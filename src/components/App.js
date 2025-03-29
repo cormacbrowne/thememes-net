@@ -1,1 +1,1 @@
-// Main React App with login, upload, meme feed
+import React from 'react'; const App = () => <h1>Welcome to the chaotic world of memes!</h1>; export default App;

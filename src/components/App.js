@@ -2,18 +2,18 @@ import { supabase } from '../supabaseClient';
 
 export default function App() {
   const root = document.getElementById('root');
-  root.innerHTML = \`
+  root.innerHTML = `
     <h1>Upload a Meme</h1>
     <input type="file" id="fileInput" />
     <div id="memeGallery"></div>
-  \`;
+  `;
 
   const fileInput = document.getElementById('fileInput');
   fileInput.addEventListener('change', async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    const filePath = \`memes/\${Date.now()}_\${file.name}\`;
+    const filePath = `memes/${Date.now()}_${file.name}`;
     const { error } = await supabase.storage.from('memes').upload(filePath, file);
     if (error) {
       alert('Upload failed');

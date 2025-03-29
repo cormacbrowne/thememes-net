@@ -1,0 +1,37 @@
+
+body {
+  margin: 0;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  background: linear-gradient(45deg, #ff69b4, #8a2be2);
+  color: white;
+  text-align: center;
+}
+
+.header {
+  padding: 2rem;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.memes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.meme-card {
+  background: #fff;
+  color: #000;
+  border-radius: 12px;
+  padding: 1rem;
+  transition: transform 0.2s;
+}
+
+.meme-card:hover {
+  transform: rotate(-2deg) scale(1.05);
+}
+
+.meme-card img {
+  width: 100%;
+  border-radius: 8px;
+}

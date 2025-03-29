@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { supabase, getUser, signInWithGoogle, signOut, uploadMeme, fetchMemes } from "../supabaseClient";
+import { supabase, signInWithGoogle, signOut, getUser, uploadMeme, fetchMemes } from "../supabaseClient";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -11,42 +11,31 @@ function App() {
     fetchMemes().then(({ memes }) => setMemes(memes || []));
   }, []);
 
-  const handleLogin = async () => {
-    await signInWithGoogle();
-  };
-
-  const handleLogout = async () => {
-    await signOut();
-    setUser(null);
-  };
-
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
-    if (file && user) {
-      const { error } = await uploadMeme(file, user.id);
-      if (!error) window.location.reload();
-    }
+    if (!file || !user) return;
+    const { url } = await uploadMeme(file, user.id);
+    setMemes([{ url }, ...memes]);
   };
 
   return (
-    <div className="app">
-      <h1>🔥 theMEMES.net 🔥</h1>
+    <div>
+      <h1>🔥 theMEMES 🔥</h1>
       {user ? (
         <>
           <p>Welcome, {user.email}</p>
-          <button onClick={handleLogout}>Logout</button>
           <input type="file" onChange={handleFileChange} />
+          <button onClick={signOut}>Logout</button>
         </>
       ) : (
-        <button onClick={handleLogin}>Login with Google</button>
+        <button onClick={signInWithGoogle}>Login with Google</button>
       )}
-      <div className="gallery">
-        {memes.map((meme) => (
-          <img key={meme.id} src={meme.url} alt="meme" className="meme" />
+      <div>
+        {memes.map((meme, idx) => (
+          <img key={idx} src={meme.url} alt="meme" />
         ))}
       </div>
     </div>
   );
 }
-
 export default App;

@@ -1,70 +1,89 @@
-import React, { useState } from 'react';
-
-const starterMemes = [
-  {
-    id: 1,
-    title: 'When ChatGPT writes your code',
-    src: '/memes/meme1.jpg',
-    likes: 15,
-  },
-  {
-    id: 2,
-    title: 'Building a meme empire at 3AM',
-    src: '/memes/meme2.jpg',
-    likes: 22,
-  },
-];
+import React, { useState, useEffect } from 'react';
+import { supabase } from './supabaseClient';
 
 function App() {
-  const [memes, setMemes] = useState(starterMemes);
+  const [memes, setMemes] = useState([]);
   const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleUpload = () => {
-    if (file) {
-      const newMeme = {
-        id: Date.now(),
-        title: file.name,
-        src: URL.createObjectURL(file),
-        likes: 0,
-      };
-      setMemes([newMeme, ...memes]);
-    }
+  useEffect(() => {
+    fetchMemes();
+  }, []);
+
+  const fetchMemes = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('memes')
+      .select('*')
+      .order('likes', { ascending: false });
+    if (!error) setMemes(data);
+    setLoading(false);
   };
 
-  const handleLike = (id) => {
-    setMemes(memes.map(meme => meme.id === id ? { ...meme, likes: meme.likes + 1 } : meme));
+  const handleUpload = async () => {
+    if (!file) return;
+    setLoading(true);
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+    const { error: uploadError } = await supabase.storage
+      .from('memes')
+      .upload(fileName, file);
+    if (uploadError) return console.error(uploadError);
+    const { data: publicData } = supabase
+      .storage
+      .from('memes')
+      .getPublicUrl(fileName);
+    const meme = {
+      title: file.name,
+      image_url: publicData.publicUrl,
+      likes: 0,
+    };
+    await supabase.from('memes').insert([meme]);
+    await fetchMemes();
+    setFile(null);
+    setLoading(false);
   };
+
+  const handleLike = async (id, currentLikes) => {
+    await supabase
+      .from('memes')
+      .update({ likes: currentLikes + 1 })
+      .eq('id', id);
+    fetchMemes();
+  };
+
+  const topMeme = memes[0];
 
   return (
-    <div>
+    <div style={{ padding: '1rem', minHeight: '100vh' }}>
       <h1 style={{ fontSize: '3rem', margin: '1rem 0', color: '#ff69b4' }}>theMEMES.net</h1>
-      <p style={{ fontStyle: 'italic' }}>Upload your chaos. Rate the madness.</p>
-
+      <p>Upload your chaos. Rate the madness.</p>
       <input type="file" onChange={(e) => setFile(e.target.files[0])} />
-      <button onClick={handleUpload} style={{ marginLeft: '1rem', padding: '0.5rem 1rem' }}>
+      <button onClick={handleUpload} disabled={loading} style={{ marginLeft: '1rem' }}>
         Upload Meme
       </button>
-
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', marginTop: '2rem' }}>
+      {topMeme && (
+        <section style={{ margin: '2rem 0' }}>
+          <h2>Top Meme of the Week</h2>
+          <img src={topMeme.image_url} alt={topMeme.title} style={{ maxWidth: '300px' }} />
+          <p>{topMeme.title}</p>
+          <p>❤️ {topMeme.likes} Likes</p>
+        </section>
+      )}
+      <hr />
+      <h2>All Memes</h2>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
         {memes.map((meme) => (
           <div key={meme.id} style={{
-            border: '2px solid #ff69b4',
-            borderRadius: '10px',
+            background: '#222',
             margin: '1rem',
             padding: '1rem',
-            background: '#222',
-            maxWidth: '300px'
+            borderRadius: '10px',
+            width: '300px'
           }}>
             <h3>{meme.title}</h3>
-            <img src={meme.src} alt={meme.title} style={{ width: '100%', borderRadius: '10px' }} />
-            <button onClick={() => handleLike(meme.id)} style={{
-              marginTop: '0.5rem',
-              padding: '0.5rem',
-              background: '#ff0',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer'
-            }}>
+            <img src={meme.image_url} alt={meme.title} style={{ width: '100%', borderRadius: '10px' }} />
+            <button onClick={() => handleLike(meme.id, meme.likes)} style={{ marginTop: '0.5rem' }}>
               ❤️ {meme.likes} Likes
             </button>
           </div>

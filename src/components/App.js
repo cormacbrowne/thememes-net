@@ -1,1 +1,1 @@
-import React from 'react'; const App = () => <h1>Welcome to the chaotic world of memes!</h1>; export default App;
+console.log('App is running');

@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from 'react';
-// Import TensorFlow.js and the NSFWJS model. These libraries are used to
-// perform client‑side image classification to detect inappropriate content.
+import React, { useEffect, useState, useRef } from 'react';
 import * as tf from '@tensorflow/tfjs';
 import * as nsfwjs from 'nsfwjs';
 import {
@@ -23,6 +21,26 @@ function App() {
   // Cache the NSFW model once it's loaded. Using state ensures it persists
   // across renders and is loaded only on demand.
   const [nsfwModel, setNsfwModel] = useState(null);
+
+  // New state for lightbox overlay and retro beep feedback
+  const [selectedMeme, setSelectedMeme] = useState(null);
+  const [clickedMemeId, setClickedMemeId] = useState(null);
+  const audioCtxRef = useRef(null);
+
+  const playBeep = () => {
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    const oscillator = audioCtxRef.current.createOscillator();
+    oscillator.type = 'square';
+    oscillator.frequency.setValueAtTime(440, audioCtxRef.current.currentTime);
+    oscillator.connect(audioCtxRef.current.destination);
+    oscillator.start();
+    oscillator.stop(audioCtxRef.current.currentTime + 0.15);
+  };
+
+  const openMeme = (meme) => setSelectedMeme(meme);
+  const closeMeme = () => setSelectedMeme(null);
 
   // Fetch the current user and memes on mount.
   useEffect(() => {
@@ -220,7 +238,12 @@ function App() {
         ) : (
           memes.map((meme) => (
             <div key={meme.id} className="meme-row">
-              <img src={meme.url} alt="meme" className="meme-thumb" />
+              <img
+                src={meme.url}
+                alt="meme"
+                className="meme-thumb"
+                onClick={() => openMeme(meme)}
+              />
               <div className="meme-meta">
                 <div className="vote-box">
                   <span className="heart">❤</span>
@@ -228,9 +251,15 @@ function App() {
                 </div>
                 <span className="meme-time">{timeAgo(meme.created_at)} ago</span>
                 <button
-                  className="vote-button"
-                  onClick={() => handleUpvote(meme.id)}
-                  // Disable the vote button for unauthenticated users
+                  className={
+                    'vote-button' +
+                    (clickedMemeId === meme.id ? ' clicked' : '')
+                  }
+                  onClick={() => {
+                    handleUpvote(meme.id);
+                    setClickedMemeId(meme.id);
+                    playBeep();
+                  }}
                   disabled={!user}
                 >
                   {user ? 'Vote' : 'Login'}
@@ -240,6 +269,44 @@ function App() {
           ))
         )}
       </section>
+
+      {/* Overlay to display selected meme in large view */}
+      {selectedMeme && (
+        <div className="overlay" onClick={closeMeme}>
+          <div className="overlay-content" onClick={(e) => e.stopPropagation()}>
+            <img
+              className="overlay-image"
+              src={selectedMeme.url}
+              alt="Selected Meme"
+            />
+            <div className="overlay-meta">
+              <div className="vote-box">
+                <span className="heart">❤</span>
+                <span className="vote-number">
+                  {selectedMeme.votes ?? 0}
+                </span>
+              </div>
+              <span className="meme-time">
+                {timeAgo(selectedMeme.created_at)} ago
+              </span>
+              <button
+                className={
+                  'vote-button' +
+                  (clickedMemeId === selectedMeme.id ? ' clicked' : '')
+                }
+                onClick={() => {
+                  handleUpvote(selectedMeme.id);
+                  setClickedMemeId(selectedMeme.id);
+                  playBeep();
+                }}
+                disabled={!user}
+              >
+                {user ? 'Vote' : 'Login'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

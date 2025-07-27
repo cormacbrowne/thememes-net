@@ -17,7 +17,21 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Helper to sign in with Google using Supabase OAuth.
 export const signInWithGoogle = async () => {
-  const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+  /*
+   * When initiating the OAuth sign‑in flow, explicitly specify a redirect URL
+   * so that Supabase knows where to send the user after authentication. If a
+   * redirect URL is not provided, Supabase will fall back to the project’s
+   * configured Site URL or, failing that, `http://localhost:3000`, which
+   * causes users in production to be sent back to a non‑existent local host.
+   *
+   * We use `window.location.origin` so the user is redirected back to the
+   * current site (either the custom domain or the Vercel preview domain).
+   */
+  const redirectTo = typeof window !== 'undefined' ? window.location.origin : undefined;
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo },
+  });
   if (error) console.error('Google sign‑in error:', error);
 };
 

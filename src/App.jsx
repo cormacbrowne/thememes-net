@@ -1,4 +1,8 @@
 import React, { useEffect, useState } from 'react';
+// Import TensorFlow.js and the NSFWJS model. These libraries are used to
+// perform client‑side image classification to detect inappropriate content.
+import * as tf from '@tensorflow/tfjs';
+import * as nsfwjs from 'nsfwjs';
 import {
   signInWithGoogle,
   signOut,
@@ -16,11 +20,24 @@ function App() {
   const [loadingMemes, setLoadingMemes] = useState(true);
   // Active tab for sorting/filtering memes (either 'latest' or 'topWeek')
   const [activeTab, setActiveTab] = useState('latest');
+  // Cache the NSFW model once it's loaded. Using state ensures it persists
+  // across renders and is loaded only on demand.
+  const [nsfwModel, setNsfwModel] = useState(null);
 
   // Fetch the current user and memes on mount.
   useEffect(() => {
     getUser().then(({ user }) => setUser(user));
     loadMemes();
+    // Load the NSFW model on mount. If the model fails to load, we log
+    // the error but allow uploads (uploads will proceed without filtering).
+    nsfwjs
+      .load()
+      .then((model) => {
+        setNsfwModel(model);
+      })
+      .catch((err) => {
+        console.error('Failed to load NSFW model', err);
+      });
   }, []);
 
   // Helper to load memes from Supabase.
@@ -56,6 +73,36 @@ function App() {
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file && user) {
+      // Before uploading, classify the image to detect inappropriate content.
+      // If the model is loaded, run a prediction. Otherwise, skip filtering.
+      let safeToUpload = true;
+      if (nsfwModel) {
+        try {
+          // Create an image element to load the file for classification.
+          const img = document.createElement('img');
+          img.src = URL.createObjectURL(file);
+          await new Promise((resolve) => {
+            img.onload = () => resolve();
+          });
+          const predictions = await nsfwModel.classify(img);
+          // Determine if any inappropriate category exceeds a threshold.
+          safeToUpload = !predictions.some(
+            (p) =>
+              (p.className === 'Porn' ||
+                p.className === 'Hentai' ||
+                p.className === 'Sexy') &&
+              p.probability > 0.8
+          );
+        } catch (err) {
+          console.error('NSFW classification failed', err);
+        }
+      }
+      if (!safeToUpload) {
+        alert(
+          'This image appears to contain inappropriate content. Please choose another file.'
+        );
+        return;
+      }
       // Use the uploadMeme helper without passing the user ID; the helper
       // fetches the current authenticated user automatically.
       const { error } = await uploadMeme(file);
@@ -91,38 +138,42 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* Hero section with title and call to action */}
-      <section className="hero">
-        <div className="hero-overlay">
-          <h1 className="hero-title">theMEMES.net</h1>
-          <p className="hero-tagline">
-            A place to upload, like and discover the funniest memes!
-          </p>
-          <div className="hero-actions">
-            {user ? (
-              <>
-                <span className="welcome-text">Welcome, {user.email}</span>
-                <button className="button" onClick={handleLogout}>
-                  Log out
-                </button>
-                <label className="upload-button">
-                  Upload Meme
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    style={{ display: 'none' }}
-                  />
-                </label>
-              </>
-            ) : (
-              <button className="button" onClick={handleLogin}>
-                Log in with Google
+      {/* Header with logo and authentication buttons */}
+      <header className="site-header">
+        <img
+          src="/images/logo.png"
+          alt="The MEMES logo"
+          className="site-logo"
+        />
+        <div className="header-buttons">
+          {user ? (
+            <>
+              <span className="welcome-text">Welcome, {user.email}</span>
+              <button className="header-btn" onClick={handleLogout}>
+                Log out
               </button>
-            )}
-          </div>
+              <label className="header-btn upload-btn">
+                Upload
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  style={{ display: 'none' }}
+                />
+              </label>
+            </>
+          ) : (
+            <>
+              <button className="header-btn" onClick={handleLogin}>
+                Log in
+              </button>
+              <button className="header-btn" onClick={handleLogin}>
+                Sign up
+              </button>
+            </>
+          )}
         </div>
-      </section>
+      </header>
 
       {/* Navigation bar with sorting options and upload link */}
       <nav className="nav-bar">

@@ -264,3 +264,49 @@ body {
   margin: 60px 0;
   color: var(--text-muted);
 }
+
+/* Header styles */
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 4px solid var(--accent);
+  background-color: var(--background);
+}
+
+.site-logo {
+  height: 60px;
+  width: auto;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.header-btn {
+  background: transparent;
+  border: 2px solid var(--highlight);
+  color: var(--highlight);
+  padding: 6px 14px;
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.header-btn:hover {
+  background: var(--highlight);
+  color: var(--background);
+}
+
+/* Upload button inside header uses label to hide the file input */
+.upload-btn {
+  position: relative;
+  overflow: hidden;
+}
+.upload-btn input {
+  display: none;
+}

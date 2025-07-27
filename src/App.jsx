@@ -44,7 +44,9 @@ function App() {
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file && user) {
-      const { error } = await uploadMeme(file, user.id);
+      // Use the uploadMeme helper without passing the user ID; the helper
+      // fetches the current authenticated user automatically.
+      const { error } = await uploadMeme(file);
       if (!error) {
         // Refresh the list after successful upload.
         await loadMemes();

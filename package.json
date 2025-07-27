@@ -10,7 +10,9 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "@tensorflow/tfjs": "^4.9.0",
+    "nsfwjs": "^2.4.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.0.0",

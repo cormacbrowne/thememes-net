@@ -3,8 +3,15 @@ import { createClient } from '@supabase/supabase-js';
 // Supabase client configuration. The URL and anon key must be provided
 // via environment variables. Vercel exposes these when defined in
 // Project → Settings → Environment Variables.
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Resolve Supabase credentials from environment variables if available.
+// Fall back to hard‑coded values to ensure the site works even when Vercel
+// environment variables are misconfigured or missing.
+const supabaseUrl =
+  import.meta.env?.VITE_SUPABASE_URL ||
+  'https://hdjxlibduxqahvwarxma.supabase.co';
+const supabaseKey =
+  import.meta.env?.VITE_SUPABASE_ANON_KEY ||
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhkanhsaWJkdXhxYWh2d2FyeG1hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MzIwMzMsImV4cCI6MjA2OTIwODAzM30.-dqgtJNkmOzpQmSw5RJDKk0mljGVyAECpsSZgnAxOnY';
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 

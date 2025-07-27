@@ -107,19 +107,28 @@ body {
   justify-content: space-between;
 }
 
-.meme-image {
-  width: 100%;
-  height: 0;
-  padding-bottom: 100%;
-  object-fit: cover;
-  background-position: center;
-}
+    /*
+     * Ensure meme images fill the card naturally without leaving large blank
+     * space underneath. Setting a zero height and padding-bottom on the
+     * image element forced a fixed aspect ratio and resulted in a tall
+     * container with empty space. Instead, allow the image to dictate its
+     * height and let the surrounding flexbox handle spacing.
+     */
+    .meme-image {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+    }
 
-.meme-card img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
+    /* Generic styling for images inside meme cards. This duplicates some
+       properties from .meme-image but helps in case other selectors are added. */
+    .meme-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+    }
 
 .meme-info {
   display: flex;

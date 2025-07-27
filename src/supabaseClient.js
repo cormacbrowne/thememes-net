@@ -82,40 +82,44 @@ export const uploadMeme = async (file, caption = '') => {
 // Fetch memes ordered by votes (descending) and created_at (descending).
 export const fetchMemes = async () => {
   /*
-    Fetch memes along with their vote counts. The `votes` table stores one row
-    per vote with `meme_id` referencing the `memes.id`. Supabase allows
-    performing a count of related rows via the `votes(count)` syntax. We
-    request the `image_url` so we can map it to a simpler `url` property for
-    the UI. Memes are ordered by vote count (descending) and then by
-    `created_at` (descending) so the most popular and recent memes appear
-    first.
+    Fetch memes and their associated vote counts. Because the `votes` table
+    stores one row per vote rather than a single numeric column on `memes`, we
+    perform two queries: one to retrieve all memes and another to retrieve all
+    votes. We then aggregate the votes by `meme_id` in JavaScript and merge
+    them back into the meme objects. Finally we sort the resulting array by
+    vote count (descending) and creation time (descending) so the most
+    popular and recent memes appear first.
   */
-  const { data, error } = await supabase
+  const { data: memesData, error: memesError } = await supabase
     .from('memes')
-    .select(
-      `id, image_url, caption, created_at, user_id, votes: votes(count)`
-    )
-    // Order by the aggregated vote count (descending) then by creation time
-    .order('count', { foreignTable: 'votes', ascending: false })
+    .select('*')
     .order('created_at', { ascending: false });
-  if (error) return { memes: [], error };
-  // Transform the data into a shape expected by the React app. Each meme
-  // record will have a `url` property instead of `image_url` and a numeric
-  // `votes` property derived from the count of related `votes` rows.
-  const memes = (data || []).map((meme) => {
-    const voteArr = meme.votes;
-    let voteCount = 0;
-    if (Array.isArray(voteArr) && voteArr.length > 0 && 'count' in voteArr[0]) {
-      voteCount = voteArr[0].count;
-    }
+  if (memesError) return { memes: [], error: memesError };
+  const { data: votesData, error: votesError } = await supabase
+    .from('votes')
+    .select('meme_id');
+  if (votesError) return { memes: [], error: votesError };
+  // Build a map of meme_id to vote count
+  const voteCounts = {};
+  (votesData || []).forEach(({ meme_id }) => {
+    voteCounts[meme_id] = (voteCounts[meme_id] || 0) + 1;
+  });
+  // Transform memes into desired shape (url, votes) and compute counts
+  const memes = (memesData || []).map((meme) => {
     return {
       id: meme.id,
       url: meme.image_url,
-      votes: voteCount,
+      votes: voteCounts[meme.id] || 0,
       caption: meme.caption,
       created_at: meme.created_at,
       user_id: meme.user_id,
     };
+  });
+  // Sort by votes desc then by created_at desc (already sorted by created_at desc)
+  memes.sort((a, b) => {
+    if (b.votes !== a.votes) return b.votes - a.votes;
+    // Compare ISO strings
+    return new Date(b.created_at) - new Date(a.created_at);
   });
   return { memes, error: null };
 };

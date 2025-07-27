@@ -162,7 +162,10 @@ function App() {
         {loadingMemes ? (
           <p className="loading-text">Loading memes…</p>
         ) : memes.length === 0 ? (
-          <p className="loading-text">No memes yet. Be the first to upload!</p>
+          // When there are no memes, encourage viewers to log in and upload
+          <p className="loading-text">
+            No memes yet. Log in and be the first to upload!
+          </p>
         ) : (
           memes.map((meme) => (
             <div key={meme.id} className="meme-row">
@@ -176,6 +179,7 @@ function App() {
                 <button
                   className="vote-button"
                   onClick={() => handleUpvote(meme.id)}
+                  // Disable the vote button for unauthenticated users
                   disabled={!user}
                 >
                   {user ? 'Vote' : 'Login'}

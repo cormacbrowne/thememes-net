@@ -1,96 +1,125 @@
-import React, { useState, useEffect } from 'react';
-import { supabase } from './supabaseClient';
-import './styles/main.css';
+import React, { useEffect, useState } from 'react';
+import {
+  signInWithGoogle,
+  signOut,
+  getUser,
+  uploadMeme,
+  fetchMemes,
+  upvoteMeme,
+} from './supabaseClient.js';
 
-
+// Main application component. This implements authentication with Supabase,
+// uploading memes, displaying them in a grid and allowing voting.
 function App() {
+  const [user, setUser] = useState(null);
   const [memes, setMemes] = useState([]);
-  const [file, setFile] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loadingMemes, setLoadingMemes] = useState(true);
 
+  // Fetch the current user and memes on mount.
   useEffect(() => {
-    fetchMemes();
+    getUser().then(({ user }) => setUser(user));
+    loadMemes();
   }, []);
 
-  const fetchMemes = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('memes')
-      .select('*')
-      .order('likes', { ascending: false });
-    if (!error) setMemes(data);
-    setLoading(false);
+  // Helper to load memes from Supabase.
+  async function loadMemes() {
+    setLoadingMemes(true);
+    const { memes } = await fetchMemes();
+    setMemes(memes || []);
+    setLoadingMemes(false);
+  }
+
+  // Trigger Google OAuth sign in.
+  const handleLogin = async () => {
+    await signInWithGoogle();
   };
 
-  const handleUpload = async () => {
-    if (!file) return;
-    setLoading(true);
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}.${fileExt}`;
-    const { error: uploadError } = await supabase.storage
-      .from('memes')
-      .upload(fileName, file);
-    if (uploadError) return console.error(uploadError);
-    const { data: publicData } = supabase
-      .storage
-      .from('memes')
-      .getPublicUrl(fileName);
-    const meme = {
-      title: file.name,
-      image_url: publicData.publicUrl,
-      likes: 0,
-    };
-    await supabase.from('memes').insert([meme]);
-    await fetchMemes();
-    setFile(null);
-    setLoading(false);
+  // Logout the current user.
+  const handleLogout = async () => {
+    await signOut();
+    setUser(null);
   };
 
-  const handleLike = async (id, currentLikes) => {
-    await supabase
-      .from('memes')
-      .update({ likes: currentLikes + 1 })
-      .eq('id', id);
-    fetchMemes();
+  // Handle file upload when a file is selected.
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (file && user) {
+      const { error } = await uploadMeme(file, user.id);
+      if (!error) {
+        // Refresh the list after successful upload.
+        await loadMemes();
+      } else {
+        console.error('Upload error', error);
+      }
+    }
   };
 
-  const topMeme = memes[0];
+  // Handle voting on a meme.
+  const handleUpvote = async (memeId) => {
+    await upvoteMeme(memeId);
+    // Reload memes to reflect updated vote counts.
+    await loadMemes();
+  };
 
   return (
-    <div style={{ padding: '1rem', minHeight: '100vh' }}>
-      <h1 style={{ fontSize: '3rem', margin: '1rem 0', color: '#ff69b4' }}>theMEMES.net</h1>
-      <p>Upload your chaos. Rate the madness.</p>
-      <input type="file" onChange={(e) => setFile(e.target.files[0])} />
-      <button onClick={handleUpload} disabled={loading} style={{ marginLeft: '1rem' }}>
-        Upload Meme
-      </button>
-      {topMeme && (
-        <section style={{ margin: '2rem 0' }}>
-          <h2>Top Meme of the Week</h2>
-          <img src={topMeme.image_url} alt={topMeme.title} style={{ maxWidth: '300px' }} />
-          <p>{topMeme.title}</p>
-          <p>❤️ {topMeme.likes} Likes</p>
-        </section>
-      )}
-      <hr />
-      <h2>All Memes</h2>
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
-        {memes.map((meme) => (
-          <div key={meme.id} style={{
-            background: '#222',
-            margin: '1rem',
-            padding: '1rem',
-            borderRadius: '10px',
-            width: '300px'
-          }}>
-            <h3>{meme.title}</h3>
-            <img src={meme.image_url} alt={meme.title} style={{ width: '100%', borderRadius: '10px' }} />
-            <button onClick={() => handleLike(meme.id, meme.likes)} style={{ marginTop: '0.5rem' }}>
-              ❤️ {meme.likes} Likes
-            </button>
+    <div className="app-container">
+      {/* Hero section with title and call to action */}
+      <section className="hero">
+        <div className="hero-overlay">
+          <h1 className="hero-title">theMEMES.net</h1>
+          <p className="hero-tagline">
+            A place to upload, like and discover the funniest memes!
+          </p>
+          <div className="hero-actions">
+            {user ? (
+              <>
+                <span className="welcome-text">Welcome, {user.email}</span>
+                <button className="button" onClick={handleLogout}>
+                  Log out
+                </button>
+                <label className="upload-button">
+                  Upload Meme
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+              </>
+            ) : (
+              <button className="button" onClick={handleLogin}>
+                Log in with Google
+              </button>
+            )}
           </div>
-        ))}
-      </div>
+        </div>
+      </section>
+
+      {/* Meme grid */}
+      <section className="meme-grid">
+        {loadingMemes ? (
+          <p className="loading-text">Loading memes…</p>
+        ) : memes.length === 0 ? (
+          <p className="loading-text">No memes yet. Be the first to upload!</p>
+        ) : (
+          memes.map((meme) => (
+            <div key={meme.id} className="meme-card">
+              <img src={meme.url} alt="meme" className="meme-image" />
+              <div className="meme-info">
+                <span className="vote-count">{meme.votes ?? 0} votes</span>
+                <button
+                  className="vote-button"
+                  onClick={() => handleUpvote(meme.id)}
+                  disabled={!user}
+                >
+                  {user ? 'Vote' : 'Login to vote'}
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </section>
     </div>
   );
 }

@@ -1,1 +1,30 @@
-/* Neon retro theme styles, vote animations, etc. */
+body {
+  margin: 0;
+  background-color: black;
+  color: #39ff14;
+  font-family: 'Courier New', monospace;
+  text-align: center;
+  padding: 2rem;
+}
+.retro-heading {
+  font-size: 2rem;
+  text-shadow: 0 0 10px #39ff14;
+}
+
+
+.retro-button {
+  background-color: #ff00cc;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  color: white;
+  font-weight: bold;
+  border-radius: 12px;
+  box-shadow: 0 0 12px #ff00cc;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+.retro-button:active {
+  transform: scale(0.95);
+  box-shadow: 0 0 18px #39ff14;
+}

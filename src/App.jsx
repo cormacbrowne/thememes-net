@@ -9,12 +9,9 @@ function App() {
   return (
     <div className="App">
       <h1 className="retro-heading">🔥 theMEMES.net 🔥</h1>
-      <p>Welcome to the internet’s retro meme pit. Voting, overlays & chaos coming up.</p>
-      <img src="/placeholder.png" alt="meme placeholder" style={{ maxWidth: '300px' }} />
-      <div style={{ marginTop: '1rem' }}>
-        <button onClick={playSound} className="retro-button">Vote 👍</button>
-      </div>
-      <img src="/assets/neon-zigzag.svg" alt="zigzag" style={{ marginTop: '2rem' }} />
+      <p>Retro chaos awaits. This version WORKS.</p>
+      <button onClick={playSound} className="retro-button">Vote 👍</button>
+      <img src="/assets/neon-zigzag.svg" alt="zigzag" style={{ marginTop: '2rem', width: '100px' }} />
     </div>
   );
 }

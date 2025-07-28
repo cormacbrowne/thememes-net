@@ -1,6 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
-import * as tf from '@tensorflow/tfjs';
-import * as nsfwjs from 'nsfwjs';
+import React, { useEffect, useState } from 'react';
 import {
   signInWithGoogle,
   signOut,
@@ -18,44 +16,11 @@ function App() {
   const [loadingMemes, setLoadingMemes] = useState(true);
   // Active tab for sorting/filtering memes (either 'latest' or 'topWeek')
   const [activeTab, setActiveTab] = useState('latest');
-  // Cache the NSFW model once it's loaded. Using state ensures it persists
-  // across renders and is loaded only on demand.
-  const [nsfwModel, setNsfwModel] = useState(null);
-
-  // New state for lightbox overlay and retro beep feedback
-  const [selectedMeme, setSelectedMeme] = useState(null);
-  const [clickedMemeId, setClickedMemeId] = useState(null);
-  const audioCtxRef = useRef(null);
-
-  const playBeep = () => {
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    const oscillator = audioCtxRef.current.createOscillator();
-    oscillator.type = 'square';
-    oscillator.frequency.setValueAtTime(440, audioCtxRef.current.currentTime);
-    oscillator.connect(audioCtxRef.current.destination);
-    oscillator.start();
-    oscillator.stop(audioCtxRef.current.currentTime + 0.15);
-  };
-
-  const openMeme = (meme) => setSelectedMeme(meme);
-  const closeMeme = () => setSelectedMeme(null);
 
   // Fetch the current user and memes on mount.
   useEffect(() => {
     getUser().then(({ user }) => setUser(user));
     loadMemes();
-    // Load the NSFW model on mount. If the model fails to load, we log
-    // the error but allow uploads (uploads will proceed without filtering).
-    nsfwjs
-      .load()
-      .then((model) => {
-        setNsfwModel(model);
-      })
-      .catch((err) => {
-        console.error('Failed to load NSFW model', err);
-      });
   }, []);
 
   // Helper to load memes from Supabase.
@@ -91,36 +56,6 @@ function App() {
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file && user) {
-      // Before uploading, classify the image to detect inappropriate content.
-      // If the model is loaded, run a prediction. Otherwise, skip filtering.
-      let safeToUpload = true;
-      if (nsfwModel) {
-        try {
-          // Create an image element to load the file for classification.
-          const img = document.createElement('img');
-          img.src = URL.createObjectURL(file);
-          await new Promise((resolve) => {
-            img.onload = () => resolve();
-          });
-          const predictions = await nsfwModel.classify(img);
-          // Determine if any inappropriate category exceeds a threshold.
-          safeToUpload = !predictions.some(
-            (p) =>
-              (p.className === 'Porn' ||
-                p.className === 'Hentai' ||
-                p.className === 'Sexy') &&
-              p.probability > 0.8
-          );
-        } catch (err) {
-          console.error('NSFW classification failed', err);
-        }
-      }
-      if (!safeToUpload) {
-        alert(
-          'This image appears to contain inappropriate content. Please choose another file.'
-        );
-        return;
-      }
       // Use the uploadMeme helper without passing the user ID; the helper
       // fetches the current authenticated user automatically.
       const { error } = await uploadMeme(file);
@@ -156,42 +91,38 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* Header with logo and authentication buttons */}
-      <header className="site-header">
-        <img
-          src="/images/logo.png"
-          alt="The MEMES logo"
-          className="site-logo"
-        />
-        <div className="header-buttons">
-          {user ? (
-            <>
-              <span className="welcome-text">Welcome, {user.email}</span>
-              <button className="header-btn" onClick={handleLogout}>
-                Log out
+      {/* Hero section with title and call to action */}
+      <section className="hero">
+        <div className="hero-overlay">
+          <h1 className="hero-title">theMEMES.net</h1>
+          <p className="hero-tagline">
+            A place to upload, like and discover the funniest memes!
+          </p>
+          <div className="hero-actions">
+            {user ? (
+              <>
+                <span className="welcome-text">Welcome, {user.email}</span>
+                <button className="button" onClick={handleLogout}>
+                  Log out
+                </button>
+                <label className="upload-button">
+                  Upload Meme
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+              </>
+            ) : (
+              <button className="button" onClick={handleLogin}>
+                Log in with Google
               </button>
-              <label className="header-btn upload-btn">
-                Upload
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  style={{ display: 'none' }}
-                />
-              </label>
-            </>
-          ) : (
-            <>
-              <button className="header-btn" onClick={handleLogin}>
-                Log in
-              </button>
-              <button className="header-btn" onClick={handleLogin}>
-                Sign up
-              </button>
-            </>
-          )}
+            )}
+          </div>
         </div>
-      </header>
+      </section>
 
       {/* Navigation bar with sorting options and upload link */}
       <nav className="nav-bar">
@@ -238,12 +169,7 @@ function App() {
         ) : (
           memes.map((meme) => (
             <div key={meme.id} className="meme-row">
-              <img
-                src={meme.url}
-                alt="meme"
-                className="meme-thumb"
-                onClick={() => openMeme(meme)}
-              />
+              <img src={meme.url} alt="meme" className="meme-thumb" />
               <div className="meme-meta">
                 <div className="vote-box">
                   <span className="heart">❤</span>
@@ -251,15 +177,9 @@ function App() {
                 </div>
                 <span className="meme-time">{timeAgo(meme.created_at)} ago</span>
                 <button
-                  className={
-                    'vote-button' +
-                    (clickedMemeId === meme.id ? ' clicked' : '')
-                  }
-                  onClick={() => {
-                    handleUpvote(meme.id);
-                    setClickedMemeId(meme.id);
-                    playBeep();
-                  }}
+                  className="vote-button"
+                  onClick={() => handleUpvote(meme.id)}
+                  // Disable the vote button for unauthenticated users
                   disabled={!user}
                 >
                   {user ? 'Vote' : 'Login'}
@@ -269,44 +189,6 @@ function App() {
           ))
         )}
       </section>
-
-      {/* Overlay to display selected meme in large view */}
-      {selectedMeme && (
-        <div className="overlay" onClick={closeMeme}>
-          <div className="overlay-content" onClick={(e) => e.stopPropagation()}>
-            <img
-              className="overlay-image"
-              src={selectedMeme.url}
-              alt="Selected Meme"
-            />
-            <div className="overlay-meta">
-              <div className="vote-box">
-                <span className="heart">❤</span>
-                <span className="vote-number">
-                  {selectedMeme.votes ?? 0}
-                </span>
-              </div>
-              <span className="meme-time">
-                {timeAgo(selectedMeme.created_at)} ago
-              </span>
-              <button
-                className={
-                  'vote-button' +
-                  (clickedMemeId === selectedMeme.id ? ' clicked' : '')
-                }
-                onClick={() => {
-                  handleUpvote(selectedMeme.id);
-                  setClickedMemeId(selectedMeme.id);
-                  playBeep();
-                }}
-                disabled={!user}
-              >
-                {user ? 'Vote' : 'Login'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -1,0 +1,11 @@
+body {
+  background-color: black;
+  color: neongreen;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+}
+
+img {
+  border: 5px dashed magenta;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}

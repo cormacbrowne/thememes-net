@@ -43,12 +43,14 @@ export default function LoginPage() {
 
   const signInGoogle = async () => {
     setBusy(true)
+    setMessage('')
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     })
     if (error) {
       alert(error.message)
+      setMessage(error.message)
       setBusy(false)
       setBusy(true)
       setMessage('')
@@ -66,6 +68,7 @@ export default function LoginPage() {
   return (
     <div className="mx-auto max-w-sm rounded-2xl border border-white/10 p-6 shadow-lg">
       <h1 className="mb-4 text-2xl font-bold">Login</h1>
+      {message && <p className="mb-4 text-sm text-red-400">{message}</p>}
       <button
         onClick={signInGoogle}
         disabled={busy}
@@ -104,3 +107,17 @@ export default function LoginPage() {
             className="flex-1 rounded-xl border border-fuchsia-400/60 px-3 py-2 hover:bg-fuchsia-500/10 disabled:opacity-50"
           >
             {busy ? '…' : 'Sign in'}
+          </button>
+          <button
+            type="button"
+            onClick={signUp}
+            disabled={busy}
+            className="flex-1 rounded-xl border border-cyan-400/60 px-3 py-2 hover:bg-cyan-500/10 disabled:opacity-50"
+          >
+            {busy ? '…' : 'Sign up'}
+          </button>
+        </div>
+      </form>
+    </div>
+  )
+}

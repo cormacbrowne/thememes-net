@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 
 export default function Gallery({ user }) {
+export default function Gallery() {
   const [urls, setUrls] = useState([]);
 
   useEffect(() => {
@@ -30,12 +32,22 @@ export default function Gallery({ user }) {
 
       const publicUrls = data.map((f) =>
         supabase.storage.from('memes').getPublicUrl(`public/${f.name}`).data.publicUrl
+      if (error) return;
+      const files = await Promise.all(
+        data.map(async (file) => {
+          const { data: urlData } = supabase.storage
+            .from('memes')
+            .getPublicUrl(`public/${file.name}`);
+          return urlData.publicUrl;
+        })
       );
       setUrls(publicUrls);
+      setUrls(files);
     }
 
     load();
   }, [user]);
+  }, []);
 
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', marginTop: '2rem' }}>

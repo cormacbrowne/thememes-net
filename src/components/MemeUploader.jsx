@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { useRef, useState } from 'react';
 import { useState, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { supabase } from '../supabaseClient';
 
 export default function MemeUploader() {
+export default function MemeUploader({ onUpload }) {
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [memeUrl, setMemeUrl] = useState(null);
   const [status, setStatus] = useState('');
   const [uploading, setUploading] = useState(false);
   const [memeUrl, setMemeUrl] = useState(null);
@@ -15,6 +18,7 @@ export default function MemeUploader() {
     const selected = e.target.files[0];
     setFile(selected);
     setPreviewUrl(selected ? URL.createObjectURL(selected) : null);
+    setMemeUrl(null);
     setStatus('');
   };
 
@@ -43,7 +47,16 @@ export default function MemeUploader() {
       setFile(null);
       setPreviewUrl(null);
       if (inputRef.current) inputRef.current.value = '';
+      return;
     }
+
+    const { data } = supabase.storage.from('memes').getPublicUrl(filePath);
+    setStatus('Upload successful!');
+    setMemeUrl(data.publicUrl);
+    setFile(null);
+    setPreviewUrl(null);
+    if (inputRef.current) inputRef.current.value = '';
+    if (onUpload) onUpload();
   };
 
   return (
@@ -68,7 +81,26 @@ export default function MemeUploader() {
             </a>
           )}
         </p>
+      {previewUrl && (
+        <img
+          src={previewUrl}
+          alt="preview"
+          style={{ maxWidth: '100%', width: 400, marginTop: '1rem' }}
+        />
       )}
+      {memeUrl && !previewUrl && (
+        <img
+          src={memeUrl}
+          alt="uploaded meme"
+          style={{ maxWidth: '100%', width: 400, marginTop: '1rem' }}
+        />
+      )}
+      <div style={{ marginTop: '1rem' }}>
+        <button className="retro-button" onClick={uploadMeme} disabled={uploading}>
+          {uploading ? 'Uploading...' : 'Upload Meme'}
+        </button>
+      </div>
+      {status && <p>{status}</p>}
     </div>
   );
 }

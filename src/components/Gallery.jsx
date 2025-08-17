@@ -9,12 +9,15 @@ export default function Gallery({ user }) {
     async function load() {
       const { data, error } = await supabase
         .storage
+      const { data, error } = await supabase.storage
         .from('memes')
         .list('', { limit: 100, sortBy: { column: 'created_at', order: 'desc' }});
         .list('public', { limit: 100, sortBy: { column: 'created_at', order: 'desc' }});
+        .list('public', { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
       if (error) return console.error(error);
       const publicUrls = data.map(f => supabase.storage.from('memes').getPublicUrl(f.name).data.publicUrl);
       const publicUrls = data.map(f =>
+      const publicUrls = data.map((f) =>
         supabase.storage.from('memes').getPublicUrl(`public/${f.name}`).data.publicUrl
       );
       setUrls(publicUrls);

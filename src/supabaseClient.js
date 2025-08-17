@@ -8,6 +8,8 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 // when running the app.
 // keys are not hard coded in the repository. Define `VITE_SUPABASE_URL`
 // and `VITE_SUPABASE_ANON_KEY` in your environment when running the app.
+// Supabase configuration is provided via environment variables.
+// Define VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in a `.env` file.
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 

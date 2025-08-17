@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from './supabaseClient';
 import MemeUploader from './components/MemeUploader';
+import Gallery from './components/Gallery';
 
 function App() {
   const [user, setUser] = useState(null);
+  const [refresh, setRefresh] = useState(0);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
@@ -35,6 +37,8 @@ function App() {
       {user && <MemeUploader />}
       <button className="retro-button" style={{ marginTop: '2rem' }}>Vote 👍</button>
       <img src="/assets/neon-zigzag.svg" alt="zigzag" style={{ marginTop: '2rem', width: '100px' }} />
+      {user && <MemeUploader onUpload={() => setRefresh((r) => r + 1)} />}
+      {user && <Gallery key={refresh} user={user} />}
     </div>
   );
 }

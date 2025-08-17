@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from './supabaseClient';
+import AuthButton from './components/AuthButton';
 import MemeUploader from './components/MemeUploader';
 import Gallery from './components/Gallery';
 
 function App() {
+export default function App() {
   const [user, setUser] = useState(null);
   const [refresh, setRefresh] = useState(0);
 
@@ -13,6 +16,10 @@ function App() {
       setUser(session?.user ?? null)
     );
     return () => listener?.subscription.unsubscribe();
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => listener.subscription.unsubscribe();
   }, []);
 
   const signIn = async () => {
@@ -32,6 +39,7 @@ function App() {
           <button className="retro-button" onClick={signIn}>Sign in with Google</button>
         )}
       </div>
+      <AuthButton />
       <h1 className="retro-heading">🔥 theMEMES.net 🔥</h1>
       <p style={{ color: '#39FF14' }}>Retro chaos awaits. This version WORKS.</p>
       {user && <MemeUploader />}
@@ -39,6 +47,7 @@ function App() {
       <img src="/assets/neon-zigzag.svg" alt="zigzag" style={{ marginTop: '2rem', width: '100px' }} />
       {user && <MemeUploader onUpload={() => setRefresh((r) => r + 1)} />}
       {user && <Gallery key={refresh} user={user} />}
+      {user && <Gallery key={refresh} />}
     </div>
   );
 }

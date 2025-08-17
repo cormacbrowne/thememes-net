@@ -13,6 +13,7 @@ export default function Navbar() {
 
   const handleGoogle = async () => {
     setBusy(true)
+    setMessage('')
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/auth/callback` },
@@ -32,12 +33,16 @@ export default function Navbar() {
         setBusy(false)
       }
     }
+    if (error) setMessage(error.message)
+    setBusy(false)
   }
 
   const handleLogout = async () => {
     setBusy(true)
+    setMessage('')
     const { error } = await supabase.auth.signOut()
     if (error) alert(error.message)
+    if (error) setMessage(error.message)
     setBusy(false)
   }
     const handleLogout = async () => {
@@ -60,6 +65,10 @@ export default function Navbar() {
         </Link>
         <nav className="flex items-center gap-3">
           <Link href="/upload" className="rounded-2xl border border-cyan-400/60 px-3 py-1 text-sm hover:bg-cyan-500/10">
+          <Link
+            href="/upload"
+            className="rounded-2xl border border-cyan-400/60 px-3 py-1 text-sm hover:bg-cyan-500/10"
+          >
             Upload
           </Link>
           {session ? (
@@ -89,6 +98,7 @@ export default function Navbar() {
           )}
         </nav>
       </div>
+      {message && <p className="px-4 pb-2 text-sm text-red-400">{message}</p>}
       {/* neon zigzag border */}
       <div className="h-1 w-full bg-[repeating-linear-gradient(45deg,_#f0f_0_10px,_#0ff_10px_20px)]" />
     </header>

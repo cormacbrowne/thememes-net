@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '../supabaseClient';
 
 export default function MemeFeed() {
   const [memes, setMemes] = useState([]);
@@ -16,6 +17,7 @@ export default function MemeFeed() {
         .list('public');
 
       if (listError || !data) {
+      if (listError) {
         setError('Failed to load memes.');
       } else {
         const withPaths = data.map((meme) => ({
@@ -23,6 +25,13 @@ export default function MemeFeed() {
           name: `public/${meme.name}`,
         }));
         setMemes(withPaths);
+        const filesWithUrls = data.map((meme) => {
+          const { data: urlData } = supabase.storage
+            .from('memes')
+            .getPublicUrl(`public/${meme.name}`);
+          return { name: meme.name, url: urlData.publicUrl };
+        });
+        setMemes(filesWithUrls);
       }
       setLoading(false);
     }
@@ -36,14 +45,18 @@ export default function MemeFeed() {
   if (error) {
     return <div>{error}</div>;
   }
+  if (loading) return <div>Loading memes...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <div>
       <h2>Latest Memes</h2>
       <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+        {memes.length === 0 && <p>No memes found.</p>}
         {memes.map((meme) => (
           <div key={meme.name} style={{ margin: 10 }}>
             <img src={`https://your-supabase-url.storage.googleapis.com/memes/public/${meme.name}`} alt={meme.name} width={300} />
+            <img src={meme.url} alt={meme.name} width={300} />
           </div>
         ))}
         {memes.length === 0 && <p>No memes found.</p>}

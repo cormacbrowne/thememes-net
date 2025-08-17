@@ -54,6 +54,7 @@ export default function MemeUploader({ onUpload }) {
     const { data } = supabase.storage.from('memes').getPublicUrl(filePath);
     setStatus('Upload successful!');
     setMemeUrl(data.publicUrl);
+    if (onUpload) onUpload();
     setFile(null);
     setPreviewUrl(null);
     if (inputRef.current) inputRef.current.value = '';
@@ -94,11 +95,14 @@ export default function MemeUploader({ onUpload }) {
           src={memeUrl}
           alt="uploaded meme"
           style={{ maxWidth: '100%', width: 400, marginTop: '1rem' }}
+          style={{ maxWidth: '100%', width: 300, marginTop: '1rem' }}
         />
       )}
       <div style={{ marginTop: '1rem' }}>
         <button className="retro-button" onClick={uploadMeme} disabled={uploading}>
           {uploading ? 'Uploading...' : 'Upload Meme'}
+        <button className="retro-button" onClick={uploadMeme}>
+          Upload Meme
         </button>
       </div>
       {status && <p>{status}</p>}

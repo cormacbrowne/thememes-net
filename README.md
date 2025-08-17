@@ -13,6 +13,10 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 These variables are loaded by Vite at build time and available via `import.meta.env`.
 
+## Authentication
+
+Supabase handles authentication via Google OAuth. Enable the Google provider in your Supabase project and supply the keys above before running the app.
+
 ## Development
 
 Run the development server with:

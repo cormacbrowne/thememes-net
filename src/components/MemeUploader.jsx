@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useRef, useState } from 'react';
+import { useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 
 export default function MemeUploader() {
@@ -19,16 +20,20 @@ export default function MemeUploader() {
 
   const uploadMeme = async () => {
     if (!file) return;
+
     setUploading(true);
     setStatus('Uploading...');
     setMemeUrl(null);
     const filePath = `${Date.now()}_${file.name}`;
     let { error } = await supabase.storage.from('memes').upload(filePath, file);
+
     const filePath = `public/${Date.now()}_${file.name}`;
     const { error } = await supabase.storage.from('memes').upload(filePath, file);
+
     setUploading(false);
     if (error) return alert('Upload failed');
     alert('Meme uploaded!');
+
     if (error) {
       setStatus(`Upload failed: ${error.message}`);
     } else {

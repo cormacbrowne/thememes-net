@@ -1,8 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Supabase configuration is pulled from environment variables. Define 'VITE_SUPABASE_URL' and 'VITE_SUPABASE_ANON_KEY'
-// in your environment (e.g., in a .env file) when running the app.
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Supabase configuration uses direct URL and public anon key for the new project
+const supabaseUrl = 'https://sawttagurwqthmdqozk.supabase.co';
+const supabaseAnonKey = 'sbp_b1665bdc2cc3793ec8d2c6a5af72d9ff033f2d30';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);

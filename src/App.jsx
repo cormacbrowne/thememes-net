@@ -13,7 +13,7 @@ export default function App() {
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
-    return () => listener?.subscription.unsubscribe();
+    return () => listener?.subscription.unsubscribe()();
   }, []);
 
   const signIn = async () => {

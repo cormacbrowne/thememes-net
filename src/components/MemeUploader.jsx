@@ -1,18 +1,12 @@
-import { useState } from 'react';
-import { useRef, useState } from 'react';
-import { useState, useRef } from 'react';
-import React, { useRef, useState } from 'react';
 import React, { useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 
-export default function MemeUploader() {
 export default function MemeUploader({ onUpload }) {
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [memeUrl, setMemeUrl] = useState(null);
   const [status, setStatus] = useState('');
   const [uploading, setUploading] = useState(false);
-  const [memeUrl, setMemeUrl] = useState(null);
   const inputRef = useRef(null);
 
   const handleFileChange = (e) => {
@@ -25,87 +19,33 @@ export default function MemeUploader({ onUpload }) {
 
   const uploadMeme = async () => {
     if (!file) return;
-
     setUploading(true);
     setStatus('Uploading...');
-    setMemeUrl(null);
     const filePath = `${Date.now()}_${file.name}`;
-    let { error } = await supabase.storage.from('memes').upload(filePath, file);
-
-    const filePath = `public/${Date.now()}_${file.name}`;
-    const { error } = await supabase.storage.from('memes').upload(filePath, file);
-
-    setUploading(false);
-    if (error) return alert('Upload failed');
-    alert('Meme uploaded!');
-
-    if (error) {
-      setStatus(`Upload failed: ${error.message}`);
+    const { error: uploadError } = await supabase.storage.from('memes').upload(filePath, file);
+    if (uploadError) {
+      setStatus(`Upload failed: ${uploadError.message}`);
     } else {
-      const { data } = supabase.storage.from('memes').getPublicUrl(filePath);
+      const { data } = await supabase.storage.from('memes').getPublicUrl(filePath);
       setStatus('Upload successful!');
       setMemeUrl(data.publicUrl);
-      setFile(null);
-      setPreviewUrl(null);
-      if (inputRef.current) inputRef.current.value = '';
-      return;
+      if (onUpload) onUpload();
     }
-
-    const { data } = supabase.storage.from('memes').getPublicUrl(filePath);
-    setStatus('Upload successful!');
-    setMemeUrl(data.publicUrl);
-    if (onUpload) onUpload();
+    setUploading(false);
     setFile(null);
     setPreviewUrl(null);
     if (inputRef.current) inputRef.current.value = '';
-    if (onUpload) onUpload();
   };
 
   return (
     <div>
-      <input type="file" onChange={(e) => setFile(e.target.files[0])} />
-      <input
-        type="file"
-        ref={inputRef}
-        onChange={(e) => setFile(e.target.files[0])}
-      />
-      <input type="file" ref={inputRef} onChange={handleFileChange} />
-      {previewUrl && <img src={previewUrl} alt="preview" width={300} />}
-      <button className="retro-button" onClick={uploadMeme} disabled={uploading}>
+      <input ref={inputRef} type="file" onChange={handleFileChange} />
+      {previewUrl && <img src={previewUrl} alt="Preview" />}
+      {status && <p>{status}</p>}
+      {memeUrl && <input type="text" value={memeUrl} readOnly onClick={(e) => e.target.select()} />}
+      <button onClick={uploadMeme} disabled={uploading}>
         {uploading ? 'Uploading...' : 'Upload Meme'}
       </button>
-      {status && (
-        <p>
-          {status}{' '}
-          {memeUrl && (
-            <a href={memeUrl} target="_blank" rel="noreferrer">
-              View meme
-            </a>
-          )}
-        </p>
-      {previewUrl && (
-        <img
-          src={previewUrl}
-          alt="preview"
-          style={{ maxWidth: '100%', width: 400, marginTop: '1rem' }}
-        />
-      )}
-      {memeUrl && !previewUrl && (
-        <img
-          src={memeUrl}
-          alt="uploaded meme"
-          style={{ maxWidth: '100%', width: 400, marginTop: '1rem' }}
-          style={{ maxWidth: '100%', width: 300, marginTop: '1rem' }}
-        />
-      )}
-      <div style={{ marginTop: '1rem' }}>
-        <button className="retro-button" onClick={uploadMeme} disabled={uploading}>
-          {uploading ? 'Uploading...' : 'Upload Meme'}
-        <button className="retro-button" onClick={uploadMeme}>
-          Upload Meme
-        </button>
-      </div>
-      {status && <p>{status}</p>}
     </div>
   );
 }

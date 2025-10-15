@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabaseClient';
 import { supabase } from '../supabaseClient';
 
+// A simple meme feed component that fetches images from the Supabase
+// storage bucket called `memes`. It retrieves the list of files in
+// the `public` folder and then constructs public URLs for each file.
+// The component displays a loading state, an error state, and
+// finally a list of images once loaded. Each image is displayed
+// within a flex container so that items wrap on smaller screens.
 export default function MemeFeed() {
   const [memes, setMemes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -9,42 +14,36 @@ export default function MemeFeed() {
 
   useEffect(() => {
     async function fetchMemes() {
-      const { data, error } = await supabase.storage.from('memes').list('public');
-      if (data) {
-        setMemes(data);
-      const { data, error: listError } = await supabase.storage
-        .from('memes')
-        .list('public');
-
-      if (listError || !data) {
-      if (listError) {
+      // Fetch the list of files in the `public` folder of the `memes` bucket
+      const { data: fileList, error } = await supabase.storage.from('memes').list('public');
+      if (error || !fileList) {
         setError('Failed to load memes.');
-      } else {
-        const withPaths = data.map((meme) => ({
-          ...meme,
-          name: `public/${meme.name}`,
-        }));
-        setMemes(withPaths);
-        const filesWithUrls = data.map((meme) => {
-          const { data: urlData } = supabase.storage
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // Construct a promise for each file to fetch its public URL
+        const urlPromises = fileList.map(async (file) => {
+          const { data: urlData, error: urlError } = await supabase.storage
             .from('memes')
-            .getPublicUrl(`public/${meme.name}`);
-          return { name: meme.name, url: urlData.publicUrl };
+            .getPublicUrl(`public/${file.name}`);
+          if (urlError || !urlData) {
+            return null;
+          }
+          return { name: file.name, url: urlData.publicUrl };
         });
-        setMemes(filesWithUrls);
+        // Resolve all promises and filter out any null results
+        const urls = (await Promise.all(urlPromises)).filter(Boolean);
+        setMemes(urls);
+      } catch (e) {
+        setError('An unexpected error occurred while loading memes.');
       }
       setLoading(false);
     }
     fetchMemes();
   }, []);
 
-  if (loading) {
-    return <div>Loading memes...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
   if (loading) return <div>Loading memes...</div>;
   if (error) return <div>{error}</div>;
 
@@ -55,32 +54,10 @@ export default function MemeFeed() {
         {memes.length === 0 && <p>No memes found.</p>}
         {memes.map((meme) => (
           <div key={meme.name} style={{ margin: 10 }}>
-            <img src={`https://your-supabase-url.storage.googleapis.com/memes/public/${meme.name}`} alt={meme.name} width={300} />
             <img src={meme.url} alt={meme.name} width={300} />
           </div>
         ))}
-        {memes.length === 0 && <p>No memes found.</p>}
-        {memes.map((meme) => {
-          const { data: urlData, error: urlError } = supabase.storage
-            .from('memes')
-            .getPublicUrl(meme.name);
-
-          if (urlError || !urlData) {
-            return (
-              <div key={meme.name} style={{ margin: 10 }}>
-                <p>Failed to load meme.</p>
-              </div>
-            );
-          }
-
-          return (
-            <div key={meme.name} style={{ margin: 10 }}>
-              <img src={urlData.publicUrl} alt={meme.name} width={300} />
-            </div>
-          );
-        })}
       </div>
     </div>
   );
-}
 }

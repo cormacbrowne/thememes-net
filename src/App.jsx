@@ -91,6 +91,28 @@ class SoundEngine {
     } catch (e) {}
   }
 
+  playMutate() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const freqs = [330, 493.88, 659.25, 987.77];
+      freqs.forEach((f, idx) => {
+        const now = this.ctx.currentTime + idx * 0.055;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(f, now);
+        gain.gain.setValueAtTime(0.11, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+        osc.start(now);
+        osc.stop(now + 0.16);
+      });
+    } catch (e) {}
+  }
+
   playLevelUp() {
     if (!this.enabled) return;
     try {
@@ -150,6 +172,10 @@ const STARTER_MEMES = [
     category: 'tech',
     author_name: 'NullPointerGod',
     score: 1420,
+    generation: 0,
+    mutation_count: 0,
+    parent_meme_id: null,
+    root_meme_id: 'seed-1',
     created_at: new Date(Date.now() - 1000 * 60 * 25).toISOString(),
     reactions: { '🔥': 84, '💀': 142, '😂': 63, '🗿': 29 },
     image_url: makeSvgMeme({
@@ -172,6 +198,10 @@ const STARTER_MEMES = [
     category: 'relatable',
     author_name: 'SleepDeprived',
     score: 980,
+    generation: 0,
+    mutation_count: 0,
+    parent_meme_id: null,
+    root_meme_id: 'seed-2',
     created_at: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
     reactions: { '🔥': 41, '💀': 210, '😂': 95, '🗿': 44 },
     image_url: makeSvgMeme({
@@ -193,6 +223,10 @@ const STARTER_MEMES = [
     category: 'gaming',
     author_name: 'ShaderWizard',
     score: 2150,
+    generation: 0,
+    mutation_count: 0,
+    parent_meme_id: null,
+    root_meme_id: 'seed-3',
     created_at: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
     reactions: { '🔥': 190, '💀': 64, '😂': 120, '🗿': 310 },
     image_url: makeSvgMeme({
@@ -214,13 +248,17 @@ const STARTER_MEMES = [
     category: 'dank',
     author_name: 'ThockMaster',
     score: 765,
+    generation: 0,
+    mutation_count: 0,
+    parent_meme_id: null,
+    root_meme_id: 'seed-4',
     created_at: new Date(Date.now() - 1000 * 60 * 320).toISOString(),
     reactions: { '🔥': 52, '💀': 88, '😂': 112, '🗿': 19 },
     image_url: makeSvgMeme({
       bg1: '#3f1d38',
       bg2: '#701a75',
       badge: 'FINANCIAL IQ',
-      topText: ' RENT IS TEMPORARY',
+      topText: 'RENT IS TEMPORARY',
       bottomText: 'CREAMY THOCK SWITCHES ARE FOREVER',
       emoji: '💸',
       accent: '#f472b6'
@@ -233,6 +271,10 @@ const STARTER_MEMES = [
     category: 'relatable',
     author_name: 'ZoomZombie',
     score: 1640,
+    generation: 0,
+    mutation_count: 0,
+    parent_meme_id: null,
+    root_meme_id: 'seed-5',
     created_at: new Date(Date.now() - 1000 * 60 * 540).toISOString(),
     reactions: { '🔥': 73, '💀': 295, '😂': 134, '🗿': 88 },
     image_url: makeSvgMeme({
@@ -254,6 +296,10 @@ const STARTER_MEMES = [
     category: 'gaming',
     author_name: 'EldenL0rd',
     score: 1290,
+    generation: 0,
+    mutation_count: 0,
+    parent_meme_id: null,
+    root_meme_id: 'seed-6',
     created_at: new Date(Date.now() - 1000 * 60 * 800).toISOString(),
     reactions: { '🔥': 110, '💀': 175, '😂': 205, '🗿': 60 },
     image_url: makeSvgMeme({
@@ -302,16 +348,22 @@ const RANKS = [
 export default function App() {
   // Core Feed & Filter State
   const [memes, setMemes] = useState(STARTER_MEMES);
-  const [sortBy, setSortBy] = useState('latest'); // 'latest' | 'top' | 'hall'
+  const [sortBy, setSortBy] = useState('latest'); // 'latest' | 'top'
   const [category, setCategory] = useState('all'); // 'all' | 'dank' | 'tech' | 'gaming' | 'relatable'
   const [viewMode, setViewMode] = useState('feed'); // 'feed' | 'swipe' | 'battle'
   const [searchQuery, setSearchQuery] = useState('');
   const [dbStatus, setDbStatus] = useState('connecting'); // 'connecting' | 'live' | 'local'
 
+  // Fork & Mutate + Evolution Tree State
+  const [mutatingParentMeme, setMutatingParentMeme] = useState(null);
+  const [evolutionModalMeme, setEvolutionModalMeme] = useState(null);
+  const [evolutionNodes, setEvolutionNodes] = useState([]);
+  const [loadingEvolution, setLoadingEvolution] = useState(false);
+
   // Gamification & Combo State
   const [xp, setXp] = useState(() => Number(localStorage.getItem('tm_xp') || 60));
   const [combo, setCombo] = useState(1);
-  const [comboTimer, setComboTimer] = useState(0); // 0 to 100
+  const [comboTimer, setComboTimer] = useState(0);
   const [soundOn, setSoundOn] = useState(true);
   const [screenShake, setScreenShake] = useState(false);
   const [particles, setParticles] = useState([]);
@@ -333,7 +385,7 @@ export default function App() {
     }
   });
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup'
+  const [authMode, setAuthMode] = useState('login');
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authUsername, setAuthUsername] = useState('');
@@ -371,7 +423,13 @@ export default function App() {
   }, [xp]);
 
   const nextRank = useMemo(() => {
-    return RANKS.find((r) => r.minXp > xp) || { level: currentRank.level + 1, title: 'Immortal Memer', minXp: xp + 1000 };
+    return (
+      RANKS.find((r) => r.minXp > xp) || {
+        level: currentRank.level + 1,
+        title: 'Immortal Memer',
+        minXp: xp + 1000
+      }
+    );
   }, [xp, currentRank]);
 
   const xpProgress = useMemo(() => {
@@ -408,7 +466,6 @@ export default function App() {
         .limit(50);
 
       if (error) {
-        // Table might not exist yet in Supabase; fallback gracefully
         setDbStatus('local');
         return;
       }
@@ -417,10 +474,11 @@ export default function App() {
       if (data && data.length > 0) {
         const normalized = data.map((row) => ({
           ...row,
+          generation: row.generation || 0,
+          mutation_count: row.mutation_count || 0,
           reactions: row.reactions || { '🔥': 0, '💀': 0, '😂': 0, '🗿': 0 },
           comments: Array.isArray(row.comments) ? row.comments : []
         }));
-        // Combine live Supabase memes with starter memes so feed is always rich
         const liveIds = new Set(normalized.map((m) => String(m.id)));
         const merged = [...normalized, ...STARTER_MEMES.filter((s) => !liveIds.has(String(s.id)))];
         setMemes(merged);
@@ -431,7 +489,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    // Ensure Supabase CDN is available
     let client = getSupabaseClient();
     if (!client && typeof document !== 'undefined') {
       const script = document.createElement('script');
@@ -445,7 +502,6 @@ export default function App() {
       fetchSupabaseMemes();
     }
 
-    // Check active Supabase session
     if (client && client.auth) {
       client.auth.getSession().then(({ data }) => {
         if (data?.session?.user) {
@@ -461,7 +517,6 @@ export default function App() {
       });
     }
 
-    // Subscribe to realtime changes on public.memes
     let channel = null;
     if (client && client.channel) {
       channel = client
@@ -550,19 +605,124 @@ export default function App() {
 
       const clientX = event?.clientX || window.innerWidth / 2;
       const clientY = event?.clientY || window.innerHeight / 2;
-      spawnParticles(clientX, clientY, `+${gained} XP ${nextCombo > 1 ? `(${nextCombo}x!)` : ''}`, emoji);
+      spawnParticles(
+        clientX,
+        clientY,
+        `+${gained} XP ${nextCombo > 1 ? `(${nextCombo}x!)` : ''}`,
+        emoji
+      );
     },
     [combo, spawnParticles]
   );
 
   // ==========================================
-  // 8. VOTING, REACTIONS & COMMENTS (SUPABASE + OPTIMISTIC UI)
+  // 8. FORK & MUTATE HANDLERS + EVOLUTION TREE
+  // ==========================================
+  const handleOpenBlankStudio = () => {
+    setMutatingParentMeme(null);
+    setCustomUploadImg(null);
+    setStudioTitle('');
+    setStudioStickers([]);
+    setStudioDeepFry(false);
+    setStudioTopText(STUDIO_TEMPLATES[0].defaultTop);
+    setStudioBottomText(STUDIO_TEMPLATES[0].defaultBottom);
+    setShowStudio(true);
+  };
+
+  // Triggered when clicking [🧬 MUTATE (+150 XP)] on any feed card or Evolution Tree node
+  const handleTriggerStudioMutate = useCallback((memeToMutate, event) => {
+    if (event) event.stopPropagation();
+    sfx.playMutate();
+
+    setMutatingParentMeme(memeToMutate);
+    setEvolutionModalMeme(null);
+    setStudioTitle(`REMIX: ${memeToMutate.title || 'Untitled'}`);
+    setStudioCategory(memeToMutate.category || 'dank');
+    setStudioTopText('WAIT A SECOND...');
+    setStudioBottomText('PLOT TWIST UNLOCKED 💀');
+    setStudioStickers([]);
+    setStudioDeepFry(false);
+
+    // Load parent meme image onto an HTMLImageElement (CORS-safe for remote URLs)
+    const img = new Image();
+    const isDataUri = String(memeToMutate.image_url || '').startsWith('data:');
+    if (!isDataUri) {
+      img.crossOrigin = 'anonymous';
+    }
+    img.onload = () => {
+      setCustomUploadImg(img);
+      setShowStudio(true);
+    };
+    img.onerror = () => {
+      // Fallback if remote host blocks CORS: open Studio with template + parent context
+      setCustomUploadImg(null);
+      setShowStudio(true);
+    };
+
+    if (isDataUri) {
+      img.src = memeToMutate.image_url;
+    } else {
+      const sep = memeToMutate.image_url.includes('?') ? '&' : '?';
+      img.src = `${memeToMutate.image_url}${sep}mutate_cors=${Date.now()}`;
+    }
+  }, []);
+
+  // Opens the Genealogical Evolution Tree modal for a meme
+  const handleOpenEvolutionTree = useCallback(
+    async (meme, event) => {
+      if (event) event.stopPropagation();
+      sfx.playPop(combo);
+      setEvolutionModalMeme(meme);
+      setLoadingEvolution(true);
+
+      const rootId = meme.root_meme_id || meme.parent_meme_id || meme.id;
+
+      // 1. Build instant local tree from loaded memes
+      const localMatches = memes
+        .filter(
+          (m) =>
+            String(m.id) === String(rootId) ||
+            String(m.root_meme_id) === String(rootId) ||
+            String(m.parent_meme_id) === String(rootId) ||
+            String(m.id) === String(meme.id) ||
+            String(m.parent_meme_id) === String(meme.id)
+        )
+        .sort((a, b) => (a.generation || 0) - (b.generation || 0));
+
+      // 2. Also query Supabase RPC if available for deep database trees
+      const client = getSupabaseClient();
+      if (client && !String(meme.id).startsWith('seed-') && !String(meme.id).startsWith('local-')) {
+        try {
+          const { data, error } = await client.rpc('get_meme_evolution_tree', {
+            target_meme_id: meme.id
+          });
+          if (!error && Array.isArray(data) && data.length > 0) {
+            setEvolutionNodes(
+              data.map((row) => ({
+                ...row,
+                author_name: row.author_name || row.username || 'AnonMemer',
+                score: row.score ?? row.upvotes ?? 1
+              }))
+            );
+            setLoadingEvolution(false);
+            return;
+          }
+        } catch (e) {}
+      }
+
+      setEvolutionNodes(localMatches.length > 0 ? localMatches : [meme]);
+      setLoadingEvolution(false);
+    },
+    [memes, combo]
+  );
+
+  // ==========================================
+  // 9. VOTING, REACTIONS & COMMENTS
   // ==========================================
   const handleVote = async (memeId, direction, event) => {
     const currentVote = userVotes[memeId] || 0;
     let delta = direction;
     if (currentVote === direction) {
-      // Undo vote
       delta = -direction;
       setUserVotes((prev) => ({ ...prev, [memeId]: 0 }));
     } else {
@@ -574,7 +734,6 @@ export default function App() {
     sfx.playVote(direction > 0, combo);
     awardXpAndCombo(15, event, direction > 0 ? '🔥' : '💀');
 
-    // Optimistic update
     let updatedScore = 1;
     setMemes((prev) =>
       prev.map((m) => {
@@ -586,9 +745,8 @@ export default function App() {
       })
     );
 
-    // Persist to Supabase if non-seed meme
     const client = getSupabaseClient();
-    if (client && !String(memeId).startsWith('seed-')) {
+    if (client && !String(memeId).startsWith('seed-') && !String(memeId).startsWith('local-')) {
       try {
         const { error: rpcError } = await client.rpc('increment_meme_score', {
           row_id: memeId,
@@ -618,7 +776,12 @@ export default function App() {
     );
 
     const client = getSupabaseClient();
-    if (client && !String(memeId).startsWith('seed-') && updatedReactions) {
+    if (
+      client &&
+      !String(memeId).startsWith('seed-') &&
+      !String(memeId).startsWith('local-') &&
+      updatedReactions
+    ) {
       try {
         await client.from('memes').update({ reactions: updatedReactions }).eq('id', memeId);
       } catch (e) {}
@@ -650,7 +813,7 @@ export default function App() {
     );
 
     const client = getSupabaseClient();
-    if (client && !String(memeId).startsWith('seed-')) {
+    if (client && !String(memeId).startsWith('seed-') && !String(memeId).startsWith('local-')) {
       try {
         await client.from('comments').insert([
           {
@@ -664,14 +827,15 @@ export default function App() {
   };
 
   // ==========================================
-  // 9. HTML5 CANVAS MEME STUDIO RENDERER & UPLOAD
+  // 10. HTML5 CANVAS MEME STUDIO RENDERER & UPLOAD
   // ==========================================
   const drawStudioCanvas = useCallback(() => {
     const canvas = studioCanvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const W = 600;
-    const H = 520;
+    const H = 552; // 520px meme area + 32px 16-bit Arcade Cartridge Footer
+    const memeH = 520;
     canvas.width = W;
     canvas.height = H;
 
@@ -684,31 +848,29 @@ export default function App() {
 
     if (customUploadImg) {
       ctx.fillStyle = '#090a0f';
-      ctx.fillRect(0, 0, W, H);
-      const scale = Math.max(W / customUploadImg.width, H / customUploadImg.height);
+      ctx.fillRect(0, 0, W, memeH);
+      const scale = Math.min(W / customUploadImg.width, memeH / customUploadImg.height);
       const dw = customUploadImg.width * scale;
       const dh = customUploadImg.height * scale;
-      ctx.drawImage(customUploadImg, (W - dw) / 2, (H - dh) / 2, dw, dh);
+      ctx.drawImage(customUploadImg, (W - dw) / 2, (memeH - dh) / 2, dw, dh);
     } else {
-      const grad = ctx.createLinearGradient(0, 0, W, H);
+      const grad = ctx.createLinearGradient(0, 0, W, memeH);
       grad.addColorStop(0, tpl.bg1);
       grad.addColorStop(1, tpl.bg2);
       ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, W, H);
+      ctx.fillRect(0, 0, W, memeH);
 
-      // Decorative glow rings
       ctx.fillStyle = tpl.accent;
       ctx.globalAlpha = 0.14;
       ctx.beginPath();
-      ctx.arc(W / 2, H / 2, 160, 0, Math.PI * 2);
+      ctx.arc(W / 2, memeH / 2, 160, 0, Math.PI * 2);
       ctx.fill();
       ctx.globalAlpha = 1;
 
-      // Center emoji
       ctx.font = '120px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(tpl.emoji, W / 2, H / 2);
+      ctx.fillText(tpl.emoji, W / 2, memeH / 2);
     }
 
     // Draw added stickers
@@ -721,7 +883,7 @@ export default function App() {
     // Helper for Impact Meme Captions
     const drawCaption = (text, yPos, fill) => {
       if (!text) return;
-      ctx.font = '900 36px Impact, "Arial Black", sans-serif';
+      ctx.font = '900 34px Impact, "Arial Black", sans-serif';
       ctx.textAlign = 'center';
       ctx.lineWidth = 7;
       ctx.strokeStyle = '#000000';
@@ -731,17 +893,43 @@ export default function App() {
       ctx.fillText(upper, W / 2, yPos, W - 40);
     };
 
-    drawCaption(studioTopText, 72, '#ffffff');
-    drawCaption(studioBottomText, H - 45, tpl.accent || '#facc15');
-
-    // Watermark badge
-    ctx.font = 'bold 12px system-ui, sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.textAlign = 'right';
-    ctx.fillText('THEMEMES.NET', W - 16, H - 12);
-
+    drawCaption(studioTopText, 64, '#ffffff');
+    drawCaption(studioBottomText, memeH - 28, mutatingParentMeme ? '#ff00ff' : tpl.accent || '#facc15');
     ctx.restore();
-  }, [studioTemplateIdx, studioTopText, studioBottomText, studioStickers, studioDeepFry, customUploadImg]);
+
+    // 16-Bit Arcade Cartridge Footer Bar (Bottom 32px)
+    const nextGen = mutatingParentMeme ? (mutatingParentMeme.generation || 0) + 1 : 0;
+    const handle = (user?.username || 'ANON_PLAYER').toUpperCase();
+
+    ctx.fillStyle = '#06070d';
+    ctx.fillRect(0, memeH, W, 32);
+
+    ctx.fillStyle = nextGen > 0 ? '#ec4899' : '#00f3ff';
+    ctx.fillRect(0, memeH, W, 2);
+
+    ctx.font = 'bold 12px "Courier New", monospace';
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#00f3ff';
+    ctx.fillText('⚡ THEMEMES.NET', 14, memeH + 17);
+
+    ctx.textAlign = 'right';
+    ctx.fillStyle = nextGen > 0 ? '#f472b6' : '#facc15';
+    const rightBadge =
+      nextGen > 0
+        ? `🧬 GEN-${nextGen} MUTATION // BY @${handle}`
+        : `🕹️ GEN-0 ORIGIN // BY @${handle}`;
+    ctx.fillText(rightBadge, W - 14, memeH + 17);
+  }, [
+    studioTemplateIdx,
+    studioTopText,
+    studioBottomText,
+    studioStickers,
+    studioDeepFry,
+    customUploadImg,
+    mutatingParentMeme,
+    user
+  ]);
 
   useEffect(() => {
     if (showStudio) {
@@ -771,14 +959,37 @@ export default function App() {
     setIsPublishing(true);
     const finalTitle = studioTitle.trim() || `${studioTopText} — ${studioBottomText}`;
     const author = user?.username || 'AnonMemer';
-    let imageUrl = canvas.toDataURL('image/png', 0.9);
+    const nextGen = mutatingParentMeme ? (mutatingParentMeme.generation || 0) + 1 : 0;
+    const parentId = mutatingParentMeme ? mutatingParentMeme.id : null;
+    const rootId = mutatingParentMeme
+      ? mutatingParentMeme.root_meme_id || mutatingParentMeme.id
+      : null;
+
+    let imageUrl = canvas.toDataURL('image/png', 0.92);
+
+    const localFallbackMeme = {
+      id: `local-${Date.now()}`,
+      title: finalTitle,
+      category: studioCategory,
+      image_url: imageUrl,
+      author_name: author,
+      score: 1,
+      generation: nextGen,
+      mutation_count: 0,
+      parent_meme_id: parentId,
+      root_meme_id: rootId,
+      created_at: new Date().toISOString(),
+      reactions: { '🔥': 1, '💀': 0, '😂': 0, '🗿': 0 },
+      comments: []
+    };
 
     const client = getSupabaseClient();
+    let savedToDb = false;
+
     if (client) {
       try {
-        // Attempt to upload PNG to Supabase Storage 'memes' bucket
         const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
-        const fileName = `meme-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.png`;
+        const fileName = `meme-${Date.now()}-gen${nextGen}-${Math.random().toString(36).slice(2, 7)}.png`;
         const { error: uploadErr } = await client.storage
           .from('memes')
           .upload(fileName, blob, { contentType: 'image/png' });
@@ -790,63 +1001,61 @@ export default function App() {
           }
         }
 
-        // Insert meme row into Supabase (works with either Storage URL or dataURL fallback)
+        // Only pass UUID parent_meme_id to Postgres if parent was a real DB UUID
+        const isParentUuid =
+          parentId && !String(parentId).startsWith('seed-') && !String(parentId).startsWith('local-');
+
+        const payload = {
+          title: finalTitle,
+          category: studioCategory,
+          image_url: imageUrl,
+          author_name: author,
+          score: 1,
+          reactions: { '🔥': 1, '💀': 0, '😂': 0, '🗿': 0 },
+          ...(isParentUuid ? { parent_meme_id: parentId } : {})
+        };
+
         const { data: insertedRow, error: dbErr } = await client
           .from('memes')
-          .insert([
-            {
-              title: finalTitle,
-              category: studioCategory,
-              image_url: imageUrl,
-              author_name: author,
-              score: 1,
-              reactions: { '🔥': 1, '💀': 0, '😂': 0, '🗿': 0 }
-            }
-          ])
+          .insert([payload])
           .select()
           .single();
 
         if (!dbErr && insertedRow) {
-          setMemes((prev) => [{ ...insertedRow, comments: [] }, ...prev]);
-        } else {
-          // Local fallback if table isn't created yet
+          savedToDb = true;
           setMemes((prev) => [
             {
-              id: `local-${Date.now()}`,
-              title: finalTitle,
-              category: studioCategory,
-              image_url: imageUrl,
-              author_name: author,
-              score: 1,
-              created_at: new Date().toISOString(),
-              reactions: { '🔥': 1, '💀': 0, '😂': 0, '🗿': 0 },
+              ...insertedRow,
+              generation: insertedRow.generation ?? nextGen,
+              mutation_count: 0,
+              parent_meme_id: parentId,
+              root_meme_id: rootId || insertedRow.id,
               comments: []
             },
-            ...prev
+            ...prev.map((m) =>
+              m.id === parentId ? { ...m, mutation_count: (m.mutation_count || 0) + 1 } : m
+            )
           ]);
         }
       } catch (err) {
-        setMemes((prev) => [
-          {
-            id: `local-${Date.now()}`,
-            title: finalTitle,
-            category: studioCategory,
-            image_url: imageUrl,
-            author_name: author,
-            score: 1,
-            created_at: new Date().toISOString(),
-            reactions: { '🔥': 1, '💀': 0, '😂': 0, '🗿': 0 },
-            comments: []
-          },
-          ...prev
-        ]);
+        // Fallback handled below
       }
     }
 
+    if (!savedToDb) {
+      setMemes((prev) => [
+        { ...localFallbackMeme, image_url: imageUrl },
+        ...prev.map((m) =>
+          m.id === parentId ? { ...m, mutation_count: (m.mutation_count || 0) + 1 } : m
+        )
+      ]);
+    }
+
     sfx.playLevelUp();
-    awardXpAndCombo(100, e, '🚀');
+    awardXpAndCombo(mutatingParentMeme ? 150 : 100, e, mutatingParentMeme ? '🧬' : '🚀');
     setIsPublishing(false);
     setShowStudio(false);
+    setMutatingParentMeme(null);
     setStudioTitle('');
     setStudioStickers([]);
     setCustomUploadImg(null);
@@ -855,7 +1064,7 @@ export default function App() {
   };
 
   // ==========================================
-  // 10. AUTH HANDLER (SUPABASE AUTH + INSTANT GUEST)
+  // 11. AUTH HANDLER (SUPABASE AUTH + INSTANT GUEST)
   // ==========================================
   const handleAuthSubmit = async (e) => {
     e.preventDefault();
@@ -910,7 +1119,7 @@ export default function App() {
   };
 
   // ==========================================
-  // 11. FILTERED MEMES & SWIPE / BATTLE CONTROLS
+  // 12. FILTERED MEMES & SWIPE / BATTLE CONTROLS
   // ==========================================
   const filteredMemes = useMemo(() => {
     return memes
@@ -953,7 +1162,6 @@ export default function App() {
     [filteredMemes, swipeIndex]
   );
 
-  // Keyboard shortcuts for Hyper-Swipe Mode
   useEffect(() => {
     if (viewMode !== 'swipe') return;
     const onKey = (e) => {
@@ -1006,7 +1214,6 @@ export default function App() {
         }
         .tm-shake { animation: tmShake 0.25s ease-in-out; }
 
-        /* Combo Overdrive Top Bar */
         .tm-combo-bar {
           position: sticky;
           top: 0;
@@ -1022,7 +1229,6 @@ export default function App() {
           box-shadow: 0 0 12px #ec4899;
         }
 
-        /* Navbar */
         .tm-nav {
           position: sticky;
           top: 5px;
@@ -1074,7 +1280,6 @@ export default function App() {
         .tm-dot.live { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
         .tm-dot.local { background: #facc15; box-shadow: 0 0 8px #facc15; }
 
-        /* Gamification HUD */
         .tm-hud {
           display: flex;
           align-items: center;
@@ -1125,7 +1330,6 @@ export default function App() {
           box-shadow: 0 0 18px rgba(236, 72, 153, 0.6);
         }
 
-        /* Buttons */
         .tm-btn {
           background: rgba(255,255,255,0.08);
           color: #f8fafc;
@@ -1156,7 +1360,66 @@ export default function App() {
           transform: translateY(-2px) scale(1.02);
         }
 
-        /* Controls Bar */
+        /* Mutate Action Bar & Neon Buttons */
+        .tm-mutate-bar {
+          padding: 10px 16px 12px;
+          background: rgba(15, 10, 28, 0.75);
+          border-top: 1px solid rgba(236, 72, 153, 0.22);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+        }
+        .tm-lineage-btn {
+          background: rgba(236, 72, 153, 0.12);
+          border: 1px solid rgba(236, 72, 153, 0.4);
+          color: #f472b6;
+          padding: 5px 10px;
+          border-radius: 8px;
+          font-size: 11px;
+          font-weight: 800;
+          font-family: 'Courier New', monospace;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .tm-lineage-btn:hover {
+          background: rgba(236, 72, 153, 0.25);
+          color: #fff;
+        }
+        .tm-mutate-btn {
+          background: linear-gradient(90deg, #00f3ff 0%, #ec4899 55%, #a3e635 100%);
+          color: #05060a;
+          border: none;
+          padding: 6px 13px;
+          border-radius: 9px;
+          font-size: 11px;
+          font-weight: 900;
+          letter-spacing: 0.4px;
+          text-transform: uppercase;
+          cursor: pointer;
+          box-shadow: 0 0 15px rgba(236, 72, 153, 0.4);
+          transition: all 0.15s ease;
+        }
+        .tm-mutate-btn:hover {
+          transform: scale(1.05);
+          box-shadow: 0 0 22px rgba(0, 243, 255, 0.75);
+        }
+        .tm-gen-pill {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          z-index: 10;
+          background: rgba(9, 10, 15, 0.85);
+          border: 1px solid #ec4899;
+          color: #f472b6;
+          padding: 4px 9px;
+          border-radius: 8px;
+          font-size: 11px;
+          font-weight: 900;
+          font-family: 'Courier New', monospace;
+          box-shadow: 0 0 12px rgba(236, 72, 153, 0.5);
+        }
+
         .tm-controls {
           max-width: 1260px;
           margin: 22px auto 14px;
@@ -1212,7 +1475,6 @@ export default function App() {
           color: #ffffff;
         }
 
-        /* Grid Feed */
         .tm-grid {
           max-width: 1260px;
           margin: 0 auto;
@@ -1288,7 +1550,6 @@ export default function App() {
           pointer-events: none;
         }
 
-        /* Reaction & Vote Bar */
         .tm-card-actions {
           padding: 12px 16px;
           display: flex;
@@ -1351,7 +1612,6 @@ export default function App() {
           transform: scale(1.1);
         }
 
-        /* Comments Drawer */
         .tm-comments {
           padding: 12px 16px 16px;
           background: rgba(9, 10, 15, 0.65);
@@ -1382,7 +1642,6 @@ export default function App() {
           border-color: #facc15;
         }
 
-        /* Hyper-Swipe & Battle Arena */
         .tm-arena {
           max-width: 560px;
           margin: 24px auto;
@@ -1412,7 +1671,6 @@ export default function App() {
           transform: scale(1.02);
         }
 
-        /* Modals */
         .tm-modal-backdrop {
           position: fixed;
           inset: 0;
@@ -1441,7 +1699,6 @@ export default function App() {
           margin-top: 16px;
         }
 
-        /* Floating Particles */
         .tm-particle {
           position: fixed;
           pointer-events: none;
@@ -1454,7 +1711,6 @@ export default function App() {
           100% { transform: translate(var(--dx), var(--dy)) scale(1.25); opacity: 0; }
         }
 
-        /* Level Up Toast */
         .tm-levelup-toast {
           position: fixed;
           bottom: 24px;
@@ -1502,7 +1758,13 @@ export default function App() {
 
       {/* TOP NAVIGATION BAR */}
       <header className="tm-nav">
-        <div className="tm-brand" onClick={() => { setViewMode('feed'); setCategory('all'); }}>
+        <div
+          className="tm-brand"
+          onClick={() => {
+            setViewMode('feed');
+            setCategory('all');
+          }}
+        >
           <div className="tm-logo-badge">THE MEMES.net</div>
           <div className="tm-status-pill" title="Connected to Supabase project otvvphmjojqyjaznjzyo">
             <span className={`tm-dot ${dbStatus === 'live' ? 'live' : 'local'}`} />
@@ -1511,15 +1773,15 @@ export default function App() {
         </div>
 
         <div className="tm-hud">
-          {/* Combo Multiplier Indicator */}
           <div className={`tm-combo-badge ${combo >= 3 ? 'hot' : ''}`}>
             {combo > 1 ? `🔥 ${combo}x OVERDRIVE` : '⚡ 1x COMBO'}
           </div>
 
-          {/* Player XP & Rank Meter */}
           <div className="tm-xp-box">
             <div className="tm-xp-top">
-              <span>Lv.{currentRank.level} {currentRank.title}</span>
+              <span>
+                Lv.{currentRank.level} {currentRank.title}
+              </span>
               <span style={{ color: '#facc15' }}>{xp} XP</span>
             </div>
             <div className="tm-xp-track">
@@ -1527,7 +1789,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Sound Toggle */}
           <button
             className="tm-btn"
             onClick={() => {
@@ -1538,12 +1799,10 @@ export default function App() {
             {soundOn ? '🔊 SFX' : '🔇 MUTE'}
           </button>
 
-          {/* Upload / Meme Studio Button */}
-          <button className="tm-btn tm-btn-primary" onClick={() => setShowStudio(true)}>
+          <button className="tm-btn tm-btn-primary" onClick={handleOpenBlankStudio}>
             + Upload / Create
           </button>
 
-          {/* User Profile / Login Button */}
           {user ? (
             <button
               className="tm-btn"
@@ -1629,10 +1888,15 @@ export default function App() {
           {filteredMemes.map((meme) => {
             const myVote = userVotes[meme.id] || 0;
             const isCommentsOpen = !!openComments[meme.id];
+            const gen = meme.generation || 0;
+            const remixCount = meme.mutation_count || 0;
+
             return (
               <article key={meme.id} className="tm-card">
                 <div className="tm-card-header">
-                  <span>Posted by <strong>@{meme.author_name || 'Anon'}</strong></span>
+                  <span>
+                    Posted by <strong>@{meme.author_name || 'Anon'}</strong>
+                  </span>
                   <span className="tm-tag">{meme.category || 'meme'}</span>
                 </div>
 
@@ -1643,6 +1907,7 @@ export default function App() {
                   onDoubleClick={(e) => handleVote(meme.id, 1, e)}
                   title="Double-click for instant Combo Upvote!"
                 >
+                  {gen > 0 && <div className="tm-gen-pill">🧬 GEN-{gen} REMIX</div>}
                   <img src={meme.image_url} alt={meme.title} loading="lazy" />
                   <span className="tm-dbl-hint">⚡ Double-tap to Upvote</span>
                 </div>
@@ -1686,6 +1951,26 @@ export default function App() {
                     }
                   >
                     💬 {(meme.comments || []).length}
+                  </button>
+                </div>
+
+                {/* FORK & MUTATE ACTION BAR */}
+                <div className="tm-mutate-bar">
+                  <button
+                    type="button"
+                    className="tm-lineage-btn"
+                    onClick={(e) => handleOpenEvolutionTree(meme, e)}
+                    title="Inspect full remix family tree"
+                  >
+                    🌿 GEN-{gen} {remixCount > 0 ? `• ${remixCount} REMIXES` : '• TREE'}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="tm-mutate-btn"
+                    onClick={(e) => handleTriggerStudioMutate(meme, e)}
+                  >
+                    🧬 MUTATE (+150 XP)
                   </button>
                 </div>
 
@@ -1733,38 +2018,57 @@ export default function App() {
       {viewMode === 'swipe' && (
         <section className="tm-arena">
           <p style={{ color: '#94a3b8', fontSize: '13px', marginBottom: '14px' }}>
-            Use keyboard arrows <strong>[← Pass]</strong> <strong>[↑ Super Fire]</strong> <strong>[→ Upvote]</strong> or tap buttons below!
+            Use keyboard arrows <strong>[← Pass]</strong> <strong>[↑ Super Fire]</strong>{' '}
+            <strong>[→ Upvote]</strong> or tap buttons below!
           </p>
-          {filteredMemes.length > 0 && (() => {
-            const m = filteredMemes[swipeIndex % filteredMemes.length];
-            return (
-              <div className={`tm-card ${swipeAnim}`} style={{ textAlign: 'left' }}>
-                <div className="tm-card-header">
-                  <span>@{m.author_name}</span>
-                  <span className="tm-tag">SCORE: {m.score}</span>
-                </div>
-                <h2 className="tm-card-title">{m.title}</h2>
-                <div className="tm-img-wrap">
-                  <img src={m.image_url} alt={m.title} />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', padding: '18px' }}>
-                  <button className="tm-btn" onClick={(e) => triggerSwipe('left', e)}>
-                    💀 Pass (←)
-                  </button>
-                  <button
-                    className="tm-btn"
-                    style={{ borderColor: '#38bdf8', color: '#38bdf8' }}
-                    onClick={(e) => triggerSwipe('up', e)}
+          {filteredMemes.length > 0 &&
+            (() => {
+              const m = filteredMemes[swipeIndex % filteredMemes.length];
+              return (
+                <div className={`tm-card ${swipeAnim}`} style={{ textAlign: 'left' }}>
+                  <div className="tm-card-header">
+                    <span>@{m.author_name}</span>
+                    <span className="tm-tag">SCORE: {m.score}</span>
+                  </div>
+                  <h2 className="tm-card-title">{m.title}</h2>
+                  <div className="tm-img-wrap">
+                    <img src={m.image_url} alt={m.title} />
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      gap: '10px',
+                      padding: '16px',
+                      flexWrap: 'wrap'
+                    }}
                   >
-                    🚀 Super 2x (↑)
-                  </button>
-                  <button className="tm-btn tm-btn-primary" onClick={(e) => triggerSwipe('right', e)}>
-                    🔥 Based (→)
-                  </button>
+                    <button className="tm-btn" onClick={(e) => triggerSwipe('left', e)}>
+                      💀 Pass (←)
+                    </button>
+                    <button
+                      className="tm-btn"
+                      style={{ borderColor: '#38bdf8', color: '#38bdf8' }}
+                      onClick={(e) => triggerSwipe('up', e)}
+                    >
+                      🚀 Super 2x (↑)
+                    </button>
+                    <button
+                      className="tm-btn tm-btn-primary"
+                      onClick={(e) => triggerSwipe('right', e)}
+                    >
+                      🔥 Based (→)
+                    </button>
+                    <button
+                      className="tm-mutate-btn"
+                      onClick={(e) => handleTriggerStudioMutate(m, e)}
+                    >
+                      🧬 Mutate
+                    </button>
+                  </div>
                 </div>
-              </div>
-            );
-          })()}
+              );
+            })()}
         </section>
       )}
 
@@ -1776,7 +2080,8 @@ export default function App() {
           <div style={{ textAlign: 'center', marginTop: '10px' }}>
             <h2 style={{ margin: '0 0 6px', fontSize: '22px' }}>⚔️ SUDDEN DEATH MEME ARENA</h2>
             <p style={{ margin: 0, color: '#94a3b8', fontSize: '13px' }}>
-              Click the funnier meme to crown it & earn combo XP! Win Streak: <strong style={{ color: '#facc15' }}>{battleStreak}🔥</strong>
+              Click the funnier meme to crown it & earn combo XP! Win Streak:{' '}
+              <strong style={{ color: '#facc15' }}>{battleStreak}🔥</strong>
             </p>
           </div>
 
@@ -1799,7 +2104,14 @@ export default function App() {
                   <div className="tm-img-wrap">
                     <img src={m.image_url} alt={m.title} />
                   </div>
-                  <div style={{ padding: '14px', textAlign: 'center', fontWeight: 900, color: isWin ? '#22c55e' : '#facc15' }}>
+                  <div
+                    style={{
+                      padding: '14px',
+                      textAlign: 'center',
+                      fontWeight: 900,
+                      color: isWin ? '#22c55e' : '#facc15'
+                    }}
+                  >
                     {isWin ? '🏆 WINNER! +XP' : '👆 VOTE THIS MEME'}
                   </div>
                 </div>
@@ -1810,22 +2122,64 @@ export default function App() {
       )}
 
       {/* ==========================================
-          MODAL 1: HTML5 CANVAS MEME STUDIO (+ UPLOAD)
+          MODAL 1: HTML5 CANVAS MEME STUDIO (+ FORK & MUTATE)
          ========================================== */}
       {showStudio && (
         <div className="tm-modal-backdrop" onClick={() => setShowStudio(false)}>
           <div className="tm-modal" onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ margin: 0 }}>🎨 Meme Forge Studio (+100 XP)</h2>
-              <button className="tm-btn" onClick={() => setShowStudio(false)}>✕ Close</button>
+              <h2 style={{ margin: 0 }}>
+                {mutatingParentMeme
+                  ? `🧬 Mutating Gen-${(mutatingParentMeme.generation || 0) + 1} Remix (+150 XP)`
+                  : '🎨 Meme Forge Studio (+100 XP)'}
+              </h2>
+              <button className="tm-btn" onClick={() => setShowStudio(false)}>
+                ✕ Close
+              </button>
             </div>
+
+            {/* Active Mutation Lineage Banner */}
+            {mutatingParentMeme && (
+              <div
+                style={{
+                  marginTop: '12px',
+                  padding: '10px 14px',
+                  borderRadius: '12px',
+                  background: 'rgba(236, 72, 153, 0.14)',
+                  border: '1px solid #ec4899',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '10px',
+                  fontSize: '12px'
+                }}
+              >
+                <span>
+                  🧬 Forking <strong>{mutatingParentMeme.title}</strong> by{' '}
+                  <strong style={{ color: '#00f3ff' }}>@{mutatingParentMeme.author_name}</strong> —
+                  Origin creator earns <strong>+50 XP Royalty!</strong>
+                </span>
+                <button
+                  type="button"
+                  className="tm-btn"
+                  style={{ padding: '4px 10px', fontSize: '11px' }}
+                  onClick={handleOpenBlankStudio}
+                >
+                  Reset to Blank Gen-0
+                </button>
+              </div>
+            )}
 
             <div className="tm-studio-layout">
               {/* Live HTML5 Canvas Preview */}
               <div>
                 <canvas
                   ref={studioCanvasRef}
-                  style={{ width: '100%', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.15)' }}
+                  style={{
+                    width: '100%',
+                    borderRadius: '14px',
+                    border: '1px solid rgba(255,255,255,0.15)'
+                  }}
                 />
                 <div style={{ display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }}>
                   {['🔥', '💀', '😂', '🕶️', '🧢', '🤡', '👑'].map((emoji) => (
@@ -1855,7 +2209,10 @@ export default function App() {
               </div>
 
               {/* Controls Form */}
-              <form onSubmit={handlePublishMeme} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <form
+                onSubmit={handlePublishMeme}
+                style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+              >
                 <div>
                   <label style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8' }}>
                     1. Choose Template or Upload Custom Photo
@@ -1865,8 +2222,11 @@ export default function App() {
                       <button
                         key={t.name}
                         type="button"
-                        className={`tm-tab ${studioTemplateIdx === i && !customUploadImg ? 'active' : ''}`}
+                        className={`tm-tab ${
+                          studioTemplateIdx === i && !customUploadImg ? 'active' : ''
+                        }`}
                         onClick={() => {
+                          setMutatingParentMeme(null);
                           setCustomUploadImg(null);
                           setStudioTemplateIdx(i);
                           setStudioTopText(t.defaultTop);
@@ -1887,12 +2247,22 @@ export default function App() {
 
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8' }}>2. Captions</label>
+                    <label style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8' }}>
+                      2. Captions
+                    </label>
                     <button
                       type="button"
-                      style={{ background: 'none', border: 'none', color: '#facc15', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#facc15',
+                        fontSize: '12px',
+                        fontWeight: 800,
+                        cursor: 'pointer'
+                      }}
                       onClick={() => {
-                        const pick = VIRAL_CAPTIONS[Math.floor(Math.random() * VIRAL_CAPTIONS.length)];
+                        const pick =
+                          VIRAL_CAPTIONS[Math.floor(Math.random() * VIRAL_CAPTIONS.length)];
                         setStudioTopText(pick[0]);
                         setStudioBottomText(pick[1]);
                       }}
@@ -1919,7 +2289,9 @@ export default function App() {
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8' }}>3. Post Title & Category</label>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8' }}>
+                    3. Post Title & Category
+                  </label>
                   <input
                     type="text"
                     className="tm-input"
@@ -1945,9 +2317,18 @@ export default function App() {
                   type="submit"
                   className="tm-btn tm-btn-primary"
                   disabled={isPublishing}
-                  style={{ justifyContent: 'center', padding: '13px', fontSize: '15px', marginTop: '6px' }}
+                  style={{
+                    justifyContent: 'center',
+                    padding: '13px',
+                    fontSize: '15px',
+                    marginTop: '6px'
+                  }}
                 >
-                  {isPublishing ? 'Uploading to Supabase...' : '🚀 Publish to Feed (+100 XP)'}
+                  {isPublishing
+                    ? 'Uploading to Supabase...'
+                    : mutatingParentMeme
+                    ? '🧬 Publish Mutation (+150 XP)'
+                    : '🚀 Publish to Feed (+100 XP)'}
                 </button>
               </form>
             </div>
@@ -1956,19 +2337,154 @@ export default function App() {
       )}
 
       {/* ==========================================
-          MODAL 2: SUPABASE AUTH & INSTANT GUEST LOGIN
+          MODAL 2: MEME EVOLUTION TREE INSPECTOR
+         ========================================== */}
+      {evolutionModalMeme && (
+        <div className="tm-modal-backdrop" onClick={() => setEvolutionModalMeme(null)}>
+          <div
+            className="tm-modal"
+            style={{ maxWidth: '680px', borderColor: '#ec4899' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '14px'
+              }}
+            >
+              <div>
+                <h2 style={{ margin: 0, color: '#f472b6' }}>🧬 Meme Evolution Tree</h2>
+                <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                  Origin creators earn <strong style={{ color: '#a3e635' }}>+50 XP</strong> per
+                  mutation & passive royalties
+                </div>
+              </div>
+              <button className="tm-btn" onClick={() => setEvolutionModalMeme(null)}>
+                ✕ Close
+              </button>
+            </div>
+
+            {loadingEvolution ? (
+              <div style={{ padding: '40px', textAlign: 'center', color: '#00f3ff' }}>
+                SCANNING GENETIC MEME ARCHIVES...
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {evolutionNodes.map((node) => {
+                  const gen = node.generation || 0;
+                  const isCurrent = String(node.id) === String(evolutionModalMeme.id);
+                  return (
+                    <div
+                      key={node.id}
+                      style={{
+                        marginLeft: `${Math.min(gen * 24, 120)}px`,
+                        padding: '12px',
+                        borderRadius: '14px',
+                        background: isCurrent
+                          ? 'rgba(0, 243, 255, 0.12)'
+                          : 'rgba(255, 255, 255, 0.04)',
+                        border: isCurrent
+                          ? '1px solid #00f3ff'
+                          : '1px solid rgba(255, 255, 255, 0.1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '12px'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <img
+                          src={node.image_url}
+                          alt={node.title}
+                          style={{
+                            width: '64px',
+                            height: '64px',
+                            objectFit: 'cover',
+                            borderRadius: '10px',
+                            border: '1px solid rgba(255,255,255,0.2)'
+                          }}
+                        />
+                        <div>
+                          <span
+                            style={{
+                              fontSize: '10px',
+                              fontWeight: 900,
+                              padding: '2px 7px',
+                              borderRadius: '6px',
+                              background: gen === 0 ? 'rgba(163,230,53,0.2)' : 'rgba(236,72,153,0.25)',
+                              color: gen === 0 ? '#a3e635' : '#f472b6'
+                            }}
+                          >
+                            {gen === 0 ? 'GEN-0 ORIGIN' : `GEN-${gen} MUTATION`}
+                          </span>
+                          <div style={{ fontWeight: 800, fontSize: '14px', marginTop: '4px' }}>
+                            {node.title}
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#94a3b8' }}>
+                            by @{node.author_name || 'Anon'} • 🔥 {node.score || 0} pts
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="tm-mutate-btn"
+                        onClick={(e) => handleTriggerStudioMutate(node, e)}
+                      >
+                        🧬 Mutate This
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================
+          MODAL 3: SUPABASE AUTH & INSTANT GUEST LOGIN
          ========================================== */}
       {showAuthModal && (
         <div className="tm-modal-backdrop" onClick={() => setShowAuthModal(false)}>
-          <div className="tm-modal" style={{ maxWidth: '420px' }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+          <div
+            className="tm-modal"
+            style={{ maxWidth: '420px' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '14px'
+              }}
+            >
               <h2 style={{ margin: 0 }}>{authMode === 'login' ? '👾 Log In' : '🚀 Sign Up'}</h2>
-              <button className="tm-btn" onClick={() => setShowAuthModal(false)}>✕</button>
+              <button className="tm-btn" onClick={() => setShowAuthModal(false)}>
+                ✕
+              </button>
             </div>
 
-            {/* Instant Guest Option */}
-            <div style={{ background: 'rgba(250, 204, 21, 0.1)', border: '1px solid rgba(250, 204, 21, 0.3)', padding: '12px', borderRadius: '12px', marginBottom: '16px' }}>
-              <div style={{ fontSize: '12px', fontWeight: 800, color: '#facc15', marginBottom: '6px' }}>
+            <div
+              style={{
+                background: 'rgba(250, 204, 21, 0.1)',
+                border: '1px solid rgba(250, 204, 21, 0.3)',
+                padding: '12px',
+                borderRadius: '12px',
+                marginBottom: '16px'
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '12px',
+                  fontWeight: 800,
+                  color: '#facc15',
+                  marginBottom: '6px'
+                }}
+              >
                 ⚡ INSTANT ARCADE ACCESS (NO EMAIL NEEDED)
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
@@ -1979,17 +2495,31 @@ export default function App() {
                   value={authUsername}
                   onChange={(e) => setAuthUsername(e.target.value)}
                 />
-                <button type="button" className="tm-btn tm-btn-primary" onClick={handleQuickGuestLogin}>
+                <button
+                  type="button"
+                  className="tm-btn tm-btn-primary"
+                  onClick={handleQuickGuestLogin}
+                >
                   Go!
                 </button>
               </div>
             </div>
 
-            <div style={{ textAlign: 'center', fontSize: '11px', color: '#64748b', margin: '10px 0' }}>
+            <div
+              style={{
+                textAlign: 'center',
+                fontSize: '11px',
+                color: '#64748b',
+                margin: '10px 0'
+              }}
+            >
               — OR USE SUPABASE EMAIL AUTH —
             </div>
 
-            <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <form
+              onSubmit={handleAuthSubmit}
+              style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
+            >
               <input
                 type="email"
                 required
@@ -2009,12 +2539,23 @@ export default function App() {
               {authMessage && (
                 <div style={{ fontSize: '12px', color: '#facc15' }}>{authMessage}</div>
               )}
-              <button type="submit" className="tm-btn tm-btn-primary" style={{ justifyContent: 'center', padding: '11px' }}>
+              <button
+                type="submit"
+                className="tm-btn tm-btn-primary"
+                style={{ justifyContent: 'center', padding: '11px' }}
+              >
                 {authMode === 'login' ? 'Log In with Supabase' : 'Create Account'}
               </button>
             </form>
 
-            <div style={{ marginTop: '12px', textAlign: 'center', fontSize: '12px', color: '#94a3b8' }}>
+            <div
+              style={{
+                marginTop: '12px',
+                textAlign: 'center',
+                fontSize: '12px',
+                color: '#94a3b8'
+              }}
+            >
               {authMode === 'login' ? (
                 <>
                   Need an account?{' '}

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { STUDIO_TEMPLATES, VIRAL_CAPTIONS } from '../data/starterMemes';
 import { STUDIO_FILTERS, CAPTION_LAYOUTS } from '../utils/canvasMutator';
 
@@ -51,8 +51,22 @@ export default function MemeStudioModal({
   const [loadingUrl, setLoadingUrl] = useState(false);
   const dragTargetRef = useRef(null);
   const fileInputRef = useRef(null);
+  const captionsFormRef = useRef(null);
 
   const selectedSticker = studioStickers.find((s) => s.id === selectedStickerId) || null;
+
+  // Prevent page/modal scroll ONLY when actively dragging a sticker or caption on touch devices
+  useEffect(() => {
+    const canvas = studioCanvasRef.current;
+    if (!canvas) return;
+    const onTouchMove = (ev) => {
+      if (dragTargetRef.current) {
+        ev.preventDefault();
+      }
+    };
+    canvas.addEventListener('touchmove', onTouchMove, { passive: false });
+    return () => canvas.removeEventListener('touchmove', onTouchMove);
+  }, [studioCanvasRef]);
 
   // Convert client mouse/touch coordinates to 600x552 canvas space
   const getCanvasCoords = (e) => {
@@ -73,7 +87,7 @@ export default function MemeStudioModal({
     // 1. Check stickers from top-most to bottom-most
     for (let i = studioStickers.length - 1; i >= 0; i--) {
       const st = studioStickers[i];
-      const radius = (st.size || 58) * 0.6;
+      const radius = (st.size || 58) * 0.65;
       if (Math.hypot(pt.x - st.x, pt.y - st.y) <= radius) {
         setSelectedStickerId(st.id);
         dragTargetRef.current = {
@@ -93,7 +107,7 @@ export default function MemeStudioModal({
     if (
       studioTopText &&
       captionLayout !== 'topbar' &&
-      Math.abs(pt.y - topTextPos.y) <= 34 &&
+      Math.abs(pt.y - topTextPos.y) <= 40 &&
       Math.abs(pt.x - topTextPos.x) <= 240
     ) {
       dragTargetRef.current = {
@@ -108,7 +122,7 @@ export default function MemeStudioModal({
     // 3. Check Bottom Text hit region
     if (
       studioBottomText &&
-      Math.abs(pt.y - bottomTextPos.y) <= 34 &&
+      Math.abs(pt.y - bottomTextPos.y) <= 40 &&
       Math.abs(pt.x - bottomTextPos.x) <= 240
     ) {
       dragTargetRef.current = {
@@ -181,18 +195,28 @@ export default function MemeStudioModal({
   return (
     <div className="tm-modal-backdrop" onClick={onClose}>
       <div className="tm-modal tm-studio-modal-v2" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-          <div>
-            <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {activeBounty
-                ? `🎯 Daily Bounty Challenge (+${activeBounty.rewardXp} XP)`
-                : mutatingParentMeme
-                ? `🧬 Mutating Gen-${(mutatingParentMeme.generation || 0) + 1} Remix (+150 XP)`
-                : '🎨 Meme Forge Studio 2.0 (+100 XP)'}
-            </h2>
-            <div style={{ fontSize: '11px', color: '#38bdf8', marginTop: '3px', fontWeight: 700 }}>
-              ⚡ Tip: Drag text or stickers directly on the canvas • Press Ctrl+V anywhere to paste an image!
+        {/* Sticky Header */}
+        <div className="tm-modal-sticky-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="tm-btn tm-back-pill"
+              onClick={onClose}
+              title="Back to Feed"
+            >
+              ← Back
+            </button>
+            <div>
+              <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px' }}>
+                {activeBounty
+                  ? `🎯 Daily Bounty (+${activeBounty.rewardXp} XP)`
+                  : mutatingParentMeme
+                  ? `🧬 Gen-${(mutatingParentMeme.generation || 0) + 1} Remix (+150 XP)`
+                  : '🎨 Meme Forge Studio (+100 XP)'}
+              </h2>
+              <div style={{ fontSize: '11px', color: '#38bdf8', marginTop: '2px', fontWeight: 700 }}>
+                ⚡ Drag text or stickers on canvas • Scroll or tap below to edit & publish!
+              </div>
             </div>
           </div>
           <button type="button" className="tm-btn" onClick={onClose}>
@@ -245,10 +269,19 @@ export default function MemeStudioModal({
                   borderRadius: '14px',
                   border: '1px solid rgba(0, 243, 255, 0.3)',
                   cursor: 'grab',
-                  touchAction: 'none'
+                  touchAction: 'manipulation'
                 }}
               />
             </div>
+
+            <button
+              type="button"
+              className="tm-btn tm-show-mobile-only"
+              onClick={() => captionsFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              style={{ justifyContent: 'center', borderColor: 'rgba(0, 243, 255, 0.4)', color: '#00f3ff' }}
+            >
+              ✏️ Jump to Captions & Publish ↓
+            </button>
 
             {/* Viral Glitch & Filter FX Suite */}
             <div>
@@ -359,6 +392,7 @@ export default function MemeStudioModal({
 
           {/* RIGHT COLUMN: Upload Dropzone, Templates, Layout & Captions Form */}
           <form
+            ref={captionsFormRef}
             onSubmit={onPublishMeme}
             style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}
           >

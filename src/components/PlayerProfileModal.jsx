@@ -69,20 +69,23 @@ export default function PlayerProfileModal({
         className="tm-modal tm-profile-modal"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Top Profile Banner */}
-        <div className="tm-profile-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        {/* Sticky Top Profile Banner */}
+        <div className="tm-profile-header tm-modal-sticky-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <button type="button" className="tm-btn tm-back-pill" onClick={onClose}>
+              ← Back
+            </button>
             <div className="tm-profile-avatar">👾</div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <h2 style={{ margin: 0, fontSize: '22px', color: '#00f3ff' }}>@{username}</h2>
+                <h2 style={{ margin: 0, fontSize: '20px', color: '#00f3ff' }}>@{username}</h2>
                 <span className="tm-tag" style={{ background: 'rgba(250,204,21,0.2)', color: '#facc15' }}>
                   Lv.{rankObj.level} {rankObj.title}
                 </span>
               </div>
               <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
-                ⚡ <strong>{playerXp} XP</strong> • 🔥 <strong>{totalScore}</strong> Total Score • 🧬{' '}
-                <strong style={{ color: '#a3e635' }}>+{royaltyBonus} XP</strong> Mutation Royalties
+                ⚡ <strong>{playerXp} XP</strong> • 🔥 <strong>{totalScore}</strong> Score • 🧬{' '}
+                <strong style={{ color: '#a3e635' }}>+{royaltyBonus} XP</strong> Royalties
               </div>
             </div>
           </div>

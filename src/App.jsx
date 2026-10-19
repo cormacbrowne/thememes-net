@@ -1195,7 +1195,7 @@ export default function App() {
     if (typeof window !== 'undefined' && window.history?.replaceState) {
       const url = new URL(window.location.href);
       url.searchParams.set('meme', String(meme.id));
-      window.history.replaceState({}, '', url.toString());
+      window.history.replaceState(window.history.state, '', url.toString());
     }
   }, []);
 
@@ -1204,9 +1204,111 @@ export default function App() {
     if (typeof window !== 'undefined' && window.history?.replaceState) {
       const url = new URL(window.location.href);
       url.searchParams.delete('meme');
-      window.history.replaceState({}, '', url.toString());
+      window.history.replaceState(window.history.state, '', url.toString());
     }
   }, []);
+
+  const closeAllModals = useCallback(() => {
+    setShowStudio(false);
+    setTheaterMemeId(null);
+    setEvolutionModalMeme(null);
+    setShowLeaderboard(false);
+    setProfileUsername(null);
+    setShowAuthModal(false);
+    if (typeof window !== 'undefined' && window.history?.replaceState) {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has('meme')) {
+        url.searchParams.delete('meme');
+        window.history.replaceState(window.history.state, '', url.toString());
+      }
+    }
+  }, []);
+
+  const isAnyModalOpen = Boolean(
+    showStudio ||
+      theaterMeme ||
+      evolutionModalMeme ||
+      showLeaderboard ||
+      profileUsername ||
+      showAuthModal
+  );
+
+  const activeNavDepth =
+    (viewMode !== 'feed' || category !== 'all' || searchQuery.trim() !== '' ? 1 : 0) +
+    (theaterMemeId ? 1 : 0) +
+    (showLeaderboard ? 1 : 0) +
+    (profileUsername ? 1 : 0) +
+    (evolutionModalMeme ? 1 : 0) +
+    (showStudio ? 1 : 0) +
+    (showAuthModal ? 1 : 0);
+
+  const handleNavigateBack = useCallback(() => {
+    sfx.playToggle();
+    if (showAuthModal) {
+      setShowAuthModal(false);
+    } else if (evolutionModalMeme) {
+      setEvolutionModalMeme(null);
+    } else if (profileUsername) {
+      setProfileUsername(null);
+    } else if (showLeaderboard) {
+      setShowLeaderboard(false);
+    } else if (showStudio) {
+      setShowStudio(false);
+    } else if (theaterMemeId) {
+      handleCloseTheater();
+    } else if (viewMode !== 'feed') {
+      setViewMode('feed');
+    } else if (category !== 'all' || searchQuery.trim() !== '') {
+      setCategory('all');
+      setSearchQuery('');
+    }
+  }, [
+    showAuthModal,
+    evolutionModalMeme,
+    profileUsername,
+    showLeaderboard,
+    showStudio,
+    theaterMemeId,
+    handleCloseTheater,
+    viewMode,
+    category,
+    searchQuery
+  ]);
+
+  // Synchronize browser history stack so iPhone edge-swipe-back & Android Back button navigate back cleanly
+  const historyDepthRef = useRef(0);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.history?.pushState) return;
+    while (historyDepthRef.current < activeNavDepth) {
+      historyDepthRef.current += 1;
+      const url = new URL(window.location.href);
+      window.history.pushState({ tmArcadeDepth: historyDepthRef.current }, '', url.toString());
+    }
+  }, [activeNavDepth]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onPopState = () => {
+      historyDepthRef.current = Math.max(0, historyDepthRef.current - 1);
+      handleNavigateBack();
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [handleNavigateBack]);
+
+  // Lock background page scroll while any modal is open on mobile/desktop
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (isAnyModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isAnyModalOpen]);
 
   const handleShareMeme = useCallback(
     (meme, e) => {
@@ -1239,6 +1341,13 @@ export default function App() {
     [filteredMemes, swipeIndex, handleVote]
   );
 
+  const handlePrevSwipeCard = useCallback(() => {
+    sfx.playToggle();
+    setSwipeAnim('');
+    const len = Math.max(1, filteredMemes.length);
+    setSwipeIndex((prev) => (prev - 1 + len) % len);
+  }, [filteredMemes.length]);
+
   useEffect(() => {
     if (viewMode !== 'swipe') return;
     const onKey = (e) => {
@@ -1270,7 +1379,7 @@ export default function App() {
       setBattleWinner(null);
       const len = memes.length;
       if (len >= 2) {
-        let nextChallenger = ( Math.max(battlePair[0], battlePair[1]) + 1 ) % len;
+        let nextChallenger = (Math.max(battlePair[0], battlePair[1]) + 1) % len;
         if (nextChallenger === pickedMemeIdx) {
           nextChallenger = (nextChallenger + 1) % len;
         }
@@ -1286,7 +1395,10 @@ export default function App() {
     sfx.playToggle();
     setCrowdAgreement(null);
     setChampionWins(0);
-    setBattlePair(([a, b]) => [(a + 1) % len, (b + 2) % len === (a + 1) % len ? (b + 3) % len : (b + 2) % len]);
+    setBattlePair(([a, b]) => [
+      (a + 1) % len,
+      (b + 2) % len === (a + 1) % len ? (b + 3) % len : (b + 2) % len
+    ]);
   };
 
   return (
@@ -1358,13 +1470,18 @@ export default function App() {
           sfx.enabled = !soundOn;
           setSoundOn(!soundOn);
         }}
-        onOpenBlankStudio={handleOpenBlankStudio}
+        onOpenBlankStudio={() => {
+          closeAllModals();
+          handleOpenBlankStudio();
+        }}
         onOpenLeaderboard={() => {
           sfx.playToggle();
+          closeAllModals();
           setShowLeaderboard(true);
         }}
         onOpenProfile={(username) => {
           sfx.playToggle();
+          closeAllModals();
           setProfileUsername(username);
         }}
         user={user}
@@ -1372,11 +1489,20 @@ export default function App() {
           setUser(null);
           localStorage.removeItem('tm_user');
         }}
-        onOpenAuthModal={() => setShowAuthModal(true)}
+        onOpenAuthModal={() => {
+          closeAllModals();
+          setShowAuthModal(true);
+        }}
         onResetFeed={() => {
+          sfx.playToggle();
+          closeAllModals();
           setViewMode('feed');
           setCategory('all');
+          setSearchQuery('');
+          window.scrollTo?.({ top: 0, behavior: 'smooth' });
         }}
+        canGoBack={activeNavDepth > 0}
+        onNavigateBack={handleNavigateBack}
       />
 
       {/* PHASE 4: FEATURED DAILY MEME BOUNTY BANNER */}
@@ -1420,15 +1546,35 @@ export default function App() {
           ))}
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <input
-            type="text"
-            className="tm-input"
-            placeholder="Search memes..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ width: '170px' }}
-          />
+        <div className="tm-controls-right">
+          <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', flex: 1 }}>
+            <input
+              type="text"
+              className="tm-input tm-search-input"
+              placeholder="Search memes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
+                style={{
+                  position: 'absolute',
+                  right: '8px',
+                  background: 'none',
+                  border: 'none',
+                  color: '#94a3b8',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  padding: '2px 4px'
+                }}
+              >
+                ✕
+              </button>
+            )}
+          </div>
           <div className="tm-mode-switch">
             <button
               type="button"
@@ -1524,6 +1670,11 @@ export default function App() {
           swipeIndex={swipeIndex}
           swipeAnim={swipeAnim}
           onTriggerSwipe={triggerSwipe}
+          onPrevCard={handlePrevSwipeCard}
+          onBackToFeed={() => {
+            sfx.playToggle();
+            setViewMode('feed');
+          }}
           onTriggerStudioMutate={handleTriggerStudioMutate}
           onOpenTheater={handleOpenTheater}
         />
@@ -1540,6 +1691,11 @@ export default function App() {
           crowdAgreement={crowdAgreement}
           onBattlePick={handleBattlePick}
           onSkipMatchup={handleSkipMatchup}
+          onBackToFeed={() => {
+            sfx.playToggle();
+            setViewMode('feed');
+          }}
+          onOpenTheater={handleOpenTheater}
         />
       )}
 
@@ -1561,15 +1717,33 @@ export default function App() {
       {/* PHASE 5: THUMB-FRIENDLY MOBILE BOTTOM ARCADE DOCK */}
       <MobileArcadeDock
         viewMode={viewMode}
+        showStudio={showStudio}
+        showLeaderboard={showLeaderboard}
+        isAnyModalOpen={isAnyModalOpen}
         onSelectMode={(mode) => {
           sfx.playToggle();
+          closeAllModals();
           setViewMode(mode);
         }}
-        onOpenBlankStudio={handleOpenBlankStudio}
+        onOpenBlankStudio={() => {
+          sfx.playToggle();
+          if (showStudio) {
+            setShowStudio(false);
+          } else {
+            closeAllModals();
+            handleOpenBlankStudio();
+          }
+        }}
         onOpenLeaderboard={() => {
           sfx.playToggle();
-          setShowLeaderboard(true);
+          if (showLeaderboard) {
+            setShowLeaderboard(false);
+          } else {
+            closeAllModals();
+            setShowLeaderboard(true);
+          }
         }}
+        onNavigateBack={handleNavigateBack}
       />
 
       {/* MODAL 0: FULLSCREEN THEATER LIGHTBOX & DEEP-LINK PERMALINK */}
@@ -1674,10 +1848,11 @@ export default function App() {
           currentXp={xp}
           royaltiesMap={royaltiesMap}
           onClose={() => setShowLeaderboard(false)}
-          onSelectCreator={(username) => {
+          onOpenProfile={(username) => {
             setShowLeaderboard(false);
             setProfileUsername(username);
           }}
+          onTriggerStudioMutate={handleTriggerStudioMutate}
           onSelectMeme={handleOpenTheater}
         />
       )}

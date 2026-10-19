@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { getMemeRarityTier } from '../data/starterMemes';
 
 export default function MemeTheaterModal({
@@ -17,10 +17,24 @@ export default function MemeTheaterModal({
   onShareMeme
 }) {
   const [copiedLink, setCopiedLink] = useState(false);
+  const touchStartRef = useRef(null);
+  const lastTapRef = useRef(0);
 
   const currentIndex = filteredMemes.findIndex((m) => String(m.id) === String(meme?.id));
   const hasPrev = filteredMemes.length > 1;
   const hasNext = filteredMemes.length > 1;
+
+  const goPrev = () => {
+    if (!hasPrev) return;
+    const prevIdx = (currentIndex - 1 + filteredMemes.length) % filteredMemes.length;
+    onSelectMeme(filteredMemes[prevIdx]);
+  };
+
+  const goNext = () => {
+    if (!hasNext) return;
+    const nextIdx = (currentIndex + 1) % filteredMemes.length;
+    onSelectMeme(filteredMemes[nextIdx]);
+  };
 
   useEffect(() => {
     if (!meme) return;
@@ -63,34 +77,76 @@ export default function MemeTheaterModal({
     setTimeout(() => setCopiedLink(false), 2200);
   };
 
+  const handleStageTouchStart = (e) => {
+    const touch = e.touches?.[0];
+    if (!touch) return;
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleStageTouchEnd = (e) => {
+    const touch = e.changedTouches?.[0];
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (!touch || !start) return;
+
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+
+    // Horizontal swipe on stage navigates between memes
+    if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+      if (dx < 0) {
+        goNext();
+      } else {
+        goPrev();
+      }
+      return;
+    }
+
+    // Quick double-tap upvotes on mobile
+    if (Math.abs(dx) < 15 && Math.abs(dy) < 15) {
+      const now = Date.now();
+      if (now - lastTapRef.current < 280) {
+        onVote(meme.id, 1, { clientX: touch.clientX, clientY: touch.clientY });
+        lastTapRef.current = 0;
+      } else {
+        lastTapRef.current = now;
+      }
+    }
+  };
+
   return (
     <div className="tm-modal-backdrop" onClick={onClose}>
       <div
         className={`tm-modal tm-theater-modal ${rarity.className}`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Top Bar */}
-        <div className="tm-theater-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+        {/* Sticky Top Bar */}
+        <div className="tm-theater-header tm-modal-sticky-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="tm-btn tm-back-pill"
+              onClick={onClose}
+              title="Back to Feed"
+            >
+              ← Back
+            </button>
             <span className="tm-tag">#{meme.category || 'meme'}</span>
             {rarity.label && (
               <span className={`tm-rarity-badge ${rarity.tier}`}>{rarity.label}</span>
             )}
             <span style={{ fontSize: '12px', color: '#94a3b8' }}>
-              Posted by <strong style={{ color: '#38bdf8' }}>@{meme.author_name || 'Anon'}</strong>
+              by <strong style={{ color: '#38bdf8' }}>@{meme.author_name || 'Anon'}</strong>
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
             {hasPrev && (
               <button
                 type="button"
                 className="tm-btn"
                 title="Previous Meme (←)"
-                onClick={() => {
-                  const prevIdx = (currentIndex - 1 + filteredMemes.length) % filteredMemes.length;
-                  onSelectMeme(filteredMemes[prevIdx]);
-                }}
+                onClick={goPrev}
               >
                 ← Prev
               </button>
@@ -100,19 +156,16 @@ export default function MemeTheaterModal({
                 type="button"
                 className="tm-btn"
                 title="Next Meme (→)"
-                onClick={() => {
-                  const nextIdx = (currentIndex + 1) % filteredMemes.length;
-                  onSelectMeme(filteredMemes[nextIdx]);
-                }}
+                onClick={goNext}
               >
                 Next →
               </button>
             )}
             <button type="button" className="tm-btn" onClick={handleCopyPermalink}>
-              {copiedLink ? '✅ Link Copied!' : '🔗 Share Link'}
+              {copiedLink ? '✅ Copied!' : '🔗 Share'}
             </button>
-            <button type="button" className="tm-btn" onClick={onClose}>
-              ✕ Esc
+            <button type="button" className="tm-btn" onClick={onClose} aria-label="Close modal">
+              ✕ Close
             </button>
           </div>
         </div>
@@ -121,14 +174,19 @@ export default function MemeTheaterModal({
         <div className="tm-theater-grid">
           {/* Left: High-Res Artwork Stage */}
           <div className="tm-theater-stage">
-            <h2 style={{ margin: '0 0 12px', fontSize: '20px', fontWeight: 900 }}>{meme.title}</h2>
+            <h2 style={{ margin: '0 0 10px', fontSize: '19px', fontWeight: 900 }}>{meme.title}</h2>
             <div
               className="tm-theater-img-box"
               onDoubleClick={(e) => onVote(meme.id, 1, e)}
-              title="Double-click to Upvote!"
+              onTouchStart={handleStageTouchStart}
+              onTouchEnd={handleStageTouchEnd}
+              title="Double-tap to Upvote • Swipe left/right for Next/Prev"
             >
               {gen > 0 && <div className="tm-gen-pill">🧬 GEN-{gen} REMIX</div>}
               <img src={meme.image_url} alt={meme.title} />
+            </div>
+            <div style={{ fontSize: '11px', color: '#64748b', marginTop: '6px', textAlign: 'center' }}>
+              💡 Tip: Swipe left/right on image for Next/Prev • Double-tap to Upvote
             </div>
 
             {/* Engagement & Mutate Bar */}

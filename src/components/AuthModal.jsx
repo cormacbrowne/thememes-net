@@ -20,16 +20,21 @@ export default function AuthModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div
+          className="tm-modal-sticky-header"
           style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
             marginBottom: '14px'
           }}
         >
-          <h2 style={{ margin: 0 }}>{authMode === 'login' ? '👾 Log In' : '🚀 Sign Up'}</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button type="button" className="tm-btn tm-back-pill" onClick={onClose}>
+              ← Back
+            </button>
+            <h2 style={{ margin: 0, fontSize: '19px' }}>
+              {authMode === 'login' ? '👾 Log In' : '🚀 Sign Up'}
+            </h2>
+          </div>
           <button type="button" className="tm-btn" onClick={onClose}>
-            ✕
+            ✕ Close
           </button>
         </div>
 

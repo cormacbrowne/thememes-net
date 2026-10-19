@@ -89,23 +89,24 @@ export default function LeaderboardModal({
         className="tm-modal tm-leaderboard-modal"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
+        {/* Sticky Header */}
         <div
+          className="tm-modal-sticky-header"
           style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '10px',
             marginBottom: '16px'
           }}
         >
-          <div>
-            <h2 style={{ margin: 0, fontSize: '22px', color: '#facc15' }}>
-              🏆 CYBER-ARCADE HALL OF FAME
-            </h2>
-            <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '3px' }}>
-              Click any creator handle to inspect their Arcade Player Card & unlocked badges!
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <button type="button" className="tm-btn tm-back-pill" onClick={onClose}>
+              ← Back
+            </button>
+            <div>
+              <h2 style={{ margin: 0, fontSize: '20px', color: '#facc15' }}>
+                🏆 CYBER-ARCADE HALL OF FAME
+              </h2>
+              <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+                Tap any creator handle to inspect their Arcade Player Card & unlocked badges!
+              </div>
             </div>
           </div>
           <button type="button" className="tm-btn" onClick={onClose}>

@@ -15,7 +15,9 @@ export default function NavbarHud({
   user,
   onLogout,
   onOpenAuthModal,
-  onResetFeed
+  onResetFeed,
+  canGoBack,
+  onNavigateBack
 }) {
   return (
     <>
@@ -29,17 +31,32 @@ export default function NavbarHud({
 
       {/* TOP NAVIGATION BAR */}
       <header className="tm-nav">
-        <div className="tm-brand" onClick={onResetFeed}>
-          <div className="tm-logo-badge">THE MEMES.net</div>
-          <div className="tm-status-pill" title="Connected to Supabase project otvvphmjojqyjaznjzyo">
-            <span className={`tm-dot ${dbStatus === 'live' ? 'live' : 'local'}`} />
-            {dbStatus === 'live' ? 'SUPABASE LIVE' : 'ARCADE READY'}
+        <div className="tm-brand-group">
+          {canGoBack && (
+            <button
+              type="button"
+              className="tm-btn tm-back-pill"
+              onClick={onNavigateBack}
+              title="Navigate Back"
+            >
+              ← Back
+            </button>
+          )}
+          <div className="tm-brand" onClick={onResetFeed} title="Return to Main Feed">
+            <div className="tm-logo-badge">THE MEMES.net</div>
+            <div className="tm-status-pill" title="Connected to Supabase project otvvphmjojqyjaznjzyo">
+              <span className={`tm-dot ${dbStatus === 'live' ? 'live' : 'local'}`} />
+              <span className="tm-status-text">
+                {dbStatus === 'live' ? 'SUPABASE LIVE' : 'ARCADE READY'}
+              </span>
+            </div>
           </div>
         </div>
 
         <div className="tm-hud">
           <div className={`tm-combo-badge ${combo >= 3 ? 'hot' : ''}`}>
-            {combo > 1 ? `🔥 ${combo}x OVERDRIVE` : '⚡ 1x COMBO'}
+            {combo > 1 ? `🔥 ${combo}x` : '⚡ 1x'}
+            <span className="tm-hide-mobile">{combo > 1 ? ' OVERDRIVE' : ' COMBO'}</span>
           </div>
 
           <div
@@ -50,7 +67,8 @@ export default function NavbarHud({
           >
             <div className="tm-xp-top">
               <span>
-                Lv.{currentRank.level} {currentRank.title}
+                Lv.{currentRank.level}{' '}
+                <span className="tm-xp-rank-title">{currentRank.title}</span>
               </span>
               <span style={{ color: '#facc15' }}>{xp} XP</span>
             </div>
@@ -61,7 +79,7 @@ export default function NavbarHud({
 
           <button
             type="button"
-            className="tm-btn"
+            className="tm-btn tm-hide-mobile"
             onClick={onOpenLeaderboard}
             title="Open Cyber-Arcade Hall of Fame Leaderboard"
           >
@@ -70,18 +88,28 @@ export default function NavbarHud({
 
           <button
             type="button"
-            className={`tm-btn ${crtOn ? 'tm-btn-crt-active' : ''}`}
+            className={`tm-btn tm-btn-icon-mobile ${crtOn ? 'tm-btn-crt-active' : ''}`}
             onClick={onToggleCrt}
             title="Toggle Retro CRT Scanline & Phosphor Shader"
           >
-            {crtOn ? '📺 CRT: ON' : '📺 CRT: OFF'}
+            📺<span className="tm-hide-mobile">{crtOn ? ' CRT: ON' : ' CRT: OFF'}</span>
           </button>
 
-          <button type="button" className="tm-btn" onClick={onToggleSound}>
-            {soundOn ? '🔊 SFX' : '🔇 MUTE'}
+          <button
+            type="button"
+            className="tm-btn tm-btn-icon-mobile"
+            onClick={onToggleSound}
+            title={soundOn ? 'Mute Sound Effects' : 'Enable Sound Effects'}
+          >
+            {soundOn ? '🔊' : '🔇'}
+            <span className="tm-hide-mobile">{soundOn ? ' SFX' : ' MUTE'}</span>
           </button>
 
-          <button type="button" className="tm-btn tm-btn-primary" onClick={onOpenBlankStudio}>
+          <button
+            type="button"
+            className="tm-btn tm-btn-primary tm-hide-mobile"
+            onClick={onOpenBlankStudio}
+          >
             + Upload / Create
           </button>
 
@@ -89,25 +117,25 @@ export default function NavbarHud({
             <div style={{ display: 'inline-flex', gap: '4px' }}>
               <button
                 type="button"
-                className="tm-btn"
+                className="tm-btn tm-user-btn"
                 onClick={() => onOpenProfile(user.username)}
                 title="View your Arcade Player Card"
               >
-                👾 @{user.username}
+                👾 <span className="tm-username-trunc">@{user.username}</span>
               </button>
               <button
                 type="button"
                 className="tm-btn"
                 onClick={onLogout}
                 title="Log out"
-                style={{ padding: '9px 10px' }}
+                style={{ padding: '8px 10px' }}
               >
                 🚪
               </button>
             </div>
           ) : (
-            <button type="button" className="tm-btn" onClick={onOpenAuthModal}>
-              Log in / Sign up
+            <button type="button" className="tm-btn tm-auth-cta" onClick={onOpenAuthModal}>
+              👾 <span className="tm-hide-mobile">Log in / </span>Join
             </button>
           )}
         </div>

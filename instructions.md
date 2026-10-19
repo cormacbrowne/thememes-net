@@ -160,8 +160,10 @@ thememes-net/
 ### ✅ Phase 5: Scale, Shareability & Production Polish (Completed)
 - [x] **Infinite Scroll & Skeleton Shimmer Cards** (`src/components/MemeSkeletonGrid.jsx`):
   - [x] Neon shimmer skeleton placeholder grid during initial feed load + batch pagination (`visibleCount`, automatic `IntersectionObserver` infinite scroll, and `⚡ Load More Memes` button).
-- [x] **Mobile Bottom Arcade Dock** (`src/components/MobileArcadeDock.jsx`):
-  - [x] Thumb-friendly bottom navigation bar on mobile/tablet screens (`📱 Feed`, `⚡ Swipe`, `🎨 +Forge`, `⚔️ Arena`, `🏆 Ranks`).
+- [x] **Mobile Bottom Arcade Dock & Cross-Device Navigation (`iPhone 17 Pro` / `Android` / `PC`)**:
+  - [x] Thumb-friendly bottom navigation bar on mobile/tablet screens (`📱 Feed`, `⚡ Swipe`, `🎨 +Forge`, `⚔️ Arena`, `🏆 Ranks`) with automatic `↩ Back` toggle when any modal is open and `closeAllModals()` integration.
+  - [x] Native browser history stack (`window.history.pushState` + `popstate`) integration so iOS Safari left-edge swipe back and Android system Back gestures cleanly close modals or return from Swipe/Arena to the main feed without exiting the site.
+  - [x] Sticky modal headers (`.tm-modal-sticky-header`) with `← Back` and `✕ Close` buttons, unclipped top modal alignment (`align-items: flex-start` + `margin: auto`), `viewport-fit=cover` safe-area support, `16px` mobile inputs to prevent iOS Safari auto-zoom, and smart touch-scroll vs. canvas-drag handling.
 - [x] **Safety, Moderation & Bundle Optimization**:
   - [x] 15MB upload validation, 4-second anti-spam publish cooldown, `🌶️ Spoiler / Spicy` click-to-reveal blur toggle (`is_spoiler`), 1-click `🚩` community report/hide button with undo/restore, and vendor chunk splitting in `vite.config.js`.
 

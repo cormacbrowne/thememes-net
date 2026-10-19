@@ -19,6 +19,7 @@ export default function MemeCard({
   onReportMeme
 }) {
   const cardRef = useRef(null);
+  const lastTapRef = useRef(0);
   const [copied, setCopied] = useState(false);
   const [spoilerRevealed, setSpoilerRevealed] = useState(false);
   const gen = meme.generation || 0;
@@ -26,8 +27,9 @@ export default function MemeCard({
   const rarity = getMemeRarityTier(meme);
   const isBlurred = Boolean(meme.is_spoiler) && !spoilerRevealed;
 
-  // 60fps 3D Holographic Card Tilt + Specular Glare (active by default)
+  // 60fps 3D Holographic Card Tilt + Specular Glare (active on pointer devices with hover)
   const handleMouseMove = useCallback((e) => {
+    if (typeof window !== 'undefined' && window.matchMedia?.('(hover: none)').matches) return;
     const el = cardRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -53,6 +55,18 @@ export default function MemeCard({
     el.style.setProperty('--ry', '0deg');
     el.style.setProperty('--glare-opacity', '0');
   }, []);
+
+  const handleImageTouchEnd = (e) => {
+    if (e.target.closest('button')) return;
+    const now = Date.now();
+    if (now - lastTapRef.current < 280) {
+      const touch = e.changedTouches?.[0];
+      onVote(meme.id, 1, touch ? { clientX: touch.clientX, clientY: touch.clientY } : e);
+      lastTapRef.current = 0;
+    } else {
+      lastTapRef.current = now;
+    }
+  };
 
   const handleShareClick = (e) => {
     e.stopPropagation();
@@ -86,7 +100,7 @@ export default function MemeCard({
             @{meme.author_name || 'Anon'}
           </strong>
         </span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
           {meme.is_spoiler && (
             <span className="tm-rarity-badge heating">🌶️ SPICY</span>
           )}
@@ -111,7 +125,8 @@ export default function MemeCard({
       <div
         className="tm-img-wrap"
         onDoubleClick={(e) => onVote(meme.id, 1, e)}
-        title="Double-click for instant Combo Upvote!"
+        onTouchEnd={handleImageTouchEnd}
+        title="Double-tap for instant Combo Upvote!"
       >
         {gen > 0 && <div className="tm-gen-pill">🧬 GEN-{gen} REMIX</div>}
         <button

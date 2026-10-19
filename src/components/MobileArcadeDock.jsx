@@ -1,23 +1,38 @@
 export default function MobileArcadeDock({
   viewMode,
+  showStudio,
+  showLeaderboard,
+  isAnyModalOpen,
   onSelectMode,
   onOpenBlankStudio,
-  onOpenLeaderboard
+  onOpenLeaderboard,
+  onNavigateBack
 }) {
   return (
     <nav className="tm-mobile-dock" aria-label="Arcade Bottom Dock">
-      <button
-        type="button"
-        className={`tm-dock-btn ${viewMode === 'feed' ? 'active' : ''}`}
-        onClick={() => onSelectMode('feed')}
-      >
-        <span className="tm-dock-icon">📱</span>
-        <span>Feed</span>
-      </button>
+      {isAnyModalOpen ? (
+        <button
+          type="button"
+          className="tm-dock-btn tm-dock-btn-back"
+          onClick={onNavigateBack}
+        >
+          <span className="tm-dock-icon">↩</span>
+          <span>Back</span>
+        </button>
+      ) : (
+        <button
+          type="button"
+          className={`tm-dock-btn ${viewMode === 'feed' && !isAnyModalOpen ? 'active' : ''}`}
+          onClick={() => onSelectMode('feed')}
+        >
+          <span className="tm-dock-icon">📱</span>
+          <span>Feed</span>
+        </button>
+      )}
 
       <button
         type="button"
-        className={`tm-dock-btn ${viewMode === 'swipe' ? 'active' : ''}`}
+        className={`tm-dock-btn ${viewMode === 'swipe' && !isAnyModalOpen ? 'active' : ''}`}
         onClick={() => onSelectMode('swipe')}
       >
         <span className="tm-dock-icon">⚡</span>
@@ -26,16 +41,16 @@ export default function MobileArcadeDock({
 
       <button
         type="button"
-        className="tm-dock-btn tm-dock-btn-forge"
+        className={`tm-dock-btn tm-dock-btn-forge ${showStudio ? 'active' : ''}`}
         onClick={onOpenBlankStudio}
       >
-        <span className="tm-dock-icon">🎨</span>
-        <span>+Forge</span>
+        <span className="tm-dock-icon">{showStudio ? '✕' : '🎨'}</span>
+        <span>{showStudio ? 'Close' : '+Forge'}</span>
       </button>
 
       <button
         type="button"
-        className={`tm-dock-btn ${viewMode === 'battle' ? 'active' : ''}`}
+        className={`tm-dock-btn ${viewMode === 'battle' && !isAnyModalOpen ? 'active' : ''}`}
         onClick={() => onSelectMode('battle')}
       >
         <span className="tm-dock-icon">⚔️</span>
@@ -44,7 +59,7 @@ export default function MobileArcadeDock({
 
       <button
         type="button"
-        className="tm-dock-btn"
+        className={`tm-dock-btn ${showLeaderboard ? 'active' : ''}`}
         onClick={onOpenLeaderboard}
       >
         <span className="tm-dock-icon">🏆</span>

@@ -6,6 +6,8 @@ export default function SwipeDeck({
   swipeIndex,
   swipeAnim,
   onTriggerSwipe,
+  onPrevCard,
+  onBackToFeed,
   onTriggerStudioMutate,
   onOpenTheater
 }) {
@@ -41,13 +43,13 @@ export default function SwipeDeck({
     dragStartRef.current = null;
     setDragOffset({ x: 0, y: 0 });
 
-    if (y < -85 && Math.abs(y) > Math.abs(x)) {
+    if (y < -75 && Math.abs(y) > Math.abs(x)) {
       setSessionSwipes((s) => s + 1);
       onTriggerSwipe('up', e);
-    } else if (x > 90) {
+    } else if (x > 75) {
       setSessionSwipes((s) => s + 1);
       onTriggerSwipe('right', e);
-    } else if (x < -90) {
+    } else if (x < -75) {
       setSessionSwipes((s) => s + 1);
       onTriggerSwipe('left', e);
     }
@@ -55,11 +57,11 @@ export default function SwipeDeck({
 
   // Determine active stamp overlay while dragging
   let stampType = null;
-  if (dragOffset.y < -45 && Math.abs(dragOffset.y) > Math.abs(dragOffset.x)) {
+  if (dragOffset.y < -40 && Math.abs(dragOffset.y) > Math.abs(dragOffset.x)) {
     stampType = 'super';
-  } else if (dragOffset.x > 45) {
+  } else if (dragOffset.x > 40) {
     stampType = 'based';
-  } else if (dragOffset.x < -45) {
+  } else if (dragOffset.x < -40) {
     stampType = 'nope';
   }
 
@@ -70,21 +72,44 @@ export default function SwipeDeck({
   return (
     <section className="tm-arena">
       <div className="tm-swipe-hud">
-        <span>
-          Card <strong>{activeIdx + 1}</strong> of <strong>{filteredMemes.length}</strong>
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          {onBackToFeed && (
+            <button
+              type="button"
+              className="tm-btn tm-back-pill"
+              onClick={onBackToFeed}
+              style={{ padding: '5px 10px', fontSize: '12px' }}
+            >
+              ← Feed
+            </button>
+          )}
+          {onPrevCard && (
+            <button
+              type="button"
+              className="tm-btn"
+              onClick={onPrevCard}
+              style={{ padding: '5px 10px', fontSize: '12px' }}
+              title="Previous Card"
+            >
+              ↺ Prev
+            </button>
+          )}
+          <span>
+            Card <strong>{activeIdx + 1}</strong> / <strong>{filteredMemes.length}</strong>
+          </span>
+        </div>
         <span style={{ color: '#facc15', fontWeight: 900 }}>
-          ⚡ Session Swipes: {sessionSwipes}
+          ⚡ Swipes: {sessionSwipes}
         </span>
       </div>
 
-      <p style={{ color: '#94a3b8', fontSize: '13px', margin: '0 0 14px' }}>
-        Drag the card with your mouse/finger or use arrows <strong>[← Nope]</strong>{' '}
+      <p style={{ color: '#94a3b8', fontSize: '12px', margin: '0 0 10px' }}>
+        Swipe card left/right or tap buttons: <strong>[← Nope]</strong>{' '}
         <strong>[↑ Super 2x]</strong> <strong>[→ Based]</strong>
       </p>
 
       <div
-        className={`tm-card tm-holo-card ${rarity.className} ${swipeAnim}`}
+        className={`tm-card tm-holo-card tm-swipe-card ${rarity.className} ${swipeAnim}`}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -92,7 +117,7 @@ export default function SwipeDeck({
         style={{
           textAlign: 'left',
           cursor: isDragging ? 'grabbing' : 'grab',
-          touchAction: 'none',
+          touchAction: 'pan-y',
           userSelect: 'none',
           transform: cardTransform,
           transition: isDragging ? 'none' : undefined
@@ -121,19 +146,11 @@ export default function SwipeDeck({
 
         <h2 className="tm-card-title">{m.title}</h2>
 
-        <div className="tm-img-wrap">
+        <div className="tm-img-wrap tm-swipe-img-wrap">
           <img src={m.image_url} alt={m.title} draggable={false} />
         </div>
 
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '10px',
-            padding: '16px',
-            flexWrap: 'wrap'
-          }}
-        >
+        <div className="tm-swipe-actions">
           <button
             type="button"
             className="tm-btn"
@@ -142,7 +159,7 @@ export default function SwipeDeck({
               onTriggerSwipe('left', e);
             }}
           >
-            💀 Pass (←)
+            💀 Pass
           </button>
           <button
             type="button"
@@ -153,7 +170,7 @@ export default function SwipeDeck({
               onTriggerSwipe('up', e);
             }}
           >
-            🚀 Super 2x (↑)
+            🚀 Super 2x
           </button>
           <button
             type="button"
@@ -163,7 +180,7 @@ export default function SwipeDeck({
               onTriggerSwipe('right', e);
             }}
           >
-            🔥 Based (→)
+            🔥 Based
           </button>
           <button
             type="button"
@@ -171,7 +188,7 @@ export default function SwipeDeck({
             onClick={() => onOpenTheater && onOpenTheater(m)}
             title="Inspect in Theater Mode"
           >
-            🔍 Theater
+            🔍 View
           </button>
           <button
             type="button"

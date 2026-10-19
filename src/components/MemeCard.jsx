@@ -1,34 +1,142 @@
-// src/components/MemeCard.jsx
-import React from 'react';
-import { Flame, MessageSquare, Share2, Dna } from 'lucide-react';
-import { MutateActionBar } from './MemeEvolutionModal';
+import { useRef, useCallback, useState } from 'react';
+import { getMemeRarityTier } from '../data/starterMemes';
 
 export default function MemeCard({
   meme,
-  onUpvote,
-  onOpenComments,
+  myVote,
+  isCommentsOpen,
+  commentInput,
+  onVote,
+  onReaction,
+  onToggleComments,
+  onCommentInputChange,
+  onAddComment,
+  onOpenEvolutionTree,
   onTriggerStudioMutate,
-  playArcadeSound,
+  onOpenTheater,
+  onShareMeme,
+  onOpenProfile,
+  onReportMeme
 }) {
+  const cardRef = useRef(null);
+  const [copied, setCopied] = useState(false);
+  const [spoilerRevealed, setSpoilerRevealed] = useState(false);
+  const gen = meme.generation || 0;
+  const remixCount = meme.mutation_count || 0;
+  const rarity = getMemeRarityTier(meme);
+  const isBlurred = Boolean(meme.is_spoiler) && !spoilerRevealed;
+
+  // 60fps 3D Holographic Card Tilt + Specular Glare (active by default)
+  const handleMouseMove = useCallback((e) => {
+    const el = cardRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const px = x / rect.width;
+    const py = y / rect.height;
+
+    const rotateY = (px - 0.5) * 11; // -5.5deg to +5.5deg
+    const rotateX = (0.5 - py) * 11; // -5.5deg to +5.5deg
+
+    el.style.setProperty('--rx', `${rotateX.toFixed(2)}deg`);
+    el.style.setProperty('--ry', `${rotateY.toFixed(2)}deg`);
+    el.style.setProperty('--glare-x', `${(px * 100).toFixed(1)}%`);
+    el.style.setProperty('--glare-y', `${(py * 100).toFixed(1)}%`);
+    el.style.setProperty('--glare-opacity', '1');
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    el.style.setProperty('--rx', '0deg');
+    el.style.setProperty('--ry', '0deg');
+    el.style.setProperty('--glare-opacity', '0');
+  }, []);
+
+  const handleShareClick = (e) => {
+    e.stopPropagation();
+    if (onShareMeme) onShareMeme(meme, e);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
-    <div className="group relative flex flex-col justify-between rounded-xl bg-[#0b0b16] border border-cyan-500/30 hover:border-cyan-400 shadow-[0_0_20px_rgba(0,243,255,0.08)] hover:shadow-[0_0_30px_rgba(0,243,255,0.25)] transition-all duration-300 overflow-hidden p-3">
-      
-      {/* Top Header: Title & Creator */}
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <h3 className="font-mono font-bold text-sm text-white truncate">
-          {meme.title || 'UNTITLED_TRANSMISSION'}
-        </h3>
-        <span className="shrink-0 text-[11px] font-mono text-cyan-400 bg-cyan-950/50 px-2 py-0.5 rounded border border-cyan-500/30">
-          @{meme.username || 'ANON'}
+    <article
+      ref={cardRef}
+      className={`tm-card tm-holo-card ${rarity.className}`}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      {/* Specular Holographic Glare Overlay */}
+      <div className="tm-holo-glare" aria-hidden="true" />
+
+      <div className="tm-card-header">
+        <span>
+          Posted by{' '}
+          <strong
+            className="tm-author-handle"
+            style={{ cursor: 'pointer' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onOpenProfile) onOpenProfile(meme.author_name || 'Anon');
+            }}
+            title="View Creator Profile & Badges"
+          >
+            @{meme.author_name || 'Anon'}
+          </strong>
         </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {meme.is_spoiler && (
+            <span className="tm-rarity-badge heating">🌶️ SPICY</span>
+          )}
+          {meme.is_bounty && (
+            <span className="tm-rarity-badge supernova">🎯 BOUNTY</span>
+          )}
+          {rarity.label && (
+            <span className={`tm-rarity-badge ${rarity.tier}`}>{rarity.label}</span>
+          )}
+          <span className="tm-tag">{meme.category || 'meme'}</span>
+        </div>
       </div>
 
-      {/* Meme Image Container with Generation Overlay Badge */}
-      <div className="relative w-full overflow-hidden rounded-lg bg-black border border-slate-800">
-        {meme.generation > 0 && (
-          <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-2 py-0.5 rounded bg-black/80 backdrop-blur-md border border-fuchsia-500 text-fuchsia-300 text-[10px] font-mono font-black uppercase shadow-[0_0_12px_rgba(255,0,255,0.5)]">
-            <Dna className="w-3 h-3 text-fuchsia-400 animate-spin" style={{ animationDuration: '6s' }} />
-            <span>GEN-{meme.generation} REMIX</span>
+      <h2
+        className="tm-card-title tm-clickable-title"
+        onClick={() => onOpenTheater && onOpenTheater(meme)}
+        title="Open in Fullscreen Theater Mode"
+      >
+        {meme.title}
+      </h2>
+
+      <div
+        className="tm-img-wrap"
+        onDoubleClick={(e) => onVote(meme.id, 1, e)}
+        title="Double-click for instant Combo Upvote!"
+      >
+        {gen > 0 && <div className="tm-gen-pill">🧬 GEN-{gen} REMIX</div>}
+        <button
+          type="button"
+          className="tm-theater-QuickBtn"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onOpenTheater) onOpenTheater(meme);
+          }}
+          title="Open Theater View & Permalink"
+        >
+          🔍 Expand
+        </button>
+
+        {isBlurred && (
+          <div
+            className="tm-spoiler-shield"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSpoilerRevealed(true);
+            }}
+          >
+            <span style={{ fontSize: '30px' }}>🌶️</span>
+            <strong>SPICY / SPOILER MEME</strong>
+            <span>Click to unblur artwork</span>
           </div>
         )}
 
@@ -36,45 +144,129 @@ export default function MemeCard({
           src={meme.image_url}
           alt={meme.title}
           loading="lazy"
-          className="w-full max-h-[460px] object-contain mx-auto transition-transform duration-300 group-hover:scale-[1.01]"
+          className={isBlurred ? 'tm-img-blurred' : ''}
         />
+        <span className="tm-dbl-hint">⚡ Double-tap to Upvote</span>
       </div>
 
-      {/* Standard Engagement Row (Upvotes, Comments, Share) */}
-      <div className="flex items-center justify-between pt-3 mt-1 text-xs font-mono text-slate-300">
-        <div className="flex items-center gap-2">
+      <div className="tm-card-actions">
+        {/* Upvote / Downvote Pill */}
+        <div className="tm-vote-pill">
           <button
-            onClick={() => onUpvote && onUpvote(meme.id)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-900 hover:bg-cyan-950 text-cyan-300 border border-cyan-500/40 hover:border-cyan-400 transition-all"
+            type="button"
+            className={`tm-vote-btn up ${myVote === 1 ? 'voted' : ''}`}
+            onClick={(e) => onVote(meme.id, 1, e)}
           >
-            <Flame className="w-4 h-4 text-orange-400" />
-            <span className="font-bold">{meme.upvotes || 0}</span>
+            ▲
           </button>
-
+          <span className="tm-score">{meme.score || 0}</span>
           <button
-            onClick={() => onOpenComments && onOpenComments(meme)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 transition-all"
+            type="button"
+            className={`tm-vote-btn down ${myVote === -1 ? 'voted' : ''}`}
+            onClick={(e) => onVote(meme.id, -1, e)}
           >
-            <MessageSquare className="w-3.5 h-3.5 text-fuchsia-400" />
-            <span>{meme.comment_count || 0}</span>
+            ▼
           </button>
         </div>
 
+        {/* Emoji Reactions */}
+        <div className="tm-react-group">
+          {['🔥', '💀', '😂', '🗿'].map((emoji) => (
+            <button
+              key={emoji}
+              type="button"
+              className="tm-react-btn"
+              onClick={(e) => onReaction(meme.id, emoji, e)}
+            >
+              {emoji} {(meme.reactions && meme.reactions[emoji]) || 0}
+            </button>
+          ))}
+        </div>
+
+        {/* Comment, Share & Flag/Hide Buttons */}
+        <div style={{ display: 'flex', gap: '5px' }}>
+          <button
+            type="button"
+            className="tm-react-btn"
+            onClick={() => onToggleComments(meme.id)}
+            title="Toggle Comments"
+          >
+            💬 {(meme.comments || []).length}
+          </button>
+          <button
+            type="button"
+            className="tm-react-btn"
+            onClick={handleShareClick}
+            title="Copy Deep-Link URL"
+          >
+            {copied ? '✅' : '🔗'}
+          </button>
+          {onReportMeme && (
+            <button
+              type="button"
+              className="tm-react-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                onReportMeme(meme, e);
+              }}
+              title="Flag / Hide Meme from Feed"
+            >
+              🚩
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* FORK & MUTATE ACTION BAR */}
+      <div className="tm-mutate-bar">
         <button
-          onClick={() => navigator.clipboard?.writeText(`${window.location.origin}/?meme=${meme.id}`)}
-          className="p-1.5 rounded bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800"
-          title="Copy Link"
+          type="button"
+          className="tm-lineage-btn"
+          onClick={(e) => onOpenEvolutionTree(meme, e)}
+          title="Inspect full remix family tree"
         >
-          <Share2 className="w-3.5 h-3.5" />
+          🌿 GEN-{gen} {remixCount > 0 ? `• ${remixCount} REMIXES` : '• TREE'}
+        </button>
+
+        <button
+          type="button"
+          className="tm-mutate-btn"
+          onClick={(e) => onTriggerStudioMutate(meme, e)}
+        >
+          🧬 MUTATE (+150 XP)
         </button>
       </div>
 
-      {/* Fork & Mutate Action Bar + Evolution Tree Trigger */}
-      <MutateActionBar
-        meme={meme}
-        onTriggerStudioMutate={onTriggerStudioMutate}
-        playArcadeSound={playArcadeSound}
-      />
-    </div>
+      {/* Inline Comments Drawer */}
+      {isCommentsOpen && (
+        <div className="tm-comments">
+          {(meme.comments || []).length === 0 ? (
+            <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '8px' }}>
+              No comments yet — drop the first roast (+25 XP)!
+            </div>
+          ) : (
+            (meme.comments || []).map((c) => (
+              <div key={c.id} className="tm-comment-item">
+                <strong style={{ color: '#38bdf8' }}>@{c.author_name}: </strong>
+                <span>{c.body}</span>
+              </div>
+            ))
+          )}
+
+          <form className="tm-comment-form" onSubmit={(e) => onAddComment(meme.id, e)}>
+            <input
+              type="text"
+              className="tm-input"
+              placeholder="Write a comment..."
+              value={commentInput || ''}
+              onChange={(e) => onCommentInputChange(meme.id, e.target.value)}
+            />
+            <button type="submit" className="tm-btn tm-btn-primary">
+              Post
+            </button>
+          </form>
+        </div>
+      )}
+    </article>
   );
 }

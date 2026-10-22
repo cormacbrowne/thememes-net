@@ -12,6 +12,8 @@ export default function PlayerProfileModal({
   unlockedFlairs = [],
   equippedFlair = '',
   roastsRun = 0,
+  goblinsCaught = 0,
+  konamiUnlocked = false,
   onClose,
   onSelectMeme,
   onTriggerStudioMutate
@@ -61,7 +63,9 @@ export default function PlayerProfileModal({
         battleStreak: isMe ? battleStreak : 0,
         bountiesCompleted: isMe ? bountiesCompleted : 0,
         unlockedFlairs: isMe ? unlockedFlairs : [],
-        roastsRun: isMe ? roastsRun : 0
+        roastsRun: isMe ? roastsRun : 0,
+        goblinsCaught: isMe ? goblinsCaught : 0,
+        konamiUnlocked: isMe ? konamiUnlocked : false
       }),
     [
       authoredMemes,
@@ -72,7 +76,9 @@ export default function PlayerProfileModal({
       battleStreak,
       bountiesCompleted,
       unlockedFlairs,
-      roastsRun
+      roastsRun,
+      goblinsCaught,
+      konamiUnlocked
     ]
   );
 

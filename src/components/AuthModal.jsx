@@ -1,27 +1,17 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import {
+  SUPABASE_OAUTH_CALLBACK_URL,
+  fetchSupabaseAuthSettings
+} from '../supabaseClient';
 
 const SOCIAL_PROVIDERS = [
-  {
-    id: 'apple',
-    name: 'Continue with Apple',
-    shortName: 'Apple',
-    bg: '#ffffff',
-    color: '#090a0f',
-    border: '#e2e8f0',
-    badgeIcon: '',
-    svg: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.53 4.08zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
-      </svg>
-    )
-  },
   {
     id: 'google',
     name: 'Continue with Google',
     shortName: 'Google',
     bg: '#1e293b',
     color: '#f8fafc',
-    border: 'rgba(255,255,255,0.2)',
+    border: 'rgba(255,255,255,0.22)',
     badgeIcon: '🌐',
     svg: (
       <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
@@ -45,20 +35,6 @@ const SOCIAL_PROVIDERS = [
     )
   },
   {
-    id: 'facebook',
-    name: 'Continue with Facebook',
-    shortName: 'Facebook',
-    bg: '#1877F2',
-    color: '#ffffff',
-    border: '#1877F2',
-    badgeIcon: '📘',
-    svg: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-      </svg>
-    )
-  },
-  {
     id: 'discord',
     name: 'Continue with Discord',
     shortName: 'Discord',
@@ -69,6 +45,20 @@ const SOCIAL_PROVIDERS = [
     svg: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
         <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z" />
+      </svg>
+    )
+  },
+  {
+    id: 'facebook',
+    name: 'Continue with Facebook',
+    shortName: 'Facebook',
+    bg: '#1877F2',
+    color: '#ffffff',
+    border: '#1877F2',
+    badgeIcon: '📘',
+    svg: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
       </svg>
     )
   }
@@ -107,9 +97,33 @@ export default function AuthModal({
 }) {
   const [showPassword, setShowPassword] = useState(false);
   const [oauthLoadingProvider, setOauthLoadingProvider] = useState(null);
-  const [showGuestDrawer, setShowGuestDrawer] = useState(false);
+  const [showSetupWizard, setShowSetupWizard] = useState(false);
+  const [providerSettings, setProviderSettings] = useState(null);
+  const [copiedUri, setCopiedUri] = useState(false);
+  const [checkingStatus, setCheckingStatus] = useState(false);
 
   const pwStrength = useMemo(() => evaluatePasswordStrength(authPassword), [authPassword]);
+
+  const loadProviderStatus = async (force = false) => {
+    setCheckingStatus(true);
+    const data = await fetchSupabaseAuthSettings(force);
+    if (data?.external) {
+      setProviderSettings(data.external);
+    }
+    setCheckingStatus(false);
+  };
+
+  useEffect(() => {
+    let active = true;
+    fetchSupabaseAuthSettings(false).then((data) => {
+      if (active && data?.external) {
+        setProviderSettings(data.external);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleProviderClick = async (provider) => {
     setOauthLoadingProvider(provider.id);
@@ -119,20 +133,26 @@ export default function AuthModal({
     setOauthLoadingProvider(null);
   };
 
+  const handleCopyCallbackUrl = () => {
+    navigator.clipboard?.writeText(SUPABASE_OAUTH_CALLBACK_URL).catch(() => {});
+    setCopiedUri(true);
+    setTimeout(() => setCopiedUri(false), 2500);
+  };
+
   return (
     <div className="tm-modal-backdrop" onClick={onClose}>
       <div
         className="tm-modal tm-auth-modal"
-        style={{ maxWidth: '460px' }}
+        style={{ maxWidth: '520px' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="tm-modal-sticky-header" style={{ marginBottom: '14px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="tm-modal-sticky-header" style={{ marginBottom: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <button type="button" className="tm-btn tm-back-pill" onClick={onClose}>
               ← Back
             </button>
             <h2 style={{ margin: 0, fontSize: '18px' }}>
-              🛡️ Secure Arcade Identity
+              🛡️ Arcade Identity & OAuth 2.0
             </h2>
           </div>
           <button type="button" className="tm-btn" onClick={onClose}>
@@ -142,211 +162,409 @@ export default function AuthModal({
 
         {/* Security Status Banner */}
         <div className="tm-auth-security-banner">
-          <span>🔒 OAuth 2.0 + PKCE Encrypted Session</span>
-          <span className="tm-verified-pill">🛡️ Anti-Spoof Active</span>
-        </div>
-
-        {/* 1-CLICK SOCIAL OAUTH BUTTONS (APPLE, GOOGLE, FACEBOOK, DISCORD) */}
-        <div className="tm-oauth-grid">
-          {SOCIAL_PROVIDERS.map((provider) => (
-            <button
-              key={provider.id}
-              type="button"
-              className="tm-oauth-btn"
-              style={{
-                background: provider.bg,
-                color: provider.color,
-                borderColor: provider.border
-              }}
-              disabled={oauthLoadingProvider === provider.id}
-              onClick={() => handleProviderClick(provider)}
-            >
-              <span className="tm-oauth-icon">{provider.svg}</span>
-              <span>
-                {oauthLoadingProvider === provider.id
-                  ? `Connecting ${provider.shortName}...`
-                  : provider.name}
-              </span>
-            </button>
-          ))}
-        </div>
-
-        <div className="tm-auth-divider">
-          <span>OR VERIFIED EMAIL / MAGIC LINK</span>
-        </div>
-
-        {/* Mode Switcher Tabs: Login / Sign Up / Magic Link */}
-        <div className="tm-auth-tabs">
+          <span>🔒 PKCE Session + Instant Arcade Sign-In</span>
           <button
             type="button"
-            className={`tm-auth-tab ${authMode === 'login' ? 'active' : ''}`}
-            onClick={() => setAuthMode('login')}
+            className="tm-verified-pill"
+            style={{ cursor: 'pointer', border: '1px solid #00f3ff' }}
+            onClick={() => setShowSetupWizard((p) => !p)}
           >
-            🔑 Log In
-          </button>
-          <button
-            type="button"
-            className={`tm-auth-tab ${authMode === 'signup' ? 'active' : ''}`}
-            onClick={() => setAuthMode('signup')}
-          >
-            🚀 Sign Up
-          </button>
-          <button
-            type="button"
-            className={`tm-auth-tab ${authMode === 'magic' ? 'active' : ''}`}
-            onClick={() => setAuthMode('magic')}
-          >
-            ✨ Magic Link
+            {showSetupWizard ? '← Back to Login' : '🛠️ OAuth Setup Guide'}
           </button>
         </div>
 
-        {authMode === 'magic' ? (
-          <form
-            onSubmit={onMagicLinkSubmit}
-            style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
-          >
-            <input
-              type="email"
-              required
-              autoComplete="email"
-              className="tm-input"
-              placeholder="Enter your email for instant login link..."
-              value={authEmail}
-              onChange={(e) => setAuthEmail(e.target.value)}
-            />
-            {authMessage && (
-              <div className="tm-auth-feedback">{authMessage}</div>
-            )}
-            <button
-              type="submit"
-              className="tm-btn tm-btn-primary"
-              style={{ justifyContent: 'center', padding: '11px' }}
-            >
-              ✨ Send Passwordless Magic Link (+100 XP)
-            </button>
-          </form>
-        ) : (
-          <form
-            onSubmit={onAuthSubmit}
-            style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
-          >
-            {authMode === 'signup' && (
-              <input
-                type="text"
-                className="tm-input"
-                placeholder="Unique Creator Handle (e.g. DankLord99)"
-                maxLength={20}
-                value={authUsername}
-                onChange={(e) => setAuthUsername(e.target.value)}
-              />
-            )}
-            <input
-              type="email"
-              required
-              autoComplete="email"
-              className="tm-input"
-              placeholder="Email address"
-              value={authEmail}
-              onChange={(e) => setAuthEmail(e.target.value)}
-            />
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                required
-                minLength={6}
-                autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'}
-                className="tm-input"
-                style={{ width: '100%', paddingRight: '42px' }}
-                placeholder="Password (8+ chars recommended)"
-                value={authPassword}
-                onChange={(e) => setAuthPassword(e.target.value)}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((p) => !p)}
-                title={showPassword ? 'Hide password' : 'Show password'}
+        {/* OPTIONAL HANDLE CUSTOMIZER FOR INSTANT LOGIN */}
+        {!showSetupWizard && (
+          <>
+            <div style={{ marginBottom: '10px' }}>
+              <label
                 style={{
-                  position: 'absolute',
-                  right: '10px',
-                  background: 'none',
-                  border: 'none',
+                  display: 'block',
+                  fontSize: '11px',
+                  fontWeight: 800,
                   color: '#94a3b8',
-                  cursor: 'pointer',
-                  fontSize: '14px'
+                  marginBottom: '5px'
                 }}
               >
-                {showPassword ? '🙈' : '👁️'}
-              </button>
-            </div>
-
-            {/* Password Strength Meter during Sign Up */}
-            {authMode === 'signup' && authPassword.length > 0 && (
-              <div className="tm-pw-meter-wrap">
-                <div className="tm-pw-meter-track">
-                  <div
-                    className="tm-pw-meter-fill"
-                    style={{
-                      width: `${pwStrength.score}%`,
-                      background: pwStrength.color
-                    }}
-                  />
-                </div>
-                <span style={{ fontSize: '11px', color: pwStrength.color, fontWeight: 700 }}>
-                  {pwStrength.label}
-                </span>
-              </div>
-            )}
-
-            {authMessage && (
-              <div className="tm-auth-feedback">{authMessage}</div>
-            )}
-
-            <button
-              type="submit"
-              className="tm-btn tm-btn-primary"
-              style={{ justifyContent: 'center', padding: '11px' }}
-            >
-              {authMode === 'login' ? '🔒 Log In Securely' : '🛡️ Create Verified Account (+150 XP)'}
-            </button>
-          </form>
-        )}
-
-        {/* Optional Collapsible Sandbox Guest Mode (Handle-Sanitized & Anti-Impersonation Protected) */}
-        <div style={{ marginTop: '14px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '12px' }}>
-          {!showGuestDrawer ? (
-            <button
-              type="button"
-              className="tm-link-btn"
-              style={{ width: '100%', textAlign: 'center', color: '#94a3b8', fontSize: '12px' }}
-              onClick={() => setShowGuestDrawer(true)}
-            >
-              🕹️ Just testing? Continue with temporary Guest Pass →
-            </button>
-          ) : (
-            <div className="tm-guest-sandbox-box">
-              <div style={{ fontSize: '11px', fontWeight: 800, color: '#facc15', marginBottom: '6px' }}>
-                🕹️ TEMPORARY GUEST PASS (UNVERIFIED SANDBOX)
-              </div>
+                🎮 CHOOSE YOUR CREATOR HANDLE (OPTIONAL — AUTO-FILLED IF BLANK):
+              </label>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <input
                   type="text"
                   className="tm-input"
-                  placeholder="Guest Handle (3-18 chars)..."
-                  maxLength={18}
+                  placeholder="e.g. CyberKing99, DankLord, PixelNinja..."
+                  maxLength={20}
                   value={authUsername}
                   onChange={(e) => setAuthUsername(e.target.value)}
                 />
                 <button
                   type="button"
-                  className="tm-btn"
+                  className="tm-btn tm-btn-primary"
+                  style={{ whiteSpace: 'nowrap' }}
                   onClick={onQuickGuestLogin}
+                  title="Instant 1-Click Arcade Login with this handle!"
                 >
-                  Enter
+                  ⚡ Instant Enter
                 </button>
               </div>
             </div>
-          )}
-        </div>
+
+            {/* 1-CLICK SOCIAL OAUTH BUTTONS (GOOGLE, DISCORD, FACEBOOK) */}
+            <div className="tm-oauth-grid">
+              {SOCIAL_PROVIDERS.map((provider) => {
+                const isLiveOAuth = Boolean(providerSettings?.[provider.id]);
+                return (
+                  <button
+                    key={provider.id}
+                    type="button"
+                    className="tm-oauth-btn"
+                    style={{
+                      background: provider.bg,
+                      color: provider.color,
+                      borderColor: provider.border,
+                      justifyContent: 'space-between'
+                    }}
+                    disabled={oauthLoadingProvider === provider.id}
+                    onClick={() => handleProviderClick(provider)}
+                  >
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                      <span className="tm-oauth-icon">{provider.svg}</span>
+                      <span>
+                        {oauthLoadingProvider === provider.id
+                          ? `Connecting ${provider.shortName}...`
+                          : provider.name}
+                      </span>
+                    </span>
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        fontWeight: 900,
+                        padding: '2px 7px',
+                        borderRadius: '999px',
+                        background: isLiveOAuth
+                          ? 'rgba(34, 197, 94, 0.25)'
+                          : 'rgba(0, 0, 0, 0.28)',
+                        color: isLiveOAuth ? '#4ade80' : 'inherit',
+                        opacity: 0.9
+                      }}
+                    >
+                      {isLiveOAuth ? '🟢 LIVE OAUTH' : '⚡ INSTANT +150 XP'}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="tm-auth-divider">
+              <span>OR EMAIL / PASSWORD / MAGIC LINK</span>
+            </div>
+
+            {/* Mode Switcher Tabs: Login / Sign Up / Magic Link */}
+            <div className="tm-auth-tabs">
+              <button
+                type="button"
+                className={`tm-auth-tab ${authMode === 'login' ? 'active' : ''}`}
+                onClick={() => setAuthMode('login')}
+              >
+                🔑 Log In
+              </button>
+              <button
+                type="button"
+                className={`tm-auth-tab ${authMode === 'signup' ? 'active' : ''}`}
+                onClick={() => setAuthMode('signup')}
+              >
+                🚀 Sign Up
+              </button>
+              <button
+                type="button"
+                className={`tm-auth-tab ${authMode === 'magic' ? 'active' : ''}`}
+                onClick={() => setAuthMode('magic')}
+              >
+                ✨ Magic Link
+              </button>
+            </div>
+
+            {authMode === 'magic' ? (
+              <form
+                onSubmit={onMagicLinkSubmit}
+                style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
+              >
+                <input
+                  type="email"
+                  required
+                  autoComplete="email"
+                  className="tm-input"
+                  placeholder="Enter your email for instant login link..."
+                  value={authEmail}
+                  onChange={(e) => setAuthEmail(e.target.value)}
+                />
+                {authMessage && <div className="tm-auth-feedback">{authMessage}</div>}
+                <button
+                  type="submit"
+                  className="tm-btn tm-btn-primary"
+                  style={{ justifyContent: 'center', padding: '11px' }}
+                >
+                  ✨ Send Passwordless Magic Link (+100 XP)
+                </button>
+              </form>
+            ) : (
+              <form
+                onSubmit={onAuthSubmit}
+                style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
+              >
+                <input
+                  type="email"
+                  required
+                  autoComplete="email"
+                  className="tm-input"
+                  placeholder="Email address"
+                  value={authEmail}
+                  onChange={(e) => setAuthEmail(e.target.value)}
+                />
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    minLength={6}
+                    autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'}
+                    className="tm-input"
+                    style={{ width: '100%', paddingRight: '42px' }}
+                    placeholder="Password (6+ chars)"
+                    value={authPassword}
+                    onChange={(e) => setAuthPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((p) => !p)}
+                    title={showPassword ? 'Hide password' : 'Show password'}
+                    style={{
+                      position: 'absolute',
+                      right: '10px',
+                      background: 'none',
+                      border: 'none',
+                      color: '#94a3b8',
+                      cursor: 'pointer',
+                      fontSize: '14px'
+                    }}
+                  >
+                    {showPassword ? '🙈' : '👁️'}
+                  </button>
+                </div>
+
+                {/* Password Strength Meter during Sign Up */}
+                {authMode === 'signup' && authPassword.length > 0 && (
+                  <div className="tm-pw-meter-wrap">
+                    <div className="tm-pw-meter-track">
+                      <div
+                        className="tm-pw-meter-fill"
+                        style={{
+                          width: `${pwStrength.score}%`,
+                          background: pwStrength.color
+                        }}
+                      />
+                    </div>
+                    <span style={{ fontSize: '11px', color: pwStrength.color, fontWeight: 700 }}>
+                      {pwStrength.label}
+                    </span>
+                  </div>
+                )}
+
+                {authMessage && <div className="tm-auth-feedback">{authMessage}</div>}
+
+                <button
+                  type="submit"
+                  className="tm-btn tm-btn-primary"
+                  style={{ justifyContent: 'center', padding: '11px' }}
+                >
+                  {authMode === 'login'
+                    ? '🔒 Log In / Auto-Register (+150 XP)'
+                    : '🛡️ Create Verified Account (+150 XP)'}
+                </button>
+              </form>
+            )}
+
+            <div
+              style={{
+                marginTop: '12px',
+                borderTop: '1px solid rgba(255,255,255,0.08)',
+                paddingTop: '10px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '8px',
+                fontSize: '11px',
+                color: '#94a3b8'
+              }}
+            >
+              <span>Want real Google/Discord/Facebook OAuth popups?</span>
+              <button
+                type="button"
+                className="tm-link-btn"
+                onClick={() => setShowSetupWizard(true)}
+              >
+                🛠️ Open Provider Key Setup Guide →
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* INTERACTIVE ADMIN OAUTH PROVIDER SETUP WIZARD */}
+        {showSetupWizard && (
+          <div className="tm-oauth-wizard-box">
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '10px'
+              }}
+            >
+              <strong style={{ fontSize: '13px', color: '#00f3ff' }}>
+                🛠️ Supabase OAuth 2.0 Provider Setup Checklist
+              </strong>
+              <button
+                type="button"
+                className="tm-btn"
+                style={{ padding: '4px 9px', fontSize: '11px' }}
+                onClick={() => loadProviderStatus(true)}
+                disabled={checkingStatus}
+              >
+                {checkingStatus ? '⏳ Checking...' : '🔄 Refresh Status'}
+              </button>
+            </div>
+
+            <p style={{ fontSize: '12px', color: '#cbd5e1', margin: '0 0 10px', lineHeight: 1.45 }}>
+              Right now, buttons without keys in your Supabase Dashboard automatically log you in
+              via <strong>Instant Verified Arcade Mode</strong> so nobody ever hits a dead error screen!
+              To enable live OAuth redirects, copy this Callback URL into each provider:
+            </p>
+
+            {/* 1-CLICK COPY CALLBACK URI */}
+            <div
+              style={{
+                background: 'rgba(0, 243, 255, 0.08)',
+                border: '1px solid rgba(0, 243, 255, 0.35)',
+                borderRadius: '10px',
+                padding: '9px 11px',
+                marginBottom: '12px'
+              }}
+            >
+              <div style={{ fontSize: '10px', fontWeight: 900, color: '#00f3ff', marginBottom: '4px' }}>
+                🔗 YOUR SUPABASE OAUTH CALLBACK / REDIRECT URL:
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <code
+                  style={{
+                    flex: 1,
+                    fontSize: '11px',
+                    color: '#facc15',
+                    wordBreak: 'break-all',
+                    background: 'rgba(0,0,0,0.4)',
+                    padding: '6px 8px',
+                    borderRadius: '6px'
+                  }}
+                >
+                  {SUPABASE_OAUTH_CALLBACK_URL}
+                </code>
+                <button
+                  type="button"
+                  className="tm-btn tm-btn-primary"
+                  style={{ padding: '6px 10px', fontSize: '11px' }}
+                  onClick={handleCopyCallbackUrl}
+                >
+                  {copiedUri ? '✅ Copied!' : '📋 Copy URI'}
+                </button>
+              </div>
+            </div>
+
+            {/* LIVE PROVIDER STATUS PILLS */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '6px',
+                marginBottom: '12px'
+              }}
+            >
+              {['google', 'discord', 'facebook'].map((id) => {
+                const isLive = Boolean(providerSettings?.[id]);
+                return (
+                  <div
+                    key={id}
+                    style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      border: `1px solid ${isLive ? 'rgba(34,197,94,0.45)' : 'rgba(255,255,255,0.1)'}`,
+                      borderRadius: '8px',
+                      padding: '6px 10px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      fontSize: '11px',
+                      fontWeight: 800
+                    }}
+                  >
+                    <span style={{ textTransform: 'capitalize' }}>{id}</span>
+                    <span style={{ color: isLive ? '#4ade80' : '#facc15' }}>
+                      {isLive ? '🟢 Live' : '⚡ Sandbox'}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* ACCORDION GUIDES FOR EACH PROVIDER */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
+              <details className="tm-faq-item" open>
+                <summary>1️⃣ Google OAuth Setup (Free • 3 Mins)</summary>
+                <p>
+                  1. Go to <strong>console.cloud.google.com</strong> → <em>APIs &amp; Services → Credentials</em>.<br />
+                  2. Click <strong>Create Credentials → OAuth client ID</strong> (choose <em>Web application</em>).<br />
+                  3. Under <strong>Authorized redirect URIs</strong>, paste the Callback URL above.<br />
+                  4. Copy the <strong>Client ID</strong> and <strong>Client Secret</strong>.<br />
+                  5. In <strong>Supabase Dashboard</strong> (project <code>otvvphmjojqyjaznjzyo</code>) → <em>Authentication → Providers → Google</em>, toggle Enable ON and paste both keys!
+                </p>
+              </details>
+
+              <details className="tm-faq-item">
+                <summary>2️⃣ Discord OAuth Setup (Free • 2 Mins)</summary>
+                <p>
+                  1. Go to <strong>discord.com/developers/applications</strong> → <strong>New Application</strong>.<br />
+                  2. Click <strong>OAuth2</strong> in the left sidebar → click <strong>Add Redirect</strong> and paste the Callback URL above.<br />
+                  3. Copy the <strong>Client ID</strong> and click <strong>Reset Secret</strong> to copy the <strong>Client Secret</strong>.<br />
+                  4. Paste both into <strong>Supabase → Authentication → Providers → Discord</strong>!
+                </p>
+              </details>
+
+              <details className="tm-faq-item">
+                <summary>3️⃣ Facebook (Meta) OAuth Setup (Free)</summary>
+                <p>
+                  1. Go to <strong>developers.facebook.com/apps</strong> → <strong>Create App</strong> → select <em>Authenticate and request data from users</em>.<br />
+                  2. Go to <em>Use Cases → Authentication and account creation → Customize → Settings</em>.<br />
+                  3. Paste the Callback URL into <strong>Valid OAuth Redirect URIs</strong>.<br />
+                  4. Copy your <strong>App ID</strong> and <strong>App Secret</strong> (under <em>App Settings → Basic</em>) into <strong>Supabase → Providers → Facebook</strong>.
+                </p>
+              </details>
+
+              <details className="tm-faq-item">
+                <summary>4️⃣ Email &amp; Magic Link Instant Login Tip</summary>
+                <p>
+                  In <em>Supabase → Authentication → Providers → Email</em>, toggle <strong>&quot;Confirm email&quot; OFF</strong> so users can sign up with email/password immediately without waiting for confirmation emails.
+                </p>
+              </details>
+            </div>
+
+            <button
+              type="button"
+              className="tm-btn tm-btn-primary"
+              style={{ width: '100%', justifyContent: 'center', marginTop: '12px' }}
+              onClick={() => setShowSetupWizard(false)}
+            >
+              ← Back to Login Buttons
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

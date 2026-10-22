@@ -17,7 +17,11 @@ export const SOUNDBOARD_PADS = [
   { id: 'whoopee', emoji: '💨', label: 'Reverb Fart', color: '#a3e635' },
   { id: 'trombone', emoji: '🎺', label: 'Sad Trombone', color: '#facc15' },
   { id: 'anime', emoji: '⚡', label: 'NANI?! Impact', color: '#a855f7' },
-  { id: 'jackpot', emoji: '🪙', label: 'Coin Jackpot', color: '#22c55e' }
+  { id: 'jackpot', emoji: '🪙', label: 'Coin Jackpot', color: '#22c55e' },
+  { id: 'siren', emoji: '🚔', label: 'Dank Police', color: '#3b82f6' },
+  { id: 'duck', emoji: '🦆', label: 'Duck Army', color: '#eab308' },
+  { id: 'violin', emoji: '🎻', label: 'Tiny Violin', color: '#f43f5e' },
+  { id: 'gong', emoji: '💥', label: 'Damage Gong', color: '#d946ef' }
 ];
 
 // Tiny 44.1kHz silent WAV data URI used to switch iOS Safari from 'ambient' (muted by silent switch)
@@ -530,9 +534,160 @@ export class SoundEngine {
   }
 
   /**
+   * 🚔 DANK POLICE SIREN ("WEE-WOO-WEE-WOO!")
+   */
+  playPoliceSiren() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(580, now);
+      osc.frequency.linearRampToValueAtTime(980, now + 0.16);
+      osc.frequency.linearRampToValueAtTime(580, now + 0.32);
+      osc.frequency.linearRampToValueAtTime(980, now + 0.48);
+      osc.frequency.linearRampToValueAtTime(560, now + 0.62);
+
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.64);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.66);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🦆 RUBBER DUCK ARMY ("QUACK-QUACK-QUAAAACK!")
+   */
+  playRubberDuck() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const quacks = [
+        { offset: 0, pitch: 440, dur: 0.11 },
+        { offset: 0.12, pitch: 520, dur: 0.11 },
+        { offset: 0.24, pitch: 390, dur: 0.22 }
+      ];
+      quacks.forEach((q) => {
+        const start = this.ctx.currentTime + q.offset;
+        const osc = this.ctx.createOscillator();
+        const filter = this.ctx.createBiquadFilter();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(q.pitch * 1.15, start);
+        osc.frequency.exponentialRampToValueAtTime(q.pitch * 0.78, start + q.dur);
+
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1350, start);
+        filter.frequency.exponentialRampToValueAtTime(750, start + q.dur);
+        filter.Q.setValueAtTime(4.2, start);
+
+        gain.gain.setValueAtTime(0.24, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + q.dur);
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(start);
+        osc.stop(start + q.dur + 0.02);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🎻 WORLD'S SMALLEST VIOLIN ("SAD SQUEAKY TREMOLO")
+   */
+  playTinyViolin() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const notes = [
+        { f: 1174.66, start: 0, dur: 0.2 },
+        { f: 1108.73, start: 0.2, dur: 0.2 },
+        { f: 1046.5, start: 0.4, dur: 0.35 }
+      ];
+      notes.forEach((n) => {
+        const t = this.ctx.currentTime + n.start;
+        const osc = this.ctx.createOscillator();
+        const vib = this.ctx.createOscillator();
+        const vibGain = this.ctx.createGain();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(n.f, t);
+
+        vib.frequency.setValueAtTime(9.5, t);
+        vibGain.gain.setValueAtTime(18, t);
+        vib.connect(vibGain);
+        vibGain.connect(osc.frequency);
+
+        gain.gain.setValueAtTime(0.09, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + n.dur);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        vib.start(t);
+        osc.start(t);
+        vib.stop(t + n.dur);
+        osc.stop(t + n.dur + 0.01);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 💥 EMOTIONAL DAMAGE DRAMATIC GONG
+   */
+  playDamageGong() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const partials = [110, 168.5, 241.2, 319.8, 452.1, 618.4];
+      partials.forEach((f, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+        osc.frequency.setValueAtTime(f, now);
+        osc.frequency.exponentialRampToValueAtTime(f * 0.96, now + 0.85);
+        gain.gain.setValueAtTime(0.16 / (idx + 1), now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.88);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.9);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  triggerHaptic(ms = 14) {
+    try {
+      if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+        navigator.vibrate(ms);
+      }
+    } catch {
+      // Ignore on unsupported devices
+    }
+  }
+
+  /**
    * Trigger a specific pad on the Crazy Meme Soundboard
    */
   playSoundboardPad(padId) {
+    this.triggerHaptic(18);
     switch (padId) {
       case 'vineboom':
         this.playVineBoom();
@@ -557,6 +712,18 @@ export class SoundEngine {
         break;
       case 'jackpot':
         this.playJackpot();
+        break;
+      case 'siren':
+        this.playPoliceSiren();
+        break;
+      case 'duck':
+        this.playRubberDuck();
+        break;
+      case 'violin':
+        this.playTinyViolin();
+        break;
+      case 'gong':
+        this.playDamageGong();
         break;
       default:
         this.playBoing(2);

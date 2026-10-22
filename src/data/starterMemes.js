@@ -415,7 +415,43 @@ export const MEME_STOCK_TICKER = [
   { symbol: '$GAMING', delta: '+31.8%', up: true, category: 'gaming', label: 'Boss Music in Latin' },
   { symbol: '$3AM_SLEEP', delta: '-88.2%', up: false, category: 'relatable', label: 'Sleep Schedule Crashed' },
   { symbol: '$VINE_BOOM', delta: '+420.0%', up: true, category: 'all', label: 'Soundboard Volume Maxed' },
-  { symbol: '$MUTATIONS', delta: '+19.5%', up: true, category: 'all', label: '+50 XP Creator Royalties Live' }
+  { symbol: '$MUTATIONS', delta: '+19.5%', up: true, category: 'all', label: '+50 XP Creator Royalties Live' },
+  { symbol: '$BOSS_KEY', delta: '+999.9%', up: true, category: 'all', label: 'Stealth Excel Mode Undetected' }
+];
+
+export const CHAOS_MUTATORS = [
+  { id: 'none', label: '✨ Normal', desc: 'Standard Cyber-Arcade Reality' },
+  { id: 'rave', label: '🕺 Rave Club', desc: 'Neon Strobe & Bouncing Dancefloor' },
+  { id: 'australian', label: '🙃 Australian', desc: 'Upside-Down Gravity Inversion' },
+  { id: 'deepfry', label: '🍗 Deep-Fried', desc: 'Maximum Crispy Saturation Overdrive' },
+  { id: 'matrix', label: '🕶️ Matrix', desc: 'Green Cyber-Phosphor Hacker Vision' }
+];
+
+export const CURSOR_TRAILS = [
+  { id: 'none', label: '🚫 No Trail', emoji: '' },
+  { id: 'fire', label: '🔥 Fire Trail', emoji: '🔥' },
+  { id: 'skull', label: '💀 Skull Trail', emoji: '💀' },
+  { id: 'diamond', label: '💎 Diamond Trail', emoji: '💎' },
+  { id: 'duck', label: '🦆 Duck Army Trail', emoji: '🦆' },
+  { id: 'crown', label: '👑 Royal Crown Trail', emoji: '👑' }
+];
+
+export const SLOT_SYMBOLS = [
+  { id: 'skull', emoji: '💀', name: 'Vine Skull', mult: 3 },
+  { id: 'fire', emoji: '🔥', name: 'Supernova Fire', mult: 4 },
+  { id: 'moai', emoji: '🗿', name: 'Giga Moai', mult: 5 },
+  { id: 'clown', emoji: '🤡', name: 'Honk Clown', mult: 3 },
+  { id: 'duck', emoji: '🦆', name: 'Golden Duck', mult: 6 },
+  { id: 'diamond', emoji: '💎', name: 'Cyber Diamond', mult: 10 }
+];
+
+export const MEME_FORTUNES = [
+  '🥠 Meme Prophecy: Your next git push --force will miraculously pass all production checks.',
+  '🥠 Meme Prophecy: Beware of meetings scheduled at 4:45 PM titled "Quick Sync".',
+  '🥠 Meme Prophecy: You will open the refrigerator 4 times tonight and lower your standards each time.',
+  '🥠 Meme Prophecy: A wild Gen-3 Mutation of your meme will bring you +50 XP royalties while you sleep.',
+  '🥠 Meme Prophecy: Someone in a corporate Zoom call right now is secretly using the Boss Key.',
+  '🥠 Meme Prophecy: Your dopamine receptors are operating at 420% efficiency.'
 ];
 
 /**
@@ -541,7 +577,9 @@ export function computePlayerBadges({
   battleStreak = 0,
   bountiesCompleted = 0,
   unlockedFlairs = [],
-  roastsRun = 0
+  roastsRun = 0,
+  goblinsCaught = 0,
+  konamiUnlocked = false
 }) {
   const hasMutation = authoredMemes.some((m) => (m.generation || 0) > 0) || totalRemixesSpawned > 0;
   const hasBountyMeme = authoredMemes.some((m) => m.is_bounty) || bountiesCompleted > 0;
@@ -602,6 +640,20 @@ export function computePlayerBadges({
       name: 'AI Dank Inspector',
       desc: 'Analyzed memes with the AI Dank-O-Meter Scanner',
       unlocked: roastsRun >= 1 || totalScore >= 2000
+    },
+    {
+      id: 'goblin-catcher',
+      icon: '👾',
+      name: 'Golden Goblin Hunter',
+      desc: 'Caught a roaming Golden Loot Goblin in the feed',
+      unlocked: goblinsCaught >= 1 || xp >= 2500
+    },
+    {
+      id: 'konami-god',
+      icon: '🕹️',
+      name: 'Konami Code Hacker',
+      desc: 'Triggered Secret God Mode (↑↑↓↓←→←→BA or 5x Logo Tap)',
+      unlocked: Boolean(konamiUnlocked) || xp >= 5000
     }
   ];
 }

@@ -23,10 +23,16 @@ export default function MemeCard({
   const lastTapRef = useRef(0);
   const [copied, setCopied] = useState(false);
   const [spoilerRevealed, setSpoilerRevealed] = useState(false);
+  const [dblTapBurst, setDblTapBurst] = useState(false);
   const gen = meme.generation || 0;
   const remixCount = meme.mutation_count || 0;
   const rarity = getMemeRarityTier(meme);
   const isBlurred = Boolean(meme.is_spoiler) && !spoilerRevealed;
+
+  const triggerBurstEffect = () => {
+    setDblTapBurst(true);
+    setTimeout(() => setDblTapBurst(false), 650);
+  };
 
   // 60fps 3D Holographic Card Tilt + Specular Glare (active on pointer devices with hover)
   const handleMouseMove = useCallback((e) => {
@@ -60,8 +66,9 @@ export default function MemeCard({
   const handleImageTouchEnd = (e) => {
     if (e.target.closest('button')) return;
     const now = Date.now();
-    if (now - lastTapRef.current < 280) {
+    if (now - lastTapRef.current < 300) {
       const touch = e.changedTouches?.[0];
+      triggerBurstEffect();
       onVote(meme.id, 1, touch ? { clientX: touch.clientX, clientY: touch.clientY } : e);
       lastTapRef.current = 0;
     } else {
@@ -125,10 +132,18 @@ export default function MemeCard({
 
       <div
         className="tm-img-wrap"
-        onDoubleClick={(e) => onVote(meme.id, 1, e)}
+        onDoubleClick={(e) => {
+          triggerBurstEffect();
+          onVote(meme.id, 1, e);
+        }}
         onTouchEnd={handleImageTouchEnd}
         title="Double-tap for instant Combo Upvote!"
       >
+        {dblTapBurst && (
+          <div className="tm-dbltap-burst" aria-hidden="true">
+            🔥
+          </div>
+        )}
         {gen > 0 && <div className="tm-gen-pill">🧬 GEN-{gen} REMIX</div>}
         <button
           type="button"

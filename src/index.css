@@ -2523,3 +2523,290 @@ body {
   font-size: 12px;
   color: #64748b;
 }
+
+/* ==========================================
+   14. PHASE 11–15: REALITY MUTATORS, GOLDEN LOOT GOBLIN, SLOT MACHINE & TABLET/MOBILE POLISH
+   ========================================== */
+
+/* Reality Chaos Mutator Strip */
+.tm-mutator-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: wrap;
+}
+
+.tm-mutator-label {
+  font-size: 11px;
+  font-weight: 900;
+  color: #facc15;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.tm-mutator-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tm-mutator-pill {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.tm-mutator-pill:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.tm-mutator-pill.active {
+  background: linear-gradient(135deg, #facc15, #ec4899);
+  color: #090a0f;
+  border-color: transparent;
+  box-shadow: 0 0 14px rgba(236, 72, 153, 0.5);
+}
+
+/* Live Screen Mutator Effects */
+@keyframes tmRavePulse {
+  0% { filter: hue-rotate(0deg) saturate(1.25); }
+  50% { filter: hue-rotate(180deg) saturate(1.65); }
+  100% { filter: hue-rotate(360deg) saturate(1.25); }
+}
+
+@keyframes tmRaveBounce {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+.tm-mutator-rave .tm-synthwave-bg {
+  animation: tmRavePulse 2.4s linear infinite;
+}
+
+.tm-mutator-rave .tm-card {
+  animation: tmRaveBounce 0.55s ease-in-out infinite;
+}
+
+.tm-mutator-australian .tm-card .tm-img-wrap img {
+  transform: rotate(180deg);
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tm-mutator-deepfry .tm-grid,
+.tm-mutator-deepfry .tm-arena,
+.tm-mutator-deepfry .tm-battle-grid {
+  filter: contrast(1.45) saturate(2.3) brightness(1.06);
+}
+
+.tm-mutator-matrix {
+  background: radial-gradient(circle at 50% 0%, #022c22 0%, #02130e 65%, #010806 100%) !important;
+}
+
+.tm-mutator-matrix .tm-card {
+  border-color: rgba(34, 197, 94, 0.48) !important;
+  box-shadow: 0 0 22px rgba(34, 197, 94, 0.18) !important;
+}
+
+/* Roaming Golden Loot Goblin */
+.tm-goblin-summon-btn {
+  background: linear-gradient(135deg, #22c55e, #00f3ff);
+  color: #05060b;
+  box-shadow: 0 0 14px rgba(34, 197, 94, 0.4);
+}
+
+@keyframes tmGoblinFlyRight {
+  0% { left: -240px; transform: translateY(0px) rotate(-4deg); }
+  25% { transform: translateY(-22px) rotate(5deg); }
+  50% { transform: translateY(14px) rotate(-5deg); }
+  75% { transform: translateY(-18px) rotate(4deg); }
+  100% { left: calc(100vw + 240px); transform: translateY(0px) rotate(-4deg); }
+}
+
+@keyframes tmGoblinFlyLeft {
+  0% { left: calc(100vw + 240px); transform: translateY(0px) rotate(4deg); }
+  25% { transform: translateY(-22px) rotate(-5deg); }
+  50% { transform: translateY(14px) rotate(5deg); }
+  75% { transform: translateY(-18px) rotate(-4deg); }
+  100% { left: -240px; transform: translateY(0px) rotate(4deg); }
+}
+
+.tm-loot-goblin {
+  position: fixed;
+  z-index: 880;
+  background: linear-gradient(135deg, #facc15 0%, #f97316 55%, #ec4899 100%);
+  color: #090a0f;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  padding: 8px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 900;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65), 0 0 26px #facc15;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.tm-loot-goblin.left-to-right {
+  animation: tmGoblinFlyRight 13s linear forwards;
+}
+
+.tm-loot-goblin.right-to-left {
+  animation: tmGoblinFlyLeft 13s linear forwards;
+}
+
+.tm-loot-goblin:hover {
+  transform: scale(1.12);
+}
+
+.tm-goblin-icon {
+  font-size: 22px;
+}
+
+.tm-goblin-toast {
+  position: fixed;
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 995;
+  max-width: 92vw;
+  background: linear-gradient(135deg, rgba(16, 20, 38, 0.96), rgba(38, 16, 48, 0.96));
+  border: 2px solid #facc15;
+  color: #f8fafc;
+  padding: 12px 20px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.75), 0 0 24px rgba(250, 204, 21, 0.45);
+  text-align: center;
+  cursor: pointer;
+}
+
+/* 3-Reel Brainrot Slot Machine */
+.tm-slot-machine-box {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.14), rgba(0, 243, 255, 0.1));
+  border: 1.5px solid rgba(236, 72, 153, 0.45);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.tm-slot-reels-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.tm-slot-reel {
+  background: rgba(6, 8, 16, 0.9);
+  border: 2px solid rgba(250, 204, 21, 0.45);
+  border-radius: 14px;
+  padding: 14px 8px;
+  text-align: center;
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.8);
+  transition: transform 0.12s ease;
+}
+
+.tm-slot-reel.rolling {
+  border-color: #00f3ff;
+  transform: scale(0.97);
+}
+
+.tm-slot-emoji {
+  font-size: 38px;
+  line-height: 1.1;
+}
+
+.tm-slot-name {
+  font-size: 11px;
+  font-weight: 800;
+  color: #cbd5e1;
+  margin-top: 6px;
+}
+
+.tm-slot-result-banner {
+  margin-top: 12px;
+  background: rgba(250, 204, 21, 0.14);
+  border: 1px solid rgba(250, 204, 21, 0.5);
+  color: #fde047;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+/* Double-Tap Upvote Burst Animation */
+@keyframes tmBurstPop {
+  0% { transform: translate(-50%, -50%) scale(0.3); opacity: 1; }
+  55% { transform: translate(-50%, -50%) scale(1.45); opacity: 1; }
+  100% { transform: translate(-50%, -65%) scale(1.8); opacity: 0; }
+}
+
+.tm-dbltap-burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 25;
+  font-size: 68px;
+  pointer-events: none;
+  filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.85));
+  animation: tmBurstPop 0.62s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Universal Cross-Device Responsive Polish: iPad, Android Tablets, iPhones & Android Phones */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .tm-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    padding: 10px 16px;
+  }
+
+  .tm-soundboard-shell {
+    width: calc(100% - 32px);
+  }
+}
+
+@media (max-width: 640px) {
+  .tm-soundboard-shell {
+    width: calc(100% - 24px);
+    padding: 10px 12px;
+  }
+
+  .tm-soundboard-pads-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .tm-sound-pad {
+    padding: 6px 6px;
+    font-size: 11px;
+  }
+
+  .tm-mutator-strip {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .tm-mutator-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tm-mutator-pills {
+    flex-wrap: nowrap;
+  }
+}
+

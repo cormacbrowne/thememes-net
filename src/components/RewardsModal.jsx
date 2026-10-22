@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { WHEEL_REWARDS, DAILY_QUESTS } from '../data/starterMemes';
+import {
+  WHEEL_REWARDS,
+  DAILY_QUESTS,
+  SLOT_SYMBOLS,
+  CURSOR_TRAILS,
+  MEME_FORTUNES
+} from '../data/starterMemes';
 import { sfx } from '../utils/soundEngine';
 
 export default function RewardsModal({
@@ -9,9 +15,14 @@ export default function RewardsModal({
   streakClaimedToday,
   onClaimDailyStreak,
   onCompleteWheelSpin,
+  onCompleteSlotSpin,
   unlockedFlairs,
   equippedFlair,
   onEquipFlair,
+  cursorTrail,
+  onSelectCursorTrail,
+  konamiUnlocked,
+  onTriggerKonamiGodMode,
   questProgress,
   claimedQuests,
   onClaimQuestReward,
@@ -20,6 +31,11 @@ export default function RewardsModal({
   const [isSpinning, setIsSpinning] = useState(false);
   const [highlightIdx, setHighlightIdx] = useState(0);
   const [wonPrize, setWonPrize] = useState(null);
+
+  // 3-Reel Brainrot Slot Machine State
+  const [reels, setReels] = useState([0, 1, 2]);
+  const [isRollingSlots, setIsRollingSlots] = useState(false);
+  const [slotResultMsg, setSlotResultMsg] = useState('');
 
   const handleSpinWheel = (e) => {
     if (isSpinning || lootSpins <= 0) return;
@@ -52,11 +68,72 @@ export default function RewardsModal({
     runTick();
   };
 
+  const handlePullSlotLever = (e) => {
+    if (isRollingSlots) return;
+    setIsRollingSlots(true);
+    setSlotResultMsg('🎰 Reels spinning...');
+    sfx.playBoing(2);
+
+    let step = 0;
+    const totalSteps = 12;
+
+    const rollInterval = setInterval(() => {
+      step += 1;
+      sfx.playToggle();
+      setReels([
+        Math.floor(Math.random() * SLOT_SYMBOLS.length),
+        Math.floor(Math.random() * SLOT_SYMBOLS.length),
+        Math.floor(Math.random() * SLOT_SYMBOLS.length)
+      ]);
+
+      if (step >= totalSteps) {
+        clearInterval(rollInterval);
+        // Slightly boost match odds so players get frequent exciting wins!
+        const r1 = Math.floor(Math.random() * SLOT_SYMBOLS.length);
+        const luckyRoll = Math.random();
+        const r2 = luckyRoll < 0.48 ? r1 : Math.floor(Math.random() * SLOT_SYMBOLS.length);
+        const r3 =
+          luckyRoll < 0.22
+            ? r1
+            : Math.floor(Math.random() * SLOT_SYMBOLS.length);
+
+        const finalReels = [r1, r2, r3];
+        setReels(finalReels);
+        setIsRollingSlots(false);
+
+        const sym1 = SLOT_SYMBOLS[r1];
+        if (r1 === r2 && r2 === r3) {
+          sfx.playJackpot();
+          setTimeout(() => sfx.playAirhorn(), 180);
+          const msg = `🚨 TRIPLE ${sym1.emoji} MEGA JACKPOT! +750 XP + 2 Free Wheel Spins + "💎 High-Roller" Flair!`;
+          setSlotResultMsg(msg);
+          if (onCompleteSlotSpin) {
+            onCompleteSlotSpin({ xpWon: 750, spinsWon: 2, flair: '💎 Diamond High-Roller' }, e);
+          }
+        } else if (r1 === r2 || r2 === r3 || r1 === r3) {
+          sfx.playJackpot();
+          const msg = `🔥 DOUBLE MATCH! You won +180 XP + 1 Free Wheel Spin!`;
+          setSlotResultMsg(msg);
+          if (onCompleteSlotSpin) {
+            onCompleteSlotSpin({ xpWon: 180, spinsWon: 1, flair: null }, e);
+          }
+        } else {
+          sfx.playClownHonk();
+          const fortune = MEME_FORTUNES[Math.floor(Math.random() * MEME_FORTUNES.length)];
+          setSlotResultMsg(`🎲 Consolation +45 XP! ${fortune}`);
+          if (onCompleteSlotSpin) {
+            onCompleteSlotSpin({ xpWon: 45, spinsWon: 0, flair: null }, e);
+          }
+        }
+      }
+    }, 75);
+  };
+
   return (
     <div className="tm-modal-backdrop" onClick={onClose}>
       <div
         className="tm-modal tm-rewards-modal"
-        style={{ maxWidth: '760px' }}
+        style={{ maxWidth: '800px' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Sticky Header */}
@@ -66,7 +143,7 @@ export default function RewardsModal({
               ← Back
             </button>
             <h2 style={{ margin: 0, fontSize: '20px', color: '#facc15' }}>
-              🎰 Arcade Vault: Loot Wheel, Streaks & Quests
+              🎰 Arcade Vault: Slots, Loot Wheel, Trails &amp; Quests
             </h2>
           </div>
           <button type="button" className="tm-btn" onClick={onClose}>
@@ -98,8 +175,58 @@ export default function RewardsModal({
           </button>
         </div>
 
-        {/* 2. WHEEL OF CHAOS / LOOT BOX SPINNER */}
-        <div className="tm-wheel-section">
+        {/* 2. NEW: 3-REEL BRAINROT SLOT MACHINE MINI-GAME */}
+        <div className="tm-slot-machine-box">
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '8px',
+              marginBottom: '10px'
+            }}
+          >
+            <div>
+              <div className="tm-studio-label" style={{ margin: 0, color: '#f472b6' }}>
+                🍒 3-REEL BRAINROT SLOT MACHINE (UNLIMITED FREE PULLS!)
+              </div>
+              <div style={{ fontSize: '12px', color: '#94a3b8' }}>
+                Match 2 for +180 XP &amp; +1 Wheel Spin • Match 3 for +750 XP Mega Jackpot!
+              </div>
+            </div>
+            <button
+              type="button"
+              className="tm-btn tm-btn-primary"
+              disabled={isRollingSlots}
+              onClick={handlePullSlotLever}
+            >
+              {isRollingSlots ? '🎰 ROLLING...' : '🕹️ PULL SLOT LEVER (FREE!)'}
+            </button>
+          </div>
+
+          <div className="tm-slot-reels-row">
+            {reels.map((symIdx, idx) => {
+              const sym = SLOT_SYMBOLS[symIdx] || SLOT_SYMBOLS[0];
+              return (
+                <div
+                  key={idx}
+                  className={`tm-slot-reel ${isRollingSlots ? 'rolling' : ''}`}
+                >
+                  <div className="tm-slot-emoji">{sym.emoji}</div>
+                  <div className="tm-slot-name">{sym.name}</div>
+                </div>
+              );
+            })}
+          </div>
+
+          {slotResultMsg && (
+            <div className="tm-slot-result-banner">{slotResultMsg}</div>
+          )}
+        </div>
+
+        {/* 3. WHEEL OF CHAOS / LOOT BOX SPINNER */}
+        <div className="tm-wheel-section" style={{ marginTop: '16px' }}>
           <div
             style={{
               display: 'flex',
@@ -115,7 +242,7 @@ export default function RewardsModal({
                 🎡 WHEEL OF CHAOS (MYSTERY LOOT CRATES)
               </div>
               <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                Win exclusive Neon Title Flairs & Massive XP Jackpots! Earn spins from Quests & Daily Streaks.
+                Win exclusive Neon Title Flairs &amp; Massive XP Jackpots!
               </div>
             </div>
             <div className="tm-spin-counter-pill">
@@ -157,12 +284,31 @@ export default function RewardsModal({
                 ? '🎰 SPINNING THE WHEEL OF CHAOS...'
                 : lootSpins > 0
                   ? `🎰 SPIN WHEEL OF CHAOS (${lootSpins} LEFT)`
-                  : '🔒 Complete Quests Below to Earn More Spins!'}
+                  : '🔒 Pull the Slot Machine Above to Win Free Wheel Spins!'}
             </button>
           </div>
         </div>
 
-        {/* 3. EQUIPPED NEON TITLE FLAIR SELECTOR */}
+        {/* 4. TOUCH & MOUSE PARTICLE TRAIL SELECTOR */}
+        <div style={{ marginTop: '18px' }}>
+          <div className="tm-studio-label" style={{ marginBottom: '8px' }}>
+            ✨ Interactive Touch &amp; Cursor Particle Trail (Works on iPhone, iPad, Android &amp; PC!)
+          </div>
+          <div className="tm-flair-list">
+            {CURSOR_TRAILS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                className={`tm-flair-chip ${cursorTrail === t.id ? 'active' : ''}`}
+                onClick={() => onSelectCursorTrail && onSelectCursorTrail(t.id)}
+              >
+                {t.label} {cursorTrail === t.id ? '✅' : ''}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 5. EQUIPPED NEON TITLE FLAIR SELECTOR */}
         <div style={{ marginTop: '18px' }}>
           <div className="tm-studio-label" style={{ marginBottom: '8px' }}>
             👑 Unlocked Neon Title Flairs ({unlockedFlairs.length} Unlocked)
@@ -187,13 +333,13 @@ export default function RewardsModal({
             ))}
             {unlockedFlairs.length === 0 && (
               <span style={{ fontSize: '12px', color: '#64748b' }}>
-                Spin the Wheel of Chaos above to unlock rare custom titles!
+                Spin the Wheel of Chaos or Slot Machine above to unlock rare custom titles!
               </span>
             )}
           </div>
         </div>
 
-        {/* 4. DAILY ARCADE QUESTS */}
+        {/* 6. DAILY ARCADE QUESTS */}
         <div style={{ marginTop: '20px' }}>
           <div className="tm-studio-label" style={{ marginBottom: '8px' }}>
             🎯 Live Arcade Quests (Complete for XP + Free Chaos Spins!)
@@ -249,6 +395,38 @@ export default function RewardsModal({
               );
             })}
           </div>
+        </div>
+
+        {/* 7. SECRET KONAMI GOD MODE EASTER EGG UNLOCK */}
+        <div
+          style={{
+            marginTop: '18px',
+            padding: '12px 14px',
+            borderRadius: '12px',
+            background: 'rgba(168, 85, 247, 0.1)',
+            border: '1px dashed rgba(168, 85, 247, 0.45)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '10px',
+            fontSize: '12px'
+          }}
+        >
+          <div>
+            <strong style={{ color: '#d8b4fe' }}>🕹️ Secret Arcade Cheat Code:</strong>{' '}
+            <span style={{ color: '#cbd5e1' }}>
+              Type <code>↑↑↓↓←→←→BA</code> on PC or tap the <strong>THE MEMES.net</strong> logo 5 times on mobile/iPad!
+            </span>
+          </div>
+          <button
+            type="button"
+            className="tm-btn"
+            style={{ borderColor: '#a855f7', color: '#d8b4fe' }}
+            onClick={onTriggerKonamiGodMode}
+          >
+            {konamiUnlocked ? '⚡ Re-Trigger God Mode Fireworks' : '🕹️ Activate God Mode (+1,000 XP)'}
+          </button>
         </div>
 
         <div style={{ marginTop: '16px', textAlign: 'right', fontSize: '12px', color: '#94a3b8' }}>

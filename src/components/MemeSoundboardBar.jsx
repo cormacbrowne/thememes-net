@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { SOUND_PACKS, SOUNDBOARD_PADS } from '../utils/soundEngine';
+import { CHAOS_MUTATORS } from '../data/starterMemes';
 
 export default function MemeSoundboardBar({
   soundPack,
@@ -10,7 +11,10 @@ export default function MemeSoundboardBar({
   onTriggerChaosRoulette,
   onOpenRewards,
   unclaimedRewardsCount,
-  onToggleBossKey
+  onToggleBossKey,
+  chaosMutator,
+  onChangeChaosMutator,
+  onSummonGoblin
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [activePadId, setActivePadId] = useState(null);
@@ -31,11 +35,11 @@ export default function MemeSoundboardBar({
             onClick={() => setIsExpanded((prev) => !prev)}
             title={isExpanded ? 'Collapse Soundboard' : 'Expand Crazy Soundboard'}
           >
-            🎹 <span>CRAZY SOUNDBOARD & CHAOS BAR</span>
+            🎹 <span>CRAZY SOUNDBOARD &amp; CHAOS DECK</span>
             <span className="tm-soundboard-chevron">{isExpanded ? '▾' : '▸'}</span>
           </button>
 
-          <div className="tm-pack-pills">
+          <div className="tm-pack-pills" role="group" aria-label="Sound Effect Packs">
             {SOUND_PACKS.map((p) => (
               <button
                 key={p.id}
@@ -60,13 +64,24 @@ export default function MemeSoundboardBar({
             🎲 Chaos Roulette
           </button>
 
+          {onSummonGoblin && (
+            <button
+              type="button"
+              className="tm-chaos-btn tm-goblin-summon-btn"
+              onClick={onSummonGoblin}
+              title="Summon a roaming Golden Loot Goblin for +300 XP & Free Spins!"
+            >
+              👾 Loot Goblin
+            </button>
+          )}
+
           <button
             type="button"
             className="tm-chaos-btn tm-chaos-rewards-btn"
             onClick={onOpenRewards}
-            title="Spin the Wheel of Chaos, claim Daily Streak & complete Quests!"
+            title="Spin the Wheel of Chaos, play Brainrot Slots & complete Quests!"
           >
-            🎰 Loot & Quests
+            🎰 Vault &amp; Slots
             {unclaimedRewardsCount > 0 && (
               <span className="tm-reward-alert-dot">{unclaimedRewardsCount}</span>
             )}
@@ -76,10 +91,28 @@ export default function MemeSoundboardBar({
             type="button"
             className="tm-chaos-btn tm-boss-key-btn"
             onClick={onToggleBossKey}
-            title="Panic Button! Disguise screen as a boring corporate Excel spreadsheet (Shortcut: B)"
+            title="Panic Button! 4 Disguises: Excel, Terminal, Zoom & OS Update (Shortcut: Shift+B)"
           >
             💼 Boss Key
           </button>
+        </div>
+      </div>
+
+      {/* LIVE SCREEN REALITY MUTATORS BAR */}
+      <div className="tm-mutator-strip">
+        <span className="tm-mutator-label">🌪️ REALITY FX:</span>
+        <div className="tm-mutator-pills">
+          {CHAOS_MUTATORS.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              className={`tm-mutator-pill ${chaosMutator === m.id ? 'active' : ''}`}
+              onClick={(e) => onChangeChaosMutator && onChangeChaosMutator(m.id, e)}
+              title={m.desc}
+            >
+              {m.label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -91,7 +124,7 @@ export default function MemeSoundboardBar({
               className="tm-ios-unlock-pill"
               onClick={onToggleSound}
             >
-              🔇 Audio Muted — Tap to Unmute iPhone / Speaker SFX!
+              🔇 Audio Muted — Tap to Unmute iPhone / iPad / Speaker SFX!
             </button>
           )}
           {SOUNDBOARD_PADS.map((pad) => (

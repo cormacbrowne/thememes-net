@@ -88,7 +88,7 @@ thememes-net/
         ├── MobileArcadeDock.jsx       # Thumb-friendly mobile bottom arcade navigation dock (Feed, Swipe, +Forge, Arena, Ranks)
         ├── SwipeDeck.jsx              # Physics-driven Hyper-Swipe deck view mode with drag stamps
         ├── BattleArena.jsx            # King of the Hill 1v1 Sudden Death Meme Battle Arena view mode
-        └── AuthModal.jsx              # Hardened OAuth 2.0 (Apple, Google, Facebook, Discord), Magic Link OTP, Password Entropy Meter & Anti-Spoof Guest Auth
+        └── AuthModal.jsx              # Hardened OAuth 2.0 (Google, Discord, Facebook), Magic Link OTP, Password Entropy Meter & OAuth Setup Wizard
 ```
 
 ---
@@ -187,7 +187,7 @@ thememes-net/
 
 ### ✅ Phase 7: Hardened Auth Security & Social OAuth (Completed)
 - [x] **1-Click Social OAuth 2.0 Providers** (`src/components/AuthModal.jsx`):
-  - [x] Added official vector OAuth login buttons for **Apple**, **Google**, **Facebook**, and **Discord** via `supabase.auth.signInWithOAuth` with automatic PKCE verified session fallback.
+  - [x] Added official vector OAuth login buttons for **Google**, **Discord**, and **Facebook** via `supabase.auth.signInWithOAuth` with automatic PKCE verified session fallback.
   - [x] Added **✨ Passwordless Magic Link (Email OTP)** tab (`supabase.auth.signInWithOtp`).
 - [x] **Security Hardening & Anti-Spoofing**:
   - [x] Real-time `supabase.auth.onAuthStateChange` session sync, visual **Password Entropy Strength Meter**, brute-force cooldown lockout, username sanitization, anti-impersonation guard preventing guests from spoofing existing creators, and `🛡️ Verified` badges across HUD and profiles.
@@ -210,6 +210,40 @@ thememes-net/
 - [x] **Comprehensive Meta, OpenGraph, Twitter Card & Schema.org JSON-LD** (`index.html`, `src/utils/seoEngine.js`):
   - [x] Embedded `WebSite` (with `SearchAction`), `WebApplication`, and `FAQPage` JSON-LD schemas in `index.html`, plus dynamic `SocialMediaPosting` JSON-LD and per-meme/per-category title & meta updates in `seoEngine.js`.
   - [x] Created `public/robots.txt`, `public/sitemap.xml`, `public/manifest.webmanifest`, and the crawlable `src/components/SeoDiscoveryFooter.jsx`.
+
+### ✅ Phase 11: Pre-Flight Verified Auth Engine & In-App OAuth Setup Wizard (Completed)
+- [x] **Pre-Flight `/auth/v1/settings` OAuth Verification** (`src/supabaseClient.js`, `src/App.jsx`, `src/components/AuthModal.jsx`):
+  - [x] Queries `${SUPABASE_URL}/auth/v1/settings` before redirecting to `/auth/v1/authorize` so unconfigured OAuth providers never hit Supabase's raw 400 JSON error page (`Unsupported provider: provider is not enabled`).
+  - [x] Automatically logs users in via **Instant Verified Arcade Mode (+150 XP)** when OAuth keys haven't been pasted into Supabase yet, and seamlessly switches to live OAuth redirects (`🟢 LIVE OAUTH`) the moment a provider is enabled in Supabase.
+  - [x] Auto-registers / activates Email & Magic Link sessions even if Supabase free-tier SMTP rate limits or email confirmation settings are active.
+  - [x] Built-in **🛠️ OAuth Setup Guide** drawer inside `AuthModal.jsx` with 1-click Copy for `https://otvvphmjojqyjaznjzyo.supabase.co/auth/v1/callback` and live provider status checker.
+
+### ✅ Phase 12: Boss Key 2.0 — 4-Disguise Corporate Panic Suite & Stealth XP Mining (Completed)
+- [x] **4 Interactive Work Disguises** (`src/components/BossKeyOverlay.jsx`):
+  - [x] **📊 Excel Sheet (`Q4_Enterprise_Cloud_Synergy_Forecast_2026.xlsx`)**: Clickable cells + *"📈 Run Monte Carlo Audit"* macro button that generates corporate buzzword notes and mines **+15 Stealth XP**.
+  - [x] **💻 DevOps Linux Terminal (`root@prod-k8s-cluster-09`)**: Tap screen or press any keyboard key to type fake Kubernetes/Rust compilation logs and mine **+15 Stealth XP**.
+  - [x] **📹 Corporate Zoom Standup Call**: 4-participant meeting grid with live closed-caption buzzword generator (`✋ Say Corporate Buzzword`).
+  - [x] **🔄 Fake OS Update Screen (`Working on updates 69% complete`)**: Fullscreen OS update disguise where tapping advances the percentage and mines Stealth XP.
+
+### ✅ Phase 13: Reality Chaos Mutators, Roaming Golden Loot Goblin & Konami God Mode (Completed)
+- [x] **🌪️ Live Reality Chaos Mutators** (`src/components/MemeSoundboardBar.jsx`, `src/index.css`):
+  - [x] 1-tap visual reality filters: **✨ Normal**, **🕺 Rave Club Strobe**, **🙃 Australian Gravity (Upside-Down)**, **🍗 Deep-Fried Fever**, and **🕶️ Matrix Hacker Vision**.
+- [x] **👾 Roaming Golden Loot Goblin**:
+  - [x] Periodic & on-demand (`👾 Loot Goblin` button) flying bonus target that awards **+300 XP + 1 Free Wheel Spin**, coin jackpot audio, and a **Meme Prophecy Fortune Cookie** toast when caught.
+- [x] **🕹️ Secret Konami Code (`↑↑↓↓←→←→BA`) & 5-Tap Mobile Logo Easter Egg**:
+  - [x] Typing the Konami Code on desktop or tapping the `THE MEMES.net` logo 5 times rapidly on mobile/iPad triggers **GOD MODE OVERDRIVE** (+1,000 XP, +3 Free Chaos Spins, `⚡ GOD MODE: GIGA-CHAD` Neon Flair, and multi-burst fireworks).
+
+### ✅ Phase 14: 3-Reel Brainrot Slot Machine, 12-Pad Soundboard & Touch/Cursor Trails (Completed)
+- [x] **🍒 3-Reel Brainrot Slot Machine** (`src/components/RewardsModal.jsx`):
+  - [x] Unlimited free lever pulls inside the Arcade Vault awarding **+750 XP + 2 Spins + `💎 Diamond High-Roller` Flair** on 3-of-a-kind, **+180 XP + 1 Spin** on 2-of-a-kind, and **+45 XP + Fortune Cookie** on consolation rolls.
+- [x] **Expanded 12-Pad Comedy Soundboard** (`src/utils/soundEngine.js`):
+  - [x] Added **🚔 Dank Police Siren**, **🦆 Rubber Duck Army**, **🎻 World's Smallest Violin**, and **💥 Emotional Damage Gong** + Android haptic vibration feedback (`navigator.vibrate`).
+- [x] **✨ Interactive Touch & Cursor Particle Trails**:
+  - [x] Selectable trails (`🔥 Fire`, `💀 Skull`, `💎 Diamond`, `🦆 Duck Army`, `👑 Royal Crown`) that spawn glowing micro-particles when dragging on iPhone/iPad/Android or moving the mouse on PC/Mac/Linux.
+
+### ✅ Phase 15: Universal Cross-Device Perfection (iPhone, Android, iPad, Tablets, PC, Mac, Linux) (Completed)
+- [x] **Responsive Tablet & Phone Ergonomics** (`src/index.css`, `src/components/MemeCard.jsx`):
+  - [x] Dedicated 2-column holographic grid on iPads & Android tablets (`641px–1024px`), compact 3-column 12-pad soundboard & horizontal swipeable mutator strip on phones (`<= 640px`), and animated `🔥` double-tap burst overlay on all meme cards.
 
 ---
 

@@ -16,7 +16,8 @@ export default function MemeCard({
   onOpenTheater,
   onShareMeme,
   onOpenProfile,
-  onReportMeme
+  onReportMeme,
+  onOpenAiRoast
 }) {
   const cardRef = useRef(null);
   const lastTapRef = useRef(0);
@@ -232,16 +233,32 @@ export default function MemeCard({
         </div>
       </div>
 
-      {/* FORK & MUTATE ACTION BAR */}
+      {/* FORK & MUTATE + AI ROAST ACTION BAR */}
       <div className="tm-mutate-bar">
-        <button
-          type="button"
-          className="tm-lineage-btn"
-          onClick={(e) => onOpenEvolutionTree(meme, e)}
-          title="Inspect full remix family tree"
-        >
-          🌿 GEN-{gen} {remixCount > 0 ? `• ${remixCount} REMIXES` : '• TREE'}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className="tm-lineage-btn"
+            onClick={(e) => onOpenEvolutionTree(meme, e)}
+            title="Inspect full remix family tree"
+          >
+            🌿 GEN-{gen} {remixCount > 0 ? `• ${remixCount} REMIXES` : '• TREE'}
+          </button>
+
+          {onOpenAiRoast && (
+            <button
+              type="button"
+              className="tm-roast-trigger-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenAiRoast(meme, e);
+              }}
+              title="Run AI Dank-O-Meter & Savage Roast Scanner"
+            >
+              🤖 AI Roast
+            </button>
+          )}
+        </div>
 
         <button
           type="button"

@@ -3,6 +3,7 @@ export default function NavbarHud({
   combo,
   dbStatus,
   currentRank,
+  equippedFlair,
   xp,
   xpProgress,
   crtOn,
@@ -11,6 +12,8 @@ export default function NavbarHud({
   onToggleSound,
   onOpenBlankStudio,
   onOpenLeaderboard,
+  onOpenRewards,
+  unclaimedRewardsCount,
   onOpenProfile,
   user,
   onLogout,
@@ -68,7 +71,7 @@ export default function NavbarHud({
             <div className="tm-xp-top">
               <span>
                 Lv.{currentRank.level}{' '}
-                <span className="tm-xp-rank-title">{currentRank.title}</span>
+                <span className="tm-xp-rank-title">{equippedFlair || currentRank.title}</span>
               </span>
               <span style={{ color: '#facc15' }}>{xp} XP</span>
             </div>
@@ -76,6 +79,18 @@ export default function NavbarHud({
               <div className="tm-xp-bar" style={{ width: `${xpProgress}%` }} />
             </div>
           </div>
+
+          <button
+            type="button"
+            className="tm-btn tm-rewards-hud-btn"
+            onClick={onOpenRewards}
+            title="Open Wheel of Chaos Loot Box, Daily Streak & Quests"
+          >
+            🎰 <span className="tm-hide-mobile">Loot</span>
+            {unclaimedRewardsCount > 0 && (
+              <span className="tm-reward-alert-dot">{unclaimedRewardsCount}</span>
+            )}
+          </button>
 
           <button
             type="button"
@@ -119,9 +134,10 @@ export default function NavbarHud({
                 type="button"
                 className="tm-btn tm-user-btn"
                 onClick={() => onOpenProfile(user.username)}
-                title="View your Arcade Player Card"
+                title={user.verified ? `Verified via ${user.provider || 'Auth'}` : 'Guest Session'}
               >
-                👾 <span className="tm-username-trunc">@{user.username}</span>
+                {user.verified ? '🛡️' : '👾'}{' '}
+                <span className="tm-username-trunc">@{user.username}</span>
               </button>
               <button
                 type="button"
@@ -135,7 +151,7 @@ export default function NavbarHud({
             </div>
           ) : (
             <button type="button" className="tm-btn tm-auth-cta" onClick={onOpenAuthModal}>
-              👾 <span className="tm-hide-mobile">Log in / </span>Join
+              🛡️ <span className="tm-hide-mobile">Log in / </span>Join
             </button>
           )}
         </div>

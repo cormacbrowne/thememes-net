@@ -287,7 +287,11 @@ export const VIRAL_CAPTIONS = [
   ['MY LAST TWO BRAINCELLS', 'FIGHTING FOR THIRD PLACE'],
   ['DEPLOYING ON FRIDAY', 'BECAUSE I FEAR NOTHING'],
   ['SOCIETY IF EVERYONE', 'UPVOTED THE MEMES THEY LAUGHED AT'],
-  ['OPENING THE FRIDGE 6 TIMES', 'EXPECTING NEW FOOD TO SPAWN']
+  ['OPENING THE FRIDGE 6 TIMES', 'EXPECTING NEW FOOD TO SPAWN'],
+  ['MY DOPAMINE RECEPTORS', 'AFTER 14 HOURS OF HYPER-SWIPE'],
+  ['AI SAID MY CODE IS CLEAN', 'IT WAS LOOKING AT AN EMPTY FILE'],
+  ['SLEEP SCHEDULE SO BROKEN', 'I HAVE JETLAG IN MY OWN TIMEZONE'],
+  ['BOSS ASKED FOR ESTIMATES', 'I PULLED A NUMBER FROM THE ASTRAL PLANE']
 ];
 
 export const RANKS = [
@@ -296,8 +300,172 @@ export const RANKS = [
   { level: 3, title: 'Meme Tactician', minXp: 400 },
   { level: 4, title: 'Sauce Inspector', minXp: 800 },
   { level: 5, title: 'Chronically Online', minXp: 1400 },
-  { level: 6, title: 'Meme Overlord', minXp: 2200 }
+  { level: 6, title: 'Meme Overlord', minXp: 2200 },
+  { level: 7, title: 'Dopamine Architect', minXp: 3200 },
+  { level: 8, title: 'Grandmaster of Dank', minXp: 4500 },
+  { level: 9, title: 'Singularity Memer', minXp: 6500 },
+  { level: 10, title: 'Cosmic Meme Deity', minXp: 9000 }
 ];
+
+export const WHEEL_REWARDS = [
+  {
+    id: 'title-brainrot',
+    label: '💀 Title: CEO of Brainrot',
+    flair: '💀 CEO of Brainrot',
+    xpBonus: 180,
+    color: '#ec4899'
+  },
+  {
+    id: 'xp-jackpot',
+    label: '🪙 MEGA JACKPOT +500 XP!',
+    flair: null,
+    xpBonus: 500,
+    color: '#facc15'
+  },
+  {
+    id: 'title-certified',
+    label: '🔥 Title: Certified Dank Lord',
+    flair: '🔥 Certified Dank Lord',
+    xpBonus: 200,
+    color: '#f97316'
+  },
+  {
+    id: 'xp-supernova',
+    label: '🚀 SUPERNOVA +350 XP!',
+    flair: null,
+    xpBonus: 350,
+    color: '#00f3ff'
+  },
+  {
+    id: 'title-alchemist',
+    label: '🧬 Title: Chaos Alchemist',
+    flair: '🧬 Chaos Alchemist',
+    xpBonus: 180,
+    color: '#a855f7'
+  },
+  {
+    id: 'title-10x',
+    label: '🗿 Title: 10x Giga-Poster',
+    flair: '🗿 10x Giga-Poster',
+    xpBonus: 220,
+    color: '#22c55e'
+  },
+  {
+    id: 'xp-mystery',
+    label: '🎁 MYSTERY CRATE +300 XP!',
+    flair: null,
+    xpBonus: 300,
+    color: '#38bdf8'
+  },
+  {
+    id: 'title-holo',
+    label: '👑 Title: Holo-Foil Sovereign',
+    flair: '👑 Holo-Foil Sovereign',
+    xpBonus: 250,
+    color: '#eab308'
+  }
+];
+
+export const DAILY_QUESTS = [
+  {
+    id: 'q-upvote',
+    icon: '🔥',
+    title: 'Arena Voter',
+    desc: 'Upvote or Hyper-Swipe 3 memes',
+    target: 3,
+    rewardXp: 150
+  },
+  {
+    id: 'q-react',
+    icon: '💀',
+    title: 'Emoji Reactor',
+    desc: 'Drop 3 emoji reactions (🔥, 💀, 😂, 🗿)',
+    target: 3,
+    rewardXp: 120
+  },
+  {
+    id: 'q-soundboard',
+    icon: '🎹',
+    title: 'Noise Complaint',
+    desc: 'Mash 3 pads on the Crazy Meme Soundboard',
+    target: 3,
+    rewardXp: 100
+  },
+  {
+    id: 'q-roast',
+    icon: '🤖',
+    title: 'AI Dank Inspector',
+    desc: 'Scan any meme with the AI Dank-O-Meter Roast tool',
+    target: 1,
+    rewardXp: 175
+  },
+  {
+    id: 'q-mutate',
+    icon: '🧬',
+    title: 'Genetic Mutator',
+    desc: 'Publish or Mutate 1 meme in the Meme Forge Studio',
+    target: 1,
+    rewardXp: 250
+  }
+];
+
+export const MEME_STOCK_TICKER = [
+  { symbol: '$DANK', delta: '+42.0%', up: true, category: 'dank', label: 'Dank Index Surging' },
+  { symbol: '$TECH', delta: '+69.4%', up: true, category: 'tech', label: 'Friday Deploy Panic' },
+  { symbol: '$GAMING', delta: '+31.8%', up: true, category: 'gaming', label: 'Boss Music in Latin' },
+  { symbol: '$3AM_SLEEP', delta: '-88.2%', up: false, category: 'relatable', label: 'Sleep Schedule Crashed' },
+  { symbol: '$VINE_BOOM', delta: '+420.0%', up: true, category: 'all', label: 'Soundboard Volume Maxed' },
+  { symbol: '$MUTATIONS', delta: '+19.5%', up: true, category: 'all', label: '+50 XP Creator Royalties Live' }
+];
+
+/**
+ * Generates a savage, hilarious AI Dank-O-Meter analysis & roast for any meme.
+ */
+export function generateAiMemeRoast(meme) {
+  const score = Number(meme?.score || 100);
+  const gen = Number(meme?.generation || 0);
+  const titleLen = (meme?.title || '').length;
+  const seed = (score + titleLen * 17 + gen * 31) % 100;
+
+  const viralProbability = Math.min(99.8, Math.max(78.4, 82 + (seed % 18) + (score >= 1000 ? 4.2 : 0.5))).toFixed(1);
+  const brainrotLevel = Math.min(99, 68 + (seed % 31));
+  const spiceCount = score >= 1400 ? 5 : score >= 800 ? 4 : 3;
+
+  const roastsByCategory = {
+    tech: [
+      `This meme has more unresolved trauma than a legacy monolith deployed on a Friday at 4:59 PM. Certified ${viralProbability}% fatal to senior engineers.`,
+      `Our neural network detected 47 open StackOverflow tabs and zero unit tests in this image. Shipping straight to the Hall of Fame.`,
+      `Warning: Viewing this meme during a Sprint Retrospective may cause spontaneous git push --force behavior.`
+    ],
+    gaming: [
+      `This meme hits harder than a Phase 2 boss when the choir starts singing in Latin and you have 0 flasks left.`,
+      `Skill issue analysis complete: 0% tutorial retention, 100% pure unadulterated gamer brainrot.`,
+      `Our GPU overheated by 14°C just rendering the sheer audacity of this gaming transmission.`
+    ],
+    relatable: [
+      `I am in this meme and my lawyer has advised me to upvote it immediately. 3 AM circadian rhythm destruction confirmed.`,
+      `Psychic damage output: CRITICAL. Every adult pretending to have their life together felt this in their lower back.`,
+      `Scientifically proven to replace 8 hours of healthy sleep with reckless doomscrolling.`
+    ],
+    dank: [
+      `Weapons-grade dankness detected. The Federal Reserve has placed this meme on watch for inflating the global dopamine supply.`,
+      `So deeply fried that just looking at it raised my cholesterol and unlocked my third eye.`,
+      `Pure 24-karat cyber-arcade gold. Future archaeologists will study this post to understand 2026 internet culture.`
+    ]
+  };
+
+  const pool = roastsByCategory[meme?.category] || roastsByCategory.dank;
+  const verdict = pool[(score + titleLen) % pool.length];
+
+  return {
+    viralProbability,
+    tierVerdict: Number(viralProbability) >= 92 ? '🔥 CERTIFIED SUPERNOVA DANK' : '⚡ HIGH-VOLTAGE SAUCE',
+    brainrotLevel: `${brainrotLevel}/100`,
+    spiceStars: '🌶️'.repeat(spiceCount),
+    repostRisk: gen > 0 ? `🧬 GEN-${gen} Verified Mutation` : '0.0% (100% Organic Origin)',
+    verdict
+  };
+}
 
 /**
  * Computes the visual Rarity / Heat Tier of a meme card based on score & remixes.
@@ -365,7 +533,16 @@ export const DAILY_BOUNTIES = [
 /**
  * Computes unlocked Cyber-Arcade achievement badges for a given player profile.
  */
-export function computePlayerBadges({ authoredMemes = [], totalScore = 0, totalRemixesSpawned = 0, xp = 0, battleStreak = 0, bountiesCompleted = 0 }) {
+export function computePlayerBadges({
+  authoredMemes = [],
+  totalScore = 0,
+  totalRemixesSpawned = 0,
+  xp = 0,
+  battleStreak = 0,
+  bountiesCompleted = 0,
+  unlockedFlairs = [],
+  roastsRun = 0
+}) {
   const hasMutation = authoredMemes.some((m) => (m.generation || 0) > 0) || totalRemixesSpawned > 0;
   const hasBountyMeme = authoredMemes.some((m) => m.is_bounty) || bountiesCompleted > 0;
 
@@ -411,6 +588,20 @@ export function computePlayerBadges({ authoredMemes = [], totalScore = 0, totalR
       name: 'King of the Hill',
       desc: 'Achieved a 3+ win streak in the 1v1 Battle Arena',
       unlocked: battleStreak >= 3 || totalScore >= 1400
+    },
+    {
+      id: 'chaos-roller',
+      icon: '🎰',
+      name: 'Chaos High Roller',
+      desc: 'Spun the Wheel of Chaos & unlocked a Custom Flair',
+      unlocked: unlockedFlairs.length > 0 || xp >= 1200
+    },
+    {
+      id: 'ai-roaster',
+      icon: '🤖',
+      name: 'AI Dank Inspector',
+      desc: 'Analyzed memes with the AI Dank-O-Meter Scanner',
+      unlocked: roastsRun >= 1 || totalScore >= 2000
     }
   ];
 }

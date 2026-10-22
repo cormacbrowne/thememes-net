@@ -54,31 +54,41 @@ thememes-net/
 ├── instructions.md                    # This architectural summary, decisions log & phased roadmap
 ├── public/
 │   ├── favicon.svg                    # App favicon
-│   └── icons.svg                      # SVG sprite sheet
+│   ├── icons.svg                      # SVG sprite sheet
+│   ├── manifest.webmanifest           # Installable PWA Web App Manifest
+│   ├── robots.txt                     # Search crawler directives (Googlebot, Googlebot-Image)
+│   └── sitemap.xml                    # XML Sitemap for Google Search & Category indexing
 └── src/
     ├── main.jsx                       # React DOM root mount (<StrictMode><App /></StrictMode>)
-    ├── index.css                      # Cyber-Arcade CSS: Synthwave grid, 3D holo tilt, rarity foil, CRT overlay
+    ├── index.css                      # Cyber-Arcade CSS: Synthwave grid, 3D holo tilt, rarity foil, CRT overlay, Soundboard & Loot Wheel
     ├── App.jsx                        # Main application coordinator (state, Supabase sync, studio canvas renderer)
     ├── supabaseClient.js              # Unified ES module Supabase client (reads .env.local with fallback)
     ├── data/
-    │   └── starterMemes.js            # makeSvgMeme(), STARTER_MEMES, STUDIO_TEMPLATES, VIRAL_CAPTIONS, RANKS, getMemeRarityTier()
+    │   └── starterMemes.js            # makeSvgMeme(), STARTER_MEMES, STUDIO_TEMPLATES, VIRAL_CAPTIONS, RANKS (Lv.1-10), WHEEL_REWARDS, DAILY_QUESTS, generateAiMemeRoast()
     ├── utils/
-    │   ├── soundEngine.js             # Web Audio API synth SoundEngine class & sfx singleton
-    │   └── canvasMutator.js           # loadMemeIntoStudioCanvas() & stampArcadeCartridgeFooter()
+    │   ├── soundEngine.js             # iOS Safari Playback-Unlocked Comedy Synthesizer (4 Sound Packs + 8 Soundboard Pads)
+    │   ├── canvasMutator.js           # loadMemeIntoStudioCanvas() & stampArcadeCartridgeFooter()
+    │   └── seoEngine.js               # Dynamic Title, Meta, OpenGraph & Schema.org JSON-LD Structured Data Engine
     └── components/
-        ├── NavbarHud.jsx              # Sticky combo bar + top HUD (XP bar, CRT toggle, SFX toggle, Ranks CTA, Studio CTA, Auth)
+        ├── NavbarHud.jsx              # Sticky combo bar + top HUD (XP bar, Custom Flair, Loot CTA, CRT toggle, SFX toggle, Ranks CTA, Studio CTA, Verified Auth)
+        ├── ViralTickerBar.jsx         # WallStreetBets-style Live Meme Stock Exchange Marquee Ticker ($DANK, $TECH, $GAMING)
         ├── DailyBountyBanner.jsx      # Featured Daily Meme Bounty banner (+200 XP 2x reward challenge & prompt switcher)
-        ├── MemeCard.jsx               # 3D holographic tilt card with rarity/bounty/spicy badges, spoiler blur, report button & Mutate bar
+        ├── MemeSoundboardBar.jsx      # Interactive 8-Pad Crazy Meme Soundboard, Sound Pack Switcher, Chaos Roulette & Boss Key
+        ├── MemeCard.jsx               # 3D holographic tilt card with rarity/bounty/spicy badges, AI Roast trigger & Mutate bar
         ├── MemeSkeletonGrid.jsx       # Neon cyber-arcade shimmer skeleton cards during feed loading
         ├── MemeStudioModal.jsx        # HTML5 Canvas Meme Forge Studio 2.0 (+ Fork/Mutate, Daily Bounty & Spoiler Blur toggle)
         ├── MemeTheaterModal.jsx       # Fullscreen Theater Lightbox modal with deep-linking & side-by-side lineage
         ├── MemeEvolutionModal.jsx     # Genealogical Evolution Tree modal
         ├── LeaderboardModal.jsx       # Hall of Fame Leaderboard modal (Top Meme Lords, Top Scored Memes, Most Mutated Origins)
-        ├── PlayerProfileModal.jsx     # Creator Arcade Profile & Achievement Badge Case modal (+50 XP mutation royalties)
+        ├── PlayerProfileModal.jsx     # Creator Arcade Profile & 8-Badge Case modal (+50 XP mutation royalties & Custom Flair)
+        ├── RewardsModal.jsx           # Wheel of Chaos Loot Box Spinner, 7-Day Login Streak & Live Daily Quests Vault
+        ├── AiRoastModal.jsx           # Cyberpunk AI Dank-O-Meter Laser Scanner & Savage Meme Roast Generator
+        ├── BossKeyOverlay.jsx         # Corporate Excel Spreadsheet Panic Disguise Screen (Shortcut: Shift+B / Esc)
+        ├── SeoDiscoveryFooter.jsx     # Crawlable SEO Category Directory & Rich Snippet FAQ Hub
         ├── MobileArcadeDock.jsx       # Thumb-friendly mobile bottom arcade navigation dock (Feed, Swipe, +Forge, Arena, Ranks)
         ├── SwipeDeck.jsx              # Physics-driven Hyper-Swipe deck view mode with drag stamps
         ├── BattleArena.jsx            # King of the Hill 1v1 Sudden Death Meme Battle Arena view mode
-        └── AuthModal.jsx              # Instant Arcade Guest login + Supabase Email/Password Auth modal
+        └── AuthModal.jsx              # Hardened OAuth 2.0 (Apple, Google, Facebook, Discord), Magic Link OTP, Password Entropy Meter & Anti-Spoof Guest Auth
 ```
 
 ---
@@ -166,6 +176,40 @@ thememes-net/
   - [x] Sticky modal headers (`.tm-modal-sticky-header`) with `← Back` and `✕ Close` buttons, unclipped top modal alignment (`align-items: flex-start` + `margin: auto`), `viewport-fit=cover` safe-area support, `16px` mobile inputs to prevent iOS Safari auto-zoom, and smart touch-scroll vs. canvas-drag handling.
 - [x] **Safety, Moderation & Bundle Optimization**:
   - [x] 15MB upload validation, 4-second anti-spam publish cooldown, `🌶️ Spoiler / Spicy` click-to-reveal blur toggle (`is_spoiler`), 1-click `🚩` community report/hide button with undo/restore, and vendor chunk splitting in `vite.config.js`.
+
+### ✅ Phase 6: iPhone Audio Unlock & "Crazy Funny" Multi-Pack Comedy Sound Engine (Completed)
+- [x] **iOS Safari & Silent-Switch Audio Fix** (`src/utils/soundEngine.js`):
+  - [x] Configures `navigator.audioSession.type = 'playback'` (iOS 16.4+/17+) and plays an inline WAV `<audio playsinline>` carrier + 1-sample WebKit unlock buffer on first touch/pointer gesture so sound plays on iPhones even when the physical Silent Switch is on.
+  - [x] Automatically resumes `AudioContext` on `visibilitychange` and recovers from `'suspended'` / `'interrupted'` iOS states.
+- [x] **4 Comedy Sound Packs & 8-Pad Interactive Meme Soundboard** (`src/components/MemeSoundboardBar.jsx`):
+  - [x] Switchable Sound Packs: **🤡 Goofy Cartoon** (default), **💀 Vine & Brainrot**, **📯 MLG Airhorn**, and **🕹️ Cyber-Arcade**.
+  - [x] 8 procedural zero-dependency comedy pads: **💀 Vine Boom (808 Drop)**, **📯 MLG Triple Airhorn**, **🤡 Clown Honk**, **🌀 Cartoon Spring Boing**, **💨 Whoopee Cushion / Reverb Fart**, **🎺 Sad Trombone**, **⚡ Anime NANI?! Impact**, and **🪙 Coin Jackpot**.
+
+### ✅ Phase 7: Hardened Auth Security & Social OAuth (Completed)
+- [x] **1-Click Social OAuth 2.0 Providers** (`src/components/AuthModal.jsx`):
+  - [x] Added official vector OAuth login buttons for **Apple**, **Google**, **Facebook**, and **Discord** via `supabase.auth.signInWithOAuth` with automatic PKCE verified session fallback.
+  - [x] Added **✨ Passwordless Magic Link (Email OTP)** tab (`supabase.auth.signInWithOtp`).
+- [x] **Security Hardening & Anti-Spoofing**:
+  - [x] Real-time `supabase.auth.onAuthStateChange` session sync, visual **Password Entropy Strength Meter**, brute-force cooldown lockout, username sanitization, anti-impersonation guard preventing guests from spoofing existing creators, and `🛡️ Verified` badges across HUD and profiles.
+
+### ✅ Phase 8: Mega Engagement Rewards — Wheel of Chaos, Streaks & Quests (Completed)
+- [x] **Arcade Vault Modal** (`src/components/RewardsModal.jsx`):
+  - [x] **🔥 Daily Login Streak Tracker** with escalating XP and free Loot Spin bonuses.
+  - [x] **🎰 Wheel of Chaos Loot Box Spinner** unlocking permanent **Neon Title Flairs** (`💀 CEO of Brainrot`, `🔥 Certified Dank Lord`, `🧬 Chaos Alchemist`, `🗿 10x Giga-Poster`, `👑 Holo-Foil Sovereign`) and Mega XP Jackpots.
+  - [x] **🎯 Live Daily Quests** (*Arena Voter*, *Emoji Reactor*, *Noise Complaint*, *AI Dank Inspector*, *Genetic Mutator*) with progress bars and claimable XP + Spin rewards.
+  - [x] Expanded `RANKS` from 6 to 10 progression tiers up to *Lv.10: Cosmic Meme Deity*.
+
+### ✅ Phase 9: Viral Gimmicks & Traffic Magnets (Completed)
+- [x] **🤖 AI Dank-O-Meter & Savage Roast Scanner** (`src/components/AiRoastModal.jsx`):
+  - [x] Animated laser scanner on any meme card calculating **Neural Viral Probability %**, **Brainrot Index**, **Spice Output**, and a custom savage AI critique with 1-click *Post to Comments (+40 XP)*.
+- [x] **🎲 1-Click Chaos Roulette**: Instant random shitpost generator loading random templates, deep-fried/glitch FX, viral captions, and stickers into the Studio.
+- [x] **📈 Live Meme Stock Exchange Ticker** (`src/components/ViralTickerBar.jsx`): Scrolling marquee tracking `$DANK`, `$TECH`, `$GAMING`, `$3AM_SLEEP`, and `$MUTATIONS`.
+- [x] **💼 Corporate "Boss Key" Panic Disguise** (`src/components/BossKeyOverlay.jsx`): 1-click button (`💼 Boss Key` or `Shift+B` / `Esc`) that disguises the screen as `Q4_Enterprise_Cloud_Synergy_Forecast_2026.xlsx`.
+
+### ✅ Phase 10: Google Search Dominance & Technical SEO Engine (Completed)
+- [x] **Comprehensive Meta, OpenGraph, Twitter Card & Schema.org JSON-LD** (`index.html`, `src/utils/seoEngine.js`):
+  - [x] Embedded `WebSite` (with `SearchAction`), `WebApplication`, and `FAQPage` JSON-LD schemas in `index.html`, plus dynamic `SocialMediaPosting` JSON-LD and per-meme/per-category title & meta updates in `seoEngine.js`.
+  - [x] Created `public/robots.txt`, `public/sitemap.xml`, `public/manifest.webmanifest`, and the crawlable `src/components/SeoDiscoveryFooter.jsx`.
 
 ---
 

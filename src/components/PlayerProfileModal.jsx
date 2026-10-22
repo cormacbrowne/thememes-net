@@ -9,6 +9,9 @@ export default function PlayerProfileModal({
   battleStreak,
   bountiesCompleted,
   royaltiesMap,
+  unlockedFlairs = [],
+  equippedFlair = '',
+  roastsRun = 0,
   onClose,
   onSelectMeme,
   onTriggerStudioMutate
@@ -56,9 +59,21 @@ export default function PlayerProfileModal({
         totalRemixesSpawned,
         xp: playerXp,
         battleStreak: isMe ? battleStreak : 0,
-        bountiesCompleted: isMe ? bountiesCompleted : 0
+        bountiesCompleted: isMe ? bountiesCompleted : 0,
+        unlockedFlairs: isMe ? unlockedFlairs : [],
+        roastsRun: isMe ? roastsRun : 0
       }),
-    [authoredMemes, totalScore, totalRemixesSpawned, playerXp, isMe, battleStreak, bountiesCompleted]
+    [
+      authoredMemes,
+      totalScore,
+      totalRemixesSpawned,
+      playerXp,
+      isMe,
+      battleStreak,
+      bountiesCompleted,
+      unlockedFlairs,
+      roastsRun
+    ]
   );
 
   if (!username) return null;
@@ -79,8 +94,13 @@ export default function PlayerProfileModal({
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <h2 style={{ margin: 0, fontSize: '20px', color: '#00f3ff' }}>@{username}</h2>
+                {isMe && currentUser?.verified && (
+                  <span className="tm-verified-pill">
+                    🛡️ Verified ({currentUser.provider || 'OAuth'})
+                  </span>
+                )}
                 <span className="tm-tag" style={{ background: 'rgba(250,204,21,0.2)', color: '#facc15' }}>
-                  Lv.{rankObj.level} {rankObj.title}
+                  Lv.{rankObj.level} {isMe && equippedFlair ? equippedFlair : rankObj.title}
                 </span>
               </div>
               <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>

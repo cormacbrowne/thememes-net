@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { SOUND_PACKS, SOUNDBOARD_PADS } from '../utils/soundEngine';
-import { CHAOS_MUTATORS } from '../data/starterMemes';
+import {
+  CHAOS_MUTATORS,
+  SILLY_STAMPEDES,
+  ARCADE_RATE_LIMITS,
+  formatWindowCountdown
+} from '../data/starterMemes';
 
 export default function MemeSoundboardBar({
   soundPack,
@@ -14,7 +19,10 @@ export default function MemeSoundboardBar({
   onToggleBossKey,
   chaosMutator,
   onChangeChaosMutator,
-  onSummonGoblin
+  onSummonGoblin,
+  goblinsLeftInWindow = ARCADE_RATE_LIMITS.GOBLINS_PER_WINDOW,
+  goblinResetMs = 0,
+  onLaunchStampede
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [activePadId, setActivePadId] = useState(null);
@@ -35,7 +43,7 @@ export default function MemeSoundboardBar({
             onClick={() => setIsExpanded((prev) => !prev)}
             title={isExpanded ? 'Collapse Soundboard' : 'Expand Crazy Soundboard'}
           >
-            🎹 <span>CRAZY SOUNDBOARD &amp; CHAOS DECK</span>
+            🎹 <span>16-PAD SOUNDBOARD &amp; CHAOS DECK</span>
             <span className="tm-soundboard-chevron">{isExpanded ? '▾' : '▸'}</span>
           </button>
 
@@ -68,10 +76,17 @@ export default function MemeSoundboardBar({
             <button
               type="button"
               className="tm-chaos-btn tm-goblin-summon-btn"
+              disabled={goblinsLeftInWindow <= 0}
               onClick={onSummonGoblin}
-              title="Summon a roaming Golden Loot Goblin for +300 XP & Free Spins!"
+              title={
+                goblinsLeftInWindow > 0
+                  ? `Summon a roaming Golden Loot Goblin (${goblinsLeftInWindow}/${ARCADE_RATE_LIMITS.GOBLINS_PER_WINDOW} left in 30m window)`
+                  : `Goblin window limit reached — resets in ${formatWindowCountdown(goblinResetMs)}`
+              }
             >
-              👾 Loot Goblin
+              {goblinsLeftInWindow > 0
+                ? `👾 Goblin (${goblinsLeftInWindow}/${ARCADE_RATE_LIMITS.GOBLINS_PER_WINDOW})`
+                : `⏳ Goblin (${formatWindowCountdown(goblinResetMs)})`}
             </button>
           )}
 
@@ -91,9 +106,9 @@ export default function MemeSoundboardBar({
             type="button"
             className="tm-chaos-btn tm-boss-key-btn"
             onClick={onToggleBossKey}
-            title="Panic Button! 4 Disguises: Excel, Terminal, Zoom & OS Update (Shortcut: Shift+B)"
+            title="Panic Button! 6 Disguises: Excel, Terminal, Zoom, Enterprise AI, OS Update & BSOD (Shortcut: Shift+B)"
           >
-            💼 Boss Key
+            💼 Boss Key (6 Tabs)
           </button>
         </div>
       </div>
@@ -111,6 +126,26 @@ export default function MemeSoundboardBar({
               title={m.desc}
             >
               {m.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* PHASE 18: SILLY ANIMATED SCREEN STAMPEDES & DOPAMINE TOYS LAUNCHER */}
+      <div className="tm-mutator-strip tm-stampede-strip">
+        <span className="tm-mutator-label" style={{ color: '#facc15' }}>
+          🎪 SILLY STAMPEDES:
+        </span>
+        <div className="tm-mutator-pills">
+          {SILLY_STAMPEDES.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              className="tm-mutator-pill tm-stampede-pill"
+              onClick={(e) => onLaunchStampede && onLaunchStampede(s.id, e)}
+              title={s.desc}
+            >
+              {s.label}
             </button>
           ))}
         </div>

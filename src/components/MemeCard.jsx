@@ -1,5 +1,5 @@
 import { useRef, useCallback, useState } from 'react';
-import { getMemeRarityTier } from '../data/starterMemes';
+import { getMemeRarityTier, COMIC_ACTION_WORDS } from '../data/starterMemes';
 
 export default function MemeCard({
   meme,
@@ -24,13 +24,26 @@ export default function MemeCard({
   const [copied, setCopied] = useState(false);
   const [spoilerRevealed, setSpoilerRevealed] = useState(false);
   const [dblTapBurst, setDblTapBurst] = useState(false);
+  const [comicWord, setComicWord] = useState('');
+  const [squishCard, setSquishCard] = useState(false);
   const gen = meme.generation || 0;
   const remixCount = meme.mutation_count || 0;
   const rarity = getMemeRarityTier(meme);
   const isBlurred = Boolean(meme.is_spoiler) && !spoilerRevealed;
 
+  const triggerComicPop = (customWord = null) => {
+    const word =
+      customWord ||
+      COMIC_ACTION_WORDS[Math.floor(Math.random() * COMIC_ACTION_WORDS.length)];
+    setComicWord(word);
+    setSquishCard(true);
+    setTimeout(() => setSquishCard(false), 360);
+    setTimeout(() => setComicWord(''), 780);
+  };
+
   const triggerBurstEffect = () => {
     setDblTapBurst(true);
+    triggerComicPop('SUPERNOVA! 🔥');
     setTimeout(() => setDblTapBurst(false), 650);
   };
 
@@ -86,12 +99,19 @@ export default function MemeCard({
   return (
     <article
       ref={cardRef}
-      className={`tm-card tm-holo-card ${rarity.className}`}
+      className={`tm-card tm-holo-card ${rarity.className} ${squishCard ? 'tm-card-jelly' : ''}`}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
       {/* Specular Holographic Glare Overlay */}
       <div className="tm-holo-glare" aria-hidden="true" />
+
+      {/* Comic Action Pop-Out Badge */}
+      {comicWord && (
+        <div className="tm-comic-pop-badge" aria-hidden="true">
+          {comicWord}
+        </div>
+      )}
 
       <div className="tm-card-header">
         <span>
@@ -186,7 +206,10 @@ export default function MemeCard({
           <button
             type="button"
             className={`tm-vote-btn up ${myVote === 1 ? 'voted' : ''}`}
-            onClick={(e) => onVote(meme.id, 1, e)}
+            onClick={(e) => {
+              triggerComicPop('BASED! 🔥');
+              onVote(meme.id, 1, e);
+            }}
           >
             ▲
           </button>
@@ -194,7 +217,10 @@ export default function MemeCard({
           <button
             type="button"
             className={`tm-vote-btn down ${myVote === -1 ? 'voted' : ''}`}
-            onClick={(e) => onVote(meme.id, -1, e)}
+            onClick={(e) => {
+              triggerComicPop('BRUH 💀');
+              onVote(meme.id, -1, e);
+            }}
           >
             ▼
           </button>
@@ -207,7 +233,16 @@ export default function MemeCard({
               key={emoji}
               type="button"
               className="tm-react-btn"
-              onClick={(e) => onReaction(meme.id, emoji, e)}
+              onClick={(e) => {
+                const mapWord = {
+                  '🔥': 'SPICY! 🔥',
+                  '💀': 'BRAINROT! 💀',
+                  '😂': 'HONK! 🤡',
+                  '🗿': 'GIGA-CHAD! 🗿'
+                };
+                triggerComicPop(mapWord[emoji]);
+                onReaction(meme.id, emoji, e);
+              }}
             >
               {emoji} {(meme.reactions && meme.reactions[emoji]) || 0}
             </button>

@@ -14,7 +14,9 @@ import {
   DAILY_BOUNTIES,
   DAILY_QUESTS,
   CURSOR_TRAILS,
-  MEME_FORTUNES
+  MEME_FORTUNES,
+  ARCADE_RATE_LIMITS,
+  formatWindowCountdown
 } from './data/starterMemes';
 import { updateDynamicSeo } from './utils/seoEngine';
 import NavbarHud from './components/NavbarHud';
@@ -36,6 +38,7 @@ import AiRoastModal from './components/AiRoastModal';
 import BossKeyOverlay from './components/BossKeyOverlay';
 import ViralTickerBar from './components/ViralTickerBar';
 import SeoDiscoveryFooter from './components/SeoDiscoveryFooter';
+import DankPetWidget from './components/DankPetWidget';
 
 export default function App() {
   // Core Feed & Filter State
@@ -119,8 +122,44 @@ export default function App() {
   // Phase 8 & 9: Rewards Vault, Wheel of Chaos, Daily Quests, AI Roast & Boss Key State
   const [showRewardsModal, setShowRewardsModal] = useState(false);
   const [lootSpins, setLootSpins] = useState(() =>
-    Number(localStorage.getItem('tm_spins') ?? 2)
+    Math.min(
+      ARCADE_RATE_LIMITS.MAX_STORED_WHEEL_SPINS,
+      Math.max(0, Number(localStorage.getItem('tm_spins') ?? 2))
+    )
   );
+
+  // Phase 17: Timed-Window Economy & Spin Rate-Limiting State
+  const [rateWindows, setRateWindows] = useState(() => {
+    const now = Date.now();
+    try {
+      const saved = JSON.parse(localStorage.getItem('tm_rate_windows') || '{}');
+      return {
+        slotUsed: Number(saved.slotUsed || 0),
+        slotStart: Number(saved.slotStart || now),
+        wheelUsed: Number(saved.wheelUsed || 0),
+        wheelStart: Number(saved.wheelStart || now),
+        goblinUsed: Number(saved.goblinUsed || 0),
+        goblinStart: Number(saved.goblinStart || now),
+        konamiLastClaim: Number(saved.konamiLastClaim || 0)
+      };
+    } catch {
+      return {
+        slotUsed: 0,
+        slotStart: now,
+        wheelUsed: 0,
+        wheelStart: now,
+        goblinUsed: 0,
+        goblinStart: now,
+        konamiLastClaim: 0
+      };
+    }
+  });
+  const [nowClock, setNowClock] = useState(() => Date.now());
+
+  // Phase 18: Silly Animated Screen Stampedes & Bubble Wrap Popper State
+  const [stampedeSprites, setStampedeSprites] = useState([]);
+  const [bubbleWrapItems, setBubbleWrapItems] = useState([]);
+  const bubbleComboRef = useRef(0);
   const [streakDays, setStreakDays] = useState(() =>
     Number(localStorage.getItem('tm_streak_days') || 3)
   );
@@ -311,6 +350,80 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('tm_konami', String(konamiUnlocked));
   }, [konamiUnlocked]);
+
+  useEffect(() => {
+    localStorage.setItem('tm_rate_windows', JSON.stringify(rateWindows));
+  }, [rateWindows]);
+
+  // Phase 17: Live Timed-Window Expiration & Cooldown Ticker
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = Date.now();
+      setNowClock(now);
+      setRateWindows((prev) => {
+        let changed = false;
+        const next = { ...prev };
+        if (prev.slotUsed > 0 && now - prev.slotStart >= ARCADE_RATE_LIMITS.SLOT_WINDOW_MS) {
+          next.slotUsed = 0;
+          next.slotStart = now;
+          changed = true;
+        }
+        if (prev.wheelUsed > 0 && now - prev.wheelStart >= ARCADE_RATE_LIMITS.WHEEL_WINDOW_MS) {
+          next.wheelUsed = 0;
+          next.wheelStart = now;
+          changed = true;
+        }
+        if (prev.goblinUsed > 0 && now - prev.goblinStart >= ARCADE_RATE_LIMITS.GOBLIN_WINDOW_MS) {
+          next.goblinUsed = 0;
+          next.goblinStart = now;
+          changed = true;
+        }
+        return changed ? next : prev;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const slotPullsLeft = Math.max(
+    0,
+    ARCADE_RATE_LIMITS.SLOT_PULLS_PER_WINDOW - rateWindows.slotUsed
+  );
+  const slotResetMs =
+    rateWindows.slotUsed > 0
+      ? Math.max(0, ARCADE_RATE_LIMITS.SLOT_WINDOW_MS - (nowClock - rateWindows.slotStart))
+      : 0;
+
+  const wheelSpinsLeftInWindow = Math.max(
+    0,
+    ARCADE_RATE_LIMITS.WHEEL_SPINS_PER_WINDOW - rateWindows.wheelUsed
+  );
+  const wheelResetMs =
+    rateWindows.wheelUsed > 0
+      ? Math.max(0, ARCADE_RATE_LIMITS.WHEEL_WINDOW_MS - (nowClock - rateWindows.wheelStart))
+      : 0;
+
+  const goblinsLeftInWindow = Math.max(
+    0,
+    ARCADE_RATE_LIMITS.GOBLINS_PER_WINDOW - rateWindows.goblinUsed
+  );
+  const goblinResetMs =
+    rateWindows.goblinUsed > 0
+      ? Math.max(0, ARCADE_RATE_LIMITS.GOBLIN_WINDOW_MS - (nowClock - rateWindows.goblinStart))
+      : 0;
+
+  const konamiCooldownMs =
+    rateWindows.konamiLastClaim > 0
+      ? Math.max(
+          0,
+          ARCADE_RATE_LIMITS.KONAMI_COOLDOWN_MS - (nowClock - rateWindows.konamiLastClaim)
+        )
+      : 0;
+
+  const addCappedWheelSpins = useCallback((delta = 1) => {
+    setLootSpins((prev) =>
+      Math.min(ARCADE_RATE_LIMITS.MAX_STORED_WHEEL_SPINS, Math.max(0, prev + delta))
+    );
+  }, []);
 
   const incrementQuest = useCallback((questId, delta = 1) => {
     setQuestProgress((prev) => ({
@@ -1221,7 +1334,7 @@ export default function App() {
 
     sfx.playLevelUp();
     incrementQuest('q-mutate', 1);
-    setLootSpins((s) => s + 1);
+    addCappedWheelSpins(1);
     if (activeBounty) {
       setBountiesCompleted((c) => c + 1);
       awardXpAndCombo(activeBounty.rewardXp || 200, e, '🎯');
@@ -1490,6 +1603,19 @@ export default function App() {
   );
 
   const handleSummonGoblin = useCallback(() => {
+    const now = Date.now();
+    if (rateWindows.goblinUsed >= ARCADE_RATE_LIMITS.GOBLINS_PER_WINDOW) {
+      const rem = ARCADE_RATE_LIMITS.GOBLIN_WINDOW_MS - (now - rateWindows.goblinStart);
+      if (rem > 0) {
+        sfx.playSadTrombone();
+        setGoblinFortuneToast(
+          `⏳ Goblin Summon Limit Reached (${ARCADE_RATE_LIMITS.GOBLINS_PER_WINDOW} per 30m window). Next summon in ${formatWindowCountdown(rem)}!`
+        );
+        setTimeout(() => setGoblinFortuneToast(''), 4500);
+        return;
+      }
+    }
+
     sfx.playRubberDuck();
     const topPct = 18 + Math.floor(Math.random() * 56);
     const dir = Math.random() > 0.5 ? 'left-to-right' : 'right-to-left';
@@ -1498,12 +1624,16 @@ export default function App() {
       topPct,
       dir
     });
-  }, []);
+  }, [rateWindows]);
 
-  // Periodic Golden Loot Goblin Spawner every 55 seconds
+  // Periodic Golden Loot Goblin Spawner every 90 seconds (respecting timed window limit)
   useEffect(() => {
     const timer = setInterval(() => {
-      if (!bossKeyActive && !activeGoblin) {
+      if (
+        !bossKeyActive &&
+        !activeGoblin &&
+        rateWindows.goblinUsed < ARCADE_RATE_LIMITS.GOBLINS_PER_WINDOW
+      ) {
         const topPct = 20 + Math.floor(Math.random() * 52);
         const dir = Math.random() > 0.5 ? 'left-to-right' : 'right-to-left';
         setActiveGoblin({
@@ -1512,9 +1642,9 @@ export default function App() {
           dir
         });
       }
-    }, 55000);
+    }, 90000);
     return () => clearInterval(timer);
-  }, [bossKeyActive, activeGoblin]);
+  }, [bossKeyActive, activeGoblin, rateWindows.goblinUsed]);
 
   const handleCatchGoblin = useCallback(
     (e) => {
@@ -1522,22 +1652,145 @@ export default function App() {
       e?.stopPropagation?.();
       setActiveGoblin(null);
       setGoblinsCaught((c) => c + 1);
-      setLootSpins((s) => s + 1);
+      addCappedWheelSpins(1);
+      setRateWindows((prev) => {
+        const now = Date.now();
+        const isFresh =
+          prev.goblinUsed === 0 || now - prev.goblinStart >= ARCADE_RATE_LIMITS.GOBLIN_WINDOW_MS;
+        return {
+          ...prev,
+          goblinUsed: isFresh ? 1 : prev.goblinUsed + 1,
+          goblinStart: isFresh ? now : prev.goblinStart
+        };
+      });
+
       sfx.playJackpot();
       setTimeout(() => sfx.playRubberDuck(), 150);
-      awardXpAndCombo(300, e, '👾');
+      awardXpAndCombo(200, e, '👾');
 
       const fortune = MEME_FORTUNES[Math.floor(Math.random() * MEME_FORTUNES.length)];
-      setGoblinFortuneToast(`👾 CAUGHT GOLDEN GOBLIN! +300 XP + 1 Free Spin! ${fortune}`);
+      setGoblinFortuneToast(`👾 CAUGHT GOLDEN GOBLIN! +200 XP + 1 Free Spin! ${fortune}`);
       setTimeout(() => setGoblinFortuneToast(''), 6500);
     },
-    [activeGoblin, awardXpAndCombo]
+    [activeGoblin, addCappedWheelSpins, awardXpAndCombo]
+  );
+
+  // Phase 18: Launch Silly Animated Screen Stampedes & Interactive Bubble Wrap
+  const handleLaunchStampede = useCallback(
+    (stampedeId, e) => {
+      if (stampedeId === 'bubble-wrap') {
+        sfx.playBoing(3);
+        bubbleComboRef.current = 0;
+        const bubbles = Array.from({ length: 16 }).map((_, idx) => ({
+          id: `bub-${Date.now()}-${idx}`,
+          leftPct: 8 + Math.round(Math.random() * 82),
+          topPct: 14 + Math.round(Math.random() * 68),
+          size: 46 + Math.round(Math.random() * 24),
+          emoji: ['🫧', '🎈', '💎', '🦆', '🐸', '🔥'][idx % 6]
+        }));
+        setBubbleWrapItems(bubbles);
+        return;
+      }
+
+      const batchId = Date.now();
+      let items = [];
+
+      if (stampedeId === 'duck-army') {
+        sfx.playRubberDuck();
+        setTimeout(() => sfx.playClownHonk(), 220);
+        items = Array.from({ length: 18 }).map((_, idx) => ({
+          id: `stmp-${batchId}-${idx}`,
+          type: 'duck-army',
+          emoji: idx % 4 === 0 ? '🪿' : '🦆',
+          topPct: 12 + Math.round(Math.random() * 74),
+          delayMs: idx * 90,
+          durMs: 2200 + Math.round(Math.random() * 900),
+          size: 34 + Math.round(Math.random() * 24)
+        }));
+      } else if (stampedeId === 'moai-drop') {
+        sfx.playVineBoom();
+        setTimeout(() => sfx.playMetalPipe(), 280);
+        setScreenShake(true);
+        setTimeout(() => setScreenShake(false), 450);
+        items = Array.from({ length: 12 }).map((_, idx) => ({
+          id: `stmp-${batchId}-${idx}`,
+          type: 'moai-drop',
+          emoji: idx % 3 === 0 ? '🔔' : '🗿',
+          leftPct: 6 + Math.round((idx / 12) * 86),
+          delayMs: idx * 75,
+          durMs: 1450 + Math.round(Math.random() * 400),
+          size: 44 + Math.round(Math.random() * 26)
+        }));
+      } else if (stampedeId === 'pizza-rain') {
+        sfx.playCartoonRun();
+        const foodPool = ['🍕', '🌮', '🥖', '🍔', '🌶️', '🍩'];
+        items = Array.from({ length: 20 }).map((_, idx) => ({
+          id: `stmp-${batchId}-${idx}`,
+          type: 'pizza-rain',
+          emoji: foodPool[idx % foodPool.length],
+          leftPct: 4 + Math.round(Math.random() * 90),
+          delayMs: idx * 80,
+          durMs: 1800 + Math.round(Math.random() * 700),
+          size: 32 + Math.round(Math.random() * 22)
+        }));
+      } else if (stampedeId === 'nyan-cat') {
+        sfx.playNyanRiff();
+        const discoPool = ['🐱‍🚀🌈', '🐸✨', '🦄🌈', '🕺💎', '👾🔥'];
+        items = Array.from({ length: 10 }).map((_, idx) => ({
+          id: `stmp-${batchId}-${idx}`,
+          type: 'nyan-cat',
+          emoji: discoPool[idx % discoPool.length],
+          topPct: 15 + Math.round((idx / 10) * 68),
+          delayMs: idx * 120,
+          durMs: 2100,
+          size: 38 + Math.round(Math.random() * 16)
+        }));
+      }
+
+      setStampedeSprites((prev) => [...prev.slice(-20), ...items]);
+      awardXpAndCombo(15, e, '🎪');
+
+      setTimeout(() => {
+        setStampedeSprites((prev) =>
+          prev.filter((s) => !items.some((it) => it.id === s.id))
+        );
+      }, 3600);
+    },
+    [awardXpAndCombo]
+  );
+
+  const handlePopBubble = useCallback(
+    (bubble, e) => {
+      e?.stopPropagation?.();
+      bubbleComboRef.current += 1;
+      sfx.playBubblePop(bubbleComboRef.current);
+
+      setBubbleWrapItems((prev) => {
+        const remaining = prev.filter((b) => b.id !== bubble.id);
+        if (remaining.length === 0) {
+          setTimeout(() => {
+            sfx.playJackpot();
+            setGoblinFortuneToast('🫧 ALL BUBBLES POPPED! Dopamine receptors at 100%!');
+            setTimeout(() => setGoblinFortuneToast(''), 4000);
+          }, 120);
+        }
+        return remaining;
+      });
+
+      setXp((prev) => prev + 5);
+      spawnParticles(
+        e?.clientX || window.innerWidth / 2,
+        e?.clientY || window.innerHeight / 2,
+        'POP! +5 XP',
+        bubble.emoji || '🫧'
+      );
+    },
+    [spawnParticles]
   );
 
   const handleTriggerKonamiGodMode = useCallback(
     (e) => {
       setKonamiUnlocked(true);
-      setLootSpins((s) => s + 3);
       const godFlair = '⚡ GOD MODE: GIGA-CHAD';
       setUnlockedFlairs((prev) => (prev.includes(godFlair) ? prev : [...prev, godFlair]));
       setEquippedFlair(godFlair);
@@ -1545,11 +1798,24 @@ export default function App() {
       setTimeout(() => sfx.playJackpot(), 220);
       setTimeout(() => sfx.playDamageGong(), 480);
 
-      awardXpAndCombo(1000, e, '👑');
-      setGoblinFortuneToast(
-        '🕹️ SECRET KONAMI GOD MODE ACTIVATED! +1,000 XP, +3 Chaos Spins & "⚡ GOD MODE: GIGA-CHAD" Title Unlocked!'
-      );
-      setTimeout(() => setGoblinFortuneToast(''), 7000);
+      const now = Date.now();
+      const canClaimReward =
+        now - rateWindows.konamiLastClaim >= ARCADE_RATE_LIMITS.KONAMI_COOLDOWN_MS;
+
+      if (canClaimReward) {
+        setRateWindows((prev) => ({ ...prev, konamiLastClaim: now }));
+        addCappedWheelSpins(1);
+        awardXpAndCombo(500, e, '👑');
+        setGoblinFortuneToast(
+          '🕹️ SECRET KONAMI GOD MODE ACTIVATED! +500 XP, +1 Chaos Spin & "⚡ GOD MODE: GIGA-CHAD" Title Unlocked!'
+        );
+      } else {
+        const rem = ARCADE_RATE_LIMITS.KONAMI_COOLDOWN_MS - (now - rateWindows.konamiLastClaim);
+        setGoblinFortuneToast(
+          `🎇 GOD MODE FIREWORKS! (Daily +500 XP & Spin bonus resets in ${formatWindowCountdown(rem)})`
+        );
+      }
+      setTimeout(() => setGoblinFortuneToast(''), 6500);
 
       // Multi-burst fireworks across screen
       if (typeof window !== 'undefined') {
@@ -1557,8 +1823,8 @@ export default function App() {
         const h = window.innerHeight;
         const bursts = [
           { x: w * 0.25, y: h * 0.3, emoji: '👑', label: 'GOD MODE!' },
-          { x: w * 0.75, y: h * 0.3, emoji: '💎', label: '+1,000 XP!' },
-          { x: w * 0.5, y: h * 0.45, emoji: '🚀', label: '+3 SPINS!' }
+          { x: w * 0.75, y: h * 0.3, emoji: '💎', label: canClaimReward ? '+500 XP!' : 'FIREWORKS!' },
+          { x: w * 0.5, y: h * 0.45, emoji: '🚀', label: 'GIGA-CHAD!' }
         ];
         bursts.forEach((b, idx) => {
           setTimeout(() => {
@@ -1567,7 +1833,7 @@ export default function App() {
         });
       }
     },
-    [awardXpAndCombo, spawnParticles]
+    [rateWindows.konamiLastClaim, addCappedWheelSpins, awardXpAndCombo, spawnParticles]
   );
 
   // Listen for Konami Code (↑↑↓↓←→←→BA) on Keyboard
@@ -1705,16 +1971,26 @@ export default function App() {
       setStreakClaimedToday(true);
       const nextStreak = streakDays + 1;
       setStreakDays(nextStreak);
-      setLootSpins((s) => s + 1);
+      addCappedWheelSpins(1);
       sfx.playJackpot();
       awardXpAndCombo(100 + nextStreak * 50, e, '🔥');
     },
-    [streakClaimedToday, streakDays, awardXpAndCombo]
+    [streakClaimedToday, streakDays, addCappedWheelSpins, awardXpAndCombo]
   );
 
   const handleCompleteWheelSpin = useCallback(
     (prize, e) => {
       setLootSpins((s) => Math.max(0, s - 1));
+      setRateWindows((prev) => {
+        const now = Date.now();
+        const isFresh =
+          prev.wheelUsed === 0 || now - prev.wheelStart >= ARCADE_RATE_LIMITS.WHEEL_WINDOW_MS;
+        return {
+          ...prev,
+          wheelUsed: isFresh ? 1 : prev.wheelUsed + 1,
+          wheelStart: isFresh ? now : prev.wheelStart
+        };
+      });
       if (prize.flair) {
         setUnlockedFlairs((prev) =>
           prev.includes(prize.flair) ? prev : [...prev, prize.flair]
@@ -1727,9 +2003,19 @@ export default function App() {
   );
 
   const handleCompleteSlotSpin = useCallback(
-    ({ xpWon = 50, spinsWon = 0, flair = null }, e) => {
+    ({ xpWon = 35, spinsWon = 0, flair = null }, e) => {
+      setRateWindows((prev) => {
+        const now = Date.now();
+        const isFresh =
+          prev.slotUsed === 0 || now - prev.slotStart >= ARCADE_RATE_LIMITS.SLOT_WINDOW_MS;
+        return {
+          ...prev,
+          slotUsed: isFresh ? 1 : prev.slotUsed + 1,
+          slotStart: isFresh ? now : prev.slotStart
+        };
+      });
       if (spinsWon > 0) {
-        setLootSpins((s) => s + spinsWon);
+        addCappedWheelSpins(spinsWon);
       }
       if (flair) {
         setUnlockedFlairs((prev) => (prev.includes(flair) ? prev : [...prev, flair]));
@@ -1737,18 +2023,18 @@ export default function App() {
       }
       awardXpAndCombo(xpWon, e, '🍒');
     },
-    [awardXpAndCombo]
+    [addCappedWheelSpins, awardXpAndCombo]
   );
 
   const handleClaimQuestReward = useCallback(
     (quest, e) => {
       if (!quest || claimedQuests[quest.id]) return;
       setClaimedQuests((prev) => ({ ...prev, [quest.id]: true }));
-      setLootSpins((s) => s + 1);
+      addCappedWheelSpins(1);
       sfx.playJackpot();
       awardXpAndCombo(quest.rewardXp || 150, e, '🎁');
     },
-    [claimedQuests, awardXpAndCombo]
+    [claimedQuests, addCappedWheelSpins, awardXpAndCombo]
   );
 
   const handleOpenAiRoast = useCallback(
@@ -2118,11 +2404,63 @@ export default function App() {
           className={`tm-loot-goblin ${activeGoblin.dir}`}
           style={{ top: `${activeGoblin.topPct}%` }}
           onClick={handleCatchGoblin}
-          title="Catch the Golden Loot Goblin for +300 XP & +1 Free Spin!"
+          title="Catch the Golden Loot Goblin for +200 XP & +1 Free Spin!"
         >
           <span className="tm-goblin-icon">👾✨</span>
-          <span className="tm-goblin-tag">CATCH ME! +300 XP &amp; +1 SPIN!</span>
+          <span className="tm-goblin-tag">CATCH ME! +200 XP &amp; +1 SPIN!</span>
         </button>
+      )}
+
+      {/* PHASE 18: SILLY ANIMATED SCREEN STAMPEDES (DUCK ARMY, MOAI DROP, PIZZA RAIN, DISCO CAT) */}
+      {stampedeSprites.map((sp) => (
+        <div
+          key={sp.id}
+          className={`tm-stampede-sprite tm-stampede-${sp.type}`}
+          style={{
+            top: sp.topPct != null ? `${sp.topPct}%` : undefined,
+            left: sp.leftPct != null ? `${sp.leftPct}%` : undefined,
+            fontSize: `${sp.size}px`,
+            animationDelay: `${sp.delayMs}ms`,
+            animationDuration: `${sp.durMs}ms`
+          }}
+          aria-hidden="true"
+        >
+          {sp.emoji}
+        </div>
+      ))}
+
+      {/* PHASE 18: INTERACTIVE DOPAMINE BUBBLE WRAP POPPER */}
+      {bubbleWrapItems.length > 0 && !bossKeyActive && (
+        <div className="tm-bubble-wrap-layer" aria-label="Interactive Dopamine Bubble Wrap">
+          <div className="tm-bubble-hud-pill">
+            <span>🫧 Pop all {bubbleWrapItems.length} bubbles for +5 XP each!</span>
+            <button
+              type="button"
+              className="tm-link-btn"
+              style={{ color: '#f87171', marginLeft: '8px' }}
+              onClick={() => setBubbleWrapItems([])}
+            >
+              ✕ Clear
+            </button>
+          </div>
+          {bubbleWrapItems.map((b) => (
+            <button
+              key={b.id}
+              type="button"
+              className="tm-bubble-pop-btn"
+              style={{
+                left: `${b.leftPct}%`,
+                top: `${b.topPct}%`,
+                width: `${b.size}px`,
+                height: `${b.size}px`
+              }}
+              onClick={(e) => handlePopBubble(b, e)}
+              title="Tap to POP! (+5 XP)"
+            >
+              <span>{b.emoji}</span>
+            </button>
+          ))}
+        </div>
       )}
 
       {/* GOBLIN / KONAMI FORTUNE TOAST BANNER */}
@@ -2285,7 +2623,7 @@ export default function App() {
         onAcceptBounty={handleAcceptBounty}
       />
 
-      {/* PHASE 6, 9 & 13: CRAZY MEME SOUNDBOARD, REALITY MUTATORS & CHAOS TOY BAR */}
+      {/* PHASE 6, 9, 13 & 18: CRAZY MEME SOUNDBOARD, REALITY MUTATORS, STAMPEDES & CHAOS TOY BAR */}
       <MemeSoundboardBar
         soundPack={soundPack}
         onChangeSoundPack={handleChangeSoundPack}
@@ -2308,6 +2646,9 @@ export default function App() {
         chaosMutator={chaosMutator}
         onChangeChaosMutator={handleChangeChaosMutator}
         onSummonGoblin={handleSummonGoblin}
+        goblinsLeftInWindow={goblinsLeftInWindow}
+        goblinResetMs={goblinResetMs}
+        onLaunchStampede={handleLaunchStampede}
       />
 
       {/* SUB-NAVIGATION: SORT, CATEGORIES & GAME MODES */}
@@ -2508,6 +2849,9 @@ export default function App() {
         </div>
       )}
 
+      {/* PHASE 20: INTERACTIVE VIRTUAL DANK TAMAGOTCHI CYBER-PET */}
+      {!bossKeyActive && <DankPetWidget onEarnPetXp={awardXpAndCombo} />}
+
       {/* PHASE 5: THUMB-FRIENDLY MOBILE BOTTOM ARCADE DOCK */}
       <MobileArcadeDock
         viewMode={viewMode}
@@ -2679,6 +3023,10 @@ export default function App() {
         <RewardsModal
           xp={xp}
           lootSpins={lootSpins}
+          slotPullsLeft={slotPullsLeft}
+          slotResetMs={slotResetMs}
+          wheelSpinsLeftInWindow={wheelSpinsLeftInWindow}
+          wheelResetMs={wheelResetMs}
           streakDays={streakDays}
           streakClaimedToday={streakClaimedToday}
           onClaimDailyStreak={handleClaimDailyStreak}
@@ -2696,6 +3044,7 @@ export default function App() {
             setCursorTrail(trailId);
           }}
           konamiUnlocked={konamiUnlocked}
+          konamiCooldownMs={konamiCooldownMs}
           onTriggerKonamiGodMode={handleTriggerKonamiGodMode}
           questProgress={questProgress}
           claimedQuests={claimedQuests}

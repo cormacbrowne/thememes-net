@@ -45,7 +45,23 @@ export default function NavbarHud({
               ← Back
             </button>
           )}
-          <div className="tm-brand" onClick={onResetFeed} title="Return to Main Feed">
+          <div
+            className="tm-brand"
+            onClick={onResetFeed}
+            title="Return to Main Feed (Tip: Tap 5x rapidly for Secret God Mode!)"
+          >
+            <div className="tm-mascot-logo-wrap">
+              <img
+                src="/logo-512.png"
+                alt="THE MEMES.net Cyber-Jester Skull Mascot Logo"
+                className="tm-mascot-logo-img"
+                width="38"
+                height="38"
+                onError={(e) => {
+                  e.currentTarget.src = '/favicon.svg';
+                }}
+              />
+            </div>
             <div className="tm-logo-badge">THE MEMES.net</div>
             <div className="tm-status-pill" title="Connected to Supabase project otvvphmjojqyjaznjzyo">
               <span className={`tm-dot ${dbStatus === 'live' ? 'live' : 'local'}`} />

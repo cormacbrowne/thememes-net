@@ -1,16 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   WHEEL_REWARDS,
   DAILY_QUESTS,
   SLOT_SYMBOLS,
   CURSOR_TRAILS,
-  MEME_FORTUNES
+  MEME_FORTUNES,
+  ARCADE_RATE_LIMITS,
+  formatWindowCountdown
 } from '../data/starterMemes';
 import { sfx } from '../utils/soundEngine';
 
 export default function RewardsModal({
   xp,
   lootSpins,
+  slotPullsLeft = ARCADE_RATE_LIMITS.SLOT_PULLS_PER_WINDOW,
+  slotResetMs = 0,
+  wheelSpinsLeftInWindow = ARCADE_RATE_LIMITS.WHEEL_SPINS_PER_WINDOW,
+  wheelResetMs = 0,
   streakDays,
   streakClaimedToday,
   onClaimDailyStreak,
@@ -22,6 +28,7 @@ export default function RewardsModal({
   cursorTrail,
   onSelectCursorTrail,
   konamiUnlocked,
+  konamiCooldownMs = 0,
   onTriggerKonamiGodMode,
   questProgress,
   claimedQuests,
@@ -37,8 +44,18 @@ export default function RewardsModal({
   const [isRollingSlots, setIsRollingSlots] = useState(false);
   const [slotResultMsg, setSlotResultMsg] = useState('');
 
+  // Live 1-second tick so countdown badges update smoothly while modal is open
+  const [, setNowTick] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setNowTick((n) => n + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  const canSpinWheel = !isSpinning && lootSpins > 0 && wheelSpinsLeftInWindow > 0;
+  const canPullSlots = !isRollingSlots && slotPullsLeft > 0;
+
   const handleSpinWheel = (e) => {
-    if (isSpinning || lootSpins <= 0) return;
+    if (!canSpinWheel) return;
     setIsSpinning(true);
     setWonPrize(null);
 
@@ -69,7 +86,7 @@ export default function RewardsModal({
   };
 
   const handlePullSlotLever = (e) => {
-    if (isRollingSlots) return;
+    if (!canPullSlots) return;
     setIsRollingSlots(true);
     setSlotResultMsg('🎰 Reels spinning...');
     sfx.playBoing(2);
@@ -88,12 +105,11 @@ export default function RewardsModal({
 
       if (step >= totalSteps) {
         clearInterval(rollInterval);
-        // Slightly boost match odds so players get frequent exciting wins!
         const r1 = Math.floor(Math.random() * SLOT_SYMBOLS.length);
         const luckyRoll = Math.random();
-        const r2 = luckyRoll < 0.48 ? r1 : Math.floor(Math.random() * SLOT_SYMBOLS.length);
+        const r2 = luckyRoll < 0.42 ? r1 : Math.floor(Math.random() * SLOT_SYMBOLS.length);
         const r3 =
-          luckyRoll < 0.22
+          luckyRoll < 0.16
             ? r1
             : Math.floor(Math.random() * SLOT_SYMBOLS.length);
 
@@ -105,24 +121,24 @@ export default function RewardsModal({
         if (r1 === r2 && r2 === r3) {
           sfx.playJackpot();
           setTimeout(() => sfx.playAirhorn(), 180);
-          const msg = `🚨 TRIPLE ${sym1.emoji} MEGA JACKPOT! +750 XP + 2 Free Wheel Spins + "💎 High-Roller" Flair!`;
+          const msg = `🚨 TRIPLE ${sym1.emoji} MEGA JACKPOT! +350 XP + 1 Wheel Spin + "💎 High-Roller" Flair!`;
           setSlotResultMsg(msg);
           if (onCompleteSlotSpin) {
-            onCompleteSlotSpin({ xpWon: 750, spinsWon: 2, flair: '💎 Diamond High-Roller' }, e);
+            onCompleteSlotSpin({ xpWon: 350, spinsWon: 1, flair: '💎 Diamond High-Roller' }, e);
           }
         } else if (r1 === r2 || r2 === r3 || r1 === r3) {
           sfx.playJackpot();
-          const msg = `🔥 DOUBLE MATCH! You won +180 XP + 1 Free Wheel Spin!`;
+          const msg = `🔥 DOUBLE MATCH! You won +110 XP! (Match 3 to win a Free Wheel Spin!)`;
           setSlotResultMsg(msg);
           if (onCompleteSlotSpin) {
-            onCompleteSlotSpin({ xpWon: 180, spinsWon: 1, flair: null }, e);
+            onCompleteSlotSpin({ xpWon: 110, spinsWon: 0, flair: null }, e);
           }
         } else {
           sfx.playClownHonk();
           const fortune = MEME_FORTUNES[Math.floor(Math.random() * MEME_FORTUNES.length)];
-          setSlotResultMsg(`🎲 Consolation +45 XP! ${fortune}`);
+          setSlotResultMsg(`🎲 Consolation +35 XP! ${fortune}`);
           if (onCompleteSlotSpin) {
-            onCompleteSlotSpin({ xpWon: 45, spinsWon: 0, flair: null }, e);
+            onCompleteSlotSpin({ xpWon: 35, spinsWon: 0, flair: null }, e);
           }
         }
       }
@@ -175,7 +191,7 @@ export default function RewardsModal({
           </button>
         </div>
 
-        {/* 2. NEW: 3-REEL BRAINROT SLOT MACHINE MINI-GAME */}
+        {/* 2. 3-REEL BRAINROT SLOT MACHINE MINI-GAME (WITH TIMED WINDOW LIMITER) */}
         <div className="tm-slot-machine-box">
           <div
             style={{
@@ -189,20 +205,43 @@ export default function RewardsModal({
           >
             <div>
               <div className="tm-studio-label" style={{ margin: 0, color: '#f472b6' }}>
-                🍒 3-REEL BRAINROT SLOT MACHINE (UNLIMITED FREE PULLS!)
+                🍒 3-REEL BRAINROT SLOT MACHINE
               </div>
               <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                Match 2 for +180 XP &amp; +1 Wheel Spin • Match 3 for +750 XP Mega Jackpot!
+                Match 2 for +110 XP • Match 3 for +350 XP &amp; +1 Wheel Spin!
               </div>
             </div>
-            <button
-              type="button"
-              className="tm-btn tm-btn-primary"
-              disabled={isRollingSlots}
-              onClick={handlePullSlotLever}
-            >
-              {isRollingSlots ? '🎰 ROLLING...' : '🕹️ PULL SLOT LEVER (FREE!)'}
-            </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span
+                className="tm-spin-counter-pill"
+                style={{
+                  borderColor: slotPullsLeft > 0 ? 'rgba(244,114,182,0.5)' : 'rgba(239,68,68,0.5)',
+                  color: slotPullsLeft > 0 ? '#f472b6' : '#f87171'
+                }}
+              >
+                {slotPullsLeft > 0 ? (
+                  <>
+                    ⚡ <strong>{slotPullsLeft}</strong>/{ARCADE_RATE_LIMITS.SLOT_PULLS_PER_WINDOW} Pulls in Window
+                  </>
+                ) : (
+                  <>⏳ Refills in {formatWindowCountdown(slotResetMs)}</>
+                )}
+              </span>
+
+              <button
+                type="button"
+                className="tm-btn tm-btn-primary"
+                disabled={!canPullSlots}
+                onClick={handlePullSlotLever}
+              >
+                {isRollingSlots
+                  ? '🎰 ROLLING...'
+                  : slotPullsLeft > 0
+                    ? `🕹️ PULL LEVER (${slotPullsLeft} LEFT)`
+                    : `⏳ Cooldown (${formatWindowCountdown(slotResetMs)})`}
+              </button>
+            </div>
           </div>
 
           <div className="tm-slot-reels-row">
@@ -225,7 +264,7 @@ export default function RewardsModal({
           )}
         </div>
 
-        {/* 3. WHEEL OF CHAOS / LOOT BOX SPINNER */}
+        {/* 3. WHEEL OF CHAOS / LOOT BOX SPINNER (WITH TIMED WINDOW LIMITER & WALLET CAP) */}
         <div className="tm-wheel-section" style={{ marginTop: '16px' }}>
           <div
             style={{
@@ -242,11 +281,29 @@ export default function RewardsModal({
                 🎡 WHEEL OF CHAOS (MYSTERY LOOT CRATES)
               </div>
               <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                Win exclusive Neon Title Flairs &amp; Massive XP Jackpots!
+                Win Neon Title Flairs &amp; XP Jackpots! (Limit: {ARCADE_RATE_LIMITS.WHEEL_SPINS_PER_WINDOW} spins / hr • Max {ARCADE_RATE_LIMITS.MAX_STORED_WHEEL_SPINS} stored)
               </div>
             </div>
-            <div className="tm-spin-counter-pill">
-              🎟️ <strong>{lootSpins}</strong> Spin{lootSpins === 1 ? '' : 's'} Ready
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <div className="tm-spin-counter-pill">
+                🎟️ <strong>{lootSpins}</strong>/{ARCADE_RATE_LIMITS.MAX_STORED_WHEEL_SPINS} Stored
+              </div>
+              <div
+                className="tm-spin-counter-pill"
+                style={{
+                  borderColor:
+                    wheelSpinsLeftInWindow > 0 ? 'rgba(0,243,255,0.45)' : 'rgba(239,68,68,0.5)',
+                  color: wheelSpinsLeftInWindow > 0 ? '#00f3ff' : '#f87171'
+                }}
+              >
+                {wheelSpinsLeftInWindow > 0 ? (
+                  <>
+                    🕐 <strong>{wheelSpinsLeftInWindow}</strong>/{ARCADE_RATE_LIMITS.WHEEL_SPINS_PER_WINDOW} Hourly Window
+                  </>
+                ) : (
+                  <>⏳ Window resets in {formatWindowCountdown(wheelResetMs)}</>
+                )}
+              </div>
             </div>
           </div>
 
@@ -277,14 +334,16 @@ export default function RewardsModal({
             <button
               type="button"
               className="tm-btn tm-btn-primary tm-spin-cta-btn"
-              disabled={isSpinning || lootSpins <= 0}
+              disabled={!canSpinWheel}
               onClick={handleSpinWheel}
             >
               {isSpinning
                 ? '🎰 SPINNING THE WHEEL OF CHAOS...'
-                : lootSpins > 0
-                  ? `🎰 SPIN WHEEL OF CHAOS (${lootSpins} LEFT)`
-                  : '🔒 Pull the Slot Machine Above to Win Free Wheel Spins!'}
+                : wheelSpinsLeftInWindow <= 0
+                  ? `⏳ Hourly Spin Limit Reached (Resets in ${formatWindowCountdown(wheelResetMs)})`
+                  : lootSpins > 0
+                    ? `🎰 SPIN WHEEL OF CHAOS (${lootSpins} STORED • ${wheelSpinsLeftInWindow} WINDOW LEFT)`
+                    : '🔒 Complete Quests or Hit Triple Jackpot Above to Earn Spins!'}
             </button>
           </div>
         </div>
@@ -397,7 +456,7 @@ export default function RewardsModal({
           </div>
         </div>
 
-        {/* 7. SECRET KONAMI GOD MODE EASTER EGG UNLOCK */}
+        {/* 7. SECRET KONAMI GOD MODE EASTER EGG UNLOCK (ONCE PER 24H REWARD) */}
         <div
           style={{
             marginTop: '18px',
@@ -416,7 +475,7 @@ export default function RewardsModal({
           <div>
             <strong style={{ color: '#d8b4fe' }}>🕹️ Secret Arcade Cheat Code:</strong>{' '}
             <span style={{ color: '#cbd5e1' }}>
-              Type <code>↑↑↓↓←→←→BA</code> on PC or tap the <strong>THE MEMES.net</strong> logo 5 times on mobile/iPad!
+              Type <code>↑↑↓↓←→←→BA</code> on PC or tap the <strong>THE MEMES.net</strong> logo 5 times on mobile!
             </span>
           </div>
           <button
@@ -425,7 +484,11 @@ export default function RewardsModal({
             style={{ borderColor: '#a855f7', color: '#d8b4fe' }}
             onClick={onTriggerKonamiGodMode}
           >
-            {konamiUnlocked ? '⚡ Re-Trigger God Mode Fireworks' : '🕹️ Activate God Mode (+1,000 XP)'}
+            {konamiCooldownMs > 0
+              ? `🎇 Fireworks Only (Bonus resets in ${formatWindowCountdown(konamiCooldownMs)})`
+              : konamiUnlocked
+                ? '🕹️ Claim Daily God Mode (+500 XP + 1 Spin)'
+                : '🕹️ Activate God Mode (+500 XP + 1 Spin)'}
           </button>
         </div>
 

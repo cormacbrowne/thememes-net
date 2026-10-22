@@ -21,7 +21,11 @@ export const SOUNDBOARD_PADS = [
   { id: 'siren', emoji: '🚔', label: 'Dank Police', color: '#3b82f6' },
   { id: 'duck', emoji: '🦆', label: 'Duck Army', color: '#eab308' },
   { id: 'violin', emoji: '🎻', label: 'Tiny Violin', color: '#f43f5e' },
-  { id: 'gong', emoji: '💥', label: 'Damage Gong', color: '#d946ef' }
+  { id: 'gong', emoji: '💥', label: 'Damage Gong', color: '#d946ef' },
+  { id: 'metalpipe', emoji: '🔔', label: 'Metal Pipe', color: '#38bdf8' },
+  { id: 'cartoonrun', emoji: '🏃', label: 'Scooby Run', color: '#fb923c' },
+  { id: 'alienbeam', emoji: '👽', label: 'UFO Brainray', color: '#4ade80' },
+  { id: 'xpcrash', emoji: '💻', label: 'Brain Crash', color: '#60a5fa' }
 ];
 
 // Tiny 44.1kHz silent WAV data URI used to switch iOS Safari from 'ambient' (muted by silent switch)
@@ -673,6 +677,202 @@ export class SoundEngine {
     }
   }
 
+  /**
+   * 🔔 FALLING METAL PIPE / TACO BELL CLANG ("KLANGGG-ringgg!")
+   */
+  playMetalPipe() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      // Inharmonic metallic pipe frequencies with secondary bounce clatter
+      const bounces = [0, 0.14, 0.25];
+      const pipeFreqs = [528, 796, 1188, 1642, 2380, 3120];
+      bounces.forEach((offset, bIdx) => {
+        const start = now + offset;
+        const scale = bIdx === 0 ? 1 : bIdx === 1 ? 0.55 : 0.35;
+        pipeFreqs.forEach((f, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = idx % 2 === 0 ? 'sine' : 'square';
+          osc.frequency.setValueAtTime(f * (1 + bIdx * 0.015), start);
+          const dur = (0.75 - idx * 0.08) * scale + 0.18;
+          gain.gain.setValueAtTime((0.15 * scale) / (idx * 0.7 + 1), start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(start);
+          osc.stop(start + dur + 0.02);
+        });
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🏃 CARTOON SCOOBY SLIP-AND-RUN BONGOS + ZOOM WHISTLE
+   */
+  playCartoonRun() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const bongoHits = [240, 320, 240, 360, 260, 340, 240, 380, 280, 420];
+      bongoHits.forEach((freq, idx) => {
+        const start = this.ctx.currentTime + idx * 0.042;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, start);
+        osc.frequency.exponentialRampToValueAtTime(freq * 0.65, start + 0.038);
+        gain.gain.setValueAtTime(0.22, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.04);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.042);
+      });
+      // Supersonic zip whistle at the end
+      const zipStart = this.ctx.currentTime + 0.42;
+      const zOsc = this.ctx.createOscillator();
+      const zGain = this.ctx.createGain();
+      zOsc.type = 'sine';
+      zOsc.frequency.setValueAtTime(340, zipStart);
+      zOsc.frequency.exponentialRampToValueAtTime(1950, zipStart + 0.18);
+      zGain.gain.setValueAtTime(0.2, zipStart);
+      zGain.gain.exponentialRampToValueAtTime(0.001, zipStart + 0.2);
+      zOsc.connect(zGain);
+      zGain.connect(this.ctx.destination);
+      zOsc.start(zipStart);
+      zOsc.stop(zipStart + 0.21);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 👽 GOOFY ALIEN UFO THEREMIN BRAIN-RAY ("WOO-EEE-OOO-EEE!")
+   */
+  playAlienBeam() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const dur = 0.62;
+      const osc = this.ctx.createOscillator();
+      const lfo = this.ctx.createOscillator();
+      const lfoGain = this.ctx.createGain();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(680, now);
+      osc.frequency.exponentialRampToValueAtTime(1180, now + dur * 0.5);
+      osc.frequency.exponentialRampToValueAtTime(520, now + dur);
+
+      lfo.type = 'sine';
+      lfo.frequency.setValueAtTime(14, now);
+      lfoGain.gain.setValueAtTime(140, now);
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      lfo.start(now);
+      osc.start(now);
+      lfo.stop(now + dur);
+      osc.stop(now + dur + 0.01);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 💻 RETRO OS ERROR / BRAIN CRASH CHORD ("DUNNNN!")
+   */
+  playXpCrash() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const chord = [196.0, 293.66, 392.0, 466.16, 587.33];
+      chord.forEach((f) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(f, now);
+        gain.gain.setValueAtTime(0.11, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.47);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🫧 GRATIFYING BUBBLE WRAP POP (pitch climbs with consecutive pops!)
+   */
+  playBubblePop(step = 0) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(10);
+      const now = this.ctx.currentTime;
+      const base = 360 + Math.min(step * 45, 720);
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(base, now);
+      osc.frequency.exponentialRampToValueAtTime(base * 2.1, now + 0.075);
+      gain.gain.setValueAtTime(0.24, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.085);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🌈 8-BIT NYAN DISCO CHIPTUNE RIFF
+   */
+  playNyanRiff() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const notes = [659.25, 783.99, 1046.5, 987.77, 1046.5, 1174.66, 1318.51, 1567.98];
+      notes.forEach((f, idx) => {
+        const start = this.ctx.currentTime + idx * 0.065;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(f, start);
+        gain.gain.setValueAtTime(0.11, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.06);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.062);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
   triggerHaptic(ms = 14) {
     try {
       if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
@@ -724,6 +924,18 @@ export class SoundEngine {
         break;
       case 'gong':
         this.playDamageGong();
+        break;
+      case 'metalpipe':
+        this.playMetalPipe();
+        break;
+      case 'cartoonrun':
+        this.playCartoonRun();
+        break;
+      case 'alienbeam':
+        this.playAlienBeam();
+        break;
+      case 'xpcrash':
+        this.playXpCrash();
         break;
       default:
         this.playBoing(2);

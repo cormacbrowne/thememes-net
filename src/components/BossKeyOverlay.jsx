@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
+import { sfx } from '../utils/soundEngine';
 
 const DISGUISE_MODES = [
-  { id: 'excel', label: '📊 Excel Sheet' },
-  { id: 'terminal', label: '💻 DevOps Terminal' },
-  { id: 'zoom', label: '📹 Zoom Standup' },
-  { id: 'update', label: '🔄 OS Update' }
+  { id: 'excel', label: '📊 1. Excel Sheet' },
+  { id: 'terminal', label: '💻 2. DevOps Terminal' },
+  { id: 'zoom', label: '📹 3. Zoom Standup' },
+  { id: 'ai', label: '🤖 4. Enterprise AI' },
+  { id: 'update', label: '🔄 5. OS Update' },
+  { id: 'bsod', label: '💀 6. Blue Screen' }
 ];
 
 const INITIAL_EXCEL_ROWS = [
@@ -22,7 +25,7 @@ const FAKE_TERMINAL_LINES = [
   '[09:41:04 UTC] WARN  postgres-pool: Connection pool utilization at 69.0% (within SLA threshold)',
   '[09:41:05 UTC] INFO  terraform-apply: aws_eks_node_group.prod_workers: Modifications complete [id=prod-ng-09]',
   '[09:41:06 UTC] OK    audit-daemon: SOC2 Type II zero-trust handshake verified (latency: 3.2ms)',
-  '[09:41:07 UTC] INFO   prometheus-scraper: Ingested 142,850 metrics/sec — 0 anomalies detected',
+  '[09:41:07 UTC] INFO  prometheus-scraper: Ingested 142,850 metrics/sec — 0 anomalies detected',
   '[09:41:08 UTC] OK    git-ops-runner: Merged PR #4209 "Refactor microservice telemetry buffer"'
 ];
 
@@ -30,7 +33,26 @@ const BUZZWORD_EXCUSES = [
   '"Let’s double-click on that holistic deliverable in Q4."',
   '"We need to move the needle on cross-functional bandwidth before we boil the ocean."',
   '"I’ll circle back offline and ping the stakeholders to align our North Star KPIs."',
-  '"From a 30,000-foot view, this paradigm shift is low-hanging fruit for our EBITDA."'
+  '"From a 30,000-foot view, this paradigm shift is low-hanging fruit for our EBITDA."',
+  '"Can we put a pin in this action item until we socialize the deck with Legal?"'
+];
+
+const AI_COPILOT_MEMOS = [
+  {
+    prompt: 'Draft a Q4 Executive Architecture Alignment Memo for the Board of Directors',
+    response:
+      'EXECUTIVE SUMMARY (CONFIDENTIAL):\n1. By leveraging hyper-converged Kubernetes microservices and proactive EBITDA guardrails, Engineering reduced coffee-to-deployment latency by 42.0%.\n2. Action Item: Transition all legacy monolithic spreadsheets into zero-trust AI synergy pipelines before Friday 4:59 PM.\n3. Projected ROI: +$1.42M in annualized cross-functional alignment.'
+  },
+  {
+    prompt: 'Generate a polite corporate email explaining why the sprint deliverable needs 2 more weeks',
+    response:
+      'SUBJECT: Proactive Quality Assurance & Holistic Scope Calibration\n\nHi Team,\nIn order to maximize stakeholder delight and avoid boiling the ocean prematurely, we are strategically extending our runway by 10 business days to stress-test our edge-case telemetry. Let’s circle back in Q1!'
+  },
+  {
+    prompt: 'Analyze why production CPU spiked to 99% during the Tuesday All-Hands',
+    response:
+      'ROOT CAUSE ANALYSIS (RCA-4209):\nOur distributed neural cluster experienced an unexpected surge in asynchronous paradigm shifts. Mitigation: Added 16 virtualized YAML load-balancers and rotated the compliance tokens. System stability is now 99.999%.'
+  }
 ];
 
 export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp }) {
@@ -44,6 +66,9 @@ export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp }) {
   const [updatePct, setUpdatePct] = useState(69);
   const [secretXpEarned, setSecretXpEarned] = useState(0);
   const [activeBuzzword, setActiveBuzzword] = useState(BUZZWORD_EXCUSES[0]);
+  const [webcamFrozen, setWebcamFrozen] = useState(false);
+  const [aiMessages, setAiMessages] = useState([AI_COPILOT_MEMOS[0]]);
+  const [bsodPct, setBsodPct] = useState(42);
 
   const earnStealthXp = (amount = 15) => {
     setSecretXpEarned((prev) => prev + amount);
@@ -86,14 +111,24 @@ export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp }) {
     ]);
   };
 
-  // Number keys 1-4 switch disguises; typing in terminal adds fake code lines
+  const handleGenerateAiMemo = () => {
+    earnStealthXp(15);
+    const nextMemo = AI_COPILOT_MEMOS[aiMessages.length % AI_COPILOT_MEMOS.length];
+    setAiMessages((prev) => [...prev.slice(-3), { ...nextMemo, id: Date.now() }]);
+  };
+
+  // Number keys 1-6 switch disguises; typing in terminal adds fake code lines
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === '1') setDisguise('excel');
       else if (e.key === '2') setDisguise('terminal');
       else if (e.key === '3') setDisguise('zoom');
-      else if (e.key === '4') setDisguise('update');
-      else if (disguise === 'terminal' && e.key !== 'Escape') {
+      else if (e.key === '4') setDisguise('ai');
+      else if (e.key === '5') setDisguise('update');
+      else if (e.key === '6') {
+        setDisguise('bsod');
+        sfx.playXpCrash();
+      } else if (disguise === 'terminal' && e.key !== 'Escape') {
         handleAppendTerminalLog();
       }
     };
@@ -103,7 +138,7 @@ export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp }) {
 
   return (
     <div className="tm-boss-overlay" role="dialog" aria-label="Enterprise Productivity Portal">
-      {/* Top Corporate Bar with Stealth Disguise Switcher */}
+      {/* Top Corporate Bar with 6-Tab Stealth Disguise Switcher */}
       <div
         className="tm-boss-topbar"
         style={{
@@ -112,9 +147,11 @@ export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp }) {
               ? '#0f172a'
               : disguise === 'zoom'
                 ? '#1e293b'
-                : disguise === 'update'
-                  ? '#0067b8'
-                  : '#107c41'
+                : disguise === 'ai'
+                  ? '#312e81'
+                  : disguise === 'update' || disguise === 'bsod'
+                    ? '#0067b8'
+                    : '#107c41'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
@@ -122,7 +159,9 @@ export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp }) {
             {disguise === 'excel' && '📊 Q4_Enterprise_Cloud_Synergy_Forecast_2026.xlsx'}
             {disguise === 'terminal' && '💻 root@prod-k8s-cluster-09: ~/enterprise-monolith'}
             {disguise === 'zoom' && '📹 Executive Q4 Architecture Sync (Recording...)'}
+            {disguise === 'ai' && '🤖 SynergyGPT Enterprise Copilot v5.4 (SOC2 Verified)'}
             {disguise === 'update' && '🔄 Enterprise OS Security Patch KB5042069'}
+            {disguise === 'bsod' && '💀 System Kernel Diagnostic Utility'}
           </strong>
           {secretXpEarned > 0 && (
             <span
@@ -144,7 +183,10 @@ export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp }) {
             <button
               key={m.id}
               type="button"
-              onClick={() => setDisguise(m.id)}
+              onClick={() => {
+                setDisguise(m.id);
+                if (m.id === 'bsod') sfx.playXpCrash();
+              }}
               style={{
                 background: disguise === m.id ? '#ffffff' : 'rgba(255,255,255,0.16)',
                 color: disguise === m.id ? '#0f172a' : '#ffffff',
@@ -280,6 +322,8 @@ export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp }) {
           <div style={{ color: '#94a3b8', marginBottom: '12px' }}>
             Linux prod-k8s-node-09 6.8.0-45-generic #45-Ubuntu SMP PREEMPT_DYNAMIC x86_64 GNU/Linux
             <br />
+            CPU: [||||||||||||||...... 68.4%] • MEM: [|||||||||||......... 54.2GB/128GB] • SWP: [0.0%]
+            <br />
             Tap anywhere or press any keyboard key to compile fake production microservices (+15 Stealth XP)...
           </div>
           {termLogs.map((line, idx) => (
@@ -318,7 +362,12 @@ export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp }) {
               { name: 'Sarah Jenkins (VP of Synergy)', status: '🟢 Speaking...', initials: 'SJ', bg: '#1e3a8a' },
               { name: 'Dave (Compliance & Legal)', status: '🔇 Muted', initials: 'DC', bg: '#334155' },
               { name: 'Kevin (Principal Architect)', status: '🖥️ Sharing Screen', initials: 'KP', bg: '#1e293b' },
-              { name: 'You (Senior IC)', status: '🔇 Muted • Camera Off', initials: 'ME', bg: '#064e3b' }
+              {
+                name: 'You (Senior IC)',
+                status: webcamFrozen ? '⚠️ Reconnecting (Poor Bandwidth...)' : '🔇 Muted • Camera Off',
+                initials: 'ME',
+                bg: webcamFrozen ? '#7c2d12' : '#064e3b'
+              }
             ].map((p) => (
               <div
                 key={p.name}
@@ -395,6 +444,24 @@ export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp }) {
             </button>
             <button
               type="button"
+              onClick={() => {
+                earnStealthXp(15);
+                setWebcamFrozen((prev) => !prev);
+              }}
+              style={{
+                background: '#d97706',
+                color: '#fff',
+                border: 'none',
+                padding: '9px 16px',
+                borderRadius: '8px',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              {webcamFrozen ? '📶 Restore Connection' : '🧊 Fake Tunnel Lag / Freeze Video'}
+            </button>
+            <button
+              type="button"
               onClick={onExitBossMode}
               style={{
                 background: '#dc2626',
@@ -412,7 +479,89 @@ export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp }) {
         </div>
       )}
 
-      {/* DISGUISE 4: FAKE OS SYSTEM UPDATE SCREEN */}
+      {/* DISGUISE 4: ENTERPRISE AI COPILOT WORKSPACE */}
+      {disguise === 'ai' && (
+        <div
+          style={{
+            flex: 1,
+            background: '#f8fafc',
+            color: '#0f172a',
+            padding: '24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '14px',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '10px',
+              paddingBottom: '12px',
+              borderBottom: '1px solid #cbd5e1'
+            }}
+          >
+            <div>
+              <h3 style={{ margin: 0, fontSize: '18px', color: '#1e1b4b' }}>
+                🤖 SynergyGPT Enterprise Copilot — Q4 Strategic Planning Workspace
+              </h3>
+              <span style={{ fontSize: '12px', color: '#64748b' }}>
+                Connected to Internal Confluence, Jira &amp; Executive OKR Graph
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleGenerateAiMemo}
+              style={{
+                background: '#4f46e5',
+                color: '#ffffff',
+                border: 'none',
+                padding: '8px 14px',
+                borderRadius: '8px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontSize: '12px'
+              }}
+            >
+              ✨ Generate Q4 Executive Deliverable (+15 Stealth XP)
+            </button>
+          </div>
+
+          {aiMessages.map((msg, i) => (
+            <div
+              key={msg.id || i}
+              style={{
+                background: '#ffffff',
+                border: '1px solid #cbd5e1',
+                borderRadius: '10px',
+                padding: '14px',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+              }}
+            >
+              <div style={{ fontSize: '12px', fontWeight: 800, color: '#4f46e5', marginBottom: '6px' }}>
+                PROMPT: &ldquo;{msg.prompt}&rdquo;
+              </div>
+              <pre
+                style={{
+                  margin: 0,
+                  whiteSpace: 'pre-wrap',
+                  fontFamily: 'system-ui, sans-serif',
+                  fontSize: '13px',
+                  lineHeight: 1.55,
+                  color: '#1e293b'
+                }}
+              >
+                {msg.response}
+              </pre>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* DISGUISE 5: FAKE OS SYSTEM UPDATE SCREEN */}
       {disguise === 'update' && (
         <div
           onClick={() => {
@@ -442,6 +591,67 @@ export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp }) {
           </div>
           <div style={{ fontSize: '12px', opacity: 0.65, marginTop: '36px' }}>
             Your device will restart several times. (Tap screen to advance % + mine Stealth XP)
+          </div>
+        </div>
+      )}
+
+      {/* DISGUISE 6: FAKE WINDOWS BLUE SCREEN OF DEATH (BSOD) */}
+      {disguise === 'bsod' && (
+        <div
+          onClick={() => {
+            setBsodPct((p) => (p >= 100 ? 0 : p + 10));
+            earnStealthXp(15);
+          }}
+          style={{
+            flex: 1,
+            background: '#0078d7',
+            color: '#ffffff',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            padding: '10% 14%',
+            fontFamily: '"Segoe UI", system-ui, sans-serif',
+            cursor: 'pointer',
+            userSelect: 'none'
+          }}
+        >
+          <div style={{ fontSize: '96px', fontWeight: 300, lineHeight: 1, marginBottom: '24px' }}>
+            :(
+          </div>
+          <div style={{ fontSize: '24px', fontWeight: 400, maxWidth: '680px', lineHeight: 1.45 }}>
+            Your device ran into a problem and needs to restart. We&apos;re just collecting some error
+            info, and then we&apos;ll restart for you.
+          </div>
+          <div style={{ fontSize: '22px', marginTop: '24px', marginBottom: '32px' }}>
+            {bsodPct}% complete
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '18px', flexWrap: 'wrap' }}>
+            <div
+              style={{
+                width: '84px',
+                height: '84px',
+                background: '#ffffff',
+                color: '#0078d7',
+                display: 'grid',
+                placeItems: 'center',
+                fontWeight: 900,
+                fontSize: '11px',
+                textAlign: 'center',
+                padding: '6px'
+              }}
+            >
+              [QR: IT TICKET #42069]
+            </div>
+            <div style={{ fontSize: '13px', lineHeight: 1.6, opacity: 0.92 }}>
+              <div>For more information about this issue and possible fixes, visit https://windows.com/stopcode</div>
+              <div>If you call a support person, give them this info:</div>
+              <div style={{ fontWeight: 700 }}>
+                Stop code: CRITICAL_SYNERGY_OVERFLOW_EXCEPTION (0x00000420)
+              </div>
+              <div style={{ opacity: 0.75, marginTop: '4px' }}>
+                (Tap anywhere to mine +15 Stealth XP while telling your boss &ldquo;IT pushed a bad patch&rdquo;)
+              </div>
+            </div>
           </div>
         </div>
       )}

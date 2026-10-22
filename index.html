@@ -2,7 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- Google Search Favicon, High-Res PNG Icons & Apple Touch Icon -->
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/logo-512.png" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#070810" />
@@ -35,7 +40,10 @@
       content="Browse 3D holographic memes, mash the Crazy Meme Soundboard, roast memes with AI, and remix memes for XP &amp; Loot Box rewards!"
     />
     <meta property="og:url" content="https://thememes.net/" />
-    <meta property="og:image" content="https://thememes.net/favicon.svg" />
+    <meta property="og:image" content="https://thememes.net/logo-512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:image:alt" content="THE MEMES.net Neon Cyber-Jester Skull Mascot Logo" />
 
     <!-- Twitter / X Large Summary Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -47,17 +55,35 @@
       name="twitter:description"
       content="Create, mutate, and battle viral memes with crazy funny sound effects, AI Dank-O-Meter roasts, and daily XP bounties."
     />
+    <meta name="twitter:image" content="https://thememes.net/logo-512.png" />
 
-    <!-- Schema.org Structured Data (WebSite + WebApplication + FAQPage) for Google Rich Results -->
+    <!-- Schema.org Structured Data (Organization Logo + WebSite + WebApplication + FAQPage) for Google Rich Results -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@graph": [
           {
+            "@type": "Organization",
+            "@id": "https://thememes.net/#organization",
+            "name": "THE MEMES.net",
+            "alternateName": "THE MEMES Cyber-Arcade",
+            "url": "https://thememes.net/",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://thememes.net/logo-512.png",
+              "width": 512,
+              "height": 512
+            },
+            "image": "https://thememes.net/logo-512.png"
+          },
+          {
             "@type": "WebSite",
             "name": "THE MEMES.net",
             "alternateName": ["TheMemes", "THE MEMES Cyber-Arcade"],
             "url": "https://thememes.net/",
+            "publisher": {
+              "@id": "https://thememes.net/#organization"
+            },
             "potentialAction": {
               "@type": "SearchAction",
               "target": "https://thememes.net/?q={search_term_string}",

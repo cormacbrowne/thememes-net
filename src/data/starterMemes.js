@@ -445,6 +445,144 @@ export const SLOT_SYMBOLS = [
   { id: 'diamond', emoji: '💎', name: 'Cyber Diamond', mult: 10 }
 ];
 
+// ==========================================
+// PHASE 17: TIMED-WINDOW ECONOMY & SPIN RATE LIMITS
+// Easy-to-tweak central configuration for when real users arrive!
+// ==========================================
+export const ARCADE_RATE_LIMITS = {
+  // Max Wheel of Chaos spins a player can hold in their wallet at once
+  MAX_STORED_WHEEL_SPINS: 5,
+  // Max Wheel of Chaos spins allowed per timed window (3 spins per 60 minutes)
+  WHEEL_SPINS_PER_WINDOW: 3,
+  WHEEL_WINDOW_MS: 60 * 60 * 1000,
+
+  // Max 3-Reel Brainrot Slot Machine pulls per timed window (5 pulls per 15 minutes)
+  SLOT_PULLS_PER_WINDOW: 5,
+  SLOT_WINDOW_MS: 15 * 60 * 1000,
+
+  // Max Golden Loot Goblin summons/catches per timed window (2 per 30 minutes)
+  GOBLINS_PER_WINDOW: 2,
+  GOBLIN_WINDOW_MS: 30 * 60 * 1000,
+
+  // Konami God Mode XP/Spin payout cooldown (once per 24 hours; visual fireworks still work anytime)
+  KONAMI_COOLDOWN_MS: 24 * 60 * 60 * 1000
+};
+
+export function formatWindowCountdown(msRemaining) {
+  if (!msRemaining || msRemaining <= 0) return 'Ready!';
+  const totalSec = Math.ceil(msRemaining / 1000);
+  const mins = Math.floor(totalSec / 60);
+  const secs = totalSec % 60;
+  if (mins >= 60) {
+    const hrs = Math.floor(mins / 60);
+    const remMins = mins % 60;
+    return `${hrs}h ${remMins}m`;
+  }
+  if (mins > 0) {
+    return `${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
+  }
+  return `${secs}s`;
+}
+
+// ==========================================
+// PHASE 18: SILLY ANIMATED SCREEN STAMPEDES & INTERACTIVE TOYS
+// ==========================================
+export const SILLY_STAMPEDES = [
+  {
+    id: 'duck-army',
+    label: '🦆 Duck Stampede',
+    desc: 'Unleash 20 waddling, honking rubber ducks across the screen!'
+  },
+  {
+    id: 'moai-drop',
+    label: '🗿 Moai Gravity Drop',
+    desc: 'Drop heavy stone Moai statues from orbit with 808 Vine Boom shockwaves!'
+  },
+  {
+    id: 'pizza-rain',
+    label: '🍕 Pizza Meteor Shower',
+    desc: 'Rain spinning pepperoni pizzas, tacos & garlic bread from the sky!'
+  },
+  {
+    id: 'nyan-cat',
+    label: '🌈 Disco Cat Flyby',
+    desc: 'Launch a supersonic rainbow cyber-cat & dancing frog convoy!'
+  },
+  {
+    id: 'bubble-wrap',
+    label: '🫧 Pop Bubble Wrap',
+    desc: 'Spawn floating neon dopamine bubbles you can pop for XP & cartoon sounds!'
+  }
+];
+
+// ==========================================
+// PHASE 20: INTERACTIVE DANK TAMAGOTCHI CYBER-PET & COMIC POPS
+// ==========================================
+export const DANK_PET_STAGES = [
+  {
+    stage: 0,
+    minFeeds: 0,
+    name: 'Sus Cyber-Egg',
+    emoji: '🥚',
+    title: 'Lv.1 Vibrating Egg',
+    quips: [
+      'I hear Vine Booms from inside my shell...',
+      'Feed me a spicy meme so I can hatch!',
+      'Knock knock. Who’s there? Production bug.'
+    ]
+  },
+  {
+    stage: 1,
+    minFeeds: 3,
+    name: 'Pepe Tadpole',
+    emoji: '🐸',
+    title: 'Lv.2 Cozy Froglet',
+    quips: [
+      'Feels good man! Feed me more deep-fried memes!',
+      'It is Wednesday in my heart, my dudes.',
+      'I just ate 47 StackOverflow tabs for breakfast.'
+    ]
+  },
+  {
+    stage: 2,
+    minFeeds: 7,
+    name: 'Neon Drip Duck',
+    emoji: '🦆',
+    title: 'Lv.3 Quack Overlord',
+    quips: [
+      'QUACK! Peace was never an option.',
+      'My sunglasses are prescription dankness.',
+      'Honk if you deployed on Friday without testing!'
+    ]
+  },
+  {
+    stage: 3,
+    minFeeds: 12,
+    name: 'Giga-Moai Sovereign',
+    emoji: '🗿',
+    title: 'Lv.MAX Immortal Statue',
+    quips: [
+      '🗿 Refuses to elaborate. Demands more memes.',
+      'My jawline was chiseled by 10,000 upvotes.',
+      'I have achieved 420% enlightenment.'
+    ]
+  }
+];
+
+export const COMIC_ACTION_WORDS = [
+  'BASED! 🔥',
+  'HONK! 🤡',
+  'BRAINROT! 💀',
+  'YEET! 🚀',
+  'GIGA-CHAD! 🗿',
+  'BOIOIOING! 🌀',
+  'SPICY! 🌶️',
+  'EMOTIONAL DAMAGE! 💥',
+  'NANI?! ⚡',
+  'QUACK! 🦆'
+];
+
+
 export const MEME_FORTUNES = [
   '🥠 Meme Prophecy: Your next git push --force will miraculously pass all production checks.',
   '🥠 Meme Prophecy: Beware of meetings scheduled at 4:45 PM titled "Quick Sync".',

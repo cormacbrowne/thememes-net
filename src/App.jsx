@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { getSupabaseClient, fetchSupabaseAuthSettings } from './supabaseClient';
 import { sfx } from './utils/soundEngine';
 import {
@@ -3087,6 +3088,9 @@ export default function App() {
           setShowRewardsModal(true);
         }}
       />
+
+      {/* Vercel Web Analytics */}
+      <Analytics />
     </div>
   );
 }

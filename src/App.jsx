@@ -2813,7 +2813,7 @@ export default function App() {
               sfx.playToggle();
               fetchSupabaseMemes();
             }}
-            title="Check Supabase for new user uploads right now"
+            title="Check for new community uploads right now"
           >
             🔄 Refresh Uploads
           </button>

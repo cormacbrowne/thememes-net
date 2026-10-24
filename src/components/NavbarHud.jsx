@@ -63,10 +63,10 @@ export default function NavbarHud({
               />
             </div>
             <div className="tm-logo-badge">THE MEMES.net</div>
-            <div className="tm-status-pill" title="Connected to Supabase project otvvphmjojqyjaznjzyo">
+            <div className="tm-status-pill" title="Live Community Feed Connected">
               <span className={`tm-dot ${dbStatus === 'live' ? 'live' : 'local'}`} />
               <span className="tm-status-text">
-                {dbStatus === 'live' ? 'SUPABASE LIVE' : 'ARCADE READY'}
+                {dbStatus === 'live' ? 'LIVE FEED' : 'ARCADE READY'}
               </span>
             </div>
           </div>

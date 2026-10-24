@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { RANKS, computePlayerBadges } from '../data/starterMemes';
+import { RANKS, computePlayerBadges, formatMemeUploadDate } from '../data/starterMemes';
 
 export default function PlayerProfileModal({
   username,
@@ -197,6 +197,9 @@ export default function PlayerProfileModal({
                       }}
                     >
                       {m.title}
+                    </div>
+                    <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '3px' }}>
+                      📅 {formatMemeUploadDate(m.created_at).dateTime}
                     </div>
                     <div
                       style={{

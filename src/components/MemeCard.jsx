@@ -1,9 +1,15 @@
 import { useRef, useCallback, useState } from 'react';
-import { getMemeRarityTier, COMIC_ACTION_WORDS } from '../data/starterMemes';
+import {
+  getMemeRarityTier,
+  COMIC_ACTION_WORDS,
+  formatMemeUploadDate
+} from '../data/starterMemes';
 
 export default function MemeCard({
   meme,
   myVote,
+  isBookmarked = false,
+  onToggleBookmark,
   isCommentsOpen,
   commentInput,
   onVote,
@@ -30,6 +36,7 @@ export default function MemeCard({
   const remixCount = meme.mutation_count || 0;
   const rarity = getMemeRarityTier(meme);
   const isBlurred = Boolean(meme.is_spoiler) && !spoilerRevealed;
+  const uploadInfo = formatMemeUploadDate(meme.created_at);
 
   const triggerComicPop = (customWord = null) => {
     const word =
@@ -58,8 +65,8 @@ export default function MemeCard({
     const px = x / rect.width;
     const py = y / rect.height;
 
-    const rotateY = (px - 0.5) * 11; // -5.5deg to +5.5deg
-    const rotateX = (0.5 - py) * 11; // -5.5deg to +5.5deg
+    const rotateY = (px - 0.5) * 11;
+    const rotateX = (0.5 - py) * 11;
 
     el.style.setProperty('--rx', `${rotateX.toFixed(2)}deg`);
     el.style.setProperty('--ry', `${rotateY.toFixed(2)}deg`);
@@ -114,20 +121,37 @@ export default function MemeCard({
       )}
 
       <div className="tm-card-header">
-        <span>
-          Posted by{' '}
-          <strong
-            className="tm-author-handle"
-            style={{ cursor: 'pointer' }}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (onOpenProfile) onOpenProfile(meme.author_name || 'Anon');
-            }}
-            title="View Creator Profile & Badges"
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', minWidth: 0 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+            Posted by{' '}
+            <strong
+              className="tm-author-handle"
+              style={{ cursor: 'pointer' }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onOpenProfile) onOpenProfile(meme.author_name || 'Anon');
+              }}
+              title="View Creator Profile & Badges"
+            >
+              @{meme.author_name || 'Anon'}
+            </strong>
+            {uploadInfo.isNewToday && (
+              <span
+                className="tm-upload-new-pill"
+                title={`Uploaded within the last 24h (${uploadInfo.dateTime})`}
+              >
+                🆕 NEW
+              </span>
+            )}
+          </span>
+          <span
+            className="tm-upload-date-badge"
+            title={`Exact upload timestamp: ${uploadInfo.dateTime}`}
           >
-            @{meme.author_name || 'Anon'}
-          </strong>
-        </span>
+            📅 Uploaded {uploadInfo.dateTime} • <strong>{uploadInfo.relative}</strong>
+          </span>
+        </div>
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
           {meme.is_spoiler && (
             <span className="tm-rarity-badge heating">🌶️ SPICY</span>
@@ -138,7 +162,7 @@ export default function MemeCard({
           {rarity.label && (
             <span className={`tm-rarity-badge ${rarity.tier}`}>{rarity.label}</span>
           )}
-          <span className="tm-tag">{meme.category || 'meme'}</span>
+          <span className="tm-tag">#{meme.category || 'meme'}</span>
         </div>
       </div>
 
@@ -207,7 +231,7 @@ export default function MemeCard({
             type="button"
             className={`tm-vote-btn up ${myVote === 1 ? 'voted' : ''}`}
             onClick={(e) => {
-              triggerComicPop('BASED! 🔥');
+              triggerComicPop('AWESOME! 🔥');
               onVote(meme.id, 1, e);
             }}
           >
@@ -218,7 +242,7 @@ export default function MemeCard({
             type="button"
             className={`tm-vote-btn down ${myVote === -1 ? 'voted' : ''}`}
             onClick={(e) => {
-              triggerComicPop('BRUH 💀');
+              triggerComicPop('OOF 😅');
               onVote(meme.id, -1, e);
             }}
           >
@@ -236,9 +260,9 @@ export default function MemeCard({
               onClick={(e) => {
                 const mapWord = {
                   '🔥': 'SPICY! 🔥',
-                  '💀': 'BRAINROT! 💀',
-                  '😂': 'HONK! 🤡',
-                  '🗿': 'GIGA-CHAD! 🗿'
+                  '💀': 'WILD! 💀',
+                  '😂': 'HAHA! 😂',
+                  '🗿': 'LEGEND! 🗿'
                 };
                 triggerComicPop(mapWord[emoji]);
                 onReaction(meme.id, emoji, e);
@@ -249,7 +273,7 @@ export default function MemeCard({
           ))}
         </div>
 
-        {/* Comment, Share & Flag/Hide Buttons */}
+        {/* Comment, Bookmark, Share & Flag/Hide Buttons */}
         <div style={{ display: 'flex', gap: '5px' }}>
           <button
             type="button"
@@ -259,11 +283,30 @@ export default function MemeCard({
           >
             💬 {(meme.comments || []).length}
           </button>
+          {onToggleBookmark && (
+            <button
+              type="button"
+              className="tm-react-btn"
+              style={
+                isBookmarked
+                  ? { borderColor: '#facc15', color: '#facc15', background: 'rgba(250, 204, 21, 0.16)' }
+                  : undefined
+              }
+              onClick={(e) => {
+                e.stopPropagation();
+                triggerComicPop(isBookmarked ? 'REMOVED' : 'SAVED! ⭐');
+                onToggleBookmark(meme, e);
+              }}
+              title={isBookmarked ? 'Remove from Saved Memes' : 'Save Meme to Favorites (+15 XP)'}
+            >
+              {isBookmarked ? '⭐' : '☆'}
+            </button>
+          )}
           <button
             type="button"
             className="tm-react-btn"
             onClick={handleShareClick}
-            title="Copy Deep-Link URL"
+            title="Share Meme / Copy Link"
           >
             {copied ? '✅' : '🔗'}
           </button>
@@ -303,9 +346,9 @@ export default function MemeCard({
                 e.stopPropagation();
                 onOpenAiRoast(meme, e);
               }}
-              title="Run AI Dank-O-Meter & Savage Roast Scanner"
+              title="Run AI Vibe & Comedy Scanner"
             >
-              🤖 AI Roast
+              🤖 AI Scan
             </button>
           )}
         </div>
@@ -315,7 +358,7 @@ export default function MemeCard({
           className="tm-mutate-btn"
           onClick={(e) => onTriggerStudioMutate(meme, e)}
         >
-          🧬 MUTATE (+150 XP)
+          🧬 REMIX (+150 XP)
         </button>
       </div>
 
@@ -324,7 +367,7 @@ export default function MemeCard({
         <div className="tm-comments">
           {(meme.comments || []).length === 0 ? (
             <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '8px' }}>
-              No comments yet — drop the first roast (+25 XP)!
+              No comments yet — be the first to comment (+25 XP)!
             </div>
           ) : (
             (meme.comments || []).map((c) => (
@@ -339,7 +382,7 @@ export default function MemeCard({
             <input
               type="text"
               className="tm-input"
-              placeholder="Write a comment..."
+              placeholder="Write a friendly comment..."
               value={commentInput || ''}
               onChange={(e) => onCommentInputChange(meme.id, e.target.value)}
             />

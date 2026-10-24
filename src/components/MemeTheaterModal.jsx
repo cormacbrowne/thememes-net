@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { getMemeRarityTier } from '../data/starterMemes';
+import { getMemeRarityTier, formatMemeUploadDate } from '../data/starterMemes';
 
 export default function MemeTheaterModal({
   meme,
@@ -57,6 +57,7 @@ export default function MemeTheaterModal({
   if (!meme) return null;
 
   const rarity = getMemeRarityTier(meme);
+  const uploadInfo = formatMemeUploadDate(meme.created_at);
   const gen = meme.generation || 0;
   const rootId = meme.root_meme_id || meme.parent_meme_id || meme.id;
 
@@ -92,7 +93,6 @@ export default function MemeTheaterModal({
     const dx = touch.clientX - start.x;
     const dy = touch.clientY - start.y;
 
-    // Horizontal swipe on stage navigates between memes
     if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.4) {
       if (dx < 0) {
         goNext();
@@ -102,7 +102,6 @@ export default function MemeTheaterModal({
       return;
     }
 
-    // Quick double-tap upvotes on mobile
     if (Math.abs(dx) < 15 && Math.abs(dy) < 15) {
       const now = Date.now();
       if (now - lastTapRef.current < 280) {
@@ -138,6 +137,10 @@ export default function MemeTheaterModal({
             <span style={{ fontSize: '12px', color: '#94a3b8' }}>
               by <strong style={{ color: '#38bdf8' }}>@{meme.author_name || 'Anon'}</strong>
             </span>
+            <span className="tm-upload-date-badge">
+              📅 Uploaded {uploadInfo.dateTime} ({uploadInfo.relative})
+            </span>
+            {uploadInfo.isNewToday && <span className="tm-upload-new-pill">🆕 NEW</span>}
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
@@ -162,7 +165,7 @@ export default function MemeTheaterModal({
               </button>
             )}
             <button type="button" className="tm-btn" onClick={handleCopyPermalink}>
-              {copiedLink ? '✅ Copied!' : '🔗 Share'}
+              {copiedLink ? '✅ Shared / Copied!' : '🔗 Share'}
             </button>
             <button type="button" className="tm-btn" onClick={onClose} aria-label="Close modal">
               ✕ Close
@@ -230,7 +233,7 @@ export default function MemeTheaterModal({
                   onTriggerStudioMutate(meme, e);
                 }}
               >
-                🧬 Fork & Mutate (+150 XP)
+                🧬 Remix Meme (+150 XP)
               </button>
             </div>
           </div>
@@ -247,6 +250,7 @@ export default function MemeTheaterModal({
                 {lineageNodes.map((node) => {
                   const isCurrent = String(node.id) === String(meme.id);
                   const nGen = node.generation || 0;
+                  const nodeDate = formatMemeUploadDate(node.created_at);
                   return (
                     <div
                       key={node.id}
@@ -282,7 +286,7 @@ export default function MemeTheaterModal({
                         />
                         <div style={{ minWidth: 0 }}>
                           <div style={{ fontSize: '10px', fontWeight: 900, color: nGen === 0 ? '#a3e635' : '#f472b6' }}>
-                            {nGen === 0 ? 'GEN-0 ORIGIN' : `GEN-${nGen} REMIX`}
+                            {nGen === 0 ? 'GEN-0 ORIGIN' : `GEN-${nGen} REMIX`} • {nodeDate.dateOnly}
                           </div>
                           <div
                             style={{
@@ -314,7 +318,7 @@ export default function MemeTheaterModal({
               <div style={{ flex: 1, maxHeight: '240px', overflowY: 'auto', marginBottom: '10px' }}>
                 {(meme.comments || []).length === 0 ? (
                   <div style={{ fontSize: '12px', color: '#64748b' }}>
-                    No comments yet — drop the first roast (+25 XP)!
+                    No comments yet — drop the first comment (+25 XP)!
                   </div>
                 ) : (
                   (meme.comments || []).map((c) => (

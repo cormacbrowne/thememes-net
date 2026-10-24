@@ -1,3 +1,5 @@
+import { formatMemeUploadDate } from '../data/starterMemes';
+
 export default function MemeEvolutionModal({
   evolutionModalMeme,
   evolutionNodes,
@@ -23,7 +25,7 @@ export default function MemeEvolutionModal({
               <h2 style={{ margin: 0, color: '#f472b6', fontSize: '19px' }}>🧬 Meme Evolution Tree</h2>
               <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
                 Origin creators earn <strong style={{ color: '#a3e635' }}>+50 XP</strong> per
-                mutation & passive royalties
+                remix &amp; passive royalties
               </div>
             </div>
           </div>
@@ -41,6 +43,7 @@ export default function MemeEvolutionModal({
             {evolutionNodes.map((node) => {
               const gen = node.generation || 0;
               const isCurrent = String(node.id) === String(evolutionModalMeme.id);
+              const uploadInfo = formatMemeUploadDate(node.created_at);
               return (
                 <div
                   key={node.id}
@@ -86,13 +89,13 @@ export default function MemeEvolutionModal({
                           color: gen === 0 ? '#a3e635' : '#f472b6'
                         }}
                       >
-                        {gen === 0 ? 'GEN-0 ORIGIN' : `GEN-${gen} MUTATION`}
+                        {gen === 0 ? 'GEN-0 ORIGIN' : `GEN-${gen} REMIX`}
                       </span>
                       <div style={{ fontWeight: 800, fontSize: '14px', marginTop: '4px', wordBreak: 'break-word' }}>
                         {node.title}
                       </div>
                       <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                        by @{node.author_name || 'Anon'} • 🔥 {node.score || 0} pts
+                        by @{node.author_name || 'Anon'} • 🔥 {node.score || 0} pts • 📅 {uploadInfo.dateTime} ({uploadInfo.relative})
                       </div>
                     </div>
                   </div>
@@ -102,7 +105,7 @@ export default function MemeEvolutionModal({
                     className="tm-mutate-btn"
                     onClick={(e) => onTriggerStudioMutate(node, e)}
                   >
-                    🧬 Mutate This
+                    🧬 Remix This
                   </button>
                 </div>
               );

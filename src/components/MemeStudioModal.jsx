@@ -1,12 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
-import { STUDIO_TEMPLATES, VIRAL_CAPTIONS } from '../data/starterMemes';
+import { VIRAL_CAPTIONS } from '../data/starterMemes';
 import { STUDIO_FILTERS, CAPTION_LAYOUTS } from '../utils/canvasMutator';
+
+const TEXT_COLOR_SWATCHES = [
+  { id: '#facc15', label: 'Cyber Gold' },
+  { id: '#ffffff', label: 'Pure White' },
+  { id: '#00f3ff', label: 'Neon Cyan' },
+  { id: '#f472b6', label: 'Hot Pink' },
+  { id: '#4ade80', label: 'Electric Lime' }
+];
 
 export default function MemeStudioModal({
   mutatingParentMeme,
   studioCanvasRef,
-  studioTemplateIdx,
-  setStudioTemplateIdx,
   studioTopText,
   setStudioTopText,
   studioBottomText,
@@ -19,6 +25,8 @@ export default function MemeStudioModal({
   setCaptionFontSize,
   captionLayout,
   setCaptionLayout,
+  studioTextColor = '#facc15',
+  setStudioTextColor,
   studioFilter,
   setStudioFilter,
   studioTitle,
@@ -30,8 +38,6 @@ export default function MemeStudioModal({
   selectedStickerId,
   setSelectedStickerId,
   customUploadImg,
-  setCustomUploadImg,
-  setMutatingParentMeme,
   onCustomImageUpload,
   onLoadUrlIntoStudio,
   onOpenBlankStudio,
@@ -49,11 +55,25 @@ export default function MemeStudioModal({
   const [urlInput, setUrlInput] = useState('');
   const [urlError, setUrlError] = useState('');
   const [loadingUrl, setLoadingUrl] = useState(false);
+  const [cameraActive, setCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState('');
   const dragTargetRef = useRef(null);
   const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
   const captionsFormRef = useRef(null);
 
   const selectedSticker = studioStickers.find((s) => s.id === selectedStickerId) || null;
+
+  // Clean up webcam stream on unmount or close
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+      }
+    };
+  }, []);
 
   // Prevent page/modal scroll ONLY when actively dragging a sticker or caption on touch devices
   useEffect(() => {
@@ -67,6 +87,58 @@ export default function MemeStudioModal({
     canvas.addEventListener('touchmove', onTouchMove, { passive: false });
     return () => canvas.removeEventListener('touchmove', onTouchMove);
   }, [studioCanvasRef]);
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    setCameraActive(false);
+  };
+
+  const handleStartCamera = async () => {
+    setCameraError('');
+    if (!navigator.mediaDevices?.getUserMedia) {
+      cameraInputRef.current?.click();
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 1200 }, height: { ideal: 960 } },
+        audio: false
+      });
+      streamRef.current = stream;
+      setCameraActive(true);
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play().catch(() => {});
+        }
+      }, 60);
+    } catch {
+      // Fallback to native mobile camera file input
+      cameraInputRef.current?.click();
+    }
+  };
+
+  const handleCaptureCameraFrame = () => {
+    const video = videoRef.current;
+    if (!video || !video.videoWidth) {
+      setCameraError('Camera stream not ready yet.');
+      return;
+    }
+    const off = document.createElement('canvas');
+    off.width = video.videoWidth;
+    off.height = video.videoHeight;
+    const octx = off.getContext('2d');
+    octx.drawImage(video, 0, 0, off.width, off.height);
+    off.toBlob((blob) => {
+      if (blob && onCustomImageUpload) {
+        onCustomImageUpload({ target: { files: [blob] } });
+      }
+      stopCamera();
+    }, 'image/png');
+  };
 
   // Convert client mouse/touch coordinates to 600x552 canvas space
   const getCanvasCoords = (e) => {
@@ -103,7 +175,7 @@ export default function MemeStudioModal({
 
     setSelectedStickerId(null);
 
-    // 2. Check Top Text hit region (when in classic or cyberbar mode)
+    // 2. Check Top Text hit region
     if (
       studioTopText &&
       captionLayout !== 'topbar' &&
@@ -131,6 +203,12 @@ export default function MemeStudioModal({
         offsetY: pt.y - bottomTextPos.y
       };
       e.currentTarget.setPointerCapture?.(e.pointerId);
+      return;
+    }
+
+    // If no image is uploaded yet and user clicks the empty canvas center, open file picker!
+    if (!customUploadImg && pt.y > 120 && pt.y < 420) {
+      fileInputRef.current?.click();
     }
   };
 
@@ -212,10 +290,10 @@ export default function MemeStudioModal({
                   ? `🎯 Daily Bounty (+${activeBounty.rewardXp} XP)`
                   : mutatingParentMeme
                   ? `🧬 Gen-${(mutatingParentMeme.generation || 0) + 1} Remix (+150 XP)`
-                  : '🎨 Meme Forge Studio (+100 XP)'}
+                  : '🎨 Meme Forge Studio — Upload & Create (+100 XP)'}
               </h2>
               <div style={{ fontSize: '11px', color: '#38bdf8', marginTop: '2px', fontWeight: 700 }}>
-                ⚡ Drag text or stickers on canvas • Scroll or tap below to edit & publish!
+                ⚡ 100% User-Uploaded Memes • Drag captions &amp; stickers directly on canvas!
               </div>
             </div>
           </div>
@@ -228,8 +306,8 @@ export default function MemeStudioModal({
         {activeBounty && (
           <div className="tm-studio-lineage-banner" style={{ borderColor: '#facc15', background: 'rgba(250, 204, 21, 0.12)' }}>
             <span>
-              🎯 <strong>BOUNTY PROMPT:</strong> “{activeBounty.prompt}” — Earn{' '}
-              <strong style={{ color: '#facc15' }}>+{activeBounty.rewardXp} XP + Bounty Hunter Badge!</strong>
+              🎯 <strong>BOUNTY PROMPT:</strong> “{activeBounty.prompt}” — Upload your photo &amp; earn{' '}
+              <strong style={{ color: '#facc15' }}>+{activeBounty.rewardXp} XP + Bounty Badge!</strong>
             </span>
           </div>
         )}
@@ -238,7 +316,7 @@ export default function MemeStudioModal({
         {mutatingParentMeme && (
           <div className="tm-studio-lineage-banner">
             <span>
-              🧬 Forking <strong>{mutatingParentMeme.title}</strong> by{' '}
+              🧬 Remixing <strong>{mutatingParentMeme.title}</strong> by{' '}
               <strong style={{ color: '#00f3ff' }}>@{mutatingParentMeme.author_name}</strong> —
               Origin creator earns <strong>+50 XP Royalty!</strong>
             </span>
@@ -248,7 +326,7 @@ export default function MemeStudioModal({
               style={{ padding: '4px 10px', fontSize: '11px' }}
               onClick={onOpenBlankStudio}
             >
-              Reset to Blank Gen-0
+              Start Fresh Upload
             </button>
           </div>
         )}
@@ -256,7 +334,7 @@ export default function MemeStudioModal({
         <div className="tm-studio-layout">
           {/* LEFT COLUMN: Interactive HTML5 Canvas + FX & Stickers */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div className="tm-studio-canvas-wrap">
+            <div className="tm-studio-canvas-wrap" style={{ position: 'relative' }}>
               <canvas
                 ref={studioCanvasRef}
                 onPointerDown={handleCanvasPointerDown}
@@ -267,8 +345,10 @@ export default function MemeStudioModal({
                   width: '100%',
                   display: 'block',
                   borderRadius: '14px',
-                  border: '1px solid rgba(0, 243, 255, 0.3)',
-                  cursor: 'grab',
+                  border: customUploadImg
+                    ? '1.5px solid rgba(34, 197, 94, 0.65)'
+                    : '1.5px dashed rgba(0, 243, 255, 0.5)',
+                  cursor: customUploadImg ? 'grab' : 'pointer',
                   touchAction: 'manipulation'
                 }}
               />
@@ -280,12 +360,12 @@ export default function MemeStudioModal({
               onClick={() => captionsFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
               style={{ justifyContent: 'center', borderColor: 'rgba(0, 243, 255, 0.4)', color: '#00f3ff' }}
             >
-              ✏️ Jump to Captions & Publish ↓
+              ✏️ Jump to Upload, Captions &amp; Publish ↓
             </button>
 
             {/* Viral Glitch & Filter FX Suite */}
             <div>
-              <div className="tm-studio-label">⚡ Viral Glitch & Filter FX</div>
+              <div className="tm-studio-label">⚡ Photo Glitch &amp; Filter FX</div>
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
                 {STUDIO_FILTERS.map((f) => (
                   <button
@@ -319,7 +399,7 @@ export default function MemeStudioModal({
                 )}
               </div>
               <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' }}>
-                {['🔥', '💀', '😂', '🕶️', '🧢', '🤡', '👑', '🗿', '⚡', '💯'].map((emoji) => (
+                {['🔥', '😂', '🌟', '🕶️', '🧢', '👑', '🗿', '⚡', '💯', '❤️', '🎉', '🦆'].map((emoji) => (
                   <button
                     key={emoji}
                     type="button"
@@ -370,13 +450,16 @@ export default function MemeStudioModal({
                 type="button"
                 className="tm-btn"
                 style={{ flex: 1, justifyContent: 'center' }}
+                disabled={!customUploadImg}
                 onClick={onDownloadPng}
+                title={customUploadImg ? 'Download your meme as PNG' : 'Upload an image first'}
               >
                 💾 Download PNG (+25 XP)
               </button>
               <button
                 type="button"
                 className="tm-btn"
+                disabled={!customUploadImg}
                 style={{
                   flex: 1,
                   justifyContent: 'center',
@@ -384,28 +467,47 @@ export default function MemeStudioModal({
                   color: clipboardStatus ? '#22c55e' : undefined
                 }}
                 onClick={onCopyClipboardPng}
+                title={customUploadImg ? 'Copy meme image to clipboard' : 'Upload an image first'}
               >
                 {clipboardStatus || '📋 Copy to Clipboard'}
               </button>
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Upload Dropzone, Templates, Layout & Captions Form */}
+          {/* RIGHT COLUMN: User Image Upload, Camera, Layout & Captions Form */}
           <form
             ref={captionsFormRef}
             onSubmit={onPublishMeme}
             style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}
           >
-            {/* 1. Zero-Friction Image Upload / URL / Template Picker */}
+            {/* 1. User Image Upload / Paste / Camera / URL */}
             <div>
-              <label className="tm-studio-label">
-                1. Image Source (Upload, Paste Ctrl+V, URL, or Template)
-              </label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <label className="tm-studio-label">
+                  1. Upload Your Meme Image (Required — No Default Templates!)
+                </label>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 800,
+                    padding: '2px 8px',
+                    borderRadius: '999px',
+                    background: customUploadImg ? 'rgba(34, 197, 94, 0.2)' : 'rgba(250, 204, 21, 0.18)',
+                    color: customUploadImg ? '#4ade80' : '#facc15'
+                  }}
+                >
+                  {customUploadImg ? '✅ Image Loaded!' : '📸 Waiting for Photo'}
+                </span>
+              </div>
 
               {/* Click / Drop Upload Zone */}
               <div
                 className="tm-studio-dropzone"
                 onClick={() => fileInputRef.current?.click()}
+                style={{
+                  borderColor: customUploadImg ? 'rgba(34, 197, 94, 0.55)' : undefined,
+                  background: customUploadImg ? 'rgba(34, 197, 94, 0.08)' : undefined
+                }}
               >
                 <input
                   ref={fileInputRef}
@@ -414,60 +516,106 @@ export default function MemeStudioModal({
                   onChange={onCustomImageUpload}
                   style={{ display: 'none' }}
                 />
-                <span>📥 Click to Upload Photo/GIF, Drop File anywhere, or press <strong>Ctrl+V</strong></span>
+                <input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={onCustomImageUpload}
+                  style={{ display: 'none' }}
+                />
+                <span>
+                  {customUploadImg
+                    ? '✅ Photo Ready! Click here to swap image, drop a new file, or press Ctrl+V'
+                    : '📥 Click to Upload Photo/Screenshot, Drop File anywhere, or press Ctrl+V'}
+                </span>
               </div>
 
-              {/* Direct Image URL Loader */}
-              <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
-                <input
-                  type="url"
-                  className="tm-input"
-                  placeholder="Or paste direct image URL (https://...)"
-                  value={urlInput}
-                  onChange={(e) => setUrlInput(e.target.value)}
-                />
+              {/* Camera Capture & Direct URL Row */}
+              <div style={{ display: 'flex', gap: '6px', marginTop: '8px', flexWrap: 'wrap' }}>
                 <button
                   type="button"
                   className="tm-btn"
-                  disabled={loadingUrl}
-                  onClick={handleUrlSubmit}
+                  onClick={cameraActive ? stopCamera : handleStartCamera}
+                  style={{ borderColor: 'rgba(0, 243, 255, 0.4)', color: '#00f3ff' }}
                 >
-                  {loadingUrl ? '...' : 'Load URL'}
+                  {cameraActive ? '✕ Close Camera' : '📸 Snap Camera Photo'}
                 </button>
+                <div style={{ display: 'flex', gap: '6px', flex: 1, minWidth: '200px' }}>
+                  <input
+                    type="url"
+                    className="tm-input"
+                    placeholder="Or paste image URL (https://...)"
+                    value={urlInput}
+                    onChange={(e) => setUrlInput(e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                  <button
+                    type="button"
+                    className="tm-btn"
+                    disabled={loadingUrl}
+                    onClick={handleUrlSubmit}
+                  >
+                    {loadingUrl ? '...' : 'Load URL'}
+                  </button>
+                </div>
               </div>
+
+              {cameraActive && (
+                <div
+                  style={{
+                    marginTop: '10px',
+                    padding: '10px',
+                    borderRadius: '12px',
+                    background: 'rgba(9, 10, 18, 0.9)',
+                    border: '1px solid #00f3ff',
+                    textAlign: 'center'
+                  }}
+                >
+                  <video
+                    ref={videoRef}
+                    playsInline
+                    muted
+                    style={{ width: '100%', maxHeight: '220px', borderRadius: '8px', objectFit: 'cover' }}
+                  />
+                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '8px' }}>
+                    <button
+                      type="button"
+                      className="tm-btn tm-btn-primary"
+                      onClick={handleCaptureCameraFrame}
+                    >
+                      📸 Capture Frame to Canvas
+                    </button>
+                    <button type="button" className="tm-btn" onClick={stopCamera}>
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {cameraError && (
+                <div style={{ fontSize: '11px', color: '#f87171', marginTop: '4px' }}>{cameraError}</div>
+              )}
               {urlError && (
                 <div style={{ fontSize: '11px', color: '#f87171', marginTop: '4px' }}>{urlError}</div>
               )}
-
-              {/* Built-in Cyber Templates */}
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '8px' }}>
-                {STUDIO_TEMPLATES.map((t, i) => (
-                  <button
-                    key={t.name}
-                    type="button"
-                    className={`tm-tab ${
-                      studioTemplateIdx === i && !customUploadImg ? 'active' : ''
-                    }`}
-                    style={{ padding: '6px 11px', fontSize: '12px' }}
-                    onClick={() => {
-                      setMutatingParentMeme(null);
-                      setCustomUploadImg(null);
-                      setStudioTemplateIdx(i);
-                      setStudioTopText(t.defaultTop);
-                      setStudioBottomText(t.defaultBottom);
-                    }}
-                  >
-                    {t.emoji} {t.name}
-                  </button>
-                ))}
-              </div>
             </div>
 
-            {/* 2. Caption Layout & Draggable Text Controls */}
+            {/* 2. Caption Layout, Random Meme Text & Draggable Text Controls */}
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <label className="tm-studio-label">2. Caption Style & Text</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+                <label className="tm-studio-label">2. Add Meme Text &amp; Random Captions (Optional)</label>
                 <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    type="button"
+                    className="tm-link-btn"
+                    onClick={() => {
+                      setStudioTopText('');
+                      setStudioBottomText('');
+                    }}
+                  >
+                    🧹 Clear Text
+                  </button>
                   <button
                     type="button"
                     className="tm-link-btn"
@@ -476,7 +624,7 @@ export default function MemeStudioModal({
                       setBottomTextPos({ x: 300, y: 490 });
                     }}
                   >
-                    ↺ Center Text
+                    ↺ Center
                   </button>
                   <button
                     type="button"
@@ -489,7 +637,7 @@ export default function MemeStudioModal({
                       setStudioBottomText(pick[1]);
                     }}
                   >
-                    🎲 Random Caption
+                    🎲 Random Meme Text
                   </button>
                 </div>
               </div>
@@ -511,7 +659,7 @@ export default function MemeStudioModal({
               <input
                 type="text"
                 className="tm-input"
-                placeholder="TOP TEXT (drag on canvas to reposition)"
+                placeholder="TOP TEXT (optional — drag on canvas to reposition)"
                 value={studioTopText}
                 onChange={(e) => setStudioTopText(e.target.value)}
                 style={{ width: '100%', marginTop: '8px' }}
@@ -519,42 +667,71 @@ export default function MemeStudioModal({
               <input
                 type="text"
                 className="tm-input"
-                placeholder="BOTTOM TEXT (drag on canvas to reposition)"
+                placeholder="BOTTOM TEXT (optional — drag on canvas to reposition)"
                 value={studioBottomText}
                 onChange={(e) => setStudioBottomText(e.target.value)}
                 style={{ width: '100%', marginTop: '8px' }}
               />
 
-              {/* Font Size Slider */}
+              {/* Font Size Slider & Text Color Swatches */}
               <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '8px',
                   marginTop: '8px',
                   fontSize: '12px',
                   color: '#94a3b8'
                 }}
               >
-                <span>Text Size: {captionFontSize}px</span>
-                <input
-                  type="range"
-                  min="22"
-                  max="50"
-                  value={captionFontSize}
-                  onChange={(e) => setCaptionFontSize(Number(e.target.value))}
-                  style={{ width: '65%' }}
-                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: '170px' }}>
+                  <span>Size: {captionFontSize}px</span>
+                  <input
+                    type="range"
+                    min="22"
+                    max="50"
+                    value={captionFontSize}
+                    onChange={(e) => setCaptionFontSize(Number(e.target.value))}
+                    style={{ flex: 1 }}
+                  />
+                </div>
+                {setStudioTextColor && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span style={{ fontSize: '11px' }}>Color:</span>
+                    {TEXT_COLOR_SWATCHES.map((sw) => (
+                      <button
+                        key={sw.id}
+                        type="button"
+                        onClick={() => setStudioTextColor(sw.id)}
+                        title={sw.label}
+                        style={{
+                          width: '20px',
+                          height: '20px',
+                          borderRadius: '50%',
+                          background: sw.id,
+                          border:
+                            studioTextColor === sw.id
+                              ? '2.5px solid #00f3ff'
+                              : '1px solid rgba(255,255,255,0.35)',
+                          cursor: 'pointer',
+                          transform: studioTextColor === sw.id ? 'scale(1.15)' : 'scale(1)'
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
             {/* 3. Post Title, Category & Safety Blur Toggle */}
             <div>
-              <label className="tm-studio-label">3. Post Title, Category & Safety</label>
+              <label className="tm-studio-label">3. Post Title, Category &amp; Safety</label>
               <input
                 type="text"
                 className="tm-input"
-                placeholder="Give your meme a spicy title..."
+                placeholder="Give your uploaded meme a title..."
                 value={studioTitle}
                 onChange={(e) => setStudioTitle(e.target.value)}
                 style={{ width: '100%', marginTop: '6px' }}
@@ -566,10 +743,10 @@ export default function MemeStudioModal({
                   onChange={(e) => setStudioCategory(e.target.value)}
                   style={{ flex: 1, background: '#1e293b' }}
                 >
-                  <option value="dank">#DANK</option>
-                  <option value="tech">#TECH</option>
+                  <option value="dank">#DANK / FUNNY</option>
+                  <option value="relatable">#RELATABLE / LIFE</option>
                   <option value="gaming">#GAMING</option>
-                  <option value="relatable">#RELATABLE</option>
+                  <option value="tech">#TECH / CODING</option>
                 </select>
 
                 <button
@@ -589,25 +766,41 @@ export default function MemeStudioModal({
               )}
             </div>
 
-            <button
-              type="submit"
-              className="tm-btn tm-btn-primary"
-              disabled={isPublishing}
-              style={{
-                justifyContent: 'center',
-                padding: '13px',
-                fontSize: '15px',
-                marginTop: '4px'
-              }}
-            >
-              {isPublishing
-                ? 'Uploading to Supabase...'
-                : activeBounty
-                ? `🎯 Submit Bounty Entry (+${activeBounty.rewardXp || 200} XP)`
-                : mutatingParentMeme
-                ? '🧬 Publish Mutation (+150 XP)'
-                : '🚀 Publish to Feed (+100 XP)'}
-            </button>
+            {!customUploadImg ? (
+              <button
+                type="button"
+                className="tm-btn tm-btn-primary"
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  justifyContent: 'center',
+                  padding: '13px',
+                  fontSize: '15px',
+                  marginTop: '4px'
+                }}
+              >
+                📸 Step 1: Select Photo to Upload (+100 XP)
+              </button>
+            ) : (
+              <button
+                type="submit"
+                className="tm-btn tm-btn-primary"
+                disabled={isPublishing}
+                style={{
+                  justifyContent: 'center',
+                  padding: '13px',
+                  fontSize: '15px',
+                  marginTop: '4px'
+                }}
+              >
+                {isPublishing
+                  ? 'Uploading to Community Feed...'
+                  : activeBounty
+                  ? `🎯 Submit Bounty Upload (+${activeBounty.rewardXp || 200} XP)`
+                  : mutatingParentMeme
+                  ? '🧬 Publish Remix (+150 XP)'
+                  : '🚀 Publish Uploaded Meme (+100 XP)'}
+              </button>
+            )}
           </form>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { getMemeRarityTier } from '../data/starterMemes';
+import { getMemeRarityTier, formatMemeUploadDate } from '../data/starterMemes';
 
 export default function SwipeDeck({
   filteredMemes,
@@ -9,18 +9,44 @@ export default function SwipeDeck({
   onPrevCard,
   onBackToFeed,
   onTriggerStudioMutate,
-  onOpenTheater
+  onOpenTheater,
+  onOpenBlankStudio
 }) {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [sessionSwipes, setSessionSwipes] = useState(0);
   const dragStartRef = useRef(null);
 
-  if (!filteredMemes || filteredMemes.length === 0) return null;
+  if (!filteredMemes || filteredMemes.length === 0) {
+    return (
+      <section className="tm-arena" style={{ padding: '40px 20px', textAlign: 'center' }}>
+        <div className="tm-empty-feed-card">
+          <div style={{ fontSize: '48px', marginBottom: '8px' }}>⚡📸</div>
+          <h2 style={{ margin: '0 0 8px', fontSize: '22px' }}>No Community Memes in Hyper-Swipe Yet!</h2>
+          <p style={{ color: '#94a3b8', maxWidth: '460px', margin: '0 auto 16px', fontSize: '14px' }}>
+            All memes on THE MEMES.net are 100% uploaded by real users. Upload the first meme to kick off the Hyper-Swipe deck!
+          </p>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            {onOpenBlankStudio && (
+              <button type="button" className="tm-btn tm-btn-primary" onClick={onOpenBlankStudio}>
+                + Upload Your Meme (+100 XP)
+              </button>
+            )}
+            {onBackToFeed && (
+              <button type="button" className="tm-btn" onClick={onBackToFeed}>
+                ← Back to Feed
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   const activeIdx = swipeIndex % filteredMemes.length;
   const m = filteredMemes[activeIdx];
   const rarity = getMemeRarityTier(m);
+  const uploadInfo = formatMemeUploadDate(m.created_at);
 
   const handlePointerDown = (e) => {
     if (e.target.closest('button')) return;
@@ -55,7 +81,6 @@ export default function SwipeDeck({
     }
   };
 
-  // Determine active stamp overlay while dragging
   let stampType = null;
   if (dragOffset.y < -40 && Math.abs(dragOffset.y) > Math.abs(dragOffset.x)) {
     stampType = 'super';
@@ -104,8 +129,8 @@ export default function SwipeDeck({
       </div>
 
       <p style={{ color: '#94a3b8', fontSize: '12px', margin: '0 0 10px' }}>
-        Swipe card left/right or tap buttons: <strong>[← Nope]</strong>{' '}
-        <strong>[↑ Super 2x]</strong> <strong>[→ Based]</strong>
+        Swipe card left/right or tap buttons: <strong>[← Skip]</strong>{' '}
+        <strong>[↑ Super 2x]</strong> <strong>[→ Awesome!]</strong>
       </p>
 
       <div
@@ -123,20 +148,25 @@ export default function SwipeDeck({
           transition: isDragging ? 'none' : undefined
         }}
       >
-        {/* Dynamic Drag Stamp Overlays */}
         {stampType === 'based' && (
-          <div className="tm-swipe-stamp based">🔥 BASED (+XP)</div>
+          <div className="tm-swipe-stamp based">🔥 AWESOME (+XP)</div>
         )}
         {stampType === 'nope' && (
-          <div className="tm-swipe-stamp nope">💀 NOPE</div>
+          <div className="tm-swipe-stamp nope">⏭️ SKIP</div>
         )}
         {stampType === 'super' && (
           <div className="tm-swipe-stamp super">🚀 SUPER 2x FIRE!</div>
         )}
 
         <div className="tm-card-header">
-          <span>@{m.author_name}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <span>@{m.author_name}</span>
+            <span className="tm-upload-date-badge">
+              📅 Uploaded {uploadInfo.dateTime} ({uploadInfo.relative})
+            </span>
+          </div>
           <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            {uploadInfo.isNewToday && <span className="tm-upload-new-pill">🆕 NEW</span>}
             {rarity.label && (
               <span className={`tm-rarity-badge ${rarity.tier}`}>{rarity.label}</span>
             )}
@@ -159,7 +189,7 @@ export default function SwipeDeck({
               onTriggerSwipe('left', e);
             }}
           >
-            💀 Pass
+            ⏭️ Skip
           </button>
           <button
             type="button"
@@ -180,7 +210,7 @@ export default function SwipeDeck({
               onTriggerSwipe('right', e);
             }}
           >
-            🔥 Based
+            🔥 Awesome
           </button>
           <button
             type="button"
@@ -195,7 +225,7 @@ export default function SwipeDeck({
             className="tm-mutate-btn"
             onClick={(e) => onTriggerStudioMutate(m, e)}
           >
-            🧬 Mutate
+            🧬 Remix
           </button>
         </div>
       </div>

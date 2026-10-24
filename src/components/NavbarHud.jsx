@@ -53,7 +53,7 @@ export default function NavbarHud({
             <div className="tm-mascot-logo-wrap">
               <img
                 src="/logo-512.png"
-                alt="THE MEMES.net Cyber-Jester Skull Mascot Logo"
+                alt="THE MEMES.net Friendly Cyber-Arcade Star Mascot Logo"
                 className="tm-mascot-logo-img"
                 width="38"
                 height="38"

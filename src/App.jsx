@@ -7,8 +7,6 @@ import {
   renderArtworkWithFilter
 } from './utils/canvasMutator';
 import {
-  STARTER_MEMES,
-  STUDIO_TEMPLATES,
   VIRAL_CAPTIONS,
   RANKS,
   DAILY_BOUNTIES,
@@ -16,7 +14,8 @@ import {
   CURSOR_TRAILS,
   MEME_FORTUNES,
   ARCADE_RATE_LIMITS,
-  formatWindowCountdown
+  formatWindowCountdown,
+  formatMemeUploadDate
 } from './data/starterMemes';
 import { updateDynamicSeo } from './utils/seoEngine';
 import NavbarHud from './components/NavbarHud';
@@ -41,11 +40,29 @@ import SeoDiscoveryFooter from './components/SeoDiscoveryFooter';
 import DankPetWidget from './components/DankPetWidget';
 
 export default function App() {
-  // Core Feed & Filter State
-  const [memes, setMemes] = useState(STARTER_MEMES);
+  // Core Feed & Filter State (100% User-Uploaded Memes Only — Zero Template Memes)
+  const [memes, setMemes] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('tm_user_memes') || '[]');
+      return Array.isArray(saved)
+        ? saved.filter((m) => m && !String(m.id).startsWith('seed-'))
+        : [];
+    } catch {
+      return [];
+    }
+  });
   const [isLoadingFeed, setIsLoadingFeed] = useState(true);
   const [visibleCount, setVisibleCount] = useState(6);
-  const [sortBy, setSortBy] = useState('latest'); // 'latest' | 'top'
+  const [sortBy, setSortBy] = useState('latest'); // 'latest' | 'top' | 'new24h'
+  const [showSavedOnly, setShowSavedOnly] = useState(false);
+  const [bookmarkedIds, setBookmarkedIds] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('tm_saved_memes') || '[]');
+    } catch {
+      return [];
+    }
+  });
+  const quickUploadInputRef = useRef(null);
   const [category, setCategory] = useState(() => {
     if (typeof window === 'undefined') return 'all';
     const cat = new URLSearchParams(window.location.search).get('category');
@@ -229,11 +246,12 @@ export default function App() {
   const [authMessage, setAuthMessage] = useState('');
   const failedAuthRef = useRef({ count: 0, lockUntil: 0 });
 
-  // Studio 2.0 Modal State
+  // Studio 2.0 Modal State (100% User-Uploaded Images)
   const [showStudio, setShowStudio] = useState(false);
   const [studioTemplateIdx, setStudioTemplateIdx] = useState(0);
-  const [studioTopText, setStudioTopText] = useState(STUDIO_TEMPLATES[0].defaultTop);
-  const [studioBottomText, setStudioBottomText] = useState(STUDIO_TEMPLATES[0].defaultBottom);
+  const [studioTopText, setStudioTopText] = useState('');
+  const [studioBottomText, setStudioBottomText] = useState('');
+  const [studioTextColor, setStudioTextColor] = useState('#facc15');
   const [topTextPos, setTopTextPos] = useState({ x: 300, y: 64 });
   const [bottomTextPos, setBottomTextPos] = useState({ x: 300, y: 490 });
   const [captionFontSize, setCaptionFontSize] = useState(34);
@@ -310,6 +328,21 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('tm_reported', JSON.stringify(reportedMemeIds));
   }, [reportedMemeIds]);
+
+  useEffect(() => {
+    localStorage.setItem('tm_saved_memes', JSON.stringify(bookmarkedIds));
+  }, [bookmarkedIds]);
+
+  useEffect(() => {
+    try {
+      const localOnly = memes
+        .filter((m) => m && !String(m.id).startsWith('seed-'))
+        .slice(0, 30);
+      localStorage.setItem('tm_user_memes', JSON.stringify(localOnly));
+    } catch {
+      // Ignore storage quota if large base64 images
+    }
+  }, [memes]);
 
   useEffect(() => {
     localStorage.setItem('tm_spins', String(lootSpins));
@@ -468,18 +501,25 @@ export default function App() {
       }
 
       setDbStatus('live');
-      if (data && data.length > 0) {
-        const normalized = data.map((row) => ({
-          ...row,
-          generation: row.generation || 0,
-          mutation_count: row.mutation_count || 0,
-          reactions: row.reactions || { '🔥': 0, '💀': 0, '😂': 0, '🗿': 0 },
-          comments: Array.isArray(row.comments) ? row.comments : []
-        }));
-        const liveIds = new Set(normalized.map((m) => String(m.id)));
-        const merged = [...normalized, ...STARTER_MEMES.filter((s) => !liveIds.has(String(s.id)))];
-        setMemes(merged);
-      }
+      const normalized = Array.isArray(data)
+        ? data.map((row) => ({
+            ...row,
+            generation: row.generation || 0,
+            mutation_count: row.mutation_count || 0,
+            reactions: row.reactions || { '🔥': 0, '💀': 0, '😂': 0, '🗿': 0 },
+            comments: Array.isArray(row.comments) ? row.comments : []
+          }))
+        : [];
+      const liveIds = new Set(normalized.map((m) => String(m.id)));
+      setMemes((prev) => {
+        const localUserUploads = prev.filter(
+          (m) =>
+            m &&
+            String(m.id).startsWith('local-') &&
+            !liveIds.has(String(m.id))
+        );
+        return [...normalized, ...localUserUploads];
+      });
       setIsLoadingFeed(false);
     } catch {
       setDbStatus('local');
@@ -738,10 +778,11 @@ export default function App() {
     setUploadError('');
     setCaptionLayout('impact');
     setCaptionFontSize(34);
+    setStudioTextColor('#facc15');
     setTopTextPos({ x: 300, y: 64 });
     setBottomTextPos({ x: 300, y: 490 });
-    setStudioTopText(STUDIO_TEMPLATES[0].defaultTop);
-    setStudioBottomText(STUDIO_TEMPLATES[0].defaultBottom);
+    setStudioTopText('');
+    setStudioBottomText('');
     setShowStudio(true);
   }, []);
 
@@ -978,7 +1019,7 @@ export default function App() {
   );
 
   // ==========================================
-  // HTML5 CANVAS MEME STUDIO 2.0 RENDERER & EXPORT
+  // HTML5 CANVAS MEME STUDIO 2.0 RENDERER & EXPORT (100% USER UPLOADS)
   // ==========================================
   const drawStudioCanvas = useCallback(
     (hideSelectionUI = false) => {
@@ -991,13 +1032,12 @@ export default function App() {
       canvas.width = W;
       canvas.height = H;
 
-      const tpl = STUDIO_TEMPLATES[studioTemplateIdx] || STUDIO_TEMPLATES[0];
       const hasTopBar = captionLayout === 'topbar' && Boolean(studioTopText.trim());
       const topBarH = hasTopBar ? 86 : 0;
       const artY = topBarH;
       const artH = memeH - topBarH;
 
-      // 1. Render Base Artwork with Chosen Viral Filter / Glitch FX
+      // 1. Render User-Uploaded Artwork with Chosen Photo Filter / Glitch FX
       renderArtworkWithFilter(ctx, W, artY, artH, studioFilter, (bctx, bw, bh) => {
         if (customUploadImg) {
           bctx.fillStyle = '#090a0f';
@@ -1007,23 +1047,49 @@ export default function App() {
           const dh = customUploadImg.height * scale;
           bctx.drawImage(customUploadImg, (bw - dw) / 2, (bh - dh) / 2, dw, dh);
         } else {
+          // Clean Upload Guide Canvas (Zero Default Template Memes)
           const grad = bctx.createLinearGradient(0, 0, bw, bh);
-          grad.addColorStop(0, tpl.bg1);
-          grad.addColorStop(1, tpl.bg2);
+          grad.addColorStop(0, '#0a0d1a');
+          grad.addColorStop(1, '#131629');
           bctx.fillStyle = grad;
           bctx.fillRect(0, 0, bw, bh);
 
-          bctx.fillStyle = tpl.accent;
-          bctx.globalAlpha = 0.14;
-          bctx.beginPath();
-          bctx.arc(bw / 2, bh / 2, 150, 0, Math.PI * 2);
-          bctx.fill();
-          bctx.globalAlpha = 1;
+          // Subtle Cyber Grid Guide
+          bctx.strokeStyle = 'rgba(0, 243, 255, 0.08)';
+          bctx.lineWidth = 1;
+          for (let gx = 0; gx < bw; gx += 40) {
+            bctx.beginPath();
+            bctx.moveTo(gx, 0);
+            bctx.lineTo(gx, bh);
+            bctx.stroke();
+          }
+          for (let gy = 0; gy < bh; gy += 40) {
+            bctx.beginPath();
+            bctx.moveTo(0, gy);
+            bctx.lineTo(bw, gy);
+            bctx.stroke();
+          }
 
-          bctx.font = '120px sans-serif';
-          bctx.textAlign = 'center';
-          bctx.textBaseline = 'middle';
-          bctx.fillText(tpl.emoji, bw / 2, bh / 2);
+          if (!hideSelectionUI) {
+            bctx.strokeStyle = 'rgba(0, 243, 255, 0.35)';
+            bctx.lineWidth = 2;
+            bctx.setLineDash([8, 6]);
+            bctx.strokeRect(56, bh / 2 - 88, bw - 112, 176);
+            bctx.setLineDash([]);
+
+            bctx.font = '54px sans-serif';
+            bctx.textAlign = 'center';
+            bctx.textBaseline = 'middle';
+            bctx.fillText('📸', bw / 2, bh / 2 - 34);
+
+            bctx.font = '800 18px Inter, system-ui, sans-serif';
+            bctx.fillStyle = '#00f3ff';
+            bctx.fillText('CLICK TO UPLOAD YOUR PHOTO OR SCREENSHOT', bw / 2, bh / 2 + 18);
+
+            bctx.font = '600 13px Inter, system-ui, sans-serif';
+            bctx.fillStyle = '#94a3b8';
+            bctx.fillText('Or Drag & Drop file anywhere • Paste Ctrl+V • Snap Camera', bw / 2, bh / 2 + 46);
+          }
         }
       });
 
@@ -1063,6 +1129,8 @@ export default function App() {
         ctx.restore();
       };
 
+      const accentFill = mutatingParentMeme ? '#ff00ff' : studioTextColor || '#facc15';
+
       if (captionLayout === 'topbar') {
         if (hasTopBar) {
           ctx.fillStyle = '#ffffff';
@@ -1073,12 +1141,7 @@ export default function App() {
           ctx.textBaseline = 'middle';
           ctx.fillText(studioTopText, W / 2, topBarH / 2, W - 36);
         }
-        drawImpactText(
-          studioBottomText,
-          bottomTextPos.x,
-          bottomTextPos.y,
-          mutatingParentMeme ? '#ff00ff' : tpl.accent || '#facc15'
-        );
+        drawImpactText(studioBottomText, bottomTextPos.x, bottomTextPos.y, accentFill);
       } else if (captionLayout === 'cyberbar') {
         if (studioTopText) {
           ctx.fillStyle = 'rgba(7, 8, 16, 0.82)';
@@ -1099,17 +1162,12 @@ export default function App() {
           ctx.font = `900 ${Math.min(30, captionFontSize)}px "Courier New", monospace`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillStyle = '#f472b6';
+          ctx.fillStyle = accentFill;
           ctx.fillText(studioBottomText.toUpperCase(), bottomTextPos.x, bottomTextPos.y, W - 36);
         }
       } else {
         drawImpactText(studioTopText, topTextPos.x, topTextPos.y, '#ffffff');
-        drawImpactText(
-          studioBottomText,
-          bottomTextPos.x,
-          bottomTextPos.y,
-          mutatingParentMeme ? '#ff00ff' : tpl.accent || '#facc15'
-        );
+        drawImpactText(studioBottomText, bottomTextPos.x, bottomTextPos.y, accentFill);
       }
 
       // 4. 16-Bit Arcade Cartridge Footer Bar (Bottom 32px)
@@ -1132,14 +1190,14 @@ export default function App() {
       ctx.fillStyle = nextGen > 0 ? '#f472b6' : '#facc15';
       const rightBadge =
         nextGen > 0
-          ? `🧬 GEN-${nextGen} MUTATION // BY @${handle}`
-          : `🕹️ GEN-0 ORIGIN // BY @${handle}`;
+          ? `🧬 GEN-${nextGen} REMIX // BY @${handle}`
+          : `🕹️ GEN-0 UPLOAD // BY @${handle}`;
       ctx.fillText(rightBadge, W - 14, memeH + 17);
     },
     [
-      studioTemplateIdx,
       studioTopText,
       studioBottomText,
+      studioTextColor,
       topTextPos,
       bottomTextPos,
       captionFontSize,
@@ -1210,6 +1268,13 @@ export default function App() {
     const canvas = studioCanvasRef.current;
     if (!canvas) return;
 
+    if (!customUploadImg) {
+      setUploadError(
+        '📸 Please upload, paste (Ctrl+V), or snap your own photo first — all memes on THE MEMES.net are 100% user-uploaded!'
+      );
+      return;
+    }
+
     const now = Date.now();
     if (now - lastPublishTimeRef.current < 4000) {
       setUploadError('Arcade Cooldown: Wait 4 seconds between publishes to prevent spam.');
@@ -1221,7 +1286,11 @@ export default function App() {
     setIsPublishing(true);
     drawStudioCanvas(true);
 
-    const finalTitle = studioTitle.trim() || `${studioTopText} — ${studioBottomText}`;
+    const fallbackCaption = [studioTopText.trim(), studioBottomText.trim()]
+      .filter(Boolean)
+      .join(' — ');
+    const finalTitle =
+      studioTitle.trim() || fallbackCaption || `Community Upload by @${user?.username || 'AnonMemer'}`;
     const author = user?.username || 'AnonMemer';
     const nextGen = mutatingParentMeme ? (mutatingParentMeme.generation || 0) + 1 : 0;
     const parentId = mutatingParentMeme ? mutatingParentMeme.id : null;
@@ -1923,23 +1992,18 @@ export default function App() {
       sfx.playClownHonk();
       setTimeout(() => sfx.playAirhorn(), 180);
 
-      const randTplIdx = Math.floor(Math.random() * STUDIO_TEMPLATES.length);
       const randCap = VIRAL_CAPTIONS[Math.floor(Math.random() * VIRAL_CAPTIONS.length)];
       const filters = ['deepfry', 'vhs', 'cyber', 'chaos', 'pixelate'];
       const randFilter = filters[Math.floor(Math.random() * filters.length)];
       const layouts = ['impact', 'topbar', 'cyberbar'];
       const randLayout = layouts[Math.floor(Math.random() * layouts.length)];
-      const stickerPool = ['💀', '🔥', '🗿', '🤡', '🚀', '⚡', '😂', '🦆'];
+      const stickerPool = ['🔥', '😂', '🌟', '👑', '🗿', '🚀', '⚡', '🦆'];
 
-      setMutatingParentMeme(null);
-      setActiveBounty(null);
-      setCustomUploadImg(null);
-      setStudioTemplateIdx(randTplIdx);
       setStudioTopText(randCap[0]);
       setStudioBottomText(randCap[1]);
       setStudioFilter(randFilter);
       setCaptionLayout(randLayout);
-      setStudioTitle(`CHAOS DROP: ${randCap[0]}`);
+      setStudioTitle(`REMIX: ${randCap[0]}`);
       setStudioCategory(['dank', 'tech', 'gaming', 'relatable'][Math.floor(Math.random() * 4)]);
       setStudioStickers([
         {
@@ -1957,10 +2021,26 @@ export default function App() {
           size: 64
         }
       ]);
-      setShowStudio(true);
+
+      // If there are already user-uploaded memes in the feed and no custom image is in the studio,
+      // load a random user-uploaded meme to remix; otherwise open the studio ready for the user's photo!
+      if (!customUploadImg && memes.length > 0) {
+        const randomUserMeme = memes[Math.floor(Math.random() * memes.length)];
+        setMutatingParentMeme(randomUserMeme);
+        loadImageFromUrl(randomUserMeme.image_url)
+          .then((img) => {
+            setCustomUploadImg(img);
+            setShowStudio(true);
+          })
+          .catch(() => {
+            setShowStudio(true);
+          });
+      } else {
+        setShowStudio(true);
+      }
       awardXpAndCombo(35, e, '🎲');
     },
-    [awardXpAndCombo]
+    [awardXpAndCombo, customUploadImg, memes]
   );
 
   const handleClaimDailyStreak = useCallback(
@@ -2102,10 +2182,47 @@ export default function App() {
     setModerationToast('');
   }, []);
 
+  const handleToggleBookmark = useCallback(
+    (meme, e) => {
+      if (!meme) return;
+      const idStr = String(meme.id);
+      setBookmarkedIds((prev) => {
+        const exists = prev.includes(idStr);
+        if (!exists) {
+          sfx.playPop(combo);
+          awardXpAndCombo(15, e, '⭐');
+          return [...prev, idStr];
+        }
+        sfx.playToggle();
+        return prev.filter((id) => id !== idStr);
+      });
+    },
+    [combo, awardXpAndCombo]
+  );
+
+  // Live Upload Activity & Date Stats (helps track when new users upload memes!)
+  const uploadStats = useMemo(() => {
+    const valid = memes.filter((m) => m && !reportedMemeIds.includes(String(m.id)));
+    const sortedByDate = [...valid].sort(
+      (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)
+    );
+    const latestMeme = sortedByDate[0] || null;
+    const latestDateInfo = latestMeme ? formatMemeUploadDate(latestMeme.created_at) : null;
+    const newTodayCount = valid.filter((m) => formatMemeUploadDate(m.created_at).isNewToday).length;
+    return {
+      totalUploads: valid.length,
+      newTodayCount,
+      latestMeme,
+      latestDateInfo
+    };
+  }, [memes, reportedMemeIds]);
+
   const filteredMemes = useMemo(() => {
     return memes
       .filter((m) => {
         if (reportedMemeIds.includes(String(m.id))) return false;
+        if (showSavedOnly && !bookmarkedIds.includes(String(m.id))) return false;
+        if (sortBy === 'new24h' && !formatMemeUploadDate(m.created_at).isNewToday) return false;
         if (category !== 'all' && m.category !== category) return false;
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase();
@@ -2117,12 +2234,12 @@ export default function App() {
         return true;
       })
       .sort((a, b) => {
-        if (sortBy === 'latest') {
+        if (sortBy === 'latest' || sortBy === 'new24h') {
           return new Date(b.created_at || 0) - new Date(a.created_at || 0);
         }
         return (b.score || 0) - (a.score || 0);
       });
-  }, [memes, reportedMemeIds, category, searchQuery, sortBy]);
+  }, [memes, reportedMemeIds, showSavedOnly, bookmarkedIds, category, searchQuery, sortBy]);
 
   const visibleMemes = useMemo(() => {
     return filteredMemes.slice(0, visibleCount);
@@ -2299,6 +2416,15 @@ export default function App() {
       if (!meme) return;
       const shareUrl = `${window.location.origin}/?meme=${encodeURIComponent(String(meme.id))}`;
       navigator.clipboard?.writeText(shareUrl).catch(() => {});
+      if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+        navigator
+          .share({
+            title: `${meme.title} — THE MEMES.net`,
+            text: `Check out "${meme.title}" uploaded by @${meme.author_name || 'Anon'} on THE MEMES.net!`,
+            url: shareUrl
+          })
+          .catch(() => {});
+      }
       sfx.playPop(combo);
       awardXpAndCombo(10, e, '🔗');
     },
@@ -2651,29 +2777,111 @@ export default function App() {
         onLaunchStampede={handleLaunchStampede}
       />
 
+      {/* LIVE COMMUNITY UPLOAD ACTIVITY & DATE TRACKER BAR */}
+      <section className="tm-upload-tracker-bar" aria-label="Live Community Upload Activity Tracker">
+        <div className="tm-upload-tracker-stats">
+          <span className="tm-tracker-pill">
+            📸 <strong>{uploadStats.totalUploads}</strong> User Upload{uploadStats.totalUploads === 1 ? '' : 's'}
+          </span>
+          <span className="tm-tracker-pill new-today">
+            🆕 <strong>{uploadStats.newTodayCount}</strong> Uploaded in Last 24h
+          </span>
+          <span className="tm-tracker-latest">
+            {uploadStats.latestMeme && uploadStats.latestDateInfo ? (
+              <>
+                ⏱️ Latest Upload: <strong>{uploadStats.latestDateInfo.dateTime}</strong> (
+                {uploadStats.latestDateInfo.relative}) by{' '}
+                <strong
+                  style={{ color: '#00f3ff', cursor: 'pointer' }}
+                  onClick={() => setProfileUsername(uploadStats.latestMeme.author_name)}
+                >
+                  @{uploadStats.latestMeme.author_name}
+                </strong>
+              </>
+            ) : (
+              <>⏱️ No user memes uploaded yet — be the first to upload (+100 XP)!</>
+            )}
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className="tm-btn"
+            style={{ padding: '6px 12px', fontSize: '12px' }}
+            onClick={() => {
+              sfx.playToggle();
+              fetchSupabaseMemes();
+            }}
+            title="Check Supabase for new user uploads right now"
+          >
+            🔄 Refresh Uploads
+          </button>
+          <button
+            type="button"
+            className="tm-btn tm-btn-primary"
+            style={{ padding: '6px 14px', fontSize: '12px' }}
+            onClick={() => {
+              closeAllModals();
+              handleOpenBlankStudio();
+            }}
+          >
+            + Upload Meme (+100 XP)
+          </button>
+        </div>
+      </section>
+
       {/* SUB-NAVIGATION: SORT, CATEGORIES & GAME MODES */}
       <section className="tm-controls">
         <div className="tm-tabs">
           <button
             type="button"
-            className={`tm-tab ${sortBy === 'latest' ? 'active' : ''}`}
-            onClick={() => setSortBy('latest')}
+            className={`tm-tab ${sortBy === 'latest' && !showSavedOnly ? 'active' : ''}`}
+            onClick={() => {
+              setShowSavedOnly(false);
+              setSortBy('latest');
+            }}
           >
-            ⚡ Latest
+            ⚡ Latest Uploads
           </button>
           <button
             type="button"
-            className={`tm-tab ${sortBy === 'top' ? 'active' : ''}`}
-            onClick={() => setSortBy('top')}
+            className={`tm-tab ${sortBy === 'new24h' && !showSavedOnly ? 'active' : ''}`}
+            onClick={() => {
+              setShowSavedOnly(false);
+              setSortBy('new24h');
+            }}
+            title="Show only memes uploaded in the last 24 hours"
           >
-            🔥 Top This Week
+            🆕 New Today ({uploadStats.newTodayCount})
+          </button>
+          <button
+            type="button"
+            className={`tm-tab ${sortBy === 'top' && !showSavedOnly ? 'active' : ''}`}
+            onClick={() => {
+              setShowSavedOnly(false);
+              setSortBy('top');
+            }}
+          >
+            🔥 Top Scored
+          </button>
+          <button
+            type="button"
+            className={`tm-tab ${showSavedOnly ? 'active' : ''}`}
+            onClick={() => setShowSavedOnly((prev) => !prev)}
+            title="View your saved favorite memes"
+          >
+            ⭐ Saved ({bookmarkedIds.length})
           </button>
           {['all', 'dank', 'tech', 'gaming', 'relatable'].map((cat) => (
             <button
               key={cat}
               type="button"
-              className={`tm-tab ${category === cat ? 'active' : ''}`}
-              onClick={() => setCategory(cat)}
+              className={`tm-tab ${category === cat && !showSavedOnly ? 'active' : ''}`}
+              onClick={() => {
+                setShowSavedOnly(false);
+                setCategory(cat);
+              }}
             >
               #{cat.toUpperCase()}
             </button>
@@ -2752,6 +2960,66 @@ export default function App() {
 
           {isLoadingFeed ? (
             <MemeSkeletonGrid count={6} />
+          ) : visibleMemes.length === 0 ? (
+            <section style={{ maxWidth: '760px', margin: '18px auto 36px', padding: '0 20px' }}>
+              <div className="tm-empty-feed-card">
+                <input
+                  ref={quickUploadInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleCustomImageUpload}
+                  style={{ display: 'none' }}
+                />
+                <div style={{ fontSize: '52px', marginBottom: '8px' }}>🚀📸✨</div>
+                <h2 style={{ margin: '0 0 8px', fontSize: '23px', fontWeight: 900 }}>
+                  {showSavedOnly
+                    ? 'No Saved Memes Yet!'
+                    : sortBy === 'new24h'
+                    ? 'No New Memes Uploaded in the Last 24 Hours!'
+                    : category !== 'all' || searchQuery.trim()
+                    ? 'No User Memes Match This Filter Yet!'
+                    : '100% Community-Powered Feed — Upload the First Meme!'}
+                </h2>
+                <p style={{ color: '#94a3b8', maxWidth: '540px', margin: '0 auto 18px', fontSize: '14px', lineHeight: 1.55 }}>
+                  {showSavedOnly
+                    ? 'Tap the ⭐ button on any meme card to save your favorites here for quick access.'
+                    : 'THE MEMES.net has zero fake template memes — every single meme on the site is uploaded by real users like you! Drop an image anywhere on screen, paste (Ctrl+V), or click below to upload and add captions.'}
+                </p>
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    className="tm-btn tm-btn-primary"
+                    onClick={() => quickUploadInputRef.current?.click()}
+                  >
+                    📥 Select Photo / Screenshot to Upload (+100 XP)
+                  </button>
+                  <button
+                    type="button"
+                    className="tm-btn"
+                    onClick={() => {
+                      closeAllModals();
+                      handleOpenBlankStudio();
+                    }}
+                  >
+                    🎨 Open Meme Forge Studio
+                  </button>
+                  {(showSavedOnly || sortBy === 'new24h' || category !== 'all' || searchQuery.trim()) && (
+                    <button
+                      type="button"
+                      className="tm-btn"
+                      onClick={() => {
+                        setShowSavedOnly(false);
+                        setSortBy('latest');
+                        setCategory('all');
+                        setSearchQuery('');
+                      }}
+                    >
+                      ↺ Show All User Uploads
+                    </button>
+                  )}
+                </div>
+              </div>
+            </section>
           ) : (
             <main className="tm-grid">
               {visibleMemes.map((meme) => (
@@ -2759,6 +3027,8 @@ export default function App() {
                   key={meme.id}
                   meme={meme}
                   myVote={userVotes[meme.id] || 0}
+                  isBookmarked={bookmarkedIds.includes(String(meme.id))}
+                  onToggleBookmark={handleToggleBookmark}
                   isCommentsOpen={!!openComments[meme.id]}
                   commentInput={commentInputs[meme.id] || ''}
                   onVote={handleVote}
@@ -2812,6 +3082,10 @@ export default function App() {
           }}
           onTriggerStudioMutate={handleTriggerStudioMutate}
           onOpenTheater={handleOpenTheater}
+          onOpenBlankStudio={() => {
+            closeAllModals();
+            handleOpenBlankStudio();
+          }}
         />
       )}
 
@@ -2831,6 +3105,10 @@ export default function App() {
             setViewMode('feed');
           }}
           onOpenTheater={handleOpenTheater}
+          onOpenBlankStudio={() => {
+            closeAllModals();
+            handleOpenBlankStudio();
+          }}
         />
       )}
 
@@ -2926,6 +3204,8 @@ export default function App() {
           setCaptionFontSize={setCaptionFontSize}
           captionLayout={captionLayout}
           setCaptionLayout={setCaptionLayout}
+          studioTextColor={studioTextColor}
+          setStudioTextColor={setStudioTextColor}
           studioFilter={studioFilter}
           setStudioFilter={setStudioFilter}
           studioTitle={studioTitle}

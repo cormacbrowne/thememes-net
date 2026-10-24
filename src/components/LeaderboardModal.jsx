@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { RANKS } from '../data/starterMemes';
+import { RANKS, formatMemeUploadDate } from '../data/starterMemes';
 
 export default function LeaderboardModal({
   memes,
@@ -238,7 +238,7 @@ export default function LeaderboardModal({
                       >
                         @{m.author_name}
                       </strong>{' '}
-                      • 🔥 {m.score} pts
+                      • 🔥 {m.score} pts • 📅 {formatMemeUploadDate(m.created_at).dateTime}
                     </div>
                   </div>
                 </div>

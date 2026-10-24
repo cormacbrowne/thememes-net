@@ -1,4 +1,4 @@
-import { getMemeRarityTier } from '../data/starterMemes';
+import { getMemeRarityTier, formatMemeUploadDate } from '../data/starterMemes';
 
 export default function BattleArena({
   memes,
@@ -10,8 +10,37 @@ export default function BattleArena({
   onBattlePick,
   onSkipMatchup,
   onBackToFeed,
-  onOpenTheater
+  onOpenTheater,
+  onOpenBlankStudio
 }) {
+  if (!memes || memes.length < 2) {
+    return (
+      <section style={{ padding: '40px 20px', textAlign: 'center' }}>
+        <div className="tm-empty-feed-card">
+          <div style={{ fontSize: '48px', marginBottom: '8px' }}>⚔️👑</div>
+          <h2 style={{ margin: '0 0 8px', fontSize: '22px' }}>
+            1v1 Battle Arena Needs at Least 2 User Memes!
+          </h2>
+          <p style={{ color: '#94a3b8', maxWidth: '480px', margin: '0 auto 16px', fontSize: '14px' }}>
+            Currently <strong>{memes?.length || 0}</strong> user-uploaded meme{memes?.length === 1 ? ' is' : 's are'} in the arena. Upload a meme to start head-to-head King of the Hill battles!
+          </p>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            {onOpenBlankStudio && (
+              <button type="button" className="tm-btn tm-btn-primary" onClick={onOpenBlankStudio}>
+                + Upload Meme to Arena (+100 XP)
+              </button>
+            )}
+            {onBackToFeed && (
+              <button type="button" className="tm-btn" onClick={onBackToFeed}>
+                ← Back to Feed
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section>
       <div style={{ textAlign: 'center', marginTop: '10px', padding: '0 16px' }}>
@@ -43,7 +72,7 @@ export default function BattleArena({
           ⚔️ KING OF THE HILL: 1v1 MEME ARENA
         </h2>
         <p style={{ margin: 0, color: '#94a3b8', fontSize: '12px' }}>
-          Tap the funnier meme! The winner stays on the throne to defend its crown.
+          Tap the funnier user-uploaded meme! The winner stays on the throne to defend its crown.
         </p>
 
         {crowdAgreement !== null && (
@@ -59,6 +88,7 @@ export default function BattleArena({
           if (!m) return null;
           const isWin = battleWinner === memeIdx;
           const rarity = getMemeRarityTier(m);
+          const uploadInfo = formatMemeUploadDate(m.created_at);
           const isReigningKing = slotIdx === 0 && championWins > 0;
 
           return (
@@ -70,16 +100,21 @@ export default function BattleArena({
               onClick={(e) => onBattlePick(memeIdx, slotIdx, e)}
             >
               <div className="tm-card-header">
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                  {isReigningKing ? (
-                    <span className="tm-king-crown-badge">
-                      👑 REIGNING KING ({championWins}W)
-                    </span>
-                  ) : (
-                    <span className="tm-challenger-badge">⚔️ CHALLENGER</span>
-                  )}
-                  <strong>@{m.author_name}</strong>
-                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                    {isReigningKing ? (
+                      <span className="tm-king-crown-badge">
+                        👑 REIGNING KING ({championWins}W)
+                      </span>
+                    ) : (
+                      <span className="tm-challenger-badge">⚔️ CHALLENGER</span>
+                    )}
+                    <strong>@{m.author_name}</strong>
+                  </span>
+                  <span className="tm-upload-date-badge">
+                    📅 Uploaded {uploadInfo.dateTime} ({uploadInfo.relative})
+                  </span>
+                </div>
                 <span className="tm-tag">{m.score} PTS</span>
               </div>
 

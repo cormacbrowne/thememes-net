@@ -26,17 +26,17 @@ export default function MobileArcadeDock({
           onClick={() => onSelectMode('feed')}
         >
           <span className="tm-dock-icon">📱</span>
-          <span>Feed</span>
+          <span>Grid</span>
         </button>
       )}
 
       <button
         type="button"
-        className={`tm-dock-btn ${viewMode === 'swipe' && !isAnyModalOpen ? 'active' : ''}`}
-        onClick={() => onSelectMode('swipe')}
+        className={`tm-dock-btn ${viewMode === 'reels' && !isAnyModalOpen ? 'active' : ''}`}
+        onClick={() => onSelectMode('reels')}
       >
-        <span className="tm-dock-icon">⚡</span>
-        <span>Swipe</span>
+        <span className="tm-dock-icon">🎬</span>
+        <span>Reels</span>
       </button>
 
       <button

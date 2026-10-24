@@ -24,8 +24,19 @@ export default function MemeSoundboardBar({
   goblinResetMs = 0,
   onLaunchStampede
 }) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('tm_soundboard_open') === 'true';
+  });
   const [activePadId, setActivePadId] = useState(null);
+
+  const toggleExpanded = () => {
+    setIsExpanded((prev) => {
+      const next = !prev;
+      localStorage.setItem('tm_soundboard_open', String(next));
+      return next;
+    });
+  };
 
   const handlePadClick = (pad, e) => {
     setActivePadId(pad.id);
@@ -40,26 +51,28 @@ export default function MemeSoundboardBar({
           <button
             type="button"
             className="tm-soundboard-toggle-btn"
-            onClick={() => setIsExpanded((prev) => !prev)}
-            title={isExpanded ? 'Collapse Soundboard' : 'Expand Crazy Soundboard'}
+            onClick={toggleExpanded}
+            title={isExpanded ? 'Collapse Soundboard & Chaos Deck' : 'Expand 16-Pad Soundboard, Reality FX & Toys'}
           >
-            🎹 <span>16-PAD SOUNDBOARD &amp; CHAOS DECK</span>
-            <span className="tm-soundboard-chevron">{isExpanded ? '▾' : '▸'}</span>
+            🎹 <span>{isExpanded ? 'HIDE ARCADE TOYS' : '16-PAD SOUNDBOARD & TOYS'}</span>
+            <span className="tm-soundboard-chevron">{isExpanded ? '▴' : '▾'}</span>
           </button>
 
-          <div className="tm-pack-pills" role="group" aria-label="Sound Effect Packs">
-            {SOUND_PACKS.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                className={`tm-pack-pill ${soundPack === p.id ? 'active' : ''}`}
-                onClick={(e) => onChangeSoundPack(p.id, e)}
-                title={`Switch all site sound effects to ${p.label}`}
-              >
-                {p.short}
-              </button>
-            ))}
-          </div>
+          {isExpanded && (
+            <div className="tm-pack-pills" role="group" aria-label="Sound Effect Packs">
+              {SOUND_PACKS.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  className={`tm-pack-pill ${soundPack === p.id ? 'active' : ''}`}
+                  onClick={(e) => onChangeSoundPack(p.id, e)}
+                  title={`Switch all site sound effects to ${p.label}`}
+                >
+                  {p.short}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="tm-chaos-actions">
@@ -113,68 +126,70 @@ export default function MemeSoundboardBar({
         </div>
       </div>
 
-      {/* LIVE SCREEN REALITY MUTATORS BAR */}
-      <div className="tm-mutator-strip">
-        <span className="tm-mutator-label">🌪️ REALITY FX:</span>
-        <div className="tm-mutator-pills">
-          {CHAOS_MUTATORS.map((m) => (
-            <button
-              key={m.id}
-              type="button"
-              className={`tm-mutator-pill ${chaosMutator === m.id ? 'active' : ''}`}
-              onClick={(e) => onChangeChaosMutator && onChangeChaosMutator(m.id, e)}
-              title={m.desc}
-            >
-              {m.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* PHASE 18: SILLY ANIMATED SCREEN STAMPEDES & DOPAMINE TOYS LAUNCHER */}
-      <div className="tm-mutator-strip tm-stampede-strip">
-        <span className="tm-mutator-label" style={{ color: '#facc15' }}>
-          🎪 SILLY STAMPEDES:
-        </span>
-        <div className="tm-mutator-pills">
-          {SILLY_STAMPEDES.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              className="tm-mutator-pill tm-stampede-pill"
-              onClick={(e) => onLaunchStampede && onLaunchStampede(s.id, e)}
-              title={s.desc}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {isExpanded && (
-        <div className="tm-soundboard-pads-row">
-          {!soundOn && (
-            <button
-              type="button"
-              className="tm-ios-unlock-pill"
-              onClick={onToggleSound}
-            >
-              🔇 Audio Muted — Tap to Unmute iPhone / iPad / Speaker SFX!
-            </button>
-          )}
-          {SOUNDBOARD_PADS.map((pad) => (
-            <button
-              key={pad.id}
-              type="button"
-              className={`tm-sound-pad ${activePadId === pad.id ? 'pressed' : ''}`}
-              style={{ '--pad-color': pad.color }}
-              onClick={(e) => handlePadClick(pad, e)}
-            >
-              <span className="tm-sound-pad-emoji">{pad.emoji}</span>
-              <span className="tm-sound-pad-label">{pad.label}</span>
-            </button>
-          ))}
-        </div>
+        <>
+          {/* LIVE SCREEN REALITY MUTATORS BAR */}
+          <div className="tm-mutator-strip">
+            <span className="tm-mutator-label">🌪️ REALITY FX:</span>
+            <div className="tm-mutator-pills">
+              {CHAOS_MUTATORS.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  className={`tm-mutator-pill ${chaosMutator === m.id ? 'active' : ''}`}
+                  onClick={(e) => onChangeChaosMutator && onChangeChaosMutator(m.id, e)}
+                  title={m.desc}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* PHASE 18: SILLY ANIMATED SCREEN STAMPEDES & DOPAMINE TOYS LAUNCHER */}
+          <div className="tm-mutator-strip tm-stampede-strip">
+            <span className="tm-mutator-label" style={{ color: '#facc15' }}>
+              🎪 SILLY STAMPEDES:
+            </span>
+            <div className="tm-mutator-pills">
+              {SILLY_STAMPEDES.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  className="tm-mutator-pill tm-stampede-pill"
+                  onClick={(e) => onLaunchStampede && onLaunchStampede(s.id, e)}
+                  title={s.desc}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="tm-soundboard-pads-row">
+            {!soundOn && (
+              <button
+                type="button"
+                className="tm-ios-unlock-pill"
+                onClick={onToggleSound}
+              >
+                🔇 Audio Muted — Tap to Unmute iPhone / iPad / Speaker SFX!
+              </button>
+            )}
+            {SOUNDBOARD_PADS.map((pad) => (
+              <button
+                key={pad.id}
+                type="button"
+                className={`tm-sound-pad ${activePadId === pad.id ? 'pressed' : ''}`}
+                style={{ '--pad-color': pad.color }}
+                onClick={(e) => handlePadClick(pad, e)}
+              >
+                <span className="tm-sound-pad-emoji">{pad.emoji}</span>
+                <span className="tm-sound-pad-label">{pad.label}</span>
+              </button>
+            ))}
+          </div>
+        </>
       )}
     </section>
   );

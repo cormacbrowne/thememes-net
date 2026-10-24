@@ -24,6 +24,7 @@ import MemeStudioModal from './components/MemeStudioModal';
 import MemeEvolutionModal from './components/MemeEvolutionModal';
 import SwipeDeck from './components/SwipeDeck';
 import BattleArena from './components/BattleArena';
+import VerticalReelsView from './components/VerticalReelsView';
 import AuthModal from './components/AuthModal';
 import MemeTheaterModal from './components/MemeTheaterModal';
 import DailyBountyBanner from './components/DailyBountyBanner';
@@ -337,10 +338,16 @@ export default function App() {
     try {
       const localOnly = memes
         .filter((m) => m && !String(m.id).startsWith('seed-'))
-        .slice(0, 30);
+        .slice(0, 20)
+        .map((m) => {
+          if (m.image_url && m.image_url.startsWith('data:') && m.image_url.length > 120000) {
+            return { ...m, image_url: '' };
+          }
+          return m;
+        });
       localStorage.setItem('tm_user_memes', JSON.stringify(localOnly));
     } catch {
-      // Ignore storage quota if large base64 images
+      // Ignore storage quota if browser storage is restricted
     }
   }, [memes]);
 
@@ -897,6 +904,7 @@ export default function App() {
       }
 
       const multipliedDelta = delta * (direction > 0 ? combo : 1);
+      const safeDelta = Math.max(-5, Math.min(5, multipliedDelta));
       sfx.playVote(direction > 0, combo);
       awardXpAndCombo(15, event, direction > 0 ? '🔥' : '💀');
       if (direction > 0) {
@@ -907,7 +915,7 @@ export default function App() {
       setMemes((prev) =>
         prev.map((m) => {
           if (m.id === memeId) {
-            updatedScore = (m.score || 0) + multipliedDelta;
+            updatedScore = (m.score || 0) + safeDelta;
             return { ...m, score: updatedScore };
           }
           return m;
@@ -919,7 +927,7 @@ export default function App() {
         try {
           const { error: rpcError } = await client.rpc('increment_meme_score', {
             row_id: memeId,
-            delta: multipliedDelta
+            delta: safeDelta
           });
           if (rpcError) {
             await client.from('memes').update({ score: updatedScore }).eq('id', memeId);
@@ -2927,6 +2935,14 @@ export default function App() {
             </button>
             <button
               type="button"
+              className={`tm-mode-btn ${viewMode === 'reels' ? 'active' : ''}`}
+              onClick={() => setViewMode('reels')}
+              title="Full-Screen Vertical Video & Meme Reels (TikTok / Instagram style)"
+            >
+              🎬 Reels
+            </button>
+            <button
+              type="button"
               className={`tm-mode-btn ${viewMode === 'swipe' ? 'active' : ''}`}
               onClick={() => setViewMode('swipe')}
             >
@@ -3068,7 +3084,34 @@ export default function App() {
         </>
       )}
 
-      {/* MODE 2: PHYSICS HYPER-SWIPE DECK */}
+      {/* MODE 2: VERTICAL FULL-SCREEN REELS (TIKTOK / INSTAGRAM STYLE) */}
+      {viewMode === 'reels' && (
+        <VerticalReelsView
+          filteredMemes={filteredMemes}
+          userVotes={userVotes}
+          bookmarkedIds={bookmarkedIds}
+          onVote={handleVote}
+          onReaction={handleReaction}
+          onToggleBookmark={handleToggleBookmark}
+          onTriggerStudioMutate={handleTriggerStudioMutate}
+          onShareMeme={handleShareMeme}
+          onOpenProfile={(username) => {
+            sfx.playToggle();
+            setProfileUsername(username);
+          }}
+          onOpenTheater={handleOpenTheater}
+          onOpenBlankStudio={() => {
+            closeAllModals();
+            handleOpenBlankStudio();
+          }}
+          onBackToFeed={() => {
+            sfx.playToggle();
+            setViewMode('feed');
+          }}
+        />
+      )}
+
+      {/* MODE 3: PHYSICS HYPER-SWIPE DECK */}
       {viewMode === 'swipe' && (
         <SwipeDeck
           filteredMemes={filteredMemes}

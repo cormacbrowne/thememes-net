@@ -4,7 +4,8 @@ import { sfx } from './utils/soundEngine';
 import {
   loadImageFromFileOrBlob,
   loadImageFromUrl,
-  renderArtworkWithFilter
+  renderArtworkWithFilter,
+  stampArcadeCartridgeFooter
 } from './utils/canvasMutator';
 import {
   VIRAL_CAPTIONS,
@@ -17,17 +18,28 @@ import {
   formatWindowCountdown,
   formatMemeUploadDate
 } from './data/starterMemes';
+import {
+  ARCADE_ECONOMY_RULES,
+  loadTokenLedger,
+  saveTokenLedger,
+  loadTokenBalance,
+  saveTokenBalance,
+  evaluateTokenAward,
+  getTodayDateString
+} from './utils/tokenEconomy';
 import { updateDynamicSeo } from './utils/seoEngine';
 import NavbarHud from './components/NavbarHud';
+import QuickUploadBar from './components/QuickUploadBar';
 import MemeCard from './components/MemeCard';
 import MemeStudioModal from './components/MemeStudioModal';
 import MemeEvolutionModal from './components/MemeEvolutionModal';
 import SwipeDeck from './components/SwipeDeck';
 import BattleArena from './components/BattleArena';
 import VerticalReelsView from './components/VerticalReelsView';
+import MemeCrushGame from './components/MemeCrushGame';
+import VegasPinballGame from './components/VegasPinballGame';
 import AuthModal from './components/AuthModal';
 import MemeTheaterModal from './components/MemeTheaterModal';
-import DailyBountyBanner from './components/DailyBountyBanner';
 import LeaderboardModal from './components/LeaderboardModal';
 import PlayerProfileModal from './components/PlayerProfileModal';
 import MemeSkeletonGrid from './components/MemeSkeletonGrid';
@@ -36,7 +48,6 @@ import MemeSoundboardBar from './components/MemeSoundboardBar';
 import RewardsModal from './components/RewardsModal';
 import AiRoastModal from './components/AiRoastModal';
 import BossKeyOverlay from './components/BossKeyOverlay';
-import ViralTickerBar from './components/ViralTickerBar';
 import SeoDiscoveryFooter from './components/SeoDiscoveryFooter';
 import DankPetWidget from './components/DankPetWidget';
 
@@ -69,7 +80,13 @@ export default function App() {
     const cat = new URLSearchParams(window.location.search).get('category');
     return ['all', 'dank', 'tech', 'gaming', 'relatable'].includes(cat) ? cat : 'all';
   });
-  const [viewMode, setViewMode] = useState('feed'); // 'feed' | 'swipe' | 'battle'
+  const [viewMode, setViewMode] = useState(() => {
+    if (typeof window === 'undefined') return 'feed';
+    const mode = new URLSearchParams(window.location.search).get('mode');
+    return ['feed', 'reels', 'crush', 'pinball', 'swipe', 'battle'].includes(mode)
+      ? mode
+      : 'feed';
+  });
   const [searchQuery, setSearchQuery] = useState(() => {
     if (typeof window === 'undefined') return '';
     return new URLSearchParams(window.location.search).get('q') || '';
@@ -117,8 +134,10 @@ export default function App() {
   const lastPublishTimeRef = useRef(0);
   const loadMoreSentinelRef = useRef(null);
 
-  // Gamification, CRT Shader, Sound Pack & Combo State
+  // Gamification, Fair Arcade Tokens, CRT Shader, Sound Pack & Combo State
   const [xp, setXp] = useState(() => Number(localStorage.getItem('tm_xp') || 60));
+  const [tokens, setTokens] = useState(() => loadTokenBalance());
+  const [tokenLedger, setTokenLedger] = useState(() => loadTokenLedger());
   const [combo, setCombo] = useState(1);
   const [comboTimer, setComboTimer] = useState(0);
   const [soundOn, setSoundOn] = useState(true);
@@ -136,6 +155,13 @@ export default function App() {
       return {};
     }
   });
+  const [userReactionsMap, setUserReactionsMap] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('tm_user_reactions') || '{}');
+    } catch {
+      return {};
+    }
+  });
 
   // Phase 8 & 9: Rewards Vault, Wheel of Chaos, Daily Quests, AI Roast & Boss Key State
   const [showRewardsModal, setShowRewardsModal] = useState(false);
@@ -146,7 +172,7 @@ export default function App() {
     )
   );
 
-  // Phase 17: Timed-Window Economy & Spin Rate-Limiting State
+  // Phase 17 & Sub-Games: Timed-Window Economy & Spin/Game Rate-Limiting State
   const [rateWindows, setRateWindows] = useState(() => {
     const now = Date.now();
     try {
@@ -158,6 +184,10 @@ export default function App() {
         wheelStart: Number(saved.wheelStart || now),
         goblinUsed: Number(saved.goblinUsed || 0),
         goblinStart: Number(saved.goblinStart || now),
+        crushUsed: Number(saved.crushUsed || 0),
+        crushStart: Number(saved.crushStart || now),
+        pinballUsed: Number(saved.pinballUsed || 0),
+        pinballStart: Number(saved.pinballStart || now),
         konamiLastClaim: Number(saved.konamiLastClaim || 0)
       };
     } catch {
@@ -168,6 +198,10 @@ export default function App() {
         wheelStart: now,
         goblinUsed: 0,
         goblinStart: now,
+        crushUsed: 0,
+        crushStart: now,
+        pinballUsed: 0,
+        pinballStart: now,
         konamiLastClaim: 0
       };
     }
@@ -305,14 +339,26 @@ export default function App() {
     return Math.min(100, Math.max(5, Math.round((current / needed) * 100)));
   }, [xp, currentRank, nextRank]);
 
-  // Persist XP, Votes, CRT, Bounties, Royalties & Reported Memes
+  // Persist XP, Tokens, Token Ledger, Votes, Reactions, CRT, Bounties, Royalties & Reported Memes
   useEffect(() => {
     localStorage.setItem('tm_xp', String(xp));
   }, [xp]);
 
   useEffect(() => {
+    saveTokenBalance(tokens);
+  }, [tokens]);
+
+  useEffect(() => {
+    saveTokenLedger(tokenLedger);
+  }, [tokenLedger]);
+
+  useEffect(() => {
     localStorage.setItem('tm_votes', JSON.stringify(userVotes));
   }, [userVotes]);
+
+  useEffect(() => {
+    localStorage.setItem('tm_user_reactions', JSON.stringify(userReactionsMap));
+  }, [userReactionsMap]);
 
   useEffect(() => {
     localStorage.setItem('tm_crt', String(crtOn));
@@ -395,7 +441,7 @@ export default function App() {
     localStorage.setItem('tm_rate_windows', JSON.stringify(rateWindows));
   }, [rateWindows]);
 
-  // Phase 17: Live Timed-Window Expiration & Cooldown Ticker
+  // Phase 17 & Sub-Games: Live Timed-Window Expiration & Cooldown Ticker
   useEffect(() => {
     const timer = setInterval(() => {
       const now = Date.now();
@@ -416,6 +462,22 @@ export default function App() {
         if (prev.goblinUsed > 0 && now - prev.goblinStart >= ARCADE_RATE_LIMITS.GOBLIN_WINDOW_MS) {
           next.goblinUsed = 0;
           next.goblinStart = now;
+          changed = true;
+        }
+        if (
+          prev.crushUsed > 0 &&
+          now - prev.crushStart >= ARCADE_ECONOMY_RULES.SUB_GAMES.CRUSH_WINDOW_MS
+        ) {
+          next.crushUsed = 0;
+          next.crushStart = now;
+          changed = true;
+        }
+        if (
+          prev.pinballUsed > 0 &&
+          now - prev.pinballStart >= ARCADE_ECONOMY_RULES.SUB_GAMES.PINBALL_WINDOW_MS
+        ) {
+          next.pinballUsed = 0;
+          next.pinballStart = now;
           changed = true;
         }
         return changed ? next : prev;
@@ -450,6 +512,43 @@ export default function App() {
     rateWindows.goblinUsed > 0
       ? Math.max(0, ARCADE_RATE_LIMITS.GOBLIN_WINDOW_MS - (nowClock - rateWindows.goblinStart))
       : 0;
+
+  const crushPlaysLeft = Math.max(
+    0,
+    ARCADE_ECONOMY_RULES.SUB_GAMES.CRUSH_PLAYS_PER_WINDOW - (rateWindows.crushUsed || 0)
+  );
+  const crushResetMs =
+    rateWindows.crushUsed > 0
+      ? Math.max(
+          0,
+          ARCADE_ECONOMY_RULES.SUB_GAMES.CRUSH_WINDOW_MS - (nowClock - rateWindows.crushStart)
+        )
+      : 0;
+
+  const pinballPlaysLeft = Math.max(
+    0,
+    ARCADE_ECONOMY_RULES.SUB_GAMES.PINBALL_PLAYS_PER_WINDOW - (rateWindows.pinballUsed || 0)
+  );
+  const pinballResetMs =
+    rateWindows.pinballUsed > 0
+      ? Math.max(
+          0,
+          ARCADE_ECONOMY_RULES.SUB_GAMES.PINBALL_WINDOW_MS - (nowClock - rateWindows.pinballStart)
+        )
+      : 0;
+
+  const uploadTokensRemainingToday = Math.max(
+    0,
+    ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.upload - (tokenLedger?.byCategory?.upload || 0)
+  );
+
+  const gameTokensRemainingToday = Math.max(
+    0,
+    Math.min(
+      ARCADE_ECONOMY_RULES.MAX_DAILY_TOKENS - (tokenLedger?.totalToday || 0),
+      ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.games - (tokenLedger?.byCategory?.games || 0)
+    )
+  );
 
   const konamiCooldownMs =
     rateWindows.konamiLastClaim > 0
@@ -654,40 +753,86 @@ export default function App() {
     }, 960);
   }, []);
 
-  const awardXpAndCombo = useCallback(
-    (baseXp, event, emoji = '⚡') => {
-      const nextCombo = Math.min(5, combo + 1);
+  const awardXpOnly = useCallback(
+    (flatXp, event, emoji = '⚡', labelOverride = null) => {
+      const gained = Math.max(0, Math.floor(Number(flatXp) || 0));
+      const nextCombo = Math.min(3, combo + 1);
       setCombo(nextCombo);
       setComboTimer(100);
 
-      const gained = baseXp * nextCombo;
-      setXp((prevXp) => {
-        const updated = prevXp + gained;
-        const oldRank = RANKS.slice().reverse().find((r) => prevXp >= r.minXp) || RANKS[0];
-        const newRank = RANKS.slice().reverse().find((r) => updated >= r.minXp) || RANKS[0];
-        if (newRank.level > oldRank.level) {
-          sfx.playLevelUp();
-          setLevelUpBanner(newRank);
-          setTimeout(() => setLevelUpBanner(null), 3500);
-        }
-        return updated;
-      });
-
-      if (nextCombo >= 3) {
-        setScreenShake(true);
-        setTimeout(() => setScreenShake(false), 260);
+      if (gained > 0) {
+        setXp((prevXp) => {
+          const updated = prevXp + gained;
+          const oldRank = RANKS.slice().reverse().find((r) => prevXp >= r.minXp) || RANKS[0];
+          const newRank = RANKS.slice().reverse().find((r) => updated >= r.minXp) || RANKS[0];
+          if (newRank.level > oldRank.level) {
+            sfx.playLevelUp();
+            setLevelUpBanner(newRank);
+            setTimeout(() => setLevelUpBanner(null), 3500);
+          }
+          return updated;
+        });
       }
 
       const clientX = event?.clientX || window.innerWidth / 2;
       const clientY = event?.clientY || window.innerHeight / 2;
-      spawnParticles(
-        clientX,
-        clientY,
-        `+${gained} XP ${nextCombo > 1 ? `(${nextCombo}x!)` : ''}`,
-        emoji
-      );
+      const textLabel = labelOverride || (gained > 0 ? `+${gained} XP` : `${emoji}`);
+      spawnParticles(clientX, clientY, textLabel, emoji);
     },
     [combo, spawnParticles]
+  );
+
+  /**
+   * Logical, Fair & Anti-Loophole Reward Engine:
+   * Deduplicates per-meme actions and enforces Daily Maximum Collection Caps.
+   */
+  const awardFairReward = useCallback(
+    ({
+      category = 'engagement',
+      requestedTokens = 0,
+      xpGain = 15,
+      actionKey = null,
+      event = null,
+      emoji = '🪙'
+    }) => {
+      const evalRes = evaluateTokenAward({
+        ledger: tokenLedger,
+        category,
+        requestedTokens,
+        actionKey
+      });
+
+      if (!evalRes.allowed) {
+        // If already rewarded for this exact meme/action, do not grant duplicate XP or tokens
+        if (evalRes.reason === 'already_rewarded') {
+          return evalRes;
+        }
+        // If daily token cap reached, still grant modest non-multiplied XP so progression continues
+        if (xpGain > 0) {
+          awardXpOnly(xpGain, event, emoji, `+${xpGain} XP (Daily Token Cap Reached)`);
+        }
+        return evalRes;
+      }
+
+      setTokenLedger(evalRes.nextLedger);
+      setTokens((prev) => prev + evalRes.awardedTokens);
+      awardXpOnly(
+        xpGain,
+        event,
+        emoji,
+        `+${evalRes.awardedTokens} 🪙 & +${xpGain} XP`
+      );
+      return evalRes;
+    },
+    [tokenLedger, awardXpOnly]
+  );
+
+  // Legacy wrapper for non-token visual toys (capped at small flat XP without combo inflation)
+  const awardXpAndCombo = useCallback(
+    (baseXp, event, emoji = '⚡') => {
+      awardXpOnly(Math.min(15, baseXp), event, emoji);
+    },
+    [awardXpOnly]
   );
 
   // ==========================================
@@ -903,12 +1048,22 @@ export default function App() {
         setUserVotes((prev) => ({ ...prev, [memeId]: direction }));
       }
 
-      const multipliedDelta = delta * (direction > 0 ? combo : 1);
-      const safeDelta = Math.max(-5, Math.min(5, multipliedDelta));
+      const safeDelta = Math.max(-2, Math.min(2, delta));
       sfx.playVote(direction > 0, combo);
-      awardXpAndCombo(15, event, direction > 0 ? '🔥' : '💀');
+
+      // Only reward tokens/XP once per unique meme ID (prevents upvote/downvote toggle farming)
       if (direction > 0) {
-        incrementQuest('q-upvote', 1);
+        const res = awardFairReward({
+          category: 'engagement',
+          requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.VOTE_UNIQUE_MEME.tokens,
+          xpGain: ARCADE_ECONOMY_RULES.REWARDS.VOTE_UNIQUE_MEME.xp,
+          actionKey: `vote:${memeId}`,
+          event,
+          emoji: '🔥'
+        });
+        if (res.allowed) {
+          incrementQuest('q-upvote', 1);
+        }
       }
 
       let updatedScore = 1;
@@ -937,14 +1092,35 @@ export default function App() {
         }
       }
     },
-    [userVotes, combo, awardXpAndCombo, incrementQuest]
+    [userVotes, combo, awardFairReward, incrementQuest]
   );
 
   const handleReaction = useCallback(
     async (memeId, emoji, event) => {
+      const existingForMeme = userReactionsMap[memeId] || [];
+      if (existingForMeme.includes(emoji)) {
+        // Already reacted with this emoji on this meme — prevent infinite reaction spam!
+        sfx.playToggle();
+        return;
+      }
+
+      setUserReactionsMap((prev) => ({
+        ...prev,
+        [memeId]: [...(prev[memeId] || []), emoji]
+      }));
+
       sfx.playReaction(emoji, combo);
-      awardXpAndCombo(10, event, emoji);
-      incrementQuest('q-react', 1);
+      const res = awardFairReward({
+        category: 'engagement',
+        requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.REACT_UNIQUE_MEME.tokens,
+        xpGain: ARCADE_ECONOMY_RULES.REWARDS.REACT_UNIQUE_MEME.xp,
+        actionKey: `react:${memeId}`,
+        event,
+        emoji
+      });
+      if (res.allowed) {
+        incrementQuest('q-react', 1);
+      }
 
       let updatedReactions = null;
       setMemes((prev) =>
@@ -972,7 +1148,7 @@ export default function App() {
         }
       }
     },
-    [combo, awardXpAndCombo, incrementQuest]
+    [userReactionsMap, combo, awardFairReward, incrementQuest]
   );
 
   const handleToggleComments = useCallback((memeId) => {
@@ -999,7 +1175,16 @@ export default function App() {
       };
 
       sfx.playPop(combo);
-      awardXpAndCombo(25, e, '💬');
+      if (text.length >= 3) {
+        awardFairReward({
+          category: 'engagement',
+          requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.COMMENT_UNIQUE_MEME.tokens,
+          xpGain: ARCADE_ECONOMY_RULES.REWARDS.COMMENT_UNIQUE_MEME.xp,
+          actionKey: `comment:${memeId}`,
+          event: e,
+          emoji: '💬'
+        });
+      }
       setCommentInputs((prev) => ({ ...prev, [memeId]: '' }));
 
       setMemes((prev) =>
@@ -1023,7 +1208,7 @@ export default function App() {
         }
       }
     },
-    [commentInputs, user, combo, awardXpAndCombo]
+    [commentInputs, user, combo, awardFairReward]
   );
 
   // ==========================================
@@ -1231,7 +1416,7 @@ export default function App() {
     loadFileIntoStudio(file);
   };
 
-  const handleDownloadPng = (e) => {
+  const handleDownloadPng = () => {
     const canvas = studioCanvasRef.current;
     if (!canvas) return;
     drawStudioCanvas(true);
@@ -1244,10 +1429,9 @@ export default function App() {
     link.click();
 
     sfx.playPop(combo);
-    awardXpAndCombo(25, e, '💾');
   };
 
-  const handleCopyClipboardPng = async (e) => {
+  const handleCopyClipboardPng = async () => {
     const canvas = studioCanvasRef.current;
     if (!canvas) return;
     try {
@@ -1259,7 +1443,6 @@ export default function App() {
         await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
         setClipboardStatus('✅ Copied Image!');
         sfx.playPop(combo);
-        awardXpAndCombo(20, e, '📋');
         setTimeout(() => setClipboardStatus(''), 2500);
       } else {
         setClipboardStatus('⚠️ Use Download PNG');
@@ -1269,6 +1452,154 @@ export default function App() {
       setClipboardStatus('⚠️ Copy blocked by browser');
       setTimeout(() => setClipboardStatus(''), 2500);
     }
+  };
+
+  /**
+   * Phase 1: 1-Click Frictionless Quick Upload directly from the top of the Feed!
+   */
+  const handleQuickPublishFile = async ({
+    file,
+    title = '',
+    topText = '',
+    bottomText = '',
+    category: quickCat = 'dank',
+    event = null
+  }) => {
+    const now = Date.now();
+    if (now - lastPublishTimeRef.current < 3500) {
+      throw new Error('Cooldown active');
+    }
+    lastPublishTimeRef.current = now;
+
+    const img = await loadImageFromFileOrBlob(file);
+    const offCanvas = document.createElement('canvas');
+    const W = 600;
+    const memeH = 520;
+    const H = 552;
+    offCanvas.width = W;
+    offCanvas.height = H;
+    const ctx = offCanvas.getContext('2d');
+
+    ctx.fillStyle = '#090a0f';
+    ctx.fillRect(0, 0, W, memeH);
+    const scale = Math.min(W / img.width, memeH / img.height);
+    const dw = img.width * scale;
+    const dh = img.height * scale;
+    ctx.drawImage(img, (W - dw) / 2, (memeH - dh) / 2, dw, dh);
+
+    const drawOverlayCaption = (txt, yPos, fill) => {
+      if (!txt) return;
+      ctx.save();
+      ctx.font = '900 34px Impact, "Arial Black", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.lineWidth = 7;
+      ctx.strokeStyle = '#000000';
+      ctx.fillStyle = fill;
+      const upper = txt.toUpperCase();
+      ctx.strokeText(upper, W / 2, yPos, W - 36);
+      ctx.fillText(upper, W / 2, yPos, W - 36);
+      ctx.restore();
+    };
+
+    drawOverlayCaption(topText, 56, '#ffffff');
+    drawOverlayCaption(bottomText, 476, '#facc15');
+
+    const author = user?.username || 'AnonMemer';
+    stampArcadeCartridgeFooter(ctx, W, memeH, {
+      generation: 0,
+      authorName: author
+    });
+
+    const fallbackCaption = [topText, bottomText].filter(Boolean).join(' — ');
+    const finalTitle = title || fallbackCaption || `Fresh Upload by @${author}`;
+    let imageUrl = offCanvas.toDataURL('image/png', 0.92);
+
+    const localFallbackMeme = {
+      id: `local-${Date.now()}`,
+      title: finalTitle,
+      category: quickCat,
+      image_url: imageUrl,
+      author_name: author,
+      score: 1,
+      generation: 0,
+      mutation_count: 0,
+      parent_meme_id: null,
+      root_meme_id: null,
+      is_bounty: false,
+      bounty_id: null,
+      is_spoiler: false,
+      created_at: new Date().toISOString(),
+      reactions: { '🔥': 1, '💀': 0, '😂': 0, '🗿': 0 },
+      comments: []
+    };
+
+    const client = getSupabaseClient();
+    let savedToDb = false;
+
+    if (client) {
+      try {
+        const blob = await new Promise((resolve) => offCanvas.toBlob(resolve, 'image/png'));
+        const fileName = `meme-${Date.now()}-gen0-${Math.random().toString(36).slice(2, 7)}.png`;
+        const { error: uploadErr } = await client.storage
+          .from('memes')
+          .upload(fileName, blob, { contentType: 'image/png' });
+
+        if (!uploadErr) {
+          const { data: pubData } = client.storage.from('memes').getPublicUrl(fileName);
+          if (pubData?.publicUrl) {
+            imageUrl = pubData.publicUrl;
+          }
+        }
+
+        const { data: insertedRow, error: dbErr } = await client
+          .from('memes')
+          .insert([
+            {
+              title: finalTitle,
+              category: quickCat,
+              image_url: imageUrl,
+              author_name: author,
+              score: 1,
+              reactions: { '🔥': 1, '💀': 0, '😂': 0, '🗿': 0 }
+            }
+          ])
+          .select()
+          .single();
+
+        if (!dbErr && insertedRow) {
+          savedToDb = true;
+          setMemes((prev) => [
+            {
+              ...insertedRow,
+              generation: 0,
+              mutation_count: 0,
+              comments: []
+            },
+            ...prev
+          ]);
+        }
+      } catch {
+        // Fallback below
+      }
+    }
+
+    if (!savedToDb) {
+      setMemes((prev) => [{ ...localFallbackMeme, image_url: imageUrl }, ...prev]);
+    }
+
+    sfx.playLevelUp();
+    incrementQuest('q-mutate', 1);
+    addCappedWheelSpins(1);
+    awardFairReward({
+      category: 'upload',
+      requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens,
+      xpGain: ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.xp,
+      actionKey: null,
+      event,
+      emoji: '🚀'
+    });
+    setSortBy('latest');
   };
 
   const handlePublishMeme = async (e) => {
@@ -1414,9 +1745,27 @@ export default function App() {
     addCappedWheelSpins(1);
     if (activeBounty) {
       setBountiesCompleted((c) => c + 1);
-      awardXpAndCombo(activeBounty.rewardXp || 200, e, '🎯');
+      awardFairReward({
+        category: 'upload',
+        requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.BOUNTY_UPLOAD.tokens,
+        xpGain: ARCADE_ECONOMY_RULES.REWARDS.BOUNTY_UPLOAD.xp,
+        actionKey: null,
+        event: e,
+        emoji: '🎯'
+      });
     } else {
-      awardXpAndCombo(mutatingParentMeme ? 150 : 100, e, mutatingParentMeme ? '🧬' : '🚀');
+      awardFairReward({
+        category: 'upload',
+        requestedTokens: mutatingParentMeme
+          ? ARCADE_ECONOMY_RULES.REWARDS.REMIX_MEME.tokens
+          : ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens,
+        xpGain: mutatingParentMeme
+          ? ARCADE_ECONOMY_RULES.REWARDS.REMIX_MEME.xp
+          : ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.xp,
+        actionKey: null,
+        event: e,
+        emoji: mutatingParentMeme ? '🧬' : '🚀'
+      });
     }
 
     setIsPublishing(false);
@@ -1672,11 +2021,16 @@ export default function App() {
       else if (mutatorId === 'matrix') sfx.playAnimeShock();
       else sfx.playToggle();
 
-      if (mutatorId !== 'none') {
-        awardXpAndCombo(25, e, '🌪️');
+      if (mutatorId !== 'none' && e) {
+        spawnParticles(
+          e.clientX || window.innerWidth / 2,
+          e.clientY || 120,
+          `🌪️ ${mutatorId.toUpperCase()} FX!`,
+          '🌪️'
+        );
       }
     },
-    [awardXpAndCombo]
+    [spawnParticles]
   );
 
   const handleSummonGoblin = useCallback(() => {
@@ -1743,16 +2097,25 @@ export default function App() {
 
       sfx.playJackpot();
       setTimeout(() => sfx.playRubberDuck(), 150);
-      awardXpAndCombo(200, e, '👾');
+      const res = awardFairReward({
+        category: 'games',
+        requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.GOBLIN_CATCH.tokens,
+        xpGain: ARCADE_ECONOMY_RULES.REWARDS.GOBLIN_CATCH.xp,
+        actionKey: null,
+        event: e,
+        emoji: '👾'
+      });
 
       const fortune = MEME_FORTUNES[Math.floor(Math.random() * MEME_FORTUNES.length)];
-      setGoblinFortuneToast(`👾 CAUGHT GOLDEN GOBLIN! +200 XP + 1 Free Spin! ${fortune}`);
+      setGoblinFortuneToast(
+        `👾 CAUGHT GOLDEN GOBLIN! +${res.awardedTokens} 🪙 Tokens, +60 XP + 1 Free Spin! ${fortune}`
+      );
       setTimeout(() => setGoblinFortuneToast(''), 6500);
     },
-    [activeGoblin, addCappedWheelSpins, awardXpAndCombo]
+    [activeGoblin, addCappedWheelSpins, awardFairReward]
   );
 
-  // Phase 18: Launch Silly Animated Screen Stampedes & Interactive Bubble Wrap
+  // Phase 18: Launch Silly Animated Screen Stampedes & Interactive Bubble Wrap (Visual Toys Only — No Token Loophole)
   const handleLaunchStampede = useCallback(
     (stampedeId, e) => {
       if (stampedeId === 'bubble-wrap') {
@@ -1825,7 +2188,14 @@ export default function App() {
       }
 
       setStampedeSprites((prev) => [...prev.slice(-20), ...items]);
-      awardXpAndCombo(15, e, '🎪');
+      if (e) {
+        spawnParticles(
+          e.clientX || window.innerWidth / 2,
+          e.clientY || 120,
+          '🎪 STAMPEDE!',
+          '🎪'
+        );
+      }
 
       setTimeout(() => {
         setStampedeSprites((prev) =>
@@ -1833,7 +2203,7 @@ export default function App() {
         );
       }, 3600);
     },
-    [awardXpAndCombo]
+    [spawnParticles]
   );
 
   const handlePopBubble = useCallback(
@@ -1854,11 +2224,10 @@ export default function App() {
         return remaining;
       });
 
-      setXp((prev) => prev + 5);
       spawnParticles(
         e?.clientX || window.innerWidth / 2,
         e?.clientY || window.innerHeight / 2,
-        'POP! +5 XP',
+        'POP!',
         bubble.emoji || '🫧'
       );
     },
@@ -1882,14 +2251,21 @@ export default function App() {
       if (canClaimReward) {
         setRateWindows((prev) => ({ ...prev, konamiLastClaim: now }));
         addCappedWheelSpins(1);
-        awardXpAndCombo(500, e, '👑');
+        const res = awardFairReward({
+          category: 'quests',
+          requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.KONAMI_DAILY.tokens,
+          xpGain: ARCADE_ECONOMY_RULES.REWARDS.KONAMI_DAILY.xp,
+          actionKey: `konami:${getTodayDateString()}`,
+          event: e,
+          emoji: '👑'
+        });
         setGoblinFortuneToast(
-          '🕹️ SECRET KONAMI GOD MODE ACTIVATED! +500 XP, +1 Chaos Spin & "⚡ GOD MODE: GIGA-CHAD" Title Unlocked!'
+          `🕹️ SECRET KONAMI GOD MODE ACTIVATED! +${res.awardedTokens} 🪙 Tokens, +100 XP & "⚡ GOD MODE: GIGA-CHAD" Title Unlocked!`
         );
       } else {
         const rem = ARCADE_RATE_LIMITS.KONAMI_COOLDOWN_MS - (now - rateWindows.konamiLastClaim);
         setGoblinFortuneToast(
-          `🎇 GOD MODE FIREWORKS! (Daily +500 XP & Spin bonus resets in ${formatWindowCountdown(rem)})`
+          `🎇 GOD MODE FIREWORKS! (24h Konami Token & XP bonus resets in ${formatWindowCountdown(rem)})`
         );
       }
       setTimeout(() => setGoblinFortuneToast(''), 6500);
@@ -1900,7 +2276,7 @@ export default function App() {
         const h = window.innerHeight;
         const bursts = [
           { x: w * 0.25, y: h * 0.3, emoji: '👑', label: 'GOD MODE!' },
-          { x: w * 0.75, y: h * 0.3, emoji: '💎', label: canClaimReward ? '+500 XP!' : 'FIREWORKS!' },
+          { x: w * 0.75, y: h * 0.3, emoji: '💎', label: canClaimReward ? '+20 🪙!' : 'FIREWORKS!' },
           { x: w * 0.5, y: h * 0.45, emoji: '🚀', label: 'GIGA-CHAD!' }
         ];
         bursts.forEach((b, idx) => {
@@ -1910,7 +2286,7 @@ export default function App() {
         });
       }
     },
-    [rateWindows.konamiLastClaim, addCappedWheelSpins, awardXpAndCombo, spawnParticles]
+    [rateWindows.konamiLastClaim, addCappedWheelSpins, awardFairReward, spawnParticles]
   );
 
   // Listen for Konami Code (↑↑↓↓←→←→BA) on Keyboard
@@ -1990,9 +2366,16 @@ export default function App() {
       }
       sfx.playSoundboardPad(pad.id);
       incrementQuest('q-soundboard', 1);
-      awardXpAndCombo(5, e, pad.emoji);
+      if (e) {
+        spawnParticles(
+          e.clientX || window.innerWidth / 2,
+          e.clientY || 120,
+          pad.label,
+          pad.emoji
+        );
+      }
     },
-    [soundOn, incrementQuest, awardXpAndCombo]
+    [soundOn, incrementQuest, spawnParticles]
   );
 
   const handleTriggerChaosRoulette = useCallback(
@@ -2030,8 +2413,6 @@ export default function App() {
         }
       ]);
 
-      // If there are already user-uploaded memes in the feed and no custom image is in the studio,
-      // load a random user-uploaded meme to remix; otherwise open the studio ready for the user's photo!
       if (!customUploadImg && memes.length > 0) {
         const randomUserMeme = memes[Math.floor(Math.random() * memes.length)];
         setMutatingParentMeme(randomUserMeme);
@@ -2046,24 +2427,38 @@ export default function App() {
       } else {
         setShowStudio(true);
       }
-      awardXpAndCombo(35, e, '🎲');
+      if (e) {
+        spawnParticles(
+          e.clientX || window.innerWidth / 2,
+          e.clientY || 120,
+          '🎲 STUDIO PRESET!',
+          '🎲'
+        );
+      }
     },
-    [awardXpAndCombo, customUploadImg, memes]
+    [customUploadImg, memes, spawnParticles]
   );
 
   const handleClaimDailyStreak = useCallback(
     (e) => {
       if (streakClaimedToday) return;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = getTodayDateString();
       localStorage.setItem('tm_streak_date', today);
       setStreakClaimedToday(true);
       const nextStreak = streakDays + 1;
       setStreakDays(nextStreak);
       addCappedWheelSpins(1);
       sfx.playJackpot();
-      awardXpAndCombo(100 + nextStreak * 50, e, '🔥');
+      awardFairReward({
+        category: 'quests',
+        requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.DAILY_STREAK.tokens,
+        xpGain: ARCADE_ECONOMY_RULES.REWARDS.DAILY_STREAK.xp + Math.min(7, nextStreak) * 10,
+        actionKey: `streak:${today}`,
+        event: e,
+        emoji: '🔥'
+      });
     },
-    [streakClaimedToday, streakDays, addCappedWheelSpins, awardXpAndCombo]
+    [streakClaimedToday, streakDays, addCappedWheelSpins, awardFairReward]
   );
 
   const handleCompleteWheelSpin = useCallback(
@@ -2085,13 +2480,24 @@ export default function App() {
         );
         setEquippedFlair(prize.flair);
       }
-      awardXpAndCombo(prize.xpBonus || 200, e, '🎰');
+      const tokenPrize = Math.min(
+        ARCADE_ECONOMY_RULES.MAX_TOKENS_PER_ROUND,
+        Math.max(10, Math.round((prize.xpBonus || 150) / 15))
+      );
+      awardFairReward({
+        category: 'games',
+        requestedTokens: tokenPrize,
+        xpGain: Math.min(200, prize.xpBonus || 120),
+        actionKey: null,
+        event: e,
+        emoji: '🎰'
+      });
     },
-    [awardXpAndCombo]
+    [awardFairReward]
   );
 
   const handleCompleteSlotSpin = useCallback(
-    ({ xpWon = 35, spinsWon = 0, flair = null }, e) => {
+    ({ tokensWon = 10, xpWon = 30, spinsWon = 0, flair = null }, e) => {
       setRateWindows((prev) => {
         const now = Date.now();
         const isFresh =
@@ -2109,20 +2515,101 @@ export default function App() {
         setUnlockedFlairs((prev) => (prev.includes(flair) ? prev : [...prev, flair]));
         setEquippedFlair(flair);
       }
-      awardXpAndCombo(xpWon, e, '🍒');
+      awardFairReward({
+        category: 'games',
+        requestedTokens: Math.min(ARCADE_ECONOMY_RULES.MAX_TOKENS_PER_ROUND, tokensWon),
+        xpGain: Math.min(120, xpWon),
+        actionKey: null,
+        event: e,
+        emoji: '🍒'
+      });
     },
-    [addCappedWheelSpins, awardXpAndCombo]
+    [addCappedWheelSpins, awardFairReward]
   );
 
   const handleClaimQuestReward = useCallback(
     (quest, e) => {
       if (!quest || claimedQuests[quest.id]) return;
+      const today = getTodayDateString();
       setClaimedQuests((prev) => ({ ...prev, [quest.id]: true }));
       addCappedWheelSpins(1);
       sfx.playJackpot();
-      awardXpAndCombo(quest.rewardXp || 150, e, '🎁');
+      awardFairReward({
+        category: 'quests',
+        requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.QUEST_CLAIM.tokens,
+        xpGain: Math.min(150, quest.rewardXp || ARCADE_ECONOMY_RULES.REWARDS.QUEST_CLAIM.xp),
+        actionKey: `quest:${quest.id}:${today}`,
+        event: e,
+        emoji: '🎁'
+      });
     },
-    [claimedQuests, addCappedWheelSpins, awardXpAndCombo]
+    [claimedQuests, addCappedWheelSpins, awardFairReward]
+  );
+
+  // Phase 3 & 4 Sub-Games: Meme Crush Saga & Las Vegas Retro Pinball Fair Payouts
+  const handleCompleteSubGameRound = useCallback(
+    ({ gameId, requestedTokens = 10, xpEarned = 40 }) => {
+      setRateWindows((prev) => {
+        const now = Date.now();
+        if (gameId === 'crush') {
+          const isFresh =
+            prev.crushUsed === 0 || now - prev.crushStart >= ARCADE_RATE_LIMITS.CRUSH_WINDOW_MS;
+          return {
+            ...prev,
+            crushUsed: isFresh ? 1 : prev.crushUsed + 1,
+            crushStart: isFresh ? now : prev.crushStart
+          };
+        }
+        if (gameId === 'pinball') {
+          const isFresh =
+            prev.pinballUsed === 0 ||
+            now - prev.pinballStart >= ARCADE_RATE_LIMITS.PINBALL_WINDOW_MS;
+          return {
+            ...prev,
+            pinballUsed: isFresh ? 1 : prev.pinballUsed + 1,
+            pinballStart: isFresh ? now : prev.pinballStart
+          };
+        }
+        return prev;
+      });
+
+      const safeTokens = Math.min(
+        ARCADE_ECONOMY_RULES.MAX_TOKENS_PER_ROUND,
+        Math.max(0, Math.round(requestedTokens))
+      );
+      const res = awardFairReward({
+        category: 'games',
+        requestedTokens: safeTokens,
+        xpGain: Math.min(120, Math.max(15, xpEarned)),
+        actionKey: null,
+        event: null,
+        emoji: gameId === 'crush' ? '🍬' : '🎱'
+      });
+      return res;
+    },
+    [awardFairReward]
+  );
+
+  const handleSpendTokensForPlay = useCallback(
+    (gameId, cost = 15) => {
+      if (tokens < cost) {
+        sfx.playSadTrombone();
+        return false;
+      }
+      sfx.playJackpot();
+      setTokens((prev) => Math.max(0, prev - cost));
+      setRateWindows((prev) => {
+        if (gameId === 'crush') {
+          return { ...prev, crushUsed: Math.max(0, prev.crushUsed - 1) };
+        }
+        if (gameId === 'pinball') {
+          return { ...prev, pinballUsed: Math.max(0, prev.pinballUsed - 1) };
+        }
+        return prev;
+      });
+      return true;
+    },
+    [tokens]
   );
 
   const handleOpenAiRoast = useCallback(
@@ -2132,9 +2619,16 @@ export default function App() {
       setRoastModalMeme(meme);
       setRoastsRun((r) => r + 1);
       incrementQuest('q-roast', 1);
-      awardXpAndCombo(30, e, '🤖');
+      awardFairReward({
+        category: 'engagement',
+        requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.ROAST_MEME.tokens,
+        xpGain: ARCADE_ECONOMY_RULES.REWARDS.ROAST_MEME.xp,
+        actionKey: `roast:${meme.id}`,
+        event: e,
+        emoji: '🤖'
+      });
     },
-    [incrementQuest, awardXpAndCombo]
+    [incrementQuest, awardFairReward]
   );
 
   const handlePostRoastComment = useCallback(
@@ -2148,14 +2642,21 @@ export default function App() {
         created_at: new Date().toISOString()
       };
       sfx.playAirhorn();
-      awardXpAndCombo(40, e, '🤖');
+      awardFairReward({
+        category: 'engagement',
+        requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.COMMENT_MEME.tokens,
+        xpGain: ARCADE_ECONOMY_RULES.REWARDS.COMMENT_MEME.xp,
+        actionKey: `roast-comment:${memeId}`,
+        event: e,
+        emoji: '🤖'
+      });
       setMemes((prev) =>
         prev.map((m) =>
           m.id === memeId ? { ...m, comments: [...(m.comments || []), newComment] } : m
         )
       );
     },
-    [user, awardXpAndCombo]
+    [user, awardFairReward]
   );
 
   // Keyboard shortcut for Boss Key Panic Screen ('Escape' exits Boss Mode, Shift+B toggles)
@@ -2194,18 +2695,24 @@ export default function App() {
     (meme, e) => {
       if (!meme) return;
       const idStr = String(meme.id);
-      setBookmarkedIds((prev) => {
-        const exists = prev.includes(idStr);
-        if (!exists) {
-          sfx.playPop(combo);
-          awardXpAndCombo(15, e, '⭐');
-          return [...prev, idStr];
-        }
+      const alreadySaved = bookmarkedIds.includes(idStr);
+      if (!alreadySaved) {
+        sfx.playPop(1);
+        setBookmarkedIds((prev) => (prev.includes(idStr) ? prev : [...prev, idStr]));
+        awardFairReward({
+          category: 'engagement',
+          requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.BOOKMARK_MEME.tokens,
+          xpGain: ARCADE_ECONOMY_RULES.REWARDS.BOOKMARK_MEME.xp,
+          actionKey: `bookmark:${idStr}`,
+          event: e,
+          emoji: '⭐'
+        });
+      } else {
         sfx.playToggle();
-        return prev.filter((id) => id !== idStr);
-      });
+        setBookmarkedIds((prev) => prev.filter((id) => id !== idStr));
+      }
     },
-    [combo, awardXpAndCombo]
+    [bookmarkedIds, awardFairReward]
   );
 
   // Live Upload Activity & Date Stats (helps track when new users upload memes!)
@@ -2433,10 +2940,17 @@ export default function App() {
           })
           .catch(() => {});
       }
-      sfx.playPop(combo);
-      awardXpAndCombo(10, e, '🔗');
+      sfx.playPop(1);
+      awardFairReward({
+        category: 'engagement',
+        requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.SHARE_MEME.tokens,
+        xpGain: ARCADE_ECONOMY_RULES.REWARDS.SHARE_MEME.xp,
+        actionKey: `share:${meme.id}`,
+        event: e,
+        emoji: '🔗'
+      });
     },
-    [combo, awardXpAndCombo]
+    [awardFairReward]
   );
 
   const triggerSwipe = useCallback(
@@ -2538,10 +3052,10 @@ export default function App() {
           className={`tm-loot-goblin ${activeGoblin.dir}`}
           style={{ top: `${activeGoblin.topPct}%` }}
           onClick={handleCatchGoblin}
-          title="Catch the Golden Loot Goblin for +200 XP & +1 Free Spin!"
+          title="Catch the Golden Loot Goblin for +10 Tokens, +60 XP & +1 Free Spin!"
         >
           <span className="tm-goblin-icon">👾✨</span>
-          <span className="tm-goblin-tag">CATCH ME! +200 XP &amp; +1 SPIN!</span>
+          <span className="tm-goblin-tag">CATCH ME! +10 🪙 &amp; +1 SPIN!</span>
         </button>
       )}
 
@@ -2567,7 +3081,7 @@ export default function App() {
       {bubbleWrapItems.length > 0 && !bossKeyActive && (
         <div className="tm-bubble-wrap-layer" aria-label="Interactive Dopamine Bubble Wrap">
           <div className="tm-bubble-hud-pill">
-            <span>🫧 Pop all {bubbleWrapItems.length} bubbles for +5 XP each!</span>
+            <span>🫧 Pop all {bubbleWrapItems.length} bubbles!</span>
             <button
               type="button"
               className="tm-link-btn"
@@ -2589,7 +3103,7 @@ export default function App() {
                 height: `${b.size}px`
               }}
               onClick={(e) => handlePopBubble(b, e)}
-              title="Tap to POP! (+5 XP)"
+              title="Tap to POP!"
             >
               <span>{b.emoji}</span>
             </button>
@@ -2609,10 +3123,10 @@ export default function App() {
         <div className="tm-global-dropzone">
           <div style={{ fontSize: '56px' }}>📥</div>
           <h2 style={{ margin: 0, fontSize: '26px', color: '#00f3ff' }}>
-            DROP IMAGE TO LAUNCH MEME FORGE STUDIO
+            DROP IMAGE TO UPLOAD OR LAUNCH MEME FORGE
           </h2>
           <p style={{ margin: 0, color: '#f472b6', fontWeight: 800 }}>
-            Instant Canvas Load + 16-Bit Cartridge Stamp (+100 XP)
+            Instant Canvas Load (+40 🪙 Tokens &amp; +100 XP)
           </p>
         </div>
       )}
@@ -2648,11 +3162,11 @@ export default function App() {
       {bossKeyActive && (
         <BossKeyOverlay
           onExitBossMode={() => setBossKeyActive(false)}
-          onSecretWorkXp={(amt) => setXp((prev) => prev + amt)}
+          onSecretWorkXp={() => {}}
         />
       )}
 
-      {/* TOP NAVIGATION & ARCADE HUD */}
+      {/* PHASE 1: SIMPLIFIED TOP NAVIGATION & FAIR TOKEN WALLET HUD */}
       <NavbarHud
         comboTimer={comboTimer}
         combo={combo}
@@ -2661,6 +3175,14 @@ export default function App() {
         equippedFlair={equippedFlair}
         xp={xp}
         xpProgress={xpProgress}
+        tokens={tokens}
+        dailyTokensEarned={tokenLedger?.totalToday || 0}
+        viewMode={viewMode}
+        onSelectViewMode={(mode) => {
+          sfx.playToggle();
+          closeAllModals();
+          setViewMode(mode);
+        }}
         crtOn={crtOn}
         onToggleCrt={() => {
           sfx.playToggle();
@@ -2730,34 +3252,143 @@ export default function App() {
         onNavigateBack={handleNavigateBack}
       />
 
-      {/* PHASE 9: LIVE WALLSTREETBETS-STYLE MEME STOCK TICKER */}
-      <ViralTickerBar
-        onSelectCategory={(cat) => {
-          sfx.playToggle();
-          setCategory(cat);
-          setViewMode('feed');
-        }}
-        onOpenRewards={() => {
-          sfx.playToggle();
-          closeAllModals();
-          setShowRewardsModal(true);
-        }}
-        lootSpins={lootSpins}
-      />
+      {/* PHASE 1: STREAMLINED MODE SWITCHER, SEARCH & COLLAPSIBLE SOUNDBOARD */}
+      <section className="tm-controls">
+        <div className="tm-mode-switch">
+          <button
+            type="button"
+            className={`tm-mode-btn ${viewMode === 'feed' ? 'active' : ''}`}
+            onClick={() => setViewMode('feed')}
+          >
+            📱 Memes ({uploadStats.totalUploads})
+          </button>
+          <button
+            type="button"
+            className={`tm-mode-btn ${viewMode === 'crush' ? 'active' : ''}`}
+            onClick={() => {
+              sfx.playCandyMatch(2);
+              setViewMode('crush');
+            }}
+            title="Play Meme Crush Saga (Candy-Crush Style Match-3 Puzzle Sub-Game)"
+          >
+            🍬 Meme Crush
+          </button>
+          <button
+            type="button"
+            className={`tm-mode-btn ${viewMode === 'pinball' ? 'active' : ''}`}
+            onClick={() => {
+              sfx.playPinballBumper(0);
+              setViewMode('pinball');
+            }}
+            title="Play Las Vegas Retro Pinball Machine"
+          >
+            🎱 Vegas Pinball
+          </button>
+          <button
+            type="button"
+            className={`tm-mode-btn ${viewMode === 'reels' ? 'active' : ''}`}
+            onClick={() => setViewMode('reels')}
+            title="Full-Screen Vertical Meme Reels"
+          >
+            🎬 Reels
+          </button>
+          <button
+            type="button"
+            className={`tm-mode-btn ${viewMode === 'battle' ? 'active' : ''}`}
+            onClick={() => setViewMode('battle')}
+          >
+            ⚔️ 1v1 Arena
+          </button>
+          <button
+            type="button"
+            className={`tm-mode-btn ${viewMode === 'swipe' ? 'active' : ''}`}
+            onClick={() => setViewMode('swipe')}
+          >
+            ⚡ Swipe
+          </button>
+        </div>
 
-      {/* PHASE 4: FEATURED DAILY MEME BOUNTY BANNER */}
-      <DailyBountyBanner
-        bounty={DAILY_BOUNTIES[bountyIdx % DAILY_BOUNTIES.length]}
-        bountyIdx={bountyIdx % DAILY_BOUNTIES.length}
-        totalBounties={DAILY_BOUNTIES.length}
-        onCycleBounty={() => {
-          sfx.playToggle();
-          setBountyIdx((i) => (i + 1) % DAILY_BOUNTIES.length);
-        }}
-        onAcceptBounty={handleAcceptBounty}
-      />
+        {viewMode === 'feed' && (
+          <div className="tm-tabs">
+            <button
+              type="button"
+              className={`tm-tab ${sortBy === 'latest' && !showSavedOnly ? 'active' : ''}`}
+              onClick={() => {
+                setShowSavedOnly(false);
+                setSortBy('latest');
+              }}
+            >
+              ⚡ Latest
+            </button>
+            <button
+              type="button"
+              className={`tm-tab ${sortBy === 'top' && !showSavedOnly ? 'active' : ''}`}
+              onClick={() => {
+                setShowSavedOnly(false);
+                setSortBy('top');
+              }}
+            >
+              🔥 Top
+            </button>
+            <button
+              type="button"
+              className={`tm-tab ${showSavedOnly ? 'active' : ''}`}
+              onClick={() => setShowSavedOnly((prev) => !prev)}
+              title="View your saved favorite memes"
+            >
+              ⭐ Saved ({bookmarkedIds.length})
+            </button>
+            {['all', 'dank', 'tech', 'gaming', 'relatable'].map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                className={`tm-tab ${category === cat && !showSavedOnly ? 'active' : ''}`}
+                onClick={() => {
+                  setShowSavedOnly(false);
+                  setCategory(cat);
+                }}
+              >
+                #{cat.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        )}
 
-      {/* PHASE 6, 9, 13 & 18: CRAZY MEME SOUNDBOARD, REALITY MUTATORS, STAMPEDES & CHAOS TOY BAR */}
+        <div className="tm-controls-right">
+          {viewMode === 'feed' && (
+            <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', flex: 1 }}>
+              <input
+                type="text"
+                className="tm-input tm-search-input"
+                placeholder="Search memes..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Clear search"
+                  style={{
+                    position: 'absolute',
+                    right: '8px',
+                    background: 'none',
+                    border: 'none',
+                    color: '#94a3b8',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    padding: '2px 4px'
+                  }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* COLLAPSIBLE MEME SOUNDBOARD & FUN TOY DRAWER */}
       <MemeSoundboardBar
         soundPack={soundPack}
         onChangeSoundPack={handleChangeSoundPack}
@@ -2785,183 +3416,28 @@ export default function App() {
         onLaunchStampede={handleLaunchStampede}
       />
 
-      {/* LIVE COMMUNITY UPLOAD ACTIVITY & DATE TRACKER BAR */}
-      <section className="tm-upload-tracker-bar" aria-label="Live Community Upload Activity Tracker">
-        <div className="tm-upload-tracker-stats">
-          <span className="tm-tracker-pill">
-            📸 <strong>{uploadStats.totalUploads}</strong> User Upload{uploadStats.totalUploads === 1 ? '' : 's'}
-          </span>
-          <span className="tm-tracker-pill new-today">
-            🆕 <strong>{uploadStats.newTodayCount}</strong> Uploaded in Last 24h
-          </span>
-          <span className="tm-tracker-latest">
-            {uploadStats.latestMeme && uploadStats.latestDateInfo ? (
-              <>
-                ⏱️ Latest Upload: <strong>{uploadStats.latestDateInfo.dateTime}</strong> (
-                {uploadStats.latestDateInfo.relative}) by{' '}
-                <strong
-                  style={{ color: '#00f3ff', cursor: 'pointer' }}
-                  onClick={() => setProfileUsername(uploadStats.latestMeme.author_name)}
-                >
-                  @{uploadStats.latestMeme.author_name}
-                </strong>
-              </>
-            ) : (
-              <>⏱️ No user memes uploaded yet — be the first to upload (+100 XP)!</>
-            )}
-          </span>
-        </div>
-
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            className="tm-btn"
-            style={{ padding: '6px 12px', fontSize: '12px' }}
-            onClick={() => {
-              sfx.playToggle();
-              fetchSupabaseMemes();
+      {/* MODE 1: HOLOGRAPHIC MASONRY GRID FEED + 1-CLICK QUICK UPLOAD BAR */}
+      {viewMode === 'feed' && (
+        <>
+          <QuickUploadBar
+            onQuickPublishFile={handleQuickPublishFile}
+            onOpenStudioWithFile={(file) => {
+              closeAllModals();
+              loadFileIntoStudio(file);
             }}
-            title="Check for new community uploads right now"
-          >
-            🔄 Refresh Uploads
-          </button>
-          <button
-            type="button"
-            className="tm-btn tm-btn-primary"
-            style={{ padding: '6px 14px', fontSize: '12px' }}
-            onClick={() => {
+            onOpenBlankStudio={() => {
               closeAllModals();
               handleOpenBlankStudio();
             }}
-          >
-            + Upload Meme (+100 XP)
-          </button>
-        </div>
-      </section>
-
-      {/* SUB-NAVIGATION: SORT, CATEGORIES & GAME MODES */}
-      <section className="tm-controls">
-        <div className="tm-tabs">
-          <button
-            type="button"
-            className={`tm-tab ${sortBy === 'latest' && !showSavedOnly ? 'active' : ''}`}
-            onClick={() => {
-              setShowSavedOnly(false);
-              setSortBy('latest');
+            activeBounty={DAILY_BOUNTIES[bountyIdx % DAILY_BOUNTIES.length]}
+            onCycleBounty={() => {
+              sfx.playToggle();
+              setBountyIdx((i) => (i + 1) % DAILY_BOUNTIES.length);
             }}
-          >
-            ⚡ Latest Uploads
-          </button>
-          <button
-            type="button"
-            className={`tm-tab ${sortBy === 'new24h' && !showSavedOnly ? 'active' : ''}`}
-            onClick={() => {
-              setShowSavedOnly(false);
-              setSortBy('new24h');
-            }}
-            title="Show only memes uploaded in the last 24 hours"
-          >
-            🆕 New Today ({uploadStats.newTodayCount})
-          </button>
-          <button
-            type="button"
-            className={`tm-tab ${sortBy === 'top' && !showSavedOnly ? 'active' : ''}`}
-            onClick={() => {
-              setShowSavedOnly(false);
-              setSortBy('top');
-            }}
-          >
-            🔥 Top Scored
-          </button>
-          <button
-            type="button"
-            className={`tm-tab ${showSavedOnly ? 'active' : ''}`}
-            onClick={() => setShowSavedOnly((prev) => !prev)}
-            title="View your saved favorite memes"
-          >
-            ⭐ Saved ({bookmarkedIds.length})
-          </button>
-          {['all', 'dank', 'tech', 'gaming', 'relatable'].map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              className={`tm-tab ${category === cat && !showSavedOnly ? 'active' : ''}`}
-              onClick={() => {
-                setShowSavedOnly(false);
-                setCategory(cat);
-              }}
-            >
-              #{cat.toUpperCase()}
-            </button>
-          ))}
-        </div>
+            onAcceptBounty={handleAcceptBounty}
+            uploadTokensRemainingToday={uploadTokensRemainingToday}
+          />
 
-        <div className="tm-controls-right">
-          <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', flex: 1 }}>
-            <input
-              type="text"
-              className="tm-input tm-search-input"
-              placeholder="Search memes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                aria-label="Clear search"
-                style={{
-                  position: 'absolute',
-                  right: '8px',
-                  background: 'none',
-                  border: 'none',
-                  color: '#94a3b8',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  padding: '2px 4px'
-                }}
-              >
-                ✕
-              </button>
-            )}
-          </div>
-          <div className="tm-mode-switch">
-            <button
-              type="button"
-              className={`tm-mode-btn ${viewMode === 'feed' ? 'active' : ''}`}
-              onClick={() => setViewMode('feed')}
-            >
-              📱 Grid Feed
-            </button>
-            <button
-              type="button"
-              className={`tm-mode-btn ${viewMode === 'reels' ? 'active' : ''}`}
-              onClick={() => setViewMode('reels')}
-              title="Full-Screen Vertical Video & Meme Reels (TikTok / Instagram style)"
-            >
-              🎬 Reels
-            </button>
-            <button
-              type="button"
-              className={`tm-mode-btn ${viewMode === 'swipe' ? 'active' : ''}`}
-              onClick={() => setViewMode('swipe')}
-            >
-              ⚡ Hyper-Swipe
-            </button>
-            <button
-              type="button"
-              className={`tm-mode-btn ${viewMode === 'battle' ? 'active' : ''}`}
-              onClick={() => setViewMode('battle')}
-            >
-              ⚔️ 1v1 Arena
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* MODE 1: HOLOGRAPHIC MASONRY GRID FEED (+ SKELETON SHIMMER & INFINITE PAGINATION) */}
-      {viewMode === 'feed' && (
-        <>
           {reportedMemeIds.length > 0 && (
             <div className="tm-moderation-bar">
               <button
@@ -2999,7 +3475,7 @@ export default function App() {
                 <p style={{ color: '#94a3b8', maxWidth: '540px', margin: '0 auto 18px', fontSize: '14px', lineHeight: 1.55 }}>
                   {showSavedOnly
                     ? 'Tap the ⭐ button on any meme card to save your favorites here for quick access.'
-                    : 'THE MEMES.net has zero fake template memes — every single meme on the site is uploaded by real users like you! Drop an image anywhere on screen, paste (Ctrl+V), or click below to upload and add captions.'}
+                    : 'Use the 1-Click Quick-Upload Bar above, drop an image anywhere on screen, or paste (Ctrl+V) to post your meme and earn +40 🪙 Arcade Tokens & +100 XP!'}
                 </p>
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
                   <button
@@ -3007,17 +3483,27 @@ export default function App() {
                     className="tm-btn tm-btn-primary"
                     onClick={() => quickUploadInputRef.current?.click()}
                   >
-                    📥 Select Photo / Screenshot to Upload (+100 XP)
+                    📥 Select Photo / Screenshot (+40 🪙 &amp; +100 XP)
                   </button>
                   <button
                     type="button"
                     className="tm-btn"
                     onClick={() => {
-                      closeAllModals();
-                      handleOpenBlankStudio();
+                      sfx.playCandyMatch(2);
+                      setViewMode('crush');
                     }}
                   >
-                    🎨 Open Meme Forge Studio
+                    🍬 Play Meme Crush Saga
+                  </button>
+                  <button
+                    type="button"
+                    className="tm-btn"
+                    onClick={() => {
+                      sfx.playPinballBumper(0);
+                      setViewMode('pinball');
+                    }}
+                  >
+                    🎱 Play Vegas Pinball
                   </button>
                   {(showSavedOnly || sortBy === 'new24h' || category !== 'all' || searchQuery.trim()) && (
                     <button
@@ -3084,6 +3570,40 @@ export default function App() {
         </>
       )}
 
+      {/* PHASE 3: MEME CRUSH SAGA (CANDY-CRUSH STYLE MATCH-3 PUZZLE SUB-GAME) */}
+      {viewMode === 'crush' && (
+        <MemeCrushGame
+          tokens={tokens}
+          tokenLedger={tokenLedger}
+          playsLeft={crushPlaysLeft}
+          resetMs={crushResetMs}
+          gameTokensRemainingToday={gameTokensRemainingToday}
+          onCompleteRound={handleCompleteSubGameRound}
+          onSpendTokensForPlay={handleSpendTokensForPlay}
+          onBackToFeed={() => {
+            sfx.playToggle();
+            setViewMode('feed');
+          }}
+        />
+      )}
+
+      {/* PHASE 4: LAS VEGAS RETRO PINBALL MACHINE SUB-GAME */}
+      {viewMode === 'pinball' && (
+        <VegasPinballGame
+          tokens={tokens}
+          tokenLedger={tokenLedger}
+          playsLeft={pinballPlaysLeft}
+          resetMs={pinballResetMs}
+          gameTokensRemainingToday={gameTokensRemainingToday}
+          onCompleteRound={handleCompleteSubGameRound}
+          onSpendTokensForPlay={handleSpendTokensForPlay}
+          onBackToFeed={() => {
+            sfx.playToggle();
+            setViewMode('feed');
+          }}
+        />
+      )}
+
       {/* MODE 2: VERTICAL FULL-SCREEN REELS (TIKTOK / INSTAGRAM STYLE) */}
       {viewMode === 'reels' && (
         <VerticalReelsView
@@ -3132,7 +3652,7 @@ export default function App() {
         />
       )}
 
-      {/* MODE 3: KING OF THE HILL 1v1 MEME BATTLE ARENA */}
+      {/* MODE 4: KING OF THE HILL 1v1 MEME BATTLE ARENA */}
       {viewMode === 'battle' && (
         <BattleArena
           memes={memes}
@@ -3341,10 +3861,12 @@ export default function App() {
         />
       )}
 
-      {/* MODAL 6: ARCADE VAULT (SLOTS, WHEEL OF CHAOS LOOT BOX, TRAILS, DAILY STREAK & QUESTS) */}
+      {/* MODAL 6: ARCADE VAULT (FAIR TOKEN LEDGER, SLOTS, WHEEL OF CHAOS, TRAILS, DAILY STREAK & QUESTS) */}
       {showRewardsModal && (
         <RewardsModal
           xp={xp}
+          tokens={tokens}
+          tokenLedger={tokenLedger}
           lootSpins={lootSpins}
           slotPullsLeft={slotPullsLeft}
           slotResetMs={slotResetMs}
@@ -3372,6 +3894,11 @@ export default function App() {
           questProgress={questProgress}
           claimedQuests={claimedQuests}
           onClaimQuestReward={handleClaimQuestReward}
+          onLaunchSubGame={(mode) => {
+            sfx.playToggle();
+            setShowRewardsModal(false);
+            setViewMode(mode);
+          }}
           onClose={() => setShowRewardsModal(false)}
         />
       )}

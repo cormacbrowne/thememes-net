@@ -3616,6 +3616,737 @@ body {
   max-height: 220px;
 }
 
+/* ==========================================
+   4-PHASE UPGRADE PLAN:
+   - PHASE 1: SIMPLIFIED HUD & 1-CLICK QUICK UPLOAD BAR
+   - PHASE 2: FAIR ANTI-LOOPHOLE TOKEN WALLET & DAILY CAP LEDGER
+   - PHASE 3: MEME CRUSH SAGA (CANDY-CRUSH STYLE MATCH-3 PUZZLE)
+   - PHASE 4: LAS VEGAS RETRO PINBALL MACHINE
+   ========================================== */
+
+/* Token Wallet Pill & Sub-Game Quick Pills in Top Navbar */
+.tm-token-wallet-pill {
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.16), rgba(249, 115, 22, 0.14));
+  border: 1.5px solid rgba(250, 204, 21, 0.65);
+  border-radius: 12px;
+  padding: 5px 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #f8fafc;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), 0 0 12px rgba(250, 204, 21, 0.18);
+}
+
+.tm-token-wallet-pill:hover {
+  transform: translateY(-1px);
+  border-color: #facc15;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), 0 0 18px rgba(250, 204, 21, 0.35);
+}
+
+.tm-token-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.tm-token-wallet-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.1;
+}
+
+.tm-token-count {
+  font-size: 12px;
+  font-weight: 900;
+  color: #facc15;
+}
+
+.tm-token-cap-sub {
+  font-size: 9px;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+
+.tm-subgame-nav-pill {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid rgba(236, 72, 153, 0.48);
+  color: #f8fafc;
+  padding: 6px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  white-space: nowrap;
+}
+
+.tm-subgame-nav-pill:hover,
+.tm-subgame-nav-pill.active {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.28), rgba(0, 243, 255, 0.24));
+  border-color: #00f3ff;
+  color: #00f3ff;
+  box-shadow: 0 0 14px rgba(0, 243, 255, 0.3);
+}
+
+/* Phase 1: 1-Click Frictionless Quick-Upload Bar */
+.tm-quick-upload-shell {
+  max-width: 1260px;
+  margin: 8px auto 14px;
+  padding: 0 20px;
+}
+
+.tm-quick-upload-bar {
+  background: linear-gradient(135deg, rgba(14, 19, 38, 0.94), rgba(24, 13, 42, 0.94));
+  border: 2px dashed rgba(0, 243, 255, 0.5);
+  border-radius: 18px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45), 0 0 20px rgba(0, 243, 255, 0.12);
+  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.tm-quick-upload-bar.dragging,
+.tm-quick-upload-bar:hover {
+  border-color: #facc15;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), 0 0 26px rgba(250, 204, 21, 0.22);
+}
+
+.tm-quick-upload-prompt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  flex: 1;
+  min-width: 240px;
+}
+
+.tm-quick-upload-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(0, 243, 255, 0.22), rgba(236, 72, 153, 0.25));
+  border: 1.5px solid #00f3ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.tm-quick-upload-title {
+  font-size: 15px;
+  font-weight: 900;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tm-quick-reward-tag {
+  font-size: 11px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(250, 204, 21, 0.18);
+  border: 1px solid #facc15;
+  color: #facc15;
+}
+
+.tm-quick-upload-sub {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.tm-quick-upload-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tm-quick-upload-composer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.tm-quick-preview-box {
+  position: relative;
+  width: 116px;
+  height: 116px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid #00f3ff;
+  background: #05070f;
+  flex-shrink: 0;
+}
+
+.tm-quick-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.tm-quick-preview-clear {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid #f87171;
+  color: #f87171;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.tm-quick-composer-fields {
+  flex: 1;
+  min-width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tm-quick-fields-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tm-quick-composer-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.tm-compact-bounty-strip {
+  margin-top: 8px;
+  padding: 7px 14px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(250, 204, 21, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.tm-compact-bounty-left,
+.tm-compact-bounty-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tm-compact-bounty-badge {
+  font-weight: 900;
+  color: #facc15;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+}
+
+.tm-compact-bounty-prompt {
+  color: #e2e8f0;
+  font-weight: 700;
+}
+
+.tm-compact-bounty-reward {
+  color: #4ade80;
+  font-weight: 800;
+  font-size: 11px;
+}
+
+/* Phase 2: Fair Token Economy Ledger in RewardsModal */
+.tm-fair-ledger-card {
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(26, 15, 46, 0.92));
+  border: 1.5px solid rgba(250, 204, 21, 0.45);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.tm-fair-ledger-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tm-ledger-caps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.tm-ledger-cap-pill {
+  background: rgba(5, 7, 15, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 6px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+.tm-ledger-cap-pill strong {
+  color: #facc15;
+  font-weight: 900;
+}
+
+.tm-vault-subgame-banner {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.tm-vault-subgame-btn {
+  border-radius: 14px;
+  padding: 11px 14px;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  border: 1.5px solid rgba(0, 243, 255, 0.5);
+  background: linear-gradient(135deg, rgba(0, 243, 255, 0.16), rgba(236, 72, 153, 0.2));
+  color: #f8fafc;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.tm-vault-subgame-btn:hover {
+  transform: translateY(-2px);
+  border-color: #facc15;
+  color: #facc15;
+}
+
+/* Phase 3 & 4 Shared Sub-Game Shell */
+.tm-subgame-wrap {
+  max-width: 860px;
+  margin: 8px auto 48px;
+  padding: 0 16px;
+}
+
+.tm-subgame-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: rgba(12, 16, 32, 0.88);
+  border: 1px solid rgba(0, 243, 255, 0.28);
+}
+
+.tm-subgame-title-block {
+  text-align: center;
+}
+
+.tm-subgame-title {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 900;
+  background: linear-gradient(90deg, #00f3ff, #facc15, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.tm-subgame-subtitle {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.tm-subgame-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tm-subgame-payout-pill {
+  background: rgba(250, 204, 21, 0.15);
+  border: 1px solid rgba(250, 204, 21, 0.55);
+  color: #facc15;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+
+.tm-subgame-toast {
+  background: linear-gradient(90deg, rgba(0, 243, 255, 0.2), rgba(236, 72, 153, 0.25));
+  border: 1.5px solid #00f3ff;
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+  padding: 8px 14px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+/* Phase 3: Meme Crush Saga (Candy-Crush Style Match-3 Puzzle) */
+.tm-crush-cabinet {
+  background: linear-gradient(160deg, rgba(14, 18, 38, 0.96), rgba(32, 11, 48, 0.96));
+  border: 2px solid rgba(236, 72, 153, 0.55);
+  border-radius: 22px;
+  padding: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), 0 0 32px rgba(236, 72, 153, 0.2);
+}
+
+.tm-crush-hud-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.tm-crush-stat-box {
+  background: rgba(6, 9, 20, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 8px 12px;
+  text-align: center;
+}
+
+.tm-crush-stat-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 0.6px;
+}
+
+.tm-crush-stat-val {
+  font-size: 18px;
+  font-weight: 900;
+  color: #f8fafc;
+}
+
+.tm-crush-progress-track {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(5, 7, 15, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.tm-crush-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00f3ff, #ec4899, #facc15);
+  transition: width 0.25s ease;
+}
+
+.tm-crush-boosters-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tm-crush-booster-btn {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1.5px solid rgba(0, 243, 255, 0.4);
+  color: #f8fafc;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tm-crush-booster-btn:hover:not(:disabled),
+.tm-crush-booster-btn.active {
+  border-color: #facc15;
+  color: #facc15;
+  background: rgba(250, 204, 21, 0.16);
+}
+
+.tm-crush-booster-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.tm-crush-plays-pill {
+  font-size: 11px;
+  font-weight: 800;
+  color: #cbd5e1;
+}
+
+.tm-crush-board-shell {
+  position: relative;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.tm-crush-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+  background: rgba(5, 7, 15, 0.9);
+  border: 2px solid rgba(0, 243, 255, 0.35);
+  border-radius: 18px;
+  padding: 10px;
+  aspect-ratio: 1 / 1;
+}
+
+.tm-crush-tile {
+  position: relative;
+  border-radius: 12px;
+  border: 2px solid var(--candy-border, rgba(255, 255, 255, 0.25));
+  background: var(--candy-bg, rgba(30, 41, 59, 0.8));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.14s ease;
+  padding: 0;
+}
+
+.tm-crush-tile:hover {
+  transform: scale(1.07);
+  z-index: 2;
+}
+
+.tm-crush-tile.selected {
+  transform: scale(1.12);
+  border-color: #ffffff;
+  box-shadow: 0 0 18px #facc15, inset 0 0 10px rgba(255, 255, 255, 0.5);
+  z-index: 3;
+}
+
+@keyframes tmCrushHintPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 rgba(250, 204, 21, 0); }
+  50% { transform: scale(1.12); box-shadow: 0 0 20px #facc15; border-color: #facc15; }
+}
+
+.tm-crush-tile.hint {
+  animation: tmCrushHintPulse 0.8s ease-in-out infinite;
+}
+
+@keyframes tmCrushPopOut {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.32); opacity: 0.9; }
+  100% { transform: scale(0.2); opacity: 0; }
+}
+
+.tm-crush-tile.popping {
+  animation: tmCrushPopOut 0.24s ease-out forwards;
+}
+
+.tm-crush-tile.special-striped-h,
+.tm-crush-tile.special-striped-v {
+  box-shadow: 0 0 16px #00f3ff, inset 0 0 12px rgba(0, 243, 255, 0.45);
+}
+
+.tm-crush-tile.special-color-bomb {
+  background: radial-gradient(circle, rgba(250, 204, 21, 0.45), rgba(236, 72, 153, 0.45), rgba(0, 243, 255, 0.45));
+  border-color: #facc15;
+  box-shadow: 0 0 20px #facc15;
+}
+
+.tm-crush-emoji {
+  font-size: clamp(18px, 4.2vw, 28px);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.tm-crush-special-badge {
+  position: absolute;
+  bottom: 2px;
+  right: 3px;
+  font-size: 9px;
+  font-weight: 900;
+  color: #facc15;
+  text-shadow: 0 1px 4px #000;
+  pointer-events: none;
+}
+
+.tm-crush-legend {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+/* Phase 4: Las Vegas Retro Pinball Machine */
+.tm-pinball-cabinet {
+  background: linear-gradient(160deg, rgba(15, 19, 38, 0.96), rgba(38, 12, 34, 0.96));
+  border: 2px solid rgba(250, 204, 21, 0.55);
+  border-radius: 22px;
+  padding: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 32px rgba(250, 204, 21, 0.18);
+}
+
+.tm-pinball-hud-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.tm-pinball-stage {
+  position: relative;
+  max-width: 440px;
+  margin: 0 auto;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 2.5px solid #00f3ff;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.85), 0 0 24px rgba(0, 243, 255, 0.25);
+  background: #070814;
+}
+
+.tm-pinball-canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  touch-action: none;
+}
+
+.tm-pinball-controls-dock {
+  max-width: 480px;
+  margin: 12px auto 0;
+  display: grid;
+  grid-template-columns: 1fr auto auto 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.tm-pinball-flipper-btn {
+  background: linear-gradient(135deg, #00f3ff, #3b82f6);
+  border: none;
+  color: #05070f;
+  font-size: 13px;
+  font-weight: 900;
+  padding: 12px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  box-shadow: 0 6px 16px rgba(0, 243, 255, 0.3);
+}
+
+.tm-pinball-flipper-btn:active {
+  transform: scale(0.95);
+}
+
+.tm-pinball-plunger-btn {
+  background: linear-gradient(135deg, #facc15, #f97316);
+  border: none;
+  color: #070810;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 12px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.tm-pinball-plunger-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.tm-pinball-nudge-btn {
+  background: rgba(236, 72, 153, 0.2);
+  border: 1.5px solid #ec4899;
+  color: #f472b6;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 11px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.tm-pinball-legend {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+/* Sub-Game GameOver / Victory Overlay */
+.tm-subgame-gameover-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 7, 15, 0.88);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 25;
+  border-radius: 18px;
+}
+
+.tm-subgame-gameover-card {
+  background: linear-gradient(155deg, rgba(15, 23, 42, 0.98), rgba(30, 14, 48, 0.98));
+  border: 2px solid #facc15;
+  border-radius: 18px;
+  padding: 20px;
+  text-align: center;
+  max-width: 360px;
+  width: 100%;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85);
+}
+
+.tm-subgame-reward-summary {
+  background: rgba(5, 7, 15, 0.75);
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: #f8fafc;
+}
+
+@media (max-width: 640px) {
+  .tm-pinball-controls-dock {
+    grid-template-columns: 1fr 1fr;
+  }
+  .tm-crush-grid {
+    gap: 4px;
+    padding: 6px;
+  }
+}
+
+
 
 
 

@@ -38,19 +38,22 @@ export default function SeoDiscoveryFooter({
           </div>
 
           <div>
-            <h3 className="tm-seo-heading">🕹️ Interactive Arcade Tools</h3>
+            <h3 className="tm-seo-heading">🕹️ Interactive Arcade Games &amp; Tools</h3>
             <div className="tm-seo-links">
+              <button type="button" className="tm-seo-link" onClick={() => onSelectViewMode('crush')}>
+                🍬 Meme Crush Saga (Match-3 Puzzle Game)
+              </button>
+              <button type="button" className="tm-seo-link" onClick={() => onSelectViewMode('pinball')}>
+                🎱 Las Vegas Retro Pinball Machine
+              </button>
               <button type="button" className="tm-seo-link" onClick={onOpenBlankStudio}>
                 🎨 Free Online Meme Forge Studio 2.0
-              </button>
-              <button type="button" className="tm-seo-link" onClick={() => onSelectViewMode('swipe')}>
-                ⚡ Hyper-Swipe Meme Deck
               </button>
               <button type="button" className="tm-seo-link" onClick={() => onSelectViewMode('battle')}>
                 ⚔️ 1v1 King of the Hill Meme Arena
               </button>
               <button type="button" className="tm-seo-link" onClick={onOpenRewards}>
-                🎰 Wheel of Chaos Loot & Daily Quests
+                🎰 Fair Token Vault, Slots &amp; Daily Quests
               </button>
             </div>
           </div>

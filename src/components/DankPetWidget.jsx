@@ -39,31 +39,30 @@ export default function DankPetWidget({ onEarnPetXp }) {
     const quip =
       currentStage.quips[Math.floor(Math.random() * currentStage.quips.length)];
     triggerAnim('eat', `🌶️ NOM NOM! "${quip}"`);
-    if (onEarnPetXp) {
+    // Award XP only on the first 3 feeds of the day to prevent click-farming
+    const today = new Date().toISOString().slice(0, 10);
+    const dailyKey = `tm_pet_xp_${today}`;
+    const dailyCount = Number(localStorage.getItem(dailyKey) || 0);
+    if (dailyCount < 3 && onEarnPetXp) {
+      localStorage.setItem(dailyKey, String(dailyCount + 1));
       onEarnPetXp(10, e, currentStage.emoji);
     }
   };
 
-  const handleSquishPet = (e) => {
+  const handleSquishPet = () => {
     sfx.playClownHonk();
     triggerAnim(
       'squish',
       '🤡 HONK! You squished my last two braincells!'
     );
-    if (onEarnPetXp) {
-      onEarnPetXp(5, e, '🤡');
-    }
   };
 
-  const handleDancePet = (e) => {
+  const handleDancePet = () => {
     sfx.playNyanRiff();
     triggerAnim(
       'dance',
       '🕺 DISCO OVERDRIVE! Look at those 60fps moves!'
     );
-    if (onEarnPetXp) {
-      onEarnPetXp(10, e, '🕺');
-    }
   };
 
   if (!isOpen) {

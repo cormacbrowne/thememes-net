@@ -187,3 +187,35 @@ export function renderArtworkWithFilter(ctx, W, areaY, areaH, filterMode, drawAr
 
   ctx.restore();
 }
+
+/**
+ * Draws the 32px 16-Bit Cyber-Arcade Cartridge Footer on exported/published canvases.
+ */
+export function stampArcadeCartridgeFooter(ctx, W, H, meta = {}) {
+  const footerH = 32;
+  const footerY = H - footerH;
+  ctx.save();
+  ctx.fillStyle = '#070810';
+  ctx.fillRect(0, footerY, W, footerH);
+
+  ctx.strokeStyle = '#00f3ff';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, footerY);
+  ctx.lineTo(W, footerY);
+  ctx.stroke();
+
+  ctx.font = '900 12px "Courier New", monospace';
+  ctx.fillStyle = '#00f3ff';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('⚡ THEMEMES.NET // CYBER-ARCADE', 12, footerY + footerH / 2);
+
+  const gen = Number(meta.generation || 0);
+  const author = meta.author || 'AnonMemer';
+  ctx.fillStyle = '#facc15';
+  ctx.textAlign = 'right';
+  ctx.fillText(`GEN-${gen} • @${author}`, W - 12, footerY + footerH / 2);
+  ctx.restore();
+}
+

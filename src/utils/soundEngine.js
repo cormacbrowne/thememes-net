@@ -873,6 +873,155 @@ export class SoundEngine {
     }
   }
 
+  /**
+   * 🎱 LAS VEGAS RETRO PINBALL BUMPER BELL & SOLENOID THUMP
+   */
+  playPinballBumper(variant = 0) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(16);
+      const now = this.ctx.currentTime;
+      const bellFreqs = [
+        [1046.5, 1567.98],
+        [1174.66, 1760.0],
+        [1318.51, 1975.53],
+        [1567.98, 2349.32]
+      ];
+      const pair = bellFreqs[variant % bellFreqs.length];
+
+      // Mechanical solenoid thump
+      const thump = this.ctx.createOscillator();
+      const thumpGain = this.ctx.createGain();
+      thump.type = 'triangle';
+      thump.frequency.setValueAtTime(160, now);
+      thump.frequency.exponentialRampToValueAtTime(48, now + 0.07);
+      thumpGain.gain.setValueAtTime(0.28, now);
+      thumpGain.gain.exponentialRampToValueAtTime(0.001, now + 0.075);
+      thump.connect(thumpGain);
+      thumpGain.connect(this.ctx.destination);
+      thump.start(now);
+      thump.stop(now + 0.08);
+
+      // Retro Vegas EM bell chime
+      pair.forEach((f, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, now + idx * 0.02);
+        gain.gain.setValueAtTime(0.18, now + idx * 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22 + idx * 0.03);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now + idx * 0.02);
+        osc.stop(now + 0.26);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🕹️ PINBALL FLIPPER SOLENOID CLICK
+   */
+  playFlipperClick(isUp = true) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(8);
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(isUp ? 220 : 140, now);
+      osc.frequency.exponentialRampToValueAtTime(isUp ? 540 : 90, now + 0.035);
+      gain.gain.setValueAtTime(0.14, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.045);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🚀 PINBALL PLUNGER SPRING LAUNCH
+   */
+  playPlungerLaunch() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(22);
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(140, now);
+      osc.frequency.exponentialRampToValueAtTime(880, now + 0.22);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.26);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🍬 CANDY CRUSH ESCALATING MATCH CHIME
+   */
+  playCandyMatch(cascade = 1) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(12);
+      const scale = [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5, 1174.66, 1318.51];
+      const baseIdx = Math.min(scale.length - 3, Math.max(0, cascade - 1));
+      const notes = [scale[baseIdx], scale[baseIdx + 1], scale[baseIdx + 2]];
+
+      notes.forEach((f, idx) => {
+        const start = this.ctx.currentTime + idx * 0.055;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(f, start);
+        osc.frequency.exponentialRampToValueAtTime(f * 1.06, start + 0.14);
+        gain.gain.setValueAtTime(0.22, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.16);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.17);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 💥 SPECIAL CANDY COLOR BOMB / ROW LASER BLAST
+   */
+  playSpecialBomb() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(30);
+      this.playJackpot();
+      setTimeout(() => this.playBoing(4), 90);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
   triggerHaptic(ms = 14) {
     try {
       if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {

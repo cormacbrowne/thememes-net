@@ -26,17 +26,17 @@ export default function MobileArcadeDock({
           onClick={() => onSelectMode('feed')}
         >
           <span className="tm-dock-icon">📱</span>
-          <span>Grid</span>
+          <span>Memes</span>
         </button>
       )}
 
       <button
         type="button"
-        className={`tm-dock-btn ${viewMode === 'reels' && !isAnyModalOpen ? 'active' : ''}`}
-        onClick={() => onSelectMode('reels')}
+        className={`tm-dock-btn ${viewMode === 'crush' && !isAnyModalOpen ? 'active' : ''}`}
+        onClick={() => onSelectMode('crush')}
       >
-        <span className="tm-dock-icon">🎬</span>
-        <span>Reels</span>
+        <span className="tm-dock-icon">🍬</span>
+        <span>Crush</span>
       </button>
 
       <button
@@ -44,17 +44,17 @@ export default function MobileArcadeDock({
         className={`tm-dock-btn tm-dock-btn-forge ${showStudio ? 'active' : ''}`}
         onClick={onOpenBlankStudio}
       >
-        <span className="tm-dock-icon">{showStudio ? '✕' : '🎨'}</span>
-        <span>{showStudio ? 'Close' : '+Forge'}</span>
+        <span className="tm-dock-icon">{showStudio ? '✕' : '📸'}</span>
+        <span>{showStudio ? 'Close' : '+Upload'}</span>
       </button>
 
       <button
         type="button"
-        className={`tm-dock-btn ${viewMode === 'battle' && !isAnyModalOpen ? 'active' : ''}`}
-        onClick={() => onSelectMode('battle')}
+        className={`tm-dock-btn ${viewMode === 'pinball' && !isAnyModalOpen ? 'active' : ''}`}
+        onClick={() => onSelectMode('pinball')}
       >
-        <span className="tm-dock-icon">⚔️</span>
-        <span>Arena</span>
+        <span className="tm-dock-icon">🎱</span>
+        <span>Pinball</span>
       </button>
 
       <button

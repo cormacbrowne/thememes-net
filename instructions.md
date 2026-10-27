@@ -74,10 +74,13 @@ thememes-net/
     │   ├── canvasMutator.js           # loadMemeIntoStudioCanvas() & stampArcadeCartridgeFooter()
     │   └── seoEngine.js               # Dynamic Title, Meta, OpenGraph & Schema.org JSON-LD Structured Data Engine
     └── components/
-        ├── NavbarHud.jsx              # Sticky combo bar + top HUD (XP bar, Custom Flair, Loot CTA, CRT toggle, SFX toggle, Ranks CTA, Studio CTA, Verified Auth)
+        ├── NavbarHud.jsx              # Simplified top HUD with Fair Token Wallet, Daily Cap indicator, Sub-Game quick pills & Studio CTA
+        ├── QuickUploadBar.jsx         # Phase 1: 1-Click inline Quick-Upload Bar (drag-drop, paste, camera snap, instant preview & publish)
+        ├── MemeCrushGame.jsx          # Phase 3: "Meme Crush Saga" Candy-Crush style 8x8 Match-3 Puzzle Sub-Game with bombs & combos
+        ├── VegasPinballGame.jsx       # Phase 4: "Las Vegas Retro Pinball" 60fps HTML5 Canvas Pinball Machine with silly sounds & jackpots
         ├── ViralTickerBar.jsx         # WallStreetBets-style Live Meme Stock Exchange Marquee Ticker ($DANK, $TECH, $GAMING)
         ├── DailyBountyBanner.jsx      # Featured Daily Meme Bounty banner (+200 XP 2x reward challenge & prompt switcher)
-        ├── MemeSoundboardBar.jsx      # Interactive 8-Pad Crazy Meme Soundboard, Sound Pack Switcher, Chaos Roulette & Boss Key
+        ├── MemeSoundboardBar.jsx      # Interactive 16-Pad Crazy Meme Soundboard, Sound Pack Switcher, Chaos Roulette & Boss Key
         ├── MemeCard.jsx               # 3D holographic tilt card with rarity/bounty/spicy badges, AI Roast trigger & Mutate bar
         ├── MemeSkeletonGrid.jsx       # Neon cyber-arcade shimmer skeleton cards during feed loading
         ├── MemeStudioModal.jsx        # HTML5 Canvas Meme Forge Studio 2.0 (+ Fork/Mutate, Daily Bounty & Spoiler Blur toggle)
@@ -306,6 +309,18 @@ thememes-net/
   - [x] Fixed `localStorage` serialization to strip enormous data URIs, preventing `QuotaExceededError`.
 - [x] **🔍 Google Structured Data SEO Compliance**:
   - [x] Removed unverified hardcoded `aggregateRating` (4.9 / 2480 reviews) from `index.html` to eliminate Google Search Console deceptive review penalties.
+
+### ✅ 4-Phase Growth, Fair Economy & Sub-Game Upgrade Plan (Completed)
+- [x] **Phase 1: Simplified Main Interface & 1-Click Frictionless Quick-Upload Bar (`src/components/QuickUploadBar.jsx`, `src/components/NavbarHud.jsx`, `src/App.jsx`)**:
+  - [x] Consolidated 6 stacked top banners into a clean, high-conversion layout: `NavbarHud` → Mode Switcher (`📱 Memes`, `🍬 Meme Crush`, `🎱 Vegas Pinball`, `🎬 Reels`, `⚔️ 1v1 Arena`, `⚡ Swipe`) → `QuickUploadBar`.
+  - [x] Created `QuickUploadBar.jsx` directly above the feed so users can drop a file, paste from clipboard (`Ctrl+V`), or snap a camera photo, optionally add a title or Top/Bottom Impact text, and publish in **1 click** without opening a complex modal (or click `🎨 Full Studio` for advanced stickers & filters).
+- [x] **Phase 2: Logical, Fair & Anti-Loophole Arcade Token Economy (`src/utils/tokenEconomy.js`, `src/components/RewardsModal.jsx`, `src/App.jsx`)**:
+  - [x] Created `tokenEconomy.js` with `ARCADE_ECONOMY_RULES`, a **Hard Daily Maximum Collection Cap (`500 🪙 Tokens / day`)**, and **Per-Category Daily Sub-Caps** (`Uploads: 120/day`, `Arcade Sub-Games: 200/day`, `Feed Engagement: 100/day`, `Quests & Streaks: 80/day`) plus a **Per-Round Sub-Game Cap (`35 🪙 max/round`)**.
+  - [x] Closed all infinite farming loopholes: per-meme action deduplication (`vote:<id>`, `react:<id>`, `comment:<id>`, `roast:<id>`, `bookmark:<id>`, `share:<id>`), 1-reaction-per-emoji-per-meme guard (`userReactionsMap`), removed token/XP farming from visual/audio toys (Soundboard pads, Reality FX, Stampedes, Bubble Wrap, Boss Key), and decoupled flat token rewards from the visual combo meter.
+- [x] **Phase 3: "Meme Crush Saga" — Candy-Crush Style Match-3 Puzzle Sub-Game (`src/components/MemeCrushGame.jsx`)**:
+  - [x] Built an interactive 8×8 Match-3 puzzle sub-game featuring 6 neon meme candies (`🐸 Pepe`, `🔥 Spicy`, `💎 Diamond`, `🦆 Quack`, `💀 Skull`, `🍕 Pizza`), click/drag swapping, **Match-4 Striped Row/Column Laser Bombs**, **Match-5 Rainbow Supernova Color Bombs**, cascading gravity combos with escalating chime synthesis (`sfx.playCandyMatch`, `sfx.playSpecialBomb`), Hint/Hammer/Shuffle boosters, viral challenge sharing (`/?mode=crush`), and fair capped token payouts.
+- [x] **Phase 4: "Las Vegas Retro Pinball" Machine & Silly Sound Effects (`src/components/VegasPinballGame.jsx`, `src/utils/soundEngine.js`)**:
+  - [x] Built a 60fps HTML5 Canvas Las Vegas Retro Pinball Machine with dual flippers (keyboard `←`/`→` or `A`/`D` + touch buttons), spring-loaded plunger (`Space` or Hold/Tap), 4 flashing Vegas Pop Bumpers (`🎰 777`, `🦆 Quack`, `🗿 Vine Boom`, `💎 VIP`), top `L-U-C-K` rollover multiplier lanes (`1x`–`5x`), center `1,500 PT` Vegas Jackpot Sinkhole, slingshot kickers, table nudge with 3-shake `TILT` protection, viral challenge sharing (`/?mode=pinball`), and fair capped token payouts.
 
 ---
 

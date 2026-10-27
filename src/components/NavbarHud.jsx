@@ -1,3 +1,5 @@
+import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
+
 export default function NavbarHud({
   comboTimer,
   combo,
@@ -6,6 +8,10 @@ export default function NavbarHud({
   equippedFlair,
   xp,
   xpProgress,
+  tokens = 50,
+  dailyTokensEarned = 0,
+  viewMode = 'feed',
+  onSelectViewMode,
   crtOn,
   onToggleCrt,
   soundOn,
@@ -32,7 +38,7 @@ export default function NavbarHud({
         />
       </div>
 
-      {/* TOP NAVIGATION BAR */}
+      {/* CLEAN, STREAMLINED TOP NAVIGATION BAR */}
       <header className="tm-nav">
         <div className="tm-brand-group">
           {canGoBack && (
@@ -63,23 +69,55 @@ export default function NavbarHud({
               />
             </div>
             <div className="tm-logo-badge">THE MEMES.net</div>
-            <div className="tm-status-pill" title="Live Community Feed Connected">
+            <div className="tm-status-pill tm-hide-mobile" title="Live Community Feed Connected">
               <span className={`tm-dot ${dbStatus === 'live' ? 'live' : 'local'}`} />
               <span className="tm-status-text">
-                {dbStatus === 'live' ? 'LIVE FEED' : 'ARCADE READY'}
+                {dbStatus === 'live' ? 'LIVE' : 'ARCADE'}
               </span>
             </div>
           </div>
         </div>
 
         <div className="tm-hud">
-          <div className={`tm-combo-badge ${combo >= 3 ? 'hot' : ''}`}>
-            {combo > 1 ? `🔥 ${combo}x` : '⚡ 1x'}
-            <span className="tm-hide-mobile">{combo > 1 ? ' OVERDRIVE' : ' COMBO'}</span>
+          {/* Sub-Game Quick Shortcuts */}
+          {onSelectViewMode && (
+            <div className="tm-nav-subgames tm-hide-mobile">
+              <button
+                type="button"
+                className={`tm-btn tm-subgame-nav-pill ${viewMode === 'crush' ? 'active' : ''}`}
+                onClick={() => onSelectViewMode('crush')}
+                title="Play Meme Crush Saga — Candy-Crush Style Match-3 Puzzle!"
+              >
+                🍬 Meme Crush
+              </button>
+              <button
+                type="button"
+                className={`tm-btn tm-subgame-nav-pill ${viewMode === 'pinball' ? 'active' : ''}`}
+                onClick={() => onSelectViewMode('pinball')}
+                title="Play Las Vegas Retro Pinball Machine!"
+              >
+                🎱 Vegas Pinball
+              </button>
+            </div>
+          )}
+
+          {/* Fair Arcade Token Wallet & Daily Collection Cap Indicator */}
+          <div
+            className="tm-token-wallet-pill"
+            onClick={onOpenRewards}
+            title={`Fair Arcade Token Wallet: ${tokens} Tokens • Daily Collection: ${dailyTokensEarned}/${ARCADE_ECONOMY_RULES.MAX_DAILY_TOKENS} max today`}
+          >
+            <span className="tm-token-coin">🪙</span>
+            <div>
+              <div className="tm-token-balance">{tokens} Tokens</div>
+              <div className="tm-token-cap-sub">
+                {dailyTokensEarned}/{ARCADE_ECONOMY_RULES.MAX_DAILY_TOKENS} Daily Cap
+              </div>
+            </div>
           </div>
 
           <div
-            className="tm-xp-box"
+            className="tm-xp-box tm-hide-mobile"
             style={{ cursor: 'pointer' }}
             onClick={() => onOpenProfile(user?.username || 'You (Arcade Player)')}
             title="Click to inspect your Arcade Player Card & Badges"
@@ -100,9 +138,9 @@ export default function NavbarHud({
             type="button"
             className="tm-btn tm-rewards-hud-btn"
             onClick={onOpenRewards}
-            title="Open Wheel of Chaos Loot Box, Daily Streak & Quests"
+            title="Open Arcade Vault: Token Ledger, Wheel of Chaos, Slots & Quests"
           >
-            🎰 <span className="tm-hide-mobile">Loot</span>
+            🎰 <span className="tm-hide-mobile">Vault</span>
             {unclaimedRewardsCount > 0 && (
               <span className="tm-reward-alert-dot">{unclaimedRewardsCount}</span>
             )}
@@ -119,21 +157,20 @@ export default function NavbarHud({
 
           <button
             type="button"
-            className={`tm-btn tm-btn-icon-mobile ${crtOn ? 'tm-btn-crt-active' : ''}`}
-            onClick={onToggleCrt}
-            title="Toggle Retro CRT Scanline & Phosphor Shader"
-          >
-            📺<span className="tm-hide-mobile">{crtOn ? ' CRT: ON' : ' CRT: OFF'}</span>
-          </button>
-
-          <button
-            type="button"
             className="tm-btn tm-btn-icon-mobile"
             onClick={onToggleSound}
             title={soundOn ? 'Mute Sound Effects' : 'Enable Sound Effects'}
           >
             {soundOn ? '🔊' : '🔇'}
-            <span className="tm-hide-mobile">{soundOn ? ' SFX' : ' MUTE'}</span>
+          </button>
+
+          <button
+            type="button"
+            className={`tm-btn tm-btn-icon-mobile tm-hide-mobile ${crtOn ? 'tm-btn-crt-active' : ''}`}
+            onClick={onToggleCrt}
+            title="Toggle Retro CRT Scanline Shader"
+          >
+            📺
           </button>
 
           <button
@@ -141,7 +178,7 @@ export default function NavbarHud({
             className="tm-btn tm-btn-primary tm-hide-mobile"
             onClick={onOpenBlankStudio}
           >
-            + Upload / Create
+            📸 + Upload
           </button>
 
           {user ? (
@@ -167,7 +204,7 @@ export default function NavbarHud({
             </div>
           ) : (
             <button type="button" className="tm-btn tm-auth-cta" onClick={onOpenAuthModal}>
-              🛡️ <span className="tm-hide-mobile">Log in / </span>Join
+              🛡️ Join
             </button>
           )}
         </div>

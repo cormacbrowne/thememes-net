@@ -8,10 +8,13 @@ import {
   ARCADE_RATE_LIMITS,
   formatWindowCountdown
 } from '../data/starterMemes';
+import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
 import { sfx } from '../utils/soundEngine';
 
 export default function RewardsModal({
   xp,
+  tokens = 50,
+  tokenLedger,
   lootSpins,
   slotPullsLeft = ARCADE_RATE_LIMITS.SLOT_PULLS_PER_WINDOW,
   slotResetMs = 0,
@@ -22,6 +25,7 @@ export default function RewardsModal({
   onClaimDailyStreak,
   onCompleteWheelSpin,
   onCompleteSlotSpin,
+  onLaunchSubGame,
   unlockedFlairs,
   equippedFlair,
   onEquipFlair,
@@ -53,6 +57,10 @@ export default function RewardsModal({
 
   const canSpinWheel = !isSpinning && lootSpins > 0 && wheelSpinsLeftInWindow > 0;
   const canPullSlots = !isRollingSlots && slotPullsLeft > 0;
+
+  const dailyUsed = tokenLedger?.totalToday || 0;
+  const dailyMax = ARCADE_ECONOMY_RULES.MAX_DAILY_TOKENS;
+  const dailyPct = Math.min(100, Math.round((dailyUsed / dailyMax) * 100));
 
   const handleSpinWheel = (e) => {
     if (!canSpinWheel) return;
@@ -107,9 +115,9 @@ export default function RewardsModal({
         clearInterval(rollInterval);
         const r1 = Math.floor(Math.random() * SLOT_SYMBOLS.length);
         const luckyRoll = Math.random();
-        const r2 = luckyRoll < 0.42 ? r1 : Math.floor(Math.random() * SLOT_SYMBOLS.length);
+        const r2 = luckyRoll < 0.35 ? r1 : Math.floor(Math.random() * SLOT_SYMBOLS.length);
         const r3 =
-          luckyRoll < 0.16
+          luckyRoll < 0.12
             ? r1
             : Math.floor(Math.random() * SLOT_SYMBOLS.length);
 
@@ -121,24 +129,24 @@ export default function RewardsModal({
         if (r1 === r2 && r2 === r3) {
           sfx.playJackpot();
           setTimeout(() => sfx.playAirhorn(), 180);
-          const msg = `🚨 TRIPLE ${sym1.emoji} MEGA JACKPOT! +350 XP + 1 Wheel Spin + "💎 High-Roller" Flair!`;
+          const msg = `🚨 TRIPLE ${sym1.emoji} JACKPOT! +25 🪙 Tokens, +120 XP, +1 Wheel Spin & "💎 High-Roller" Flair!`;
           setSlotResultMsg(msg);
           if (onCompleteSlotSpin) {
-            onCompleteSlotSpin({ xpWon: 350, spinsWon: 1, flair: '💎 Diamond High-Roller' }, e);
+            onCompleteSlotSpin({ tokensWon: 25, xpWon: 120, spinsWon: 1, flair: '💎 Diamond High-Roller' }, e);
           }
         } else if (r1 === r2 || r2 === r3 || r1 === r3) {
           sfx.playJackpot();
-          const msg = `🔥 DOUBLE MATCH! You won +110 XP! (Match 3 to win a Free Wheel Spin!)`;
+          const msg = `🔥 DOUBLE MATCH! You won +8 🪙 Tokens & +45 XP! (Match 3 for Triple Jackpot!)`;
           setSlotResultMsg(msg);
           if (onCompleteSlotSpin) {
-            onCompleteSlotSpin({ xpWon: 110, spinsWon: 0, flair: null }, e);
+            onCompleteSlotSpin({ tokensWon: 8, xpWon: 45, spinsWon: 0, flair: null }, e);
           }
         } else {
           sfx.playClownHonk();
           const fortune = MEME_FORTUNES[Math.floor(Math.random() * MEME_FORTUNES.length)];
-          setSlotResultMsg(`🎲 Consolation +35 XP! ${fortune}`);
+          setSlotResultMsg(`🎲 Consolation +2 🪙 Tokens & +15 XP! ${fortune}`);
           if (onCompleteSlotSpin) {
-            onCompleteSlotSpin({ xpWon: 35, spinsWon: 0, flair: null }, e);
+            onCompleteSlotSpin({ tokensWon: 2, xpWon: 15, spinsWon: 0, flair: null }, e);
           }
         }
       }
@@ -149,7 +157,7 @@ export default function RewardsModal({
     <div className="tm-modal-backdrop" onClick={onClose}>
       <div
         className="tm-modal tm-rewards-modal"
-        style={{ maxWidth: '800px' }}
+        style={{ maxWidth: '820px' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Sticky Header */}
@@ -159,7 +167,7 @@ export default function RewardsModal({
               ← Back
             </button>
             <h2 style={{ margin: 0, fontSize: '20px', color: '#facc15' }}>
-              🎰 Arcade Vault: Slots, Loot Wheel, Trails &amp; Quests
+              🎰 Arcade Token Vault: Fair Economy, Sub-Games &amp; Rewards
             </h2>
           </div>
           <button type="button" className="tm-btn" onClick={onClose}>
@@ -167,8 +175,70 @@ export default function RewardsModal({
           </button>
         </div>
 
+        {/* 0. LOGICAL & FAIR DAILY TOKEN COLLECTION METER (ANTI-LOOPHOLE TRANSPARENCY) */}
+        <div className="tm-fair-ledger-card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            <div>
+              <div style={{ fontSize: '12px', fontWeight: 900, color: '#4ade80', letterSpacing: '0.5px' }}>
+                🛡️ FAIR ARCADE TOKEN ECONOMY (ANTI-EXPLOIT PROTECTED)
+              </div>
+              <div style={{ fontSize: '17px', fontWeight: 900, marginTop: '2px' }}>
+                Wallet: <span style={{ color: '#facc15' }}>🪙 {tokens} Tokens</span> •{' '}
+                <span style={{ color: '#00f3ff' }}>{xp} XP</span>
+              </div>
+            </div>
+            <div className="tm-spin-counter-pill" style={{ borderColor: '#4ade80', color: '#4ade80' }}>
+              Daily Collection: <strong>{dailyUsed}</strong> / {dailyMax} Max Tokens Today
+            </div>
+          </div>
+
+          <div className="tm-xp-track" style={{ marginTop: '8px', height: '8px' }}>
+            <div className="tm-xp-bar" style={{ width: `${dailyPct}%` }} />
+          </div>
+
+          <div className="tm-ledger-caps-grid">
+            <div className="tm-ledger-cap-pill">
+              📸 Uploads: <strong>{tokenLedger?.byCategory?.upload || 0}</strong>/{ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.upload}
+            </div>
+            <div className="tm-ledger-cap-pill">
+              🕹️ Sub-Games: <strong>{tokenLedger?.byCategory?.games || 0}</strong>/{ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.games}
+            </div>
+            <div className="tm-ledger-cap-pill">
+              🔥 Feed Actions: <strong>{tokenLedger?.byCategory?.engagement || 0}</strong>/{ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.engagement}
+            </div>
+            <div className="tm-ledger-cap-pill">
+              🎯 Quests/Streak: <strong>{tokenLedger?.byCategory?.quests || 0}</strong>/{ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.quests}
+            </div>
+          </div>
+
+          {onLaunchSubGame && (
+            <div style={{ display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className="tm-btn tm-btn-primary"
+                onClick={() => {
+                  onClose();
+                  onLaunchSubGame('crush');
+                }}
+              >
+                🍬 Play Meme Crush Puzzle (Win up to 35 🪙)
+              </button>
+              <button
+                type="button"
+                className="tm-btn tm-btn-primary"
+                onClick={() => {
+                  onClose();
+                  onLaunchSubGame('pinball');
+                }}
+              >
+                🎱 Play Las Vegas Retro Pinball (Win up to 35 🪙)
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* 1. DAILY STREAK BANNER */}
-        <div className="tm-streak-box">
+        <div className="tm-streak-box" style={{ marginTop: '14px' }}>
           <div>
             <div style={{ fontSize: '12px', fontWeight: 900, color: '#f97316', letterSpacing: '0.6px' }}>
               🔥 DAILY ARCADE LOGIN STREAK
@@ -176,7 +246,7 @@ export default function RewardsModal({
             <div style={{ fontSize: '18px', fontWeight: 900, marginTop: '2px' }}>
               Day {streakDays} Streak Active!{' '}
               <span style={{ fontSize: '13px', color: '#cbd5e1', fontWeight: 600 }}>
-                (+{100 + streakDays * 50} XP + 1 Free Chaos Spin)
+                (+{ARCADE_ECONOMY_RULES.REWARDS.DAILY_STREAK.tokens} 🪙 Tokens + 100 XP + 1 Free Chaos Spin)
               </span>
             </div>
           </div>
@@ -205,10 +275,10 @@ export default function RewardsModal({
           >
             <div>
               <div className="tm-studio-label" style={{ margin: 0, color: '#f472b6' }}>
-                🍒 3-REEL BRAINROT SLOT MACHINE
+                🍒 3-REEL ARCADE SLOT MACHINE
               </div>
               <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                Match 2 for +110 XP • Match 3 for +350 XP &amp; +1 Wheel Spin!
+                Match 2 for +8 🪙 Tokens • Match 3 for +25 🪙 Tokens &amp; +1 Wheel Spin!
               </div>
             </div>
 
@@ -281,7 +351,7 @@ export default function RewardsModal({
                 🎡 WHEEL OF CHAOS (MYSTERY LOOT CRATES)
               </div>
               <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                Win Neon Title Flairs &amp; XP Jackpots! (Limit: {ARCADE_RATE_LIMITS.WHEEL_SPINS_PER_WINDOW} spins / hr • Max {ARCADE_RATE_LIMITS.MAX_STORED_WHEEL_SPINS} stored)
+                Win Neon Title Flairs &amp; XP! (Limit: {ARCADE_RATE_LIMITS.WHEEL_SPINS_PER_WINDOW} spins / hr • Max {ARCADE_RATE_LIMITS.MAX_STORED_WHEEL_SPINS} stored)
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -351,7 +421,7 @@ export default function RewardsModal({
         {/* 4. TOUCH & MOUSE PARTICLE TRAIL SELECTOR */}
         <div style={{ marginTop: '18px' }}>
           <div className="tm-studio-label" style={{ marginBottom: '8px' }}>
-            ✨ Interactive Touch &amp; Cursor Particle Trail (Works on iPhone, iPad, Android &amp; PC!)
+            ✨ Interactive Touch &amp; Cursor Particle Trail
           </div>
           <div className="tm-flair-list">
             {CURSOR_TRAILS.map((t) => (
@@ -390,18 +460,13 @@ export default function RewardsModal({
                 {flair} {equippedFlair === flair ? '✅' : ''}
               </button>
             ))}
-            {unlockedFlairs.length === 0 && (
-              <span style={{ fontSize: '12px', color: '#64748b' }}>
-                Spin the Wheel of Chaos or Slot Machine above to unlock rare custom titles!
-              </span>
-            )}
           </div>
         </div>
 
         {/* 6. DAILY ARCADE QUESTS */}
         <div style={{ marginTop: '20px' }}>
           <div className="tm-studio-label" style={{ marginBottom: '8px' }}>
-            🎯 Live Arcade Quests (Complete for XP + Free Chaos Spins!)
+            🎯 Live Arcade Quests (Complete for +{ARCADE_ECONOMY_RULES.REWARDS.DAILY_QUEST.tokens} 🪙 Tokens + XP + Free Chaos Spin!)
           </div>
           <div className="tm-quests-list">
             {DAILY_QUESTS.map((q) => {
@@ -421,7 +486,7 @@ export default function RewardsModal({
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 800 }}>
                         <span>{q.title}</span>
                         <span style={{ color: '#facc15' }}>
-                          {current}/{q.target} • +{q.rewardXp} XP + 1 Spin
+                          {current}/{q.target} • +{ARCADE_ECONOMY_RULES.REWARDS.DAILY_QUEST.tokens} 🪙 + {q.rewardXp} XP
                         </span>
                       </div>
                       <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '6px' }}>
@@ -442,7 +507,7 @@ export default function RewardsModal({
                         className="tm-btn tm-btn-primary"
                         onClick={(e) => onClaimQuestReward(q, e)}
                       >
-                        🎁 Claim +{q.rewardXp} XP
+                        🎁 Claim +{ARCADE_ECONOMY_RULES.REWARDS.DAILY_QUEST.tokens} 🪙
                       </button>
                     ) : (
                       <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700 }}>
@@ -487,13 +552,9 @@ export default function RewardsModal({
             {konamiCooldownMs > 0
               ? `🎇 Fireworks Only (Bonus resets in ${formatWindowCountdown(konamiCooldownMs)})`
               : konamiUnlocked
-                ? '🕹️ Claim Daily God Mode (+500 XP + 1 Spin)'
-                : '🕹️ Activate God Mode (+500 XP + 1 Spin)'}
+                ? '🕹️ Claim Daily God Mode (+15 🪙 + 1 Spin)'
+                : '🕹️ Activate God Mode (+15 🪙 + 1 Spin)'}
           </button>
-        </div>
-
-        <div style={{ marginTop: '16px', textAlign: 'right', fontSize: '12px', color: '#94a3b8' }}>
-          Current Vault Balance: <strong style={{ color: '#facc15' }}>{xp} XP</strong>
         </div>
       </div>
     </div>

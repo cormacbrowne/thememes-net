@@ -4346,6 +4346,535 @@ body {
   }
 }
 
+/* ==========================================
+   TURBO-CHARGED SUB-GAMES, MAIN SITE STEER SHOWCASE & "DO NOT PRESS" CHAOS BUTTON
+   ========================================== */
+
+/* Mode Switcher Hot / New Badges */
+.tm-mode-btn-subgame {
+  border-color: rgba(250, 204, 21, 0.5) !important;
+  box-shadow: 0 0 12px rgba(236, 72, 153, 0.2);
+}
+
+.tm-mode-hot-badge {
+  display: inline-block;
+  margin-left: 5px;
+  padding: 1px 6px;
+  font-size: 9px;
+  font-weight: 900;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #facc15, #ec4899);
+  color: #070810;
+  letter-spacing: 0.4px;
+  vertical-align: middle;
+}
+
+/* Main Site Sub-Game Steer Showcase Cards */
+.tm-arcade-steer-shell {
+  max-width: 1260px;
+  margin: 6px auto 12px;
+  padding: 0 20px;
+}
+
+.tm-arcade-steer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+  gap: 14px;
+}
+
+.tm-arcade-steer-card {
+  border-radius: 18px;
+  padding: 14px 16px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease, border-color 0.18s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.tm-arcade-steer-card.tm-steer-crush {
+  background: linear-gradient(135deg, rgba(36, 12, 54, 0.94), rgba(15, 20, 42, 0.95));
+  border: 2px solid rgba(236, 72, 153, 0.65);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55), 0 0 22px rgba(236, 72, 153, 0.22);
+}
+
+.tm-arcade-steer-card.tm-steer-pinball {
+  background: linear-gradient(135deg, rgba(12, 26, 48, 0.94), rgba(28, 16, 42, 0.95));
+  border: 2px solid rgba(0, 243, 255, 0.65);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55), 0 0 22px rgba(0, 243, 255, 0.22);
+}
+
+.tm-arcade-steer-card:hover {
+  transform: translateY(-3px) scale(1.01);
+  border-color: #facc15;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.7), 0 0 28px rgba(250, 204, 21, 0.35);
+}
+
+.tm-arcade-steer-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tm-arcade-steer-pill {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(250, 204, 21, 0.16);
+  border: 1px solid rgba(250, 204, 21, 0.55);
+  color: #facc15;
+}
+
+.tm-arcade-steer-best {
+  font-size: 11px;
+  font-weight: 800;
+  color: #4ade80;
+}
+
+.tm-arcade-steer-body {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.tm-arcade-steer-icons {
+  font-size: 28px;
+  letter-spacing: 2px;
+  background: rgba(5, 7, 15, 0.75);
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+  padding: 10px 12px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.tm-arcade-steer-title {
+  margin: 0 0 3px;
+  font-size: 17px;
+  font-weight: 900;
+  color: #f8fafc;
+}
+
+.tm-arcade-steer-desc {
+  margin: 0;
+  font-size: 12px;
+  color: #cbd5e1;
+  line-height: 1.4;
+}
+
+.tm-arcade-steer-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tm-arcade-steer-payout {
+  font-size: 11px;
+  font-weight: 800;
+  color: #facc15;
+}
+
+.tm-arcade-steer-cta {
+  padding: 7px 14px !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+}
+
+/* In-Feed Arcade Challenge Break Card */
+.tm-infeed-arcade-card {
+  background: linear-gradient(150deg, rgba(22, 13, 44, 0.96), rgba(11, 20, 40, 0.96)) !important;
+  border: 2px solid #facc15 !important;
+  padding: 24px 18px !important;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.65), 0 0 26px rgba(250, 204, 21, 0.22) !important;
+}
+
+.tm-infeed-arcade-badge {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(0, 243, 255, 0.16);
+  border: 1px solid #00f3ff;
+  color: #00f3ff;
+}
+
+/* Sub-Game Header & Marquee Banner */
+.tm-subgame-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tm-subgame-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #facc15, #f97316);
+  color: #070810;
+  -webkit-text-fill-color: #070810;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.tm-pinball-marquee-banner {
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.95), rgba(46, 16, 58, 0.95), rgba(15, 23, 42, 0.95));
+  border: 1.5px solid #facc15;
+  color: #fde047;
+  font-size: 13px;
+  font-weight: 900;
+  text-align: center;
+  padding: 8px 14px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 0 18px rgba(250, 204, 21, 0.25);
+}
+
+/* Meme Crush Saga Turbo-Charged Effects */
+@keyframes tmFeverCabinetGlow {
+  0%, 100% {
+    border-color: #facc15;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 38px rgba(250, 204, 21, 0.45);
+  }
+  50% {
+    border-color: #00f3ff;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 42px rgba(0, 243, 255, 0.5);
+  }
+}
+
+.tm-crush-fever-cabinet {
+  animation: tmFeverCabinetGlow 1.1s ease-in-out infinite;
+}
+
+.tm-crush-levelup-strip {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(250, 204, 21, 0.22));
+  border: 2px solid #4ade80;
+  border-radius: 14px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 13px;
+  color: #f8fafc;
+}
+
+.tm-crush-tile.special-packet-bomb {
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.55), rgba(239, 68, 68, 0.45));
+  border-color: #facc15;
+  box-shadow: 0 0 18px #f97316, inset 0 0 10px rgba(250, 204, 21, 0.6);
+}
+
+/* Center-Board 3D Candy Crush Announcer Splash */
+@keyframes tmCrushAnnouncerPop {
+  0% {
+    transform: translate(-50%, -50%) scale(0.25) rotate(-8deg);
+    opacity: 0;
+  }
+  28% {
+    transform: translate(-50%, -50%) scale(1.18) rotate(3deg);
+    opacity: 1;
+  }
+  75% {
+    transform: translate(-50%, -50%) scale(1.02) rotate(-1deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -62%) scale(1.25) rotate(0deg);
+    opacity: 0;
+  }
+}
+
+.tm-crush-announcer-splash {
+  position: absolute;
+  top: 48%;
+  left: 50%;
+  z-index: 30;
+  pointer-events: none;
+  background: linear-gradient(145deg, rgba(10, 14, 28, 0.96), rgba(38, 12, 52, 0.96));
+  border: 3px solid var(--splash-color, #facc15);
+  border-radius: 20px;
+  padding: 12px 24px;
+  text-align: center;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.9), 0 0 36px var(--splash-color, #facc15);
+  white-space: nowrap;
+  animation: tmCrushAnnouncerPop 1.12s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.tm-crush-announcer-title {
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: clamp(22px, 5vw, 32px);
+  font-weight: 900;
+  letter-spacing: 1.2px;
+  color: var(--splash-color, #facc15);
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.95);
+}
+
+.tm-crush-announcer-sub {
+  font-size: 11px;
+  font-weight: 900;
+  color: #f8fafc;
+  letter-spacing: 0.8px;
+  margin-top: 2px;
+}
+
+/* Row & Column Neon Laser Beams */
+@keyframes tmLaserBeamFlash {
+  0% { opacity: 0; transform: scale(0.4); }
+  25% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0; transform: scale(1.4); }
+}
+
+.tm-crush-laser-beam {
+  position: absolute;
+  z-index: 22;
+  pointer-events: none;
+  background: #ffffff;
+  box-shadow: 0 0 16px var(--laser-color, #00f3ff), 0 0 32px var(--laser-color, #00f3ff);
+  border-radius: 999px;
+  animation: tmLaserBeamFlash 0.4s ease-out forwards;
+}
+
+.tm-crush-laser-beam.horizontal {
+  left: 0;
+  right: 0;
+  height: 12px;
+  margin-top: -6px;
+}
+
+.tm-crush-laser-beam.vertical {
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  margin-left: -6px;
+}
+
+/* Per-Tile Floating Score Popup & Flying Candy Shards */
+@keyframes tmTileScoreRise {
+  0% {
+    transform: translate(-50%, -50%) scale(0.6);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -165%) scale(1.15);
+    opacity: 0;
+  }
+}
+
+.tm-crush-tile-popup {
+  position: absolute;
+  z-index: 26;
+  pointer-events: none;
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  text-shadow: 0 2px 8px #000, 0 0 12px rgba(0, 0, 0, 0.95);
+  white-space: nowrap;
+  animation: tmTileScoreRise 0.88s ease-out forwards;
+}
+
+@keyframes tmCandyShardBurst {
+  0% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--dx, 40px)), calc(-50% + var(--dy, -50px))) scale(0.3) rotate(260deg);
+    opacity: 0;
+  }
+}
+
+.tm-crush-candy-shard {
+  position: absolute;
+  z-index: 24;
+  pointer-events: none;
+  font-size: 20px;
+  animation: tmCandyShardBurst 0.68s ease-out forwards;
+}
+
+/* 🚨 "DO NOT PRESS" Big Red Chaos Button & Interactive Mini-Events */
+.tm-donotpress-dock {
+  position: fixed;
+  bottom: 20px;
+  left: 18px;
+  z-index: 940;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tm-donotpress-btn {
+  background: linear-gradient(145deg, #ef4444, #b91c1c);
+  border: 2.5px solid #fde047;
+  color: #ffffff;
+  padding: 9px 15px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75), 0 0 20px rgba(239, 68, 68, 0.55);
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
+}
+
+.tm-donotpress-btn:hover {
+  transform: translateY(-2px) scale(1.06);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.85), 0 0 28px #facc15;
+}
+
+.tm-donotpress-btn:active {
+  transform: scale(0.94);
+}
+
+.tm-donotpress-led {
+  font-size: 16px;
+}
+
+.tm-donotpress-hide {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.tm-chaos-event-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 992;
+  background: rgba(5, 7, 15, 0.78);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.tm-chaos-event-card {
+  position: relative;
+  width: 100%;
+  max-width: 370px;
+  background: linear-gradient(155deg, rgba(14, 18, 38, 0.98), rgba(38, 12, 52, 0.98));
+  border: 2.5px solid #facc15;
+  border-radius: 22px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 36px rgba(250, 204, 21, 0.35);
+}
+
+.tm-chaos-event-tag {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.7px;
+  color: #00f3ff;
+  text-transform: uppercase;
+}
+
+.tm-chaos-target-btn {
+  width: 100%;
+  background: radial-gradient(circle, rgba(250, 204, 21, 0.2), rgba(15, 23, 42, 0.9));
+  border: 2px dashed rgba(250, 204, 21, 0.65);
+  border-radius: 18px;
+  padding: 16px 12px;
+  cursor: pointer;
+  transition: transform 0.1s ease, border-color 0.1s ease;
+}
+
+.tm-chaos-target-btn:hover:not(:disabled) {
+  transform: scale(1.04);
+  border-color: #00f3ff;
+}
+
+.tm-chaos-target-btn.hit {
+  transform: scale(0.9) rotate(-6deg);
+  border-color: #ef4444;
+}
+
+.tm-chaos-target-cta {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 900;
+  color: #facc15;
+  background: rgba(5, 7, 15, 0.8);
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+@keyframes tmPoliceStrobe {
+  0%, 100% {
+    border-color: #ef4444;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.85), 0 0 28px rgba(239, 68, 68, 0.65);
+  }
+  50% {
+    border-color: #3b82f6;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.85), 0 0 28px rgba(59, 130, 246, 0.65);
+  }
+}
+
+.tm-police-siren-banner {
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 994;
+  width: calc(100% - 32px);
+  max-width: 780px;
+  background: rgba(10, 14, 28, 0.96);
+  border: 2.5px solid #ef4444;
+  border-radius: 16px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 13px;
+  color: #f8fafc;
+  cursor: pointer;
+  animation: tmPoliceStrobe 0.55s linear infinite;
+}
+
+@media (max-width: 768px) {
+  .tm-donotpress-dock {
+    bottom: 84px;
+    left: 12px;
+  }
+}
+
+
 
 
 

@@ -6,20 +6,28 @@ import { formatWindowCountdown } from '../data/starterMemes';
 const GRID_SIZE = 8;
 
 const CANDY_TYPES = [
-  { id: 0, emoji: '🐸', name: 'Pepe Lime', bg: 'rgba(34, 197, 94, 0.24)', border: '#4ade80' },
-  { id: 1, emoji: '🔥', name: 'Fire Drop', bg: 'rgba(249, 115, 22, 0.26)', border: '#fb923c' },
-  { id: 2, emoji: '💎', name: 'Cyber Gem', bg: 'rgba(0, 243, 255, 0.22)', border: '#00f3ff' },
-  { id: 3, emoji: '🦆', name: 'Quack Gold', bg: 'rgba(250, 204, 21, 0.25)', border: '#facc15' },
-  { id: 4, emoji: '💀', name: 'Skull Fizz', bg: 'rgba(168, 85, 247, 0.26)', border: '#c084fc' },
-  { id: 5, emoji: '🍕', name: 'Pizza Pop', bg: 'rgba(236, 72, 153, 0.25)', border: '#f472b6' }
+  { id: 0, emoji: '🐸', name: 'Pepe Lime', bg: 'rgba(34, 197, 94, 0.26)', border: '#4ade80' },
+  { id: 1, emoji: '🔥', name: 'Spicy Drop', bg: 'rgba(249, 115, 22, 0.28)', border: '#fb923c' },
+  { id: 2, emoji: '💎', name: 'Cyber Gem', bg: 'rgba(0, 243, 255, 0.24)', border: '#00f3ff' },
+  { id: 3, emoji: '🦆', name: 'Quack Gold', bg: 'rgba(250, 204, 21, 0.27)', border: '#facc15' },
+  { id: 4, emoji: '💀', name: 'Skull Fizz', bg: 'rgba(168, 85, 247, 0.28)', border: '#c084fc' },
+  { id: 5, emoji: '🍕', name: 'Pizza Pop', bg: 'rgba(236, 72, 153, 0.27)', border: '#f472b6' }
 ];
 
-const CASCADE_CALLOUTS = [
-  'SWEET! 🍬',
-  'TASTY! 🔥',
-  'JUICY COMBO! ⚡',
-  'DIVINE CRUSH! 🌟',
-  'SUPERNOVA CASCADE!! 🌈👑'
+// Official Candy Crush Escalation — THE MEMES.net Edition!
+const ANNOUNCER_TIERS = [
+  { tier: 1, title: 'SWEET! 🍬', sub: 'CERTIFIED DANK MATCH!', color: '#4ade80' },
+  { tier: 2, title: 'TASTY!! 🔥', sub: '2X CASCADE COMBO!', color: '#fb923c' },
+  { tier: 3, title: 'DELICIOUS BRAINROT! 💀', sub: '3X DOPAMINE OVERLOAD!', color: '#c084fc' },
+  { tier: 4, title: 'DIVINE GIGA-CRUSH!! 🗿', sub: '4X ULTRA COMBO!', color: '#00f3ff' },
+  { tier: 5, title: 'UNHINGED SUPERNOVA!! 🌈👑', sub: 'EMOTIONAL DAMAGE!!', color: '#facc15' }
+];
+
+const FEVER_LOOT_PERKS = [
+  { id: 'moves', label: '🎁 FEVER LOOT: +2 BONUS MOVES & +600 PTS!', emoji: '⏱️' },
+  { id: 'hammer', label: '🎁 FEVER LOOT: +1 FREE MEME HAMMER & +600 PTS!', emoji: '🔨' },
+  { id: 'ufo', label: '🎁 FEVER LOOT: +1 FREE UFO BOMB DROPPER & +600 PTS!', emoji: '🛸' },
+  { id: 'colorbomb', label: '🎁 FEVER LOOT: SUPERNOVA COLOR BOMB BEAMED ONTO BOARD!', emoji: '🌈' }
 ];
 
 let tileUidCounter = 1;
@@ -28,7 +36,7 @@ function makeTile(typeId, special = null) {
   return {
     uid: `c-${tileUidCounter++}`,
     type: typeId ?? Math.floor(Math.random() * CANDY_TYPES.length),
-    special // null | 'striped-h' | 'striped-v' | 'color-bomb'
+    special // null | 'striped-h' | 'striped-v' | 'packet-bomb' | 'color-bomb'
   };
 }
 
@@ -115,10 +123,14 @@ function findMatchGroups(board) {
  */
 function findFirstValidMove(board) {
   const cloneSwap = (r1, c1, r2, c2) => {
+    const tA = board[r1]?.[c1];
+    const tB = board[r2]?.[c2];
+    if (!tA || !tB) return false;
+    if (tA.special === 'color-bomb' || tB.special === 'color-bomb') return true;
+    if (tA.special && tB.special) return true;
     const copy = board.map((row) => [...row]);
-    const tmp = copy[r1][c1];
-    copy[r1][c1] = copy[r2][c2];
-    copy[r2][c2] = tmp;
+    copy[r1][c1] = tB;
+    copy[r2][c2] = tA;
     return findMatchGroups(copy).length > 0;
   };
 
@@ -173,15 +185,31 @@ export default function MemeCrushGame({
     Number(localStorage.getItem('tm_crush_highscore') || 0)
   );
   const highScore = Math.max(storedHighScore, score);
-  const [movesLeft, setMovesLeft] = useState(18);
+  const [movesLeft, setMovesLeft] = useState(20);
   const [selectedCell, setSelectedCell] = useState(null);
   const [hintCells, setHintCells] = useState([]);
   const [poppingKeys, setPoppingKeys] = useState(new Set());
   const [isAnimating, setIsAnimating] = useState(false);
-  const [calloutText, setCalloutText] = useState('');
+  const [boardShake, setBoardShake] = useState(false);
+
+  // Turbo-Charged Candy Crush Visual Overlays
+  const [announceSplash, setAnnounceSplash] = useState(null);
+  const [activeLasers, setActiveLasers] = useState([]);
+  const [tilePopups, setTilePopups] = useState([]);
+  const [candyParticles, setCandyParticles] = useState([]);
+  const [lootToast, setLootToast] = useState('');
+
+  // Meme Fever Meter & Multipliers
+  const [feverPct, setFeverPct] = useState(0);
+  const [feverMovesLeft, setFeverMovesLeft] = useState(0);
+  const [comboCount, setComboCount] = useState(0);
+
+  // Boosters
   const [hammerMode, setHammerMode] = useState(false);
-  const [hammersLeft, setHammersLeft] = useState(1);
-  const [shufflesLeft, setShufflesLeft] = useState(1);
+  const [hammersLeft, setHammersLeft] = useState(2);
+  const [ufoDropsLeft, setUfoDropsLeft] = useState(1);
+  const [shufflesLeft, setShufflesLeft] = useState(2);
+
   const [roundFinished, setRoundFinished] = useState(false);
   const [roundSummary, setRoundSummary] = useState(null);
   const [copiedChallenge, setCopiedChallenge] = useState(false);
@@ -189,15 +217,19 @@ export default function MemeCrushGame({
   const dragStartRef = useRef(null);
   const roundRewardedRef = useRef(false);
   const cascadeRunnerRef = useRef(null);
-  const movesLeftRef = useRef(18);
+  const movesLeftRef = useRef(20);
   const scoreRef = useRef(0);
+  const feverPctRef = useRef(0);
+  const feverMovesRef = useRef(0);
 
-  const targetScore = level === 1 ? 1200 : level === 2 ? 2600 : 2600 + (level - 2) * 1600;
+  const targetScore = level === 1 ? 1500 : level === 2 ? 3400 : 3400 + (level - 2) * 2200;
 
   useEffect(() => {
     movesLeftRef.current = movesLeft;
     scoreRef.current = score;
-  }, [movesLeft, score]);
+    feverPctRef.current = feverPct;
+    feverMovesRef.current = feverMovesLeft;
+  }, [movesLeft, score, feverPct, feverMovesLeft]);
 
   useEffect(() => {
     if (score > storedHighScore) {
@@ -205,36 +237,112 @@ export default function MemeCrushGame({
     }
   }, [score, storedHighScore]);
 
-  const showFloatingCallout = useCallback((text) => {
-    setCalloutText(text);
+  const triggerAnnounceSplash = useCallback((tierIdx, customTitle = null, customSub = null) => {
+    const base =
+      ANNOUNCER_TIERS[Math.min(ANNOUNCER_TIERS.length - 1, Math.max(0, tierIdx - 1))];
+    const payload = {
+      id: `sp-${Date.now()}-${Math.random()}`,
+      tier: base.tier,
+      title: customTitle || base.title,
+      sub: customSub || base.sub,
+      color: base.color
+    };
+    setAnnounceSplash(payload);
     setTimeout(() => {
-      setCalloutText((prev) => (prev === text ? '' : prev));
-    }, 950);
+      setAnnounceSplash((prev) => (prev?.id === payload.id ? null : prev));
+    }, 1150);
+  }, []);
+
+  const spawnGridEffects = useCallback((coordsList, points, customTag = null, lasers = []) => {
+    const now = Date.now();
+    if (coordsList.length > 0) {
+      const mid = coordsList[Math.floor(coordsList.length / 2)];
+      const popup = {
+        id: `tp-${now}-${Math.random()}`,
+        r: mid[0],
+        c: mid[1],
+        text: customTag ? `${customTag} +${points}` : `+${points}`,
+        color: points >= 400 ? '#facc15' : '#00f3ff'
+      };
+      setTilePopups((prev) => [...prev.slice(-10), popup]);
+      setTimeout(() => {
+        setTilePopups((prev) => prev.filter((p) => p.id !== popup.id));
+      }, 900);
+
+      // Spawn flying candy emoji shards from matched cells
+      const shards = coordsList.slice(0, 10).map(([r, c], idx) => ({
+        id: `sh-${now}-${idx}-${Math.random()}`,
+        r,
+        c,
+        dx: Math.round((Math.random() - 0.5) * 90),
+        dy: Math.round(-35 - Math.random() * 55),
+        emoji: ['🍬', '✨', '🔥', '💎', '⚡', '🪙'][idx % 6]
+      }));
+      setCandyParticles((prev) => [...prev.slice(-18), ...shards]);
+      setTimeout(() => {
+        setCandyParticles((prev) => prev.filter((s) => !shards.some((sh) => sh.id === s.id)));
+      }, 700);
+    }
+
+    if (lasers.length > 0) {
+      const laserItems = lasers.map((l, idx) => ({
+        ...l,
+        id: `lz-${now}-${idx}-${Math.random()}`
+      }));
+      setActiveLasers((prev) => [...prev, ...laserItems]);
+      setTimeout(() => {
+        setActiveLasers((prev) => prev.filter((item) => !laserItems.some((l) => l.id === item.id)));
+      }, 420);
+    }
+  }, []);
+
+  const showLootToast = useCallback((msg) => {
+    setLootToast(msg);
+    setTimeout(() => {
+      setLootToast((prev) => (prev === msg ? '' : prev));
+    }, 3200);
   }, []);
 
   const finishRound = useCallback(
-    (clearedTarget, finalScoreVal = score) => {
+    (clearedTarget, finalScoreVal = scoreRef.current, bonusMovesConverted = 0) => {
       if (roundRewardedRef.current) return;
       roundRewardedRef.current = true;
       setRoundFinished(true);
-      if (finalScoreVal > storedHighScore) {
-        setStoredHighScore(finalScoreVal);
+
+      const moveConversionPts = bonusMovesConverted * 300;
+      const totalScore = finalScoreVal + moveConversionPts;
+      if (moveConversionPts > 0) {
+        setScore(totalScore);
+      }
+      if (totalScore > storedHighScore) {
+        setStoredHighScore(totalScore);
       }
 
-      // Logical, fair token calculation: 1 token per 120 score + 8 bonus for target clear, capped at 35
-      const baseTokens = Math.floor(finalScoreVal / 120) + (clearedTarget ? 8 : 2);
+      // Compute 1-3 Star Trophy Rating
+      const stars =
+        totalScore >= targetScore * 1.8
+          ? 3
+          : totalScore >= targetScore
+          ? 2
+          : totalScore >= targetScore * 0.5
+          ? 1
+          : 0;
+
+      // Turbo-charged fair token calculation: 1 token per 95 score + Star Chest Bonus, up to 50 tokens/round!
+      const starBonusTokens = stars === 3 ? 14 : stars === 2 ? 10 : stars === 1 ? 4 : 2;
+      const baseTokens = Math.floor(totalScore / 95) + starBonusTokens + (level - 1) * 4;
       const requestedTokens = Math.min(
         ARCADE_ECONOMY_RULES.SUB_GAMES.MAX_TOKENS_PER_ROUND,
-        Math.max(finalScoreVal >= 300 ? 3 : 0, baseTokens)
+        Math.max(totalScore >= 250 ? 4 : 0, baseTokens)
       );
-      const xpEarned = Math.min(250, Math.max(25, Math.floor(finalScoreVal / 25)));
+      const xpEarned = Math.min(350, Math.max(35, Math.floor(totalScore / 18) + stars * 35));
 
       let actualTokensWon = requestedTokens;
       let capNote = '';
       if (completeRoundHandler) {
         const res = completeRoundHandler({
           gameId: 'crush',
-          score: finalScoreVal,
+          score: totalScore,
           requestedTokens,
           xpEarned
         });
@@ -246,104 +354,254 @@ export default function MemeCrushGame({
         }
       }
 
-      if (clearedTarget) {
+      if (clearedTarget || stars >= 2) {
         sfx.playJackpot();
+        setTimeout(() => sfx.playAirhorn(), 160);
       } else {
         sfx.playBoing(2);
       }
 
       setRoundSummary({
-        clearedTarget,
-        score: finalScoreVal,
+        clearedTarget: totalScore >= targetScore,
+        stars,
+        score: totalScore,
+        moveConversionPts,
         tokensWon: actualTokensWon,
         xpEarned,
         capNote
       });
     },
-    [score, storedHighScore, completeRoundHandler]
+    [storedHighScore, targetScore, level, completeRoundHandler]
   );
 
   /**
-   * Resolves all cascades on a board state until stable.
+   * Triggers the official Candy Crush style "MEME CRUSH FINALE" converting remaining moves into bombs/lasers!
+   */
+  const handleTriggerMemeCrushFinale = () => {
+    if (roundFinished || isAnimating) return;
+    const remMoves = movesLeft;
+    setMovesLeft(0);
+    sfx.playSpecialBomb();
+    setBoardShake(true);
+    setTimeout(() => setBoardShake(false), 550);
+
+    // Fire cross-board finale lasers visually
+    spawnGridEffects(
+      [
+        [2, 2],
+        [3, 4],
+        [5, 3],
+        [4, 6]
+      ],
+      remMoves * 300,
+      '🎆 MEME CRUSH FINALE!',
+      [
+        { dir: 'h', index: 2, color: '#facc15' },
+        { dir: 'h', index: 5, color: '#ec4899' },
+        { dir: 'v', index: 3, color: '#00f3ff' },
+        { dir: 'v', index: 6, color: '#4ade80' }
+      ]
+    );
+    triggerAnnounceSplash(
+      5,
+      '🎆 MEME CRUSH FINALE!!',
+      `+${(remMoves * 300).toLocaleString()} MOVE BONUS!`
+    );
+
+    setTimeout(() => {
+      finishRound(true, scoreRef.current, remMoves);
+    }, 620);
+  };
+
+  /**
+   * Resolves all cascades on a board state until stable, spawning Striped Lasers,
+   * L/T-Shape 3x3 Packet Bombs, 5-in-a-row Supernova Color Bombs, and charging Meme Fever!
    */
   const resolveBoardCascades = useCallback(
     (workingBoard, cascadeStep = 1, swappedCoord = null) => {
       const groups = findMatchGroups(workingBoard);
       if (groups.length === 0) {
         setIsAnimating(false);
+        setComboCount(0);
         if (movesLeftRef.current <= 0 && !roundRewardedRef.current) {
-          finishRound(scoreRef.current >= targetScore, scoreRef.current);
+          finishRound(scoreRef.current >= targetScore, scoreRef.current, 0);
         }
         return;
       }
 
       setIsAnimating(true);
+      setComboCount(cascadeStep);
       const toRemove = new Set();
       const specialsToSpawn = [];
+      const spawnedKeySet = new Set();
+
+      // Detect intersecting L-shape or T-shape matches to spawn 3x3 Wrapped Packet Bombs!
+      const cellGroupCount = new Map();
+      groups.forEach((g) => {
+        g.coords.forEach(([r, c]) => {
+          const k = `${r},${c}`;
+          toRemove.add(k);
+          cellGroupCount.set(k, (cellGroupCount.get(k) || 0) + 1);
+        });
+      });
 
       groups.forEach((g) => {
-        g.coords.forEach(([r, c]) => toRemove.add(`${r},${c}`));
+        // Check if any cell in this group is an L/T intersection
+        const intersectCoord = g.coords.find(([r, c]) => (cellGroupCount.get(`${r},${c}`) || 0) >= 2);
+
         if (g.length >= 5) {
           const spawnCoord =
             (swappedCoord &&
               g.coords.find(([r, c]) => r === swappedCoord[0] && c === swappedCoord[1])) ||
             g.coords[Math.floor(g.coords.length / 2)];
-          specialsToSpawn.push({
-            r: spawnCoord[0],
-            c: spawnCoord[1],
-            type: g.type,
-            special: 'color-bomb'
-          });
+          const spKey = `${spawnCoord[0]},${spawnCoord[1]}`;
+          if (!spawnedKeySet.has(spKey)) {
+            spawnedKeySet.add(spKey);
+            specialsToSpawn.push({
+              r: spawnCoord[0],
+              c: spawnCoord[1],
+              type: g.type,
+              special: 'color-bomb'
+            });
+          }
+        } else if (intersectCoord) {
+          const spKey = `${intersectCoord[0]},${intersectCoord[1]}`;
+          if (!spawnedKeySet.has(spKey)) {
+            spawnedKeySet.add(spKey);
+            specialsToSpawn.push({
+              r: intersectCoord[0],
+              c: intersectCoord[1],
+              type: g.type,
+              special: 'packet-bomb'
+            });
+          }
         } else if (g.length === 4) {
           const spawnCoord =
             (swappedCoord &&
               g.coords.find(([r, c]) => r === swappedCoord[0] && c === swappedCoord[1])) ||
             g.coords[1];
-          specialsToSpawn.push({
-            r: spawnCoord[0],
-            c: spawnCoord[1],
-            type: g.type,
-            special: g.dir === 'h' ? 'striped-v' : 'striped-h'
-          });
-        }
-      });
-
-      // Trigger any existing striped/color-bomb tiles caught in the match
-      let triggeredSpecial = false;
-      Array.from(toRemove).forEach((key) => {
-        const [r, c] = key.split(',').map(Number);
-        const tile = workingBoard[r]?.[c];
-        if (!tile?.special) return;
-        triggeredSpecial = true;
-        if (tile.special === 'striped-h') {
-          for (let col = 0; col < GRID_SIZE; col++) toRemove.add(`${r},${col}`);
-        } else if (tile.special === 'striped-v') {
-          for (let row = 0; row < GRID_SIZE; row++) toRemove.add(`${row},${c}`);
-        } else if (tile.special === 'color-bomb') {
-          for (let row = 0; row < GRID_SIZE; row++) {
-            for (let col = 0; col < GRID_SIZE; col++) {
-              if (workingBoard[row][col]?.type === tile.type) {
-                toRemove.add(`${row},${col}`);
-              }
-            }
+          const spKey = `${spawnCoord[0]},${spawnCoord[1]}`;
+          if (!spawnedKeySet.has(spKey)) {
+            spawnedKeySet.add(spKey);
+            specialsToSpawn.push({
+              r: spawnCoord[0],
+              c: spawnCoord[1],
+              type: g.type,
+              special: g.dir === 'h' ? 'striped-v' : 'striped-h'
+            });
           }
         }
       });
 
+      // Chain-detonate any existing special candies caught in the match!
+      let triggeredSpecial = false;
+      const lasersToFire = [];
+      const queue = Array.from(toRemove);
+      const processedSpecials = new Set();
+
+      while (queue.length > 0) {
+        const key = queue.shift();
+        if (processedSpecials.has(key)) continue;
+        const [r, c] = key.split(',').map(Number);
+        const tile = workingBoard[r]?.[c];
+        if (!tile?.special) continue;
+
+        processedSpecials.add(key);
+        triggeredSpecial = true;
+
+        if (tile.special === 'striped-h') {
+          lasersToFire.push({ dir: 'h', index: r, color: '#00f3ff' });
+          for (let col = 0; col < GRID_SIZE; col++) {
+            const k = `${r},${col}`;
+            if (!toRemove.has(k)) {
+              toRemove.add(k);
+              queue.push(k);
+            }
+          }
+        } else if (tile.special === 'striped-v') {
+          lasersToFire.push({ dir: 'v', index: c, color: '#ec4899' });
+          for (let row = 0; row < GRID_SIZE; row++) {
+            const k = `${row},${c}`;
+            if (!toRemove.has(k)) {
+              toRemove.add(k);
+              queue.push(k);
+            }
+          }
+        } else if (tile.special === 'packet-bomb') {
+          for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+              const nr = r + dr;
+              const nc = c + dc;
+              if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
+                const k = `${nr},${nc}`;
+                if (!toRemove.has(k)) {
+                  toRemove.add(k);
+                  queue.push(k);
+                }
+              }
+            }
+          }
+        } else if (tile.special === 'color-bomb') {
+          for (let row = 0; row < GRID_SIZE; row++) {
+            for (let col = 0; col < GRID_SIZE; col++) {
+              if (workingBoard[row][col]?.type === tile.type) {
+                const k = `${row},${col}`;
+                if (!toRemove.has(k)) {
+                  toRemove.add(k);
+                  queue.push(k);
+                }
+              }
+            }
+          }
+        }
+      }
+
       const clearedCount = toRemove.size;
-      const pointsEarned = clearedCount * 35 * cascadeStep;
+      const feverMultiplier = feverMovesRef.current > 0 ? 2 : 1;
+      const pointsEarned = clearedCount * 45 * cascadeStep * feverMultiplier;
       setScore((prev) => prev + pointsEarned);
 
-      if (triggeredSpecial || specialsToSpawn.length > 0) {
-        sfx.playSpecialBomb();
+      // Charge Meme Fever Meter
+      const nextFever = Math.min(100, feverPctRef.current + clearedCount * 4 + cascadeStep * 6);
+      let triggerFeverNow = false;
+      if (nextFever >= 100) {
+        triggerFeverNow = true;
+        setFeverPct(0);
+        feverPctRef.current = 0;
+        setFeverMovesLeft((m) => m + 3);
+      } else {
+        setFeverPct(nextFever);
+        feverPctRef.current = nextFever;
+      }
+
+      // Audio & Screen Shake
+      if (triggeredSpecial || clearedCount >= 7 || cascadeStep >= 3) {
+        setBoardShake(true);
+        setTimeout(() => setBoardShake(false), 360);
+      }
+      if (lasersToFire.length > 0) {
+        sfx.playLaserZap();
+      }
+      if (triggeredSpecial || specialsToSpawn.length > 0 || cascadeStep >= 2) {
+        sfx.playCrushComboFanfare(Math.min(5, Math.max(cascadeStep, clearedCount >= 8 ? 4 : 2)));
       } else {
         sfx.playCandyMatch(cascadeStep);
       }
 
-      if (cascadeStep >= 2 || clearedCount >= 5) {
-        const word =
-          CASCADE_CALLOUTS[Math.min(CASCADE_CALLOUTS.length - 1, cascadeStep - 1)];
-        showFloatingCallout(`${word} +${pointsEarned}`);
+      const allCoords = Array.from(toRemove).map((k) => k.split(',').map(Number));
+      spawnGridEffects(
+        allCoords,
+        pointsEarned,
+        triggeredSpecial ? '💥 MEGA BLAST!' : cascadeStep >= 2 ? `🔥 ${cascadeStep}x` : null,
+        lasersToFire
+      );
+
+      if (cascadeStep >= 2 || clearedCount >= 4 || triggeredSpecial) {
+        const effectiveTier = Math.min(
+          5,
+          Math.max(cascadeStep, clearedCount >= 10 ? 5 : clearedCount >= 6 ? 3 : 1)
+        );
+        triggerAnnounceSplash(effectiveTier);
       }
 
       setPoppingKeys(toRemove);
@@ -376,6 +634,32 @@ export default function MemeCrushGame({
           }
         }
 
+        // If Meme Fever Meter hit 100%, drop bonus special candies & award a Turbo Loot Drop!
+        if (triggerFeverNow) {
+          sfx.playPowerUpCollect();
+          const perk = FEVER_LOOT_PERKS[Math.floor(Math.random() * FEVER_LOOT_PERKS.length)];
+          setScore((s) => s + 600);
+          if (perk.id === 'moves') setMovesLeft((m) => m + 2);
+          else if (perk.id === 'hammer') setHammersLeft((h) => h + 1);
+          else if (perk.id === 'ufo') setUfoDropsLeft((u) => u + 1);
+
+          // Spawn 2 bonus special candies on random tiles
+          const r1 = Math.floor(Math.random() * GRID_SIZE);
+          const c1 = Math.floor(Math.random() * GRID_SIZE);
+          const r2 = (r1 + 3) % GRID_SIZE;
+          const c2 = (c1 + 4) % GRID_SIZE;
+          if (nextBoard[r1][c1]) {
+            nextBoard[r1][c1] = makeTile(
+              nextBoard[r1][c1].type,
+              perk.id === 'colorbomb' ? 'color-bomb' : 'packet-bomb'
+            );
+          }
+          if (nextBoard[r2][c2]) {
+            nextBoard[r2][c2] = makeTile(nextBoard[r2][c2].type, 'striped-h');
+          }
+          showLootToast(`🔥 MEME FEVER ERUPTION (2X SCORE)! ${perk.label}`);
+        }
+
         setPoppingKeys(new Set());
         setBoard(nextBoard);
 
@@ -384,9 +668,9 @@ export default function MemeCrushGame({
             cascadeRunnerRef.current(nextBoard, cascadeStep + 1, null);
           }
         }, 190);
-      }, 220);
+      }, 230);
     },
-    [showFloatingCallout, finishRound, targetScore]
+    [spawnGridEffects, triggerAnnounceSplash, showLootToast, finishRound, targetScore]
   );
 
   useEffect(() => {
@@ -396,10 +680,11 @@ export default function MemeCrushGame({
   const handleAdvanceNextLevel = () => {
     sfx.playLevelUp();
     setLevel((lv) => lv + 1);
-    setMovesLeft((m) => Math.min(22, m + 10));
-    setHammersLeft(1);
-    setShufflesLeft(1);
-    showFloatingCallout(`🚀 LEVEL ${level + 1} UNLOCKED! +10 MOVES!`);
+    setMovesLeft((m) => Math.min(25, m + 12));
+    setHammersLeft((h) => h + 1);
+    setUfoDropsLeft((u) => u + 1);
+    setShufflesLeft((s) => s + 1);
+    triggerAnnounceSplash(4, `🚀 LEVEL ${level + 1} UNLOCKED!`, '+12 MOVES & +1 HAMMER + UFO!');
   };
 
   const handleStartNewRound = (useTokensIfEmpty = false) => {
@@ -418,14 +703,20 @@ export default function MemeCrushGame({
     setRoundSummary(null);
     setLevel(1);
     setScore(0);
-    setMovesLeft(18);
-    setHammersLeft(1);
-    setShufflesLeft(1);
+    setMovesLeft(20);
+    setFeverPct(0);
+    setFeverMovesLeft(0);
+    setHammersLeft(2);
+    setUfoDropsLeft(1);
+    setShufflesLeft(2);
     setSelectedCell(null);
     setHintCells([]);
     setBoard(createInitialBoard());
   };
 
+  /**
+   * Executes a Special + Special Swap or standard swap on the 8x8 Candy Board.
+   */
   const attemptSwap = (r1, c1, r2, c2) => {
     if (isAnimating || roundFinished || movesLeft <= 0) return;
     if (Math.abs(r1 - r2) + Math.abs(c1 - c2) !== 1) return;
@@ -437,28 +728,33 @@ export default function MemeCrushGame({
     const tileB = board[r2][c2];
     if (!tileA || !tileB) return;
 
-    // Special case: swapping a Color Bomb with any adjacent candy blasts all candies of that type!
-    if (tileA.special === 'color-bomb' || tileB.special === 'color-bomb') {
-      const targetType = tileA.special === 'color-bomb' ? tileB.type : tileA.type;
-      const toBlast = new Set([`${r1},${c1}`, `${r2},${c2}`]);
-      for (let r = 0; r < GRID_SIZE; r++) {
-        for (let c = 0; c < GRID_SIZE; c++) {
-          if (board[r][c]?.type === targetType) {
-            toBlast.add(`${r},${c}`);
-          }
-        }
-      }
+    const consumeMove = () => {
       setMovesLeft((m) => Math.max(0, m - 1));
+      if (feverMovesLeft > 0) {
+        setFeverMovesLeft((f) => Math.max(0, f - 1));
+      }
+    };
+
+    const executeCustomBlast = (toBlastSet, bonusPts, bannerTitle, bannerSub, lasers = []) => {
+      consumeMove();
       setIsAnimating(true);
+      setBoardShake(true);
+      setTimeout(() => setBoardShake(false), 450);
       sfx.playSpecialBomb();
-      const bonus = toBlast.size * 60;
-      setScore((s) => s + bonus);
-      showFloatingCallout(`🌈 SUPERNOVA COLOR BLAST! +${bonus}`);
-      setPoppingKeys(toBlast);
+      if (lasers.length > 0) sfx.playLaserZap();
+
+      const feverMult = feverMovesLeft > 0 ? 2 : 1;
+      const totalPts = bonusPts * feverMult;
+      setScore((s) => s + totalPts);
+
+      const coords = Array.from(toBlastSet).map((k) => k.split(',').map(Number));
+      spawnGridEffects(coords, totalPts, bannerTitle, lasers);
+      triggerAnnounceSplash(5, bannerTitle, `${bannerSub} (+${totalPts.toLocaleString()} PTS!)`);
+      setPoppingKeys(toBlastSet);
 
       setTimeout(() => {
         const nextBoard = board.map((row) => [...row]);
-        toBlast.forEach((key) => {
+        toBlastSet.forEach((key) => {
           const [br, bc] = key.split(',').map(Number);
           nextBoard[br][bc] = null;
         });
@@ -473,24 +769,148 @@ export default function MemeCrushGame({
         }
         setPoppingKeys(new Set());
         setBoard(nextBoard);
-        setTimeout(() => resolveBoardCascades(nextBoard, 2, null), 180);
-      }, 240);
+        setTimeout(() => resolveBoardCascades(nextBoard, 2, null), 190);
+      }, 260);
+    };
+
+    // 1. 🌈 COLOR BOMB + 🌈 COLOR BOMB = NUCLEAR 64-TILE BOARD WIPE!
+    if (tileA.special === 'color-bomb' && tileB.special === 'color-bomb') {
+      const allKeys = new Set();
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          allKeys.add(`${r},${c}`);
+        }
+      }
+      executeCustomBlast(
+        allKeys,
+        5000,
+        '🌌 NUCLEAR BOARD WIPE!!',
+        'DOUBLE COLOR BOMB SUPERNOVA!',
+        [
+          { dir: 'h', index: r1, color: '#facc15' },
+          { dir: 'h', index: r2, color: '#00f3ff' },
+          { dir: 'v', index: c1, color: '#ec4899' },
+          { dir: 'v', index: c2, color: '#4ade80' }
+        ]
+      );
       return;
     }
 
+    // 2. 🌈 COLOR BOMB + ANY CANDY (OR STRIPED / PACKET BOMB)
+    if (tileA.special === 'color-bomb' || tileB.special === 'color-bomb') {
+      const otherTile = tileA.special === 'color-bomb' ? tileB : tileA;
+      const targetType = otherTile.type;
+      const toBlast = new Set([`${r1},${c1}`, `${r2},${c2}`]);
+      const lasers = [];
+
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          if (board[r][c]?.type === targetType) {
+            toBlast.add(`${r},${c}`);
+            if (otherTile.special === 'striped-h' || otherTile.special === 'striped-v') {
+              // Color Bomb + Striped = Every matching candy fires a Row or Column Laser!
+              if ((r + c) % 2 === 0) {
+                lasers.push({ dir: 'h', index: r, color: '#00f3ff' });
+                for (let k = 0; k < GRID_SIZE; k++) toBlast.add(`${r},${k}`);
+              } else {
+                lasers.push({ dir: 'v', index: c, color: '#ec4899' });
+                for (let k = 0; k < GRID_SIZE; k++) toBlast.add(`${k},${c}`);
+              }
+            } else if (otherTile.special === 'packet-bomb') {
+              // Color Bomb + Packet Bomb = Every matching candy detonates a 3x3 crater!
+              for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                  if (r + dr >= 0 && r + dr < GRID_SIZE && c + dc >= 0 && c + dc < GRID_SIZE) {
+                    toBlast.add(`${r + dr},${c + dc}`);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      executeCustomBlast(
+        toBlast,
+        toBlast.size * 75,
+        otherTile.special ? '🌈⚡ HYPER COMBO STORM!!' : '🌈 SUPERNOVA COLOR BLAST!',
+        `${toBlast.size} CANDIES VAPORIZED!`,
+        lasers
+      );
+      return;
+    }
+
+    // 3. ⚡/💥 TWO SPECIAL CANDIES SWAPPED TOGETHER (Striped+Striped, Striped+Packet, Packet+Packet)
+    if (tileA.special && tileB.special) {
+      const toBlast = new Set([`${r1},${c1}`, `${r2},${c2}`]);
+      const lasers = [];
+      const hasPacket = tileA.special === 'packet-bomb' || tileB.special === 'packet-bomb';
+      const hasStriped =
+        tileA.special?.startsWith('striped') || tileB.special?.startsWith('striped');
+
+      if (hasPacket && hasStriped) {
+        // Giant 3-Row x 3-Column Mega Laser Sweep!
+        for (let d = -1; d <= 1; d++) {
+          const rr = r2 + d;
+          const cc = c2 + d;
+          if (rr >= 0 && rr < GRID_SIZE) {
+            lasers.push({ dir: 'h', index: rr, color: '#facc15' });
+            for (let k = 0; k < GRID_SIZE; k++) toBlast.add(`${rr},${k}`);
+          }
+          if (cc >= 0 && cc < GRID_SIZE) {
+            lasers.push({ dir: 'v', index: cc, color: '#ec4899' });
+            for (let k = 0; k < GRID_SIZE; k++) toBlast.add(`${k},${cc}`);
+          }
+        }
+        executeCustomBlast(
+          toBlast,
+          2400,
+          '⚡💥 GIANT 3×3 MEGA LASER!!',
+          '3 ROWS + 3 COLUMNS OBLITERATED!',
+          lasers
+        );
+        return;
+      }
+
+      if (tileA.special === 'packet-bomb' && tileB.special === 'packet-bomb') {
+        // 5x5 Giga Crater!
+        for (let dr = -2; dr <= 2; dr++) {
+          for (let dc = -2; dc <= 2; dc++) {
+            const nr = r2 + dr;
+            const nc = c2 + dc;
+            if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
+              toBlast.add(`${nr},${nc}`);
+            }
+          }
+        }
+        executeCustomBlast(toBlast, 2000, '💥💥 5×5 GIGA-CRATER!!', 'DOUBLE PACKET DETONATION!');
+        return;
+      }
+
+      // Striped + Striped = Cross Laser (Full Row + Full Column)
+      lasers.push({ dir: 'h', index: r2, color: '#00f3ff' });
+      lasers.push({ dir: 'v', index: c2, color: '#ec4899' });
+      for (let k = 0; k < GRID_SIZE; k++) {
+        toBlast.add(`${r2},${k}`);
+        toBlast.add(`${k},${c2}`);
+      }
+      executeCustomBlast(toBlast, 1400, '⚡╋ CROSS-LASER OVERDRIVE!', 'ROW & COLUMN CLEARED!', lasers);
+      return;
+    }
+
+    // 4. Standard Swap Check
     const swapped = board.map((row) => [...row]);
     swapped[r1][c1] = tileB;
     swapped[r2][c2] = tileA;
 
     const matches = findMatchGroups(swapped);
     if (matches.length === 0) {
-      // Invalid swap — play goofy honk without deducting a move
       sfx.playClownHonk();
-      showFloatingCallout('🤡 No Match! Try another swap!');
+      showLootToast('🤡 No Match! Try another swap or tap 💡 Hint!');
       return;
     }
 
-    setMovesLeft((m) => Math.max(0, m - 1));
+    consumeMove();
     setBoard(swapped);
     resolveBoardCascades(swapped, 1, [r2, c2]);
   };
@@ -498,26 +918,30 @@ export default function MemeCrushGame({
   const handleCellClick = (r, c) => {
     if (isAnimating || roundFinished || movesLeft <= 0) return;
 
-    // Hammer Booster Mode: smash any single tile + its 4 neighbors!
+    // 🔨 Meme Hammer Booster Mode: smash a 3x3 cross & trigger any specials hit!
     if (hammerMode && hammersLeft > 0) {
       setHammerMode(false);
       setHammersLeft((h) => h - 1);
       setIsAnimating(true);
+      setBoardShake(true);
+      setTimeout(() => setBoardShake(false), 380);
       sfx.playMetalPipe();
       const toSmash = new Set([`${r},${c}`]);
-      [
-        [r - 1, c],
-        [r + 1, c],
-        [r, c - 1],
-        [r, c + 1]
-      ].forEach(([nr, nc]) => {
-        if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
-          toSmash.add(`${nr},${nc}`);
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          if (Math.abs(dr) + Math.abs(dc) <= 1) {
+            const nr = r + dr;
+            const nc = c + dc;
+            if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
+              toSmash.add(`${nr},${nc}`);
+            }
+          }
         }
-      });
+      }
       setPoppingKeys(toSmash);
-      setScore((s) => s + 180);
-      showFloatingCallout('🔨 MEME HAMMER SMASH! +180');
+      setScore((s) => s + 350);
+      spawnGridEffects([[r, c]], 350, '🔨 HAMMER SMASH!');
+      triggerAnnounceSplash(3, '🔨 MEME HAMMER SMASH!', '+350 BONUS PTS!');
 
       setTimeout(() => {
         const nextBoard = board.map((row) => [...row]);
@@ -559,6 +983,26 @@ export default function MemeCrushGame({
       sfx.playToggle();
       setSelectedCell([r, c]);
     }
+  };
+
+  // 🛸 UFO Special Bomb Dropper Booster
+  const handleDeployUfoDrop = () => {
+    if (isAnimating || roundFinished || ufoDropsLeft <= 0) return;
+    setUfoDropsLeft((u) => u - 1);
+    sfx.playAlienBeam();
+    setTimeout(() => sfx.playPowerUpCollect(), 200);
+
+    const nextBoard = board.map((row) => [...row]);
+    const r1 = 2 + Math.floor(Math.random() * 4);
+    const c1 = 1 + Math.floor(Math.random() * 3);
+    const r2 = 2 + Math.floor(Math.random() * 4);
+    const c2 = 4 + Math.floor(Math.random() * 3);
+
+    nextBoard[r1][c1] = makeTile(nextBoard[r1][c1]?.type ?? 0, 'color-bomb');
+    nextBoard[r2][c2] = makeTile(nextBoard[r2][c2]?.type ?? 1, 'packet-bomb');
+    setBoard(nextBoard);
+    setScore((s) => s + 400);
+    triggerAnnounceSplash(4, '🛸 UFO BOMB DROP!!', '🌈 COLOR BOMB + 💥 PACKET BOMB BEAMED IN!');
   };
 
   const handlePointerDown = (r, c, e) => {
@@ -605,7 +1049,7 @@ export default function MemeCrushGame({
     if (!freeAuto && shufflesLeft <= 0) return;
     if (!freeAuto) setShufflesLeft((s) => s - 1);
     sfx.playBoing(3);
-    showFloatingCallout('🔀 BOARD SHUFFLED!');
+    triggerAnnounceSplash(2, '🔀 BOARD SHUFFLED!', 'FRESH MEME CANDIES DROPPED!');
     setHintCells([]);
     setSelectedCell(null);
     setBoard(createInitialBoard());
@@ -613,7 +1057,7 @@ export default function MemeCrushGame({
 
   const handleShareChallenge = () => {
     const shareUrl = `${window.location.origin}/?mode=crush`;
-    const shareText = `🍬 I just scored ${score} pts (Level ${level}) in MEME CRUSH SAGA on THE MEMES.net! Can you beat my score?`;
+    const shareText = `🍬 I just scored ${score.toLocaleString()} pts (Level ${level}) in MEME CRUSH SAGA on THE MEMES.net! Can you beat my high score?`;
     navigator.clipboard?.writeText(`${shareText} ${shareUrl}`).catch(() => {});
     if (typeof navigator.share === 'function') {
       navigator
@@ -630,10 +1074,16 @@ export default function MemeCrushGame({
   };
 
   const progressPct = Math.min(100, Math.round((score / targetScore) * 100));
+  const currentStars =
+    score >= targetScore * 1.8 ? 3 : score >= targetScore ? 2 : score >= targetScore * 0.5 ? 1 : 0;
 
   return (
     <section className="tm-subgame-wrap" aria-label="Meme Crush Saga Puzzle Game">
-      <div className="tm-subgame-card tm-crush-cabinet">
+      <div
+        className={`tm-subgame-card tm-crush-cabinet ${boardShake ? 'tm-shake' : ''} ${
+          feverMovesLeft > 0 || comboCount >= 3 ? 'tm-crush-fever-cabinet' : ''
+        }`}
+      >
         {/* Top Header */}
         <div className="tm-subgame-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
@@ -642,16 +1092,23 @@ export default function MemeCrushGame({
             </button>
             <div>
               <h2 className="tm-subgame-title">
-                🍬 MEME CRUSH SAGA <span className="tm-subgame-badge">LEVEL {level}</span>
+                🍬 MEME CRUSH SAGA{' '}
+                <span className="tm-subgame-badge">
+                  LEVEL {level} {feverMovesLeft > 0 ? '• 🔥 2X FEVER!' : ''}
+                </span>
               </h2>
               <div className="tm-subgame-subtitle">
-                Swap 3+ Meme Candies! Match 4 for ⚡ Row/Col Laser • Match 5 for 🌈 Supernova Bomb!
+                Match 4 = ⚡ Row/Col Laser • L/T Match = 💥 3×3 Packet Bomb • Match 5 = 🌈 Supernova
+                Bomb! Swap 2 Specials for Mega Wipe!
               </div>
             </div>
           </div>
 
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <span className="tm-spin-counter-pill" style={{ borderColor: '#facc15', color: '#facc15' }}>
+            <span
+              className="tm-spin-counter-pill"
+              style={{ borderColor: '#facc15', color: '#facc15' }}
+            >
               🪙 {effectiveGameTokensLeft} Game Tokens Left Today
             </span>
             <button type="button" className="tm-btn" onClick={handleShareChallenge}>
@@ -660,15 +1117,36 @@ export default function MemeCrushGame({
           </div>
         </div>
 
-        {/* Score, Moves & Level Progress HUD */}
+        {/* Score, Moves, Fever Meter & Star Trophy HUD */}
         <div className="tm-crush-hud-grid">
           <div className="tm-crush-stat-box">
-            <span className="tm-crush-stat-label">SCORE / TARGET</span>
+            <span className="tm-crush-stat-label">
+              SCORE / TARGET ({'⭐'.repeat(currentStars) || '☆'})
+            </span>
             <strong className="tm-crush-stat-val" style={{ color: '#00f3ff' }}>
               {score.toLocaleString()} <small>/ {targetScore.toLocaleString()}</small>
             </strong>
             <div className="tm-xp-track" style={{ marginTop: '6px' }}>
               <div className="tm-xp-bar" style={{ width: `${progressPct}%` }} />
+            </div>
+          </div>
+
+          <div className="tm-crush-stat-box">
+            <span className="tm-crush-stat-label">🔥 MEME FEVER METER</span>
+            <strong
+              className="tm-crush-stat-val"
+              style={{ color: feverMovesLeft > 0 ? '#ec4899' : '#facc15' }}
+            >
+              {feverMovesLeft > 0 ? `🔥 2X FRENZY (${feverMovesLeft} Moves)` : `${feverPct}%`}
+            </strong>
+            <div className="tm-xp-track" style={{ marginTop: '6px' }}>
+              <div
+                className="tm-xp-bar"
+                style={{
+                  width: `${feverMovesLeft > 0 ? 100 : feverPct}%`,
+                  background: 'linear-gradient(90deg, #facc15, #f97316, #ec4899)'
+                }}
+              />
             </div>
           </div>
 
@@ -681,7 +1159,9 @@ export default function MemeCrushGame({
               {movesLeft}
             </strong>
             <span style={{ fontSize: '11px', color: '#94a3b8' }}>
-              {score >= targetScore ? '🎉 Target Reached!' : `${targetScore - score} pts to clear`}
+              {score >= targetScore
+                ? '🎉 Target Crushed! Finale Ready!'
+                : `${(targetScore - score).toLocaleString()} pts to clear`}
             </span>
           </div>
 
@@ -692,33 +1172,38 @@ export default function MemeCrushGame({
             </strong>
             <span style={{ fontSize: '11px', color: '#94a3b8' }}>
               {effectivePlaysLeft > 0
-                ? `🎟️ ${effectivePlaysLeft}/${ARCADE_ECONOMY_RULES.SUB_GAMES.CRUSH_PLAYS_PER_WINDOW} Free Plays in Window`
+                ? `🎟️ ${effectivePlaysLeft}/${ARCADE_ECONOMY_RULES.SUB_GAMES.CRUSH_PLAYS_PER_WINDOW} Free Plays`
                 : `⏳ Refills in ${formatWindowCountdown(effectiveResetMs)}`}
             </span>
           </div>
         </div>
 
-        {/* Level Cleared Early Advance Banner */}
+        {/* Turbo Loot Drop Toast */}
+        {lootToast && <div className="tm-subgame-toast">{lootToast}</div>}
+
+        {/* Level Cleared Early Advance & Official "Meme Crush Finale" Strip */}
         {score >= targetScore && !roundFinished && movesLeft > 0 && (
           <div className="tm-crush-levelup-strip">
             <span>
-              🎉 <strong>LEVEL {level} TARGET CRUSHED!</strong> Keep playing with your remaining{' '}
-              {movesLeft} moves or advance now for +10 Bonus Moves!
+              🎉 <strong>LEVEL {level} TARGET CRUSHED!</strong> Advance for +12 Moves or trigger the{' '}
+              <strong>🎆 MEME CRUSH FINALE</strong> (+{(movesLeft * 300).toLocaleString()} Move Bonus
+              + Star Chest)!
             </span>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <button
                 type="button"
                 className="tm-btn tm-btn-primary"
                 onClick={handleAdvanceNextLevel}
               >
-                🚀 Next Level (+10 Moves)
+                🚀 Next Level (+12 Moves &amp; Boosters)
               </button>
               <button
                 type="button"
                 className="tm-btn"
-                onClick={() => finishRound(true)}
+                style={{ borderColor: '#facc15', color: '#facc15', fontWeight: 900 }}
+                onClick={handleTriggerMemeCrushFinale}
               >
-                🪙 Bank Score &amp; Collect Tokens
+                🎆 Trigger Meme Crush Finale &amp; Claim Tokens!
               </button>
             </div>
           </div>
@@ -728,7 +1213,7 @@ export default function MemeCrushGame({
         <div className="tm-crush-boosters-bar">
           <button
             type="button"
-            className="tm-btn"
+            className="tm-crush-booster-btn"
             onClick={handleShowHint}
             disabled={isAnimating || roundFinished}
           >
@@ -737,7 +1222,7 @@ export default function MemeCrushGame({
 
           <button
             type="button"
-            className={`tm-btn ${hammerMode ? 'tm-btn-primary' : ''}`}
+            className={`tm-crush-booster-btn ${hammerMode ? 'active' : ''}`}
             disabled={hammersLeft <= 0 || isAnimating || roundFinished}
             onClick={() => {
               sfx.playToggle();
@@ -749,7 +1234,17 @@ export default function MemeCrushGame({
 
           <button
             type="button"
-            className="tm-btn"
+            className="tm-crush-booster-btn"
+            disabled={ufoDropsLeft <= 0 || isAnimating || roundFinished}
+            onClick={handleDeployUfoDrop}
+            title="Beam a Supernova Color Bomb + 3x3 Packet Bomb directly onto the board!"
+          >
+            🛸 UFO Bomb Drop ({ufoDropsLeft})
+          </button>
+
+          <button
+            type="button"
+            className="tm-crush-booster-btn"
             disabled={shufflesLeft <= 0 || isAnimating || roundFinished}
             onClick={() => handleShuffleBoard(false)}
           >
@@ -758,18 +1253,72 @@ export default function MemeCrushGame({
 
           <button
             type="button"
-            className="tm-btn"
-            onClick={() => finishRound(score >= targetScore)}
+            className="tm-crush-booster-btn"
+            onClick={() => finishRound(score >= targetScore, score, 0)}
             disabled={roundFinished || score === 0}
-            title="End current game and claim earned tokens"
+            title="End current game and claim earned Arcade Tokens"
           >
-            🏁 Cash Out Score
+            🏁 Cash Out ({score.toLocaleString()} pts)
           </button>
         </div>
 
-        {/* Floating Combo Callout Toast */}
-        <div className="tm-crush-board-stage">
-          {calloutText && <div className="tm-crush-callout-banner">{calloutText}</div>}
+        {/* 8x8 Candy Board Stage + Laser Beams + 3D Announcer Splash */}
+        <div className="tm-crush-board-stage" style={{ position: 'relative' }}>
+          {/* Center-Board 3D Candy Crush Announcer Splash */}
+          {announceSplash && (
+            <div
+              key={announceSplash.id}
+              className="tm-crush-announcer-splash"
+              style={{ '--splash-color': announceSplash.color }}
+            >
+              <div className="tm-crush-announcer-title">{announceSplash.title}</div>
+              <div className="tm-crush-announcer-sub">{announceSplash.sub}</div>
+            </div>
+          )}
+
+          {/* Row & Column Neon Laser Beams Overlay */}
+          {activeLasers.map((lz) => (
+            <div
+              key={lz.id}
+              className={`tm-crush-laser-beam ${lz.dir === 'h' ? 'horizontal' : 'vertical'}`}
+              style={{
+                '--laser-color': lz.color,
+                top: lz.dir === 'h' ? `${(lz.index + 0.5) * 12.5}%` : 0,
+                left: lz.dir === 'v' ? `${(lz.index + 0.5) * 12.5}%` : 0
+              }}
+            />
+          ))}
+
+          {/* Floating Per-Tile Score Popups */}
+          {tilePopups.map((tp) => (
+            <div
+              key={tp.id}
+              className="tm-crush-tile-popup"
+              style={{
+                top: `${(tp.r + 0.5) * 12.5}%`,
+                left: `${(tp.c + 0.5) * 12.5}%`,
+                color: tp.color
+              }}
+            >
+              {tp.text}
+            </div>
+          ))}
+
+          {/* Flying Candy Emoji Shards */}
+          {candyParticles.map((sh) => (
+            <div
+              key={sh.id}
+              className="tm-crush-candy-shard"
+              style={{
+                top: `${(sh.r + 0.5) * 12.5}%`,
+                left: `${(sh.c + 0.5) * 12.5}%`,
+                '--dx': `${sh.dx}px`,
+                '--dy': `${sh.dy}px`
+              }}
+            >
+              {sh.emoji}
+            </div>
+          ))}
 
           {/* 8x8 Candy Grid */}
           <div
@@ -807,13 +1356,16 @@ export default function MemeCrushGame({
                       {tile?.special === 'color-bomb' ? '🌈' : candy.emoji}
                     </span>
                     {tile?.special === 'striped-h' && (
-                      <span className="tm-crush-special-tag">↔⚡</span>
+                      <span className="tm-crush-special-badge">↔⚡</span>
                     )}
                     {tile?.special === 'striped-v' && (
-                      <span className="tm-crush-special-tag">↕⚡</span>
+                      <span className="tm-crush-special-badge">↕⚡</span>
+                    )}
+                    {tile?.special === 'packet-bomb' && (
+                      <span className="tm-crush-special-badge">💥3×3</span>
                     )}
                     {tile?.special === 'color-bomb' && (
-                      <span className="tm-crush-special-tag">BOMB</span>
+                      <span className="tm-crush-special-badge">🌟BOMB</span>
                     )}
                   </button>
                 );
@@ -821,30 +1373,50 @@ export default function MemeCrushGame({
             )}
           </div>
 
-          {/* Round Over Summary Overlay */}
+          {/* Round Over Summary & Star Chest Overlay */}
           {roundFinished && roundSummary && (
             <div className="tm-subgame-gameover-overlay">
               <div className="tm-subgame-gameover-card">
-                <div style={{ fontSize: '46px' }}>
-                  {roundSummary.clearedTarget ? '🏆🍬🎉' : '🍬🕹️'}
+                <div style={{ fontSize: '42px', letterSpacing: '4px' }}>
+                  {roundSummary.stars > 0 ? '⭐'.repeat(roundSummary.stars) : '🍬🕹️'}
                 </div>
                 <h3 style={{ margin: '6px 0', fontSize: '22px', color: '#facc15' }}>
                   {roundSummary.clearedTarget
-                    ? `LEVEL ${level} CRUSHED!`
-                    : 'OUT OF MOVES — GOOD GAME!'}
+                    ? `🏆 LEVEL ${level} CRUSHED! (${roundSummary.stars}/3 STARS)`
+                    : 'OUT OF MOVES — GREAT CRUSHING!'}
                 </h3>
-                <p style={{ margin: '4px 0 12px', color: '#cbd5e1', fontSize: '14px' }}>
-                  Final Score: <strong>{roundSummary.score.toLocaleString()} pts</strong> • Earned{' '}
-                  <strong style={{ color: '#4ade80' }}>+{roundSummary.tokensWon} 🪙 Tokens</strong>{' '}
-                  &amp; <strong style={{ color: '#00f3ff' }}>+{roundSummary.xpEarned} XP</strong>!
+                <div className="tm-subgame-reward-summary" style={{ marginBottom: '14px' }}>
+                  <div>
+                    Final Score: <strong>{roundSummary.score.toLocaleString()} pts</strong>
+                    {roundSummary.moveConversionPts > 0 && (
+                      <span style={{ color: '#facc15', fontSize: '11px', marginLeft: '6px' }}>
+                        (Includes +{roundSummary.moveConversionPts.toLocaleString()} Finale Bonus!)
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: '15px', marginTop: '4px' }}>
+                    🎁 Chest Payout:{' '}
+                    <strong style={{ color: '#4ade80' }}>
+                      +{roundSummary.tokensWon} 🪙 Arcade Tokens
+                    </strong>{' '}
+                    &amp;{' '}
+                    <strong style={{ color: '#00f3ff' }}>+{roundSummary.xpEarned} XP</strong>!
+                  </div>
                   {roundSummary.capNote && (
-                    <span style={{ display: 'block', fontSize: '11px', color: '#facc15', marginTop: '4px' }}>
+                    <span style={{ fontSize: '11px', color: '#facc15', marginTop: '4px' }}>
                       {roundSummary.capNote}
                     </span>
                   )}
-                </p>
+                </div>
 
-                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '10px',
+                    justifyContent: 'center',
+                    flexWrap: 'wrap'
+                  }}
+                >
                   {effectivePlaysLeft > 0 ? (
                     <button
                       type="button"
@@ -860,8 +1432,8 @@ export default function MemeCrushGame({
                       disabled={tokens < ARCADE_ECONOMY_RULES.SUB_GAMES.EXTRA_LIFE_TOKEN_COST}
                       onClick={() => handleStartNewRound(true)}
                     >
-                      🪙 Spend {ARCADE_ECONOMY_RULES.SUB_GAMES.EXTRA_LIFE_TOKEN_COST} Tokens to Play Now (or wait{' '}
-                      {formatWindowCountdown(effectiveResetMs)})
+                      🪙 Spend {ARCADE_ECONOMY_RULES.SUB_GAMES.EXTRA_LIFE_TOKEN_COST} Tokens to Play
+                      Now (or wait {formatWindowCountdown(effectiveResetMs)})
                     </button>
                   )}
 
@@ -872,6 +1444,15 @@ export default function MemeCrushGame({
               </div>
             </div>
           )}
+        </div>
+
+        {/* Special Combos Legend */}
+        <div className="tm-crush-legend">
+          <span>⚡ <strong>Match 4:</strong> Row/Col Laser</span>
+          <span>💥 <strong>L/T Match:</strong> 3×3 Packet Bomb</span>
+          <span>🌈 <strong>Match 5:</strong> Supernova Color Bomb</span>
+          <span>🌌 <strong>🌈 + 🌈 Swap:</strong> 64-Tile Board Wipe!</span>
+          <span>🔥 <strong>100% Fever:</strong> 2x Score + Free Loot!</span>
         </div>
       </div>
     </section>

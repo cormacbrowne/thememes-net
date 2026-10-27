@@ -9,10 +9,10 @@
 
 export const ARCADE_ECONOMY_RULES = {
   MAX_DAILY_TOKENS: 500,
-  MAX_TOKENS_PER_ROUND: 35,
+  MAX_TOKENS_PER_ROUND: 50,
   CATEGORY_DAILY_CAPS: {
     upload: 120,     // Max 3 rewarded uploads/remixes per day (40 tokens each)
-    games: 200,      // Combined daily cap across Meme Crush, Vegas Pinball & Slots
+    games: 240,      // Combined daily cap across Meme Crush, Vegas Pinball & Slots
     engagement: 100, // Votes, Reactions, Comments, Saves, Shares (1x per unique meme)
     quests: 80       // Daily Streak & Daily Quests
   },
@@ -39,7 +39,7 @@ export const ARCADE_ECONOMY_RULES = {
     GOBLIN_CATCH: { tokens: 15, xp: 100 }
   },
   SUB_GAMES: {
-    MAX_TOKENS_PER_ROUND: 35,
+    MAX_TOKENS_PER_ROUND: 50,
     CRUSH_PLAYS_PER_WINDOW: 5,
     CRUSH_WINDOW_MS: 15 * 60 * 1000,
     PINBALL_PLAYS_PER_WINDOW: 5,

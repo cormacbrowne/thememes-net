@@ -3264,25 +3264,25 @@ export default function App() {
           </button>
           <button
             type="button"
-            className={`tm-mode-btn ${viewMode === 'crush' ? 'active' : ''}`}
+            className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'crush' ? 'active' : ''}`}
             onClick={() => {
               sfx.playCandyMatch(2);
               setViewMode('crush');
             }}
             title="Play Meme Crush Saga (Candy-Crush Style Match-3 Puzzle Sub-Game)"
           >
-            🍬 Meme Crush
+            🍬 Meme Crush <span className="tm-mode-hot-badge">🔥 TURBO</span>
           </button>
           <button
             type="button"
-            className={`tm-mode-btn ${viewMode === 'pinball' ? 'active' : ''}`}
+            className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'pinball' ? 'active' : ''}`}
             onClick={() => {
               sfx.playPinballBumper(0);
               setViewMode('pinball');
             }}
             title="Play Las Vegas Retro Pinball Machine"
           >
-            🎱 Vegas Pinball
+            🎱 Vegas Pinball <span className="tm-mode-hot-badge">⚡ NEW</span>
           </button>
           <button
             type="button"
@@ -3416,9 +3416,99 @@ export default function App() {
         onLaunchStampede={handleLaunchStampede}
       />
 
-      {/* MODE 1: HOLOGRAPHIC MASONRY GRID FEED + 1-CLICK QUICK UPLOAD BAR */}
+      {/* MODE 1: HOLOGRAPHIC MASONRY GRID FEED + SUB-GAME SHOWCASE + 1-CLICK QUICK UPLOAD BAR */}
       {viewMode === 'feed' && (
         <>
+          {/* STEER VISITORS TO THE SUB-GAMES: FEATURED CYBER-ARCADE GAME ZONE SHOWCASE */}
+          <section className="tm-arcade-steer-shell" aria-label="Featured Arcade Sub-Games">
+            <div className="tm-arcade-steer-grid">
+              {/* Cabinet 1: Meme Crush Saga */}
+              <div
+                className="tm-arcade-steer-card tm-steer-crush"
+                onClick={() => {
+                  sfx.playCandyMatch(3);
+                  setViewMode('crush');
+                }}
+              >
+                <div className="tm-arcade-steer-top">
+                  <span className="tm-arcade-steer-pill">🍬 MATCH-3 PUZZLE • 🔥 TURBO REWARDS</span>
+                  <span className="tm-arcade-steer-best">
+                    🏆 Best: {Number(localStorage.getItem('tm_crush_highscore') || 0).toLocaleString()} pts
+                  </span>
+                </div>
+                <div className="tm-arcade-steer-body">
+                  <div className="tm-arcade-steer-icons">🐸⚡💥🌈</div>
+                  <div>
+                    <h3 className="tm-arcade-steer-title">MEME CRUSH SAGA</h3>
+                    <p className="tm-arcade-steer-desc">
+                      Trigger <strong>3×3 Packet Bombs</strong>, <strong>Cross-Lasers</strong>,{' '}
+                      <strong>🌈 Supernova Board Wipes</strong> &amp; <strong>Meme Fever Overdrive</strong>!
+                    </p>
+                  </div>
+                </div>
+                <div className="tm-arcade-steer-footer">
+                  <span className="tm-arcade-steer-payout">
+                    🪙 Win up to 50 Tokens/Round • 🎟️ {crushPlaysLeft} Free Plays Ready
+                  </span>
+                  <button
+                    type="button"
+                    className="tm-btn tm-btn-primary tm-arcade-steer-cta"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      sfx.playCandyMatch(3);
+                      setViewMode('crush');
+                    }}
+                  >
+                    ▶ Play Meme Crush
+                  </button>
+                </div>
+              </div>
+
+              {/* Cabinet 2: Las Vegas Retro Pinball */}
+              <div
+                className="tm-arcade-steer-card tm-steer-pinball"
+                onClick={() => {
+                  sfx.playPinballBumper(0);
+                  setViewMode('pinball');
+                }}
+              >
+                <div className="tm-arcade-steer-top">
+                  <span className="tm-arcade-steer-pill">🎱 60FPS PINBALL • ⚡ NEW POWER-UPS!</span>
+                  <span className="tm-arcade-steer-best">
+                    🏆 Best: {Number(localStorage.getItem('tm_pinball_highscore') || 0).toLocaleString()} pts
+                  </span>
+                </div>
+                <div className="tm-arcade-steer-body">
+                  <div className="tm-arcade-steer-icons">🎰🎱🛡️🧲</div>
+                  <div>
+                    <h3 className="tm-arcade-steer-title">LAS VEGAS RETRO PINBALL</h3>
+                    <p className="tm-arcade-steer-desc">
+                      Unleash <strong>3-Ball Multiball Madness</strong>,{' '}
+                      <strong>🛡️ Plasma Drain Shields</strong>, <strong>🧲 Mega Flippers</strong> &amp;{' '}
+                      <strong>M-E-M-E Targets</strong>!
+                    </p>
+                  </div>
+                </div>
+                <div className="tm-arcade-steer-footer">
+                  <span className="tm-arcade-steer-payout">
+                    🪙 Win up to 50 Tokens/Round • 🎟️ {pinballPlaysLeft} Free Plays Ready
+                  </span>
+                  <button
+                    type="button"
+                    className="tm-btn tm-btn-primary tm-arcade-steer-cta"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      sfx.playPinballBumper(0);
+                      setViewMode('pinball');
+                    }}
+                  >
+                    ▶ Launch Pinball
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <QuickUploadBar
             onQuickPublishFile={handleQuickPublishFile}
             onOpenStudioWithFile={(file) => {
@@ -3524,31 +3614,68 @@ export default function App() {
             </section>
           ) : (
             <main className="tm-grid">
-              {visibleMemes.map((meme) => (
-                <MemeCard
-                  key={meme.id}
-                  meme={meme}
-                  myVote={userVotes[meme.id] || 0}
-                  isBookmarked={bookmarkedIds.includes(String(meme.id))}
-                  onToggleBookmark={handleToggleBookmark}
-                  isCommentsOpen={!!openComments[meme.id]}
-                  commentInput={commentInputs[meme.id] || ''}
-                  onVote={handleVote}
-                  onReaction={handleReaction}
-                  onToggleComments={handleToggleComments}
-                  onCommentInputChange={handleCommentInputChange}
-                  onAddComment={handleAddComment}
-                  onOpenEvolutionTree={handleOpenEvolutionTree}
-                  onTriggerStudioMutate={handleTriggerStudioMutate}
-                  onOpenTheater={handleOpenTheater}
-                  onShareMeme={handleShareMeme}
-                  onOpenProfile={(username) => {
-                    sfx.playToggle();
-                    setProfileUsername(username);
-                  }}
-                  onReportMeme={handleReportMeme}
-                  onOpenAiRoast={handleOpenAiRoast}
-                />
+              {visibleMemes.map((meme, idx) => (
+                <div key={meme.id} style={{ display: 'contents' }}>
+                  <MemeCard
+                    meme={meme}
+                    myVote={userVotes[meme.id] || 0}
+                    isBookmarked={bookmarkedIds.includes(String(meme.id))}
+                    onToggleBookmark={handleToggleBookmark}
+                    isCommentsOpen={!!openComments[meme.id]}
+                    commentInput={commentInputs[meme.id] || ''}
+                    onVote={handleVote}
+                    onReaction={handleReaction}
+                    onToggleComments={handleToggleComments}
+                    onCommentInputChange={handleCommentInputChange}
+                    onAddComment={handleAddComment}
+                    onOpenEvolutionTree={handleOpenEvolutionTree}
+                    onTriggerStudioMutate={handleTriggerStudioMutate}
+                    onOpenTheater={handleOpenTheater}
+                    onShareMeme={handleShareMeme}
+                    onOpenProfile={(username) => {
+                      sfx.playToggle();
+                      setProfileUsername(username);
+                    }}
+                    onReportMeme={handleReportMeme}
+                    onOpenAiRoast={handleOpenAiRoast}
+                  />
+                  {idx === 2 && (
+                    <article className="tm-card tm-infeed-arcade-card" aria-label="Arcade Sub-Game Challenge Break">
+                      <div className="tm-infeed-arcade-badge">🕹️ ARCADE CHALLENGE BREAK</div>
+                      <div style={{ fontSize: '42px', margin: '8px 0' }}>🍬⚡🎱</div>
+                      <h3 style={{ margin: '0 0 6px', fontSize: '19px', color: '#facc15' }}>
+                        READY FOR 60 SECONDS OF ARCADE CHAOS?
+                      </h3>
+                      <p style={{ margin: '0 0 14px', fontSize: '13px', color: '#cbd5e1', lineHeight: 1.5 }}>
+                        Take a quick break from scrolling! Blast <strong>3×3 Packet Bombs</strong> in{' '}
+                        <strong>🍬 Meme Crush Saga</strong> or unleash <strong>3-Ball Multiball</strong> in{' '}
+                        <strong>🎱 Las Vegas Pinball</strong> to stack up to <strong>+50 🪙 Tokens</strong>!
+                      </p>
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          className="tm-btn tm-btn-primary"
+                          onClick={() => {
+                            sfx.playCandyMatch(3);
+                            setViewMode('crush');
+                          }}
+                        >
+                          🍬 Play Meme Crush
+                        </button>
+                        <button
+                          type="button"
+                          className="tm-btn tm-btn-primary"
+                          onClick={() => {
+                            sfx.playPinballBumper(0);
+                            setViewMode('pinball');
+                          }}
+                        >
+                          🎱 Play Vegas Pinball
+                        </button>
+                      </div>
+                    </article>
+                  )}
+                </div>
               ))}
             </main>
           )}
@@ -3690,8 +3817,18 @@ export default function App() {
         </div>
       )}
 
-      {/* PHASE 20: INTERACTIVE VIRTUAL DANK TAMAGOTCHI CYBER-PET */}
-      {!bossKeyActive && <DankPetWidget onEarnPetXp={awardXpAndCombo} />}
+      {/* PHASE 20: INTERACTIVE "DO NOT PRESS" CHAOS BUTTON & MINI-GAME LAUNCHER */}
+      {!bossKeyActive && (
+        <DankPetWidget
+          onEarnPetXp={awardXpAndCombo}
+          onSelectViewMode={(mode) => {
+            sfx.playToggle();
+            closeAllModals();
+            setViewMode(mode);
+            window.scrollTo?.({ top: 0, behavior: 'smooth' });
+          }}
+        />
+      )}
 
       {/* PHASE 5: THUMB-FRIENDLY MOBILE BOTTOM ARCADE DOCK */}
       <MobileArcadeDock
@@ -3837,6 +3974,11 @@ export default function App() {
           }}
           onTriggerStudioMutate={handleTriggerStudioMutate}
           onSelectMeme={handleOpenTheater}
+          onLaunchSubGame={(mode) => {
+            sfx.playToggle();
+            setShowLeaderboard(false);
+            setViewMode(mode);
+          }}
         />
       )}
 

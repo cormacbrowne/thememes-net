@@ -1022,6 +1022,131 @@ export class SoundEngine {
     }
   }
 
+  /**
+   * ⚡ PINBALL & CRUSH POWER-UP COLLECT FANFARE
+   */
+  playPowerUpCollect() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(24);
+      const notes = [523.25, 659.25, 783.99, 1046.5, 1318.51, 1567.98];
+      notes.forEach((f, idx) => {
+        const start = this.ctx.currentTime + idx * 0.045;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = idx % 2 === 0 ? 'triangle' : 'sawtooth';
+        osc.frequency.setValueAtTime(f, start);
+        osc.frequency.exponentialRampToValueAtTime(f * 1.08, start + 0.14);
+        gain.gain.setValueAtTime(0.18, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.16);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.17);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🚨 MULTIBALL MADNESS SIREN & FANFARE
+   */
+  playMultiballSiren() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(35);
+      this.playPoliceSiren();
+      setTimeout(() => this.playJackpot(), 180);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🌀 PINBALL HIGH-SPEED SPINNER TICK
+   */
+  playSpinnerTick(step = 0) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'square';
+      const f = 880 + (step % 8) * 110;
+      osc.frequency.setValueAtTime(f, now);
+      osc.frequency.exponentialRampToValueAtTime(f * 1.25, now + 0.025);
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.028);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.03);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * ⚡ NEON LASER BEAM ZAP (Striped Candy & Plasma Ball Saver)
+   */
+  playLaserZap() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(20);
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(1680, now);
+      osc.frequency.exponentialRampToValueAtTime(190, now + 0.22);
+      gain.gain.setValueAtTime(0.22, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.25);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🍬 CANDY CRUSH MEME EDITION ESCALATING COMBO FANFARE
+   */
+  playCrushComboFanfare(tier = 1) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      if (tier >= 5) {
+        this.playAirhorn();
+        setTimeout(() => this.playDamageGong(), 160);
+      } else if (tier === 4) {
+        this.playJackpot();
+        setTimeout(() => this.playAnimeShock(), 140);
+      } else if (tier === 3) {
+        this.playPowerUpCollect();
+        setTimeout(() => this.playVineBoom(), 110);
+      } else if (tier === 2) {
+        this.playCandyMatch(4);
+        setTimeout(() => this.playBoing(3), 90);
+      } else {
+        this.playCandyMatch(2);
+      }
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
   triggerHaptic(ms = 14) {
     try {
       if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {

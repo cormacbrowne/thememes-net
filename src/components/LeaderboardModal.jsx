@@ -9,9 +9,36 @@ export default function LeaderboardModal({
   onClose,
   onSelectMeme,
   onTriggerStudioMutate,
-  onOpenProfile
+  onOpenProfile,
+  onLaunchSubGame
 }) {
-  const [tab, setTab] = useState('creators'); // 'creators' | 'memes' | 'origins'
+  const [tab, setTab] = useState('creators'); // 'creators' | 'subgames' | 'memes' | 'origins'
+
+  const myCrushHigh = Number(localStorage.getItem('tm_crush_highscore') || 0);
+  const myPinballHigh = Number(localStorage.getItem('tm_pinball_highscore') || 0);
+  const myHandle = currentUser?.username || 'You (Arcade Player)';
+
+  const crushRankings = useMemo(() => {
+    const rivals = [
+      { username: 'CandyOverlord_99', score: 14850, badge: '🌈 Supernova King' },
+      { username: 'PepeCrusher_X', score: 9420, badge: '💥 Packet Bomber' },
+      { username: 'NeonSweetTooth', score: 6250, badge: '⚡ Laser Master' },
+      { username: 'DankSugarRush', score: 3100, badge: '🍬 Crush Tactician' },
+      { username: myHandle, score: myCrushHigh, badge: '🕹️ Your Best Score', isMe: true }
+    ];
+    return rivals.sort((a, b) => b.score - a.score);
+  }, [myCrushHigh, myHandle]);
+
+  const pinballRankings = useMemo(() => {
+    const rivals = [
+      { username: 'VegasTiltWizard', score: 24500, badge: '🎰 777 Multiball God' },
+      { username: 'ChromeFlipper_77', score: 15800, badge: '🛡️ Plasma Saver' },
+      { username: 'QuackBumperKing', score: 9600, badge: '🦆 Bumper Sniper' },
+      { username: 'ArcadePlungerPro', score: 4200, badge: '🎱 Skill Shot Pro' },
+      { username: myHandle, score: myPinballHigh, badge: '🕹️ Your Best Score', isMe: true }
+    ];
+    return rivals.sort((a, b) => b.score - a.score);
+  }, [myPinballHigh, myHandle]);
 
   // 1. Aggregate Top Creators Leaderboard
   const topCreators = useMemo(() => {
@@ -125,6 +152,13 @@ export default function LeaderboardModal({
           </button>
           <button
             type="button"
+            className={`tm-tab ${tab === 'subgames' ? 'active' : ''}`}
+            onClick={() => setTab('subgames')}
+          >
+            🕹️ Sub-Game High Scores
+          </button>
+          <button
+            type="button"
             className={`tm-tab ${tab === 'memes' ? 'active' : ''}`}
             onClick={() => setTab('memes')}
           >
@@ -138,6 +172,101 @@ export default function LeaderboardModal({
             🧬 Most Mutated Origins
           </button>
         </div>
+
+        {/* TAB 0: SUB-GAME HIGH SCORES (MEME CRUSH & VEGAS PINBALL) */}
+        {tab === 'subgames' && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+            {/* Meme Crush Saga Column */}
+            <div style={{ background: 'rgba(15, 23, 42, 0.72)', border: '1.5px solid rgba(236, 72, 153, 0.45)', borderRadius: '16px', padding: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '8px' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '16px', color: '#f472b6' }}>🍬 Meme Crush Saga</h3>
+                  <span style={{ fontSize: '11px', color: '#94a3b8' }}>Your Best: {myCrushHigh.toLocaleString()} pts</span>
+                </div>
+                {onLaunchSubGame && (
+                  <button
+                    type="button"
+                    className="tm-btn tm-btn-primary"
+                    style={{ padding: '6px 12px', fontSize: '12px' }}
+                    onClick={() => {
+                      onClose();
+                      onLaunchSubGame('crush');
+                    }}
+                  >
+                    ▶ Play Crush
+                  </button>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {crushRankings.map((r, idx) => (
+                  <div
+                    key={`${r.username}-${idx}`}
+                    className={`tm-leaderboard-row ${idx < 3 ? `podium-${idx + 1}` : ''}`}
+                    style={{ padding: '8px 12px' }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span className="tm-medal-badge">{getMedal(idx)}</span>
+                      <div>
+                        <strong style={{ fontSize: '13px', color: r.isMe ? '#4ade80' : '#f8fafc' }}>
+                          @{r.username} {r.isMe ? '(YOU)' : ''}
+                        </strong>
+                        <div style={{ fontSize: '10px', color: '#94a3b8' }}>{r.badge}</div>
+                      </div>
+                    </div>
+                    <strong style={{ color: '#facc15', fontSize: '14px' }}>
+                      {r.score.toLocaleString()} pts
+                    </strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Las Vegas Pinball Column */}
+            <div style={{ background: 'rgba(15, 23, 42, 0.72)', border: '1.5px solid rgba(0, 243, 255, 0.45)', borderRadius: '16px', padding: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '8px' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '16px', color: '#00f3ff' }}>🎱 Las Vegas Pinball</h3>
+                  <span style={{ fontSize: '11px', color: '#94a3b8' }}>Your Best: {myPinballHigh.toLocaleString()} pts</span>
+                </div>
+                {onLaunchSubGame && (
+                  <button
+                    type="button"
+                    className="tm-btn tm-btn-primary"
+                    style={{ padding: '6px 12px', fontSize: '12px' }}
+                    onClick={() => {
+                      onClose();
+                      onLaunchSubGame('pinball');
+                    }}
+                  >
+                    ▶ Play Pinball
+                  </button>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {pinballRankings.map((r, idx) => (
+                  <div
+                    key={`${r.username}-${idx}`}
+                    className={`tm-leaderboard-row ${idx < 3 ? `podium-${idx + 1}` : ''}`}
+                    style={{ padding: '8px 12px' }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span className="tm-medal-badge">{getMedal(idx)}</span>
+                      <div>
+                        <strong style={{ fontSize: '13px', color: r.isMe ? '#4ade80' : '#f8fafc' }}>
+                          @{r.username} {r.isMe ? '(YOU)' : ''}
+                        </strong>
+                        <div style={{ fontSize: '10px', color: '#94a3b8' }}>{r.badge}</div>
+                      </div>
+                    </div>
+                    <strong style={{ color: '#facc15', fontSize: '14px' }}>
+                      {r.score.toLocaleString()} pts
+                    </strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* TAB 1: TOP CREATORS */}
         {tab === 'creators' && (

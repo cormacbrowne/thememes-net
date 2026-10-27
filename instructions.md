@@ -322,6 +322,17 @@ thememes-net/
 - [x] **Phase 4: "Las Vegas Retro Pinball" Machine & Silly Sound Effects (`src/components/VegasPinballGame.jsx`, `src/utils/soundEngine.js`)**:
   - [x] Built a 60fps HTML5 Canvas Las Vegas Retro Pinball Machine with dual flippers (keyboard `←`/`→` or `A`/`D` + touch buttons), spring-loaded plunger (`Space` or Hold/Tap), 4 flashing Vegas Pop Bumpers (`🎰 777`, `🦆 Quack`, `🗿 Vine Boom`, `💎 VIP`), top `L-U-C-K` rollover multiplier lanes (`1x`–`5x`), center `1,500 PT` Vegas Jackpot Sinkhole, slingshot kickers, table nudge with 3-shake `TILT` protection, viral challenge sharing (`/?mode=pinball`), and fair capped token payouts.
 
+### ✅ Phase 23: Pinball Multiball & Power-Up Overhaul, Turbo-Charged Meme Crush Saga, Main Site Sub-Game Showcase & "DO NOT PRESS" Chaos Button (Completed)
+- [x] **🎱 Las Vegas Pinball 2.0 (`src/components/VegasPinballGame.jsx`)**:
+  - [x] Widened flipper pivot spacing (`x=104` and `x=326`, `len=64`) leaving a genuine `~102px` tip-to-tip center drain gap so balls can actually drain unless saved by flipper timing, table nudge, or the Plasma Shield.
+  - [x] Added 5 Collectible Playfield Power-Up Orbs & Pocket Boosters (**🎱 3-Ball Multiball Madness**, **🛡️ Plasma Drain Shield**, **🧲 Mega Magnetic Flippers**, **🔥 2X Vegas Fever Overdrive**, and **💣 Dank Bumper Nuker**), **🎯 `M-E-M-E` Drop Targets Bank**, **🌀 Left Whirlpool Spinner**, **36 Flashing Vegas Marquee Chaser Bulbs**, shockwave rings, and comet ball trails.
+- [x] **🍬 Meme Crush Saga Turbo-Charged Edition (`src/components/MemeCrushGame.jsx`)**:
+  - [x] Added official Candy Crush-style 3D Center Announcer Splashes (*SWEET!* → *TASTY!* → *DELICIOUS BRAINROT!* → *DIVINE GIGA-CRUSH!* → *UNHINGED SUPERNOVA!*), row/column **Neon Laser Beams**, per-tile floating score popups, flying candy shards, **💥 L/T-Shape 3×3 Wrapped Packet Bombs**, **Special + Special Combo Matrix** (`🌈+🌈` 64-Tile Board Wipe, `🌈+⚡` Hyper Laser Storm, `⚡+💥` 3×3 Mega Laser), **🔥 Meme Fever Meter** with instant loot drops, **🛸 UFO Bomb Dropper**, and the **🎆 Meme Crush Finale** move-conversion celebration + 3-Star Chests (up to `50 🪙 Tokens/round`).
+- [x] **🕹️ Main Site Sub-Game Showcase Steer & Leaderboard Tab (`src/App.jsx`, `src/components/LeaderboardModal.jsx`)**:
+  - [x] Added the Dual Arcade Cabinet Showcase Strip at the top of the main feed, an In-Feed Arcade Challenge Break Card, `🔥 TURBO` / `⚡ NEW` badges on mode buttons, and a **`🕹️ Sub-Game High Scores`** tab in the Hall of Fame Leaderboard.
+- [x] **🚨 Replaced Pointless Frog Popup with the "DO NOT PRESS" Big Red Chaos Button (`src/components/DankPetWidget.jsx`)**:
+  - [x] Removed the static frog squish popup and replaced it with a tactile **🚨 DO NOT PRESS** button that triggers interactive screen-wide mini-events (**🪅 Whack the Golden Llama Piñata**, **🗿 Giga-Moai Boss Fight**, **🚔 Dank Police Vibe Audit**, and **🎰 Vegas Jackpot Shower**) with 1-click portals into Meme Crush and Vegas Pinball.
+
 ---
 
 ## 6. Development Commands

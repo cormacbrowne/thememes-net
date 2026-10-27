@@ -2,14 +2,13 @@ import { useState, useEffect } from 'react';
 import {
   WHEEL_REWARDS,
   DAILY_QUESTS,
-  SLOT_SYMBOLS,
   CURSOR_TRAILS,
-  MEME_FORTUNES,
   ARCADE_RATE_LIMITS,
   formatWindowCountdown
 } from '../data/starterMemes';
 import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
 import { sfx } from '../utils/soundEngine';
+import VegasSlotMachine from './VegasSlotMachine';
 
 export default function RewardsModal({
   xp,
@@ -25,6 +24,7 @@ export default function RewardsModal({
   onClaimDailyStreak,
   onCompleteWheelSpin,
   onCompleteSlotSpin,
+  onSpendTokensForPulls,
   onLaunchSubGame,
   unlockedFlairs,
   equippedFlair,
@@ -43,11 +43,6 @@ export default function RewardsModal({
   const [highlightIdx, setHighlightIdx] = useState(0);
   const [wonPrize, setWonPrize] = useState(null);
 
-  // 3-Reel Brainrot Slot Machine State
-  const [reels, setReels] = useState([0, 1, 2]);
-  const [isRollingSlots, setIsRollingSlots] = useState(false);
-  const [slotResultMsg, setSlotResultMsg] = useState('');
-
   // Live 1-second tick so countdown badges update smoothly while modal is open
   const [, setNowTick] = useState(0);
   useEffect(() => {
@@ -56,7 +51,6 @@ export default function RewardsModal({
   }, []);
 
   const canSpinWheel = !isSpinning && lootSpins > 0 && wheelSpinsLeftInWindow > 0;
-  const canPullSlots = !isRollingSlots && slotPullsLeft > 0;
 
   const dailyUsed = tokenLedger?.totalToday || 0;
   const dailyMax = ARCADE_ECONOMY_RULES.MAX_DAILY_TOKENS;
@@ -91,66 +85,6 @@ export default function RewardsModal({
     };
 
     runTick();
-  };
-
-  const handlePullSlotLever = (e) => {
-    if (!canPullSlots) return;
-    setIsRollingSlots(true);
-    setSlotResultMsg('🎰 Reels spinning...');
-    sfx.playBoing(2);
-
-    let step = 0;
-    const totalSteps = 12;
-
-    const rollInterval = setInterval(() => {
-      step += 1;
-      sfx.playToggle();
-      setReels([
-        Math.floor(Math.random() * SLOT_SYMBOLS.length),
-        Math.floor(Math.random() * SLOT_SYMBOLS.length),
-        Math.floor(Math.random() * SLOT_SYMBOLS.length)
-      ]);
-
-      if (step >= totalSteps) {
-        clearInterval(rollInterval);
-        const r1 = Math.floor(Math.random() * SLOT_SYMBOLS.length);
-        const luckyRoll = Math.random();
-        const r2 = luckyRoll < 0.35 ? r1 : Math.floor(Math.random() * SLOT_SYMBOLS.length);
-        const r3 =
-          luckyRoll < 0.12
-            ? r1
-            : Math.floor(Math.random() * SLOT_SYMBOLS.length);
-
-        const finalReels = [r1, r2, r3];
-        setReels(finalReels);
-        setIsRollingSlots(false);
-
-        const sym1 = SLOT_SYMBOLS[r1];
-        if (r1 === r2 && r2 === r3) {
-          sfx.playJackpot();
-          setTimeout(() => sfx.playAirhorn(), 180);
-          const msg = `🚨 TRIPLE ${sym1.emoji} JACKPOT! +25 🪙 Tokens, +120 XP, +1 Wheel Spin & "💎 High-Roller" Flair!`;
-          setSlotResultMsg(msg);
-          if (onCompleteSlotSpin) {
-            onCompleteSlotSpin({ tokensWon: 25, xpWon: 120, spinsWon: 1, flair: '💎 Diamond High-Roller' }, e);
-          }
-        } else if (r1 === r2 || r2 === r3 || r1 === r3) {
-          sfx.playJackpot();
-          const msg = `🔥 DOUBLE MATCH! You won +8 🪙 Tokens & +45 XP! (Match 3 for Triple Jackpot!)`;
-          setSlotResultMsg(msg);
-          if (onCompleteSlotSpin) {
-            onCompleteSlotSpin({ tokensWon: 8, xpWon: 45, spinsWon: 0, flair: null }, e);
-          }
-        } else {
-          sfx.playClownHonk();
-          const fortune = MEME_FORTUNES[Math.floor(Math.random() * MEME_FORTUNES.length)];
-          setSlotResultMsg(`🎲 Consolation +2 🪙 Tokens & +15 XP! ${fortune}`);
-          if (onCompleteSlotSpin) {
-            onCompleteSlotSpin({ tokensWon: 2, xpWon: 15, spinsWon: 0, flair: null }, e);
-          }
-        }
-      }
-    }, 75);
   };
 
   return (
@@ -218,10 +152,20 @@ export default function RewardsModal({
                 className="tm-btn tm-btn-primary"
                 onClick={() => {
                   onClose();
+                  onLaunchSubGame('slots');
+                }}
+              >
+                🎰 Full-Screen Vegas 777 Slots
+              </button>
+              <button
+                type="button"
+                className="tm-btn tm-btn-primary"
+                onClick={() => {
+                  onClose();
                   onLaunchSubGame('crush');
                 }}
               >
-                🍬 Play Meme Crush Puzzle (Win up to 35 🪙)
+                🍬 Play Meme Crush Saga
               </button>
               <button
                 type="button"
@@ -231,7 +175,7 @@ export default function RewardsModal({
                   onLaunchSubGame('pinball');
                 }}
               >
-                🎱 Play Las Vegas Retro Pinball (Win up to 35 🪙)
+                🎱 Play Las Vegas Pinball
               </button>
             </div>
           )}
@@ -261,78 +205,16 @@ export default function RewardsModal({
           </button>
         </div>
 
-        {/* 2. 3-REEL BRAINROT SLOT MACHINE MINI-GAME (WITH TIMED WINDOW LIMITER) */}
-        <div className="tm-slot-machine-box">
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '8px',
-              marginBottom: '10px'
-            }}
-          >
-            <div>
-              <div className="tm-studio-label" style={{ margin: 0, color: '#f472b6' }}>
-                🍒 3-REEL ARCADE SLOT MACHINE
-              </div>
-              <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                Match 2 for +8 🪙 Tokens • Match 3 for +25 🪙 Tokens &amp; +1 Wheel Spin!
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <span
-                className="tm-spin-counter-pill"
-                style={{
-                  borderColor: slotPullsLeft > 0 ? 'rgba(244,114,182,0.5)' : 'rgba(239,68,68,0.5)',
-                  color: slotPullsLeft > 0 ? '#f472b6' : '#f87171'
-                }}
-              >
-                {slotPullsLeft > 0 ? (
-                  <>
-                    ⚡ <strong>{slotPullsLeft}</strong>/{ARCADE_RATE_LIMITS.SLOT_PULLS_PER_WINDOW} Pulls in Window
-                  </>
-                ) : (
-                  <>⏳ Refills in {formatWindowCountdown(slotResetMs)}</>
-                )}
-              </span>
-
-              <button
-                type="button"
-                className="tm-btn tm-btn-primary"
-                disabled={!canPullSlots}
-                onClick={handlePullSlotLever}
-              >
-                {isRollingSlots
-                  ? '🎰 ROLLING...'
-                  : slotPullsLeft > 0
-                    ? `🕹️ PULL LEVER (${slotPullsLeft} LEFT)`
-                    : `⏳ Cooldown (${formatWindowCountdown(slotResetMs)})`}
-              </button>
-            </div>
-          </div>
-
-          <div className="tm-slot-reels-row">
-            {reels.map((symIdx, idx) => {
-              const sym = SLOT_SYMBOLS[symIdx] || SLOT_SYMBOLS[0];
-              return (
-                <div
-                  key={idx}
-                  className={`tm-slot-reel ${isRollingSlots ? 'rolling' : ''}`}
-                >
-                  <div className="tm-slot-emoji">{sym.emoji}</div>
-                  <div className="tm-slot-name">{sym.name}</div>
-                </div>
-              );
-            })}
-          </div>
-
-          {slotResultMsg && (
-            <div className="tm-slot-result-banner">{slotResultMsg}</div>
-          )}
-        </div>
+        {/* 2. RETRO NEON LAS VEGAS 777 SLOT MACHINE CABINET */}
+        <VegasSlotMachine
+          embedded
+          tokens={tokens}
+          tokenLedger={tokenLedger}
+          slotPullsLeft={slotPullsLeft}
+          slotResetMs={slotResetMs}
+          onCompleteSlotSpin={onCompleteSlotSpin}
+          onSpendTokensForPulls={onSpendTokensForPulls}
+        />
 
         {/* 3. WHEEL OF CHAOS / LOOT BOX SPINNER (WITH TIMED WINDOW LIMITER & WALLET CAP) */}
         <div className="tm-wheel-section" style={{ marginTop: '16px' }}>

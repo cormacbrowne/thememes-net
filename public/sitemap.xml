@@ -26,12 +26,27 @@
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://thememes.net/?meme=seed-1</loc>
+    <loc>https://thememes.net/?mode=reels</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://thememes.net/?mode=slots</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://thememes.net/?meme=seed-3</loc>
+    <loc>https://thememes.net/?mode=crush</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://thememes.net/?mode=pinball</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://thememes.net/?mode=battle</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>

@@ -2,6 +2,7 @@ import { useRef, useCallback, useState } from 'react';
 import {
   getMemeRarityTier,
   COMIC_ACTION_WORDS,
+  QUICK_REACTION_COMMENTS,
   formatMemeUploadDate
 } from '../data/starterMemes';
 
@@ -101,6 +102,19 @@ export default function MemeCard({
     if (onShareMeme) onShareMeme(meme, e);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownloadMemeImage = (e) => {
+    e.stopPropagation();
+    if (!meme?.image_url) return;
+    triggerComicPop('SAVED PNG! ⬇');
+    const link = document.createElement('a');
+    link.href = meme.image_url;
+    link.download = `${(meme.title || 'thememes-net').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 32)}.png`;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -305,6 +319,14 @@ export default function MemeCard({
           <button
             type="button"
             className="tm-react-btn"
+            onClick={handleDownloadMemeImage}
+            title="Download / Save Meme Image"
+          >
+            ⬇
+          </button>
+          <button
+            type="button"
+            className="tm-react-btn"
             onClick={handleShareClick}
             title="Share Meme / Copy Link"
           >
@@ -377,6 +399,21 @@ export default function MemeCard({
               </div>
             ))
           )}
+
+          {/* 1-Tap Quick-Reaction Viral Comment Chips */}
+          <div className="tm-quick-comment-chips">
+            {QUICK_REACTION_COMMENTS.map((chip) => (
+              <button
+                key={chip}
+                type="button"
+                className="tm-quick-comment-chip"
+                onClick={() => onCommentInputChange(meme.id, chip)}
+                title="Tap to fill comment, then press Post!"
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
 
           <form className="tm-comment-form" onSubmit={(e) => onAddComment(meme.id, e)}>
             <input

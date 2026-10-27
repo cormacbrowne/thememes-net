@@ -230,12 +230,21 @@ export const CURSOR_TRAILS = [
 ];
 
 export const SLOT_SYMBOLS = [
-  { id: 'star', emoji: '🌟', name: 'Supernova Star', mult: 3 },
-  { id: 'fire', emoji: '🔥', name: 'Arcade Fire', mult: 4 },
-  { id: 'moai', emoji: '🗿', name: 'Giga Moai', mult: 5 },
-  { id: 'clown', emoji: '😂', name: 'Laugh Riot', mult: 3 },
-  { id: 'duck', emoji: '🦆', name: 'Golden Duck', mult: 6 },
-  { id: 'diamond', emoji: '💎', name: 'Cyber Diamond', mult: 10 }
+  { id: '777', emoji: '7️⃣', name: 'VEGAS 777', mult: 12, color: '#facc15', badge: 'JACKPOT' },
+  { id: 'diamond', emoji: '💎', name: 'CYBER DIAMOND', mult: 10, color: '#00f3ff', badge: 'MEGA' },
+  { id: 'pepe', emoji: '🐸', name: 'PEPE VIP', mult: 8, color: '#4ade80', badge: 'DANK' },
+  { id: 'duck', emoji: '🦆', name: 'GOLDEN DUCK', mult: 6, color: '#fde047', badge: 'LUCKY' },
+  { id: 'moai', emoji: '🗿', name: 'GIGA MOAI', mult: 5, color: '#c084fc', badge: 'BASED' },
+  { id: 'cherry', emoji: '🍒', name: 'NEON CHERRY', mult: 4, color: '#f472b6', badge: 'VEGAS' },
+  { id: 'star', emoji: '🌟', name: 'MEMES STAR', mult: 5, color: '#fb923c', badge: 'WILD' }
+];
+
+export const QUICK_REACTION_COMMENTS = [
+  '💀 I am officially deceased',
+  '🔥 Certified 24K Dank!',
+  '😂 Why is this so accurate?!',
+  '🗿 Absolute peak cinema',
+  '👑 Straight to the Hall of Fame!'
 ];
 
 // ==========================================
@@ -245,7 +254,7 @@ export const ARCADE_RATE_LIMITS = {
   MAX_STORED_WHEEL_SPINS: 5,
   WHEEL_SPINS_PER_WINDOW: 3,
   WHEEL_WINDOW_MS: 60 * 60 * 1000,
-  SLOT_PULLS_PER_WINDOW: 5,
+  SLOT_PULLS_PER_WINDOW: 8,
   SLOT_WINDOW_MS: 15 * 60 * 1000,
   GOBLINS_PER_WINDOW: 2,
   GOBLIN_WINDOW_MS: 30 * 60 * 1000,

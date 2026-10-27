@@ -79,16 +79,24 @@ export default function NavbarHud({
         </div>
 
         <div className="tm-hud">
-          {/* Sub-Game Quick Shortcuts */}
+          {/* Side-Entertainment Quick Shortcuts */}
           {onSelectViewMode && (
             <div className="tm-nav-subgames tm-hide-mobile">
+              <button
+                type="button"
+                className={`tm-btn tm-subgame-nav-pill ${viewMode === 'slots' ? 'active' : ''}`}
+                onClick={() => onSelectViewMode('slots')}
+                title="Play THE MEMES.net Las Vegas 777 Slot Machine!"
+              >
+                🎰 Slots
+              </button>
               <button
                 type="button"
                 className={`tm-btn tm-subgame-nav-pill ${viewMode === 'crush' ? 'active' : ''}`}
                 onClick={() => onSelectViewMode('crush')}
                 title="Play Meme Crush Saga — Candy-Crush Style Match-3 Puzzle!"
               >
-                🍬 Meme Crush
+                🍬 Crush
               </button>
               <button
                 type="button"
@@ -96,7 +104,7 @@ export default function NavbarHud({
                 onClick={() => onSelectViewMode('pinball')}
                 title="Play Las Vegas Retro Pinball Machine!"
               >
-                🎱 Vegas Pinball
+                🎱 Pinball
               </button>
             </div>
           )}

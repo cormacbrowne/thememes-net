@@ -6,44 +6,99 @@ import { formatWindowCountdown } from '../data/starterMemes';
 const GRID_SIZE = 8;
 
 const CANDY_TYPES = [
-  { id: 0, emoji: '🐸', name: 'Pepe Lime', bg: 'rgba(34, 197, 94, 0.26)', border: '#4ade80' },
-  { id: 1, emoji: '🔥', name: 'Spicy Drop', bg: 'rgba(249, 115, 22, 0.28)', border: '#fb923c' },
-  { id: 2, emoji: '💎', name: 'Cyber Gem', bg: 'rgba(0, 243, 255, 0.24)', border: '#00f3ff' },
-  { id: 3, emoji: '🦆', name: 'Quack Gold', bg: 'rgba(250, 204, 21, 0.27)', border: '#facc15' },
-  { id: 4, emoji: '💀', name: 'Skull Fizz', bg: 'rgba(168, 85, 247, 0.28)', border: '#c084fc' },
-  { id: 5, emoji: '🍕', name: 'Pizza Pop', bg: 'rgba(236, 72, 153, 0.27)', border: '#f472b6' }
+  {
+    id: 0,
+    emoji: '🐸',
+    name: 'Pepe Lime Jelly',
+    bg: 'radial-gradient(circle at 32% 26%, #bbf7d0 0%, #4ade80 35%, #16a34a 78%, #14532d 100%)',
+    border: '#86efac',
+    shadow: '#15803d',
+    glow: 'rgba(74, 222, 128, 0.55)',
+    shapeClass: 'candy-shape-gumdrop'
+  },
+  {
+    id: 1,
+    emoji: '🔥',
+    name: 'Spicy Tangerine Drop',
+    bg: 'radial-gradient(circle at 32% 26%, #fed7aa 0%, #fb923c 35%, #ea580c 78%, #7c2d12 100%)',
+    border: '#fdba74',
+    shadow: '#c2410c',
+    glow: 'rgba(251, 146, 60, 0.55)',
+    shapeClass: 'candy-shape-teardrop'
+  },
+  {
+    id: 2,
+    emoji: '💎',
+    name: 'Cyber Blue Lozenge',
+    bg: 'radial-gradient(circle at 32% 26%, #e0f2fe 0%, #38bdf8 35%, #0284c7 78%, #0c4a6e 100%)',
+    border: '#7dd3fc',
+    shadow: '#0369a1',
+    glow: 'rgba(0, 243, 255, 0.6)',
+    shapeClass: 'candy-shape-diamond'
+  },
+  {
+    id: 3,
+    emoji: '🦆',
+    name: 'Golden Lemon Cluster',
+    bg: 'radial-gradient(circle at 32% 26%, #fef9c3 0%, #facc15 35%, #ca8a04 78%, #713f12 100%)',
+    border: '#fde047',
+    shadow: '#a16207',
+    glow: 'rgba(250, 204, 21, 0.58)',
+    shapeClass: 'candy-shape-pillow'
+  },
+  {
+    id: 4,
+    emoji: '💀',
+    name: 'Grape Brainrot Fizz',
+    bg: 'radial-gradient(circle at 32% 26%, #f3e8ff 0%, #c084fc 35%, #9333ea 78%, #4c1d95 100%)',
+    border: '#d8b4fe',
+    shadow: '#7e22ce',
+    glow: 'rgba(192, 132, 252, 0.58)',
+    shapeClass: 'candy-shape-star'
+  },
+  {
+    id: 5,
+    emoji: '🍕',
+    name: 'Strawberry Sugar Pop',
+    bg: 'radial-gradient(circle at 32% 26%, #fce7f3 0%, #f472b6 35%, #db2777 78%, #831843 100%)',
+    border: '#f9a8d4',
+    shadow: '#be185d',
+    glow: 'rgba(244, 114, 182, 0.58)',
+    shapeClass: 'candy-shape-heart'
+  }
 ];
 
 // Official Candy Crush Escalation — THE MEMES.net Edition!
 const ANNOUNCER_TIERS = [
-  { tier: 1, title: 'SWEET! 🍬', sub: 'CERTIFIED DANK MATCH!', color: '#4ade80' },
-  { tier: 2, title: 'TASTY!! 🔥', sub: '2X CASCADE COMBO!', color: '#fb923c' },
-  { tier: 3, title: 'DELICIOUS BRAINROT! 💀', sub: '3X DOPAMINE OVERLOAD!', color: '#c084fc' },
-  { tier: 4, title: 'DIVINE GIGA-CRUSH!! 🗿', sub: '4X ULTRA COMBO!', color: '#00f3ff' },
-  { tier: 5, title: 'UNHINGED SUPERNOVA!! 🌈👑', sub: 'EMOTIONAL DAMAGE!!', color: '#facc15' }
+  { tier: 1, title: 'SWEET! 🍬', sub: 'JUICY SUGAR MATCH!', color: '#4ade80', mascot: '🐸 "Sweet match!"' },
+  { tier: 2, title: 'TASTY!! 🔥', sub: '2X CASCADE COMBO!', color: '#fb923c', mascot: '🦆 "Ooh, tasty cascade!"' },
+  { tier: 3, title: 'DELICIOUS!! 💀', sub: '3X DOPAMINE OVERLOAD!', color: '#c084fc', mascot: '🗿 "Delicious combo energy!"' },
+  { tier: 4, title: 'DIVINE CRUSH!! 💎', sub: '4X ULTRA SUGAR SURGE!', color: '#00f3ff', mascot: '👑 "DIVINE! Keep crushing!"' },
+  { tier: 5, title: 'SUGAR SUPERNOVA!! 🌈👑', sub: 'UNHINGED CANDY FRENZY!!', color: '#facc15', mascot: '🚀 "SUPERNOVA!! Pure perfection!"' }
 ];
 
 const FEVER_LOOT_PERKS = [
-  { id: 'moves', label: '🎁 FEVER LOOT: +2 BONUS MOVES & +600 PTS!', emoji: '⏱️' },
-  { id: 'hammer', label: '🎁 FEVER LOOT: +1 FREE MEME HAMMER & +600 PTS!', emoji: '🔨' },
-  { id: 'ufo', label: '🎁 FEVER LOOT: +1 FREE UFO BOMB DROPPER & +600 PTS!', emoji: '🛸' },
-  { id: 'colorbomb', label: '🎁 FEVER LOOT: SUPERNOVA COLOR BOMB BEAMED ONTO BOARD!', emoji: '🌈' }
+  { id: 'moves', label: '🎁 SUGAR RUSH LOOT: +2 BONUS MOVES & +600 PTS!', emoji: '⏱️' },
+  { id: 'hammer', label: '🎁 SUGAR RUSH LOOT: +1 FREE LOLLIPOP HAMMER & +600 PTS!', emoji: '🔨' },
+  { id: 'ufo', label: '🎁 SUGAR RUSH LOOT: +1 FREE UFO BOMB DROPPER & +600 PTS!', emoji: '🛸' },
+  { id: 'colorbomb', label: '🎁 SUGAR RUSH LOOT: SUPERNOVA COLOR BOMB BEAMED ONTO BOARD!', emoji: '🌈' }
 ];
 
 let tileUidCounter = 1;
 
-function makeTile(typeId, special = null) {
+function makeTile(typeId, special = null, dropDist = 0) {
   return {
     uid: `c-${tileUidCounter++}`,
     type: typeId ?? Math.floor(Math.random() * CANDY_TYPES.length),
-    special // null | 'striped-h' | 'striped-v' | 'packet-bomb' | 'color-bomb'
+    special, // null | 'striped-h' | 'striped-v' | 'packet-bomb' | 'color-bomb' | 'seeking-rocket'
+    dropDist
   };
 }
 
 /**
  * Generates an initial 8x8 board with zero pre-existing 3-in-a-row matches.
  */
-function createInitialBoard() {
+function createInitialBoard(withDropAnimation = true) {
   const board = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(null));
   for (let r = 0; r < GRID_SIZE; r++) {
     for (let c = 0; c < GRID_SIZE; c++) {
@@ -61,14 +116,41 @@ function createInitialBoard() {
         candidate = (candidate + 1) % CANDY_TYPES.length;
         tries++;
       }
-      board[r][c] = makeTile(candidate, null);
+      board[r][c] = makeTile(candidate, null, withDropAnimation ? r + 2 : 0);
     }
   }
   return board;
 }
 
 /**
- * Finds all horizontal and vertical match groups of length >= 3.
+ * Generates the glowing Frosted Crystal Jelly pattern under the 8x8 board.
+ * Value 1 = Crystal Jelly, Value 2 = Double Crystal Frosting (on higher levels).
+ */
+function createInitialJellyGrid(levelNum = 1) {
+  const grid = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(0));
+  for (let r = 1; r < GRID_SIZE - 1; r++) {
+    for (let c = 1; c < GRID_SIZE - 1; c++) {
+      if (levelNum === 1) {
+        // Diamond ring pattern in center 6x6
+        if (Math.abs(r - 3.5) + Math.abs(c - 3.5) <= 3.2) {
+          grid[r][c] = 1;
+        }
+      } else if (levelNum % 2 === 0) {
+        // Checkerboard + center double frost
+        if ((r + c) % 2 === 0) {
+          grid[r][c] = r >= 3 && r <= 4 && c >= 3 && c <= 4 ? 2 : 1;
+        }
+      } else {
+        // Full inner 6x6 crystal vault with corners double frosted
+        grid[r][c] = (r === 2 || r === 5) && (c === 2 || c === 5) ? 2 : 1;
+      }
+    }
+  }
+  return grid;
+}
+
+/**
+ * Finds all horizontal/vertical match groups of length >= 3 AND 2x2 square matches (for Seeking Meme Rockets).
  */
 function findMatchGroups(board) {
   const groups = [];
@@ -115,11 +197,36 @@ function findMatchGroups(board) {
     }
   }
 
+  // 2x2 Square Matches (spawns 🚀 Seeking Meme Rocket, like iPhone Candy Crush Jelly Fish!)
+  for (let r = 0; r < GRID_SIZE - 1; r++) {
+    for (let c = 0; c < GRID_SIZE - 1; c++) {
+      const t0 = board[r][c];
+      if (!t0) continue;
+      if (
+        board[r][c + 1]?.type === t0.type &&
+        board[r + 1][c]?.type === t0.type &&
+        board[r + 1][c + 1]?.type === t0.type
+      ) {
+        groups.push({
+          dir: 'sq',
+          length: 4,
+          coords: [
+            [r, c],
+            [r, c + 1],
+            [r + 1, c],
+            [r + 1, c + 1]
+          ],
+          type: t0.type
+        });
+      }
+    }
+  }
+
   return groups;
 }
 
 /**
- * Finds the first valid swap [ [r1,c1], [r2,c2] ] on the board for the Hint button.
+ * Finds the first valid swap [ [r1,c1], [r2,c2] ] on the board for the Hint button & idle shimmer.
  */
 function findFirstValidMove(board) {
   const cloneSwap = (r1, c1, r2, c2) => {
@@ -127,6 +234,7 @@ function findFirstValidMove(board) {
     const tB = board[r2]?.[c2];
     if (!tA || !tB) return false;
     if (tA.special === 'color-bomb' || tB.special === 'color-bomb') return true;
+    if (tA.special === 'seeking-rocket' || tB.special === 'seeking-rocket') return true;
     if (tA.special && tB.special) return true;
     const copy = board.map((row) => [...row]);
     copy[r1][c1] = tB;
@@ -151,6 +259,24 @@ function findFirstValidMove(board) {
     }
   }
   return null;
+}
+
+function pickRocketTargets(jellyGrid, strikeCount = 2) {
+  const jellyCandidates = [];
+  for (let r = 0; r < GRID_SIZE; r++) {
+    for (let c = 0; c < GRID_SIZE; c++) {
+      if (jellyGrid?.[r]?.[c] > 0) jellyCandidates.push([r, c]);
+    }
+  }
+  const chosen = [];
+  for (let i = 0; i < strikeCount; i++) {
+    const pick =
+      jellyCandidates.length > 0
+        ? jellyCandidates.splice(Math.floor(Math.random() * jellyCandidates.length), 1)[0]
+        : [Math.floor(Math.random() * GRID_SIZE), Math.floor(Math.random() * GRID_SIZE)];
+    chosen.push(pick);
+  }
+  return chosen;
 }
 
 export default function MemeCrushGame({
@@ -178,7 +304,9 @@ export default function MemeCrushGame({
     );
   const completeRoundHandler = onCompleteRound || onCompleteGameRound;
 
-  const [board, setBoard] = useState(() => createInitialBoard());
+  const [board, setBoard] = useState(() => createInitialBoard(true));
+  const [jellyGrid, setJellyGrid] = useState(() => createInitialJellyGrid(1));
+  const [jellyAllClearedLevel, setJellyAllClearedLevel] = useState(0);
   const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
   const [storedHighScore, setStoredHighScore] = useState(() =>
@@ -189,12 +317,16 @@ export default function MemeCrushGame({
   const [selectedCell, setSelectedCell] = useState(null);
   const [hintCells, setHintCells] = useState([]);
   const [poppingKeys, setPoppingKeys] = useState(new Set());
+  const [invalidSwapPair, setInvalidSwapPair] = useState(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [boardShake, setBoardShake] = useState(false);
 
-  // Turbo-Charged Candy Crush Visual Overlays
+  // iPhone Candy Crush Visual Effects Overlays
   const [announceSplash, setAnnounceSplash] = useState(null);
+  const [mascotCallout, setMascotCallout] = useState('🐸 Match 3, 2×2 Squares, or 4/5 in a row to crush Crystal Jelly!');
   const [activeLasers, setActiveLasers] = useState([]);
+  const [activeLightnings, setActiveLightnings] = useState([]);
+  const [shockwaves, setShockwaves] = useState([]);
   const [tilePopups, setTilePopups] = useState([]);
   const [candyParticles, setCandyParticles] = useState([]);
   const [lootToast, setLootToast] = useState('');
@@ -221,21 +353,45 @@ export default function MemeCrushGame({
   const scoreRef = useRef(0);
   const feverPctRef = useRef(0);
   const feverMovesRef = useRef(0);
+  const jellyGridRef = useRef(jellyGrid);
+  const levelRef = useRef(1);
+  const jellyClearedLevelRef = useRef(0);
 
   const targetScore = level === 1 ? 1500 : level === 2 ? 3400 : 3400 + (level - 2) * 2200;
+
+  // Count remaining Frosted Crystal Jelly tiles
+  const remainingJellyCount = jellyGrid.reduce(
+    (sum, row) => sum + row.reduce((rSum, cell) => rSum + (cell > 0 ? 1 : 0), 0),
+    0
+  );
 
   useEffect(() => {
     movesLeftRef.current = movesLeft;
     scoreRef.current = score;
     feverPctRef.current = feverPct;
     feverMovesRef.current = feverMovesLeft;
-  }, [movesLeft, score, feverPct, feverMovesLeft]);
+    jellyGridRef.current = jellyGrid;
+    levelRef.current = level;
+    jellyClearedLevelRef.current = jellyAllClearedLevel;
+  }, [movesLeft, score, feverPct, feverMovesLeft, jellyGrid, level, jellyAllClearedLevel]);
 
   useEffect(() => {
     if (score > storedHighScore) {
       localStorage.setItem('tm_crush_highscore', String(score));
     }
   }, [score, storedHighScore]);
+
+  // Automatic 4.8-second iPhone-style idle hint shimmer when player hasn't moved
+  useEffect(() => {
+    if (isAnimating || roundFinished || hintCells.length > 0) return undefined;
+    const timer = setTimeout(() => {
+      const move = findFirstValidMove(board);
+      if (move) {
+        setHintCells(move.map(([r, c]) => `${r},${c}`));
+      }
+    }, 4800);
+    return () => clearTimeout(timer);
+  }, [board, isAnimating, roundFinished, hintCells]);
 
   const triggerAnnounceSplash = useCallback((tierIdx, customTitle = null, customSub = null) => {
     const base =
@@ -248,12 +404,48 @@ export default function MemeCrushGame({
       color: base.color
     };
     setAnnounceSplash(payload);
+    if (base.mascot) {
+      setMascotCallout(base.mascot);
+    }
     setTimeout(() => {
       setAnnounceSplash((prev) => (prev?.id === payload.id ? null : prev));
     }, 1150);
   }, []);
 
-  const spawnGridEffects = useCallback((coordsList, points, customTag = null, lasers = []) => {
+  const spawnShockwave = useCallback((r, c, color = '#00f3ff') => {
+    const id = `sw-${Date.now()}-${Math.random()}`;
+    setShockwaves((prev) => [...prev.slice(-6), { id, r, c, color }]);
+    setTimeout(() => {
+      setShockwaves((prev) => prev.filter((item) => item.id !== id));
+    }, 620);
+  }, []);
+
+  const spawnLightningArcs = useCallback((originCoord, targetCoords) => {
+    if (!originCoord || !targetCoords?.length) return;
+    const now = Date.now();
+    const arcs = targetCoords.slice(0, 14).map(([tr, tc], idx) => {
+      const x1 = (originCoord[1] + 0.5) * 12.5;
+      const y1 = (originCoord[0] + 0.5) * 12.5;
+      const x2 = (tc + 0.5) * 12.5;
+      const y2 = (tr + 0.5) * 12.5;
+      return {
+        id: `lt-${now}-${idx}-${Math.random()}`,
+        x1,
+        y1,
+        x2,
+        y2,
+        midX: (x1 + x2) / 2 + (Math.random() - 0.5) * 8,
+        midY: (y1 + y2) / 2 + (Math.random() - 0.5) * 8,
+        color: ['#00f3ff', '#facc15', '#ec4899', '#4ade80', '#c084fc'][idx % 5]
+      };
+    });
+    setActiveLightnings(arcs);
+    setTimeout(() => {
+      setActiveLightnings([]);
+    }, 480);
+  }, []);
+
+  const spawnGridEffects = useCallback((coordsList, points, customTag = null, lasers = [], extraEmoji = null) => {
     const now = Date.now();
     if (coordsList.length > 0) {
       const mid = coordsList[Math.floor(coordsList.length / 2)];
@@ -267,21 +459,22 @@ export default function MemeCrushGame({
       setTilePopups((prev) => [...prev.slice(-10), popup]);
       setTimeout(() => {
         setTilePopups((prev) => prev.filter((p) => p.id !== popup.id));
-      }, 900);
+      }, 950);
 
-      // Spawn flying candy emoji shards from matched cells
-      const shards = coordsList.slice(0, 10).map(([r, c], idx) => ({
+      // Spawn glossy candy splash droplets & emoji shards from matched cells
+      const palette = extraEmoji || ['🍬', '✨', '🍓', '💎', '⚡', '🌟', '🍭', '❄️'];
+      const shards = coordsList.slice(0, 14).map(([r, c], idx) => ({
         id: `sh-${now}-${idx}-${Math.random()}`,
         r,
         c,
-        dx: Math.round((Math.random() - 0.5) * 90),
-        dy: Math.round(-35 - Math.random() * 55),
-        emoji: ['🍬', '✨', '🔥', '💎', '⚡', '🪙'][idx % 6]
+        dx: Math.round((Math.random() - 0.5) * 105),
+        dy: Math.round(-40 - Math.random() * 65),
+        emoji: palette[idx % palette.length]
       }));
-      setCandyParticles((prev) => [...prev.slice(-18), ...shards]);
+      setCandyParticles((prev) => [...prev.slice(-22), ...shards]);
       setTimeout(() => {
         setCandyParticles((prev) => prev.filter((s) => !shards.some((sh) => sh.id === s.id)));
-      }, 700);
+      }, 720);
     }
 
     if (lasers.length > 0) {
@@ -292,7 +485,7 @@ export default function MemeCrushGame({
       setActiveLasers((prev) => [...prev, ...laserItems]);
       setTimeout(() => {
         setActiveLasers((prev) => prev.filter((item) => !laserItems.some((l) => l.id === item.id)));
-      }, 420);
+      }, 440);
     }
   }, []);
 
@@ -302,6 +495,53 @@ export default function MemeCrushGame({
       setLootToast((prev) => (prev === msg ? '' : prev));
     }, 3200);
   }, []);
+
+  /**
+   * Shatters Frosted Crystal Jelly on any coordinates cleared during a match or bomb blast!
+   */
+  const damageJellyAtCoords = useCallback(
+    (coordsList) => {
+      const currentJelly = jellyGridRef.current;
+      if (!currentJelly) return 0;
+
+      let shatteredCount = 0;
+      let remainingAfter = 0;
+      const nextJelly = currentJelly.map((row) => [...row]);
+
+      coordsList.forEach(([r, c]) => {
+        if (nextJelly[r]?.[c] > 0) {
+          nextJelly[r][c] = Math.max(0, nextJelly[r][c] - 1);
+          shatteredCount++;
+        }
+      });
+
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          if (nextJelly[r][c] > 0) remainingAfter++;
+        }
+      }
+
+      if (shatteredCount > 0) {
+        sfx.playJellyShatter();
+        setJellyGrid(nextJelly);
+        jellyGridRef.current = nextJelly;
+
+        if (remainingAfter === 0 && jellyClearedLevelRef.current < levelRef.current) {
+          setJellyAllClearedLevel(levelRef.current);
+          jellyClearedLevelRef.current = levelRef.current;
+          setScore((s) => s + 1500);
+          sfx.playJackpot();
+          showLootToast('🧊✨ ALL CRYSTAL JELLY SHATTERED! +1,500 BONUS PTS!');
+          setMascotCallout('👑 "ALL CRYSTAL JELLY CLEARED! +1,500 SUGAR BONUS!"');
+        } else if (remainingAfter > 0 && remainingAfter <= 4) {
+          setMascotCallout(`🧊 "Almost there! Only ${remainingAfter} Crystal Jelly tile${remainingAfter === 1 ? '' : 's'} left!"`);
+        }
+      }
+
+      return shatteredCount;
+    },
+    [showLootToast]
+  );
 
   const finishRound = useCallback(
     (clearedTarget, finalScoreVal = scoreRef.current, bonusMovesConverted = 0) => {
@@ -375,7 +615,7 @@ export default function MemeCrushGame({
   );
 
   /**
-   * Triggers the official Candy Crush style "MEME CRUSH FINALE" converting remaining moves into bombs/lasers!
+   * Triggers the official Candy Crush style "SUGAR CRUSH FINALE" converting remaining moves into bombs/lasers!
    */
   const handleTriggerMemeCrushFinale = () => {
     if (roundFinished || isAnimating) return;
@@ -384,6 +624,9 @@ export default function MemeCrushGame({
     sfx.playSpecialBomb();
     setBoardShake(true);
     setTimeout(() => setBoardShake(false), 550);
+
+    spawnShockwave(3, 3, '#facc15');
+    spawnShockwave(4, 4, '#00f3ff');
 
     // Fire cross-board finale lasers visually
     spawnGridEffects(
@@ -394,7 +637,7 @@ export default function MemeCrushGame({
         [4, 6]
       ],
       remMoves * 300,
-      '🎆 MEME CRUSH FINALE!',
+      '🎆 SUGAR CRUSH FINALE!',
       [
         { dir: 'h', index: 2, color: '#facc15' },
         { dir: 'h', index: 5, color: '#ec4899' },
@@ -404,7 +647,7 @@ export default function MemeCrushGame({
     );
     triggerAnnounceSplash(
       5,
-      '🎆 MEME CRUSH FINALE!!',
+      '🎆 SUGAR CRUSH FINALE!!',
       `+${(remMoves * 300).toLocaleString()} MOVE BONUS!`
     );
 
@@ -415,7 +658,8 @@ export default function MemeCrushGame({
 
   /**
    * Resolves all cascades on a board state until stable, spawning Striped Lasers,
-   * L/T-Shape 3x3 Packet Bombs, 5-in-a-row Supernova Color Bombs, and charging Meme Fever!
+   * 2x2 Seeking Meme Rockets, L/T-Shape 3x3 Packet Bombs, 5-in-a-row Supernova Color Bombs,
+   * shattering Frosted Crystal Jelly, and animating smooth gravity drop-ins!
    */
   const resolveBoardCascades = useCallback(
     (workingBoard, cascadeStep = 1, swappedCoord = null) => {
@@ -441,15 +685,35 @@ export default function MemeCrushGame({
         g.coords.forEach(([r, c]) => {
           const k = `${r},${c}`;
           toRemove.add(k);
-          cellGroupCount.set(k, (cellGroupCount.get(k) || 0) + 1);
+          if (g.dir !== 'sq') {
+            cellGroupCount.set(k, (cellGroupCount.get(k) || 0) + 1);
+          }
         });
       });
 
       groups.forEach((g) => {
-        // Check if any cell in this group is an L/T intersection
-        const intersectCoord = g.coords.find(([r, c]) => (cellGroupCount.get(`${r},${c}`) || 0) >= 2);
+        const intersectCoord =
+          g.dir !== 'sq'
+            ? g.coords.find(([r, c]) => (cellGroupCount.get(`${r},${c}`) || 0) >= 2)
+            : null;
 
-        if (g.length >= 5) {
+        if (g.dir === 'sq') {
+          // 2x2 Square Match -> Spawn 🚀 Seeking Meme Rocket (like Candy Crush Jelly Fish!)
+          const spawnCoord =
+            (swappedCoord &&
+              g.coords.find(([r, c]) => r === swappedCoord[0] && c === swappedCoord[1])) ||
+            g.coords[0];
+          const spKey = `${spawnCoord[0]},${spawnCoord[1]}`;
+          if (!spawnedKeySet.has(spKey)) {
+            spawnedKeySet.add(spKey);
+            specialsToSpawn.push({
+              r: spawnCoord[0],
+              c: spawnCoord[1],
+              type: g.type,
+              special: 'seeking-rocket'
+            });
+          }
+        } else if (g.length >= 5) {
           const spawnCoord =
             (swappedCoord &&
               g.coords.find(([r, c]) => r === swappedCoord[0] && c === swappedCoord[1])) ||
@@ -528,6 +792,7 @@ export default function MemeCrushGame({
             }
           }
         } else if (tile.special === 'packet-bomb') {
+          spawnShockwave(r, c, '#facc15');
           for (let dr = -1; dr <= 1; dr++) {
             for (let dc = -1; dc <= 1; dc++) {
               const nr = r + dr;
@@ -541,11 +806,45 @@ export default function MemeCrushGame({
               }
             }
           }
+        } else if (tile.special === 'seeking-rocket') {
+          // 🚀 Seeking Meme Rocket seeks out Frosted Jelly cells (or random targets) and blasts them!
+          const jellyTargets = [];
+          const currJelly = jellyGridRef.current;
+          for (let jr = 0; jr < GRID_SIZE; jr++) {
+            for (let jc = 0; jc < GRID_SIZE; jc++) {
+              if (currJelly?.[jr]?.[jc] > 0 && !toRemove.has(`${jr},${jc}`)) {
+                jellyTargets.push([jr, jc]);
+              }
+            }
+          }
+          const chosenTarget =
+            jellyTargets.length > 0
+              ? jellyTargets[Math.floor(Math.random() * jellyTargets.length)]
+              : [Math.floor(Math.random() * GRID_SIZE), Math.floor(Math.random() * GRID_SIZE)];
+          spawnLightningArcs([r, c], [chosenTarget]);
+          spawnShockwave(chosenTarget[0], chosenTarget[1], '#4ade80');
+          for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+              if (Math.abs(dr) + Math.abs(dc) <= 1) {
+                const nr = chosenTarget[0] + dr;
+                const nc = chosenTarget[1] + dc;
+                if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
+                  const k = `${nr},${nc}`;
+                  if (!toRemove.has(k)) {
+                    toRemove.add(k);
+                    queue.push(k);
+                  }
+                }
+              }
+            }
+          }
         } else if (tile.special === 'color-bomb') {
+          const zappedCoords = [];
           for (let row = 0; row < GRID_SIZE; row++) {
             for (let col = 0; col < GRID_SIZE; col++) {
               if (workingBoard[row][col]?.type === tile.type) {
                 const k = `${row},${col}`;
+                zappedCoords.push([row, col]);
                 if (!toRemove.has(k)) {
                   toRemove.add(k);
                   queue.push(k);
@@ -553,16 +852,24 @@ export default function MemeCrushGame({
               }
             }
           }
+          spawnLightningArcs([r, c], zappedCoords);
         }
       }
 
+      const allCoords = Array.from(toRemove).map((k) => k.split(',').map(Number));
+      const jellyShattered = damageJellyAtCoords(allCoords);
+
       const clearedCount = toRemove.size;
       const feverMultiplier = feverMovesRef.current > 0 ? 2 : 1;
-      const pointsEarned = clearedCount * 45 * cascadeStep * feverMultiplier;
+      const pointsEarned =
+        (clearedCount * 45 * cascadeStep + jellyShattered * 120) * feverMultiplier;
       setScore((prev) => prev + pointsEarned);
 
       // Charge Meme Fever Meter
-      const nextFever = Math.min(100, feverPctRef.current + clearedCount * 4 + cascadeStep * 6);
+      const nextFever = Math.min(
+        100,
+        feverPctRef.current + clearedCount * 4 + cascadeStep * 6 + jellyShattered * 3
+      );
       let triggerFeverNow = false;
       if (nextFever >= 100) {
         triggerFeverNow = true;
@@ -588,12 +895,18 @@ export default function MemeCrushGame({
         sfx.playCandyMatch(cascadeStep);
       }
 
-      const allCoords = Array.from(toRemove).map((k) => k.split(',').map(Number));
       spawnGridEffects(
         allCoords,
         pointsEarned,
-        triggeredSpecial ? '💥 MEGA BLAST!' : cascadeStep >= 2 ? `🔥 ${cascadeStep}x` : null,
-        lasersToFire
+        triggeredSpecial
+          ? '💥 MEGA BLAST!'
+          : jellyShattered > 0
+          ? `🧊 ${jellyShattered} JELLY!`
+          : cascadeStep >= 2
+          ? `🔥 ${cascadeStep}x`
+          : null,
+        lasersToFire,
+        jellyShattered > 0 ? ['❄️', '💎', '✨', '🍬', '🌟'] : null
       );
 
       if (cascadeStep >= 2 || clearedCount >= 4 || triggeredSpecial) {
@@ -617,20 +930,30 @@ export default function MemeCrushGame({
 
         // Place newly earned special candies
         specialsToSpawn.forEach((sp) => {
-          nextBoard[sp.r][sp.c] = makeTile(sp.type, sp.special);
+          nextBoard[sp.r][sp.c] = makeTile(sp.type, sp.special, 0);
         });
 
-        // Apply downward gravity column by column
+        // Apply downward gravity column by column AND compute exact drop distance for elastic bounce!
         for (let c = 0; c < GRID_SIZE; c++) {
           const surviving = [];
           for (let r = GRID_SIZE - 1; r >= 0; r--) {
             if (nextBoard[r][c] !== null) {
-              surviving.push(nextBoard[r][c]);
+              surviving.push({ tile: nextBoard[r][c], origRow: r });
             }
           }
+          const missingCount = GRID_SIZE - surviving.length;
           for (let r = GRID_SIZE - 1; r >= 0; r--) {
-            const item = surviving[GRID_SIZE - 1 - r];
-            nextBoard[r][c] = item || makeTile(null, null);
+            const idxFromBottom = GRID_SIZE - 1 - r;
+            if (idxFromBottom < surviving.length) {
+              const { tile, origRow } = surviving[idxFromBottom];
+              const dropRows = Math.max(0, r - origRow);
+              nextBoard[r][c] = {
+                ...tile,
+                dropDist: dropRows
+              };
+            } else {
+              nextBoard[r][c] = makeTile(null, null, missingCount + 1);
+            }
           }
         }
 
@@ -651,13 +974,14 @@ export default function MemeCrushGame({
           if (nextBoard[r1][c1]) {
             nextBoard[r1][c1] = makeTile(
               nextBoard[r1][c1].type,
-              perk.id === 'colorbomb' ? 'color-bomb' : 'packet-bomb'
+              perk.id === 'colorbomb' ? 'color-bomb' : 'packet-bomb',
+              1
             );
           }
           if (nextBoard[r2][c2]) {
-            nextBoard[r2][c2] = makeTile(nextBoard[r2][c2].type, 'striped-h');
+            nextBoard[r2][c2] = makeTile(nextBoard[r2][c2].type, 'seeking-rocket', 1);
           }
-          showLootToast(`🔥 MEME FEVER ERUPTION (2X SCORE)! ${perk.label}`);
+          showLootToast(`🔥 SUGAR RUSH ERUPTION (2X SCORE)! ${perk.label}`);
         }
 
         setPoppingKeys(new Set());
@@ -667,10 +991,19 @@ export default function MemeCrushGame({
           if (cascadeRunnerRef.current) {
             cascadeRunnerRef.current(nextBoard, cascadeStep + 1, null);
           }
-        }, 190);
-      }, 230);
+        }, 240);
+      }, 240);
     },
-    [spawnGridEffects, triggerAnnounceSplash, showLootToast, finishRound, targetScore]
+    [
+      spawnGridEffects,
+      triggerAnnounceSplash,
+      showLootToast,
+      finishRound,
+      targetScore,
+      damageJellyAtCoords,
+      spawnShockwave,
+      spawnLightningArcs
+    ]
   );
 
   useEffect(() => {
@@ -679,12 +1012,14 @@ export default function MemeCrushGame({
 
   const handleAdvanceNextLevel = () => {
     sfx.playLevelUp();
-    setLevel((lv) => lv + 1);
+    const nextLv = level + 1;
+    setLevel(nextLv);
+    setJellyGrid(createInitialJellyGrid(nextLv));
     setMovesLeft((m) => Math.min(25, m + 12));
     setHammersLeft((h) => h + 1);
     setUfoDropsLeft((u) => u + 1);
     setShufflesLeft((s) => s + 1);
-    triggerAnnounceSplash(4, `🚀 LEVEL ${level + 1} UNLOCKED!`, '+12 MOVES & +1 HAMMER + UFO!');
+    triggerAnnounceSplash(4, `🚀 LEVEL ${nextLv} UNLOCKED!`, '+12 MOVES, FRESH CRYSTAL JELLY & BOOSTERS!');
   };
 
   const handleStartNewRound = (useTokensIfEmpty = false) => {
@@ -702,6 +1037,8 @@ export default function MemeCrushGame({
     setRoundFinished(false);
     setRoundSummary(null);
     setLevel(1);
+    setJellyAllClearedLevel(0);
+    setJellyGrid(createInitialJellyGrid(1));
     setScore(0);
     setMovesLeft(20);
     setFeverPct(0);
@@ -711,7 +1048,7 @@ export default function MemeCrushGame({
     setShufflesLeft(2);
     setSelectedCell(null);
     setHintCells([]);
-    setBoard(createInitialBoard());
+    setBoard(createInitialBoard(true));
   };
 
   /**
@@ -743,11 +1080,13 @@ export default function MemeCrushGame({
       sfx.playSpecialBomb();
       if (lasers.length > 0) sfx.playLaserZap();
 
+      const coords = Array.from(toBlastSet).map((k) => k.split(',').map(Number));
+      const jellyHits = damageJellyAtCoords(coords);
+
       const feverMult = feverMovesLeft > 0 ? 2 : 1;
-      const totalPts = bonusPts * feverMult;
+      const totalPts = (bonusPts + jellyHits * 120) * feverMult;
       setScore((s) => s + totalPts);
 
-      const coords = Array.from(toBlastSet).map((k) => k.split(',').map(Number));
       spawnGridEffects(coords, totalPts, bannerTitle, lasers);
       triggerAnnounceSplash(5, bannerTitle, `${bannerSub} (+${totalPts.toLocaleString()} PTS!)`);
       setPoppingKeys(toBlastSet);
@@ -761,15 +1100,22 @@ export default function MemeCrushGame({
         for (let c = 0; c < GRID_SIZE; c++) {
           const surviving = [];
           for (let r = GRID_SIZE - 1; r >= 0; r--) {
-            if (nextBoard[r][c] !== null) surviving.push(nextBoard[r][c]);
+            if (nextBoard[r][c] !== null) surviving.push({ tile: nextBoard[r][c], origRow: r });
           }
+          const missing = GRID_SIZE - surviving.length;
           for (let r = GRID_SIZE - 1; r >= 0; r--) {
-            nextBoard[r][c] = surviving[GRID_SIZE - 1 - r] || makeTile(null, null);
+            const idx = GRID_SIZE - 1 - r;
+            if (idx < surviving.length) {
+              const { tile, origRow } = surviving[idx];
+              nextBoard[r][c] = { ...tile, dropDist: Math.max(0, r - origRow) };
+            } else {
+              nextBoard[r][c] = makeTile(null, null, missing + 1);
+            }
           }
         }
         setPoppingKeys(new Set());
         setBoard(nextBoard);
-        setTimeout(() => resolveBoardCascades(nextBoard, 2, null), 190);
+        setTimeout(() => resolveBoardCascades(nextBoard, 2, null), 230);
       }, 260);
     };
 
@@ -781,6 +1127,7 @@ export default function MemeCrushGame({
           allKeys.add(`${r},${c}`);
         }
       }
+      spawnShockwave(r2, c2, '#facc15');
       executeCustomBlast(
         allKeys,
         5000,
@@ -796,19 +1143,21 @@ export default function MemeCrushGame({
       return;
     }
 
-    // 2. 🌈 COLOR BOMB + ANY CANDY (OR STRIPED / PACKET BOMB)
+    // 2. 🌈 COLOR BOMB + ANY CANDY (OR STRIPED / PACKET BOMB / SEEKING ROCKET)
     if (tileA.special === 'color-bomb' || tileB.special === 'color-bomb') {
+      const bombCoords = tileA.special === 'color-bomb' ? [r1, c1] : [r2, c2];
       const otherTile = tileA.special === 'color-bomb' ? tileB : tileA;
       const targetType = otherTile.type;
       const toBlast = new Set([`${r1},${c1}`, `${r2},${c2}`]);
       const lasers = [];
+      const arcTargets = [];
 
       for (let r = 0; r < GRID_SIZE; r++) {
         for (let c = 0; c < GRID_SIZE; c++) {
           if (board[r][c]?.type === targetType) {
             toBlast.add(`${r},${c}`);
+            arcTargets.push([r, c]);
             if (otherTile.special === 'striped-h' || otherTile.special === 'striped-v') {
-              // Color Bomb + Striped = Every matching candy fires a Row or Column Laser!
               if ((r + c) % 2 === 0) {
                 lasers.push({ dir: 'h', index: r, color: '#00f3ff' });
                 for (let k = 0; k < GRID_SIZE; k++) toBlast.add(`${r},${k}`);
@@ -816,8 +1165,7 @@ export default function MemeCrushGame({
                 lasers.push({ dir: 'v', index: c, color: '#ec4899' });
                 for (let k = 0; k < GRID_SIZE; k++) toBlast.add(`${k},${c}`);
               }
-            } else if (otherTile.special === 'packet-bomb') {
-              // Color Bomb + Packet Bomb = Every matching candy detonates a 3x3 crater!
+            } else if (otherTile.special === 'packet-bomb' || otherTile.special === 'seeking-rocket') {
               for (let dr = -1; dr <= 1; dr++) {
                 for (let dc = -1; dc <= 1; dc++) {
                   if (r + dr >= 0 && r + dr < GRID_SIZE && c + dc >= 0 && c + dc < GRID_SIZE) {
@@ -830,6 +1178,8 @@ export default function MemeCrushGame({
         }
       }
 
+      spawnLightningArcs(bombCoords, arcTargets);
+      spawnShockwave(bombCoords[0], bombCoords[1], '#00f3ff');
       executeCustomBlast(
         toBlast,
         toBlast.size * 75,
@@ -840,7 +1190,37 @@ export default function MemeCrushGame({
       return;
     }
 
-    // 3. ⚡/💥 TWO SPECIAL CANDIES SWAPPED TOGETHER (Striped+Striped, Striped+Packet, Packet+Packet)
+    // 3. 🚀 SEEKING ROCKET SWAPPED WITH ANY CANDY -> Launches Homing Rockets at Crystal Jelly!
+    if (tileA.special === 'seeking-rocket' || tileB.special === 'seeking-rocket') {
+      const origin = tileA.special === 'seeking-rocket' ? [r1, c1] : [r2, c2];
+      const toBlast = new Set([`${r1},${c1}`, `${r2},${c2}`]);
+      const strikeCount = tileA.special && tileB.special ? 3 : 2;
+      const chosenTargets = pickRocketTargets(jellyGrid, strikeCount);
+      for (const pick of chosenTargets) {
+        spawnShockwave(pick[0], pick[1], '#4ade80');
+        for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+            if (Math.abs(dr) + Math.abs(dc) <= 1) {
+              const nr = pick[0] + dr;
+              const nc = pick[1] + dc;
+              if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
+                toBlast.add(`${nr},${nc}`);
+              }
+            }
+          }
+        }
+      }
+      spawnLightningArcs(origin, chosenTargets);
+      executeCustomBlast(
+        toBlast,
+        950 * strikeCount,
+        '🚀 SEEKING ROCKET BARRAGE!',
+        'HOMING JELLY STRIKE COMPLETE!'
+      );
+      return;
+    }
+
+    // 4. ⚡/💥 TWO SPECIAL CANDIES SWAPPED TOGETHER (Striped+Striped, Striped+Packet, Packet+Packet)
     if (tileA.special && tileB.special) {
       const toBlast = new Set([`${r1},${c1}`, `${r2},${c2}`]);
       const lasers = [];
@@ -849,7 +1229,6 @@ export default function MemeCrushGame({
         tileA.special?.startsWith('striped') || tileB.special?.startsWith('striped');
 
       if (hasPacket && hasStriped) {
-        // Giant 3-Row x 3-Column Mega Laser Sweep!
         for (let d = -1; d <= 1; d++) {
           const rr = r2 + d;
           const cc = c2 + d;
@@ -862,6 +1241,7 @@ export default function MemeCrushGame({
             for (let k = 0; k < GRID_SIZE; k++) toBlast.add(`${k},${cc}`);
           }
         }
+        spawnShockwave(r2, c2, '#facc15');
         executeCustomBlast(
           toBlast,
           2400,
@@ -873,7 +1253,6 @@ export default function MemeCrushGame({
       }
 
       if (tileA.special === 'packet-bomb' && tileB.special === 'packet-bomb') {
-        // 5x5 Giga Crater!
         for (let dr = -2; dr <= 2; dr++) {
           for (let dc = -2; dc <= 2; dc++) {
             const nr = r2 + dr;
@@ -883,6 +1262,7 @@ export default function MemeCrushGame({
             }
           }
         }
+        spawnShockwave(r2, c2, '#ec4899');
         executeCustomBlast(toBlast, 2000, '💥💥 5×5 GIGA-CRATER!!', 'DOUBLE PACKET DETONATION!');
         return;
       }
@@ -898,15 +1278,20 @@ export default function MemeCrushGame({
       return;
     }
 
-    // 4. Standard Swap Check
-    const swapped = board.map((row) => [...row]);
-    swapped[r1][c1] = tileB;
-    swapped[r2][c2] = tileA;
+    // 5. Standard Swap Check
+    const swapped = board.map((row) =>
+      row.map((cell) => (cell ? { ...cell, dropDist: 0 } : null))
+    );
+    swapped[r1][c1] = { ...tileB, dropDist: 0 };
+    swapped[r2][c2] = { ...tileA, dropDist: 0 };
 
     const matches = findMatchGroups(swapped);
     if (matches.length === 0) {
+      // iPhone Candy Crush elastic spring-back invalid swap animation!
       sfx.playClownHonk();
-      showLootToast('🤡 No Match! Try another swap or tap 💡 Hint!');
+      setInvalidSwapPair([`${r1},${c1}`, `${r2},${c2}`]);
+      setTimeout(() => setInvalidSwapPair(null), 420);
+      setMascotCallout('🐸 "No match there! Tap 💡 Hint for a glowing move!"');
       return;
     }
 
@@ -918,7 +1303,7 @@ export default function MemeCrushGame({
   const handleCellClick = (r, c) => {
     if (isAnimating || roundFinished || movesLeft <= 0) return;
 
-    // 🔨 Meme Hammer Booster Mode: smash a 3x3 cross & trigger any specials hit!
+    // 🔨 Lollipop Meme Hammer Booster Mode: smash a 3x3 cross & shatter Crystal Jelly!
     if (hammerMode && hammersLeft > 0) {
       setHammerMode(false);
       setHammersLeft((h) => h - 1);
@@ -926,6 +1311,7 @@ export default function MemeCrushGame({
       setBoardShake(true);
       setTimeout(() => setBoardShake(false), 380);
       sfx.playMetalPipe();
+      spawnShockwave(r, c, '#facc15');
       const toSmash = new Set([`${r},${c}`]);
       for (let dr = -1; dr <= 1; dr++) {
         for (let dc = -1; dc <= 1; dc++) {
@@ -938,10 +1324,13 @@ export default function MemeCrushGame({
           }
         }
       }
+      const coords = Array.from(toSmash).map((k) => k.split(',').map(Number));
+      const jellyHit = damageJellyAtCoords(coords);
+      const pts = 350 + jellyHit * 120;
       setPoppingKeys(toSmash);
-      setScore((s) => s + 350);
-      spawnGridEffects([[r, c]], 350, '🔨 HAMMER SMASH!');
-      triggerAnnounceSplash(3, '🔨 MEME HAMMER SMASH!', '+350 BONUS PTS!');
+      setScore((s) => s + pts);
+      spawnGridEffects([[r, c]], pts, '🔨 LOLLIPOP SMASH!');
+      triggerAnnounceSplash(3, '🔨 LOLLIPOP HAMMER SMASH!', `+${pts} BONUS PTS!`);
 
       setTimeout(() => {
         const nextBoard = board.map((row) => [...row]);
@@ -952,15 +1341,22 @@ export default function MemeCrushGame({
         for (let col = 0; col < GRID_SIZE; col++) {
           const surviving = [];
           for (let row = GRID_SIZE - 1; row >= 0; row--) {
-            if (nextBoard[row][col] !== null) surviving.push(nextBoard[row][col]);
+            if (nextBoard[row][col] !== null) surviving.push({ tile: nextBoard[row][col], origRow: row });
           }
+          const missing = GRID_SIZE - surviving.length;
           for (let row = GRID_SIZE - 1; row >= 0; row--) {
-            nextBoard[row][col] = surviving[GRID_SIZE - 1 - row] || makeTile(null, null);
+            const idx = GRID_SIZE - 1 - row;
+            if (idx < surviving.length) {
+              const { tile, origRow } = surviving[idx];
+              nextBoard[row][col] = { ...tile, dropDist: Math.max(0, row - origRow) };
+            } else {
+              nextBoard[row][col] = makeTile(null, null, missing + 1);
+            }
           }
         }
         setPoppingKeys(new Set());
         setBoard(nextBoard);
-        setTimeout(() => resolveBoardCascades(nextBoard, 1, null), 180);
+        setTimeout(() => resolveBoardCascades(nextBoard, 1, null), 200);
       }, 220);
       return;
     }
@@ -998,11 +1394,13 @@ export default function MemeCrushGame({
     const r2 = 2 + Math.floor(Math.random() * 4);
     const c2 = 4 + Math.floor(Math.random() * 3);
 
-    nextBoard[r1][c1] = makeTile(nextBoard[r1][c1]?.type ?? 0, 'color-bomb');
-    nextBoard[r2][c2] = makeTile(nextBoard[r2][c2]?.type ?? 1, 'packet-bomb');
+    nextBoard[r1][c1] = makeTile(nextBoard[r1][c1]?.type ?? 0, 'color-bomb', 2);
+    nextBoard[r2][c2] = makeTile(nextBoard[r2][c2]?.type ?? 1, 'seeking-rocket', 2);
+    spawnShockwave(r1, c1, '#00f3ff');
+    spawnShockwave(r2, c2, '#4ade80');
     setBoard(nextBoard);
     setScore((s) => s + 400);
-    triggerAnnounceSplash(4, '🛸 UFO BOMB DROP!!', '🌈 COLOR BOMB + 💥 PACKET BOMB BEAMED IN!');
+    triggerAnnounceSplash(4, '🛸 UFO CANDY DROP!!', '🌈 COLOR BOMB + 🚀 SEEKING ROCKET BEAMED IN!');
   };
 
   const handlePointerDown = (r, c, e) => {
@@ -1018,7 +1416,7 @@ export default function MemeCrushGame({
     const dy = e.clientY - start.y;
     const dist = Math.hypot(dx, dy);
 
-    if (dist >= 24) {
+    if (dist >= 22) {
       if (Math.abs(dx) > Math.abs(dy)) {
         const targetC = start.c + (dx > 0 ? 1 : -1);
         if (targetC >= 0 && targetC < GRID_SIZE) {
@@ -1049,10 +1447,10 @@ export default function MemeCrushGame({
     if (!freeAuto && shufflesLeft <= 0) return;
     if (!freeAuto) setShufflesLeft((s) => s - 1);
     sfx.playBoing(3);
-    triggerAnnounceSplash(2, '🔀 BOARD SHUFFLED!', 'FRESH MEME CANDIES DROPPED!');
+    triggerAnnounceSplash(2, '🔀 BOARD SHUFFLED!', 'FRESH GLOSSY JELLY CANDIES DROPPED!');
     setHintCells([]);
     setSelectedCell(null);
-    setBoard(createInitialBoard());
+    setBoard(createInitialBoard(true));
   };
 
   const handleShareChallenge = () => {
@@ -1073,7 +1471,9 @@ export default function MemeCrushGame({
     setTimeout(() => setCopiedChallenge(false), 2500);
   };
 
-  const progressPct = Math.min(100, Math.round((score / targetScore) * 100));
+  // 3-Star Progress Tube scaling (3 stars = 180% of targetScore)
+  const threeStarGoal = Math.round(targetScore * 1.8);
+  const starTubePct = Math.min(100, Math.round((score / threeStarGoal) * 100));
   const currentStars =
     score >= targetScore * 1.8 ? 3 : score >= targetScore ? 2 : score >= targetScore * 0.5 ? 1 : 0;
 
@@ -1094,12 +1494,12 @@ export default function MemeCrushGame({
               <h2 className="tm-subgame-title">
                 🍬 MEME CRUSH SAGA{' '}
                 <span className="tm-subgame-badge">
-                  LEVEL {level} {feverMovesLeft > 0 ? '• 🔥 2X FEVER!' : ''}
+                  LEVEL {level} {feverMovesLeft > 0 ? '• 🔥 2X SUGAR RUSH!' : ''}
                 </span>
               </h2>
               <div className="tm-subgame-subtitle">
-                Match 4 = ⚡ Row/Col Laser • L/T Match = 💥 3×3 Packet Bomb • Match 5 = 🌈 Supernova
-                Bomb! Swap 2 Specials for Mega Wipe!
+                2×2 Square = 🚀 Seeking Rocket • Match 4 = ⚡ Laser • L/T = 💥 3×3 Bomb • Match 5 = 🌈
+                Supernova!
               </div>
             </div>
           </div>
@@ -1117,6 +1517,50 @@ export default function MemeCrushGame({
           </div>
         </div>
 
+        {/* iPhone Candy Crush Style 3-Star Candy Progress Tube & Mascot Strip */}
+        <div className="tm-crush-star-tube-shell">
+          <div className="tm-crush-mascot-pill">
+            <span className="tm-crush-mascot-avatar">🍬</span>
+            <span className="tm-crush-mascot-text">{mascotCallout}</span>
+            <span className="tm-crush-jelly-badge">
+              🧊 {remainingJellyCount > 0 ? `${remainingJellyCount} Crystal Jelly Left` : '✅ All Jelly Cleared!'}
+            </span>
+          </div>
+
+          <div className="tm-crush-star-tube-wrap">
+            <div className="tm-crush-star-tube-track">
+              <div
+                className="tm-crush-star-tube-fill"
+                style={{ width: `${starTubePct}%` }}
+              />
+              {/* 1-Star Milestone Marker (~28% of 1.8x tube) */}
+              <div
+                className={`tm-crush-star-marker ${currentStars >= 1 ? 'lit' : ''}`}
+                style={{ left: '28%' }}
+                title={`1 Star: ${Math.round(targetScore * 0.5).toLocaleString()} pts`}
+              >
+                ⭐
+              </div>
+              {/* 2-Star Milestone Marker (~56% of 1.8x tube = targetScore) */}
+              <div
+                className={`tm-crush-star-marker ${currentStars >= 2 ? 'lit' : ''}`}
+                style={{ left: '56%' }}
+                title={`2 Stars (Level Clear): ${targetScore.toLocaleString()} pts`}
+              >
+                ⭐⭐
+              </div>
+              {/* 3-Star Milestone Marker (96% of tube = 1.8x targetScore) */}
+              <div
+                className={`tm-crush-star-marker ${currentStars >= 3 ? 'lit' : ''}`}
+                style={{ left: '95%' }}
+                title={`3 Stars (Mastery): ${threeStarGoal.toLocaleString()} pts`}
+              >
+                ⭐⭐⭐
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Score, Moves, Fever Meter & Star Trophy HUD */}
         <div className="tm-crush-hud-grid">
           <div className="tm-crush-stat-box">
@@ -1126,20 +1570,17 @@ export default function MemeCrushGame({
             <strong className="tm-crush-stat-val" style={{ color: '#00f3ff' }}>
               {score.toLocaleString()} <small>/ {targetScore.toLocaleString()}</small>
             </strong>
-            <div className="tm-xp-track" style={{ marginTop: '6px' }}>
-              <div className="tm-xp-bar" style={{ width: `${progressPct}%` }} />
-            </div>
           </div>
 
           <div className="tm-crush-stat-box">
-            <span className="tm-crush-stat-label">🔥 MEME FEVER METER</span>
+            <span className="tm-crush-stat-label">🔥 SUGAR FEVER METER</span>
             <strong
               className="tm-crush-stat-val"
               style={{ color: feverMovesLeft > 0 ? '#ec4899' : '#facc15' }}
             >
-              {feverMovesLeft > 0 ? `🔥 2X FRENZY (${feverMovesLeft} Moves)` : `${feverPct}%`}
+              {feverMovesLeft > 0 ? `🔥 2X RUSH (${feverMovesLeft} Moves)` : `${feverPct}%`}
             </strong>
-            <div className="tm-xp-track" style={{ marginTop: '6px' }}>
+            <div className="tm-xp-track" style={{ marginTop: '4px' }}>
               <div
                 className="tm-xp-bar"
                 style={{
@@ -1181,12 +1622,12 @@ export default function MemeCrushGame({
         {/* Turbo Loot Drop Toast */}
         {lootToast && <div className="tm-subgame-toast">{lootToast}</div>}
 
-        {/* Level Cleared Early Advance & Official "Meme Crush Finale" Strip */}
+        {/* Level Cleared Early Advance & Official "Sugar Crush Finale" Strip */}
         {score >= targetScore && !roundFinished && movesLeft > 0 && (
           <div className="tm-crush-levelup-strip">
             <span>
               🎉 <strong>LEVEL {level} TARGET CRUSHED!</strong> Advance for +12 Moves or trigger the{' '}
-              <strong>🎆 MEME CRUSH FINALE</strong> (+{(movesLeft * 300).toLocaleString()} Move Bonus
+              <strong>🎆 SUGAR CRUSH FINALE</strong> (+{(movesLeft * 300).toLocaleString()} Move Bonus
               + Star Chest)!
             </span>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -1203,7 +1644,7 @@ export default function MemeCrushGame({
                 style={{ borderColor: '#facc15', color: '#facc15', fontWeight: 900 }}
                 onClick={handleTriggerMemeCrushFinale}
               >
-                🎆 Trigger Meme Crush Finale &amp; Claim Tokens!
+                🎆 Trigger Sugar Crush Finale &amp; Claim Tokens!
               </button>
             </div>
           </div>
@@ -1229,7 +1670,7 @@ export default function MemeCrushGame({
               setHammerMode((prev) => !prev);
             }}
           >
-            🔨 Meme Hammer ({hammersLeft}) {hammerMode ? '— Tap any tile!' : ''}
+            🍭 Lollipop Hammer ({hammersLeft}) {hammerMode ? '— Tap any tile!' : ''}
           </button>
 
           <button
@@ -1237,9 +1678,9 @@ export default function MemeCrushGame({
             className="tm-crush-booster-btn"
             disabled={ufoDropsLeft <= 0 || isAnimating || roundFinished}
             onClick={handleDeployUfoDrop}
-            title="Beam a Supernova Color Bomb + 3x3 Packet Bomb directly onto the board!"
+            title="Beam a Supernova Color Bomb + Seeking Rocket directly onto the board!"
           >
-            🛸 UFO Bomb Drop ({ufoDropsLeft})
+            🛸 UFO Candy Drop ({ufoDropsLeft})
           </button>
 
           <button
@@ -1262,7 +1703,7 @@ export default function MemeCrushGame({
           </button>
         </div>
 
-        {/* 8x8 Candy Board Stage + Laser Beams + 3D Announcer Splash */}
+        {/* 8x8 Candy Board Stage + Rainbow Lightning + Shockwaves + Lasers + 3D Announcer Splash */}
         <div className="tm-crush-board-stage" style={{ position: 'relative' }}>
           {/* Center-Board 3D Candy Crush Announcer Splash */}
           {announceSplash && (
@@ -1275,6 +1716,48 @@ export default function MemeCrushGame({
               <div className="tm-crush-announcer-sub">{announceSplash.sub}</div>
             </div>
           )}
+
+          {/* SVG Rainbow Lightning Beams (Color Bomb & Rocket Arcs) */}
+          {activeLightnings.length > 0 && (
+            <svg
+              className="tm-crush-lightning-svg"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              {activeLightnings.map((arc) => (
+                <g key={arc.id}>
+                  <polyline
+                    points={`${arc.x1},${arc.y1} ${arc.midX},${arc.midY} ${arc.x2},${arc.y2}`}
+                    fill="none"
+                    stroke={arc.color}
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                  />
+                  <polyline
+                    points={`${arc.x1},${arc.y1} ${arc.midX},${arc.midY} ${arc.x2},${arc.y2}`}
+                    fill="none"
+                    stroke="#ffffff"
+                    strokeWidth="0.9"
+                    strokeLinecap="round"
+                  />
+                </g>
+              ))}
+            </svg>
+          )}
+
+          {/* Expanding Neon Shockwave Rings */}
+          {shockwaves.map((sw) => (
+            <div
+              key={sw.id}
+              className="tm-crush-shockwave-ring"
+              style={{
+                top: `${(sw.r + 0.5) * 12.5}%`,
+                left: `${(sw.c + 0.5) * 12.5}%`,
+                '--sw-color': sw.color
+              }}
+            />
+          ))}
 
           {/* Row & Column Neon Laser Beams Overlay */}
           {activeLasers.map((lz) => (
@@ -1304,7 +1787,7 @@ export default function MemeCrushGame({
             </div>
           ))}
 
-          {/* Flying Candy Emoji Shards */}
+          {/* Flying Candy Emoji Shards & Sugar Drops */}
           {candyParticles.map((sh) => (
             <div
               key={sh.id}
@@ -1320,7 +1803,7 @@ export default function MemeCrushGame({
             </div>
           ))}
 
-          {/* 8x8 Candy Grid */}
+          {/* 8x8 Glossy 3D Jelly Candy Grid */}
           <div
             className="tm-crush-grid"
             role="grid"
@@ -1329,32 +1812,64 @@ export default function MemeCrushGame({
             {board.map((row, rIdx) =>
               row.map((tile, cIdx) => {
                 const candy = CANDY_TYPES[tile?.type || 0] || CANDY_TYPES[0];
+                const cellKey = `${rIdx},${cIdx}`;
                 const isSelected =
                   selectedCell && selectedCell[0] === rIdx && selectedCell[1] === cIdx;
-                const isHint = hintCells.includes(`${rIdx},${cIdx}`);
-                const isPopping = poppingKeys.has(`${rIdx},${cIdx}`);
+                const isHint = hintCells.includes(cellKey);
+                const isPopping = poppingKeys.has(cellKey);
+                const isInvalidSwap = invalidSwapPair?.includes(cellKey);
+                const jellyLayer = jellyGrid[rIdx]?.[cIdx] || 0;
+                const dropRows = tile?.dropDist || 0;
 
                 return (
                   <button
                     key={tile?.uid || `${rIdx}-${cIdx}`}
                     type="button"
-                    className={`tm-crush-tile ${isSelected ? 'selected' : ''} ${
-                      isHint ? 'hint' : ''
-                    } ${isPopping ? 'popping' : ''} ${
-                      tile?.special ? `special-${tile.special}` : ''
-                    }`}
+                    className={`tm-crush-tile ${candy.shapeClass || ''} ${
+                      isSelected ? 'selected' : ''
+                    } ${isHint ? 'hint' : ''} ${isPopping ? 'popping' : ''} ${
+                      isInvalidSwap ? 'invalid-swap' : ''
+                    } ${dropRows > 0 ? 'dropping' : ''} ${
+                      jellyLayer === 2
+                        ? 'has-double-jelly'
+                        : jellyLayer === 1
+                        ? 'has-crystal-jelly'
+                        : ''
+                    } ${tile?.special ? `special-${tile.special}` : ''}`}
                     style={{
                       '--candy-bg': candy.bg,
-                      '--candy-border': candy.border
+                      '--candy-border': candy.border,
+                      '--candy-shadow': candy.shadow,
+                      '--candy-glow': candy.glow,
+                      '--drop-rows': dropRows
                     }}
                     onClick={() => handleCellClick(rIdx, cIdx)}
                     onPointerDown={(e) => handlePointerDown(rIdx, cIdx, e)}
                     onPointerUp={(e) => handlePointerUp(rIdx, cIdx, e)}
-                    aria-label={`${candy.name} at row ${rIdx + 1} column ${cIdx + 1}`}
+                    aria-label={`${candy.name}${jellyLayer > 0 ? ' on Crystal Jelly' : ''} at row ${
+                      rIdx + 1
+                    } column ${cIdx + 1}`}
                   >
+                    {/* 3D Specular Glossy Jelly Highlight */}
+                    <span className="tm-crush-candy-shine" aria-hidden="true" />
+
+                    {/* Frosted Crystal Jelly Indicator */}
+                    {jellyLayer > 0 && (
+                      <span className="tm-crush-jelly-frost" aria-hidden="true">
+                        {jellyLayer === 2 ? '❄️' : '🧊'}
+                      </span>
+                    )}
+
+                    {/* Main Candy Icon */}
                     <span className="tm-crush-emoji">
-                      {tile?.special === 'color-bomb' ? '🌈' : candy.emoji}
+                      {tile?.special === 'color-bomb'
+                        ? '🌈'
+                        : tile?.special === 'seeking-rocket'
+                        ? '🚀'
+                        : candy.emoji}
                     </span>
+
+                    {/* Special Candy Overlays */}
                     {tile?.special === 'striped-h' && (
                       <span className="tm-crush-special-badge">↔⚡</span>
                     )}
@@ -1363,6 +1878,9 @@ export default function MemeCrushGame({
                     )}
                     {tile?.special === 'packet-bomb' && (
                       <span className="tm-crush-special-badge">💥3×3</span>
+                    )}
+                    {tile?.special === 'seeking-rocket' && (
+                      <span className="tm-crush-special-badge">🚀SEEK</span>
                     )}
                     {tile?.special === 'color-bomb' && (
                       <span className="tm-crush-special-badge">🌟BOMB</span>
@@ -1448,11 +1966,11 @@ export default function MemeCrushGame({
 
         {/* Special Combos Legend */}
         <div className="tm-crush-legend">
+          <span>🚀 <strong>2×2 Square:</strong> Seeking Jelly Rocket</span>
           <span>⚡ <strong>Match 4:</strong> Row/Col Laser</span>
           <span>💥 <strong>L/T Match:</strong> 3×3 Packet Bomb</span>
           <span>🌈 <strong>Match 5:</strong> Supernova Color Bomb</span>
-          <span>🌌 <strong>🌈 + 🌈 Swap:</strong> 64-Tile Board Wipe!</span>
-          <span>🔥 <strong>100% Fever:</strong> 2x Score + Free Loot!</span>
+          <span>🧊 <strong>Crystal Jelly:</strong> +120 pts (+1,500 Clear Bonus!)</span>
         </div>
       </div>
     </section>

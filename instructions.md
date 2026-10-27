@@ -333,6 +333,21 @@ thememes-net/
 - [x] **🚨 Replaced Pointless Frog Popup with the "DO NOT PRESS" Big Red Chaos Button (`src/components/DankPetWidget.jsx`)**:
   - [x] Removed the static frog squish popup and replaced it with a tactile **🚨 DO NOT PRESS** button that triggers interactive screen-wide mini-events (**🪅 Whack the Golden Llama Piñata**, **🗿 Giga-Moai Boss Fight**, **🚔 Dank Police Vibe Audit**, and **🎰 Vegas Jackpot Shower**) with 1-click portals into Meme Crush and Vegas Pinball.
 
+### ✅ Phase 24: Retro Neon `THE MEMES.net` Las Vegas 777 Slot Machine Cabinet, iPhone Candy Crush Glossy Jelly & Crystal Frost Overhaul, and Meme-First iPhone Layout (Completed)
+- [x] **🎰 Retro Neon `THE MEMES.net` Las Vegas 777 Slot Machine (`src/components/VegasSlotMachine.jsx`, `src/components/RewardsModal.jsx`, `src/App.jsx`, `src/index.css`)**:
+  - [x] Built an authentic Las Vegas neon slot machine cabinet (`VegasSlotMachine.jsx`) available both as a full-screen side game (`/?mode=slots`) and inside the Arcade Vault (`RewardsModal.jsx`).
+  - [x] Features an **Arched Las Vegas Marquee Topper** with 18 chasing neon bulbs, live **Progressive 777 LED Jackpot Ticker**, **Illuminated Paytable Glass**, **3 Curved Cylindrical Spinning Drums** showing top/center/bottom symbols, sequential reel stopping (`560ms` → `1050ms` → `1620ms` with Reel 3 jackpot drumroll suspense), per-reel **`🔒 HOLD`** and **`⏫ NUDGE`** deck buttons, a **Physical 3D Chrome & Neon Side Pull-Lever** that animates pulling down, and a **Chrome Coin Hopper Tray** with flying coin fountain particles.
+- [x] **🍬 iPhone Candy Crush Graphical Overhaul (`src/components/MemeCrushGame.jsx`, `src/utils/soundEngine.js`, `src/index.css`)**:
+  - [x] Upgraded all 6 candy types to **3D Glossy Jelly Candies** with specular highlight bubbles (`.tm-crush-candy-shine`) and colored bevels.
+  - [x] Added **Glowing Frosted Crystal Jelly (`jellyGrid`)** tiles underneath the board that shatter with crystalline audio (`sfx.playJellyShatter()`) and ice shards (`+120 pts` per jelly + `+1,500 pts` full-clear bonus).
+  - [x] Added **2×2 Square Match → `🚀` Seeking Meme Rocket (`seeking-rocket`)** (like Candy Crush Jelly Fish) that automatically seeks out and blasts Crystal Jelly cells.
+  - [x] Added **Smooth Gravity Drop-In & Elastic Jelly Bounce (`dropDist`)**, **Spring-Back Invalid Swap Animation (`invalidSwapPair`)**, **SVG Rainbow Lightning Beams (`activeLightnings`)** on Color Bomb/Rocket zaps, **Expanding Neon Shockwave Rings (`shockwaves`)**, a **3-Star Candy Progress Tube** with milestone star markers, a **Cheering Meme Mascot**, and **Auto Idle Hint Shimmer**.
+- [x] **📱 Memes First on iPhone & Desktop (Games Positioned as Side Entertainment) (`src/App.jsx`, `src/components/MobileArcadeDock.jsx`, `src/index.css`)**:
+  - [x] Reordered `viewMode === 'feed'` so `QuickUploadBar` and `<main className="tm-grid">` (**THE MEMES**) render immediately first at the top of the page, moving `MemeSoundboardBar` and the 3-cabinet **Side Entertainment Lounge** (`🎰 Vegas 777 Slots`, `🍬 Meme Crush Saga`, `🎱 Las Vegas Pinball`) below the meme feed.
+  - [x] Updated `MobileArcadeDock.jsx` on iPhone so primary thumb tabs focus on Memes (`📱 Memes`, `🎬 Reels`, `📸 +Upload`, `🕹️ Games` pop-up drawer, `🏆 Ranks`).
+- [x] **🚀 Usability, Engagement & Findability Upgrades (`src/components/MemeCard.jsx`, `src/components/SeoDiscoveryFooter.jsx`, `src/utils/seoEngine.js`, `public/sitemap.xml`)**:
+  - [x] Added **1-Tap Quick-Reaction Viral Comment Chips** (`QUICK_REACTION_COMMENTS`), a **1-Tap `⬇` Download Meme PNG** button on every card, a **`🎲 Random Meme`** button & **`🆕 New (24h)`** tab in feed controls, and a **Viral Share & Add-to-iPhone-Home-Screen** banner in the footer.
+
 ---
 
 ## 6. Development Commands

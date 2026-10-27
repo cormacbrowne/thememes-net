@@ -34,12 +34,20 @@ export function updateDynamicSeo({ activeMeme = null, category = 'all', viewMode
   if (activeMeme) {
     pageTitle = `${activeMeme.title} — Meme by @${activeMeme.author_name || 'Anon'} | THE MEMES.net`;
     pageDesc = `View, upvote (${activeMeme.score || 1} pts), roast with AI, or remix "${activeMeme.title}" by @${activeMeme.author_name || 'Anon'} on THE MEMES.net.`;
+  } else if (viewMode === 'slots') {
+    pageTitle = 'Las Vegas 777 Retro Neon Slot Machine | THE MEMES.net Cyber-Arcade';
+    pageDesc =
+      'Pull the 3D chrome lever on THE MEMES.net Las Vegas 777 Slot Machine! Use Reel HOLD & NUDGE, hit Triple 777 Jackpots, and win fair Arcade Tokens.';
   } else if (viewMode === 'crush') {
     pageTitle = 'Meme Crush Saga — Candy-Crush Style Meme Puzzle Game | THE MEMES.net';
-    pageDesc = 'Play Meme Crush Saga online! Match 3, 4, or 5 spicy meme candies, trigger Rainbow Supernova combos, and win fair Arcade Tokens on THE MEMES.net.';
+    pageDesc =
+      'Play Meme Crush Saga online! Shatter Frosted Crystal Jelly with 2x2 Seeking Rockets, 3x3 Packet Bombs, Rainbow Lightning Beams, and win fair Arcade Tokens.';
   } else if (viewMode === 'pinball') {
     pageTitle = 'Las Vegas Retro Pinball Machine — Win Arcade Credits | THE MEMES.net';
-    pageDesc = 'Play the 60fps Las Vegas Retro Pinball Machine! Launch the silver ball, hit 777 & Rubber Duck pop bumpers, light L-U-C-K multipliers, and win fair Arcade Tokens.';
+    pageDesc =
+      'Play the 60fps Las Vegas Retro Pinball Machine! Launch the silver ball, hit 777 & Rubber Duck pop bumpers, light L-U-C-K multipliers, and win fair Arcade Tokens.';
+  } else if (viewMode === 'reels') {
+    pageTitle = 'Vertical Meme Reels — Fullscreen Viral Memes | THE MEMES.net';
   } else if (viewMode === 'swipe') {
     pageTitle = 'Hyper-Swipe Meme Triage Deck | THE MEMES.net Cyber-Arcade';
   } else if (viewMode === 'battle') {

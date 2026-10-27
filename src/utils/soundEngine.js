@@ -1147,6 +1147,105 @@ export class SoundEngine {
     }
   }
 
+  /**
+   * 🕹️ LAS VEGAS SLOT MACHINE MECHANICAL LEVER PULL (RATCHET + SPRING)
+   */
+  playSlotLeverPull() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(25);
+      const clicks = [260, 310, 370, 440, 520, 640];
+      clicks.forEach((f, idx) => {
+        const start = this.ctx.currentTime + idx * 0.032;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(f, start);
+        osc.frequency.exponentialRampToValueAtTime(f * 0.65, start + 0.025);
+        gain.gain.setValueAtTime(0.18, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.028);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.03);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🎰 LAS VEGAS SLOT DRUM MECHANICAL STOP THUD + CASINO CHIME
+   */
+  playSlotReelStop(reelIdx = 0) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(18);
+      const now = this.ctx.currentTime;
+
+      // Low mechanical drum brake thud
+      const thud = this.ctx.createOscillator();
+      const thudGain = this.ctx.createGain();
+      thud.type = 'triangle';
+      thud.frequency.setValueAtTime(150, now);
+      thud.frequency.exponentialRampToValueAtTime(46, now + 0.08);
+      thudGain.gain.setValueAtTime(0.32, now);
+      thudGain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+      thud.connect(thudGain);
+      thudGain.connect(this.ctx.destination);
+      thud.start(now);
+      thud.stop(now + 0.095);
+
+      // Rising casino bell ping per reel (1 -> 2 -> 3)
+      const bellNotes = [659.25, 783.99, 1046.5];
+      const f = bellNotes[reelIdx % bellNotes.length];
+      const bell = this.ctx.createOscillator();
+      const bellGain = this.ctx.createGain();
+      bell.type = 'sine';
+      bell.frequency.setValueAtTime(f, now + 0.015);
+      bellGain.gain.setValueAtTime(0.2, now + 0.015);
+      bellGain.gain.exponentialRampToValueAtTime(0.001, now + 0.19);
+      bell.connect(bellGain);
+      bellGain.connect(this.ctx.destination);
+      bell.start(now + 0.015);
+      bell.stop(now + 0.2);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🧊 CANDY CRUSH FROSTED JELLY CRYSTAL SHATTER CHIME
+   */
+  playJellyShatter() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(15);
+      const sparkles = [1318.51, 1567.98, 2093.0, 2637.02];
+      sparkles.forEach((f, idx) => {
+        const start = this.ctx.currentTime + idx * 0.028;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, start);
+        gain.gain.setValueAtTime(0.14, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.12);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.13);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
   triggerHaptic(ms = 14) {
     try {
       if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {

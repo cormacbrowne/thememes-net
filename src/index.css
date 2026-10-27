@@ -4874,6 +4874,1058 @@ body {
   }
 }
 
+/* ==========================================
+   PHASE 24:
+   1. RETRO NEON "THE MEMES.NET" LAS VEGAS 777 SLOT MACHINE CABINET
+   2. IPHONE CANDY CRUSH GLOSSY JELLY, CRYSTAL FROST & LIGHTNING FX
+   3. MEME-FIRST IPHONE LAYOUT & SIDE-ENTERTAINMENT LOUNGE
+   ========================================== */
+
+/* 1. Retro Neon THE MEMES.net Las Vegas 777 Slot Machine Cabinet */
+.tm-vegas-slot-cabinet {
+  position: relative;
+  background: linear-gradient(180deg, #1b0b2e 0%, #0f1329 48%, #1c0d30 100%);
+  border: 3px solid #facc15;
+  border-radius: 28px 28px 20px 20px;
+  padding: 18px 20px;
+  box-shadow:
+    0 22px 55px rgba(0, 0, 0, 0.88),
+    0 0 38px rgba(236, 72, 153, 0.28),
+    inset 0 0 28px rgba(0, 243, 255, 0.14);
+  overflow: hidden;
+}
+
+.tm-vegas-slot-cabinet.vault-embedded {
+  margin-bottom: 14px;
+  padding: 14px 16px;
+}
+
+@keyframes tmVegasJackpotStrobe {
+  0%, 100% {
+    border-color: #facc15;
+    box-shadow: 0 22px 55px rgba(0, 0, 0, 0.9), 0 0 52px rgba(250, 204, 21, 0.65);
+  }
+  50% {
+    border-color: #00f3ff;
+    box-shadow: 0 22px 55px rgba(0, 0, 0, 0.9), 0 0 56px rgba(0, 243, 255, 0.65);
+  }
+}
+
+.tm-vegas-slot-cabinet.jackpot-strobe {
+  animation: tmVegasJackpotStrobe 0.55s ease-in-out infinite;
+}
+
+/* Arched Las Vegas Marquee Topper & Chasing Bulbs */
+.tm-vegas-topper-arch {
+  position: relative;
+  background: radial-gradient(circle at 50% 25%, #3b0764 0%, #17082a 70%, #090614 100%);
+  border: 2.5px solid #ec4899;
+  border-radius: 36px 36px 16px 16px;
+  padding: 18px 18px 14px;
+  margin-bottom: 12px;
+  text-align: center;
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.7),
+    0 0 24px rgba(236, 72, 153, 0.35),
+    inset 0 0 22px rgba(250, 204, 21, 0.16);
+}
+
+.tm-vegas-bulb-ring {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 10px;
+  padding: 0 6px;
+}
+
+.tm-vegas-bulb {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #334155;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  transition: all 0.15s ease;
+}
+
+.tm-vegas-bulb.lit.gold {
+  background: #fde047;
+  box-shadow: 0 0 10px #facc15, 0 0 18px #f59e0b;
+}
+
+.tm-vegas-bulb.lit.pink {
+  background: #f472b6;
+  box-shadow: 0 0 10px #ec4899, 0 0 18px #db2777;
+}
+
+.tm-vegas-bulb.lit.cyan {
+  background: #67e8f9;
+  box-shadow: 0 0 10px #00f3ff, 0 0 18px #0284c7;
+}
+
+.tm-vegas-topper-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.tm-vegas-neon-crown {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+  color: #f472b6;
+  text-shadow: 0 0 10px rgba(236, 72, 153, 0.8);
+}
+
+.tm-vegas-neon-logo {
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: clamp(20px, 4.2vw, 30px);
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  color: #ffffff;
+  text-shadow:
+    0 0 8px #00f3ff,
+    0 0 18px #00f3ff,
+    0 3px 8px rgba(0, 0, 0, 0.95);
+}
+
+.tm-vegas-neon-logo span {
+  color: #fde047;
+  text-shadow:
+    0 0 10px #facc15,
+    0 0 22px #f97316,
+    0 3px 8px rgba(0, 0, 0, 0.95);
+}
+
+.tm-vegas-progressive-led {
+  margin-top: 4px;
+  background: #04060e;
+  border: 2px solid #facc15;
+  border-radius: 10px;
+  padding: 5px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  box-shadow: inset 0 0 12px rgba(250, 204, 21, 0.25), 0 0 14px rgba(250, 204, 21, 0.25);
+}
+
+.tm-vegas-led-label {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  color: #f87171;
+}
+
+.tm-vegas-led-digits {
+  font-family: "Courier New", monospace;
+  font-size: 15px;
+  font-weight: 900;
+  color: #4ade80;
+  text-shadow: 0 0 10px rgba(74, 222, 128, 0.75);
+}
+
+/* Illuminated Paytable Glass */
+.tm-vegas-paytable-glass {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 6px;
+  background: linear-gradient(90deg, rgba(8, 12, 26, 0.92), rgba(24, 11, 38, 0.92));
+  border: 1.5px solid rgba(0, 243, 255, 0.4);
+  border-radius: 12px;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+}
+
+.tm-vegas-pay-item {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 4px 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #cbd5e1;
+}
+
+.tm-vegas-pay-item strong {
+  color: #4ade80;
+  font-weight: 900;
+}
+
+.tm-vegas-pay-item.gold-tier {
+  border-color: rgba(250, 204, 21, 0.55);
+  background: rgba(250, 204, 21, 0.1);
+}
+
+.tm-vegas-pay-item.gold-tier strong {
+  color: #fde047;
+}
+
+.tm-vegas-pay-item.cyan-tier {
+  border-color: rgba(0, 243, 255, 0.45);
+  background: rgba(0, 243, 255, 0.08);
+}
+
+.tm-vegas-pay-item.cyan-tier strong {
+  color: #00f3ff;
+}
+
+/* Main Slot Machine Body: 3D Reels Bezel + Right Side Physical Pull Lever */
+.tm-vegas-machine-body {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.tm-vegas-reels-bezel {
+  flex: 1;
+  position: relative;
+  background: linear-gradient(180deg, #060812 0%, #11162b 50%, #060812 100%);
+  border: 3px solid #cbd5e1;
+  border-radius: 18px;
+  padding: 14px 12px 12px;
+  box-shadow:
+    inset 0 12px 24px rgba(0, 0, 0, 0.9),
+    inset 0 -12px 24px rgba(0, 0, 0, 0.9),
+    0 0 22px rgba(0, 243, 255, 0.22);
+}
+
+/* Center Payline Laser */
+.tm-vegas-payline-laser {
+  position: absolute;
+  top: 44%;
+  left: 6px;
+  right: 6px;
+  height: 3px;
+  background: linear-gradient(90deg, #ef4444, #facc15, #00f3ff, #facc15, #ef4444);
+  box-shadow: 0 0 12px #ef4444, 0 0 20px #facc15;
+  z-index: 8;
+  pointer-events: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tm-vegas-payline-tag {
+  font-size: 9px;
+  font-weight: 900;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: #ef4444;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 8px #ef4444;
+}
+
+.tm-vegas-reels-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  position: relative;
+  z-index: 5;
+}
+
+.tm-vegas-reel-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 3D Cylindrical Drum Window */
+.tm-vegas-reel-drum {
+  position: relative;
+  height: 182px;
+  border-radius: 14px;
+  background: linear-gradient(
+    180deg,
+    #070a16 0%,
+    #1e293b 22%,
+    #f8fafc 50%,
+    #1e293b 78%,
+    #070a16 100%
+  );
+  border: 2.5px solid var(--reel-accent, #00f3ff);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    inset 0 18px 22px rgba(0, 0, 0, 0.82),
+    inset 0 -18px 22px rgba(0, 0, 0, 0.82),
+    0 6px 16px rgba(0, 0, 0, 0.65);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.tm-vegas-reel-drum.held {
+  border-color: #facc15;
+  box-shadow:
+    inset 0 16px 20px rgba(0, 0, 0, 0.8),
+    inset 0 -16px 20px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(250, 204, 21, 0.65);
+}
+
+@keyframes tmVegasDrumSpin {
+  0% { transform: translateY(-18px) scaleY(1.08); filter: blur(1.5px); }
+  50% { transform: translateY(18px) scaleY(1.12); filter: blur(2px); }
+  100% { transform: translateY(-18px) scaleY(1.08); filter: blur(1.5px); }
+}
+
+.tm-vegas-reel-drum.spinning .tm-vegas-drum-strip {
+  animation: tmVegasDrumSpin 0.14s linear infinite;
+}
+
+@keyframes tmVegasDrumStopBounce {
+  0% { transform: translateY(-14px); }
+  55% { transform: translateY(6px); }
+  100% { transform: translateY(0); }
+}
+
+.tm-vegas-reel-drum.just-stopped .tm-vegas-drum-strip {
+  animation: tmVegasDrumStopBounce 0.26s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tm-vegas-drum-glass-shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(4, 6, 14, 0.82) 0%,
+    rgba(4, 6, 14, 0.12) 28%,
+    rgba(255, 255, 255, 0.18) 48%,
+    rgba(4, 6, 14, 0.12) 72%,
+    rgba(4, 6, 14, 0.82) 100%
+  );
+  z-index: 4;
+}
+
+.tm-vegas-hold-lock-ribbon {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9;
+  background: linear-gradient(135deg, #facc15, #f97316);
+  color: #070810;
+  font-size: 9px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.tm-vegas-drum-strip {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 4px;
+  z-index: 2;
+}
+
+.tm-vegas-drum-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.tm-vegas-drum-cell.neighbor {
+  font-size: 20px;
+  opacity: 0.42;
+  filter: saturate(0.75);
+}
+
+.tm-vegas-drum-cell.center {
+  background: radial-gradient(circle, rgba(15, 23, 42, 0.94) 0%, rgba(7, 10, 22, 0.98) 100%);
+  border: 2px solid var(--sym-color, #facc15);
+  border-radius: 12px;
+  padding: 7px 10px;
+  width: 88%;
+  box-shadow: 0 0 16px rgba(0, 243, 255, 0.28);
+}
+
+.tm-vegas-sym-emoji {
+  font-size: clamp(26px, 5vw, 36px);
+  line-height: 1.05;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.8));
+}
+
+.tm-vegas-sym-name {
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: var(--sym-color, #fde047);
+  margin-top: 3px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Per-Reel HOLD & NUDGE Buttons */
+.tm-vegas-reel-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
+.tm-vegas-deck-mini-btn {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  color: #cbd5e1;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 6px 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+
+.tm-vegas-deck-mini-btn:hover:not(:disabled) {
+  border-color: #00f3ff;
+  color: #00f3ff;
+}
+
+.tm-vegas-deck-mini-btn.active {
+  background: linear-gradient(135deg, #facc15, #f97316);
+  border-color: #ffffff;
+  color: #070810;
+  box-shadow: 0 0 14px rgba(250, 204, 21, 0.6);
+}
+
+.tm-vegas-deck-mini-btn.nudge:hover:not(:disabled) {
+  border-color: #4ade80;
+  color: #4ade80;
+}
+
+.tm-vegas-deck-mini-btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+/* Physical 3D Chrome & Neon Side Pull-Lever */
+.tm-vegas-lever-housing {
+  width: 58px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  user-select: none;
+}
+
+.tm-vegas-lever-mount {
+  width: 46px;
+  height: 150px;
+  background: linear-gradient(90deg, #334155, #94a3b8 45%, #1e293b);
+  border: 2px solid #cbd5e1;
+  border-radius: 14px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.7), 0 6px 16px rgba(0, 0, 0, 0.6);
+}
+
+.tm-vegas-lever-slot-track {
+  width: 10px;
+  height: 112px;
+  background: #05070f;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.tm-vegas-lever-arm-group {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%) rotateX(0deg);
+  transform-origin: bottom center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.36s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 6;
+}
+
+.tm-vegas-lever-arm-group.pulled {
+  transform: translateX(-50%) translateY(58px) scaleY(0.55);
+}
+
+.tm-vegas-lever-knob {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #fde047 0%, #ef4444 45%, #991b1b 100%);
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 0 18px #ef4444, 0 6px 14px rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.tm-vegas-lever-knob-shine {
+  position: absolute;
+  top: 5px;
+  left: 7px;
+  width: 10px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.tm-vegas-lever-knob-text {
+  font-size: 9px;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 0 1px 3px #000;
+  letter-spacing: 0.4px;
+}
+
+.tm-vegas-lever-shaft {
+  width: 10px;
+  height: 64px;
+  background: linear-gradient(90deg, #94a3b8, #f8fafc 50%, #475569);
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+}
+
+.tm-vegas-lever-caption {
+  font-size: 9px;
+  font-weight: 900;
+  color: #facc15;
+  margin-top: 6px;
+  letter-spacing: 0.6px;
+}
+
+/* Digital Status Readout & Control Deck */
+.tm-vegas-digital-readout {
+  background: #050711;
+  border: 1.5px solid rgba(0, 243, 255, 0.48);
+  border-radius: 12px;
+  padding: 9px 14px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 900;
+  color: #e2e8f0;
+  margin-bottom: 12px;
+  box-shadow: inset 0 0 14px rgba(0, 243, 255, 0.14);
+}
+
+.tm-vegas-digital-readout.win-glow {
+  border-color: #facc15;
+  color: #fde047;
+  box-shadow: 0 0 20px rgba(250, 204, 21, 0.35), inset 0 0 16px rgba(250, 204, 21, 0.22);
+}
+
+.tm-vegas-control-deck {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: rgba(8, 12, 26, 0.85);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+}
+
+.tm-vegas-deck-Meters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tm-vegas-meter-pill {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 5px 10px;
+  display: flex;
+  flex-direction: column;
+  font-size: 10px;
+  color: #94a3b8;
+  font-weight: 800;
+}
+
+.tm-vegas-meter-pill strong {
+  font-size: 12px;
+  color: #facc15;
+}
+
+.tm-vegas-deck-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.tm-vegas-spin-mega-btn {
+  background: linear-gradient(135deg, #facc15 0%, #f97316 52%, #ec4899 100%);
+  border: 2.5px solid #ffffff;
+  color: #070810;
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 0.9px;
+  padding: 11px 22px;
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(249, 115, 22, 0.45), 0 0 20px rgba(250, 204, 21, 0.4);
+  transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.14s ease;
+}
+
+.tm-vegas-spin-mega-btn:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 12px 28px rgba(249, 115, 22, 0.65), 0 0 28px #facc15;
+}
+
+.tm-vegas-spin-mega-btn:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+/* Chrome Coin Hopper Tray & Flying Coin Shower */
+.tm-vegas-hopper-tray {
+  position: relative;
+  background: linear-gradient(180deg, #1e293b 0%, #090d1a 60%, #334155 100%);
+  border: 2px solid #94a3b8;
+  border-radius: 12px 12px 18px 18px;
+  padding: 8px 14px;
+  box-shadow: inset 0 6px 14px rgba(0, 0, 0, 0.85);
+  overflow: hidden;
+}
+
+.tm-vegas-hopper-lip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 10px;
+  font-weight: 900;
+  color: #cbd5e1;
+  letter-spacing: 0.6px;
+}
+
+.tm-vegas-hopper-win-tag {
+  color: #4ade80;
+}
+
+@keyframes tmVegasCoinFountain {
+  0% {
+    transform: translateY(16px) scale(0.5) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-38px) scale(1.15) rotate(180deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(10px) scale(0.8) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.tm-vegas-coin-shower {
+  position: relative;
+  height: 28px;
+  pointer-events: none;
+}
+
+.tm-vegas-coin-particle {
+  position: absolute;
+  bottom: 0;
+  font-size: 20px;
+  animation: tmVegasCoinFountain 0.9s ease-out forwards;
+}
+
+/* 2. iPhone Candy Crush Style Glossy 3D Jelly Candies, Crystal Frost & 3-Star Tube */
+.tm-crush-star-tube-shell {
+  background: rgba(7, 10, 22, 0.86);
+  border: 1.5px solid rgba(0, 243, 255, 0.35);
+  border-radius: 16px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tm-crush-mascot-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.tm-crush-mascot-avatar {
+  font-size: 18px;
+}
+
+.tm-crush-mascot-text {
+  flex: 1;
+  min-width: 180px;
+  color: #fde047;
+}
+
+.tm-crush-jelly-badge {
+  background: rgba(56, 189, 248, 0.16);
+  border: 1px solid #38bdf8;
+  color: #7dd3fc;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.tm-crush-star-tube-wrap {
+  padding: 6px 4px 2px;
+}
+
+.tm-crush-star-tube-track {
+  position: relative;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.85);
+}
+
+.tm-crush-star-tube-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #4ade80 0%, #00f3ff 45%, #ec4899 78%, #facc15 100%);
+  box-shadow: 0 0 14px rgba(0, 243, 255, 0.6);
+  transition: width 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tm-crush-star-marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0.88);
+  background: #0f172a;
+  border: 1.5px solid #64748b;
+  border-radius: 999px;
+  padding: 1px 6px;
+  font-size: 10px;
+  filter: grayscale(0.85);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.25s ease, border-color 0.25s ease;
+}
+
+.tm-crush-star-marker.lit {
+  filter: grayscale(0);
+  border-color: #facc15;
+  background: #1e1b4b;
+  transform: translate(-50%, -50%) scale(1.12);
+  box-shadow: 0 0 12px #facc15;
+}
+
+/* 3D Glossy Jelly Candy Tile Upgrades */
+.tm-crush-tile {
+  box-shadow:
+    0 4px 0 var(--candy-shadow, #0f172a),
+    0 6px 12px rgba(0, 0, 0, 0.55),
+    inset 0 2px 4px rgba(255, 255, 255, 0.45);
+  overflow: hidden;
+}
+
+.tm-crush-candy-shine {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  width: 42%;
+  height: 26%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.05));
+  transform: rotate(-12deg);
+  pointer-events: none;
+}
+
+/* Glowing Frosted Crystal Jelly Underlay */
+.tm-crush-tile.has-crystal-jelly {
+  box-shadow:
+    0 0 0 2.5px rgba(56, 189, 248, 0.85),
+    0 0 16px rgba(56, 189, 248, 0.5),
+    inset 0 0 14px rgba(186, 230, 253, 0.45);
+}
+
+.tm-crush-tile.has-double-jelly {
+  box-shadow:
+    0 0 0 3px #e0f2fe,
+    0 0 20px rgba(0, 243, 255, 0.8),
+    inset 0 0 18px rgba(224, 242, 254, 0.65);
+}
+
+.tm-crush-jelly-frost {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  font-size: 10px;
+  line-height: 1;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px #000);
+}
+
+.tm-crush-tile.special-seeking-rocket {
+  background: radial-gradient(circle, rgba(74, 222, 128, 0.65), rgba(16, 185, 129, 0.5), rgba(5, 46, 22, 0.9));
+  border-color: #86efac;
+  box-shadow: 0 0 18px #4ade80, inset 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* Smooth Gravity Drop-In & Elastic Jelly Bounce */
+@keyframes tmCandyGravityDrop {
+  0% {
+    transform: translateY(calc(var(--drop-rows, 1) * -36%)) scale(0.92, 1.08);
+  }
+  70% {
+    transform: translateY(4%) scale(1.06, 0.94);
+  }
+  86% {
+    transform: translateY(-2%) scale(0.98, 1.02);
+  }
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+}
+
+.tm-crush-tile.dropping {
+  animation: tmCandyGravityDrop 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Invalid Swap Elastic Spring-Back Shake */
+@keyframes tmCandyInvalidSwap {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-7px) rotate(-6deg); border-color: #f87171; }
+  50% { transform: translateX(7px) rotate(6deg); border-color: #f87171; }
+  75% { transform: translateX(-4px) rotate(-3deg); }
+}
+
+.tm-crush-tile.invalid-swap {
+  animation: tmCandyInvalidSwap 0.38s ease-in-out;
+}
+
+/* Rainbow Lightning SVG & Expanding Shockwave Rings */
+.tm-crush-lightning-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 25;
+  pointer-events: none;
+  filter: drop-shadow(0 0 8px #00f3ff) drop-shadow(0 0 14px #facc15);
+}
+
+@keyframes tmShockwaveExpand {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.8);
+    opacity: 0;
+  }
+}
+
+.tm-crush-shockwave-ring {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 4px solid var(--sw-color, #00f3ff);
+  box-shadow: 0 0 20px var(--sw-color, #00f3ff), inset 0 0 14px var(--sw-color, #00f3ff);
+  z-index: 23;
+  pointer-events: none;
+  animation: tmShockwaveExpand 0.58s ease-out forwards;
+}
+
+/* 3. Meme-First Layout, Side-Entertainment Showcase, Mobile Games Drawer & Quick Comment Chips */
+.tm-mode-divider {
+  font-size: 10px;
+  font-weight: 900;
+  color: #94a3b8;
+  letter-spacing: 0.6px;
+  padding: 0 4px 0 8px;
+  align-self: center;
+}
+
+.tm-tab-surprise {
+  border-color: rgba(250, 204, 21, 0.5) !important;
+  color: #fde047 !important;
+}
+
+.tm-arcade-steer-section-head {
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tm-arcade-steer-eyebrow {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  color: #00f3ff;
+}
+
+.tm-arcade-steer-heading {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 900;
+  color: #f8fafc;
+}
+
+.tm-arcade-steer-grid-3 {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.tm-arcade-steer-card.tm-steer-slots {
+  background: linear-gradient(135deg, rgba(44, 12, 48, 0.94), rgba(20, 14, 42, 0.95));
+  border: 2px solid rgba(250, 204, 21, 0.72);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55), 0 0 22px rgba(250, 204, 21, 0.22);
+}
+
+/* 1-Tap Quick-Reaction Comment Chips on MemeCard */
+.tm-quick-comment-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.tm-quick-comment-chip {
+  background: rgba(0, 243, 255, 0.1);
+  border: 1px solid rgba(0, 243, 255, 0.35);
+  color: #e2e8f0;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+
+.tm-quick-comment-chip:hover {
+  background: rgba(250, 204, 21, 0.2);
+  border-color: #facc15;
+  color: #fde047;
+}
+
+/* Viral Share & Add-to-Home-Screen Strip in SEO Footer */
+.tm-seo-viral-strip {
+  background: linear-gradient(135deg, rgba(14, 22, 44, 0.94), rgba(34, 12, 48, 0.94));
+  border: 1.5px solid rgba(250, 204, 21, 0.5);
+  border-radius: 16px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Pop-Up Side-Entertainment Games Drawer above Mobile Dock */
+.tm-dock-games-drawer {
+  position: fixed;
+  bottom: 72px;
+  left: 12px;
+  right: 12px;
+  z-index: 985;
+  background: rgba(10, 14, 28, 0.97);
+  border: 2px solid #00f3ff;
+  border-radius: 18px;
+  padding: 12px;
+  box-shadow: 0 -10px 34px rgba(0, 0, 0, 0.85), 0 0 24px rgba(0, 243, 255, 0.3);
+  backdrop-filter: blur(16px);
+}
+
+.tm-dock-games-drawer-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 900;
+  color: #facc15;
+  letter-spacing: 0.7px;
+  margin-bottom: 8px;
+}
+
+.tm-dock-games-drawer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.tm-dock-game-chip {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  padding: 9px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f8fafc;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.tm-dock-game-chip.active,
+.tm-dock-game-chip:hover {
+  border-color: #facc15;
+  background: rgba(250, 204, 21, 0.16);
+  color: #fde047;
+}
+
+/* Mobile-First Compact Adjustments so Memes Appear Immediately on iPhone */
+@media (max-width: 680px) {
+  .tm-vegas-machine-body {
+    flex-direction: column;
+  }
+  .tm-vegas-lever-housing {
+    width: 100%;
+    flex-direction: row;
+    gap: 10px;
+  }
+  .tm-vegas-lever-mount {
+    display: none;
+  }
+  .tm-vegas-reel-drum {
+    height: 152px;
+  }
+  .tm-quick-upload-shell {
+    margin: 4px auto 8px;
+    padding: 0 12px;
+  }
+  .tm-quick-upload-bar {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  .tm-quick-upload-sub {
+    display: none;
+  }
+  .tm-compact-bounty-strip {
+    display: none;
+  }
+}
+
+
 
 
 

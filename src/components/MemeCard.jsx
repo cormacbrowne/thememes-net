@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState } from 'react';
+import { useRef, useCallback, useState, memo } from 'react';
 import {
   getMemeRarityTier,
   COMIC_ACTION_WORDS,
@@ -6,7 +6,7 @@ import {
   formatMemeUploadDate
 } from '../data/starterMemes';
 
-export default function MemeCard({
+const MemeCard = memo(function MemeCard({
   meme,
   myVote,
   isBookmarked = false,
@@ -233,6 +233,7 @@ export default function MemeCard({
           src={meme.image_url}
           alt={meme.title}
           loading="lazy"
+          decoding="async"
           className={isBlurred ? 'tm-img-blurred' : ''}
         />
         <span className="tm-dbl-hint">⚡ Double-tap to Upvote</span>
@@ -380,7 +381,7 @@ export default function MemeCard({
           className="tm-mutate-btn"
           onClick={(e) => onTriggerStudioMutate(meme, e)}
         >
-          🧬 REMIX (+150 XP)
+          🧬 REMIX (+35 🪙)
         </button>
       </div>
 
@@ -431,4 +432,6 @@ export default function MemeCard({
       )}
     </article>
   );
-}
+});
+
+export default MemeCard;

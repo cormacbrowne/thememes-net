@@ -74,10 +74,13 @@ thememes-net/
     │   ├── canvasMutator.js           # loadMemeIntoStudioCanvas() & stampArcadeCartridgeFooter()
     │   └── seoEngine.js               # Dynamic Title, Meta, OpenGraph & Schema.org JSON-LD Structured Data Engine
     └── components/
-        ├── NavbarHud.jsx              # Simplified top HUD with Fair Token Wallet, Daily Cap indicator, Sub-Game quick pills & Studio CTA
-        ├── QuickUploadBar.jsx         # Phase 1: 1-Click inline Quick-Upload Bar (drag-drop, paste, camera snap, instant preview & publish)
-        ├── MemeCrushGame.jsx          # Phase 3: "Meme Crush Saga" Candy-Crush style 8x8 Match-3 Puzzle Sub-Game with bombs & combos
-        ├── VegasPinballGame.jsx       # Phase 4: "Las Vegas Retro Pinball" 60fps HTML5 Canvas Pinball Machine with silly sounds & jackpots
+        ├── NavbarHud.jsx              # Simplified top HUD with Fair Token Wallet, Daily Cap indicator, ⚡ Turbo FPS toggle & Sub-Game pills
+        ├── QuickUploadBar.jsx         # 1-Click inline Quick-Upload Bar (+75 🪙 First Upload Pioneer Bonus, 🎲 Random Funny Caption, drag-drop/paste/camera)
+        ├── VegasSlotMachine.jsx       # Classic Las Vegas One-Arm Bandit 777 Slot Machine (SVG 777/BAR/Bell/Cherry/Diamond drums, chrome lever, chip wagers)
+        ├── MemeStockMarketGame.jsx    # MEMEDAQ '86 80s Wall Street Meme Stock Market Simulator (8 meme tickers, live CRT SVG chart, 1% spread, insider tips)
+        ├── MemeCrushGame.jsx          # 10-Level 80s Neon Meme Crush Saga (carved board shapes, 📼 Mixtape drops, 🔒 Laser Ice Locks, Double Frost Jelly)
+        ├── VegasPinballGame.jsx       # 5-Table 80s Cyber-Pinball (Vegas '85, Outrun Highway, Invader Grid, Miami Lagoon, Cosmic Reactor Boss; zero shadowBlur)
+        ├── ParticleOverlay.jsx        # Isolated forwardRef floating particle & comic-pop overlay (prevents root App re-renders on older iPads)
         ├── ViralTickerBar.jsx         # WallStreetBets-style Live Meme Stock Exchange Marquee Ticker ($DANK, $TECH, $GAMING)
         ├── DailyBountyBanner.jsx      # Featured Daily Meme Bounty banner (+200 XP 2x reward challenge & prompt switcher)
         ├── MemeSoundboardBar.jsx      # Interactive 16-Pad Crazy Meme Soundboard, Sound Pack Switcher, Chaos Roulette & Boss Key
@@ -347,6 +350,22 @@ thememes-net/
   - [x] Updated `MobileArcadeDock.jsx` on iPhone so primary thumb tabs focus on Memes (`📱 Memes`, `🎬 Reels`, `📸 +Upload`, `🕹️ Games` pop-up drawer, `🏆 Ranks`).
 - [x] **🚀 Usability, Engagement & Findability Upgrades (`src/components/MemeCard.jsx`, `src/components/SeoDiscoveryFooter.jsx`, `src/utils/seoEngine.js`, `public/sitemap.xml`)**:
   - [x] Added **1-Tap Quick-Reaction Viral Comment Chips** (`QUICK_REACTION_COMMENTS`), a **1-Tap `⬇` Download Meme PNG** button on every card, a **`🎲 Random Meme`** button & **`🆕 New (24h)`** tab in feed controls, and a **Viral Share & Add-to-iPhone-Home-Screen** banner in the footer.
+
+### ✅ Phase 25: Classic Vegas One-Arm Bandit, Fixed Non-Scrolling iPad/iPhone Game Viewport, Hardened Meme-First Gambling Economy, MEMEDAQ '86 Stock Market Simulator, Older-iPad Turbo Engine, 10-Level Meme Crush & 5-Table Cyber-Pinball (Completed)
+- [x] **🎰 Authentic Las Vegas One-Arm Bandit Graphics (`src/components/VegasSlotMachine.jsx`, `src/index.css`)**:
+  - [x] Replaced mismatched emojis/classes with custom vector Las Vegas slot artwork (`SlotSymbolSvg`: **Flaming Red 777**, **Neon Diamond**, **Triple Gold BAR**, **Golden Liberty Bell**, **Glossy Twin Cherries**, **Watermelon**, **Lemon**) spinning inside **3 curved ivory mechanical drums** with top/center/bottom symbols, red laser center payline, chasing marquee bulbs, VFD LED readout, and a **right-side 3D chrome pull-lever + crimson ball knob** that stays attached on the right on desktop, iPad, and iPhone.
+- [x] **📱 Fixed Non-Scrolling `100dvh` Game Viewport for iPhone & iPad (`src/App.jsx`, `src/index.css`)**:
+  - [x] When `viewMode` is `'slots' | 'stocks' | 'crush' | 'pinball'` (`isFixedArcadeGame`), `App.jsx` locks `html`/`body` overflow, hides scrolling feed chrome, and renders a sleek `46px` `.tm-fixed-arcade-bar` (`← Memes`, `🎰 Slots`, `📈 Stocks`, `🍬 Crush`, `🎱 Pinball`, `🪙` Wallet, `⚡` Turbo FPS, `🔊` Mute) above a fixed `calc(100dvh - 46px)` cabinet stage with `touch-action: none` on game boards/canvases so players never fight page scrolling on iPad or iPhone.
+- [x] **🪅 Skill-Based Dodging Piñata & Full Anti-Exploit Token Economy Audit (`src/components/DankPetWidget.jsx`, `src/utils/tokenEconomy.js`, `src/App.jsx`, `src/components/RewardsModal.jsx`)**:
+  - [x] Fixed `DankPetWidget.jsx` so tokens are **never** awarded on open: players must physically click a **moving/dodging Piñata 8 times within a 7.2s escape timer** (missing jumps the piñata away!) to win `+5 🪙` strictly `1x/day` (`daily:pinata:<YYYY-MM-DD>`).
+  - [x] Audited every token path so **Memes are the #1 token generator** (`25 🪙` starter balance, `+45 🪙` upload + `+30 🪙` 1-time First-Upload Pioneer Bonus = `+75 🪙` first meme, `+60 🪙` Daily Bounty, `+35 🪙` Remix; `upload` cap `180/day`), visits/engagement give modest capped tokens (`+10 🪙` daily streak, `+5 🪙` daily quest, `+2 🪙` unique vote, `+3 🪙` meaningful `>=6 char` comment, `+1 🪙` unique reaction; `0 🪙` for saves/shares/roasts/manual goblins/free practice rounds; `engagement` cap `25/day`, `quests` cap `25/day`), and **tokens are wagered/invested in the arcade games** via atomic `tokensRef` + `validateStakedGamePayout`.
+- [x] **📈 New Game: MEMEDAQ '86 Meme Stock Market Simulator (`src/components/MemeStockMarketGame.jsx`, `/?mode=stocks`)**:
+  - [x] Buy and sell shares in 8 hilarious 80s-neon meme companies (`$DOGE`, `$CHAD`, `$PEPE`, `$CATS`, `$WIFI`, `$PIZA`, `$AI`, `$MOON`) using real `🪙` tokens, featuring live `1.85s` price ticks (auto-paused when `document.hidden`), breaking news market shocks, live neon bull/bear SVG CRT area chart with average cost basis line, `1%` ceil/floor broker spread (anti-arbitrage), persisted portfolio (`tm_stock_portfolio_v1`), Peak Net Worth leaderboard (`tm_stocks_highscore`), and a **🔮 Gordon Gecko-Frog Insider Rumor Hotline**.
+- [x] **⚡ Older iPad Performance & Efficiency Overhaul (`src/App.jsx`, `src/components/ParticleOverlay.jsx`, `src/components/MemeCard.jsx`, `src/index.css`)**:
+  - [x] Eliminated the 1-second root `App` re-render interval, isolated floating particles into `<ParticleOverlay ref={particleOverlayRef} />`, wrapped `MemeCard` in `React.memo` with `decoding="async"`, removed all expensive `ctx.shadowBlur` calls in Pinball, replaced full-screen `filter: blur(45px)` with a zero-blur radial gradient, added `content-visibility: auto` on `.tm-card`, and auto-enabled **⚡ Turbo FPS Mode** (`litePerfMode`) on touch/low-core devices to disable expensive Mobile Safari `backdrop-filter` and continuous `background-position` repaints.
+- [x] **🍬 10 Distinct Levels in Meme Crush & 🎱 5 Distinct Tables in Cyber-Pinball**:
+  - [x] **Meme Crush (`src/components/MemeCrushGame.jsx`)**: 10 distinct 80s Neon levels with unique carved `void` board geometries and varied objectives (**Crystal Jelly**, **Double Frost**, **Candy Orders**, **`📼` 80s Mixtape Cassette Drop** to exit row, and **`🔒` Cyber-Ice Laser Locks**), with `10 🪙` Prize Run (`12/18/26 🪙` payout on clear) or `0 🪙` Free Practice.
+  - [x] **Cyber-Pinball (`src/components/VegasPinballGame.jsx`)**: 5 distinct 80s Neon tables (*Vegas Strip '85*, *Outrun Turbo Highway* with boost pads & patrolling DeLorean, *Invader Cyber-Grid* with alien formation & wormhole portals, *Miami Vice Lagoon* with Shark Pit & dual spinners, and *Cosmic Reactor Boss* with central gravity well & moving shield), with `10 🪙` Coin-Op Prize Run (`8/15/22/32 🪙` score tiers) or `0 🪙` Free Practice.
 
 ---
 

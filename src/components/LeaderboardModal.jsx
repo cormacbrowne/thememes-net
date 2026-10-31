@@ -16,7 +16,20 @@ export default function LeaderboardModal({
 
   const myCrushHigh = Number(localStorage.getItem('tm_crush_highscore') || 0);
   const myPinballHigh = Number(localStorage.getItem('tm_pinball_highscore') || 0);
+  const myStocksHigh = Number(localStorage.getItem('tm_stocks_highscore') || 0);
+  const mySlotsHigh = Number(localStorage.getItem('tm_slots_best_win') || 0);
   const myHandle = currentUser?.username || 'You (Arcade Player)';
+
+  const stocksRankings = useMemo(() => {
+    const rivals = [
+      { username: 'GordonGeckoFrog', score: 640, badge: '📈 $MOON Whale' },
+      { username: 'DiamondHands86', score: 310, badge: '💎 Bork Aerospace' },
+      { username: 'GigaChinFund', score: 175, badge: '🗿 Blue-Chip Bull' },
+      { username: 'StonksIntern', score: 65, badge: '📟 Floor Rookie' },
+      { username: myHandle, score: myStocksHigh, badge: '🪙 Your Peak Net Worth', isMe: true }
+    ];
+    return rivals.sort((a, b) => b.score - a.score);
+  }, [myStocksHigh, myHandle]);
 
   const crushRankings = useMemo(() => {
     const rivals = [
@@ -173,9 +186,54 @@ export default function LeaderboardModal({
           </button>
         </div>
 
-        {/* TAB 0: SUB-GAME HIGH SCORES (MEME CRUSH & VEGAS PINBALL) */}
+        {/* TAB 0: SUB-GAME HIGH SCORES (STOCKS, SLOTS, MEME CRUSH & VEGAS PINBALL) */}
         {tab === 'subgames' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
+            {/* MEMEDAQ '86 Stock Market Column */}
+            <div style={{ background: 'rgba(15, 23, 42, 0.78)', border: '1.5px solid rgba(74, 222, 128, 0.45)', borderRadius: '16px', padding: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '8px' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '16px', color: '#4ade80' }}>📈 MEMEDAQ &apos;86 Stocks</h3>
+                  <span style={{ fontSize: '11px', color: '#94a3b8' }}>Peak Net Worth: {myStocksHigh} 🪙 • Best Slot Win: {mySlotsHigh} 🪙</span>
+                </div>
+                {onLaunchSubGame && (
+                  <button
+                    type="button"
+                    className="tm-btn tm-btn-primary"
+                    style={{ padding: '6px 12px', fontSize: '12px' }}
+                    onClick={() => {
+                      onClose();
+                      onLaunchSubGame('stocks');
+                    }}
+                  >
+                    ▶ Trade
+                  </button>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {stocksRankings.map((r, idx) => (
+                  <div
+                    key={`stk-${r.username}-${idx}`}
+                    className={`tm-leaderboard-row ${idx < 3 ? `podium-${idx + 1}` : ''}`}
+                    style={{ padding: '8px 12px' }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span className="tm-medal-badge">{getMedal(idx)}</span>
+                      <div>
+                        <strong style={{ fontSize: '13px', color: r.isMe ? '#4ade80' : '#f8fafc' }}>
+                          @{r.username} {r.isMe ? '(YOU)' : ''}
+                        </strong>
+                        <div style={{ fontSize: '10px', color: '#94a3b8' }}>{r.badge}</div>
+                      </div>
+                    </div>
+                    <strong style={{ color: '#4ade80', fontSize: '14px' }}>
+                      🪙 {r.score.toLocaleString()}
+                    </strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Meme Crush Saga Column */}
             <div style={{ background: 'rgba(15, 23, 42, 0.72)', border: '1.5px solid rgba(236, 72, 153, 0.45)', borderRadius: '16px', padding: '14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '8px' }}>

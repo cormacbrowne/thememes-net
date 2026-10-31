@@ -35,19 +35,20 @@ body {
 
 .tm-synthwave-glow {
   position: absolute;
-  top: -15%;
+  top: -18%;
   left: 50%;
   transform: translateX(-50%);
-  width: 900px;
-  height: 460px;
+  width: 1080px;
+  height: 540px;
   border-radius: 50%;
   background: radial-gradient(
     ellipse at center,
-    rgba(236, 72, 153, 0.22) 0%,
-    rgba(0, 243, 255, 0.14) 45%,
-    transparent 72%
+    rgba(236, 72, 153, 0.24) 0%,
+    rgba(0, 243, 255, 0.14) 38%,
+    rgba(29, 21, 66, 0.06) 62%,
+    transparent 76%
   );
-  filter: blur(45px);
+  opacity: 0.9;
 }
 
 .tm-synthwave-grid {
@@ -304,13 +305,15 @@ body {
 
 .tm-card {
   position: relative;
-  background: rgba(14, 17, 30, 0.88);
+  background: rgba(14, 17, 30, 0.9);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 18px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 520px;
 }
 
 /* Active-by-default 3D Holographic Tilt */
@@ -5931,3 +5934,1833 @@ body {
 
 
 
+
+/* ==========================================================================
+   PHASE 25: OLDER-IPAD GPU OPTIMIZATION, FIXED NON-SCROLLING GAME VIEWPORT,
+   CLASSIC VEGAS ONE-ARM BANDIT, MEMEDAQ '86 STOCKS, 10-LVL CRUSH & 5-TBL PINBALL
+   ========================================================================== */
+
+/* 1. Older iPad & Touch-Device Turbo GPU Optimizations */
+.tm-lite-perf .tm-card,
+.tm-lite-perf .tm-nav,
+.tm-lite-perf .tm-controls,
+.tm-lite-perf .tm-dock-games-drawer {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: rgba(12, 14, 26, 0.96);
+}
+
+.tm-lite-perf .tm-synthwave-grid,
+.tm-app-game-fixed .tm-synthwave-grid {
+  animation: none !important;
+}
+
+.tm-lite-perf .tm-tier-supernova {
+  animation: none !important;
+}
+
+@media (hover: none), (max-width: 1180px) {
+  .tm-card,
+  .tm-controls {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .tm-synthwave-grid {
+    animation: none !important;
+  }
+  .tm-holo-card {
+    will-change: auto;
+  }
+}
+
+/* 4-Card Responsive Side Entertainment Lounge Grid */
+.tm-arcade-steer-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+  gap: 14px;
+}
+
+.tm-steer-stocks {
+  border-color: rgba(34, 197, 94, 0.52) !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55), 0 0 22px rgba(34, 197, 94, 0.16);
+}
+
+.tm-steer-stocks:hover {
+  border-color: #4ade80 !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.7), 0 0 28px rgba(34, 197, 94, 0.34);
+}
+
+/* 2. Fixed Non-Scrolling 100dvh Arcade Viewport for iPad, iPhone & Desktop */
+.tm-app.tm-app-game-fixed {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden !important;
+  overscroll-behavior: none;
+  padding-bottom: 0 !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.tm-fixed-arcade-bar {
+  height: 46px;
+  min-height: 46px;
+  flex-shrink: 0;
+  z-index: 90;
+  background: linear-gradient(90deg, rgba(10, 8, 24, 0.98), rgba(22, 10, 38, 0.98), rgba(10, 12, 26, 0.98));
+  border-bottom: 1.5px solid rgba(0, 243, 255, 0.36);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.7);
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tm-fixed-back-btn {
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(0, 243, 255, 0.45);
+  color: #67e8f9;
+  font-weight: 900;
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 9px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tm-fixed-back-btn:hover {
+  background: rgba(0, 243, 255, 0.18);
+  color: #fff;
+}
+
+.tm-fixed-game-pills {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tm-fixed-game-pills::-webkit-scrollbar {
+  display: none;
+}
+
+.tm-fixed-game-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  font-weight: 800;
+  font-size: 11.5px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.14s ease;
+}
+
+.tm-fixed-game-pill.active {
+  background: linear-gradient(135deg, #ec4899, #f97316);
+  border-color: #fde047;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(236, 72, 153, 0.55);
+}
+
+.tm-fixed-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.tm-fixed-wallet-pill {
+  background: rgba(250, 204, 21, 0.16);
+  border: 1.5px solid #facc15;
+  color: #fde047;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tm-fixed-icon-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #e2e8f0;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.tm-fixed-icon-btn.active {
+  border-color: #4ade80;
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+/* ==========================================================================
+   3. CLASSIC LAS VEGAS ONE-ARM BANDIT 777 SLOT MACHINE (.tm-bandit-*)
+   ========================================================================== */
+.tm-bandit-standalone {
+  flex: 1;
+  min-height: 0;
+  height: calc(100dvh - 46px);
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px env(safe-area-inset-bottom, 8px);
+}
+
+.tm-bandit-embedded {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 4px 0;
+}
+
+.tm-bandit-cabinet-wrap {
+  display: flex;
+  flex-direction: row !important;
+  align-items: stretch;
+  justify-content: center;
+  width: 100%;
+  max-width: 630px;
+  max-height: 100%;
+}
+
+.tm-bandit-cabinet {
+  flex: 1;
+  min-width: 0;
+  max-height: 100%;
+  background: linear-gradient(180deg, #240b36 0%, #10091e 48%, #1a0b28 100%);
+  border: 3px solid #facc15;
+  border-radius: 26px 26px 18px 18px;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.85),
+    0 0 28px rgba(236, 72, 153, 0.35),
+    inset 0 0 18px rgba(250, 204, 21, 0.22);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 7px;
+  overflow: hidden;
+}
+
+.tm-bandit-jackpot-glow .tm-bandit-cabinet {
+  border-color: #fde047;
+  box-shadow:
+    0 0 42px rgba(250, 204, 21, 0.8),
+    0 0 64px rgba(236, 72, 153, 0.65),
+    inset 0 0 26px rgba(250, 204, 21, 0.45);
+}
+
+.tm-bandit-marquee {
+  background: radial-gradient(circle at 50% 25%, #be123c 0%, #581c87 65%, #1e1b4b 100%);
+  border: 2px solid #fde047;
+  border-radius: 18px 18px 10px 10px;
+  padding: 6px 10px 7px;
+  text-align: center;
+  position: relative;
+  box-shadow: inset 0 0 16px rgba(250, 204, 21, 0.35);
+}
+
+.tm-bandit-bulbs {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4px 3px;
+}
+
+.tm-bandit-bulb {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fde047;
+  box-shadow: 0 0 8px #facc15;
+  animation: tmBanditBulbChase 1s infinite alternate;
+}
+
+.tm-bandit-bulb:nth-child(even) {
+  background: #38bdf8;
+  box-shadow: 0 0 8px #00f3ff;
+  animation-delay: 0.5s;
+}
+
+@keyframes tmBanditBulbChase {
+  0% { opacity: 0.45; transform: scale(0.88); }
+  100% { opacity: 1; transform: scale(1.12); }
+}
+
+.tm-bandit-marquee-sub {
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+  color: #fde047;
+  text-transform: uppercase;
+}
+
+.tm-bandit-marquee-title {
+  font-size: clamp(16px, 2.8vw, 22px);
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #fff;
+  text-shadow: 0 2px 0 #9f1239, 0 0 14px #facc15;
+  line-height: 1.15;
+}
+
+.tm-bandit-payglass {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+  background: rgba(7, 9, 20, 0.85);
+  border: 1px solid rgba(250, 204, 21, 0.35);
+  border-radius: 10px;
+  padding: 4px 6px;
+}
+
+.tm-bandit-paychip {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 2px 6px;
+  white-space: nowrap;
+}
+
+.tm-bandit-paychip strong {
+  color: #fde047;
+}
+
+.tm-bandit-paychip.hot {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.35), rgba(250, 204, 21, 0.25));
+  border-color: #facc15;
+}
+
+/* Chrome Bezeled 3-Drum Mechanical Reel Window */
+.tm-bandit-reel-bezel {
+  position: relative;
+  background: linear-gradient(180deg, #334155 0%, #0f172a 14%, #090d1a 86%, #475569 100%);
+  border: 3px solid #cbd5e1;
+  border-radius: 16px;
+  padding: 9px 18px;
+  box-shadow:
+    inset 0 6px 18px rgba(0, 0, 0, 0.9),
+    0 2px 10px rgba(0, 243, 255, 0.2);
+}
+
+.tm-bandit-payline-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 6;
+  color: #ef4444;
+  font-size: 13px;
+  font-weight: 900;
+  text-shadow: 0 0 8px #ef4444, 0 0 2px #fde047;
+  pointer-events: none;
+}
+
+.tm-bandit-payline-arrow.left {
+  left: 3px;
+}
+
+.tm-bandit-payline-arrow.right {
+  right: 3px;
+}
+
+.tm-bandit-payline-laser {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.9), rgba(250, 204, 21, 0.55), rgba(239, 68, 68, 0.9));
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.85);
+  z-index: 4;
+  pointer-events: none;
+}
+
+.tm-bandit-drums-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.tm-bandit-drum-col {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.tm-bandit-drum-window {
+  position: relative;
+  height: clamp(132px, 23dvh, 186px);
+  border-radius: 11px;
+  border: 2px solid #64748b;
+  /* Classic curved mechanical ivory/cream slot machine drum shading */
+  background: linear-gradient(
+    180deg,
+    #1e293b 0%,
+    #cbd5e1 11%,
+    #fffbeb 26%,
+    #ffffff 50%,
+    #fffbeb 74%,
+    #cbd5e1 89%,
+    #1e293b 100%
+  );
+  box-shadow:
+    inset 0 14px 18px rgba(15, 23, 42, 0.55),
+    inset 0 -14px 18px rgba(15, 23, 42, 0.58);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 4px;
+  overflow: hidden;
+}
+
+.tm-bandit-drum-window.held {
+  border-color: #facc15;
+  box-shadow:
+    0 0 14px rgba(250, 204, 21, 0.7),
+    inset 0 12px 16px rgba(15, 23, 42, 0.5);
+}
+
+.tm-bandit-drum-window.winner {
+  border-color: #22c55e;
+  box-shadow:
+    0 0 18px rgba(34, 197, 94, 0.85),
+    inset 0 10px 14px rgba(15, 23, 42, 0.45);
+}
+
+.tm-bandit-drum-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  z-index: 2;
+}
+
+.tm-bandit-drum-slot.peek {
+  height: 24%;
+  opacity: 0.46;
+  transform: scale(0.76) perspective(160px) rotateX(28deg);
+}
+
+.tm-bandit-drum-slot.peek.bottom {
+  transform: scale(0.76) perspective(160px) rotateX(-28deg);
+}
+
+.tm-bandit-drum-slot.center {
+  height: 52%;
+  z-index: 3;
+  filter: drop-shadow(0 2px 3px rgba(15, 23, 42, 0.32));
+}
+
+.tm-bandit-drum-slot svg {
+  max-height: 100%;
+  max-width: 100%;
+}
+
+.tm-bandit-drum-window.spinning .tm-bandit-drum-slot {
+  animation: tmDrumSpinTick 0.09s linear infinite;
+}
+
+@keyframes tmDrumSpinTick {
+  0% { transform: translateY(-7px) scaleY(1.06); }
+  100% { transform: translateY(7px) scaleY(1.06); }
+}
+
+.tm-bandit-drum-glass {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  background: linear-gradient(
+    180deg,
+    rgba(2, 6, 23, 0.42) 0%,
+    rgba(255, 255, 255, 0.16) 22%,
+    transparent 45%,
+    transparent 65%,
+    rgba(2, 6, 23, 0.46) 100%
+  );
+}
+
+.tm-bandit-held-tag {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 7;
+  background: #facc15;
+  color: #090a0f;
+  font-size: 9px;
+  font-weight: 900;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.tm-bandit-drum-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  position: relative;
+  z-index: 8;
+}
+
+.tm-bandit-mini-btn {
+  background: #1e293b;
+  border: 1px solid #475569;
+  color: #64748b;
+  font-size: 9.5px;
+  font-weight: 900;
+  padding: 4px 2px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.tm-bandit-mini-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.tm-bandit-mini-btn.lit {
+  border-color: #facc15;
+  color: #fde047;
+  background: rgba(250, 204, 21, 0.16);
+}
+
+.tm-bandit-mini-btn.active-hold {
+  background: #facc15;
+  border-color: #fef08a;
+  color: #090a0f;
+}
+
+.tm-bandit-mini-btn.lit-nudge {
+  border-color: #00f3ff;
+  color: #67e8f9;
+  background: rgba(0, 243, 255, 0.16);
+}
+
+/* Digital VFD Status Display */
+.tm-bandit-led-bar {
+  background: #050811;
+  border: 1.5px solid rgba(0, 243, 255, 0.4);
+  border-radius: 9px;
+  padding: 6px 10px;
+  text-align: center;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11.5px;
+  font-weight: 900;
+  color: #67e8f9;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tm-bandit-led-bar.win {
+  border-color: #4ade80;
+  color: #fde047;
+  background: rgba(20, 83, 45, 0.45);
+  box-shadow: 0 0 14px rgba(74, 222, 128, 0.35);
+}
+
+/* Casino Wager & Spin Control Deck */
+.tm-bandit-control-deck {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tm-bandit-wallet-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.tm-bandit-stat-box {
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9px;
+  padding: 4px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tm-bandit-stat-box span {
+  font-size: 9px;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 0.6px;
+}
+
+.tm-bandit-stat-box strong {
+  font-size: 13px;
+  font-weight: 900;
+  color: #f8fafc;
+}
+
+.tm-bandit-bet-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.tm-bandit-bet-label {
+  font-size: 10px;
+  font-weight: 900;
+  color: #cbd5e1;
+  margin-right: 2px;
+}
+
+.tm-bandit-chip-btn {
+  background: radial-gradient(circle at 30% 30%, #334155, #0f172a);
+  border: 2px dashed rgba(250, 204, 21, 0.55);
+  color: #f8fafc;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 4px 9px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.12s ease;
+}
+
+.tm-bandit-chip-btn.active {
+  background: radial-gradient(circle at 30% 30%, #ef4444, #991b1b);
+  border: 2px solid #fde047;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(250, 204, 21, 0.55);
+  transform: scale(1.05);
+}
+
+.tm-bandit-chip-btn.demo.active {
+  background: radial-gradient(circle at 30% 30%, #0284c7, #1e3a8a);
+  border-color: #67e8f9;
+}
+
+.tm-bandit-chip-btn.short {
+  opacity: 0.55;
+}
+
+.tm-bandit-action-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tm-bandit-back-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #cbd5e1;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tm-bandit-spin-btn {
+  flex: 1;
+  background: linear-gradient(180deg, #fde047 0%, #f59e0b 48%, #dc2626 100%);
+  border: 2px solid #fef08a;
+  color: #090a0f;
+  font-weight: 900;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.5);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.tm-bandit-spin-btn:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.tm-bandit-reload-cta {
+  background: rgba(236, 72, 153, 0.16);
+  border: 1px dashed #f472b6;
+  color: #fbcfe8;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 5px 10px;
+  border-radius: 9px;
+  cursor: pointer;
+  text-align: center;
+}
+
+/* Right-Side 3D Chrome One-Arm Bandit Pull-Lever & Glossy Red Ball Knob */
+.tm-bandit-arm-housing {
+  width: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+}
+
+.tm-bandit-arm-box {
+  width: 14px;
+  height: 66px;
+  background: linear-gradient(90deg, #94a3b8, #f8fafc, #475569);
+  border: 2px solid #334155;
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+  box-shadow: 4px 6px 14px rgba(0, 0, 0, 0.7);
+}
+
+.tm-bandit-arm-track {
+  position: absolute;
+  left: 6px;
+  bottom: calc(50% - 6px);
+  width: 36px;
+  height: 155px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  transform-origin: bottom center;
+  transition: transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tm-bandit-arm-track.pulled {
+  transform: rotateX(55deg) scaleY(0.48) translateY(36px);
+}
+
+.tm-bandit-arm-ball {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #fca5a5 0%, #ef4444 35%, #991b1b 78%, #450a0a 100%);
+  border: 2px solid #fecaca;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.75), 0 0 14px rgba(239, 68, 68, 0.65);
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.tm-bandit-arm-shaft {
+  width: 9px;
+  flex: 1;
+  margin-top: -3px;
+  border-radius: 0 0 6px 6px;
+  background: linear-gradient(90deg, #475569 0%, #f8fafc 45%, #94a3b8 75%, #1e293b 100%);
+  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.65);
+}
+
+@media (max-width: 520px) {
+  .tm-bandit-arm-housing {
+    width: 34px;
+  }
+  .tm-bandit-arm-track {
+    width: 28px;
+    height: 126px;
+    left: 4px;
+  }
+  .tm-bandit-arm-ball {
+    width: 27px;
+    height: 27px;
+  }
+  .tm-bandit-payglass {
+    gap: 3px;
+  }
+  .tm-bandit-paychip {
+    font-size: 9.5px;
+    padding: 2px 4px;
+  }
+}
+
+/* ==========================================================================
+   4. MEMEDAQ '86 — 80s WALL STREET MEME STOCK MARKET SIMULATOR (.tm-stocks-*)
+   ========================================================================== */
+.tm-stocks-stage {
+  flex: 1;
+  min-height: 0;
+  height: calc(100dvh - 46px);
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  padding: 6px 10px env(safe-area-inset-bottom, 8px);
+}
+
+.tm-stocks-terminal {
+  width: 100%;
+  max-width: 1120px;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(8, 13, 27, 0.97) 0%, rgba(11, 9, 24, 0.98) 100%);
+  border: 2px solid #00f3ff;
+  border-radius: 18px;
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.85), 0 0 24px rgba(0, 243, 255, 0.22);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  overflow: hidden;
+}
+
+.tm-stocks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.tm-stocks-eyebrow {
+  font-size: 9.5px;
+  font-weight: 900;
+  color: #4ade80;
+  letter-spacing: 1.1px;
+}
+
+.tm-stocks-title {
+  margin: 0;
+  font-size: clamp(15px, 2.2vw, 20px);
+  font-weight: 900;
+  color: #f8fafc;
+  text-shadow: 0 0 12px rgba(0, 243, 255, 0.45);
+}
+
+.tm-stocks-kpis {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tm-stocks-kpi {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(0, 243, 255, 0.28);
+  border-radius: 9px;
+  padding: 3px 9px;
+  display: flex;
+  flex-direction: column;
+}
+
+.tm-stocks-kpi span {
+  font-size: 9px;
+  font-weight: 800;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.tm-stocks-kpi strong {
+  font-size: 12.5px;
+  font-weight: 900;
+  color: #f8fafc;
+}
+
+.tm-stocks-newswire {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: rgba(6, 20, 28, 0.9);
+  border: 1px solid rgba(74, 222, 128, 0.38);
+  border-radius: 10px;
+  padding: 5px 9px;
+  flex-shrink: 0;
+}
+
+.tm-stocks-news-text {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #86efac;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tm-stocks-news-btns {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.tm-stocks-wire-btn {
+  background: rgba(250, 204, 21, 0.15);
+  border: 1px solid rgba(250, 204, 21, 0.55);
+  color: #fde047;
+  font-size: 10.5px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 7px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tm-stocks-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 315px 1fr;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.tm-stocks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 3px;
+}
+
+.tm-stock-row {
+  background: rgba(15, 23, 42, 0.72);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 11px;
+  padding: 7px 9px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+  text-align: left;
+  color: #f8fafc;
+  transition: border-color 0.14s ease, background 0.14s ease;
+}
+
+.tm-stock-row:hover {
+  border-color: rgba(0, 243, 255, 0.45);
+}
+
+.tm-stock-row.active {
+  background: linear-gradient(135deg, rgba(0, 243, 255, 0.16), rgba(236, 72, 153, 0.16));
+  border-color: #00f3ff;
+  box-shadow: 0 0 14px rgba(0, 243, 255, 0.25);
+}
+
+.tm-stock-row-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.tm-stock-emoji {
+  font-size: 21px;
+  flex-shrink: 0;
+}
+
+.tm-stock-ticker {
+  font-weight: 900;
+  font-size: 12.5px;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tm-stock-owned-pill {
+  background: rgba(250, 204, 21, 0.22);
+  border: 1px solid #facc15;
+  color: #fde047;
+  font-size: 9.5px;
+  padding: 0 5px;
+  border-radius: 999px;
+}
+
+.tm-stock-name {
+  font-size: 10.5px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+.tm-stock-row-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.tm-stock-price {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 900;
+  font-size: 13px;
+  color: #fde047;
+}
+
+.tm-stock-delta {
+  font-size: 10.5px;
+  font-weight: 900;
+}
+
+.tm-stock-delta.up {
+  color: #4ade80;
+}
+
+.tm-stock-delta.down {
+  color: #fb7185;
+}
+
+/* Right Desk: Live Neon CRT Chart + Order Execution */
+.tm-stocks-desk {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 7px;
+  overflow: hidden;
+}
+
+.tm-stocks-chart-card {
+  flex: 1;
+  min-height: 0;
+  background: radial-gradient(circle at 50% 20%, rgba(16, 28, 48, 0.9), rgba(5, 8, 18, 0.96));
+  border: 1.5px solid rgba(0, 243, 255, 0.32);
+  border-radius: 14px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow: hidden;
+}
+
+.tm-stocks-chart-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.tm-stocks-active-sym {
+  font-size: 15px;
+  font-weight: 900;
+  color: #67e8f9;
+}
+
+.tm-stocks-active-company {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.tm-stocks-active-quote {
+  text-align: right;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 16px;
+  font-weight: 900;
+  color: #fde047;
+}
+
+.tm-stocks-svg-wrap {
+  flex: 1;
+  min-height: 75px;
+  width: 100%;
+  position: relative;
+  touch-action: none;
+}
+
+.tm-stocks-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.tm-stocks-pos-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9px;
+  padding: 5px 9px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #cbd5e1;
+  flex-shrink: 0;
+}
+
+.tm-stocks-order-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.tm-stocks-order-box {
+  background: rgba(15, 23, 42, 0.86);
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 7px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.tm-stocks-order-box.buy {
+  border-color: rgba(74, 222, 128, 0.45);
+}
+
+.tm-stocks-order-box.sell {
+  border-color: rgba(251, 113, 133, 0.45);
+}
+
+.tm-stocks-order-label {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: #cbd5e1;
+  display: flex;
+  justify-content: space-between;
+}
+
+.tm-stocks-order-btns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+
+.tm-stock-trade-btn {
+  border-radius: 8px;
+  padding: 7px 4px;
+  font-weight: 900;
+  font-size: 11px;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: transform 0.1s ease, opacity 0.12s ease;
+}
+
+.tm-stock-trade-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tm-stock-trade-btn.buy {
+  background: linear-gradient(180deg, #22c55e, #15803d);
+  border-color: #86efac;
+  color: #052e16;
+}
+
+.tm-stock-trade-btn.sell {
+  background: linear-gradient(180deg, #fb7185, #be123c);
+  border-color: #fda4af;
+  color: #fff;
+}
+
+.tm-stocks-feedback {
+  background: rgba(8, 12, 24, 0.9);
+  border: 1px solid rgba(0, 243, 255, 0.28);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #e2e8f0;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+.tm-stocks-broke-bar {
+  background: rgba(236, 72, 153, 0.16);
+  border: 1px dashed #f472b6;
+  border-radius: 9px;
+  padding: 5px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fbcfe8;
+  flex-shrink: 0;
+}
+
+@media (max-width: 820px) {
+  .tm-stocks-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(112px, 31%) 1fr;
+    gap: 7px;
+  }
+  .tm-stocks-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+  }
+  .tm-stock-name {
+    display: none;
+  }
+  .tm-stocks-order-grid {
+    gap: 6px;
+  }
+}
+
+/* ==========================================================================
+   5. MEME CRUSH SAGA — 10 DISTINCT 80s NEON LEVELS (.tm-crush2-*)
+   ========================================================================== */
+.tm-crush2-stage {
+  flex: 1;
+  min-height: 0;
+  height: calc(100dvh - 46px);
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px env(safe-area-inset-bottom, 8px);
+}
+
+.tm-crush2-cabinet {
+  --crush-accent: #ec4899;
+  width: 100%;
+  max-width: 550px;
+  height: 100%;
+  max-height: 830px;
+  background: linear-gradient(180deg, rgba(19, 11, 38, 0.97) 0%, rgba(9, 10, 22, 0.98) 100%);
+  border: 2.5px solid var(--crush-accent);
+  border-radius: 22px;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.85),
+    0 0 26px color-mix(in srgb, var(--crush-accent) 36%, transparent);
+  padding: 9px 11px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.tm-crush2-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.tm-crush2-eyebrow {
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: var(--crush-accent);
+  text-transform: uppercase;
+}
+
+.tm-crush2-title {
+  margin: 0;
+  font-size: clamp(14px, 2.2vw, 18px);
+  font-weight: 900;
+  color: #f8fafc;
+}
+
+.tm-crush2-stake-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tm-crush2-wallet {
+  background: rgba(250, 204, 21, 0.14);
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  color: #fde047;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.tm-crush2-prize-btn {
+  background: linear-gradient(135deg, #facc15, #f97316);
+  border: none;
+  color: #090a0f;
+  font-size: 10.5px;
+  font-weight: 900;
+  padding: 4px 9px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.tm-crush2-stake-active {
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid #4ade80;
+  color: #86efac;
+  font-size: 10.5px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.tm-crush2-level-strip {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+  flex-shrink: 0;
+}
+
+.tm-crush2-level-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.tm-crush2-lvl-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #cbd5e1;
+  font-size: 10.5px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tm-crush2-lvl-pill.active {
+  background: var(--crush-accent);
+  border-color: #fde047;
+  color: #090a0f;
+  box-shadow: 0 0 10px var(--crush-accent);
+}
+
+.tm-crush2-hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  background: rgba(8, 11, 24, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 11px;
+  padding: 5px 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.tm-crush2-stat {
+  font-size: 11.5px;
+  font-weight: 900;
+  color: #e2e8f0;
+}
+
+.tm-crush2-stat strong {
+  color: #fde047;
+  font-size: 13px;
+}
+
+.tm-crush2-goals {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.tm-crush2-goal-chip {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 7px;
+  padding: 2px 7px;
+  font-size: 10.5px;
+  font-weight: 900;
+  color: #f8fafc;
+}
+
+.tm-crush2-goal-chip.done {
+  background: rgba(34, 197, 94, 0.24);
+  border-color: #4ade80;
+  color: #86efac;
+}
+
+.tm-crush2-board-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.tm-crush2-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  gap: 3px;
+  aspect-ratio: 1 / 1;
+  width: min(100%, 45dvh, 416px);
+  max-height: 100%;
+  background: rgba(5, 8, 18, 0.82);
+  border: 2px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 5px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.tm-crush2-void-cell {
+  border-radius: 7px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, transparent 75%);
+}
+
+.tm-crush2-cell {
+  position: relative;
+  border-radius: 8px;
+  background: rgba(30, 41, 59, 0.58);
+  border: 1.5px solid rgba(255, 255, 255, 0.09);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.tm-crush2-cell.jelly-1 {
+  background: linear-gradient(135deg, rgba(0, 243, 255, 0.28), rgba(168, 85, 247, 0.28));
+  border-color: #38bdf8;
+  box-shadow: inset 0 0 8px rgba(0, 243, 255, 0.45);
+}
+
+.tm-crush2-cell.jelly-2 {
+  background: linear-gradient(135deg, rgba(0, 243, 255, 0.5), rgba(236, 72, 153, 0.45));
+  border: 2px solid #e0f2fe;
+  box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.65);
+}
+
+.tm-crush2-cell.selected {
+  border-color: #fde047;
+  box-shadow: 0 0 12px #facc15;
+  transform: scale(1.06);
+  z-index: 4;
+}
+
+.tm-crush2-cell.locked {
+  border-color: #22d3ee;
+}
+
+.tm-crush2-cell.exit-row {
+  border-bottom: 2px dashed rgba(250, 204, 21, 0.65);
+}
+
+.tm-crush2-candy {
+  width: 86%;
+  height: 86%;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: transform 0.12s ease;
+}
+
+.tm-crush2-candy.cassette {
+  background: linear-gradient(135deg, #facc15, #ec4899);
+  border: 1.5px solid #fff;
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.7);
+}
+
+.tm-crush2-candy.sp-striped-h {
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.28) 0px,
+    rgba(255, 255, 255, 0.28) 3px,
+    transparent 3px,
+    transparent 6px
+  );
+  border: 1.5px solid #fde047;
+}
+
+.tm-crush2-candy.sp-striped-v {
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.28) 0px,
+    rgba(255, 255, 255, 0.28) 3px,
+    transparent 3px,
+    transparent 6px
+  );
+  border: 1.5px solid #38bdf8;
+}
+
+.tm-crush2-candy.sp-packet-bomb {
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.55), rgba(220, 38, 38, 0.3));
+  border: 1.5px solid #fb923c;
+}
+
+.tm-crush2-candy.sp-seeking-rocket {
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.5), rgba(168, 85, 247, 0.35));
+  border: 1.5px solid #67e8f9;
+}
+
+.tm-crush2-candy.sp-color-bomb {
+  background: conic-gradient(#ef4444, #facc15, #22c55e, #00f3ff, #a855f7, #ec4899, #ef4444);
+  border: 1.5px solid #fff;
+  border-radius: 50%;
+}
+
+.tm-crush2-emoji {
+  font-size: clamp(16px, 2.8dvh, 24px);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.tm-crush2-sp-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  font-size: 9px;
+  font-weight: 900;
+  background: #090a0f;
+  color: #fde047;
+  border-radius: 4px;
+  padding: 0 2px;
+  line-height: 1.1;
+}
+
+.tm-crush2-lock-cage {
+  position: absolute;
+  inset: 1px;
+  border: 2px dashed rgba(103, 232, 249, 0.9);
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(6, 182, 212, 0.22) 0px,
+    rgba(6, 182, 212, 0.22) 4px,
+    rgba(15, 23, 42, 0.32) 4px,
+    rgba(15, 23, 42, 0.32) 8px
+  );
+  border-radius: 6px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  font-size: 10px;
+  padding: 1px;
+  pointer-events: none;
+}
+
+.tm-crush2-exit-arrow {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  color: #fde047;
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.tm-crush2-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: rgba(6, 8, 18, 0.86);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+}
+
+.tm-crush2-modal {
+  background: linear-gradient(180deg, #1e1238, #0d0b1e);
+  border: 2px solid #facc15;
+  border-radius: 18px;
+  padding: 16px;
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.9);
+}
+
+.tm-crush2-modal-btns {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.tm-crush2-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.tm-crush2-status {
+  background: #060913;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #cbd5e1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tm-crush2-tools {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.tm-crush2-tool-btn {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #e2e8f0;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 6px 8px;
+  border-radius: 9px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tm-crush2-tool-btn.active {
+  background: rgba(250, 204, 21, 0.25);
+  border-color: #facc15;
+  color: #fde047;
+}
+
+.tm-crush2-tool-btn.upload {
+  border-color: rgba(244, 114, 182, 0.55);
+  color: #fbcfe8;
+}
+
+/* ==========================================================================
+   6. 80s NEON CYBER-PINBALL — 5 DISTINCT TABLES (.tm-pin2-*)
+   ========================================================================== */
+.tm-pin2-stage {
+  flex: 1;
+  min-height: 0;
+  height: calc(100dvh - 46px);
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px env(safe-area-inset-bottom, 8px);
+}
+
+.tm-pin2-cabinet {
+  --pin-accent: #ec4899;
+  width: 100%;
+  max-width: 520px;
+  height: 100%;
+  max-height: 850px;
+  background: linear-gradient(180deg, rgba(16, 11, 34, 0.97) 0%, rgba(7, 9, 20, 0.99) 100%);
+  border: 2.5px solid var(--pin-accent);
+  border-radius: 22px;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.88),
+    0 0 26px color-mix(in srgb, var(--pin-accent) 36%, transparent);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 5px;
+  overflow: hidden;
+}
+
+.tm-pin2-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.tm-pin2-eyebrow {
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: var(--pin-accent);
+  text-transform: uppercase;
+}
+
+.tm-pin2-title {
+  margin: 0;
+  font-size: clamp(14px, 2.2vw, 18px);
+  font-weight: 900;
+  color: #f8fafc;
+}
+
+.tm-pin2-stake-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tm-pin2-table-strip {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+
+.tm-pin2-table-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.tm-pin2-tbl-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  font-size: 10.5px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tm-pin2-tbl-pill.active {
+  background: var(--pin-accent);
+  border-color: #fde047;
+  color: #090a0f;
+}
+
+.tm-pin2-hud {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  background: #050812;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  padding: 4px 8px;
+  flex-shrink: 0;
+}
+
+.tm-pin2-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 800;
+  color: #94a3b8;
+}
+
+.tm-pin2-stat strong {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12.5px;
+  font-weight: 900;
+  color: #fde047;
+}
+
+.tm-pin2-canvas-wrap {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.tm-pin2-canvas {
+  max-height: 100%;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  aspect-ratio: 400 / 560;
+  border-radius: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  background: #060814;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  display: block;
+}
+
+.tm-pin2-controls {
+  display: grid;
+  grid-template-columns: 1.25fr 0.9fr 1.25fr;
+  gap: 7px;
+  flex-shrink: 0;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.tm-pin2-flip-btn {
+  background: linear-gradient(180deg, #1e293b, #0f172a);
+  border: 2px solid var(--pin-accent);
+  color: #f8fafc;
+  font-weight: 900;
+  font-size: 13px;
+  padding: 11px 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.6);
+}
+
+.tm-pin2-flip-btn:active {
+  background: var(--pin-accent);
+  color: #090a0f;
+  transform: translateY(1px);
+}
+
+.tm-pin2-launch-btn {
+  background: linear-gradient(180deg, #fde047, #f97316);
+  border: 2px solid #fef08a;
+  color: #090a0f;
+  font-weight: 900;
+  font-size: 12.5px;
+  padding: 11px 6px;
+  border-radius: 12px;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.tm-pin2-banner {
+  background: #050812;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 7px;
+  padding: 3px 8px;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #67e8f9;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}

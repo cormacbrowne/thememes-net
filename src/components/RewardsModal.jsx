@@ -12,19 +12,18 @@ import VegasSlotMachine from './VegasSlotMachine';
 
 export default function RewardsModal({
   xp,
-  tokens = 50,
+  tokens = 25,
   tokenLedger,
   lootSpins,
-  slotPullsLeft = ARCADE_RATE_LIMITS.SLOT_PULLS_PER_WINDOW,
-  slotResetMs = 0,
   wheelSpinsLeftInWindow = ARCADE_RATE_LIMITS.WHEEL_SPINS_PER_WINDOW,
   wheelResetMs = 0,
   streakDays,
   streakClaimedToday,
   onClaimDailyStreak,
   onCompleteWheelSpin,
-  onCompleteSlotSpin,
-  onSpendTokensForPulls,
+  onSpendTokens,
+  onPayoutTokens,
+  onOpenUpload,
   onLaunchSubGame,
   unlockedFlairs,
   equippedFlair,
@@ -32,8 +31,6 @@ export default function RewardsModal({
   cursorTrail,
   onSelectCursorTrail,
   konamiUnlocked,
-  konamiCooldownMs = 0,
-  onTriggerKonamiGodMode,
   questProgress,
   claimedQuests,
   onClaimQuestReward,
@@ -43,17 +40,18 @@ export default function RewardsModal({
   const [highlightIdx, setHighlightIdx] = useState(0);
   const [wonPrize, setWonPrize] = useState(null);
 
-  // Live 1-second tick so countdown badges update smoothly while modal is open
+  // Only tick when hourly wheel window is actively cooling down
   const [, setNowTick] = useState(0);
   useEffect(() => {
+    if (wheelSpinsLeftInWindow > 0) return undefined;
     const t = setInterval(() => setNowTick((n) => n + 1), 1000);
     return () => clearInterval(t);
-  }, []);
+  }, [wheelSpinsLeftInWindow]);
 
   const canSpinWheel = !isSpinning && lootSpins > 0 && wheelSpinsLeftInWindow > 0;
 
   const dailyUsed = tokenLedger?.totalToday || 0;
-  const dailyMax = ARCADE_ECONOMY_RULES.MAX_DAILY_TOKENS;
+  const dailyMax = ARCADE_ECONOMY_RULES.MAX_DAILY_EARNED_TOKENS;
   const dailyPct = Math.min(100, Math.round((dailyUsed / dailyMax) * 100));
 
   const handleSpinWheel = (e) => {
@@ -132,16 +130,16 @@ export default function RewardsModal({
 
           <div className="tm-ledger-caps-grid">
             <div className="tm-ledger-cap-pill">
-              📸 Uploads: <strong>{tokenLedger?.byCategory?.upload || 0}</strong>/{ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.upload}
+              📸 Meme Uploads: <strong>{tokenLedger?.byCategory?.upload || 0}</strong>/{ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.upload} (+45–75 🪙)
             </div>
             <div className="tm-ledger-cap-pill">
-              🕹️ Sub-Games: <strong>{tokenLedger?.byCategory?.games || 0}</strong>/{ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.games}
+              🔥 Feed Votes/Comments: <strong>{tokenLedger?.byCategory?.engagement || 0}</strong>/{ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.engagement}
             </div>
             <div className="tm-ledger-cap-pill">
-              🔥 Feed Actions: <strong>{tokenLedger?.byCategory?.engagement || 0}</strong>/{ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.engagement}
+              🎯 Daily Visit &amp; Quests: <strong>{tokenLedger?.byCategory?.quests || 0}</strong>/{ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.quests}
             </div>
             <div className="tm-ledger-cap-pill">
-              🎯 Quests/Streak: <strong>{tokenLedger?.byCategory?.quests || 0}</strong>/{ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.quests}
+              🎰 Games: <strong>Wager &amp; Gamble Your 🪙!</strong>
             </div>
           </div>
 
@@ -155,7 +153,17 @@ export default function RewardsModal({
                   onLaunchSubGame('slots');
                 }}
               >
-                🎰 Full-Screen Vegas 777 Slots
+                🎰 One-Arm Bandit
+              </button>
+              <button
+                type="button"
+                className="tm-btn tm-btn-primary"
+                onClick={() => {
+                  onClose();
+                  onLaunchSubGame('stocks');
+                }}
+              >
+                📈 Meme Stock Market
               </button>
               <button
                 type="button"
@@ -165,7 +173,7 @@ export default function RewardsModal({
                   onLaunchSubGame('crush');
                 }}
               >
-                🍬 Play Meme Crush Saga
+                🍬 Meme Crush (10 Lv)
               </button>
               <button
                 type="button"
@@ -175,7 +183,7 @@ export default function RewardsModal({
                   onLaunchSubGame('pinball');
                 }}
               >
-                🎱 Play Las Vegas Pinball
+                🎱 Pinball (5 Tbl)
               </button>
             </div>
           )}
@@ -205,15 +213,16 @@ export default function RewardsModal({
           </button>
         </div>
 
-        {/* 2. RETRO NEON LAS VEGAS 777 SLOT MACHINE CABINET */}
+        {/* 2. RETRO NEON LAS VEGAS 777 ONE-ARM BANDIT CABINET */}
         <VegasSlotMachine
           embedded
           tokens={tokens}
-          tokenLedger={tokenLedger}
-          slotPullsLeft={slotPullsLeft}
-          slotResetMs={slotResetMs}
-          onCompleteSlotSpin={onCompleteSlotSpin}
-          onSpendTokensForPulls={onSpendTokensForPulls}
+          onSpendTokens={onSpendTokens}
+          onPayoutTokens={onPayoutTokens}
+          onOpenUpload={() => {
+            onClose();
+            if (onOpenUpload) onOpenUpload();
+          }}
         />
 
         {/* 3. WHEEL OF CHAOS / LOOT BOX SPINNER (WITH TIMED WINDOW LIMITER & WALLET CAP) */}
@@ -403,7 +412,7 @@ export default function RewardsModal({
           </div>
         </div>
 
-        {/* 7. SECRET KONAMI GOD MODE EASTER EGG UNLOCK (ONCE PER 24H REWARD) */}
+        {/* 7. SECRET KONAMI EASTER EGG HINT (MUST ACTUALLY ENTER CODE — NO FREE CLICK FARMING!) */}
         <div
           style={{
             marginTop: '18px',
@@ -420,23 +429,15 @@ export default function RewardsModal({
           }}
         >
           <div>
-            <strong style={{ color: '#d8b4fe' }}>🕹️ Secret Arcade Cheat Code:</strong>{' '}
+            <strong style={{ color: '#d8b4fe' }}>🕹️ Secret 80s Arcade Easter Egg:</strong>{' '}
             <span style={{ color: '#cbd5e1' }}>
-              Type <code>↑↑↓↓←→←→BA</code> on PC or tap the <strong>THE MEMES.net</strong> logo 5 times on mobile!
+              Physically type <code>↑↑↓↓←→←→BA</code> on keyboard or rapidly tap the{' '}
+              <strong>THE MEMES.net</strong> logo 5× on iPad/iPhone!
             </span>
           </div>
-          <button
-            type="button"
-            className="tm-btn"
-            style={{ borderColor: '#a855f7', color: '#d8b4fe' }}
-            onClick={onTriggerKonamiGodMode}
-          >
-            {konamiCooldownMs > 0
-              ? `🎇 Fireworks Only (Bonus resets in ${formatWindowCountdown(konamiCooldownMs)})`
-              : konamiUnlocked
-                ? '🕹️ Claim Daily God Mode (+15 🪙 + 1 Spin)'
-                : '🕹️ Activate God Mode (+15 🪙 + 1 Spin)'}
-          </button>
+          <span style={{ color: konamiUnlocked ? '#4ade80' : '#94a3b8', fontWeight: 800 }}>
+            {konamiUnlocked ? '✅ Secret Found!' : '🔒 Hidden'}
+          </span>
         </div>
       </div>
     </div>

@@ -25,6 +25,8 @@ import {
   loadTokenBalance,
   saveTokenBalance,
   evaluateTokenAward,
+  hasActionBeenRewarded,
+  validateStakedGamePayout,
   getTodayDateString
 } from './utils/tokenEconomy';
 import { updateDynamicSeo } from './utils/seoEngine';
@@ -39,6 +41,8 @@ import VerticalReelsView from './components/VerticalReelsView';
 import MemeCrushGame from './components/MemeCrushGame';
 import VegasPinballGame from './components/VegasPinballGame';
 import VegasSlotMachine from './components/VegasSlotMachine';
+import MemeStockMarketGame from './components/MemeStockMarketGame';
+import ParticleOverlay from './components/ParticleOverlay';
 import AuthModal from './components/AuthModal';
 import MemeTheaterModal from './components/MemeTheaterModal';
 import LeaderboardModal from './components/LeaderboardModal';
@@ -84,7 +88,7 @@ export default function App() {
   const [viewMode, setViewMode] = useState(() => {
     if (typeof window === 'undefined') return 'feed';
     const mode = new URLSearchParams(window.location.search).get('mode');
-    return ['feed', 'reels', 'slots', 'crush', 'pinball', 'swipe', 'battle'].includes(mode)
+    return ['feed', 'reels', 'slots', 'crush', 'pinball', 'stocks', 'swipe', 'battle'].includes(mode)
       ? mode
       : 'feed';
   });
@@ -135,9 +139,10 @@ export default function App() {
   const lastPublishTimeRef = useRef(0);
   const loadMoreSentinelRef = useRef(null);
 
-  // Gamification, Fair Arcade Tokens, CRT Shader, Sound Pack & Combo State
+  // Gamification, Fair Arcade Tokens, CRT Shader, Turbo iPad FPS Mode, Sound Pack & Combo State
   const [xp, setXp] = useState(() => Number(localStorage.getItem('tm_xp') || 60));
   const [tokens, setTokens] = useState(() => loadTokenBalance());
+  const tokensRef = useRef(tokens);
   const [tokenLedger, setTokenLedger] = useState(() => loadTokenLedger());
   const [combo, setCombo] = useState(1);
   const [comboTimer, setComboTimer] = useState(0);
@@ -146,8 +151,18 @@ export default function App() {
     () => localStorage.getItem('tm_sound_pack') || 'goofy'
   );
   const [crtOn, setCrtOn] = useState(() => localStorage.getItem('tm_crt') === 'true');
+  const [litePerfMode, setLitePerfMode] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const saved = localStorage.getItem('tm_lite_perf_v1');
+    if (saved !== null) return saved === 'true';
+    const isTouchTabletOrPhone =
+      window.matchMedia?.('(pointer: coarse)').matches ||
+      /iPad|iPhone|iPod|Android/i.test(navigator.userAgent || '');
+    const lowCores = (navigator.hardwareConcurrency || 8) <= 4;
+    return Boolean(isTouchTabletOrPhone || lowCores);
+  });
   const [screenShake, setScreenShake] = useState(false);
-  const [particles, setParticles] = useState([]);
+  const particleOverlayRef = useRef(null);
   const [levelUpBanner, setLevelUpBanner] = useState(null);
   const [userVotes, setUserVotes] = useState(() => {
     try {
@@ -169,45 +184,32 @@ export default function App() {
   const [lootSpins, setLootSpins] = useState(() =>
     Math.min(
       ARCADE_RATE_LIMITS.MAX_STORED_WHEEL_SPINS,
-      Math.max(0, Number(localStorage.getItem('tm_spins') ?? 2))
+      Math.max(0, Number(localStorage.getItem('tm_spins') ?? 1))
     )
   );
 
-  // Phase 17 & Sub-Games: Timed-Window Economy & Spin/Game Rate-Limiting State
+  // Phase 17: Lightweight Cooldown Window State (Zero 1-second full-app re-render loop!)
   const [rateWindows, setRateWindows] = useState(() => {
     const now = Date.now();
     try {
       const saved = JSON.parse(localStorage.getItem('tm_rate_windows') || '{}');
       return {
-        slotUsed: Number(saved.slotUsed || 0),
-        slotStart: Number(saved.slotStart || now),
         wheelUsed: Number(saved.wheelUsed || 0),
         wheelStart: Number(saved.wheelStart || now),
         goblinUsed: Number(saved.goblinUsed || 0),
         goblinStart: Number(saved.goblinStart || now),
-        crushUsed: Number(saved.crushUsed || 0),
-        crushStart: Number(saved.crushStart || now),
-        pinballUsed: Number(saved.pinballUsed || 0),
-        pinballStart: Number(saved.pinballStart || now),
         konamiLastClaim: Number(saved.konamiLastClaim || 0)
       };
     } catch {
       return {
-        slotUsed: 0,
-        slotStart: now,
         wheelUsed: 0,
         wheelStart: now,
         goblinUsed: 0,
         goblinStart: now,
-        crushUsed: 0,
-        crushStart: now,
-        pinballUsed: 0,
-        pinballStart: now,
         konamiLastClaim: 0
       };
     }
   });
-  const [nowClock, setNowClock] = useState(() => Date.now());
 
   // Phase 18: Silly Animated Screen Stampedes & Bubble Wrap Popper State
   const [stampedeSprites, setStampedeSprites] = useState([]);
@@ -252,9 +254,12 @@ export default function App() {
 
   // Phase 12–15: Chaos Reality Mutators, Golden Loot Goblin, Konami God Mode & Touch/Cursor Trails
   const [chaosMutator, setChaosMutator] = useState('none'); // 'none' | 'rave' | 'australian' | 'deepfry' | 'matrix'
-  const [cursorTrail, setCursorTrail] = useState(
-    () => localStorage.getItem('tm_cursor_trail') || 'fire'
-  );
+  const [cursorTrail, setCursorTrail] = useState(() => {
+    if (typeof window === 'undefined') return 'none';
+    const saved = localStorage.getItem('tm_cursor_trail');
+    if (saved) return saved;
+    return window.matchMedia?.('(pointer: coarse)').matches ? 'none' : 'fire';
+  });
   const [activeGoblin, setActiveGoblin] = useState(null);
   const [goblinsCaught, setGoblinsCaught] = useState(() =>
     Number(localStorage.getItem('tm_goblins') || 0)
@@ -346,8 +351,13 @@ export default function App() {
   }, [xp]);
 
   useEffect(() => {
+    tokensRef.current = tokens;
     saveTokenBalance(tokens);
   }, [tokens]);
+
+  useEffect(() => {
+    localStorage.setItem('tm_lite_perf_v1', String(litePerfMode));
+  }, [litePerfMode]);
 
   useEffect(() => {
     saveTokenLedger(tokenLedger);
@@ -442,19 +452,17 @@ export default function App() {
     localStorage.setItem('tm_rate_windows', JSON.stringify(rateWindows));
   }, [rateWindows]);
 
-  // Phase 17 & Sub-Games: Live Timed-Window Expiration & Cooldown Ticker
+  const [windowNow, setWindowNow] = useState(() => Date.now());
+
+  // Lightweight 30-second window expiration check (only runs when a cooldown is active — zero 1s re-render spam on older iPads!)
   useEffect(() => {
+    if (rateWindows.wheelUsed === 0 && rateWindows.goblinUsed === 0) return undefined;
     const timer = setInterval(() => {
       const now = Date.now();
-      setNowClock(now);
+      setWindowNow(now);
       setRateWindows((prev) => {
         let changed = false;
         const next = { ...prev };
-        if (prev.slotUsed > 0 && now - prev.slotStart >= ARCADE_RATE_LIMITS.SLOT_WINDOW_MS) {
-          next.slotUsed = 0;
-          next.slotStart = now;
-          changed = true;
-        }
         if (prev.wheelUsed > 0 && now - prev.wheelStart >= ARCADE_RATE_LIMITS.WHEEL_WINDOW_MS) {
           next.wheelUsed = 0;
           next.wheelStart = now;
@@ -465,36 +473,11 @@ export default function App() {
           next.goblinStart = now;
           changed = true;
         }
-        if (
-          prev.crushUsed > 0 &&
-          now - prev.crushStart >= ARCADE_ECONOMY_RULES.SUB_GAMES.CRUSH_WINDOW_MS
-        ) {
-          next.crushUsed = 0;
-          next.crushStart = now;
-          changed = true;
-        }
-        if (
-          prev.pinballUsed > 0 &&
-          now - prev.pinballStart >= ARCADE_ECONOMY_RULES.SUB_GAMES.PINBALL_WINDOW_MS
-        ) {
-          next.pinballUsed = 0;
-          next.pinballStart = now;
-          changed = true;
-        }
         return changed ? next : prev;
       });
-    }, 1000);
+    }, 30000);
     return () => clearInterval(timer);
-  }, []);
-
-  const slotPullsLeft = Math.max(
-    0,
-    ARCADE_RATE_LIMITS.SLOT_PULLS_PER_WINDOW - rateWindows.slotUsed
-  );
-  const slotResetMs =
-    rateWindows.slotUsed > 0
-      ? Math.max(0, ARCADE_RATE_LIMITS.SLOT_WINDOW_MS - (nowClock - rateWindows.slotStart))
-      : 0;
+  }, [rateWindows.wheelUsed, rateWindows.goblinUsed]);
 
   const wheelSpinsLeftInWindow = Math.max(
     0,
@@ -502,7 +485,7 @@ export default function App() {
   );
   const wheelResetMs =
     rateWindows.wheelUsed > 0
-      ? Math.max(0, ARCADE_RATE_LIMITS.WHEEL_WINDOW_MS - (nowClock - rateWindows.wheelStart))
+      ? Math.max(0, ARCADE_RATE_LIMITS.WHEEL_WINDOW_MS - (windowNow - rateWindows.wheelStart))
       : 0;
 
   const goblinsLeftInWindow = Math.max(
@@ -511,31 +494,7 @@ export default function App() {
   );
   const goblinResetMs =
     rateWindows.goblinUsed > 0
-      ? Math.max(0, ARCADE_RATE_LIMITS.GOBLIN_WINDOW_MS - (nowClock - rateWindows.goblinStart))
-      : 0;
-
-  const crushPlaysLeft = Math.max(
-    0,
-    ARCADE_ECONOMY_RULES.SUB_GAMES.CRUSH_PLAYS_PER_WINDOW - (rateWindows.crushUsed || 0)
-  );
-  const crushResetMs =
-    rateWindows.crushUsed > 0
-      ? Math.max(
-          0,
-          ARCADE_ECONOMY_RULES.SUB_GAMES.CRUSH_WINDOW_MS - (nowClock - rateWindows.crushStart)
-        )
-      : 0;
-
-  const pinballPlaysLeft = Math.max(
-    0,
-    ARCADE_ECONOMY_RULES.SUB_GAMES.PINBALL_PLAYS_PER_WINDOW - (rateWindows.pinballUsed || 0)
-  );
-  const pinballResetMs =
-    rateWindows.pinballUsed > 0
-      ? Math.max(
-          0,
-          ARCADE_ECONOMY_RULES.SUB_GAMES.PINBALL_WINDOW_MS - (nowClock - rateWindows.pinballStart)
-        )
+      ? Math.max(0, ARCADE_RATE_LIMITS.GOBLIN_WINDOW_MS - (windowNow - rateWindows.goblinStart))
       : 0;
 
   const uploadTokensRemainingToday = Math.max(
@@ -543,21 +502,12 @@ export default function App() {
     ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.upload - (tokenLedger?.byCategory?.upload || 0)
   );
 
-  const gameTokensRemainingToday = Math.max(
-    0,
-    Math.min(
-      ARCADE_ECONOMY_RULES.MAX_DAILY_TOKENS - (tokenLedger?.totalToday || 0),
-      ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.games - (tokenLedger?.byCategory?.games || 0)
-    )
+  const pioneerBonusAvailable = !hasActionBeenRewarded(tokenLedger, 'pioneer:first_upload');
+  const pinataClaimedToday = hasActionBeenRewarded(
+    tokenLedger,
+    `daily:pinata:${getTodayDateString()}`
   );
-
-  const konamiCooldownMs =
-    rateWindows.konamiLastClaim > 0
-      ? Math.max(
-          0,
-          ARCADE_RATE_LIMITS.KONAMI_COOLDOWN_MS - (nowClock - rateWindows.konamiLastClaim)
-        )
-      : 0;
+  const isFixedArcadeGame = ['slots', 'crush', 'pinball', 'stocks'].includes(viewMode);
 
   const addCappedWheelSpins = useCallback((delta = 1) => {
     setLootSpins((prev) =>
@@ -718,41 +668,19 @@ export default function App() {
   }, [comboTimer]);
 
   // ==========================================
-  // JUICE HELPERS: ROTATIONAL PARTICLES, XP & COMBO
+  // JUICE HELPERS: ISOLATED PARTICLE OVERLAY (ZERO ROOT APP RE-RENDERS!), XP & COMBO
   // ==========================================
-  const spawnParticles = useCallback((x, y, label, emoji = '🔥') => {
-    const idBase = Date.now() + Math.random();
-    const newItems = [
-      {
-        id: idBase,
-        x,
-        y,
-        text: label,
-        isText: true,
-        dx: (Math.random() - 0.5) * 45,
-        dy: -80,
-        rot: 0
+  const spawnParticles = useCallback(
+    (x, y, label, emoji = '🔥') => {
+      if (litePerfMode) return;
+      const fakeEvt = { clientX: x, clientY: y };
+      particleOverlayRef.current?.spawnParticles(fakeEvt, emoji, 5);
+      if (label) {
+        particleOverlayRef.current?.spawnComicPop(fakeEvt, label);
       }
-    ];
-    for (let i = 0; i < 8; i++) {
-      const angle = (Math.PI * 2 * i) / 8 + (Math.random() - 0.5) * 0.4;
-      const speed = 50 + Math.random() * 75;
-      newItems.push({
-        id: idBase + i + 1,
-        x,
-        y,
-        text: emoji,
-        isText: false,
-        dx: Math.cos(angle) * speed,
-        dy: Math.sin(angle) * speed - 45,
-        rot: Math.round((Math.random() - 0.5) * 260)
-      });
-    }
-    setParticles((prev) => [...prev.slice(-30), ...newItems]);
-    setTimeout(() => {
-      setParticles((prev) => prev.filter((p) => !newItems.some((n) => n.id === p.id)));
-    }, 960);
-  }, []);
+    },
+    [litePerfMode]
+  );
 
   const awardXpOnly = useCallback(
     (flatXp, event, emoji = '⚡', labelOverride = null) => {
@@ -834,6 +762,120 @@ export default function App() {
       awardXpOnly(Math.min(15, baseXp), event, emoji);
     },
     [awardXpOnly]
+  );
+
+  /**
+   * Atomic Token Wallet Spend / Wager Helper (Slots, Meme Stock Market, Crush & Pinball Stakes)
+   */
+  const handleSpendTokens = useCallback((cost) => {
+    const cleanCost = Math.max(0, Math.floor(Number(cost) || 0));
+    if (cleanCost <= 0) return true;
+    if (tokensRef.current < cleanCost) {
+      sfx.playSadTrombone();
+      return false;
+    }
+    tokensRef.current = Math.max(0, tokensRef.current - cleanCost);
+    setTokens(tokensRef.current);
+    return true;
+  }, []);
+
+  /**
+   * Verified Staked Game Payout Helper (Only pays out when real tokens were staked/invested!)
+   */
+  const handlePayoutGameTokens = useCallback(
+    (rawPayout, { stakedTokens = 0, xp: xpGain = 20, label = '', emoji = '🪙' } = {}) => {
+      const verified = validateStakedGamePayout({
+        stakedTokens,
+        rawPayout,
+        maxMultiplier: 55
+      });
+      if (verified <= 0) return 0;
+      tokensRef.current += verified;
+      setTokens(tokensRef.current);
+      if (xpGain > 0) {
+        awardXpOnly(xpGain, null, emoji, label || `+${verified} 🪙`);
+      }
+      return verified;
+    },
+    [awardXpOnly]
+  );
+
+  /**
+   * Skill-Based Dodging Piñata Win Handler (Strictly 1x/day, requires 8 moving hits before escape!)
+   */
+  const handleWinPinataReward = useCallback(
+    (e) => {
+      const res = awardFairReward({
+        category: 'quests',
+        requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.PINATA_WHACK_WIN.tokens,
+        xpGain: ARCADE_ECONOMY_RULES.REWARDS.PINATA_WHACK_WIN.xp,
+        actionKey: `daily:pinata:${getTodayDateString()}`,
+        event: e,
+        emoji: '🪅'
+      });
+      return res.awardedTokens || 0;
+    },
+    [awardFairReward]
+  );
+
+  /**
+   * Awards Primary Meme Upload Tokens + 1-Time +30 🪙 First-Upload Pioneer Bonus!
+   */
+  const awardUploadTokensWithPioneerCheck = useCallback(
+    ({ baseTokens, baseXp, event, emoji = '🚀' }) => {
+      let currentLedger = tokenLedger;
+      let totalAwarded = 0;
+
+      // 1. Check 1-time First-Ever Meme Upload Pioneer Bonus (+30 Tokens)
+      if (!hasActionBeenRewarded(currentLedger, 'pioneer:first_upload')) {
+        const pioneerRes = evaluateTokenAward({
+          ledger: currentLedger,
+          category: 'upload',
+          requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.FIRST_UPLOAD_BONUS.tokens,
+          actionKey: 'pioneer:first_upload'
+        });
+        if (pioneerRes.allowed) {
+          currentLedger = pioneerRes.nextLedger;
+          totalAwarded += pioneerRes.awardedTokens;
+        }
+      }
+
+      // 2. Award Primary Upload / Bounty / Remix Tokens (+45 / +60 / +35 Tokens)
+      const mainRes = evaluateTokenAward({
+        ledger: currentLedger,
+        category: 'upload',
+        requestedTokens: baseTokens,
+        actionKey: null
+      });
+      if (mainRes.allowed) {
+        currentLedger = mainRes.nextLedger;
+        totalAwarded += mainRes.awardedTokens;
+      }
+
+      setTokenLedger(currentLedger);
+      if (totalAwarded > 0) {
+        tokensRef.current += totalAwarded;
+        setTokens(tokensRef.current);
+      }
+
+      const gainedXp =
+        baseXp +
+        (totalAwarded > baseTokens ? ARCADE_ECONOMY_RULES.REWARDS.FIRST_UPLOAD_BONUS.xp : 0);
+      awardXpOnly(
+        gainedXp,
+        event,
+        emoji,
+        totalAwarded > 0 ? `+${totalAwarded} 🪙 & +${gainedXp} XP!` : `+${gainedXp} XP`
+      );
+
+      if (totalAwarded > baseTokens) {
+        setGoblinFortuneToast(
+          `🌟 FIRST MEME PIONEER BONUS UNLOCKED! +${totalAwarded} 🪙 Tokens added to your Arcade Wallet!`
+        );
+        setTimeout(() => setGoblinFortuneToast(''), 5500);
+      }
+    },
+    [tokenLedger, awardXpOnly]
   );
 
   // ==========================================
@@ -1176,7 +1218,7 @@ export default function App() {
       };
 
       sfx.playPop(combo);
-      if (text.length >= 3) {
+      if (text.length >= 6) {
         awardFairReward({
           category: 'engagement',
           requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.COMMENT_UNIQUE_MEME.tokens,
@@ -1592,11 +1634,9 @@ export default function App() {
     sfx.playLevelUp();
     incrementQuest('q-mutate', 1);
     addCappedWheelSpins(1);
-    awardFairReward({
-      category: 'upload',
-      requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens,
-      xpGain: ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.xp,
-      actionKey: null,
+    awardUploadTokensWithPioneerCheck({
+      baseTokens: ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens,
+      baseXp: ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.xp,
       event,
       emoji: '🚀'
     });
@@ -1746,24 +1786,20 @@ export default function App() {
     addCappedWheelSpins(1);
     if (activeBounty) {
       setBountiesCompleted((c) => c + 1);
-      awardFairReward({
-        category: 'upload',
-        requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.BOUNTY_UPLOAD.tokens,
-        xpGain: ARCADE_ECONOMY_RULES.REWARDS.BOUNTY_UPLOAD.xp,
-        actionKey: null,
+      awardUploadTokensWithPioneerCheck({
+        baseTokens: ARCADE_ECONOMY_RULES.REWARDS.BOUNTY_UPLOAD.tokens,
+        baseXp: ARCADE_ECONOMY_RULES.REWARDS.BOUNTY_UPLOAD.xp,
         event: e,
         emoji: '🎯'
       });
     } else {
-      awardFairReward({
-        category: 'upload',
-        requestedTokens: mutatingParentMeme
+      awardUploadTokensWithPioneerCheck({
+        baseTokens: mutatingParentMeme
           ? ARCADE_ECONOMY_RULES.REWARDS.REMIX_MEME.tokens
           : ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens,
-        xpGain: mutatingParentMeme
+        baseXp: mutatingParentMeme
           ? ARCADE_ECONOMY_RULES.REWARDS.REMIX_MEME.xp
           : ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.xp,
-        actionKey: null,
         event: e,
         emoji: mutatingParentMeme ? '🧬' : '🚀'
       });
@@ -2054,16 +2090,19 @@ export default function App() {
     setActiveGoblin({
       id: `gob-${Date.now()}`,
       topPct,
-      dir
+      dir,
+      manualSummon: true
     });
   }, [rateWindows]);
 
-  // Periodic Golden Loot Goblin Spawner every 90 seconds (respecting timed window limit)
+  // Periodic Golden Loot Goblin Spawner every 95 seconds (paused while playing fixed arcade games)
   useEffect(() => {
+    if (isFixedArcadeGame) return undefined;
     const timer = setInterval(() => {
       if (
         !bossKeyActive &&
         !activeGoblin &&
+        (typeof document === 'undefined' || !document.hidden) &&
         rateWindows.goblinUsed < ARCADE_RATE_LIMITS.GOBLINS_PER_WINDOW
       ) {
         const topPct = 20 + Math.floor(Math.random() * 52);
@@ -2071,20 +2110,21 @@ export default function App() {
         setActiveGoblin({
           id: `gob-${Date.now()}`,
           topPct,
-          dir
+          dir,
+          manualSummon: false
         });
       }
-    }, 90000);
+    }, 95000);
     return () => clearInterval(timer);
-  }, [bossKeyActive, activeGoblin, rateWindows.goblinUsed]);
+  }, [bossKeyActive, activeGoblin, rateWindows.goblinUsed, isFixedArcadeGame]);
 
   const handleCatchGoblin = useCallback(
     (e) => {
       if (!activeGoblin) return;
       e?.stopPropagation?.();
+      const wasManual = Boolean(activeGoblin.manualSummon);
       setActiveGoblin(null);
       setGoblinsCaught((c) => c + 1);
-      addCappedWheelSpins(1);
       setRateWindows((prev) => {
         const now = Date.now();
         const isFresh =
@@ -2098,22 +2138,32 @@ export default function App() {
 
       sfx.playJackpot();
       setTimeout(() => sfx.playRubberDuck(), 150);
-      const res = awardFairReward({
-        category: 'games',
-        requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.GOBLIN_CATCH.tokens,
-        xpGain: ARCADE_ECONOMY_RULES.REWARDS.GOBLIN_CATCH.xp,
-        actionKey: null,
-        event: e,
-        emoji: '👾'
-      });
 
-      const fortune = MEME_FORTUNES[Math.floor(Math.random() * MEME_FORTUNES.length)];
-      setGoblinFortuneToast(
-        `👾 CAUGHT GOLDEN GOBLIN! +${res.awardedTokens} 🪙 Tokens, +60 XP + 1 Free Spin! ${fortune}`
-      );
-      setTimeout(() => setGoblinFortuneToast(''), 6500);
+      if (wasManual) {
+        // Soundboard-summoned goblins are fun target practice (XP only — zero free token farming!)
+        awardXpOnly(20, e, '👾', '+20 XP (Practice Goblin)');
+        setGoblinFortuneToast(
+          '👾 PRACTICE GOBLIN CAUGHT! +20 XP! (Natural wild roaming goblins drop +5 🪙 1x/day!)'
+        );
+      } else {
+        const res = awardFairReward({
+          category: 'quests',
+          requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.GOBLIN_CATCH.tokens,
+          xpGain: ARCADE_ECONOMY_RULES.REWARDS.GOBLIN_CATCH.xp,
+          actionKey: `daily:goblin:${getTodayDateString()}`,
+          event: e,
+          emoji: '👾'
+        });
+        const fortune = MEME_FORTUNES[Math.floor(Math.random() * MEME_FORTUNES.length)];
+        setGoblinFortuneToast(
+          res.awardedTokens > 0
+            ? `👾 WILD GOLDEN GOBLIN CAUGHT! +${res.awardedTokens} 🪙 & +60 XP! ${fortune}`
+            : `👾 GOBLIN CAUGHT! (+20 XP — Daily Goblin token bonus already claimed today!)`
+        );
+      }
+      setTimeout(() => setGoblinFortuneToast(''), 5500);
     },
-    [activeGoblin, addCappedWheelSpins, awardFairReward]
+    [activeGoblin, awardFairReward, awardXpOnly]
   );
 
   // Phase 18: Launch Silly Animated Screen Stampedes & Interactive Bubble Wrap (Visual Toys Only — No Token Loophole)
@@ -2322,42 +2372,31 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, [handleTriggerKonamiGodMode]);
 
-  // Touch & Mouse Cursor Particle Trail Emitter
+  // Desktop Mouse Cursor Particle Trail Emitter (Disabled in Turbo FPS Mode & while inside Arcade Games)
   useEffect(() => {
-    if (!cursorTrail || cursorTrail === 'none') return;
+    if (!cursorTrail || cursorTrail === 'none' || litePerfMode || isFixedArcadeGame) {
+      return undefined;
+    }
     const trailObj = CURSOR_TRAILS.find((t) => t.id === cursorTrail);
-    if (!trailObj || !trailObj.emoji) return;
-
-    const emitTrailPoint = (clientX, clientY) => {
-      const now = Date.now();
-      if (now - lastTrailTimeRef.current < 110) return;
-      lastTrailTimeRef.current = now;
-
-      const item = {
-        id: `trail-${now}-${Math.random()}`,
-        x: clientX,
-        y: clientY,
-        text: trailObj.emoji,
-        isText: false,
-        dx: (Math.random() - 0.5) * 28,
-        dy: -24 - Math.random() * 20,
-        rot: Math.round((Math.random() - 0.5) * 90)
-      };
-      setParticles((prev) => [...prev.slice(-24), item]);
-      setTimeout(() => {
-        setParticles((prev) => prev.filter((p) => p.id !== item.id));
-      }, 650);
-    };
+    if (!trailObj || !trailObj.emoji) return undefined;
 
     const onPointerMove = (e) => {
+      if (e.pointerType === 'touch') return;
+      const now = Date.now();
+      if (now - lastTrailTimeRef.current < 160) return;
+      lastTrailTimeRef.current = now;
       if (e.clientX && e.clientY) {
-        emitTrailPoint(e.clientX, e.clientY);
+        particleOverlayRef.current?.spawnParticles(
+          { clientX: e.clientX, clientY: e.clientY },
+          trailObj.emoji,
+          1
+        );
       }
     };
 
     window.addEventListener('pointermove', onPointerMove, { passive: true });
     return () => window.removeEventListener('pointermove', onPointerMove);
-  }, [cursorTrail]);
+  }, [cursorTrail, litePerfMode, isFixedArcadeGame]);
 
   const handlePlaySoundboardPad = useCallback(
     (pad, e) => {
@@ -2481,152 +2520,39 @@ export default function App() {
         );
         setEquippedFlair(prize.flair);
       }
-      const tokenPrize = Math.min(
-        ARCADE_ECONOMY_RULES.MAX_TOKENS_PER_ROUND,
-        Math.max(10, Math.round((prize.xpBonus || 150) / 15))
-      );
-      awardFairReward({
-        category: 'games',
-        requestedTokens: tokenPrize,
-        xpGain: Math.min(200, prize.xpBonus || 120),
-        actionKey: null,
-        event: e,
-        emoji: '🎰'
-      });
-    },
-    [awardFairReward]
-  );
-
-  const handleCompleteSlotSpin = useCallback(
-    ({ tokensWon = 10, xpWon = 30, spinsWon = 0, flair = null }, e) => {
-      setRateWindows((prev) => {
-        const now = Date.now();
-        const isFresh =
-          prev.slotUsed === 0 || now - prev.slotStart >= ARCADE_RATE_LIMITS.SLOT_WINDOW_MS;
-        return {
-          ...prev,
-          slotUsed: isFresh ? 1 : prev.slotUsed + 1,
-          slotStart: isFresh ? now : prev.slotStart
-        };
-      });
-      if (spinsWon > 0) {
-        addCappedWheelSpins(spinsWon);
+      // Only 1 rare jackpot wedge on the Wheel of Chaos awards tokens (+8 🪙); all other wedges award Flairs & XP!
+      if (prize.id === 'xp-jackpot') {
+        awardFairReward({
+          category: 'quests',
+          requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.WHEEL_RARE_JACKPOT.tokens,
+          xpGain: ARCADE_ECONOMY_RULES.REWARDS.WHEEL_RARE_JACKPOT.xp,
+          actionKey: `daily:wheeljackpot:${getTodayDateString()}`,
+          event: e,
+          emoji: '🎰'
+        });
+      } else {
+        awardXpOnly(Math.min(180, prize.xpBonus || 120), e, '🎡');
       }
-      if (flair) {
-        setUnlockedFlairs((prev) => (prev.includes(flair) ? prev : [...prev, flair]));
-        setEquippedFlair(flair);
-      }
-      awardFairReward({
-        category: 'games',
-        requestedTokens: Math.min(ARCADE_ECONOMY_RULES.MAX_TOKENS_PER_ROUND, tokensWon),
-        xpGain: Math.min(120, xpWon),
-        actionKey: null,
-        event: e,
-        emoji: '🍒'
-      });
     },
-    [addCappedWheelSpins, awardFairReward]
+    [awardFairReward, awardXpOnly]
   );
-
-  const handleSpendTokensForSlotPulls = useCallback(() => {
-    const cost = 15;
-    if (tokens < cost) {
-      sfx.playSadTrombone();
-      return false;
-    }
-    sfx.playJackpot();
-    setTokens((prev) => Math.max(0, prev - cost));
-    setRateWindows((prev) => ({
-      ...prev,
-      slotUsed: 0,
-      slotStart: Date.now()
-    }));
-    return true;
-  }, [tokens]);
 
   const handleClaimQuestReward = useCallback(
     (quest, e) => {
       if (!quest || claimedQuests[quest.id]) return;
       const today = getTodayDateString();
       setClaimedQuests((prev) => ({ ...prev, [quest.id]: true }));
-      addCappedWheelSpins(1);
       sfx.playJackpot();
       awardFairReward({
         category: 'quests',
         requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.QUEST_CLAIM.tokens,
         xpGain: Math.min(150, quest.rewardXp || ARCADE_ECONOMY_RULES.REWARDS.QUEST_CLAIM.xp),
-        actionKey: `quest:${quest.id}:${today}`,
+        actionKey: `daily:quest:${quest.id}:${today}`,
         event: e,
         emoji: '🎁'
       });
     },
-    [claimedQuests, addCappedWheelSpins, awardFairReward]
-  );
-
-  // Phase 3 & 4 Sub-Games: Meme Crush Saga & Las Vegas Retro Pinball Fair Payouts
-  const handleCompleteSubGameRound = useCallback(
-    ({ gameId, requestedTokens = 10, xpEarned = 40 }) => {
-      setRateWindows((prev) => {
-        const now = Date.now();
-        if (gameId === 'crush') {
-          const isFresh =
-            prev.crushUsed === 0 || now - prev.crushStart >= ARCADE_RATE_LIMITS.CRUSH_WINDOW_MS;
-          return {
-            ...prev,
-            crushUsed: isFresh ? 1 : prev.crushUsed + 1,
-            crushStart: isFresh ? now : prev.crushStart
-          };
-        }
-        if (gameId === 'pinball') {
-          const isFresh =
-            prev.pinballUsed === 0 ||
-            now - prev.pinballStart >= ARCADE_RATE_LIMITS.PINBALL_WINDOW_MS;
-          return {
-            ...prev,
-            pinballUsed: isFresh ? 1 : prev.pinballUsed + 1,
-            pinballStart: isFresh ? now : prev.pinballStart
-          };
-        }
-        return prev;
-      });
-
-      const safeTokens = Math.min(
-        ARCADE_ECONOMY_RULES.MAX_TOKENS_PER_ROUND,
-        Math.max(0, Math.round(requestedTokens))
-      );
-      const res = awardFairReward({
-        category: 'games',
-        requestedTokens: safeTokens,
-        xpGain: Math.min(120, Math.max(15, xpEarned)),
-        actionKey: null,
-        event: null,
-        emoji: gameId === 'crush' ? '🍬' : '🎱'
-      });
-      return res;
-    },
-    [awardFairReward]
-  );
-
-  const handleSpendTokensForPlay = useCallback(
-    (gameId, cost = 15) => {
-      if (tokens < cost) {
-        sfx.playSadTrombone();
-        return false;
-      }
-      sfx.playJackpot();
-      setTokens((prev) => Math.max(0, prev - cost));
-      setRateWindows((prev) => {
-        if (gameId === 'crush') {
-          return { ...prev, crushUsed: Math.max(0, prev.crushUsed - 1) };
-        }
-        if (gameId === 'pinball') {
-          return { ...prev, pinballUsed: Math.max(0, prev.pinballUsed - 1) };
-        }
-        return prev;
-      });
-      return true;
-    },
-    [tokens]
+    [claimedQuests, awardFairReward]
   );
 
   const handleOpenAiRoast = useCallback(
@@ -2636,16 +2562,9 @@ export default function App() {
       setRoastModalMeme(meme);
       setRoastsRun((r) => r + 1);
       incrementQuest('q-roast', 1);
-      awardFairReward({
-        category: 'engagement',
-        requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.ROAST_MEME.tokens,
-        xpGain: ARCADE_ECONOMY_RULES.REWARDS.ROAST_MEME.xp,
-        actionKey: `roast:${meme.id}`,
-        event: e,
-        emoji: '🤖'
-      });
+      awardXpOnly(ARCADE_ECONOMY_RULES.REWARDS.ROAST_MEME.xp, e, '🤖');
     },
-    [incrementQuest, awardFairReward]
+    [incrementQuest, awardXpOnly]
   );
 
   const handlePostRoastComment = useCallback(
@@ -2659,21 +2578,14 @@ export default function App() {
         created_at: new Date().toISOString()
       };
       sfx.playAirhorn();
-      awardFairReward({
-        category: 'engagement',
-        requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.COMMENT_MEME.tokens,
-        xpGain: ARCADE_ECONOMY_RULES.REWARDS.COMMENT_MEME.xp,
-        actionKey: `roast-comment:${memeId}`,
-        event: e,
-        emoji: '🤖'
-      });
+      awardXpOnly(15, e, '🤖');
       setMemes((prev) =>
         prev.map((m) =>
           m.id === memeId ? { ...m, comments: [...(m.comments || []), newComment] } : m
         )
       );
     },
-    [user, awardFairReward]
+    [user, awardXpOnly]
   );
 
   // Keyboard shortcut for Boss Key Panic Screen ('Escape' exits Boss Mode, Shift+B toggles)
@@ -2930,18 +2842,33 @@ export default function App() {
     return () => window.removeEventListener('popstate', onPopState);
   }, [handleNavigateBack]);
 
-  // Lock background page scroll while any modal is open on mobile/desktop
+  // Lock background page scroll while any modal OR fixed iPad/iPhone arcade game is active
   useEffect(() => {
     if (typeof document === 'undefined') return;
-    if (isAnyModalOpen) {
+    if (isAnyModalOpen || isFixedArcadeGame) {
       document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     }
     return () => {
       document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     };
-  }, [isAnyModalOpen]);
+  }, [isAnyModalOpen, isFixedArcadeGame]);
+
+  // Synchronize ?mode= URL query parameter so direct links & refreshes preserve the active game
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.history?.replaceState) return;
+    const url = new URL(window.location.href);
+    if (viewMode && viewMode !== 'feed') {
+      url.searchParams.set('mode', viewMode);
+    } else {
+      url.searchParams.delete('mode');
+    }
+    window.history.replaceState(window.history.state, '', url.toString());
+  }, [viewMode]);
 
   const handleShareMeme = useCallback(
     (meme, e) => {
@@ -3051,7 +2978,11 @@ export default function App() {
   };
 
   return (
-    <div className={`tm-app ${screenShake ? 'tm-shake' : ''} tm-mutator-${chaosMutator}`}>
+    <div
+      className={`tm-app ${isFixedArcadeGame ? 'tm-app-game-fixed' : ''} ${
+        litePerfMode ? 'tm-lite-perf' : ''
+      } ${screenShake ? 'tm-shake' : ''} tm-mutator-${chaosMutator}`}
+    >
       {/* ACTIVE-BY-DEFAULT SYNTHWAVE PERSPECTIVE GRID & NEON GLOW BACKDROP */}
       <div className="tm-synthwave-bg" aria-hidden="true">
         <div className="tm-synthwave-glow" />
@@ -3062,17 +2993,17 @@ export default function App() {
       {crtOn && <div className="tm-crt-overlay" aria-hidden="true" />}
 
       {/* ROAMING GOLDEN LOOT GOBLIN SURPRISE EVENT */}
-      {activeGoblin && !bossKeyActive && (
+      {activeGoblin && !bossKeyActive && !isFixedArcadeGame && (
         <button
           type="button"
           key={activeGoblin.id}
           className={`tm-loot-goblin ${activeGoblin.dir}`}
           style={{ top: `${activeGoblin.topPct}%` }}
           onClick={handleCatchGoblin}
-          title="Catch the Golden Loot Goblin for +10 Tokens, +60 XP & +1 Free Spin!"
+          title="Catch the Wild Golden Loot Goblin (+5 Tokens max 1x/day & +40 XP)!"
         >
           <span className="tm-goblin-icon">👾✨</span>
-          <span className="tm-goblin-tag">CATCH ME! +10 🪙 &amp; +1 SPIN!</span>
+          <span className="tm-goblin-tag">CATCH ME! WILD LOOT!</span>
         </button>
       )}
 
@@ -3143,30 +3074,13 @@ export default function App() {
             DROP IMAGE TO UPLOAD OR LAUNCH MEME FORGE
           </h2>
           <p style={{ margin: 0, color: '#f472b6', fontWeight: 800 }}>
-            Instant Canvas Load (+40 🪙 Tokens &amp; +100 XP)
+            Instant Canvas Load ({pioneerBonusAvailable ? '+75 🪙 First Upload Bonus' : '+45 🪙 Tokens'} &amp; +120 XP)
           </p>
         </div>
       )}
 
-      {/* FLOATING PHYSICS PARTICLES OVERLAY */}
-      {particles.map((p) => (
-        <div
-          key={p.id}
-          className="tm-particle"
-          style={{
-            left: p.x,
-            top: p.y,
-            '--dx': `${p.dx}px`,
-            '--dy': `${p.dy}px`,
-            '--rot': `${p.rot || 0}deg`,
-            fontSize: p.isText ? '16px' : '24px',
-            color: '#facc15',
-            textShadow: '0 2px 8px rgba(0,0,0,0.9)'
-          }}
-        >
-          {p.text}
-        </div>
-      ))}
+      {/* ISOLATED FLOATING PHYSICS PARTICLES OVERLAY (ZERO ROOT RE-RENDERS) */}
+      <ParticleOverlay ref={particleOverlayRef} litePerfMode={litePerfMode} />
 
       {/* LEVEL UP BANNER */}
       {levelUpBanner && (
@@ -3183,267 +3097,382 @@ export default function App() {
         />
       )}
 
-      {/* PHASE 1: SIMPLIFIED TOP NAVIGATION & FAIR TOKEN WALLET HUD */}
-      <NavbarHud
-        comboTimer={comboTimer}
-        combo={combo}
-        dbStatus={dbStatus}
-        currentRank={currentRank}
-        equippedFlair={equippedFlair}
-        xp={xp}
-        xpProgress={xpProgress}
-        tokens={tokens}
-        dailyTokensEarned={tokenLedger?.totalToday || 0}
-        viewMode={viewMode}
-        onSelectViewMode={(mode) => {
-          sfx.playToggle();
-          closeAllModals();
-          setViewMode(mode);
-        }}
-        crtOn={crtOn}
-        onToggleCrt={() => {
-          sfx.playToggle();
-          setCrtOn((prev) => !prev);
-        }}
-        soundOn={soundOn}
-        onToggleSound={() => {
-          const nextState = !soundOn;
-          sfx.enabled = nextState;
-          setSoundOn(nextState);
-          if (nextState) sfx.playBoing(2);
-        }}
-        onOpenBlankStudio={() => {
-          closeAllModals();
-          handleOpenBlankStudio();
-        }}
-        onOpenLeaderboard={() => {
-          sfx.playToggle();
-          closeAllModals();
-          setShowLeaderboard(true);
-        }}
-        onOpenRewards={() => {
-          sfx.playToggle();
-          closeAllModals();
-          setShowRewardsModal(true);
-        }}
-        unclaimedRewardsCount={unclaimedRewardsCount}
-        onOpenProfile={(username) => {
-          sfx.playToggle();
-          closeAllModals();
-          setProfileUsername(username);
-        }}
-        user={user}
-        onLogout={() => {
-          const client = getSupabaseClient();
-          client?.auth?.signOut?.().catch(() => {});
-          setUser(null);
-          localStorage.removeItem('tm_user');
-        }}
-        onOpenAuthModal={() => {
-          closeAllModals();
-          setShowAuthModal(true);
-        }}
-        onResetFeed={(e) => {
-          const now = Date.now();
-          if (now - logoTapRef.current.lastTap < 650) {
-            logoTapRef.current.count += 1;
-          } else {
-            logoTapRef.current.count = 1;
-          }
-          logoTapRef.current.lastTap = now;
-
-          if (logoTapRef.current.count >= 5) {
-            logoTapRef.current.count = 0;
-            handleTriggerKonamiGodMode(e);
-            return;
-          }
-
-          sfx.playToggle();
-          closeAllModals();
-          setViewMode('feed');
-          setCategory('all');
-          setSearchQuery('');
-          window.scrollTo?.({ top: 0, behavior: 'smooth' });
-        }}
-        canGoBack={activeNavDepth > 0}
-        onNavigateBack={handleNavigateBack}
-      />
-
-      {/* PHASE 1: MEME-FIRST MODE SWITCHER, DISCOVERY TABS & SEARCH */}
-      <section className="tm-controls">
-        <div className="tm-mode-switch">
+      {/* FIXED NON-SCROLLING IPAD/IPHONE ARCADE TOP BAR VS FULL FEED NAVIGATION */}
+      {isFixedArcadeGame ? (
+        <header className="tm-fixed-arcade-bar" aria-label="Fixed Arcade Cabinet Bar">
           <button
             type="button"
-            className={`tm-mode-btn ${viewMode === 'feed' ? 'active' : ''}`}
-            onClick={() => setViewMode('feed')}
-          >
-            📱 Memes ({uploadStats.totalUploads})
-          </button>
-          <button
-            type="button"
-            className={`tm-mode-btn ${viewMode === 'reels' ? 'active' : ''}`}
-            onClick={() => setViewMode('reels')}
-            title="Full-Screen Vertical Meme Reels"
-          >
-            🎬 Reels
-          </button>
-          <button
-            type="button"
-            className={`tm-mode-btn ${viewMode === 'swipe' ? 'active' : ''}`}
-            onClick={() => setViewMode('swipe')}
-          >
-            ⚡ Swipe
-          </button>
-          <button
-            type="button"
-            className={`tm-mode-btn ${viewMode === 'battle' ? 'active' : ''}`}
-            onClick={() => setViewMode('battle')}
-          >
-            ⚔️ 1v1 Arena
-          </button>
-          <span className="tm-mode-divider" aria-hidden="true">
-            🕹️ SIDE GAMES:
-          </span>
-          <button
-            type="button"
-            className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'slots' ? 'active' : ''}`}
+            className="tm-fixed-back-btn"
             onClick={() => {
-              sfx.playSlotLeverPull();
-              setViewMode('slots');
+              sfx.playToggle();
+              setViewMode('feed');
             }}
-            title="Play THE MEMES.net Las Vegas 777 Slot Machine"
           >
-            🎰 Vegas Slots <span className="tm-mode-hot-badge">777</span>
+            ← Memes
           </button>
-          <button
-            type="button"
-            className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'crush' ? 'active' : ''}`}
-            onClick={() => {
-              sfx.playCandyMatch(2);
-              setViewMode('crush');
-            }}
-            title="Play Meme Crush Saga (Candy-Crush Style Match-3 Puzzle Side Game)"
-          >
-            🍬 Meme Crush <span className="tm-mode-hot-badge">JELLY</span>
-          </button>
-          <button
-            type="button"
-            className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'pinball' ? 'active' : ''}`}
-            onClick={() => {
-              sfx.playPinballBumper(0);
-              setViewMode('pinball');
-            }}
-            title="Play Las Vegas Retro Pinball Machine"
-          >
-            🎱 Pinball
-          </button>
-        </div>
 
-        {viewMode === 'feed' && (
-          <div className="tm-tabs">
+          <nav className="tm-fixed-game-pills" aria-label="Switch Arcade Game">
             <button
               type="button"
-              className={`tm-tab ${sortBy === 'latest' && !showSavedOnly ? 'active' : ''}`}
+              className={`tm-fixed-game-pill ${viewMode === 'slots' ? 'active' : ''}`}
               onClick={() => {
-                setShowSavedOnly(false);
-                setSortBy('latest');
+                sfx.playToggle();
+                setViewMode('slots');
               }}
             >
-              ⚡ Latest
+              🎰 Slots
             </button>
             <button
               type="button"
-              className={`tm-tab ${sortBy === 'top' && !showSavedOnly ? 'active' : ''}`}
+              className={`tm-fixed-game-pill ${viewMode === 'stocks' ? 'active' : ''}`}
               onClick={() => {
-                setShowSavedOnly(false);
-                setSortBy('top');
+                sfx.playToggle();
+                setViewMode('stocks');
               }}
             >
-              🔥 Top
+              📈 Stocks
             </button>
             <button
               type="button"
-              className={`tm-tab ${sortBy === 'new24h' && !showSavedOnly ? 'active' : ''}`}
+              className={`tm-fixed-game-pill ${viewMode === 'crush' ? 'active' : ''}`}
               onClick={() => {
-                setShowSavedOnly(false);
-                setSortBy('new24h');
+                sfx.playToggle();
+                setViewMode('crush');
               }}
-              title="Memes uploaded in the last 24 hours"
             >
-              🆕 New ({uploadStats.newTodayCount})
+              🍬 Crush
             </button>
             <button
               type="button"
-              className="tm-tab tm-tab-surprise"
+              className={`tm-fixed-game-pill ${viewMode === 'pinball' ? 'active' : ''}`}
               onClick={() => {
-                if (filteredMemes.length > 0) {
-                  const pick = filteredMemes[Math.floor(Math.random() * filteredMemes.length)];
-                  handleOpenTheater(pick);
-                } else {
-                  sfx.playBoing(2);
-                }
+                sfx.playToggle();
+                setViewMode('pinball');
               }}
-              title="Open a random community meme!"
             >
-              🎲 Random Meme
+              🎱 Pinball
+            </button>
+          </nav>
+
+          <div className="tm-fixed-bar-right">
+            <button
+              type="button"
+              className="tm-fixed-wallet-pill"
+              onClick={() => {
+                sfx.playToggle();
+                setShowRewardsModal(true);
+              }}
+              title="Open Token Wallet & Daily Quests"
+            >
+              🪙 <strong>{tokens}</strong>
             </button>
             <button
               type="button"
-              className={`tm-tab ${showSavedOnly ? 'active' : ''}`}
-              onClick={() => setShowSavedOnly((prev) => !prev)}
-              title="View your saved favorite memes"
+              className={`tm-fixed-icon-btn ${litePerfMode ? 'active' : ''}`}
+              onClick={() => {
+                sfx.playToggle();
+                setLitePerfMode((prev) => !prev);
+              }}
+              title="Toggle iPad/Mobile Turbo FPS Mode"
             >
-              ⭐ Saved ({bookmarkedIds.length})
+              ⚡
             </button>
-            {['all', 'dank', 'tech', 'gaming', 'relatable'].map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                className={`tm-tab ${category === cat && !showSavedOnly ? 'active' : ''}`}
-                onClick={() => {
-                  setShowSavedOnly(false);
-                  setCategory(cat);
-                }}
-              >
-                #{cat.toUpperCase()}
-              </button>
-            ))}
+            <button
+              type="button"
+              className="tm-fixed-icon-btn"
+              onClick={() => {
+                const nextState = !soundOn;
+                sfx.enabled = nextState;
+                setSoundOn(nextState);
+                if (nextState) sfx.playBoing(2);
+              }}
+              title={soundOn ? 'Mute Arcade Audio' : 'Unmute Arcade Audio'}
+            >
+              {soundOn ? '🔊' : '🔇'}
+            </button>
           </div>
-        )}
+        </header>
+      ) : (
+        <>
+          {/* PHASE 1: SIMPLIFIED TOP NAVIGATION & FAIR TOKEN WALLET HUD */}
+          <NavbarHud
+            comboTimer={comboTimer}
+            combo={combo}
+            dbStatus={dbStatus}
+            currentRank={currentRank}
+            equippedFlair={equippedFlair}
+            xp={xp}
+            xpProgress={xpProgress}
+            tokens={tokens}
+            dailyTokensEarned={tokenLedger?.totalToday || 0}
+            viewMode={viewMode}
+            onSelectViewMode={(mode) => {
+              sfx.playToggle();
+              closeAllModals();
+              setViewMode(mode);
+            }}
+            litePerfMode={litePerfMode}
+            onToggleLitePerf={() => {
+              sfx.playToggle();
+              setLitePerfMode((prev) => !prev);
+            }}
+            crtOn={crtOn}
+            onToggleCrt={() => {
+              sfx.playToggle();
+              setCrtOn((prev) => !prev);
+            }}
+            soundOn={soundOn}
+            onToggleSound={() => {
+              const nextState = !soundOn;
+              sfx.enabled = nextState;
+              setSoundOn(nextState);
+              if (nextState) sfx.playBoing(2);
+            }}
+            onOpenBlankStudio={() => {
+              closeAllModals();
+              handleOpenBlankStudio();
+            }}
+            onOpenLeaderboard={() => {
+              sfx.playToggle();
+              closeAllModals();
+              setShowLeaderboard(true);
+            }}
+            onOpenRewards={() => {
+              sfx.playToggle();
+              closeAllModals();
+              setShowRewardsModal(true);
+            }}
+            unclaimedRewardsCount={unclaimedRewardsCount}
+            onOpenProfile={(username) => {
+              sfx.playToggle();
+              closeAllModals();
+              setProfileUsername(username);
+            }}
+            user={user}
+            onLogout={() => {
+              const client = getSupabaseClient();
+              client?.auth?.signOut?.().catch(() => {});
+              setUser(null);
+              localStorage.removeItem('tm_user');
+            }}
+            onOpenAuthModal={() => {
+              closeAllModals();
+              setShowAuthModal(true);
+            }}
+            onResetFeed={(e) => {
+              const now = Date.now();
+              if (now - logoTapRef.current.lastTap < 650) {
+                logoTapRef.current.count += 1;
+              } else {
+                logoTapRef.current.count = 1;
+              }
+              logoTapRef.current.lastTap = now;
 
-        <div className="tm-controls-right">
-          {viewMode === 'feed' && (
-            <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', flex: 1 }}>
-              <input
-                type="text"
-                className="tm-input tm-search-input"
-                placeholder="Search memes..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              {searchQuery && (
+              if (logoTapRef.current.count >= 5) {
+                logoTapRef.current.count = 0;
+                handleTriggerKonamiGodMode(e);
+                return;
+              }
+
+              sfx.playToggle();
+              closeAllModals();
+              setViewMode('feed');
+              setCategory('all');
+              setSearchQuery('');
+              window.scrollTo?.({ top: 0, behavior: 'smooth' });
+            }}
+            canGoBack={activeNavDepth > 0}
+            onNavigateBack={handleNavigateBack}
+          />
+
+          {/* PHASE 1: MEME-FIRST MODE SWITCHER, DISCOVERY TABS & SEARCH */}
+          <section className="tm-controls">
+            <div className="tm-mode-switch">
+              <button
+                type="button"
+                className={`tm-mode-btn ${viewMode === 'feed' ? 'active' : ''}`}
+                onClick={() => setViewMode('feed')}
+              >
+                📱 Memes ({uploadStats.totalUploads})
+              </button>
+              <button
+                type="button"
+                className={`tm-mode-btn ${viewMode === 'reels' ? 'active' : ''}`}
+                onClick={() => setViewMode('reels')}
+                title="Full-Screen Vertical Meme Reels"
+              >
+                🎬 Reels
+              </button>
+              <button
+                type="button"
+                className={`tm-mode-btn ${viewMode === 'swipe' ? 'active' : ''}`}
+                onClick={() => setViewMode('swipe')}
+              >
+                ⚡ Swipe
+              </button>
+              <button
+                type="button"
+                className={`tm-mode-btn ${viewMode === 'battle' ? 'active' : ''}`}
+                onClick={() => setViewMode('battle')}
+              >
+                ⚔️ 1v1 Arena
+              </button>
+              <span className="tm-mode-divider" aria-hidden="true">
+                🕹️ TOKEN GAMES:
+              </span>
+              <button
+                type="button"
+                className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'slots' ? 'active' : ''}`}
+                onClick={() => {
+                  sfx.playSlotLeverPull();
+                  setViewMode('slots');
+                }}
+                title="Play Classic Las Vegas One-Arm Bandit 777 Slot Machine"
+              >
+                🎰 Vegas Slots <span className="tm-mode-hot-badge">777</span>
+              </button>
+              <button
+                type="button"
+                className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'stocks' ? 'active' : ''}`}
+                onClick={() => {
+                  sfx.playStockBell?.(true);
+                  setViewMode('stocks');
+                }}
+                title="Trade Funny Meme Stocks on MEMEDAQ '86!"
+              >
+                📈 Meme Stocks <span className="tm-mode-hot-badge">NEW</span>
+              </button>
+              <button
+                type="button"
+                className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'crush' ? 'active' : ''}`}
+                onClick={() => {
+                  sfx.playCandyMatch(2);
+                  setViewMode('crush');
+                }}
+                title="Play 10-Level 80s Neon Meme Crush Saga"
+              >
+                🍬 Meme Crush <span className="tm-mode-hot-badge">10 LVLS</span>
+              </button>
+              <button
+                type="button"
+                className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'pinball' ? 'active' : ''}`}
+                onClick={() => {
+                  sfx.playPinballBumper(0);
+                  setViewMode('pinball');
+                }}
+                title="Play 5-Table 80s Neon Cyber-Pinball"
+              >
+                🎱 Pinball <span className="tm-mode-hot-badge">5 TBLS</span>
+              </button>
+            </div>
+
+            {viewMode === 'feed' && (
+              <div className="tm-tabs">
                 <button
                   type="button"
-                  onClick={() => setSearchQuery('')}
-                  aria-label="Clear search"
-                  style={{
-                    position: 'absolute',
-                    right: '8px',
-                    background: 'none',
-                    border: 'none',
-                    color: '#94a3b8',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    padding: '2px 4px'
+                  className={`tm-tab ${sortBy === 'latest' && !showSavedOnly ? 'active' : ''}`}
+                  onClick={() => {
+                    setShowSavedOnly(false);
+                    setSortBy('latest');
                   }}
                 >
-                  ✕
+                  ⚡ Latest
                 </button>
+                <button
+                  type="button"
+                  className={`tm-tab ${sortBy === 'top' && !showSavedOnly ? 'active' : ''}`}
+                  onClick={() => {
+                    setShowSavedOnly(false);
+                    setSortBy('top');
+                  }}
+                >
+                  🔥 Top
+                </button>
+                <button
+                  type="button"
+                  className={`tm-tab ${sortBy === 'new24h' && !showSavedOnly ? 'active' : ''}`}
+                  onClick={() => {
+                    setShowSavedOnly(false);
+                    setSortBy('new24h');
+                  }}
+                  title="Memes uploaded in the last 24 hours"
+                >
+                  🆕 New ({uploadStats.newTodayCount})
+                </button>
+                <button
+                  type="button"
+                  className="tm-tab tm-tab-surprise"
+                  onClick={() => {
+                    if (filteredMemes.length > 0) {
+                      const pick = filteredMemes[Math.floor(Math.random() * filteredMemes.length)];
+                      handleOpenTheater(pick);
+                    } else {
+                      sfx.playBoing(2);
+                    }
+                  }}
+                  title="Open a random community meme!"
+                >
+                  🎲 Random Meme
+                </button>
+                <button
+                  type="button"
+                  className={`tm-tab ${showSavedOnly ? 'active' : ''}`}
+                  onClick={() => setShowSavedOnly((prev) => !prev)}
+                  title="View your saved favorite memes"
+                >
+                  ⭐ Saved ({bookmarkedIds.length})
+                </button>
+                {['all', 'dank', 'tech', 'gaming', 'relatable'].map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    className={`tm-tab ${category === cat && !showSavedOnly ? 'active' : ''}`}
+                    onClick={() => {
+                      setShowSavedOnly(false);
+                      setCategory(cat);
+                    }}
+                  >
+                    #{cat.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="tm-controls-right">
+              {viewMode === 'feed' && (
+                <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', flex: 1 }}>
+                  <input
+                    type="text"
+                    className="tm-input tm-search-input"
+                    placeholder="Search memes..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      aria-label="Clear search"
+                      style={{
+                        position: 'absolute',
+                        right: '8px',
+                        background: 'none',
+                        border: 'none',
+                        color: '#94a3b8',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        padding: '2px 4px'
+                      }}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
-      </section>
+          </section>
+        </>
+      )}
 
       {/* MODE 1: HERO MEME FEED FIRST (ON IPHONE & DESKTOP) + SIDE ENTERTAINMENT BELOW */}
       {viewMode === 'feed' && (
@@ -3465,6 +3494,7 @@ export default function App() {
             }}
             onAcceptBounty={handleAcceptBounty}
             uploadTokensRemainingToday={uploadTokensRemainingToday}
+            pioneerBonusAvailable={pioneerBonusAvailable}
           />
 
           {reportedMemeIds.length > 0 && (
@@ -3504,7 +3534,9 @@ export default function App() {
                 <p style={{ color: '#94a3b8', maxWidth: '540px', margin: '0 auto 18px', fontSize: '14px', lineHeight: 1.55 }}>
                   {showSavedOnly
                     ? 'Tap the ⭐ button on any meme card to save your favorites here for quick access.'
-                    : 'Use the 1-Click Quick-Upload Bar above, drop an image anywhere on screen, or paste (Ctrl+V) to post your meme and earn +40 🪙 Arcade Tokens & +100 XP!'}
+                    : `Use the 1-Click Quick-Upload Bar above, drop an image anywhere on screen, or paste (Ctrl+V) to post your meme and earn ${
+                        pioneerBonusAvailable ? '+75 🪙 First-Upload Pioneer Bonus' : '+45 🪙 Arcade Tokens'
+                      } & +120 XP — then gamble or invest your tokens in the 80s Arcade!`}
                 </p>
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
                   <button
@@ -3512,7 +3544,7 @@ export default function App() {
                     className="tm-btn tm-btn-primary"
                     onClick={() => quickUploadInputRef.current?.click()}
                   >
-                    📥 Select Photo / Screenshot (+40 🪙 &amp; +100 XP)
+                    📥 Select Photo / Screenshot ({pioneerBonusAvailable ? '+75 🪙 First Upload!' : '+45 🪙 & +120 XP'})
                   </button>
                   {(showSavedOnly || sortBy === 'new24h' || category !== 'all' || searchQuery.trim()) && (
                     <button
@@ -3560,15 +3592,15 @@ export default function App() {
                   />
                   {idx === 3 && (
                     <article className="tm-card tm-infeed-arcade-card" aria-label="Side Entertainment Arcade Break">
-                      <div className="tm-infeed-arcade-badge">🕹️ SIDE ENTERTAINMENT LOUNGE</div>
-                      <div style={{ fontSize: '36px', margin: '6px 0' }}>🎰🍬🎱</div>
+                      <div className="tm-infeed-arcade-badge">🕹️ 80s NEON TOKEN ARCADE</div>
+                      <div style={{ fontSize: '34px', margin: '6px 0' }}>🎰📈🍬🎱</div>
                       <h3 style={{ margin: '0 0 6px', fontSize: '18px', color: '#facc15' }}>
-                        QUICK 60-SECOND SIDE-GAME BREAK?
+                        READY TO GAMBLE OR INVEST YOUR MEME TOKENS?
                       </h3>
                       <p style={{ margin: '0 0 12px', fontSize: '12.5px', color: '#cbd5e1', lineHeight: 1.5 }}>
-                        Pull the lever on <strong>🎰 Vegas 777 Slots</strong>, shatter Crystal Jelly in{' '}
-                        <strong>🍬 Meme Crush</strong>, or launch <strong>🎱 Vegas Pinball</strong> for up to{' '}
-                        <strong>+50 🪙 Tokens</strong>!
+                        Pull the <strong>🎰 One-Arm Bandit</strong>, trade meme stonks on{' '}
+                        <strong>📈 MEMEDAQ &apos;86</strong>, conquer 10 levels of <strong>🍬 Meme Crush</strong>, or play 5 tables of{' '}
+                        <strong>🎱 80s Pinball</strong>!
                       </p>
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
                         <button
@@ -3579,7 +3611,17 @@ export default function App() {
                             setViewMode('slots');
                           }}
                         >
-                          🎰 Vegas 777 Slots
+                          🎰 One-Arm Bandit
+                        </button>
+                        <button
+                          type="button"
+                          className="tm-btn tm-btn-primary"
+                          onClick={() => {
+                            sfx.playStockBell?.(true);
+                            setViewMode('stocks');
+                          }}
+                        >
+                          📈 Meme Stocks
                         </button>
                         <button
                           type="button"
@@ -3599,7 +3641,7 @@ export default function App() {
                             setViewMode('pinball');
                           }}
                         >
-                          🎱 Vegas Pinball
+                          🎱 80s Pinball
                         </button>
                       </div>
                     </article>
@@ -3652,16 +3694,16 @@ export default function App() {
             onLaunchStampede={handleLaunchStampede}
           />
 
-          {/* SIDE ENTERTAINMENT LOUNGE: FEATURED ARCADE SUB-GAMES BELOW THE MEME FEED */}
+          {/* SIDE ENTERTAINMENT LOUNGE: FEATURED 80s NEON ARCADE SUB-GAMES BELOW THE MEME FEED */}
           <section className="tm-arcade-steer-shell" aria-label="Side Entertainment Arcade Lounge">
             <div className="tm-arcade-steer-section-head">
-              <span className="tm-arcade-steer-eyebrow">🕹️ SIDE ENTERTAINMENT LOUNGE</span>
+              <span className="tm-arcade-steer-eyebrow">🕹️ 80s NEON TOKEN CASINO &amp; ARCADE LOUNGE</span>
               <h2 className="tm-arcade-steer-heading">
-                Need a Break Between Memes? Try Our Retro Vegas &amp; Candy Arcade Cabinets
+                Earn 🪙 Tokens by Uploading Memes — Then Wager, Trade &amp; Play in Fixed Non-Scroll Cabinets
               </h2>
             </div>
-            <div className="tm-arcade-steer-grid tm-arcade-steer-grid-3">
-              {/* Cabinet 1: THE MEMES.net Las Vegas 777 Slot Machine */}
+            <div className="tm-arcade-steer-grid tm-arcade-steer-grid-4">
+              {/* Cabinet 1: Authentic Las Vegas One-Arm Bandit 777 Slot Machine */}
               <div
                 className="tm-arcade-steer-card tm-steer-slots"
                 onClick={() => {
@@ -3670,24 +3712,25 @@ export default function App() {
                 }}
               >
                 <div className="tm-arcade-steer-top">
-                  <span className="tm-arcade-steer-pill">🎰 VEGAS 777 CABINET • REEL HOLD &amp; NUDGE</span>
+                  <span className="tm-arcade-steer-pill">🎰 ONE-ARM BANDIT • 777 / BAR / BELL / CHERRY</span>
                   <span className="tm-arcade-steer-best">
-                    🎟️ {slotPullsLeft} Free Pulls
+                    🏆 Best: {Number(localStorage.getItem('tm_slots_best_win') || 0).toLocaleString()} 🪙
                   </span>
                 </div>
                 <div className="tm-arcade-steer-body">
-                  <div className="tm-arcade-steer-icons">7️⃣💎🐸🍒</div>
+                  <div className="tm-arcade-steer-icons">🎰💎🔔🍒</div>
                   <div>
-                    <h3 className="tm-arcade-steer-title">VEGAS 777 NEON SLOTS</h3>
+                    <h3 className="tm-arcade-steer-title">LAS VEGAS ONE-ARM BANDIT</h3>
                     <p className="tm-arcade-steer-desc">
-                      Pull the physical 3D chrome lever! Lock reels with <strong>🔒 HOLD</strong>, bump
-                      drums with <strong>⏫ NUDGE</strong> &amp; hit the <strong>777 Progressive Jackpot</strong>!
+                      Authentic curved mechanical drums with <strong>Flaming 777s</strong>,{' '}
+                      <strong>Triple Gold BARs</strong>, <strong>Liberty Bells</strong>,{' '}
+                      <strong>Twin Cherries</strong> &amp; 3D chrome pull-lever!
                     </p>
                   </div>
                 </div>
                 <div className="tm-arcade-steer-footer">
                   <span className="tm-arcade-steer-payout">
-                    🪙 Up to 50 Tokens + VIP Flairs
+                    🪙 Wager 5–50 Tokens • Up to 40× Jackpot
                   </span>
                   <button
                     type="button"
@@ -3698,12 +3741,54 @@ export default function App() {
                       setViewMode('slots');
                     }}
                   >
-                    ▶ Pull Vegas Slots
+                    ▶ Pull Bandit Lever
                   </button>
                 </div>
               </div>
 
-              {/* Cabinet 2: Meme Crush Saga */}
+              {/* Cabinet 2: MEMEDAQ '86 Meme Stock Market Simulator */}
+              <div
+                className="tm-arcade-steer-card tm-steer-stocks"
+                onClick={() => {
+                  sfx.playStockBell?.(true);
+                  setViewMode('stocks');
+                }}
+              >
+                <div className="tm-arcade-steer-top">
+                  <span className="tm-arcade-steer-pill">📈 MEMEDAQ &apos;86 • LIVE WALL ST TERMINAL</span>
+                  <span className="tm-arcade-steer-best">
+                    🏆 Peak: {Number(localStorage.getItem('tm_stocks_highscore') || 0).toLocaleString()} 🪙
+                  </span>
+                </div>
+                <div className="tm-arcade-steer-body">
+                  <div className="tm-arcade-steer-icons">📈🐕🐸🚀</div>
+                  <div>
+                    <h3 className="tm-arcade-steer-title">STOCK MARKET SIMULATOR</h3>
+                    <p className="tm-arcade-steer-desc">
+                      Buy low &amp; sell high on <strong>$DOGE</strong>, <strong>$CHAD</strong>,{' '}
+                      <strong>$PEPE</strong>, <strong>$CATS</strong> &amp; <strong>$MOON</strong> with live neon CRT charts &amp; breaking news!
+                    </p>
+                  </div>
+                </div>
+                <div className="tm-arcade-steer-footer">
+                  <span className="tm-arcade-steer-payout">
+                    🪙 Trade Real Tokens • Insider Rumor Hotline
+                  </span>
+                  <button
+                    type="button"
+                    className="tm-btn tm-btn-primary tm-arcade-steer-cta"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      sfx.playStockBell?.(true);
+                      setViewMode('stocks');
+                    }}
+                  >
+                    ▶ Trade Meme Stocks
+                  </button>
+                </div>
+              </div>
+
+              {/* Cabinet 3: Meme Crush Saga (10 Distinct 80s Neon Levels) */}
               <div
                 className="tm-arcade-steer-card tm-steer-crush"
                 onClick={() => {
@@ -3712,24 +3797,24 @@ export default function App() {
                 }}
               >
                 <div className="tm-arcade-steer-top">
-                  <span className="tm-arcade-steer-pill">🍬 GLOSSY JELLY PUZZLE • 🧊 CRYSTAL CLEAR</span>
+                  <span className="tm-arcade-steer-pill">🍬 10 NEON LEVELS • MIXTAPE &amp; ICE LOCKS</span>
                   <span className="tm-arcade-steer-best">
                     🏆 Best: {Number(localStorage.getItem('tm_crush_highscore') || 0).toLocaleString()} pts
                   </span>
                 </div>
                 <div className="tm-arcade-steer-body">
-                  <div className="tm-arcade-steer-icons">🐸🚀💥🌈</div>
+                  <div className="tm-arcade-steer-icons">🍬📼🔒🌈</div>
                   <div>
-                    <h3 className="tm-arcade-steer-title">MEME CRUSH SAGA</h3>
+                    <h3 className="tm-arcade-steer-title">MEME CRUSH — 10 LEVELS</h3>
                     <p className="tm-arcade-steer-desc">
-                      Shatter <strong>🧊 Crystal Jelly</strong> with <strong>🚀 2×2 Seeking Rockets</strong>,{' '}
-                      <strong>💥 3×3 Packet Bombs</strong> &amp; <strong>🌈 Rainbow Lightning Beams</strong>!
+                      10 distinct carved board geometries! Drop <strong>📼 80s Mixtapes</strong>, unlock{' '}
+                      <strong>🔒 Laser Ice Cages</strong> &amp; blast <strong>🧊 Double Frost Jelly</strong>!
                     </p>
                   </div>
                 </div>
                 <div className="tm-arcade-steer-footer">
                   <span className="tm-arcade-steer-payout">
-                    🪙 Win up to 50 Tokens/Round • 🎟️ {crushPlaysLeft} Free Plays
+                    🪙 10 Token Prize Run (Win up to 26 🪙) or Free Practice
                   </span>
                   <button
                     type="button"
@@ -3740,12 +3825,12 @@ export default function App() {
                       setViewMode('crush');
                     }}
                   >
-                    ▶ Play Meme Crush
+                    ▶ Play 10 Levels
                   </button>
                 </div>
               </div>
 
-              {/* Cabinet 3: Las Vegas Retro Pinball */}
+              {/* Cabinet 4: 80s Neon Cyber-Pinball (5 Distinct Tables) */}
               <div
                 className="tm-arcade-steer-card tm-steer-pinball"
                 onClick={() => {
@@ -3754,25 +3839,25 @@ export default function App() {
                 }}
               >
                 <div className="tm-arcade-steer-top">
-                  <span className="tm-arcade-steer-pill">🎱 60FPS PINBALL • ⚡ MULTIBALL</span>
+                  <span className="tm-arcade-steer-pill">🎱 5 PINBALL TABLES • WORMHOLES &amp; BOSSES</span>
                   <span className="tm-arcade-steer-best">
                     🏆 Best: {Number(localStorage.getItem('tm_pinball_highscore') || 0).toLocaleString()} pts
                   </span>
                 </div>
                 <div className="tm-arcade-steer-body">
-                  <div className="tm-arcade-steer-icons">🎰🎱🛡️🧲</div>
+                  <div className="tm-arcade-steer-icons">🎱🏎️👾🦈</div>
                   <div>
-                    <h3 className="tm-arcade-steer-title">LAS VEGAS RETRO PINBALL</h3>
+                    <h3 className="tm-arcade-steer-title">80s CYBER-PINBALL (5 TABLES)</h3>
                     <p className="tm-arcade-steer-desc">
-                      Unleash <strong>3-Ball Multiball Madness</strong>,{' '}
-                      <strong>🛡️ Plasma Drain Shields</strong>, <strong>🧲 Mega Flippers</strong> &amp;{' '}
-                      <strong>M-E-M-E Targets</strong>!
+                      Play <strong>Vegas Strip &apos;85</strong>, <strong>Outrun Highway</strong>,{' '}
+                      <strong>Invader Grid</strong>, <strong>Miami Lagoon</strong> &amp;{' '}
+                      <strong>Cosmic Reactor Boss</strong>!
                     </p>
                   </div>
                 </div>
                 <div className="tm-arcade-steer-footer">
                   <span className="tm-arcade-steer-payout">
-                    🪙 Win up to 50 Tokens/Round • 🎟️ {pinballPlaysLeft} Free Plays
+                    🪙 10 Token Coin-Op Run (Win up to 32 🪙) or Free Practice
                   </span>
                   <button
                     type="button"
@@ -3783,7 +3868,7 @@ export default function App() {
                       setViewMode('pinball');
                     }}
                   >
-                    ▶ Launch Pinball
+                    ▶ Launch 5 Tables
                   </button>
                 </div>
               </div>
@@ -3792,16 +3877,18 @@ export default function App() {
         </>
       )}
 
-      {/* SIDE-GAME 0: THE MEMES.NET LAS VEGAS 777 RETRO NEON SLOT MACHINE */}
+      {/* FIXED ARCADE GAME 1: CLASSIC LAS VEGAS ONE-ARM BANDIT 777 SLOT MACHINE */}
       {viewMode === 'slots' && (
         <VegasSlotMachine
           embedded={false}
           tokens={tokens}
-          slotPullsLeft={slotPullsLeft}
-          slotResetMs={slotResetMs}
-          gameTokensRemainingToday={gameTokensRemainingToday}
-          onCompleteSlotSpin={handleCompleteSlotSpin}
-          onSpendTokensForPulls={handleSpendTokensForSlotPulls}
+          onSpendTokens={handleSpendTokens}
+          onPayoutTokens={handlePayoutGameTokens}
+          onOpenUpload={() => {
+            sfx.playToggle();
+            setViewMode('feed');
+            handleOpenBlankStudio();
+          }}
           onBackToFeed={() => {
             sfx.playToggle();
             setViewMode('feed');
@@ -3809,16 +3896,35 @@ export default function App() {
         />
       )}
 
-      {/* PHASE 3: MEME CRUSH SAGA (CANDY-CRUSH STYLE MATCH-3 PUZZLE SUB-GAME) */}
+      {/* FIXED ARCADE GAME 2: MEMEDAQ '86 STOCK MARKET SIMULATOR */}
+      {viewMode === 'stocks' && (
+        <MemeStockMarketGame
+          tokens={tokens}
+          onSpendTokens={handleSpendTokens}
+          onPayoutTokens={handlePayoutGameTokens}
+          onOpenUpload={() => {
+            sfx.playToggle();
+            setViewMode('feed');
+            handleOpenBlankStudio();
+          }}
+          onBackToFeed={() => {
+            sfx.playToggle();
+            setViewMode('feed');
+          }}
+        />
+      )}
+
+      {/* FIXED ARCADE GAME 3: MEME CRUSH SAGA — 10 DISTINCT 80s NEON LEVELS */}
       {viewMode === 'crush' && (
         <MemeCrushGame
           tokens={tokens}
-          tokenLedger={tokenLedger}
-          playsLeft={crushPlaysLeft}
-          resetMs={crushResetMs}
-          gameTokensRemainingToday={gameTokensRemainingToday}
-          onCompleteRound={handleCompleteSubGameRound}
-          onSpendTokensForPlay={handleSpendTokensForPlay}
+          onSpendTokens={handleSpendTokens}
+          onPayoutTokens={handlePayoutGameTokens}
+          onOpenUpload={() => {
+            sfx.playToggle();
+            setViewMode('feed');
+            handleOpenBlankStudio();
+          }}
           onBackToFeed={() => {
             sfx.playToggle();
             setViewMode('feed');
@@ -3826,16 +3932,17 @@ export default function App() {
         />
       )}
 
-      {/* PHASE 4: LAS VEGAS RETRO PINBALL MACHINE SUB-GAME */}
+      {/* FIXED ARCADE GAME 4: 80s NEON CYBER-PINBALL — 5 DISTINCT TABLES */}
       {viewMode === 'pinball' && (
         <VegasPinballGame
           tokens={tokens}
-          tokenLedger={tokenLedger}
-          playsLeft={pinballPlaysLeft}
-          resetMs={pinballResetMs}
-          gameTokensRemainingToday={gameTokensRemainingToday}
-          onCompleteRound={handleCompleteSubGameRound}
-          onSpendTokensForPlay={handleSpendTokensForPlay}
+          onSpendTokens={handleSpendTokens}
+          onPayoutTokens={handlePayoutGameTokens}
+          onOpenUpload={() => {
+            sfx.playToggle();
+            setViewMode('feed');
+            handleOpenBlankStudio();
+          }}
           onBackToFeed={() => {
             sfx.playToggle();
             setViewMode('feed');
@@ -3929,10 +4036,12 @@ export default function App() {
         </div>
       )}
 
-      {/* PHASE 20: INTERACTIVE "DO NOT PRESS" CHAOS BUTTON & MINI-GAME LAUNCHER */}
-      {!bossKeyActive && (
+      {/* PHASE 20: INTERACTIVE "DO NOT PRESS" CHAOS BUTTON & SKILL-BASED DODGING PIÑATA */}
+      {!bossKeyActive && !isFixedArcadeGame && (
         <DankPetWidget
-          onEarnPetXp={awardXpAndCombo}
+          onEarnPetXp={awardXpOnly}
+          onWinPinataReward={handleWinPinataReward}
+          pinataClaimedToday={pinataClaimedToday}
           onSelectViewMode={(mode) => {
             sfx.playToggle();
             closeAllModals();
@@ -3943,36 +4052,38 @@ export default function App() {
       )}
 
       {/* PHASE 5: THUMB-FRIENDLY MOBILE BOTTOM ARCADE DOCK */}
-      <MobileArcadeDock
-        viewMode={viewMode}
-        showStudio={showStudio}
-        showLeaderboard={showLeaderboard}
-        isAnyModalOpen={isAnyModalOpen}
-        onSelectMode={(mode) => {
-          sfx.playToggle();
-          closeAllModals();
-          setViewMode(mode);
-        }}
-        onOpenBlankStudio={() => {
-          sfx.playToggle();
-          if (showStudio) {
-            setShowStudio(false);
-          } else {
+      {!isFixedArcadeGame && (
+        <MobileArcadeDock
+          viewMode={viewMode}
+          showStudio={showStudio}
+          showLeaderboard={showLeaderboard}
+          isAnyModalOpen={isAnyModalOpen}
+          onSelectMode={(mode) => {
+            sfx.playToggle();
             closeAllModals();
-            handleOpenBlankStudio();
-          }
-        }}
-        onOpenLeaderboard={() => {
-          sfx.playToggle();
-          if (showLeaderboard) {
-            setShowLeaderboard(false);
-          } else {
-            closeAllModals();
-            setShowLeaderboard(true);
-          }
-        }}
-        onNavigateBack={handleNavigateBack}
-      />
+            setViewMode(mode);
+          }}
+          onOpenBlankStudio={() => {
+            sfx.playToggle();
+            if (showStudio) {
+              setShowStudio(false);
+            } else {
+              closeAllModals();
+              handleOpenBlankStudio();
+            }
+          }}
+          onOpenLeaderboard={() => {
+            sfx.playToggle();
+            if (showLeaderboard) {
+              setShowLeaderboard(false);
+            } else {
+              closeAllModals();
+              setShowLeaderboard(true);
+            }
+          }}
+          onNavigateBack={handleNavigateBack}
+        />
+      )}
 
       {/* MODAL 0: FULLSCREEN THEATER LIGHTBOX & DEEP-LINK PERMALINK */}
       {theaterMeme && (
@@ -4115,23 +4226,27 @@ export default function App() {
         />
       )}
 
-      {/* MODAL 6: ARCADE VAULT (FAIR TOKEN LEDGER, SLOTS, WHEEL OF CHAOS, TRAILS, DAILY STREAK & QUESTS) */}
+      {/* MODAL 6: ARCADE VAULT (FAIR TOKEN LEDGER, ONE-ARM BANDIT, WHEEL OF CHAOS, TRAILS, DAILY STREAK & QUESTS) */}
       {showRewardsModal && (
         <RewardsModal
           xp={xp}
           tokens={tokens}
           tokenLedger={tokenLedger}
           lootSpins={lootSpins}
-          slotPullsLeft={slotPullsLeft}
-          slotResetMs={slotResetMs}
           wheelSpinsLeftInWindow={wheelSpinsLeftInWindow}
           wheelResetMs={wheelResetMs}
           streakDays={streakDays}
           streakClaimedToday={streakClaimedToday}
           onClaimDailyStreak={handleClaimDailyStreak}
           onCompleteWheelSpin={handleCompleteWheelSpin}
-          onCompleteSlotSpin={handleCompleteSlotSpin}
-          onSpendTokensForPulls={handleSpendTokensForSlotPulls}
+          onSpendTokens={handleSpendTokens}
+          onPayoutTokens={handlePayoutGameTokens}
+          onOpenUpload={() => {
+            sfx.playToggle();
+            setShowRewardsModal(false);
+            setViewMode('feed');
+            handleOpenBlankStudio();
+          }}
           unlockedFlairs={unlockedFlairs}
           equippedFlair={equippedFlair}
           onEquipFlair={(flair) => {
@@ -4144,8 +4259,6 @@ export default function App() {
             setCursorTrail(trailId);
           }}
           konamiUnlocked={konamiUnlocked}
-          konamiCooldownMs={konamiCooldownMs}
-          onTriggerKonamiGodMode={handleTriggerKonamiGodMode}
           questProgress={questProgress}
           claimedQuests={claimedQuests}
           onClaimQuestReward={handleClaimQuestReward}
@@ -4169,29 +4282,31 @@ export default function App() {
       )}
 
       {/* PHASE 10: CRAWLABLE SEO DISCOVERY DIRECTORY & FAQ HUB */}
-      <SeoDiscoveryFooter
-        onSelectCategory={(cat) => {
-          sfx.playToggle();
-          setCategory(cat);
-          setViewMode('feed');
-          window.scrollTo?.({ top: 0, behavior: 'smooth' });
-        }}
-        onOpenBlankStudio={() => {
-          closeAllModals();
-          handleOpenBlankStudio();
-        }}
-        onSelectViewMode={(mode) => {
-          sfx.playToggle();
-          closeAllModals();
-          setViewMode(mode);
-          window.scrollTo?.({ top: 0, behavior: 'smooth' });
-        }}
-        onOpenRewards={() => {
-          sfx.playToggle();
-          closeAllModals();
-          setShowRewardsModal(true);
-        }}
-      />
+      {!isFixedArcadeGame && (
+        <SeoDiscoveryFooter
+          onSelectCategory={(cat) => {
+            sfx.playToggle();
+            setCategory(cat);
+            setViewMode('feed');
+            window.scrollTo?.({ top: 0, behavior: 'smooth' });
+          }}
+          onOpenBlankStudio={() => {
+            closeAllModals();
+            handleOpenBlankStudio();
+          }}
+          onSelectViewMode={(mode) => {
+            sfx.playToggle();
+            closeAllModals();
+            setViewMode(mode);
+            window.scrollTo?.({ top: 0, behavior: 'smooth' });
+          }}
+          onOpenRewards={() => {
+            sfx.playToggle();
+            closeAllModals();
+            setShowRewardsModal(true);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -43,9 +43,13 @@ export function updateDynamicSeo({ activeMeme = null, category = 'all', viewMode
     pageDesc =
       'Play Meme Crush Saga online! Shatter Frosted Crystal Jelly with 2x2 Seeking Rockets, 3x3 Packet Bombs, Rainbow Lightning Beams, and win fair Arcade Tokens.';
   } else if (viewMode === 'pinball') {
-    pageTitle = 'Las Vegas Retro Pinball Machine — Win Arcade Credits | THE MEMES.net';
+    pageTitle = 'Las Vegas 80s Neon Pinball — 5 Arcade Tables | THE MEMES.net';
     pageDesc =
-      'Play the 60fps Las Vegas Retro Pinball Machine! Launch the silver ball, hit 777 & Rubber Duck pop bumpers, light L-U-C-K multipliers, and win fair Arcade Tokens.';
+      'Play 5 distinct 80s Neon Pinball Machines! Launch the silver ball across Vegas Strip, Outrun Highway, Invader Cyber-Grid, Miami Lagoon & Cosmic Reactor.';
+  } else if (viewMode === 'stocks') {
+    pageTitle = "MEMEDAQ '86 — Meme Stock Market Simulator | THE MEMES.net Cyber-Arcade";
+    pageDesc =
+      'Trade hilarious meme stocks ($DOGE, $CHAD, $PEPE, $CATS, $MOON) on the 80s Neon MEMEDAQ Stock Market Simulator using your earned meme tokens!';
   } else if (viewMode === 'reels') {
     pageTitle = 'Vertical Meme Reels — Fullscreen Viral Memes | THE MEMES.net';
   } else if (viewMode === 'swipe') {

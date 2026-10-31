@@ -203,13 +203,13 @@ export const DAILY_QUESTS = [
 ];
 
 export const MEME_STOCK_TICKER = [
-  { symbol: '$UPLOADS', delta: '+100%', up: true, category: 'all', label: '100% Real User Memes' },
-  { symbol: '$DANK', delta: '+42.0%', up: true, category: 'dank', label: 'Viral Laughs Surging' },
-  { symbol: '$GAMING', delta: '+64.8%', up: true, category: 'gaming', label: 'Squad Wins & Clips' },
-  { symbol: '$RELATABLE', delta: '+88.2%', up: true, category: 'relatable', label: 'Everyday Vibes Peaking' },
-  { symbol: '$TECH', delta: '+51.4%', up: true, category: 'tech', label: 'Coding & AI Humor' },
-  { symbol: '$REMIXES', delta: '+29.5%', up: true, category: 'all', label: '+50 XP Creator Royalties Live' },
-  { symbol: '$SOUNDBOARD', delta: '+420.0%', up: true, category: 'all', label: '16 Comedy Pads Active' }
+  { symbol: '$MEMEDAQ', delta: 'LIVE!', up: true, category: 'all', label: 'Trade Meme Stocks in Arcade!' },
+  { symbol: '$DOGE', delta: '+18.4%', up: true, category: 'dank', label: 'Bork & Woof Aerospace' },
+  { symbol: '$CHAD', delta: '+12.0%', up: true, category: 'relatable', label: 'GigaChin Supplements Inc.' },
+  { symbol: '$PEPE', delta: '+34.2%', up: true, category: 'dank', label: 'Rare Swamp Collectibles ETF' },
+  { symbol: '$CATS', delta: '+21.6%', up: true, category: 'relatable', label: '3AM Zoomies Robotics' },
+  { symbol: '$AI', delta: '+47.9%', up: true, category: 'tech', label: 'Hallucination Labs Corp.' },
+  { symbol: '$MOON', delta: '+420%', up: true, category: 'gaming', label: 'TrustMeBro Holdings LP' }
 ];
 
 export const CHAOS_MUTATORS = [
@@ -230,13 +230,13 @@ export const CURSOR_TRAILS = [
 ];
 
 export const SLOT_SYMBOLS = [
-  { id: '777', emoji: '7️⃣', name: 'VEGAS 777', mult: 12, color: '#facc15', badge: 'JACKPOT' },
-  { id: 'diamond', emoji: '💎', name: 'CYBER DIAMOND', mult: 10, color: '#00f3ff', badge: 'MEGA' },
-  { id: 'pepe', emoji: '🐸', name: 'PEPE VIP', mult: 8, color: '#4ade80', badge: 'DANK' },
-  { id: 'duck', emoji: '🦆', name: 'GOLDEN DUCK', mult: 6, color: '#fde047', badge: 'LUCKY' },
-  { id: 'moai', emoji: '🗿', name: 'GIGA MOAI', mult: 5, color: '#c084fc', badge: 'BASED' },
-  { id: 'cherry', emoji: '🍒', name: 'NEON CHERRY', mult: 4, color: '#f472b6', badge: 'VEGAS' },
-  { id: 'star', emoji: '🌟', name: 'MEMES STAR', mult: 5, color: '#fb923c', badge: 'WILD' }
+  { id: '777', emoji: '777', name: 'FLAMING 777', mult: 50, weight: 1, color: '#ef4444', badge: '50X JACKPOT' },
+  { id: 'diamond', emoji: '💎', name: 'NEON DIAMOND', mult: 25, weight: 2, color: '#00f3ff', badge: '25X MEGA' },
+  { id: 'bar', emoji: 'BAR', name: 'TRIPLE BAR', mult: 15, weight: 3, color: '#facc15', badge: '15X GOLD' },
+  { id: 'bell', emoji: '🔔', name: 'LIBERTY BELL', mult: 10, weight: 4, color: '#fbbf24', badge: '10X BELL' },
+  { id: 'cherry', emoji: '🍒', name: 'TWIN CHERRY', mult: 6, weight: 5, color: '#f43f5e', badge: '6X / 2X / 1X' },
+  { id: 'watermelon', emoji: '🍉', name: 'MELON SLICE', mult: 4, weight: 6, color: '#22c55e', badge: '4X FRUIT' },
+  { id: 'lemon', emoji: '🍋', name: 'VEGAS LEMON', mult: 4, weight: 7, color: '#fde047', badge: '4X CITRUS' }
 ];
 
 export const QUICK_REACTION_COMMENTS = [

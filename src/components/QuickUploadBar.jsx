@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
+import { VIRAL_CAPTIONS } from '../data/starterMemes';
 
 export default function QuickUploadBar({
   onQuickPublishFile,
@@ -9,6 +10,7 @@ export default function QuickUploadBar({
   activeBounty,
   onCycleBounty,
   onAcceptBounty,
+  pioneerBonusAvailable = false,
   uploadTokensRemainingToday = ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.upload
 }) {
   const [previewUrl, setPreviewUrl] = useState('');
@@ -155,7 +157,15 @@ export default function QuickUploadBar({
                 Got a funny meme or photo? <span>Drop, Paste, or Tap to Upload in 1 Click!</span>
               </div>
               <div className="tm-quick-upload-sub">
-                Earn <strong>+40 🪙 Tokens &amp; +100 XP</strong> per upload ({uploadTokensRemainingToday} upload tokens left today)
+                {pioneerBonusAvailable ? (
+                  <>
+                    🌟 <strong>FIRST UPLOAD BONUS: Earn +75 🪙 Tokens</strong> (+45 🪙 Upload + 30 🪙 Pioneer Bonus) to gamble in Slots &amp; Meme Stocks!
+                  </>
+                ) : (
+                  <>
+                    Memes = #1 Token Generator! Earn <strong>+45 🪙 Tokens &amp; +120 XP</strong> per upload ({uploadTokensRemainingToday} upload tokens left today)
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -261,7 +271,30 @@ export default function QuickUploadBar({
                 disabled={isSubmitting}
                 style={{ padding: '10px 18px', fontSize: '14px' }}
               >
-                {isSubmitting ? '🚀 Uploading...' : '🚀 Post Meme Now (+40 🪙 & +100 XP)'}
+                {isSubmitting
+                  ? '🚀 Uploading...'
+                  : pioneerBonusAvailable
+                  ? '🌟 Post First Meme (+75 🪙 Pioneer Bonus!)'
+                  : '🚀 Post Meme Now (+45 🪙 & +120 XP)'}
+              </button>
+
+              <button
+                type="button"
+                className="tm-btn"
+                style={{ borderColor: 'rgba(250, 204, 21, 0.5)', color: '#fde047' }}
+                onClick={() => {
+                  sfx.playToggle();
+                  const pair =
+                    VIRAL_CAPTIONS[Math.floor(Math.random() * VIRAL_CAPTIONS.length)];
+                  setQuickTopCaption(pair[0]);
+                  setQuickBottomCaption(pair[1]);
+                  if (!quickTitle.trim()) {
+                    setQuickTitle(`${pair[0]} ${pair[1]}`);
+                  }
+                }}
+                title="Auto-fill a hilarious 2-line meme caption in 1 tap!"
+              >
+                🎲 Random Funny Caption
               </button>
 
               <button
@@ -290,7 +323,7 @@ export default function QuickUploadBar({
       {activeBounty && !selectedFile && (
         <div className="tm-compact-bounty-strip">
           <div className="tm-compact-bounty-text">
-            <span className="tm-bounty-chip">🎯 DAILY BOUNTY (+50 🪙)</span>
+            <span className="tm-bounty-chip">🎯 DAILY BOUNTY (+60 🪙)</span>
             <span>“{activeBounty.prompt}”</span>
           </div>
           <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>

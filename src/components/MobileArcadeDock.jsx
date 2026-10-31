@@ -12,7 +12,7 @@ export default function MobileArcadeDock({
 }) {
   const [showGamesMenu, setShowGamesMenu] = useState(false);
 
-  const isSideGameActive = ['slots', 'crush', 'pinball', 'battle', 'swipe'].includes(viewMode);
+  const isSideGameActive = ['slots', 'crush', 'pinball', 'stocks', 'battle', 'swipe'].includes(viewMode);
 
   const handlePickMode = (mode) => {
     setShowGamesMenu(false);
@@ -45,7 +45,15 @@ export default function MobileArcadeDock({
               onClick={() => handlePickMode('slots')}
             >
               <span>🎰</span>
-              <strong>Vegas 777 Slots</strong>
+              <strong>One-Arm Bandit</strong>
+            </button>
+            <button
+              type="button"
+              className={`tm-dock-game-chip ${viewMode === 'stocks' ? 'active' : ''}`}
+              onClick={() => handlePickMode('stocks')}
+            >
+              <span>📈</span>
+              <strong>Meme Stocks</strong>
             </button>
             <button
               type="button"
@@ -53,7 +61,7 @@ export default function MobileArcadeDock({
               onClick={() => handlePickMode('crush')}
             >
               <span>🍬</span>
-              <strong>Meme Crush</strong>
+              <strong>Meme Crush (10 Lv)</strong>
             </button>
             <button
               type="button"
@@ -61,7 +69,7 @@ export default function MobileArcadeDock({
               onClick={() => handlePickMode('pinball')}
             >
               <span>🎱</span>
-              <strong>Vegas Pinball</strong>
+              <strong>Pinball (5 Tbl)</strong>
             </button>
             <button
               type="button"

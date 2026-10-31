@@ -36,6 +36,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://thememes.net/?mode=stocks</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
     <loc>https://thememes.net/?mode=crush</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>

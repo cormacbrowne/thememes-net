@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { sfx } from '../utils/soundEngine';
-import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
-import { formatWindowCountdown } from '../data/starterMemes';
+import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
 
 const GRID_SIZE = 8;
 
@@ -9,1881 +8,1282 @@ const CANDY_TYPES = [
   {
     id: 0,
     emoji: '🐸',
-    name: 'Pepe Lime Jelly',
-    bg: 'radial-gradient(circle at 32% 26%, #bbf7d0 0%, #4ade80 35%, #16a34a 78%, #14532d 100%)',
-    border: '#86efac',
-    shadow: '#15803d',
-    glow: 'rgba(74, 222, 128, 0.55)',
-    shapeClass: 'candy-shape-gumdrop'
+    name: 'Neon Frog',
+    bg: 'radial-gradient(circle at 32% 28%, #bbf7d0 0%, #4ade80 38%, #15803d 100%)',
+    border: '#86efac'
   },
   {
     id: 1,
     emoji: '🔥',
-    name: 'Spicy Tangerine Drop',
-    bg: 'radial-gradient(circle at 32% 26%, #fed7aa 0%, #fb923c 35%, #ea580c 78%, #7c2d12 100%)',
-    border: '#fdba74',
-    shadow: '#c2410c',
-    glow: 'rgba(251, 146, 60, 0.55)',
-    shapeClass: 'candy-shape-teardrop'
+    name: 'Outrun Flame',
+    bg: 'radial-gradient(circle at 32% 28%, #fed7aa 0%, #fb923c 38%, #c2410c 100%)',
+    border: '#fdba74'
   },
   {
     id: 2,
     emoji: '💎',
-    name: 'Cyber Blue Lozenge',
-    bg: 'radial-gradient(circle at 32% 26%, #e0f2fe 0%, #38bdf8 35%, #0284c7 78%, #0c4a6e 100%)',
-    border: '#7dd3fc',
-    shadow: '#0369a1',
-    glow: 'rgba(0, 243, 255, 0.6)',
-    shapeClass: 'candy-shape-diamond'
+    name: 'Cyber Diamond',
+    bg: 'radial-gradient(circle at 32% 28%, #e0f2fe 0%, #38bdf8 38%, #0369a1 100%)',
+    border: '#7dd3fc'
   },
   {
     id: 3,
     emoji: '🦆',
-    name: 'Golden Lemon Cluster',
-    bg: 'radial-gradient(circle at 32% 26%, #fef9c3 0%, #facc15 35%, #ca8a04 78%, #713f12 100%)',
-    border: '#fde047',
-    shadow: '#a16207',
-    glow: 'rgba(250, 204, 21, 0.58)',
-    shapeClass: 'candy-shape-pillow'
+    name: 'Laser Duck',
+    bg: 'radial-gradient(circle at 32% 28%, #fef9c3 0%, #facc15 38%, #a16207 100%)',
+    border: '#fde047'
   },
   {
     id: 4,
     emoji: '💀',
-    name: 'Grape Brainrot Fizz',
-    bg: 'radial-gradient(circle at 32% 26%, #f3e8ff 0%, #c084fc 35%, #9333ea 78%, #4c1d95 100%)',
-    border: '#d8b4fe',
-    shadow: '#7e22ce',
-    glow: 'rgba(192, 132, 252, 0.58)',
-    shapeClass: 'candy-shape-star'
+    name: 'Synth Skull',
+    bg: 'radial-gradient(circle at 32% 28%, #f3e8ff 0%, #c084fc 38%, #6b21a8 100%)',
+    border: '#d8b4fe'
   },
   {
     id: 5,
     emoji: '🍕',
-    name: 'Strawberry Sugar Pop',
-    bg: 'radial-gradient(circle at 32% 26%, #fce7f3 0%, #f472b6 35%, #db2777 78%, #831843 100%)',
-    border: '#f9a8d4',
-    shadow: '#be185d',
-    glow: 'rgba(244, 114, 182, 0.58)',
-    shapeClass: 'candy-shape-heart'
+    name: 'Arcade Pizza',
+    bg: 'radial-gradient(circle at 32% 28%, #fce7f3 0%, #f472b6 38%, #9d174d 100%)',
+    border: '#f9a8d4'
   }
 ];
 
-// Official Candy Crush Escalation — THE MEMES.net Edition!
-const ANNOUNCER_TIERS = [
-  { tier: 1, title: 'SWEET! 🍬', sub: 'JUICY SUGAR MATCH!', color: '#4ade80', mascot: '🐸 "Sweet match!"' },
-  { tier: 2, title: 'TASTY!! 🔥', sub: '2X CASCADE COMBO!', color: '#fb923c', mascot: '🦆 "Ooh, tasty cascade!"' },
-  { tier: 3, title: 'DELICIOUS!! 💀', sub: '3X DOPAMINE OVERLOAD!', color: '#c084fc', mascot: '🗿 "Delicious combo energy!"' },
-  { tier: 4, title: 'DIVINE CRUSH!! 💎', sub: '4X ULTRA SUGAR SURGE!', color: '#00f3ff', mascot: '👑 "DIVINE! Keep crushing!"' },
-  { tier: 5, title: 'SUGAR SUPERNOVA!! 🌈👑', sub: 'UNHINGED CANDY FRENZY!!', color: '#facc15', mascot: '🚀 "SUPERNOVA!! Pure perfection!"' }
+// ==========================================
+// 10 DISTINCT 80s NEON CAMPAIGN LEVELS
+// Each level features its own carved board geometry, palette & unique objectives!
+// ==========================================
+const CRUSH_LEVELS = [
+  {
+    id: 1,
+    name: 'Miami Sunset Strip',
+    badge: '🧊 JELLY CLEAR',
+    accent: '#ec4899',
+    moves: 20,
+    starScores: [2200, 4200, 6800],
+    desc: 'Shatter all 16 Pink Neon Jellies across the Sunset Board!',
+    isVoid: () => false,
+    initJelly: (r, c) => (r >= 2 && r <= 5 && c >= 2 && c <= 5 ? 1 : 0),
+    initLock: () => false,
+    goals: { jelly: true, cassettes: 0, locks: 0, orders: null, minScore: 0 }
+  },
+  {
+    id: 2,
+    name: "Mall Arcade '84",
+    badge: '🎯 CANDY ORDER',
+    accent: '#00f3ff',
+    moves: 20,
+    starScores: [2500, 4600, 7200],
+    desc: 'Octagon Cabinet: Collect 15 🐸 Frogs & 15 💎 Diamonds!',
+    isVoid: (r, c) =>
+      (r === 0 && (c === 0 || c === 7)) ||
+      (r === 7 && (c === 0 || c === 7)) ||
+      (r === 1 && (c === 0 || c === 7) && false),
+    initJelly: () => 0,
+    initLock: () => false,
+    goals: { jelly: false, cassettes: 0, locks: 0, orders: { 0: 15, 2: 15 }, minScore: 0 }
+  },
+  {
+    id: 3,
+    name: 'Synth Mixtape Drop',
+    badge: '📼 CASSETTE DROP',
+    accent: '#facc15',
+    moves: 22,
+    starScores: [2800, 5000, 7800],
+    desc: 'Twin Channels: Drop 3 📼 80s Mixtapes to the bottom Neon Exit Row!',
+    isVoid: (r, c) => (r >= 2 && r <= 4 && (c === 2 || c === 5)),
+    initJelly: () => 0,
+    initLock: () => false,
+    goals: { jelly: false, cassettes: 3, locks: 0, orders: null, minScore: 0 }
+  },
+  {
+    id: 4,
+    name: 'Cryo-Vault Lasers',
+    badge: '🔒 LASER LOCKS',
+    accent: '#38bdf8',
+    moves: 22,
+    starScores: [3000, 5400, 8200],
+    desc: 'Hourglass Grid: Break all 10 🔒 Locked Tiles & Clear 12 Jellies!',
+    isVoid: (r, c) => (r === 3 || r === 4) && (c === 0 || c === 7),
+    initJelly: (r, c) => (r >= 2 && r <= 5 && c >= 2 && c <= 4 ? 1 : 0),
+    initLock: (r, c) => (r === 3 || r === 4) && c >= 1 && c <= 5,
+    goals: { jelly: true, cassettes: 0, locks: 10, orders: null, minScore: 0 }
+  },
+  {
+    id: 5,
+    name: 'Flamingo Lagoon',
+    badge: '🦩 ISLAND ORDER',
+    accent: '#f472b6',
+    moves: 21,
+    starScores: [3200, 5800, 8800],
+    desc: 'Donut Lagoon: Collect 16 🦆 Ducks, 16 🍕 Pizzas & 12 🔥 Flames!',
+    isVoid: (r, c) => r >= 3 && r <= 4 && c >= 3 && c <= 4,
+    initJelly: () => 0,
+    initLock: () => false,
+    goals: { jelly: false, cassettes: 0, locks: 0, orders: { 3: 16, 5: 16, 1: 12 }, minScore: 0 }
+  },
+  {
+    id: 6,
+    name: 'Outrun Laser Bridge',
+    badge: '🧊 DOUBLE FROST',
+    accent: '#a855f7',
+    moves: 23,
+    starScores: [3500, 6200, 9400],
+    desc: 'Twin Bridges: Shatter 20 Heavy Double-Layer Crystal Jellies!',
+    isVoid: (r, c) => (r === 3 || r === 4) && (c === 3 || c === 4 || c === 0 || c === 7),
+    initJelly: (r, c) => ((r <= 2 || r >= 5) && c >= 2 && c <= 5 ? (r === 1 || r === 6 ? 2 : 1) : 0),
+    initLock: () => false,
+    goals: { jelly: true, cassettes: 0, locks: 0, orders: null, minScore: 0 }
+  },
+  {
+    id: 7,
+    name: 'DeLorean Time Funnel',
+    badge: '📼+🔒 DROP & UNLOCK',
+    accent: '#fb923c',
+    moves: 24,
+    starScores: [3800, 6600, 9800],
+    desc: 'Time Funnel: Unlock the bottom gate & drop 4 📼 Mixtapes!',
+    isVoid: (r, c) => (r >= 5 && (c === 0 || c === 7)) || (r === 7 && (c === 1 || c === 6)),
+    initJelly: () => 0,
+    initLock: (r, c) => r === 5 && c >= 2 && c <= 5,
+    goals: { jelly: false, cassettes: 4, locks: 4, orders: null, minScore: 0 }
+  },
+  {
+    id: 8,
+    name: 'VHS Glitch Citadel',
+    badge: '⚡ SCORE & LOCKS',
+    accent: '#4ade80',
+    moves: 22,
+    starScores: [5500, 7500, 10500],
+    desc: 'Citadel Cross: Break 12 🔒 Cyber Locks & Score 5,500+ Points!',
+    isVoid: (r, c) =>
+      (r <= 1 && (c <= 1 || c >= 6)) || (r >= 6 && (c <= 1 || c >= 6)),
+    initJelly: () => 0,
+    initLock: (r, c) => (r === 2 || r === 5) && c >= 1 && c <= 6,
+    goals: { jelly: false, cassettes: 0, locks: 12, orders: null, minScore: 5500 }
+  },
+  {
+    id: 9,
+    name: 'Neon Tokyo Spire',
+    badge: '💀 JELLY + SKULLS',
+    accent: '#e879f9',
+    moves: 24,
+    starScores: [4200, 7200, 11000],
+    desc: 'Tokyo Diamond: Clear all Double Jellies & Collect 18 💀 Skulls!',
+    isVoid: (r, c) =>
+      (r === 0 && (c <= 1 || c >= 6)) ||
+      (r === 1 && (c === 0 || c === 7)) ||
+      (r === 6 && (c === 0 || c === 7)) ||
+      (r === 7 && (c <= 1 || c >= 6)),
+    initJelly: (r, c) => (r >= 2 && r <= 5 && c >= 2 && c <= 5 ? 2 : 0),
+    initLock: () => false,
+    goals: { jelly: true, cassettes: 0, locks: 0, orders: { 4: 18 }, minScore: 0 }
+  },
+  {
+    id: 10,
+    name: 'Cosmic Synth Overlord',
+    badge: '👑 FINAL BOSS',
+    accent: '#facc15',
+    moves: 26,
+    starScores: [5000, 8500, 12500],
+    desc: 'BOSS STAGE: Drop 3 📼 Tapes, Break 8 🔒 Locks & Clear All Jellies!',
+    isVoid: (r, c) => (r === 2 || r === 5) && (c === 2 || c === 5),
+    initJelly: (r, c) => (r >= 3 && r <= 6 && (c === 1 || c === 3 || c === 4 || c === 6) ? 1 : 0),
+    initLock: (r, c) => (r === 4 || r === 6) && (c === 1 || c === 3 || c === 4 || c === 6),
+    goals: { jelly: true, cassettes: 3, locks: 8, orders: null, minScore: 0 }
+  }
 ];
 
-const FEVER_LOOT_PERKS = [
-  { id: 'moves', label: '🎁 SUGAR RUSH LOOT: +2 BONUS MOVES & +600 PTS!', emoji: '⏱️' },
-  { id: 'hammer', label: '🎁 SUGAR RUSH LOOT: +1 FREE LOLLIPOP HAMMER & +600 PTS!', emoji: '🔨' },
-  { id: 'ufo', label: '🎁 SUGAR RUSH LOOT: +1 FREE UFO BOMB DROPPER & +600 PTS!', emoji: '🛸' },
-  { id: 'colorbomb', label: '🎁 SUGAR RUSH LOOT: SUPERNOVA COLOR BOMB BEAMED ONTO BOARD!', emoji: '🌈' }
-];
+const PROGRESS_STORAGE_KEY = 'tm_crush_levels_v2';
 
-let tileUidCounter = 1;
-
-function makeTile(typeId, special = null, dropDist = 0) {
+let uidSeq = 1;
+function createCandyTile(typeId = null, special = null, isCassette = false) {
+  if (isCassette) {
+    return {
+      uid: `tape-${uidSeq++}`,
+      type: -1,
+      special: null,
+      isCassette: true
+    };
+  }
   return {
-    uid: `c-${tileUidCounter++}`,
-    type: typeId ?? Math.floor(Math.random() * CANDY_TYPES.length),
+    uid: `tile-${uidSeq++}`,
+    type: typeId !== null ? typeId : Math.floor(Math.random() * CANDY_TYPES.length),
     special, // null | 'striped-h' | 'striped-v' | 'packet-bomb' | 'color-bomb' | 'seeking-rocket'
-    dropDist
+    isCassette: false
   };
 }
 
-/**
- * Generates an initial 8x8 board with zero pre-existing 3-in-a-row matches.
- */
-function createInitialBoard(withDropAnimation = true) {
+function loadLevelStars() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(PROGRESS_STORAGE_KEY) || 'null');
+    if (saved && typeof saved === 'object') return saved;
+  } catch {
+    // Ignore parse error
+  }
+  return {};
+}
+
+function getBottomPlayableRow(levelDef, col) {
+  for (let r = GRID_SIZE - 1; r >= 0; r--) {
+    if (!levelDef.isVoid(r, col)) return r;
+  }
+  return -1;
+}
+
+function buildFreshLevelState(levelDef) {
   const board = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(null));
+  const jelly = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(0));
+  const locks = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(false));
+
   for (let r = 0; r < GRID_SIZE; r++) {
     for (let c = 0; c < GRID_SIZE; c++) {
-      let candidate = Math.floor(Math.random() * CANDY_TYPES.length);
-      let tries = 0;
+      if (levelDef.isVoid(r, c)) {
+        board[r][c] = null;
+        continue;
+      }
+      jelly[r][c] = levelDef.initJelly(r, c);
+      locks[r][c] = Boolean(levelDef.initLock(r, c));
+
+      // Prevent instant starting 3-matches
+      let t = Math.floor(Math.random() * CANDY_TYPES.length);
+      let guard = 0;
       while (
-        tries < 20 &&
+        guard < 15 &&
         ((c >= 2 &&
-          board[r][c - 1]?.type === candidate &&
-          board[r][c - 2]?.type === candidate) ||
+          board[r][c - 1]?.type === t &&
+          board[r][c - 2]?.type === t) ||
           (r >= 2 &&
-            board[r - 1][c]?.type === candidate &&
-            board[r - 2][c]?.type === candidate))
+            board[r - 1][c]?.type === t &&
+            board[r - 2][c]?.type === t))
       ) {
-        candidate = (candidate + 1) % CANDY_TYPES.length;
-        tries++;
+        t = (t + 1) % CANDY_TYPES.length;
+        guard++;
       }
-      board[r][c] = makeTile(candidate, null, withDropAnimation ? r + 2 : 0);
+      board[r][c] = createCandyTile(t);
     }
   }
-  return board;
+
+  // Spawn up to 2 starting cassettes near the top playable rows if level requires cassettes
+  let spawnedCassettes = 0;
+  if (levelDef.goals.cassettes > 0) {
+    const candidateCols = [1, 3, 4, 6].filter((c) => !levelDef.isVoid(0, c));
+    const toPlace = Math.min(2, levelDef.goals.cassettes);
+    for (let i = 0; i < toPlace && i < candidateCols.length; i++) {
+      const col = candidateCols[i];
+      board[0][col] = createCandyTile(null, null, true);
+      locks[0][col] = false;
+      spawnedCassettes++;
+    }
+  }
+
+  return { board, jelly, locks, spawnedCassettes };
 }
 
 /**
- * Generates the glowing Frosted Crystal Jelly pattern under the 8x8 board.
- * Value 1 = Crystal Jelly, Value 2 = Double Crystal Frosting (on higher levels).
+ * Finds all horizontal/vertical 3+ runs and 2x2 squares of matching regular candies.
  */
-function createInitialJellyGrid(levelNum = 1) {
-  const grid = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(0));
-  for (let r = 1; r < GRID_SIZE - 1; r++) {
-    for (let c = 1; c < GRID_SIZE - 1; c++) {
-      if (levelNum === 1) {
-        // Diamond ring pattern in center 6x6
-        if (Math.abs(r - 3.5) + Math.abs(c - 3.5) <= 3.2) {
-          grid[r][c] = 1;
-        }
-      } else if (levelNum % 2 === 0) {
-        // Checkerboard + center double frost
-        if ((r + c) % 2 === 0) {
-          grid[r][c] = r >= 3 && r <= 4 && c >= 3 && c <= 4 ? 2 : 1;
-        }
-      } else {
-        // Full inner 6x6 crystal vault with corners double frosted
-        grid[r][c] = (r === 2 || r === 5) && (c === 2 || c === 5) ? 2 : 1;
-      }
-    }
-  }
-  return grid;
-}
+function findBoardMatches(board, levelDef) {
+  const matchedSet = new Set();
+  const specialsToSpawn = []; // { r, c, type, special }
 
-/**
- * Finds all horizontal/vertical match groups of length >= 3 AND 2x2 square matches (for Seeking Meme Rockets).
- */
-function findMatchGroups(board) {
-  const groups = [];
-
-  // Horizontal runs
+  // 1. Horizontal runs
   for (let r = 0; r < GRID_SIZE; r++) {
-    let runStart = 0;
-    for (let c = 1; c <= GRID_SIZE; c++) {
-      const prevTile = board[r][c - 1];
-      const currTile = c < GRID_SIZE ? board[r][c] : null;
-      if (currTile && prevTile && currTile.type === prevTile.type) {
+    let c = 0;
+    while (c < GRID_SIZE) {
+      const cell = board[r][c];
+      if (!cell || cell.isCassette || cell.type < 0 || levelDef.isVoid(r, c)) {
+        c++;
         continue;
       }
-      const runLen = c - runStart;
-      if (prevTile && runLen >= 3) {
-        const coords = [];
-        for (let k = runStart; k < c; k++) {
-          coords.push([r, k]);
-        }
-        groups.push({ dir: 'h', length: runLen, coords, type: prevTile.type });
+      let end = c + 1;
+      while (
+        end < GRID_SIZE &&
+        !levelDef.isVoid(r, end) &&
+        board[r][end] &&
+        !board[r][end].isCassette &&
+        board[r][end].type === cell.type
+      ) {
+        end++;
       }
-      runStart = c;
+      const len = end - c;
+      if (len >= 3) {
+        for (let k = c; k < end; k++) matchedSet.add(`${r},${k}`);
+        if (len >= 5) {
+          specialsToSpawn.push({ r, c: c + 2, type: cell.type, special: 'color-bomb' });
+        } else if (len === 4) {
+          specialsToSpawn.push({ r, c: c + 1, type: cell.type, special: 'striped-v' });
+        }
+      }
+      c = end;
     }
   }
 
-  // Vertical runs
+  // 2. Vertical runs
   for (let c = 0; c < GRID_SIZE; c++) {
-    let runStart = 0;
-    for (let r = 1; r <= GRID_SIZE; r++) {
-      const prevTile = board[r - 1][c];
-      const currTile = r < GRID_SIZE ? board[r][c] : null;
-      if (currTile && prevTile && currTile.type === prevTile.type) {
+    let r = 0;
+    while (r < GRID_SIZE) {
+      const cell = board[r][c];
+      if (!cell || cell.isCassette || cell.type < 0 || levelDef.isVoid(r, c)) {
+        r++;
         continue;
       }
-      const runLen = r - runStart;
-      if (prevTile && runLen >= 3) {
-        const coords = [];
-        for (let k = runStart; k < r; k++) {
-          coords.push([k, c]);
-        }
-        groups.push({ dir: 'v', length: runLen, coords, type: prevTile.type });
+      let end = r + 1;
+      while (
+        end < GRID_SIZE &&
+        !levelDef.isVoid(end, c) &&
+        board[end][c] &&
+        !board[end][c].isCassette &&
+        board[end][c].type === cell.type
+      ) {
+        end++;
       }
-      runStart = r;
+      const len = end - r;
+      if (len >= 3) {
+        for (let k = r; k < end; k++) {
+          const key = `${k},${c}`;
+          if (matchedSet.has(key) && len >= 3) {
+            // T or L intersection -> Packet Bomb!
+            specialsToSpawn.push({ r: k, c, type: cell.type, special: 'packet-bomb' });
+          }
+          matchedSet.add(key);
+        }
+        if (len >= 5) {
+          specialsToSpawn.push({ r: r + 2, c, type: cell.type, special: 'color-bomb' });
+        } else if (len === 4) {
+          specialsToSpawn.push({ r: r + 1, c, type: cell.type, special: 'striped-h' });
+        }
+      }
+      r = end;
     }
   }
 
-  // 2x2 Square Matches (spawns 🚀 Seeking Meme Rocket, like iPhone Candy Crush Jelly Fish!)
+  // 3. 2x2 Seeking Rocket Squares
   for (let r = 0; r < GRID_SIZE - 1; r++) {
     for (let c = 0; c < GRID_SIZE - 1; c++) {
-      const t0 = board[r][c];
-      if (!t0) continue;
+      const a = board[r][c];
+      const b = board[r][c + 1];
+      const d = board[r + 1][c];
+      const e = board[r + 1][c + 1];
       if (
-        board[r][c + 1]?.type === t0.type &&
-        board[r + 1][c]?.type === t0.type &&
-        board[r + 1][c + 1]?.type === t0.type
+        a &&
+        b &&
+        d &&
+        e &&
+        !a.isCassette &&
+        !b.isCassette &&
+        !d.isCassette &&
+        !e.isCassette &&
+        a.type >= 0 &&
+        a.type === b.type &&
+        a.type === d.type &&
+        a.type === e.type
       ) {
-        groups.push({
-          dir: 'sq',
-          length: 4,
-          coords: [
-            [r, c],
-            [r, c + 1],
-            [r + 1, c],
-            [r + 1, c + 1]
-          ],
-          type: t0.type
-        });
+        matchedSet.add(`${r},${c}`);
+        matchedSet.add(`${r},${c + 1}`);
+        matchedSet.add(`${r + 1},${c}`);
+        matchedSet.add(`${r + 1},${c + 1}`);
+        specialsToSpawn.push({ r, c, type: a.type, special: 'seeking-rocket' });
       }
     }
   }
 
-  return groups;
+  return { matchedSet, specialsToSpawn };
 }
 
-/**
- * Finds the first valid swap [ [r1,c1], [r2,c2] ] on the board for the Hint button & idle shimmer.
- */
-function findFirstValidMove(board) {
-  const cloneSwap = (r1, c1, r2, c2) => {
-    const tA = board[r1]?.[c1];
-    const tB = board[r2]?.[c2];
-    if (!tA || !tB) return false;
-    if (tA.special === 'color-bomb' || tB.special === 'color-bomb') return true;
-    if (tA.special === 'seeking-rocket' || tB.special === 'seeking-rocket') return true;
-    if (tA.special && tB.special) return true;
-    const copy = board.map((row) => [...row]);
-    copy[r1][c1] = tB;
-    copy[r2][c2] = tA;
-    return findMatchGroups(copy).length > 0;
-  };
-
+function hasAnyValidMove(board, locks, levelDef) {
   for (let r = 0; r < GRID_SIZE; r++) {
     for (let c = 0; c < GRID_SIZE; c++) {
-      if (c + 1 < GRID_SIZE && cloneSwap(r, c, r, c + 1)) {
-        return [
-          [r, c],
-          [r, c + 1]
-        ];
-      }
-      if (r + 1 < GRID_SIZE && cloneSwap(r, c, r + 1, c)) {
-        return [
-          [r, c],
-          [r + 1, c]
-        ];
+      if (levelDef.isVoid(r, c) || locks[r][c] || !board[r][c]) continue;
+      const dirs = [
+        [0, 1],
+        [1, 0]
+      ];
+      for (const [dr, dc] of dirs) {
+        const nr = r + dr;
+        const nc = c + dc;
+        if (nr >= GRID_SIZE || nc >= GRID_SIZE) continue;
+        if (levelDef.isVoid(nr, nc) || locks[nr][nc] || !board[nr][nc]) continue;
+
+        const a = board[r][c];
+        const b = board[nr][nc];
+        if (a.special === 'color-bomb' || b.special === 'color-bomb') return true;
+        if (a.special && b.special) return true;
+
+        const copy = board.map((row) => [...row]);
+        copy[r][c] = b;
+        copy[nr][nc] = a;
+        const { matchedSet } = findBoardMatches(copy, levelDef);
+        if (matchedSet.size > 0) return true;
       }
     }
   }
-  return null;
-}
-
-function pickRocketTargets(jellyGrid, strikeCount = 2) {
-  const jellyCandidates = [];
-  for (let r = 0; r < GRID_SIZE; r++) {
-    for (let c = 0; c < GRID_SIZE; c++) {
-      if (jellyGrid?.[r]?.[c] > 0) jellyCandidates.push([r, c]);
-    }
-  }
-  const chosen = [];
-  for (let i = 0; i < strikeCount; i++) {
-    const pick =
-      jellyCandidates.length > 0
-        ? jellyCandidates.splice(Math.floor(Math.random() * jellyCandidates.length), 1)[0]
-        : [Math.floor(Math.random() * GRID_SIZE), Math.floor(Math.random() * GRID_SIZE)];
-    chosen.push(pick);
-  }
-  return chosen;
+  return false;
 }
 
 export default function MemeCrushGame({
   tokens = 0,
-  tokenLedger = null,
-  playsLeft,
-  playsLeftInWindow,
-  resetMs,
-  windowResetMs,
-  gameTokensRemainingToday,
-  onCompleteRound,
-  onCompleteGameRound,
-  onSpendTokensForPlay,
+  onSpendTokens,
+  onPayoutTokens,
+  onRecordHighScore,
+  onOpenUpload,
   onBackToFeed
 }) {
-  const effectivePlaysLeft =
-    playsLeft ?? playsLeftInWindow ?? ARCADE_ECONOMY_RULES.SUB_GAMES.CRUSH_PLAYS_PER_WINDOW;
-  const effectiveResetMs = resetMs ?? windowResetMs ?? 0;
-  const effectiveGameTokensLeft =
-    gameTokensRemainingToday ??
-    Math.max(
-      0,
-      ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.games -
-        (tokenLedger?.byCategory?.games || 0)
-    );
-  const completeRoundHandler = onCompleteRound || onCompleteGameRound;
+  const entryCost = ARCADE_ECONOMY_RULES.ARCADE_STAKES.CRUSH_ENTRY_COST; // 10 tokens
+  const starPayouts = ARCADE_ECONOMY_RULES.ARCADE_STAKES.CRUSH_STAR_PAYOUTS; // { 1: 12, 2: 18, 3: 26 }
 
-  const [board, setBoard] = useState(() => createInitialBoard(true));
-  const [jellyGrid, setJellyGrid] = useState(() => createInitialJellyGrid(1));
-  const [jellyAllClearedLevel, setJellyAllClearedLevel] = useState(0);
-  const [level, setLevel] = useState(1);
-  const [score, setScore] = useState(0);
-  const [storedHighScore, setStoredHighScore] = useState(() =>
-    Number(localStorage.getItem('tm_crush_highscore') || 0)
+  const [levelStars, setLevelStars] = useState(loadLevelStars);
+  const [levelId, setLevelId] = useState(1);
+  const levelDef = useMemo(
+    () => CRUSH_LEVELS.find((l) => l.id === levelId) || CRUSH_LEVELS[0],
+    [levelId]
   );
-  const highScore = Math.max(storedHighScore, score);
-  const [movesLeft, setMovesLeft] = useState(20);
+
+  // Stake tracking: 0 = Free Practice, >0 = 10-Token Prize Run staked upfront
+  const [activeStakeTokens, setActiveStakeTokens] = useState(0);
+  const [roundStarted, setRoundStarted] = useState(false);
+
+  const [board, setBoard] = useState(() => buildFreshLevelState(CRUSH_LEVELS[0]).board);
+  const [jellyGrid, setJellyGrid] = useState(() => buildFreshLevelState(CRUSH_LEVELS[0]).jelly);
+  const [lockGrid, setLockGrid] = useState(() => buildFreshLevelState(CRUSH_LEVELS[0]).locks);
+
+  const [movesLeft, setMovesLeft] = useState(CRUSH_LEVELS[0].moves);
+  const [score, setScore] = useState(0);
+  const [collected, setCollected] = useState({});
+  const [cassettesDropped, setCassettesDropped] = useState(0);
+  const [locksBroken, setLocksBroken] = useState(0);
+
   const [selectedCell, setSelectedCell] = useState(null);
-  const [hintCells, setHintCells] = useState([]);
-  const [poppingKeys, setPoppingKeys] = useState(new Set());
-  const [invalidSwapPair, setInvalidSwapPair] = useState(null);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [boardShake, setBoardShake] = useState(false);
-
-  // iPhone Candy Crush Visual Effects Overlays
-  const [announceSplash, setAnnounceSplash] = useState(null);
-  const [mascotCallout, setMascotCallout] = useState('🐸 Match 3, 2×2 Squares, or 4/5 in a row to crush Crystal Jelly!');
-  const [activeLasers, setActiveLasers] = useState([]);
-  const [activeLightnings, setActiveLightnings] = useState([]);
-  const [shockwaves, setShockwaves] = useState([]);
-  const [tilePopups, setTilePopups] = useState([]);
-  const [candyParticles, setCandyParticles] = useState([]);
-  const [lootToast, setLootToast] = useState('');
-
-  // Meme Fever Meter & Multipliers
-  const [feverPct, setFeverPct] = useState(0);
-  const [feverMovesLeft, setFeverMovesLeft] = useState(0);
-  const [comboCount, setComboCount] = useState(0);
-
-  // Boosters
-  const [hammerMode, setHammerMode] = useState(false);
-  const [hammersLeft, setHammersLeft] = useState(2);
-  const [ufoDropsLeft, setUfoDropsLeft] = useState(1);
-  const [shufflesLeft, setShufflesLeft] = useState(2);
-
-  const [roundFinished, setRoundFinished] = useState(false);
-  const [roundSummary, setRoundSummary] = useState(null);
-  const [copiedChallenge, setCopiedChallenge] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [hammerCharges, setHammerCharges] = useState(0);
+  const [hammerActive, setHammerActive] = useState(false);
+  const [comboBanner, setComboBanner] = useState('');
+  const [roundResult, setRoundResult] = useState(null); // null | { won, stars, payout, score }
 
   const dragStartRef = useRef(null);
-  const roundRewardedRef = useRef(false);
-  const cascadeRunnerRef = useRef(null);
-  const movesLeftRef = useRef(20);
-  const scoreRef = useRef(0);
-  const feverPctRef = useRef(0);
-  const feverMovesRef = useRef(0);
-  const jellyGridRef = useRef(jellyGrid);
-  const levelRef = useRef(1);
-  const jellyClearedLevelRef = useRef(0);
+  const spawnedCassettesRef = useRef(0);
+  const paidOutRef = useRef(false);
 
-  const targetScore = level === 1 ? 1500 : level === 2 ? 3400 : 3400 + (level - 2) * 2200;
-
-  // Count remaining Frosted Crystal Jelly tiles
-  const remainingJellyCount = jellyGrid.reduce(
-    (sum, row) => sum + row.reduce((rSum, cell) => rSum + (cell > 0 ? 1 : 0), 0),
-    0
-  );
-
-  useEffect(() => {
-    movesLeftRef.current = movesLeft;
-    scoreRef.current = score;
-    feverPctRef.current = feverPct;
-    feverMovesRef.current = feverMovesLeft;
-    jellyGridRef.current = jellyGrid;
-    levelRef.current = level;
-    jellyClearedLevelRef.current = jellyAllClearedLevel;
-  }, [movesLeft, score, feverPct, feverMovesLeft, jellyGrid, level, jellyAllClearedLevel]);
-
-  useEffect(() => {
-    if (score > storedHighScore) {
-      localStorage.setItem('tm_crush_highscore', String(score));
-    }
-  }, [score, storedHighScore]);
-
-  // Automatic 4.8-second iPhone-style idle hint shimmer when player hasn't moved
-  useEffect(() => {
-    if (isAnimating || roundFinished || hintCells.length > 0) return undefined;
-    const timer = setTimeout(() => {
-      const move = findFirstValidMove(board);
-      if (move) {
-        setHintCells(move.map(([r, c]) => `${r},${c}`));
-      }
-    }, 4800);
-    return () => clearTimeout(timer);
-  }, [board, isAnimating, roundFinished, hintCells]);
-
-  const triggerAnnounceSplash = useCallback((tierIdx, customTitle = null, customSub = null) => {
-    const base =
-      ANNOUNCER_TIERS[Math.min(ANNOUNCER_TIERS.length - 1, Math.max(0, tierIdx - 1))];
-    const payload = {
-      id: `sp-${Date.now()}-${Math.random()}`,
-      tier: base.tier,
-      title: customTitle || base.title,
-      sub: customSub || base.sub,
-      color: base.color
-    };
-    setAnnounceSplash(payload);
-    if (base.mascot) {
-      setMascotCallout(base.mascot);
-    }
-    setTimeout(() => {
-      setAnnounceSplash((prev) => (prev?.id === payload.id ? null : prev));
-    }, 1150);
-  }, []);
-
-  const spawnShockwave = useCallback((r, c, color = '#00f3ff') => {
-    const id = `sw-${Date.now()}-${Math.random()}`;
-    setShockwaves((prev) => [...prev.slice(-6), { id, r, c, color }]);
-    setTimeout(() => {
-      setShockwaves((prev) => prev.filter((item) => item.id !== id));
-    }, 620);
-  }, []);
-
-  const spawnLightningArcs = useCallback((originCoord, targetCoords) => {
-    if (!originCoord || !targetCoords?.length) return;
-    const now = Date.now();
-    const arcs = targetCoords.slice(0, 14).map(([tr, tc], idx) => {
-      const x1 = (originCoord[1] + 0.5) * 12.5;
-      const y1 = (originCoord[0] + 0.5) * 12.5;
-      const x2 = (tc + 0.5) * 12.5;
-      const y2 = (tr + 0.5) * 12.5;
-      return {
-        id: `lt-${now}-${idx}-${Math.random()}`,
-        x1,
-        y1,
-        x2,
-        y2,
-        midX: (x1 + x2) / 2 + (Math.random() - 0.5) * 8,
-        midY: (y1 + y2) / 2 + (Math.random() - 0.5) * 8,
-        color: ['#00f3ff', '#facc15', '#ec4899', '#4ade80', '#c084fc'][idx % 5]
-      };
-    });
-    setActiveLightnings(arcs);
-    setTimeout(() => {
-      setActiveLightnings([]);
-    }, 480);
-  }, []);
-
-  const spawnGridEffects = useCallback((coordsList, points, customTag = null, lasers = [], extraEmoji = null) => {
-    const now = Date.now();
-    if (coordsList.length > 0) {
-      const mid = coordsList[Math.floor(coordsList.length / 2)];
-      const popup = {
-        id: `tp-${now}-${Math.random()}`,
-        r: mid[0],
-        c: mid[1],
-        text: customTag ? `${customTag} +${points}` : `+${points}`,
-        color: points >= 400 ? '#facc15' : '#00f3ff'
-      };
-      setTilePopups((prev) => [...prev.slice(-10), popup]);
-      setTimeout(() => {
-        setTilePopups((prev) => prev.filter((p) => p.id !== popup.id));
-      }, 950);
-
-      // Spawn glossy candy splash droplets & emoji shards from matched cells
-      const palette = extraEmoji || ['🍬', '✨', '🍓', '💎', '⚡', '🌟', '🍭', '❄️'];
-      const shards = coordsList.slice(0, 14).map(([r, c], idx) => ({
-        id: `sh-${now}-${idx}-${Math.random()}`,
-        r,
-        c,
-        dx: Math.round((Math.random() - 0.5) * 105),
-        dy: Math.round(-40 - Math.random() * 65),
-        emoji: palette[idx % palette.length]
-      }));
-      setCandyParticles((prev) => [...prev.slice(-22), ...shards]);
-      setTimeout(() => {
-        setCandyParticles((prev) => prev.filter((s) => !shards.some((sh) => sh.id === s.id)));
-      }, 720);
-    }
-
-    if (lasers.length > 0) {
-      const laserItems = lasers.map((l, idx) => ({
-        ...l,
-        id: `lz-${now}-${idx}-${Math.random()}`
-      }));
-      setActiveLasers((prev) => [...prev, ...laserItems]);
-      setTimeout(() => {
-        setActiveLasers((prev) => prev.filter((item) => !laserItems.some((l) => l.id === item.id)));
-      }, 440);
-    }
-  }, []);
-
-  const showLootToast = useCallback((msg) => {
-    setLootToast(msg);
-    setTimeout(() => {
-      setLootToast((prev) => (prev === msg ? '' : prev));
-    }, 3200);
-  }, []);
-
-  /**
-   * Shatters Frosted Crystal Jelly on any coordinates cleared during a match or bomb blast!
-   */
-  const damageJellyAtCoords = useCallback(
-    (coordsList) => {
-      const currentJelly = jellyGridRef.current;
-      if (!currentJelly) return 0;
-
-      let shatteredCount = 0;
-      let remainingAfter = 0;
-      const nextJelly = currentJelly.map((row) => [...row]);
-
-      coordsList.forEach(([r, c]) => {
-        if (nextJelly[r]?.[c] > 0) {
-          nextJelly[r][c] = Math.max(0, nextJelly[r][c] - 1);
-          shatteredCount++;
-        }
-      });
-
-      for (let r = 0; r < GRID_SIZE; r++) {
-        for (let c = 0; c < GRID_SIZE; c++) {
-          if (nextJelly[r][c] > 0) remainingAfter++;
-        }
-      }
-
-      if (shatteredCount > 0) {
-        sfx.playJellyShatter();
-        setJellyGrid(nextJelly);
-        jellyGridRef.current = nextJelly;
-
-        if (remainingAfter === 0 && jellyClearedLevelRef.current < levelRef.current) {
-          setJellyAllClearedLevel(levelRef.current);
-          jellyClearedLevelRef.current = levelRef.current;
-          setScore((s) => s + 1500);
-          sfx.playJackpot();
-          showLootToast('🧊✨ ALL CRYSTAL JELLY SHATTERED! +1,500 BONUS PTS!');
-          setMascotCallout('👑 "ALL CRYSTAL JELLY CLEARED! +1,500 SUGAR BONUS!"');
-        } else if (remainingAfter > 0 && remainingAfter <= 4) {
-          setMascotCallout(`🧊 "Almost there! Only ${remainingAfter} Crystal Jelly tile${remainingAfter === 1 ? '' : 's'} left!"`);
-        }
-      }
-
-      return shatteredCount;
-    },
-    [showLootToast]
-  );
-
-  const finishRound = useCallback(
-    (clearedTarget, finalScoreVal = scoreRef.current, bonusMovesConverted = 0) => {
-      if (roundRewardedRef.current) return;
-      roundRewardedRef.current = true;
-      setRoundFinished(true);
-
-      const moveConversionPts = bonusMovesConverted * 300;
-      const totalScore = finalScoreVal + moveConversionPts;
-      if (moveConversionPts > 0) {
-        setScore(totalScore);
-      }
-      if (totalScore > storedHighScore) {
-        setStoredHighScore(totalScore);
-      }
-
-      // Compute 1-3 Star Trophy Rating
-      const stars =
-        totalScore >= targetScore * 1.8
-          ? 3
-          : totalScore >= targetScore
-          ? 2
-          : totalScore >= targetScore * 0.5
-          ? 1
-          : 0;
-
-      // Turbo-charged fair token calculation: 1 token per 95 score + Star Chest Bonus, up to 50 tokens/round!
-      const starBonusTokens = stars === 3 ? 14 : stars === 2 ? 10 : stars === 1 ? 4 : 2;
-      const baseTokens = Math.floor(totalScore / 95) + starBonusTokens + (level - 1) * 4;
-      const requestedTokens = Math.min(
-        ARCADE_ECONOMY_RULES.SUB_GAMES.MAX_TOKENS_PER_ROUND,
-        Math.max(totalScore >= 250 ? 4 : 0, baseTokens)
-      );
-      const xpEarned = Math.min(350, Math.max(35, Math.floor(totalScore / 18) + stars * 35));
-
-      let actualTokensWon = requestedTokens;
-      let capNote = '';
-      if (completeRoundHandler) {
-        const res = completeRoundHandler({
-          gameId: 'crush',
-          score: totalScore,
-          requestedTokens,
-          xpEarned
-        });
-        if (res && typeof res.awardedTokens === 'number') {
-          actualTokensWon = res.awardedTokens;
-          if (res.reason === 'daily_cap_reached' || res.reason === 'category_cap_reached') {
-            capNote = ' (Daily Arcade Token Cap reached — high score still recorded!)';
-          }
-        }
-      }
-
-      if (clearedTarget || stars >= 2) {
-        sfx.playJackpot();
-        setTimeout(() => sfx.playAirhorn(), 160);
-      } else {
-        sfx.playBoing(2);
-      }
-
-      setRoundSummary({
-        clearedTarget: totalScore >= targetScore,
-        stars,
-        score: totalScore,
-        moveConversionPts,
-        tokensWon: actualTokensWon,
-        xpEarned,
-        capNote
-      });
-    },
-    [storedHighScore, targetScore, level, completeRoundHandler]
-  );
-
-  /**
-   * Triggers the official Candy Crush style "SUGAR CRUSH FINALE" converting remaining moves into bombs/lasers!
-   */
-  const handleTriggerMemeCrushFinale = () => {
-    if (roundFinished || isAnimating) return;
-    const remMoves = movesLeft;
-    setMovesLeft(0);
-    sfx.playSpecialBomb();
-    setBoardShake(true);
-    setTimeout(() => setBoardShake(false), 550);
-
-    spawnShockwave(3, 3, '#facc15');
-    spawnShockwave(4, 4, '#00f3ff');
-
-    // Fire cross-board finale lasers visually
-    spawnGridEffects(
-      [
-        [2, 2],
-        [3, 4],
-        [5, 3],
-        [4, 6]
-      ],
-      remMoves * 300,
-      '🎆 SUGAR CRUSH FINALE!',
-      [
-        { dir: 'h', index: 2, color: '#facc15' },
-        { dir: 'h', index: 5, color: '#ec4899' },
-        { dir: 'v', index: 3, color: '#00f3ff' },
-        { dir: 'v', index: 6, color: '#4ade80' }
-      ]
+  const resetToLevel = useCallback((targetLevelId, stakedAmt = 0) => {
+    const def = CRUSH_LEVELS.find((l) => l.id === targetLevelId) || CRUSH_LEVELS[0];
+    const fresh = buildFreshLevelState(def);
+    setLevelId(def.id);
+    setBoard(fresh.board);
+    setJellyGrid(fresh.jelly);
+    setLockGrid(fresh.locks);
+    setMovesLeft(def.moves);
+    setScore(0);
+    setCollected({});
+    spawnedCassettesRef.current = fresh.spawnedCassettes;
+    setCassettesDropped(0);
+    setLocksBroken(0);
+    setSelectedCell(null);
+    setBusy(false);
+    setHammerCharges(0);
+    setHammerActive(false);
+    setComboBanner(
+      stakedAmt > 0
+        ? `🪙 ${stakedAmt}-TOKEN PRIZE RUN ACTIVE — CLEAR OBJECTIVES TO WIN UP TO ${starPayouts[3]} 🪙!`
+        : `🆓 PRACTICE MODE — Lv.${def.id} ${def.name}`
     );
-    triggerAnnounceSplash(
-      5,
-      '🎆 SUGAR CRUSH FINALE!!',
-      `+${(remMoves * 300).toLocaleString()} MOVE BONUS!`
-    );
+    setActiveStakeTokens(stakedAmt);
+    setRoundStarted(stakedAmt > 0);
+    setRoundResult(null);
+    paidOutRef.current = false;
+  }, [starPayouts]);
 
-    setTimeout(() => {
-      finishRound(true, scoreRef.current, remMoves);
-    }, 620);
-  };
-
-  /**
-   * Resolves all cascades on a board state until stable, spawning Striped Lasers,
-   * 2x2 Seeking Meme Rockets, L/T-Shape 3x3 Packet Bombs, 5-in-a-row Supernova Color Bombs,
-   * shattering Frosted Crystal Jelly, and animating smooth gravity drop-ins!
-   */
-  const resolveBoardCascades = useCallback(
-    (workingBoard, cascadeStep = 1, swappedCoord = null) => {
-      const groups = findMatchGroups(workingBoard);
-      if (groups.length === 0) {
-        setIsAnimating(false);
-        setComboCount(0);
-        if (movesLeftRef.current <= 0 && !roundRewardedRef.current) {
-          finishRound(scoreRef.current >= targetScore, scoreRef.current, 0);
-        }
+  const handleSelectLevel = (nextId) => {
+    if (busy) return;
+    // Prevent accidental loss of active staked run unless round ended
+    if (activeStakeTokens > 0 && !roundResult && roundStarted && movesLeft < levelDef.moves) {
+      if (!window.confirm('Abandon your active 10-Token Prize Run and switch levels?')) {
         return;
       }
+    }
+    sfx.playToggle();
+    resetToLevel(nextId, 0);
+  };
 
-      setIsAnimating(true);
-      setComboCount(cascadeStep);
-      const toRemove = new Set();
-      const specialsToSpawn = [];
-      const spawnedKeySet = new Set();
+  const handleStartPrizeRun = () => {
+    if (busy) return;
+    if (tokens < entryCost) {
+      sfx.playClownHonk();
+      setComboBanner(
+        `⚠️ NEED ${entryCost} 🪙 FOR PRIZE MODE! UPLOAD A MEME (+45 🪙) OR PLAY FREE PRACTICE!`
+      );
+      return;
+    }
+    if (onSpendTokens) {
+      const ok = onSpendTokens(entryCost, `Meme Crush Lv.${levelDef.id} Prize Entry`);
+      if (!ok) return;
+    }
+    sfx.playCoinInsert();
+    resetToLevel(levelDef.id, entryCost);
+  };
 
-      // Detect intersecting L-shape or T-shape matches to spawn 3x3 Wrapped Packet Bombs!
-      const cellGroupCount = new Map();
-      groups.forEach((g) => {
-        g.coords.forEach(([r, c]) => {
-          const k = `${r},${c}`;
-          toRemove.add(k);
-          if (g.dir !== 'sq') {
-            cellGroupCount.set(k, (cellGroupCount.get(k) || 0) + 1);
+  // Compute remaining objectives dynamically
+  const remainingJelly = useMemo(() => {
+    let count = 0;
+    for (let r = 0; r < GRID_SIZE; r++) {
+      for (let c = 0; c < GRID_SIZE; c++) {
+        if (jellyGrid[r][c] > 0) count += 1;
+      }
+    }
+    return count;
+  }, [jellyGrid]);
+
+  const remainingLocksOnBoard = useMemo(() => {
+    let count = 0;
+    for (let r = 0; r < GRID_SIZE; r++) {
+      for (let c = 0; c < GRID_SIZE; c++) {
+        if (lockGrid[r][c]) count += 1;
+      }
+    }
+    return count;
+  }, [lockGrid]);
+
+  const isObjectiveComplete = useMemo(() => {
+    const g = levelDef.goals;
+    if (g.jelly && remainingJelly > 0) return false;
+    if (g.cassettes > 0 && cassettesDropped < g.cassettes) return false;
+    if (g.locks > 0 && remainingLocksOnBoard > 0 && locksBroken < g.locks) return false;
+    if (g.minScore > 0 && score < g.minScore) return false;
+    if (g.orders) {
+      for (const [typeKey, reqCount] of Object.entries(g.orders)) {
+        if ((collected[typeKey] || 0) < reqCount) return false;
+      }
+    }
+    return true;
+  }, [levelDef, remainingJelly, cassettesDropped, remainingLocksOnBoard, locksBroken, score, collected]);
+
+  // Evaluate Victory or Out-of-Moves when board finishes cascading
+  useEffect(() => {
+    if (busy || roundResult) return undefined;
+    if (!isObjectiveComplete && movesLeft > 0) return undefined;
+
+    const timer = setTimeout(() => {
+      if (isObjectiveComplete) {
+        if (paidOutRef.current) return;
+        paidOutRef.current = true;
+        const bonusScore = movesLeft * 180;
+        const finalScore = score + bonusScore;
+        const [s1, s2, s3] = levelDef.starScores;
+        const stars = finalScore >= s3 ? 3 : finalScore >= s2 ? 2 : s1 ? 1 : 1;
+
+        // Save stars & high score
+        setLevelStars((prev) => {
+          const next = { ...prev, [levelDef.id]: Math.max(prev[levelDef.id] || 0, stars) };
+          try {
+            localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(next));
+          } catch {
+            // Ignore storage error
           }
+          return next;
         });
-      });
 
-      groups.forEach((g) => {
-        const intersectCoord =
-          g.dir !== 'sq'
-            ? g.coords.find(([r, c]) => (cellGroupCount.get(`${r},${c}`) || 0) >= 2)
-            : null;
-
-        if (g.dir === 'sq') {
-          // 2x2 Square Match -> Spawn 🚀 Seeking Meme Rocket (like Candy Crush Jelly Fish!)
-          const spawnCoord =
-            (swappedCoord &&
-              g.coords.find(([r, c]) => r === swappedCoord[0] && c === swappedCoord[1])) ||
-            g.coords[0];
-          const spKey = `${spawnCoord[0]},${spawnCoord[1]}`;
-          if (!spawnedKeySet.has(spKey)) {
-            spawnedKeySet.add(spKey);
-            specialsToSpawn.push({
-              r: spawnCoord[0],
-              c: spawnCoord[1],
-              type: g.type,
-              special: 'seeking-rocket'
-            });
-          }
-        } else if (g.length >= 5) {
-          const spawnCoord =
-            (swappedCoord &&
-              g.coords.find(([r, c]) => r === swappedCoord[0] && c === swappedCoord[1])) ||
-            g.coords[Math.floor(g.coords.length / 2)];
-          const spKey = `${spawnCoord[0]},${spawnCoord[1]}`;
-          if (!spawnedKeySet.has(spKey)) {
-            spawnedKeySet.add(spKey);
-            specialsToSpawn.push({
-              r: spawnCoord[0],
-              c: spawnCoord[1],
-              type: g.type,
-              special: 'color-bomb'
-            });
-          }
-        } else if (intersectCoord) {
-          const spKey = `${intersectCoord[0]},${intersectCoord[1]}`;
-          if (!spawnedKeySet.has(spKey)) {
-            spawnedKeySet.add(spKey);
-            specialsToSpawn.push({
-              r: intersectCoord[0],
-              c: intersectCoord[1],
-              type: g.type,
-              special: 'packet-bomb'
-            });
-          }
-        } else if (g.length === 4) {
-          const spawnCoord =
-            (swappedCoord &&
-              g.coords.find(([r, c]) => r === swappedCoord[0] && c === swappedCoord[1])) ||
-            g.coords[1];
-          const spKey = `${spawnCoord[0]},${spawnCoord[1]}`;
-          if (!spawnedKeySet.has(spKey)) {
-            spawnedKeySet.add(spKey);
-            specialsToSpawn.push({
-              r: spawnCoord[0],
-              c: spawnCoord[1],
-              type: g.type,
-              special: g.dir === 'h' ? 'striped-v' : 'striped-h'
-            });
-          }
+        const prevBest = Number(localStorage.getItem('tm_crush_highscore') || 0);
+        if (finalScore > prevBest) {
+          localStorage.setItem('tm_crush_highscore', String(finalScore));
+          if (onRecordHighScore) onRecordHighScore('crush', finalScore);
         }
-      });
 
-      // Chain-detonate any existing special candies caught in the match!
-      let triggeredSpecial = false;
-      const lasersToFire = [];
-      const queue = Array.from(toRemove);
-      const processedSpecials = new Set();
+        const rawPrize = activeStakeTokens > 0 ? starPayouts[stars] || 12 : 0;
+        const verifiedPayout = validateStakedGamePayout({
+          stakedTokens: activeStakeTokens,
+          rawPayout: rawPrize,
+          maxMultiplier: 4
+        });
+
+        sfx.playCrushComboFanfare();
+        if (verifiedPayout > 0 && onPayoutTokens) {
+          onPayoutTokens(verifiedPayout, {
+            stakedTokens: activeStakeTokens,
+            xp: 45 + stars * 15,
+            label: `🍬 Lv.${levelDef.id} ${levelDef.name} Cleared (${stars}⭐)!`,
+            emoji: '🍬'
+          });
+        }
+
+        setRoundResult({
+          won: true,
+          stars,
+          payout: verifiedPayout,
+          score: finalScore
+        });
+      } else if (movesLeft <= 0) {
+        sfx.playSadTrombone();
+        setRoundResult({
+          won: false,
+          stars: 0,
+          payout: 0,
+          score
+        });
+      }
+    }, 45);
+
+    return () => clearTimeout(timer);
+  }, [
+    busy,
+    roundResult,
+    isObjectiveComplete,
+    movesLeft,
+    score,
+    levelDef,
+    activeStakeTokens,
+    starPayouts,
+    onPayoutTokens,
+    onRecordHighScore
+  ]);
+
+  /**
+   * Expands special candy blasts recursively (Striped H/V, 3x3 Packet Bomb, Seeking Rocket)
+   */
+  const expandBlastSet = useCallback(
+    (initialKeys, currBoard, currJelly, currLocks) => {
+      const clearSet = new Set(initialKeys);
+      const queue = [...initialKeys];
+      const visitedSpecial = new Set();
 
       while (queue.length > 0) {
         const key = queue.shift();
-        if (processedSpecials.has(key)) continue;
+        if (visitedSpecial.has(key)) continue;
         const [r, c] = key.split(',').map(Number);
-        const tile = workingBoard[r]?.[c];
-        if (!tile?.special) continue;
-
-        processedSpecials.add(key);
-        triggeredSpecial = true;
+        const tile = currBoard[r]?.[c];
+        if (!tile || !tile.special) continue;
+        visitedSpecial.add(key);
 
         if (tile.special === 'striped-h') {
-          lasersToFire.push({ dir: 'h', index: r, color: '#00f3ff' });
-          for (let col = 0; col < GRID_SIZE; col++) {
-            const k = `${r},${col}`;
-            if (!toRemove.has(k)) {
-              toRemove.add(k);
-              queue.push(k);
+          sfx.playLaserZap();
+          for (let cc = 0; cc < GRID_SIZE; cc++) {
+            if (!levelDef.isVoid(r, cc)) {
+              const nk = `${r},${cc}`;
+              if (!clearSet.has(nk)) {
+                clearSet.add(nk);
+                queue.push(nk);
+              }
             }
           }
         } else if (tile.special === 'striped-v') {
-          lasersToFire.push({ dir: 'v', index: c, color: '#ec4899' });
-          for (let row = 0; row < GRID_SIZE; row++) {
-            const k = `${row},${c}`;
-            if (!toRemove.has(k)) {
-              toRemove.add(k);
-              queue.push(k);
+          sfx.playLaserZap();
+          for (let rr = 0; rr < GRID_SIZE; rr++) {
+            if (!levelDef.isVoid(rr, c)) {
+              const nk = `${rr},${c}`;
+              if (!clearSet.has(nk)) {
+                clearSet.add(nk);
+                queue.push(nk);
+              }
             }
           }
         } else if (tile.special === 'packet-bomb') {
-          spawnShockwave(r, c, '#facc15');
+          sfx.playSpecialBomb();
           for (let dr = -1; dr <= 1; dr++) {
             for (let dc = -1; dc <= 1; dc++) {
               const nr = r + dr;
               const nc = c + dc;
-              if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
-                const k = `${nr},${nc}`;
-                if (!toRemove.has(k)) {
-                  toRemove.add(k);
-                  queue.push(k);
+              if (
+                nr >= 0 &&
+                nr < GRID_SIZE &&
+                nc >= 0 &&
+                nc < GRID_SIZE &&
+                !levelDef.isVoid(nr, nc)
+              ) {
+                const nk = `${nr},${nc}`;
+                if (!clearSet.has(nk)) {
+                  clearSet.add(nk);
+                  queue.push(nk);
                 }
               }
             }
           }
         } else if (tile.special === 'seeking-rocket') {
-          // 🚀 Seeking Meme Rocket seeks out Frosted Jelly cells (or random targets) and blasts them!
-          const jellyTargets = [];
-          const currJelly = jellyGridRef.current;
-          for (let jr = 0; jr < GRID_SIZE; jr++) {
-            for (let jc = 0; jc < GRID_SIZE; jc++) {
-              if (currJelly?.[jr]?.[jc] > 0 && !toRemove.has(`${jr},${jc}`)) {
-                jellyTargets.push([jr, jc]);
-              }
-            }
-          }
-          const chosenTarget =
-            jellyTargets.length > 0
-              ? jellyTargets[Math.floor(Math.random() * jellyTargets.length)]
-              : [Math.floor(Math.random() * GRID_SIZE), Math.floor(Math.random() * GRID_SIZE)];
-          spawnLightningArcs([r, c], [chosenTarget]);
-          spawnShockwave(chosenTarget[0], chosenTarget[1], '#4ade80');
-          for (let dr = -1; dr <= 1; dr++) {
-            for (let dc = -1; dc <= 1; dc++) {
-              if (Math.abs(dr) + Math.abs(dc) <= 1) {
-                const nr = chosenTarget[0] + dr;
-                const nc = chosenTarget[1] + dc;
-                if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
-                  const k = `${nr},${nc}`;
-                  if (!toRemove.has(k)) {
-                    toRemove.add(k);
-                    queue.push(k);
-                  }
+          sfx.playAlienBeam();
+          // Target highest-priority objective cell (lock or jelly!)
+          let targetKey = null;
+          for (let rr = 0; rr < GRID_SIZE && !targetKey; rr++) {
+            for (let cc = 0; cc < GRID_SIZE; cc++) {
+              if (!levelDef.isVoid(rr, cc) && (currLocks[rr][cc] || currJelly[rr][cc] > 0)) {
+                if (!clearSet.has(`${rr},${cc}`)) {
+                  targetKey = `${rr},${cc}`;
+                  break;
                 }
               }
             }
           }
-        } else if (tile.special === 'color-bomb') {
-          const zappedCoords = [];
-          for (let row = 0; row < GRID_SIZE; row++) {
-            for (let col = 0; col < GRID_SIZE; col++) {
-              if (workingBoard[row][col]?.type === tile.type) {
-                const k = `${row},${col}`;
-                zappedCoords.push([row, col]);
-                if (!toRemove.has(k)) {
-                  toRemove.add(k);
-                  queue.push(k);
-                }
-              }
-            }
-          }
-          spawnLightningArcs([r, c], zappedCoords);
-        }
-      }
-
-      const allCoords = Array.from(toRemove).map((k) => k.split(',').map(Number));
-      const jellyShattered = damageJellyAtCoords(allCoords);
-
-      const clearedCount = toRemove.size;
-      const feverMultiplier = feverMovesRef.current > 0 ? 2 : 1;
-      const pointsEarned =
-        (clearedCount * 45 * cascadeStep + jellyShattered * 120) * feverMultiplier;
-      setScore((prev) => prev + pointsEarned);
-
-      // Charge Meme Fever Meter
-      const nextFever = Math.min(
-        100,
-        feverPctRef.current + clearedCount * 4 + cascadeStep * 6 + jellyShattered * 3
-      );
-      let triggerFeverNow = false;
-      if (nextFever >= 100) {
-        triggerFeverNow = true;
-        setFeverPct(0);
-        feverPctRef.current = 0;
-        setFeverMovesLeft((m) => m + 3);
-      } else {
-        setFeverPct(nextFever);
-        feverPctRef.current = nextFever;
-      }
-
-      // Audio & Screen Shake
-      if (triggeredSpecial || clearedCount >= 7 || cascadeStep >= 3) {
-        setBoardShake(true);
-        setTimeout(() => setBoardShake(false), 360);
-      }
-      if (lasersToFire.length > 0) {
-        sfx.playLaserZap();
-      }
-      if (triggeredSpecial || specialsToSpawn.length > 0 || cascadeStep >= 2) {
-        sfx.playCrushComboFanfare(Math.min(5, Math.max(cascadeStep, clearedCount >= 8 ? 4 : 2)));
-      } else {
-        sfx.playCandyMatch(cascadeStep);
-      }
-
-      spawnGridEffects(
-        allCoords,
-        pointsEarned,
-        triggeredSpecial
-          ? '💥 MEGA BLAST!'
-          : jellyShattered > 0
-          ? `🧊 ${jellyShattered} JELLY!`
-          : cascadeStep >= 2
-          ? `🔥 ${cascadeStep}x`
-          : null,
-        lasersToFire,
-        jellyShattered > 0 ? ['❄️', '💎', '✨', '🍬', '🌟'] : null
-      );
-
-      if (cascadeStep >= 2 || clearedCount >= 4 || triggeredSpecial) {
-        const effectiveTier = Math.min(
-          5,
-          Math.max(cascadeStep, clearedCount >= 10 ? 5 : clearedCount >= 6 ? 3 : 1)
-        );
-        triggerAnnounceSplash(effectiveTier);
-      }
-
-      setPoppingKeys(toRemove);
-
-      setTimeout(() => {
-        const nextBoard = workingBoard.map((row) => [...row]);
-
-        // Clear matched cells
-        toRemove.forEach((key) => {
-          const [r, c] = key.split(',').map(Number);
-          nextBoard[r][c] = null;
-        });
-
-        // Place newly earned special candies
-        specialsToSpawn.forEach((sp) => {
-          nextBoard[sp.r][sp.c] = makeTile(sp.type, sp.special, 0);
-        });
-
-        // Apply downward gravity column by column AND compute exact drop distance for elastic bounce!
-        for (let c = 0; c < GRID_SIZE; c++) {
-          const surviving = [];
-          for (let r = GRID_SIZE - 1; r >= 0; r--) {
-            if (nextBoard[r][c] !== null) {
-              surviving.push({ tile: nextBoard[r][c], origRow: r });
-            }
-          }
-          const missingCount = GRID_SIZE - surviving.length;
-          for (let r = GRID_SIZE - 1; r >= 0; r--) {
-            const idxFromBottom = GRID_SIZE - 1 - r;
-            if (idxFromBottom < surviving.length) {
-              const { tile, origRow } = surviving[idxFromBottom];
-              const dropRows = Math.max(0, r - origRow);
-              nextBoard[r][c] = {
-                ...tile,
-                dropDist: dropRows
-              };
-            } else {
-              nextBoard[r][c] = makeTile(null, null, missingCount + 1);
-            }
+          if (targetKey) {
+            clearSet.add(targetKey);
+            queue.push(targetKey);
           }
         }
+      }
 
-        // If Meme Fever Meter hit 100%, drop bonus special candies & award a Turbo Loot Drop!
-        if (triggerFeverNow) {
-          sfx.playPowerUpCollect();
-          const perk = FEVER_LOOT_PERKS[Math.floor(Math.random() * FEVER_LOOT_PERKS.length)];
-          setScore((s) => s + 600);
-          if (perk.id === 'moves') setMovesLeft((m) => m + 2);
-          else if (perk.id === 'hammer') setHammersLeft((h) => h + 1);
-          else if (perk.id === 'ufo') setUfoDropsLeft((u) => u + 1);
-
-          // Spawn 2 bonus special candies on random tiles
-          const r1 = Math.floor(Math.random() * GRID_SIZE);
-          const c1 = Math.floor(Math.random() * GRID_SIZE);
-          const r2 = (r1 + 3) % GRID_SIZE;
-          const c2 = (c1 + 4) % GRID_SIZE;
-          if (nextBoard[r1][c1]) {
-            nextBoard[r1][c1] = makeTile(
-              nextBoard[r1][c1].type,
-              perk.id === 'colorbomb' ? 'color-bomb' : 'packet-bomb',
-              1
-            );
-          }
-          if (nextBoard[r2][c2]) {
-            nextBoard[r2][c2] = makeTile(nextBoard[r2][c2].type, 'seeking-rocket', 1);
-          }
-          showLootToast(`🔥 SUGAR RUSH ERUPTION (2X SCORE)! ${perk.label}`);
-        }
-
-        setPoppingKeys(new Set());
-        setBoard(nextBoard);
-
-        setTimeout(() => {
-          if (cascadeRunnerRef.current) {
-            cascadeRunnerRef.current(nextBoard, cascadeStep + 1, null);
-          }
-        }, 240);
-      }, 240);
+      return clearSet;
     },
-    [
-      spawnGridEffects,
-      triggerAnnounceSplash,
-      showLootToast,
-      finishRound,
-      targetScore,
-      damageJellyAtCoords,
-      spawnShockwave,
-      spawnLightningArcs
-    ]
+    [levelDef]
   );
 
-  useEffect(() => {
-    cascadeRunnerRef.current = resolveBoardCascades;
-  }, [resolveBoardCascades]);
-
-  const handleAdvanceNextLevel = () => {
-    sfx.playLevelUp();
-    const nextLv = level + 1;
-    setLevel(nextLv);
-    setJellyGrid(createInitialJellyGrid(nextLv));
-    setMovesLeft((m) => Math.min(25, m + 12));
-    setHammersLeft((h) => h + 1);
-    setUfoDropsLeft((u) => u + 1);
-    setShufflesLeft((s) => s + 1);
-    triggerAnnounceSplash(4, `🚀 LEVEL ${nextLv} UNLOCKED!`, '+12 MOVES, FRESH CRYSTAL JELLY & BOOSTERS!');
-  };
-
-  const handleStartNewRound = (useTokensIfEmpty = false) => {
-    if (effectivePlaysLeft <= 0) {
-      if (useTokensIfEmpty && onSpendTokensForPlay) {
-        const ok = onSpendTokensForPlay('crush', ARCADE_ECONOMY_RULES.SUB_GAMES.EXTRA_LIFE_TOKEN_COST);
-        if (!ok) return;
-      } else {
-        sfx.playSadTrombone();
-        return;
-      }
-    }
-    sfx.playMutate();
-    roundRewardedRef.current = false;
-    setRoundFinished(false);
-    setRoundSummary(null);
-    setLevel(1);
-    setJellyAllClearedLevel(0);
-    setJellyGrid(createInitialJellyGrid(1));
-    setScore(0);
-    setMovesLeft(20);
-    setFeverPct(0);
-    setFeverMovesLeft(0);
-    setHammersLeft(2);
-    setUfoDropsLeft(1);
-    setShufflesLeft(2);
-    setSelectedCell(null);
-    setHintCells([]);
-    setBoard(createInitialBoard(true));
-  };
-
   /**
-   * Executes a Special + Special Swap or standard swap on the 8x8 Candy Board.
+   * Applies gravity through carved void tiles, ejects bottom-row 80s Cassettes, and cascades!
    */
-  const attemptSwap = (r1, c1, r2, c2) => {
-    if (isAnimating || roundFinished || movesLeft <= 0) return;
-    if (Math.abs(r1 - r2) + Math.abs(c1 - c2) !== 1) return;
+  const resolveCascades = useCallback(
+    async (startBoard, startJelly, startLocks, forcedClearKeys = null, forcedSpecials = []) => {
+      setBusy(true);
+      let currBoard = startBoard.map((row) => [...row]);
+      let currJelly = startJelly.map((row) => [...row]);
+      let currLocks = startLocks.map((row) => [...row]);
 
-    setHintCells([]);
-    setSelectedCell(null);
+      let cascadeStep = 0;
+      let pendingForced = forcedClearKeys;
+      let pendingSpecials = forcedSpecials;
+
+      const wait = (ms) => new Promise((res) => setTimeout(res, ms));
+
+      while (cascadeStep < 14) {
+        let matchKeys;
+        let spawnList;
+
+        if (pendingForced) {
+          matchKeys = pendingForced;
+          spawnList = pendingSpecials;
+          pendingForced = null;
+          pendingSpecials = [];
+        } else {
+          const found = findBoardMatches(currBoard, levelDef);
+          matchKeys = found.matchedSet;
+          spawnList = found.specialsToSpawn;
+        }
+
+        // Check for cassettes already sitting on the bottom playable row
+        let ejectedThisPass = 0;
+        for (let c = 0; c < GRID_SIZE; c++) {
+          const botR = getBottomPlayableRow(levelDef, c);
+          if (botR >= 0 && currBoard[botR][c]?.isCassette && !currLocks[botR][c]) {
+            currBoard[botR][c] = null;
+            ejectedThisPass += 1;
+          }
+        }
+        if (ejectedThisPass > 0) {
+          sfx.playPowerUpCollect();
+          setCassettesDropped((d) => d + ejectedThisPass);
+          setScore((s) => s + ejectedThisPass * 600);
+          setComboBanner(`📼 MIXTAPE EJECTED! (+${ejectedThisPass * 600} PTS)`);
+        }
+
+        if (matchKeys.size === 0 && ejectedThisPass === 0) {
+          break;
+        }
+
+        if (matchKeys.size > 0) {
+          cascadeStep += 1;
+          const expanded = expandBlastSet(matchKeys, currBoard, currJelly, currLocks);
+
+          let ptsEarned = 0;
+          let newlyBrokenLocks = 0;
+          const newlyCollected = {};
+
+          expanded.forEach((key) => {
+            const [r, c] = key.split(',').map(Number);
+            const tile = currBoard[r]?.[c];
+            if (!tile) return;
+
+            if (currLocks[r][c]) {
+              currLocks[r][c] = false;
+              newlyBrokenLocks += 1;
+              ptsEarned += 120;
+            }
+            if (currJelly[r][c] > 0) {
+              currJelly[r][c] = Math.max(0, currJelly[r][c] - 1);
+              sfx.playJellyShatter();
+              ptsEarned += 110;
+            }
+            // Cassettes are indestructible!
+            if (tile.isCassette) return;
+
+            if (tile.type >= 0) {
+              newlyCollected[tile.type] = (newlyCollected[tile.type] || 0) + 1;
+            }
+            ptsEarned += 45 * cascadeStep;
+            currBoard[r][c] = null;
+          });
+
+          // Place newly created special candies
+          spawnList.forEach((sp) => {
+            if (!levelDef.isVoid(sp.r, sp.c) && !currBoard[sp.r][sp.c]) {
+              currBoard[sp.r][sp.c] = createCandyTile(sp.type, sp.special);
+            }
+          });
+
+          sfx.playCandyMatch(Math.min(6, cascadeStep + 2));
+          if (newlyBrokenLocks > 0) {
+            setLocksBroken((l) => l + newlyBrokenLocks);
+          }
+          if (Object.keys(newlyCollected).length > 0) {
+            setCollected((prev) => {
+              const next = { ...prev };
+              for (const [k, v] of Object.entries(newlyCollected)) {
+                next[k] = (next[k] || 0) + v;
+              }
+              return next;
+            });
+          }
+          setScore((s) => s + ptsEarned);
+
+          // Award 1 pocket Cyber-Hammer if player hits a 3x+ natural cascade!
+          if (cascadeStep === 3) {
+            setHammerCharges((h) => Math.min(2, h + 1));
+            setComboBanner('⚡ 3× SYNTH COMBO! +1 CYBER HAMMER EARNED!');
+          } else if (cascadeStep >= 2) {
+            setComboBanner(`🔥 ${cascadeStep}× NEON CASCADE! (+${ptsEarned} PTS)`);
+          }
+
+          setBoard(currBoard.map((row) => [...row]));
+          setJellyGrid(currJelly.map((row) => [...row]));
+          setLockGrid(currLocks.map((row) => [...row]));
+          await wait(175);
+        }
+
+        // Gravity drop through playable cells in each column (locked tiles act as anchors; unlocked fall cleanly)
+        for (let c = 0; c < GRID_SIZE; c++) {
+          const playableRows = [];
+          for (let r = 0; r < GRID_SIZE; r++) {
+            if (!levelDef.isVoid(r, c)) playableRows.push(r);
+          }
+          if (playableRows.length === 0) continue;
+
+          // Segment column between locked anchors so tiles don't phase through locked cages
+          let segEndIdx = playableRows.length - 1;
+          while (segEndIdx >= 0) {
+            const rAtEnd = playableRows[segEndIdx];
+            if (currLocks[rAtEnd][c]) {
+              segEndIdx -= 1;
+              continue;
+            }
+            let segStartIdx = segEndIdx;
+            while (segStartIdx > 0 && !currLocks[playableRows[segStartIdx - 1]][c]) {
+              segStartIdx -= 1;
+            }
+
+            const survivors = [];
+            for (let idx = segEndIdx; idx >= segStartIdx; idx--) {
+              const rr = playableRows[idx];
+              if (currBoard[rr][c]) survivors.push(currBoard[rr][c]);
+            }
+
+            let writePtr = 0;
+            for (let idx = segEndIdx; idx >= segStartIdx; idx--) {
+              const rr = playableRows[idx];
+              if (writePtr < survivors.length) {
+                currBoard[rr][c] = survivors[writePtr++];
+              } else if (segStartIdx === 0) {
+                // Top segment refills from top dispenser
+                const needTape =
+                  levelDef.goals.cassettes > 0 &&
+                  spawnedCassettesRef.current < levelDef.goals.cassettes &&
+                  Math.random() < 0.28;
+                if (needTape) {
+                  spawnedCassettesRef.current += 1;
+                  currBoard[rr][c] = createCandyTile(null, null, true);
+                } else {
+                  currBoard[rr][c] = createCandyTile();
+                }
+              } else {
+                // Pocket underneath a locked cage refills cleanly too so no dead void forms
+                currBoard[rr][c] = createCandyTile();
+              }
+            }
+
+            segEndIdx = segStartIdx - 1;
+          }
+        }
+
+        setBoard(currBoard.map((row) => [...row]));
+        await wait(165);
+      }
+
+      // Auto-shuffle unlocked regular candies if no valid swap remains
+      if (!hasAnyValidMove(currBoard, currLocks, levelDef)) {
+        const pool = [];
+        for (let r = 0; r < GRID_SIZE; r++) {
+          for (let c = 0; c < GRID_SIZE; c++) {
+            if (!levelDef.isVoid(r, c) && !currLocks[r][c] && currBoard[r][c] && !currBoard[r][c].isCassette) {
+              pool.push(currBoard[r][c]);
+            }
+          }
+        }
+        for (let i = pool.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+        let ptr = 0;
+        for (let r = 0; r < GRID_SIZE; r++) {
+          for (let c = 0; c < GRID_SIZE; c++) {
+            if (!levelDef.isVoid(r, c) && !currLocks[r][c] && currBoard[r][c] && !currBoard[r][c].isCassette) {
+              currBoard[r][c] = pool[ptr++];
+            }
+          }
+        }
+        setBoard(currBoard.map((row) => [...row]));
+        setComboBanner('🔀 NO MOVES LEFT — NEON GRID AUTO-SHUFFLED!');
+      }
+
+      setBusy(false);
+    },
+    [levelDef, expandBlastSet]
+  );
+
+  const attemptSwap = async (r1, c1, r2, c2) => {
+    if (busy || roundResult || movesLeft <= 0) return;
+    if (
+      r1 < 0 ||
+      r1 >= GRID_SIZE ||
+      c1 < 0 ||
+      c1 >= GRID_SIZE ||
+      r2 < 0 ||
+      r2 >= GRID_SIZE ||
+      c2 < 0 ||
+      c2 >= GRID_SIZE
+    ) {
+      return;
+    }
+    if (levelDef.isVoid(r1, c1) || levelDef.isVoid(r2, c2)) return;
+
+    // Cyber-Ice Locked tiles cannot be dragged!
+    if (lockGrid[r1][c1] || lockGrid[r2][c2]) {
+      sfx.playClownHonk();
+      setComboBanner('🔒 LOCKED BY CYBER-ICE! MATCH ADJACENT CANDIES TO SHATTER LOCK!');
+      setSelectedCell(null);
+      return;
+    }
 
     const tileA = board[r1][c1];
     const tileB = board[r2][c2];
     if (!tileA || !tileB) return;
 
-    const consumeMove = () => {
+    setRoundStarted(true);
+    setSelectedCell(null);
+
+    const swapped = board.map((row) => [...row]);
+    swapped[r1][c1] = tileB;
+    swapped[r2][c2] = tileA;
+
+    // Special case 1: Color Bomb swapped with any non-cassette candy -> zaps all of that color!
+    if (
+      (tileA.special === 'color-bomb' && !tileB.isCassette) ||
+      (tileB.special === 'color-bomb' && !tileA.isCassette)
+    ) {
+      sfx.playAlienBeam();
       setMovesLeft((m) => Math.max(0, m - 1));
-      if (feverMovesLeft > 0) {
-        setFeverMovesLeft((f) => Math.max(0, f - 1));
-      }
-    };
-
-    const executeCustomBlast = (toBlastSet, bonusPts, bannerTitle, bannerSub, lasers = []) => {
-      consumeMove();
-      setIsAnimating(true);
-      setBoardShake(true);
-      setTimeout(() => setBoardShake(false), 450);
-      sfx.playSpecialBomb();
-      if (lasers.length > 0) sfx.playLaserZap();
-
-      const coords = Array.from(toBlastSet).map((k) => k.split(',').map(Number));
-      const jellyHits = damageJellyAtCoords(coords);
-
-      const feverMult = feverMovesLeft > 0 ? 2 : 1;
-      const totalPts = (bonusPts + jellyHits * 120) * feverMult;
-      setScore((s) => s + totalPts);
-
-      spawnGridEffects(coords, totalPts, bannerTitle, lasers);
-      triggerAnnounceSplash(5, bannerTitle, `${bannerSub} (+${totalPts.toLocaleString()} PTS!)`);
-      setPoppingKeys(toBlastSet);
-
-      setTimeout(() => {
-        const nextBoard = board.map((row) => [...row]);
-        toBlastSet.forEach((key) => {
-          const [br, bc] = key.split(',').map(Number);
-          nextBoard[br][bc] = null;
-        });
-        for (let c = 0; c < GRID_SIZE; c++) {
-          const surviving = [];
-          for (let r = GRID_SIZE - 1; r >= 0; r--) {
-            if (nextBoard[r][c] !== null) surviving.push({ tile: nextBoard[r][c], origRow: r });
-          }
-          const missing = GRID_SIZE - surviving.length;
-          for (let r = GRID_SIZE - 1; r >= 0; r--) {
-            const idx = GRID_SIZE - 1 - r;
-            if (idx < surviving.length) {
-              const { tile, origRow } = surviving[idx];
-              nextBoard[r][c] = { ...tile, dropDist: Math.max(0, r - origRow) };
-            } else {
-              nextBoard[r][c] = makeTile(null, null, missing + 1);
-            }
+      const targetColor = tileA.special === 'color-bomb' ? tileB.type : tileA.type;
+      const zapSet = new Set([`${r1},${c1}`, `${r2},${c2}`]);
+      for (let rr = 0; rr < GRID_SIZE; rr++) {
+        for (let cc = 0; cc < GRID_SIZE; cc++) {
+          const t = swapped[rr][cc];
+          if (t && !t.isCassette && (targetColor < 0 || t.type === targetColor)) {
+            zapSet.add(`${rr},${cc}`);
           }
         }
-        setPoppingKeys(new Set());
-        setBoard(nextBoard);
-        setTimeout(() => resolveBoardCascades(nextBoard, 2, null), 230);
-      }, 260);
-    };
-
-    // 1. 🌈 COLOR BOMB + 🌈 COLOR BOMB = NUCLEAR 64-TILE BOARD WIPE!
-    if (tileA.special === 'color-bomb' && tileB.special === 'color-bomb') {
-      const allKeys = new Set();
-      for (let r = 0; r < GRID_SIZE; r++) {
-        for (let c = 0; c < GRID_SIZE; c++) {
-          allKeys.add(`${r},${c}`);
-        }
       }
-      spawnShockwave(r2, c2, '#facc15');
-      executeCustomBlast(
-        allKeys,
-        5000,
-        '🌌 NUCLEAR BOARD WIPE!!',
-        'DOUBLE COLOR BOMB SUPERNOVA!',
-        [
-          { dir: 'h', index: r1, color: '#facc15' },
-          { dir: 'h', index: r2, color: '#00f3ff' },
-          { dir: 'v', index: c1, color: '#ec4899' },
-          { dir: 'v', index: c2, color: '#4ade80' }
-        ]
-      );
+      setBoard(swapped);
+      await resolveCascades(swapped, jellyGrid, lockGrid, zapSet, []);
       return;
     }
 
-    // 2. 🌈 COLOR BOMB + ANY CANDY (OR STRIPED / PACKET BOMB / SEEKING ROCKET)
-    if (tileA.special === 'color-bomb' || tileB.special === 'color-bomb') {
-      const bombCoords = tileA.special === 'color-bomb' ? [r1, c1] : [r2, c2];
-      const otherTile = tileA.special === 'color-bomb' ? tileB : tileA;
-      const targetType = otherTile.type;
-      const toBlast = new Set([`${r1},${c1}`, `${r2},${c2}`]);
-      const lasers = [];
-      const arcTargets = [];
-
-      for (let r = 0; r < GRID_SIZE; r++) {
-        for (let c = 0; c < GRID_SIZE; c++) {
-          if (board[r][c]?.type === targetType) {
-            toBlast.add(`${r},${c}`);
-            arcTargets.push([r, c]);
-            if (otherTile.special === 'striped-h' || otherTile.special === 'striped-v') {
-              if ((r + c) % 2 === 0) {
-                lasers.push({ dir: 'h', index: r, color: '#00f3ff' });
-                for (let k = 0; k < GRID_SIZE; k++) toBlast.add(`${r},${k}`);
-              } else {
-                lasers.push({ dir: 'v', index: c, color: '#ec4899' });
-                for (let k = 0; k < GRID_SIZE; k++) toBlast.add(`${k},${c}`);
-              }
-            } else if (otherTile.special === 'packet-bomb' || otherTile.special === 'seeking-rocket') {
-              for (let dr = -1; dr <= 1; dr++) {
-                for (let dc = -1; dc <= 1; dc++) {
-                  if (r + dr >= 0 && r + dr < GRID_SIZE && c + dc >= 0 && c + dc < GRID_SIZE) {
-                    toBlast.add(`${r + dr},${c + dc}`);
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-
-      spawnLightningArcs(bombCoords, arcTargets);
-      spawnShockwave(bombCoords[0], bombCoords[1], '#00f3ff');
-      executeCustomBlast(
-        toBlast,
-        toBlast.size * 75,
-        otherTile.special ? '🌈⚡ HYPER COMBO STORM!!' : '🌈 SUPERNOVA COLOR BLAST!',
-        `${toBlast.size} CANDIES VAPORIZED!`,
-        lasers
-      );
-      return;
-    }
-
-    // 3. 🚀 SEEKING ROCKET SWAPPED WITH ANY CANDY -> Launches Homing Rockets at Crystal Jelly!
-    if (tileA.special === 'seeking-rocket' || tileB.special === 'seeking-rocket') {
-      const origin = tileA.special === 'seeking-rocket' ? [r1, c1] : [r2, c2];
-      const toBlast = new Set([`${r1},${c1}`, `${r2},${c2}`]);
-      const strikeCount = tileA.special && tileB.special ? 3 : 2;
-      const chosenTargets = pickRocketTargets(jellyGrid, strikeCount);
-      for (const pick of chosenTargets) {
-        spawnShockwave(pick[0], pick[1], '#4ade80');
-        for (let dr = -1; dr <= 1; dr++) {
-          for (let dc = -1; dc <= 1; dc++) {
-            if (Math.abs(dr) + Math.abs(dc) <= 1) {
-              const nr = pick[0] + dr;
-              const nc = pick[1] + dc;
-              if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
-                toBlast.add(`${nr},${nc}`);
-              }
-            }
-          }
-        }
-      }
-      spawnLightningArcs(origin, chosenTargets);
-      executeCustomBlast(
-        toBlast,
-        950 * strikeCount,
-        '🚀 SEEKING ROCKET BARRAGE!',
-        'HOMING JELLY STRIKE COMPLETE!'
-      );
-      return;
-    }
-
-    // 4. ⚡/💥 TWO SPECIAL CANDIES SWAPPED TOGETHER (Striped+Striped, Striped+Packet, Packet+Packet)
+    // Special case 2: Swapping any two Special Candies together triggers both immediately!
     if (tileA.special && tileB.special) {
-      const toBlast = new Set([`${r1},${c1}`, `${r2},${c2}`]);
-      const lasers = [];
-      const hasPacket = tileA.special === 'packet-bomb' || tileB.special === 'packet-bomb';
-      const hasStriped =
-        tileA.special?.startsWith('striped') || tileB.special?.startsWith('striped');
-
-      if (hasPacket && hasStriped) {
-        for (let d = -1; d <= 1; d++) {
-          const rr = r2 + d;
-          const cc = c2 + d;
-          if (rr >= 0 && rr < GRID_SIZE) {
-            lasers.push({ dir: 'h', index: rr, color: '#facc15' });
-            for (let k = 0; k < GRID_SIZE; k++) toBlast.add(`${rr},${k}`);
-          }
-          if (cc >= 0 && cc < GRID_SIZE) {
-            lasers.push({ dir: 'v', index: cc, color: '#ec4899' });
-            for (let k = 0; k < GRID_SIZE; k++) toBlast.add(`${k},${cc}`);
-          }
-        }
-        spawnShockwave(r2, c2, '#facc15');
-        executeCustomBlast(
-          toBlast,
-          2400,
-          '⚡💥 GIANT 3×3 MEGA LASER!!',
-          '3 ROWS + 3 COLUMNS OBLITERATED!',
-          lasers
-        );
-        return;
-      }
-
-      if (tileA.special === 'packet-bomb' && tileB.special === 'packet-bomb') {
-        for (let dr = -2; dr <= 2; dr++) {
-          for (let dc = -2; dc <= 2; dc++) {
-            const nr = r2 + dr;
-            const nc = c2 + dc;
-            if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
-              toBlast.add(`${nr},${nc}`);
-            }
-          }
-        }
-        spawnShockwave(r2, c2, '#ec4899');
-        executeCustomBlast(toBlast, 2000, '💥💥 5×5 GIGA-CRATER!!', 'DOUBLE PACKET DETONATION!');
-        return;
-      }
-
-      // Striped + Striped = Cross Laser (Full Row + Full Column)
-      lasers.push({ dir: 'h', index: r2, color: '#00f3ff' });
-      lasers.push({ dir: 'v', index: c2, color: '#ec4899' });
-      for (let k = 0; k < GRID_SIZE; k++) {
-        toBlast.add(`${r2},${k}`);
-        toBlast.add(`${k},${c2}`);
-      }
-      executeCustomBlast(toBlast, 1400, '⚡╋ CROSS-LASER OVERDRIVE!', 'ROW & COLUMN CLEARED!', lasers);
+      setMovesLeft((m) => Math.max(0, m - 1));
+      setBoard(swapped);
+      const comboSet = new Set([`${r1},${c1}`, `${r2},${c2}`]);
+      await resolveCascades(swapped, jellyGrid, lockGrid, comboSet, []);
       return;
     }
 
-    // 5. Standard Swap Check
-    const swapped = board.map((row) =>
-      row.map((cell) => (cell ? { ...cell, dropDist: 0 } : null))
-    );
-    swapped[r1][c1] = { ...tileB, dropDist: 0 };
-    swapped[r2][c2] = { ...tileA, dropDist: 0 };
-
-    const matches = findMatchGroups(swapped);
-    if (matches.length === 0) {
-      // iPhone Candy Crush elastic spring-back invalid swap animation!
-      sfx.playClownHonk();
-      setInvalidSwapPair([`${r1},${c1}`, `${r2},${c2}`]);
-      setTimeout(() => setInvalidSwapPair(null), 420);
-      setMascotCallout('🐸 "No match there! Tap 💡 Hint for a glowing move!"');
+    // Normal match check
+    const { matchedSet, specialsToSpawn } = findBoardMatches(swapped, levelDef);
+    if (matchedSet.size === 0) {
+      sfx.playBoing(1);
       return;
     }
 
-    consumeMove();
+    setMovesLeft((m) => Math.max(0, m - 1));
     setBoard(swapped);
-    resolveBoardCascades(swapped, 1, [r2, c2]);
+    await resolveCascades(swapped, jellyGrid, lockGrid, matchedSet, specialsToSpawn);
   };
 
-  const handleCellClick = (r, c) => {
-    if (isAnimating || roundFinished || movesLeft <= 0) return;
+  const handleCellTap = async (r, c) => {
+    if (busy || roundResult || levelDef.isVoid(r, c)) return;
 
-    // 🔨 Lollipop Meme Hammer Booster Mode: smash a 3x3 cross & shatter Crystal Jelly!
-    if (hammerMode && hammersLeft > 0) {
-      setHammerMode(false);
-      setHammersLeft((h) => h - 1);
-      setIsAnimating(true);
-      setBoardShake(true);
-      setTimeout(() => setBoardShake(false), 380);
-      sfx.playMetalPipe();
-      spawnShockwave(r, c, '#facc15');
-      const toSmash = new Set([`${r},${c}`]);
-      for (let dr = -1; dr <= 1; dr++) {
-        for (let dc = -1; dc <= 1; dc++) {
-          if (Math.abs(dr) + Math.abs(dc) <= 1) {
-            const nr = r + dr;
-            const nc = c + dc;
-            if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
-              toSmash.add(`${nr},${nc}`);
-            }
-          }
-        }
-      }
-      const coords = Array.from(toSmash).map((k) => k.split(',').map(Number));
-      const jellyHit = damageJellyAtCoords(coords);
-      const pts = 350 + jellyHit * 120;
-      setPoppingKeys(toSmash);
-      setScore((s) => s + pts);
-      spawnGridEffects([[r, c]], pts, '🔨 LOLLIPOP SMASH!');
-      triggerAnnounceSplash(3, '🔨 LOLLIPOP HAMMER SMASH!', `+${pts} BONUS PTS!`);
+    // Cyber Hammer Booster smash (works on locks & jellies too!)
+    if (hammerActive && hammerCharges > 0) {
+      const tile = board[r][c];
+      if (!tile) return;
+      setHammerActive(false);
+      setHammerCharges((h) => Math.max(0, h - 1));
+      sfx.playSpecialBomb();
+      const smashSet = new Set([`${r},${c}`]);
+      await resolveCascades(board, jellyGrid, lockGrid, smashSet, []);
+      return;
+    }
 
-      setTimeout(() => {
-        const nextBoard = board.map((row) => [...row]);
-        toSmash.forEach((key) => {
-          const [sr, sc] = key.split(',').map(Number);
-          nextBoard[sr][sc] = null;
-        });
-        for (let col = 0; col < GRID_SIZE; col++) {
-          const surviving = [];
-          for (let row = GRID_SIZE - 1; row >= 0; row--) {
-            if (nextBoard[row][col] !== null) surviving.push({ tile: nextBoard[row][col], origRow: row });
-          }
-          const missing = GRID_SIZE - surviving.length;
-          for (let row = GRID_SIZE - 1; row >= 0; row--) {
-            const idx = GRID_SIZE - 1 - row;
-            if (idx < surviving.length) {
-              const { tile, origRow } = surviving[idx];
-              nextBoard[row][col] = { ...tile, dropDist: Math.max(0, row - origRow) };
-            } else {
-              nextBoard[row][col] = makeTile(null, null, missing + 1);
-            }
-          }
-        }
-        setPoppingKeys(new Set());
-        setBoard(nextBoard);
-        setTimeout(() => resolveBoardCascades(nextBoard, 1, null), 200);
-      }, 220);
+    if (lockGrid[r][c]) {
+      sfx.playClownHonk();
+      setComboBanner('🔒 TILE LOCKED! MATCH NEXT TO IT OR USE A 🔨 HAMMER!');
       return;
     }
 
     if (!selectedCell) {
-      sfx.playToggle();
-      setSelectedCell([r, c]);
+      sfx.playFlipperClick();
+      setSelectedCell({ r, c });
       return;
     }
 
-    const [sr, sc] = selectedCell;
-    if (sr === r && sc === c) {
+    if (selectedCell.r === r && selectedCell.c === c) {
       setSelectedCell(null);
       return;
     }
 
-    if (Math.abs(sr - r) + Math.abs(sc - c) === 1) {
-      attemptSwap(sr, sc, r, c);
+    const dist = Math.abs(selectedCell.r - r) + Math.abs(selectedCell.c - c);
+    if (dist === 1) {
+      await attemptSwap(selectedCell.r, selectedCell.c, r, c);
     } else {
-      sfx.playToggle();
-      setSelectedCell([r, c]);
+      sfx.playFlipperClick();
+      setSelectedCell({ r, c });
     }
-  };
-
-  // 🛸 UFO Special Bomb Dropper Booster
-  const handleDeployUfoDrop = () => {
-    if (isAnimating || roundFinished || ufoDropsLeft <= 0) return;
-    setUfoDropsLeft((u) => u - 1);
-    sfx.playAlienBeam();
-    setTimeout(() => sfx.playPowerUpCollect(), 200);
-
-    const nextBoard = board.map((row) => [...row]);
-    const r1 = 2 + Math.floor(Math.random() * 4);
-    const c1 = 1 + Math.floor(Math.random() * 3);
-    const r2 = 2 + Math.floor(Math.random() * 4);
-    const c2 = 4 + Math.floor(Math.random() * 3);
-
-    nextBoard[r1][c1] = makeTile(nextBoard[r1][c1]?.type ?? 0, 'color-bomb', 2);
-    nextBoard[r2][c2] = makeTile(nextBoard[r2][c2]?.type ?? 1, 'seeking-rocket', 2);
-    spawnShockwave(r1, c1, '#00f3ff');
-    spawnShockwave(r2, c2, '#4ade80');
-    setBoard(nextBoard);
-    setScore((s) => s + 400);
-    triggerAnnounceSplash(4, '🛸 UFO CANDY DROP!!', '🌈 COLOR BOMB + 🚀 SEEKING ROCKET BEAMED IN!');
   };
 
   const handlePointerDown = (r, c, e) => {
+    if (busy || roundResult || hammerActive || levelDef.isVoid(r, c)) return;
     dragStartRef.current = { r, c, x: e.clientX, y: e.clientY };
   };
 
-  const handlePointerUp = (r, c, e) => {
-    const start = dragStartRef.current;
+  const handlePointerMove = (e) => {
+    if (!dragStartRef.current || busy || roundResult) return;
+    const dx = e.clientX - dragStartRef.current.x;
+    const dy = e.clientY - dragStartRef.current.y;
+    if (Math.abs(dx) < 20 && Math.abs(dy) < 20) return;
+
+    const { r, c } = dragStartRef.current;
     dragStartRef.current = null;
-    if (!start) return;
-
-    const dx = e.clientX - start.x;
-    const dy = e.clientY - start.y;
-    const dist = Math.hypot(dx, dy);
-
-    if (dist >= 22) {
-      if (Math.abs(dx) > Math.abs(dy)) {
-        const targetC = start.c + (dx > 0 ? 1 : -1);
-        if (targetC >= 0 && targetC < GRID_SIZE) {
-          attemptSwap(start.r, start.c, start.r, targetC);
-        }
-      } else {
-        const targetR = start.r + (dy > 0 ? 1 : -1);
-        if (targetR >= 0 && targetR < GRID_SIZE) {
-          attemptSwap(start.r, start.c, targetR, start.c);
-        }
-      }
-    }
-  };
-
-  const handleShowHint = () => {
-    if (isAnimating) return;
-    const move = findFirstValidMove(board);
-    if (move) {
-      sfx.playBubblePop(3);
-      setHintCells(move.map(([r, c]) => `${r},${c}`));
+    if (Math.abs(dx) > Math.abs(dy)) {
+      attemptSwap(r, c, r, c + (dx > 0 ? 1 : -1));
     } else {
-      handleShuffleBoard(true);
+      attemptSwap(r, c, r + (dy > 0 ? 1 : -1), c);
     }
   };
 
-  const handleShuffleBoard = (freeAuto = false) => {
-    if (isAnimating) return;
-    if (!freeAuto && shufflesLeft <= 0) return;
-    if (!freeAuto) setShufflesLeft((s) => s - 1);
-    sfx.playBoing(3);
-    triggerAnnounceSplash(2, '🔀 BOARD SHUFFLED!', 'FRESH GLOSSY JELLY CANDIES DROPPED!');
-    setHintCells([]);
-    setSelectedCell(null);
-    setBoard(createInitialBoard(true));
+  const handlePointerUp = () => {
+    dragStartRef.current = null;
   };
 
-  const handleShareChallenge = () => {
-    const shareUrl = `${window.location.origin}/?mode=crush`;
-    const shareText = `🍬 I just scored ${score.toLocaleString()} pts (Level ${level}) in MEME CRUSH SAGA on THE MEMES.net! Can you beat my high score?`;
-    navigator.clipboard?.writeText(`${shareText} ${shareUrl}`).catch(() => {});
-    if (typeof navigator.share === 'function') {
-      navigator
-        .share({
-          title: '🍬 Meme Crush Saga — THE MEMES.net',
-          text: shareText,
-          url: shareUrl
-        })
-        .catch(() => {});
+  const handleBuyExtraMoves = () => {
+    const cost = ARCADE_ECONOMY_RULES.ARCADE_STAKES.CRUSH_CONTINUE_COST; // 10 tokens
+    if (tokens < cost) {
+      sfx.playClownHonk();
+      setComboBanner(`⚠️ NEED ${cost} 🪙 FOR +5 EXTRA MOVES!`);
+      return;
     }
-    sfx.playPop(3);
-    setCopiedChallenge(true);
-    setTimeout(() => setCopiedChallenge(false), 2500);
+    if (onSpendTokens && onSpendTokens(cost, 'Meme Crush +5 Extra Moves')) {
+      sfx.playPowerUpCollect();
+      setMovesLeft(5);
+      setRoundResult(null);
+      setComboBanner('⚡ +5 EXTRA MOVES UNLOCKED — FINISH THE LEVEL!');
+    }
   };
-
-  // 3-Star Progress Tube scaling (3 stars = 180% of targetScore)
-  const threeStarGoal = Math.round(targetScore * 1.8);
-  const starTubePct = Math.min(100, Math.round((score / threeStarGoal) * 100));
-  const currentStars =
-    score >= targetScore * 1.8 ? 3 : score >= targetScore ? 2 : score >= targetScore * 0.5 ? 1 : 0;
 
   return (
-    <section className="tm-subgame-wrap" aria-label="Meme Crush Saga Puzzle Game">
-      <div
-        className={`tm-subgame-card tm-crush-cabinet ${boardShake ? 'tm-shake' : ''} ${
-          feverMovesLeft > 0 || comboCount >= 3 ? 'tm-crush-fever-cabinet' : ''
-        }`}
-      >
-        {/* Top Header */}
-        <div className="tm-subgame-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-            <button type="button" className="tm-btn tm-back-pill" onClick={onBackToFeed}>
-              ← Back to Memes
-            </button>
+    <section
+      className="tm-crush2-stage"
+      style={{ '--crush-accent': levelDef.accent }}
+      aria-label="Meme Crush 10-Level 80s Neon Puzzle"
+    >
+      <div className="tm-crush2-cabinet">
+        {/* 1. COMPACT TOP HEADER + STAKE TOGGLE */}
+        <header className="tm-crush2-header">
+          <div className="tm-crush2-title-wrap">
+            {onBackToFeed && (
+              <button type="button" className="tm-bandit-back-btn" onClick={onBackToFeed}>
+                ← Memes
+              </button>
+            )}
             <div>
-              <h2 className="tm-subgame-title">
-                🍬 MEME CRUSH SAGA{' '}
-                <span className="tm-subgame-badge">
-                  LEVEL {level} {feverMovesLeft > 0 ? '• 🔥 2X SUGAR RUSH!' : ''}
-                </span>
+              <div className="tm-crush2-eyebrow">
+                🍬 10-LEVEL 80s NEON CAMPAIGN • {levelDef.badge}
+              </div>
+              <h2 className="tm-crush2-title">
+                Lv.{levelDef.id}: {levelDef.name}
               </h2>
-              <div className="tm-subgame-subtitle">
-                2×2 Square = 🚀 Seeking Rocket • Match 4 = ⚡ Laser • L/T = 💥 3×3 Bomb • Match 5 = 🌈
-                Supernova!
-              </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <span
-              className="tm-spin-counter-pill"
-              style={{ borderColor: '#facc15', color: '#facc15' }}
-            >
-              🪙 {effectiveGameTokensLeft} Game Tokens Left Today
-            </span>
-            <button type="button" className="tm-btn" onClick={handleShareChallenge}>
-              {copiedChallenge ? '✅ Challenge Link Copied!' : '🔗 Challenge Friends'}
-            </button>
-          </div>
-        </div>
-
-        {/* iPhone Candy Crush Style 3-Star Candy Progress Tube & Mascot Strip */}
-        <div className="tm-crush-star-tube-shell">
-          <div className="tm-crush-mascot-pill">
-            <span className="tm-crush-mascot-avatar">🍬</span>
-            <span className="tm-crush-mascot-text">{mascotCallout}</span>
-            <span className="tm-crush-jelly-badge">
-              🧊 {remainingJellyCount > 0 ? `${remainingJellyCount} Crystal Jelly Left` : '✅ All Jelly Cleared!'}
-            </span>
-          </div>
-
-          <div className="tm-crush-star-tube-wrap">
-            <div className="tm-crush-star-tube-track">
-              <div
-                className="tm-crush-star-tube-fill"
-                style={{ width: `${starTubePct}%` }}
-              />
-              {/* 1-Star Milestone Marker (~28% of 1.8x tube) */}
-              <div
-                className={`tm-crush-star-marker ${currentStars >= 1 ? 'lit' : ''}`}
-                style={{ left: '28%' }}
-                title={`1 Star: ${Math.round(targetScore * 0.5).toLocaleString()} pts`}
-              >
-                ⭐
-              </div>
-              {/* 2-Star Milestone Marker (~56% of 1.8x tube = targetScore) */}
-              <div
-                className={`tm-crush-star-marker ${currentStars >= 2 ? 'lit' : ''}`}
-                style={{ left: '56%' }}
-                title={`2 Stars (Level Clear): ${targetScore.toLocaleString()} pts`}
-              >
-                ⭐⭐
-              </div>
-              {/* 3-Star Milestone Marker (96% of tube = 1.8x targetScore) */}
-              <div
-                className={`tm-crush-star-marker ${currentStars >= 3 ? 'lit' : ''}`}
-                style={{ left: '95%' }}
-                title={`3 Stars (Mastery): ${threeStarGoal.toLocaleString()} pts`}
-              >
-                ⭐⭐⭐
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Score, Moves, Fever Meter & Star Trophy HUD */}
-        <div className="tm-crush-hud-grid">
-          <div className="tm-crush-stat-box">
-            <span className="tm-crush-stat-label">
-              SCORE / TARGET ({'⭐'.repeat(currentStars) || '☆'})
-            </span>
-            <strong className="tm-crush-stat-val" style={{ color: '#00f3ff' }}>
-              {score.toLocaleString()} <small>/ {targetScore.toLocaleString()}</small>
-            </strong>
-          </div>
-
-          <div className="tm-crush-stat-box">
-            <span className="tm-crush-stat-label">🔥 SUGAR FEVER METER</span>
-            <strong
-              className="tm-crush-stat-val"
-              style={{ color: feverMovesLeft > 0 ? '#ec4899' : '#facc15' }}
-            >
-              {feverMovesLeft > 0 ? `🔥 2X RUSH (${feverMovesLeft} Moves)` : `${feverPct}%`}
-            </strong>
-            <div className="tm-xp-track" style={{ marginTop: '4px' }}>
-              <div
-                className="tm-xp-bar"
-                style={{
-                  width: `${feverMovesLeft > 0 ? 100 : feverPct}%`,
-                  background: 'linear-gradient(90deg, #facc15, #f97316, #ec4899)'
-                }}
-              />
-            </div>
-          </div>
-
-          <div className="tm-crush-stat-box">
-            <span className="tm-crush-stat-label">MOVES LEFT</span>
-            <strong
-              className="tm-crush-stat-val"
-              style={{ color: movesLeft <= 4 ? '#f87171' : '#facc15' }}
-            >
-              {movesLeft}
-            </strong>
-            <span style={{ fontSize: '11px', color: '#94a3b8' }}>
-              {score >= targetScore
-                ? '🎉 Target Crushed! Finale Ready!'
-                : `${(targetScore - score).toLocaleString()} pts to clear`}
-            </span>
-          </div>
-
-          <div className="tm-crush-stat-box">
-            <span className="tm-crush-stat-label">BEST SCORE &amp; PLAYS</span>
-            <strong className="tm-crush-stat-val" style={{ color: '#f472b6' }}>
-              🏆 {highScore.toLocaleString()}
-            </strong>
-            <span style={{ fontSize: '11px', color: '#94a3b8' }}>
-              {effectivePlaysLeft > 0
-                ? `🎟️ ${effectivePlaysLeft}/${ARCADE_ECONOMY_RULES.SUB_GAMES.CRUSH_PLAYS_PER_WINDOW} Free Plays`
-                : `⏳ Refills in ${formatWindowCountdown(effectiveResetMs)}`}
-            </span>
-          </div>
-        </div>
-
-        {/* Turbo Loot Drop Toast */}
-        {lootToast && <div className="tm-subgame-toast">{lootToast}</div>}
-
-        {/* Level Cleared Early Advance & Official "Sugar Crush Finale" Strip */}
-        {score >= targetScore && !roundFinished && movesLeft > 0 && (
-          <div className="tm-crush-levelup-strip">
-            <span>
-              🎉 <strong>LEVEL {level} TARGET CRUSHED!</strong> Advance for +12 Moves or trigger the{' '}
-              <strong>🎆 SUGAR CRUSH FINALE</strong> (+{(movesLeft * 300).toLocaleString()} Move Bonus
-              + Star Chest)!
-            </span>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="tm-crush2-stake-bar">
+            <span className="tm-crush2-wallet">🪙 {tokens}</span>
+            {activeStakeTokens > 0 && !roundResult ? (
+              <span className="tm-crush2-stake-active">
+                🏆 PRIZE RUN ({starPayouts[1]}/{starPayouts[2]}/{starPayouts[3]} 🪙)
+              </span>
+            ) : (
               <button
                 type="button"
-                className="tm-btn tm-btn-primary"
-                onClick={handleAdvanceNextLevel}
+                className="tm-crush2-prize-btn"
+                onClick={handleStartPrizeRun}
+                title={`Stake ${entryCost} Tokens to win ${starPayouts[1]}–${starPayouts[3]} Tokens on clearing this level!`}
               >
-                🚀 Next Level (+12 Moves &amp; Boosters)
+                🪙 Stake {entryCost} (Win up to {starPayouts[3]} 🪙)
               </button>
-              <button
-                type="button"
-                className="tm-btn"
-                style={{ borderColor: '#facc15', color: '#facc15', fontWeight: 900 }}
-                onClick={handleTriggerMemeCrushFinale}
-              >
-                🎆 Trigger Sugar Crush Finale &amp; Claim Tokens!
-              </button>
-            </div>
+            )}
           </div>
-        )}
+        </header>
 
-        {/* Power Boosters Bar */}
-        <div className="tm-crush-boosters-bar">
-          <button
-            type="button"
-            className="tm-crush-booster-btn"
-            onClick={handleShowHint}
-            disabled={isAnimating || roundFinished}
-          >
-            💡 Hint (Free)
-          </button>
-
-          <button
-            type="button"
-            className={`tm-crush-booster-btn ${hammerMode ? 'active' : ''}`}
-            disabled={hammersLeft <= 0 || isAnimating || roundFinished}
-            onClick={() => {
-              sfx.playToggle();
-              setHammerMode((prev) => !prev);
-            }}
-          >
-            🍭 Lollipop Hammer ({hammersLeft}) {hammerMode ? '— Tap any tile!' : ''}
-          </button>
-
-          <button
-            type="button"
-            className="tm-crush-booster-btn"
-            disabled={ufoDropsLeft <= 0 || isAnimating || roundFinished}
-            onClick={handleDeployUfoDrop}
-            title="Beam a Supernova Color Bomb + Seeking Rocket directly onto the board!"
-          >
-            🛸 UFO Candy Drop ({ufoDropsLeft})
-          </button>
-
-          <button
-            type="button"
-            className="tm-crush-booster-btn"
-            disabled={shufflesLeft <= 0 || isAnimating || roundFinished}
-            onClick={() => handleShuffleBoard(false)}
-          >
-            🔀 Shuffle ({shufflesLeft})
-          </button>
-
-          <button
-            type="button"
-            className="tm-crush-booster-btn"
-            onClick={() => finishRound(score >= targetScore, score, 0)}
-            disabled={roundFinished || score === 0}
-            title="End current game and claim earned Arcade Tokens"
-          >
-            🏁 Cash Out ({score.toLocaleString()} pts)
-          </button>
+        {/* 2. 10-LEVEL SELECTOR STRIP */}
+        <div className="tm-crush2-level-strip" role="tablist" aria-label="Select Meme Crush Level">
+          {CRUSH_LEVELS.map((lv) => {
+            const stars = levelStars[lv.id] || 0;
+            const active = lv.id === levelDef.id;
+            return (
+              <button
+                key={lv.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                className={`tm-crush2-lvl-pill ${active ? 'active' : ''}`}
+                style={{ '--lv-color': lv.accent }}
+                onClick={() => handleSelectLevel(lv.id)}
+              >
+                <span>L{lv.id}</span>
+                {stars > 0 && <small>{'⭐'.repeat(stars)}</small>}
+              </button>
+            );
+          })}
         </div>
 
-        {/* 8x8 Candy Board Stage + Rainbow Lightning + Shockwaves + Lasers + 3D Announcer Splash */}
-        <div className="tm-crush-board-stage" style={{ position: 'relative' }}>
-          {/* Center-Board 3D Candy Crush Announcer Splash */}
-          {announceSplash && (
-            <div
-              key={announceSplash.id}
-              className="tm-crush-announcer-splash"
-              style={{ '--splash-color': announceSplash.color }}
-            >
-              <div className="tm-crush-announcer-title">{announceSplash.title}</div>
-              <div className="tm-crush-announcer-sub">{announceSplash.sub}</div>
-            </div>
-          )}
+        {/* 3. LIVE OBJECTIVES & MOVES HUD */}
+        <div className="tm-crush2-hud">
+          <div className="tm-crush2-stat">
+            <span>MOVES</span>
+            <strong style={{ color: movesLeft <= 4 ? '#f43f5e' : '#00f3ff' }}>{movesLeft}</strong>
+          </div>
+          <div className="tm-crush2-stat">
+            <span>SCORE</span>
+            <strong>{score.toLocaleString()}</strong>
+          </div>
 
-          {/* SVG Rainbow Lightning Beams (Color Bomb & Rocket Arcs) */}
-          {activeLightnings.length > 0 && (
-            <svg
-              className="tm-crush-lightning-svg"
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-              aria-hidden="true"
-            >
-              {activeLightnings.map((arc) => (
-                <g key={arc.id}>
-                  <polyline
-                    points={`${arc.x1},${arc.y1} ${arc.midX},${arc.midY} ${arc.x2},${arc.y2}`}
-                    fill="none"
-                    stroke={arc.color}
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                  />
-                  <polyline
-                    points={`${arc.x1},${arc.y1} ${arc.midX},${arc.midY} ${arc.x2},${arc.y2}`}
-                    fill="none"
-                    stroke="#ffffff"
-                    strokeWidth="0.9"
-                    strokeLinecap="round"
-                  />
-                </g>
-              ))}
-            </svg>
-          )}
+          <div className="tm-crush2-goals">
+            {levelDef.goals.jelly && (
+              <span className={`tm-crush2-goal-chip ${remainingJelly === 0 ? 'done' : ''}`}>
+                🧊 Jelly: {remainingJelly} left
+              </span>
+            )}
+            {levelDef.goals.cassettes > 0 && (
+              <span
+                className={`tm-crush2-goal-chip ${
+                  cassettesDropped >= levelDef.goals.cassettes ? 'done' : ''
+                }`}
+              >
+                📼 Tapes: {cassettesDropped}/{levelDef.goals.cassettes}
+              </span>
+            )}
+            {levelDef.goals.locks > 0 && (
+              <span className={`tm-crush2-goal-chip ${remainingLocksOnBoard === 0 ? 'done' : ''}`}>
+                🔒 Locks: {remainingLocksOnBoard} left
+              </span>
+            )}
+            {levelDef.goals.minScore > 0 && (
+              <span
+                className={`tm-crush2-goal-chip ${
+                  score >= levelDef.goals.minScore ? 'done' : ''
+                }`}
+              >
+                ⚡ {Math.min(score, levelDef.goals.minScore)}/{levelDef.goals.minScore}
+              </span>
+            )}
+            {levelDef.goals.orders &&
+              Object.entries(levelDef.goals.orders).map(([typeKey, req]) => {
+                const candy = CANDY_TYPES[Number(typeKey)];
+                const cur = collected[typeKey] || 0;
+                return (
+                  <span
+                    key={typeKey}
+                    className={`tm-crush2-goal-chip ${cur >= req ? 'done' : ''}`}
+                  >
+                    {candy.emoji} {Math.min(cur, req)}/{req}
+                  </span>
+                );
+              })}
+          </div>
+        </div>
 
-          {/* Expanding Neon Shockwave Rings */}
-          {shockwaves.map((sw) => (
-            <div
-              key={sw.id}
-              className="tm-crush-shockwave-ring"
-              style={{
-                top: `${(sw.r + 0.5) * 12.5}%`,
-                left: `${(sw.c + 0.5) * 12.5}%`,
-                '--sw-color': sw.color
-              }}
-            />
-          ))}
-
-          {/* Row & Column Neon Laser Beams Overlay */}
-          {activeLasers.map((lz) => (
-            <div
-              key={lz.id}
-              className={`tm-crush-laser-beam ${lz.dir === 'h' ? 'horizontal' : 'vertical'}`}
-              style={{
-                '--laser-color': lz.color,
-                top: lz.dir === 'h' ? `${(lz.index + 0.5) * 12.5}%` : 0,
-                left: lz.dir === 'v' ? `${(lz.index + 0.5) * 12.5}%` : 0
-              }}
-            />
-          ))}
-
-          {/* Floating Per-Tile Score Popups */}
-          {tilePopups.map((tp) => (
-            <div
-              key={tp.id}
-              className="tm-crush-tile-popup"
-              style={{
-                top: `${(tp.r + 0.5) * 12.5}%`,
-                left: `${(tp.c + 0.5) * 12.5}%`,
-                color: tp.color
-              }}
-            >
-              {tp.text}
-            </div>
-          ))}
-
-          {/* Flying Candy Emoji Shards & Sugar Drops */}
-          {candyParticles.map((sh) => (
-            <div
-              key={sh.id}
-              className="tm-crush-candy-shard"
-              style={{
-                top: `${(sh.r + 0.5) * 12.5}%`,
-                left: `${(sh.c + 0.5) * 12.5}%`,
-                '--dx': `${sh.dx}px`,
-                '--dy': `${sh.dy}px`
-              }}
-            >
-              {sh.emoji}
-            </div>
-          ))}
-
-          {/* 8x8 Glossy 3D Jelly Candy Grid */}
+        {/* 4. NON-SCROLLING TOUCH-LOCKED 8x8 CARVED NEON BOARD */}
+        <div className="tm-crush2-board-wrap">
           <div
-            className="tm-crush-grid"
-            role="grid"
-            aria-label="8 by 8 Meme Candy Puzzle Grid"
+            className="tm-crush2-grid"
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
           >
-            {board.map((row, rIdx) =>
-              row.map((tile, cIdx) => {
-                const candy = CANDY_TYPES[tile?.type || 0] || CANDY_TYPES[0];
-                const cellKey = `${rIdx},${cIdx}`;
-                const isSelected =
-                  selectedCell && selectedCell[0] === rIdx && selectedCell[1] === cIdx;
-                const isHint = hintCells.includes(cellKey);
-                const isPopping = poppingKeys.has(cellKey);
-                const isInvalidSwap = invalidSwapPair?.includes(cellKey);
-                const jellyLayer = jellyGrid[rIdx]?.[cIdx] || 0;
-                const dropRows = tile?.dropDist || 0;
+            {board.map((row, r) =>
+              row.map((tile, c) => {
+                const isVoid = levelDef.isVoid(r, c);
+                if (isVoid) {
+                  return <div key={`void-${r}-${c}`} className="tm-crush2-void-cell" />;
+                }
+
+                const jellyLvl = jellyGrid[r][c];
+                const isLocked = lockGrid[r][c];
+                const isSelected = selectedCell?.r === r && selectedCell?.c === c;
+                const isExitCell =
+                  levelDef.goals.cassettes > 0 && r === getBottomPlayableRow(levelDef, c);
+                const candyInfo =
+                  tile && !tile.isCassette && tile.type >= 0 ? CANDY_TYPES[tile.type] : null;
 
                 return (
                   <button
-                    key={tile?.uid || `${rIdx}-${cIdx}`}
+                    key={`${r}-${c}`}
                     type="button"
-                    className={`tm-crush-tile ${candy.shapeClass || ''} ${
-                      isSelected ? 'selected' : ''
-                    } ${isHint ? 'hint' : ''} ${isPopping ? 'popping' : ''} ${
-                      isInvalidSwap ? 'invalid-swap' : ''
-                    } ${dropRows > 0 ? 'dropping' : ''} ${
-                      jellyLayer === 2
-                        ? 'has-double-jelly'
-                        : jellyLayer === 1
-                        ? 'has-crystal-jelly'
-                        : ''
-                    } ${tile?.special ? `special-${tile.special}` : ''}`}
-                    style={{
-                      '--candy-bg': candy.bg,
-                      '--candy-border': candy.border,
-                      '--candy-shadow': candy.shadow,
-                      '--candy-glow': candy.glow,
-                      '--drop-rows': dropRows
-                    }}
-                    onClick={() => handleCellClick(rIdx, cIdx)}
-                    onPointerDown={(e) => handlePointerDown(rIdx, cIdx, e)}
-                    onPointerUp={(e) => handlePointerUp(rIdx, cIdx, e)}
-                    aria-label={`${candy.name}${jellyLayer > 0 ? ' on Crystal Jelly' : ''} at row ${
-                      rIdx + 1
-                    } column ${cIdx + 1}`}
+                    className={`tm-crush2-cell ${jellyLvl === 1 ? 'jelly-1' : ''} ${
+                      jellyLvl >= 2 ? 'jelly-2' : ''
+                    } ${isLocked ? 'locked' : ''} ${isSelected ? 'selected' : ''} ${
+                      isExitCell ? 'exit-row' : ''
+                    }`}
+                    onPointerDown={(e) => handlePointerDown(r, c, e)}
+                    onClick={() => handleCellTap(r, c)}
                   >
-                    {/* 3D Specular Glossy Jelly Highlight */}
-                    <span className="tm-crush-candy-shine" aria-hidden="true" />
-
-                    {/* Frosted Crystal Jelly Indicator */}
-                    {jellyLayer > 0 && (
-                      <span className="tm-crush-jelly-frost" aria-hidden="true">
-                        {jellyLayer === 2 ? '❄️' : '🧊'}
-                      </span>
+                    {tile && (
+                      <div
+                        className={`tm-crush2-candy ${
+                          tile.isCassette ? 'cassette' : ''
+                        } ${tile.special ? `sp-${tile.special}` : ''}`}
+                        style={
+                          tile.isCassette
+                            ? undefined
+                            : tile.special === 'color-bomb'
+                            ? undefined
+                            : {
+                                background: candyInfo?.bg,
+                                borderColor: candyInfo?.border
+                              }
+                        }
+                      >
+                        <span className="tm-crush2-emoji">
+                          {tile.isCassette
+                            ? '📼'
+                            : tile.special === 'color-bomb'
+                            ? '🌈'
+                            : candyInfo?.emoji}
+                        </span>
+                        {tile.special && tile.special !== 'color-bomb' && (
+                          <span className="tm-crush2-sp-badge">
+                            {tile.special === 'striped-h'
+                              ? '↔'
+                              : tile.special === 'striped-v'
+                              ? '↕'
+                              : tile.special === 'packet-bomb'
+                              ? '💥'
+                              : '🚀'}
+                          </span>
+                        )}
+                      </div>
                     )}
-
-                    {/* Main Candy Icon */}
-                    <span className="tm-crush-emoji">
-                      {tile?.special === 'color-bomb'
-                        ? '🌈'
-                        : tile?.special === 'seeking-rocket'
-                        ? '🚀'
-                        : candy.emoji}
-                    </span>
-
-                    {/* Special Candy Overlays */}
-                    {tile?.special === 'striped-h' && (
-                      <span className="tm-crush-special-badge">↔⚡</span>
-                    )}
-                    {tile?.special === 'striped-v' && (
-                      <span className="tm-crush-special-badge">↕⚡</span>
-                    )}
-                    {tile?.special === 'packet-bomb' && (
-                      <span className="tm-crush-special-badge">💥3×3</span>
-                    )}
-                    {tile?.special === 'seeking-rocket' && (
-                      <span className="tm-crush-special-badge">🚀SEEK</span>
-                    )}
-                    {tile?.special === 'color-bomb' && (
-                      <span className="tm-crush-special-badge">🌟BOMB</span>
+                    {isLocked && <span className="tm-crush2-lock-cage">🔒</span>}
+                    {isExitCell && !tile?.isCassette && (
+                      <span className="tm-crush2-exit-arrow">▼</span>
                     )}
                   </button>
                 );
@@ -1891,87 +1291,102 @@ export default function MemeCrushGame({
             )}
           </div>
 
-          {/* Round Over Summary & Star Chest Overlay */}
-          {roundFinished && roundSummary && (
-            <div className="tm-subgame-gameover-overlay">
-              <div className="tm-subgame-gameover-card">
-                <div style={{ fontSize: '42px', letterSpacing: '4px' }}>
-                  {roundSummary.stars > 0 ? '⭐'.repeat(roundSummary.stars) : '🍬🕹️'}
+          {/* VICTORY / OUT-OF-MOVES OVERLAY */}
+          {roundResult && (
+            <div className="tm-crush2-overlay" role="dialog">
+              <div className="tm-crush2-modal">
+                <div style={{ fontSize: '36px' }}>
+                  {roundResult.won ? '⭐'.repeat(roundResult.stars) : '💔'}
                 </div>
-                <h3 style={{ margin: '6px 0', fontSize: '22px', color: '#facc15' }}>
-                  {roundSummary.clearedTarget
-                    ? `🏆 LEVEL ${level} CRUSHED! (${roundSummary.stars}/3 STARS)`
-                    : 'OUT OF MOVES — GREAT CRUSHING!'}
+                <h3>
+                  {roundResult.won
+                    ? `LV.${levelDef.id} CLEARED!`
+                    : `OUT OF MOVES ON LV.${levelDef.id}`}
                 </h3>
-                <div className="tm-subgame-reward-summary" style={{ marginBottom: '14px' }}>
-                  <div>
-                    Final Score: <strong>{roundSummary.score.toLocaleString()} pts</strong>
-                    {roundSummary.moveConversionPts > 0 && (
-                      <span style={{ color: '#facc15', fontSize: '11px', marginLeft: '6px' }}>
-                        (Includes +{roundSummary.moveConversionPts.toLocaleString()} Finale Bonus!)
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ fontSize: '15px', marginTop: '4px' }}>
-                    🎁 Chest Payout:{' '}
-                    <strong style={{ color: '#4ade80' }}>
-                      +{roundSummary.tokensWon} 🪙 Arcade Tokens
-                    </strong>{' '}
-                    &amp;{' '}
-                    <strong style={{ color: '#00f3ff' }}>+{roundSummary.xpEarned} XP</strong>!
-                  </div>
-                  {roundSummary.capNote && (
-                    <span style={{ fontSize: '11px', color: '#facc15', marginTop: '4px' }}>
-                      {roundSummary.capNote}
-                    </span>
-                  )}
-                </div>
+                <p>
+                  {roundResult.won
+                    ? roundResult.payout > 0
+                      ? `Final Score: ${roundResult.score.toLocaleString()} • Won +${roundResult.payout} 🪙 Prize!`
+                      : `Final Score: ${roundResult.score.toLocaleString()} (Practice Clear — Stake ${entryCost} 🪙 to win token prizes!)`
+                    : 'So close! Grab +5 Extra Moves or retry this board!'}
+                </p>
 
-                <div
-                  style={{
-                    display: 'flex',
-                    gap: '10px',
-                    justifyContent: 'center',
-                    flexWrap: 'wrap'
-                  }}
-                >
-                  {effectivePlaysLeft > 0 ? (
+                <div className="tm-crush2-modal-btns">
+                  {!roundResult.won && (
                     <button
                       type="button"
                       className="tm-btn tm-btn-primary"
-                      onClick={() => handleStartNewRound(false)}
+                      onClick={handleBuyExtraMoves}
                     >
-                      🍬 Play Again ({effectivePlaysLeft} Free Left)
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="tm-btn tm-btn-primary"
-                      disabled={tokens < ARCADE_ECONOMY_RULES.SUB_GAMES.EXTRA_LIFE_TOKEN_COST}
-                      onClick={() => handleStartNewRound(true)}
-                    >
-                      🪙 Spend {ARCADE_ECONOMY_RULES.SUB_GAMES.EXTRA_LIFE_TOKEN_COST} Tokens to Play
-                      Now (or wait {formatWindowCountdown(effectiveResetMs)})
+                      ⚡ +5 Extra Moves ({ARCADE_ECONOMY_RULES.ARCADE_STAKES.CRUSH_CONTINUE_COST} 🪙)
                     </button>
                   )}
 
-                  <button type="button" className="tm-btn" onClick={handleShareChallenge}>
-                    {copiedChallenge ? '✅ Link Copied!' : '🔗 Share Score'}
+                  {roundResult.won && levelDef.id < CRUSH_LEVELS.length && (
+                    <button
+                      type="button"
+                      className="tm-btn tm-btn-primary"
+                      onClick={() => resetToLevel(levelDef.id + 1, 0)}
+                    >
+                      ▶ Next: Lv.{levelDef.id + 1} {CRUSH_LEVELS[levelDef.id].name}
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    className="tm-btn"
+                    onClick={() => resetToLevel(levelDef.id, 0)}
+                  >
+                    🔄 Replay Free
                   </button>
+
+                  {tokens >= entryCost && (
+                    <button
+                      type="button"
+                      className="tm-btn tm-btn-primary"
+                      onClick={handleStartPrizeRun}
+                    >
+                      🪙 Play Prize Run ({entryCost} 🪙)
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* Special Combos Legend */}
-        <div className="tm-crush-legend">
-          <span>🚀 <strong>2×2 Square:</strong> Seeking Jelly Rocket</span>
-          <span>⚡ <strong>Match 4:</strong> Row/Col Laser</span>
-          <span>💥 <strong>L/T Match:</strong> 3×3 Packet Bomb</span>
-          <span>🌈 <strong>Match 5:</strong> Supernova Color Bomb</span>
-          <span>🧊 <strong>Crystal Jelly:</strong> +120 pts (+1,500 Clear Bonus!)</span>
-        </div>
+        {/* 5. BOTTOM BOOSTER & STATUS BAR */}
+        <footer className="tm-crush2-footer">
+          <span className="tm-crush2-status">{comboBanner || levelDef.desc}</span>
+          <div className="tm-crush2-tools">
+            <button
+              type="button"
+              disabled={hammerCharges <= 0 || busy}
+              className={`tm-crush2-tool-btn ${hammerActive ? 'active' : ''}`}
+              onClick={() => setHammerActive((a) => !a)}
+              title="Earned via 3x Cascades! Tap any tile or lock to smash it!"
+            >
+              🔨 Hammer ({hammerCharges})
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              className="tm-crush2-tool-btn"
+              onClick={() => resetToLevel(levelDef.id, 0)}
+            >
+              🔄 Reset
+            </button>
+            {tokens < entryCost && onOpenUpload && (
+              <button
+                type="button"
+                className="tm-crush2-tool-btn upload"
+                onClick={onOpenUpload}
+              >
+                📸 +45 🪙
+              </button>
+            )}
+          </div>
+        </footer>
       </div>
     </section>
   );

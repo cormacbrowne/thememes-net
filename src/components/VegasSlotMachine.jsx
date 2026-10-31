@@ -1,640 +1,860 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  SLOT_SYMBOLS,
-  MEME_FORTUNES,
-  ARCADE_RATE_LIMITS,
-  formatWindowCountdown
-} from '../data/starterMemes';
-import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
+import { useState, useRef, useEffect } from 'react';
 import { sfx } from '../utils/soundEngine';
+import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
 
-const MARQUEE_BULB_COUNT = 18;
+// ==========================================
+// AUTHENTIC 1980s LAS VEGAS ONE-ARM BANDIT REEL STRIP (22 Weighted Stops)
+// Classic Casino Symbols & Fair House-Edge Odds (~91% RTP — Zero Free-Token Loopholes)
+// ==========================================
+const VEGAS_SYMBOLS = {
+  '777': { id: '777', label: 'FLAMING 777', mult3: 50, color: '#ef4444' },
+  diamond: { id: 'diamond', label: 'NEON DIAMOND', mult3: 25, color: '#00f3ff' },
+  bar: { id: 'bar', label: 'TRIPLE BAR', mult3: 15, color: '#facc15' },
+  bell: { id: 'bell', label: 'LIBERTY BELL', mult3: 10, color: '#f59e0b' },
+  cherry: { id: 'cherry', label: 'TWIN CHERRY', mult3: 6, color: '#e11d48' },
+  watermelon: { id: 'watermelon', label: 'MELON SLICE', mult3: 4, color: '#16a34a' },
+  lemon: { id: 'lemon', label: 'VEGAS LEMON', mult3: 4, color: '#eab308' }
+};
+
+// Authentic 22-stop physical mechanical reel strip (non-adjacent distribution for natural neighbors)
+const REEL_STRIP = [
+  '777',
+  'lemon',
+  'cherry',
+  'bar',
+  'watermelon',
+  'bell',
+  'lemon',
+  'diamond',
+  'cherry',
+  'watermelon',
+  'bar',
+  'lemon',
+  'bell',
+  'cherry',
+  'watermelon',
+  'diamond',
+  'lemon',
+  'bar',
+  'cherry',
+  'bell',
+  'watermelon',
+  'lemon'
+];
+
+const STRIP_LEN = REEL_STRIP.length;
+
+function wrapStop(idx) {
+  return ((idx % STRIP_LEN) + STRIP_LEN) % STRIP_LEN;
+}
+
+/**
+ * Crisp inline SVG Classic Las Vegas Slot Machine Reel Graphics
+ */
+function SlotSymbolSvg({ symbolId, size = 56 }) {
+  switch (symbolId) {
+    case '777':
+      return (
+        <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Flaming Lucky 777">
+          <defs>
+            <linearGradient id="v7Red" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#ff4d4d" />
+              <stop offset="50%" stopColor="#dc2626" />
+              <stop offset="100%" stopColor="#7f1d1d" />
+            </linearGradient>
+            <linearGradient id="v7Gold" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#fef08a" />
+              <stop offset="50%" stopColor="#facc15" />
+              <stop offset="100%" stopColor="#b45309" />
+            </linearGradient>
+          </defs>
+          {/* Flame Aura */}
+          <path
+            d="M12 48 C8 38, 15 28, 12 20 C19 25, 22 14, 30 8 C33 17, 42 12, 48 20 C54 27, 55 40, 48 48 Z"
+            fill="#f97316"
+            opacity="0.32"
+          />
+          {/* Back Shadow Twin 7s */}
+          <path
+            d="M8 14 H28 L18 46 H10 L19 21 H8 Z"
+            fill="#991b1b"
+            stroke="#facc15"
+            strokeWidth="1.4"
+            opacity="0.88"
+          />
+          <path
+            d="M36 14 H56 L46 46 H38 L47 21 H36 Z"
+            fill="#991b1b"
+            stroke="#facc15"
+            strokeWidth="1.4"
+            opacity="0.88"
+          />
+          {/* Hero Center Vegas 7 */}
+          <path
+            d="M15 10 H50 L34 55 H21 L35 20 H15 Z"
+            fill="url(#v7Red)"
+            stroke="url(#v7Gold)"
+            strokeWidth="3"
+            strokeLinejoin="round"
+          />
+          <path d="M19 14 H44" stroke="#fef9c3" strokeWidth="2" strokeLinecap="round" opacity="0.85" />
+          <rect x="13" y="47" width="38" height="11" rx="3" fill="#111827" stroke="#facc15" strokeWidth="1.5" />
+          <text
+            x="32"
+            y="55.5"
+            textAnchor="middle"
+            fill="#fef08a"
+            fontSize="8.5"
+            fontWeight="900"
+            fontFamily="Impact, Arial Black, sans-serif"
+            letterSpacing="1"
+          >
+            JACKPOT
+          </text>
+        </svg>
+      );
+
+    case 'bar':
+      return (
+        <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Triple Gold BAR">
+          {[8, 25, 42].map((y, idx) => (
+            <g key={y}>
+              <rect
+                x="6"
+                y={y}
+                width="52"
+                height="14"
+                rx="3.5"
+                fill="#0f172a"
+                stroke="#facc15"
+                strokeWidth="2.2"
+              />
+              <rect x="8.5" y={y + 2} width="47" height="3" rx="1" fill="#fde047" opacity="0.25" />
+              <text
+                x="32"
+                y={y + 10.8}
+                textAnchor="middle"
+                fill={idx === 1 ? '#fef08a' : '#facc15'}
+                fontSize="10.5"
+                fontWeight="900"
+                fontFamily="Impact, Arial Black, sans-serif"
+                letterSpacing="2.2"
+              >
+                BAR
+              </text>
+            </g>
+          ))}
+        </svg>
+      );
+
+    case 'bell':
+      return (
+        <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Golden Liberty Bell">
+          <defs>
+            <linearGradient id="vBellGold" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#fef9c3" />
+              <stop offset="45%" stopColor="#facc15" />
+              <stop offset="100%" stopColor="#b45309" />
+            </linearGradient>
+          </defs>
+          <circle cx="32" cy="11" r="4.5" fill="#d97706" stroke="#78350f" strokeWidth="1.8" />
+          <circle cx="32" cy="51" r="6" fill="#b45309" stroke="#78350f" strokeWidth="2" />
+          <path
+            d="M32 14 C19 14, 15 26, 13 39 L8 46 H56 L51 39 C49 26, 45 14, 32 14 Z"
+            fill="url(#vBellGold)"
+            stroke="#78350f"
+            strokeWidth="2.4"
+            strokeLinejoin="round"
+          />
+          {/* Liberty Bell Crack & Specular Highlight */}
+          <path d="M22 21 C20 28, 18 35, 16 41" stroke="#fef9c3" strokeWidth="2.6" strokeLinecap="round" />
+          <path d="M35 30 L33 37 L36 41 L34 46" stroke="#78350f" strokeWidth="2" fill="none" strokeLinecap="round" />
+        </svg>
+      );
+
+    case 'cherry':
+      return (
+        <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Glossy Twin Cherries">
+          <defs>
+            <radialGradient id="vCherryRed" cx="35%" cy="30%" r="65%">
+              <stop offset="0%" stopColor="#fda4af" />
+              <stop offset="35%" stopColor="#ef4444" />
+              <stop offset="100%" stopColor="#881337" />
+            </radialGradient>
+          </defs>
+          {/* Twin Emerald Stems & Leaf */}
+          <path
+            d="M21 36 C21 22, 30 14, 38 9 C36 20, 41 26, 45 38"
+            fill="none"
+            stroke="#15803d"
+            strokeWidth="3.2"
+            strokeLinecap="round"
+          />
+          <path
+            d="M37 10 C46 7, 54 12, 51 19 C44 21, 38 17, 37 10 Z"
+            fill="#22c55e"
+            stroke="#14532d"
+            strokeWidth="1.8"
+          />
+          {/* Left Cherry */}
+          <circle cx="20" cy="43" r="12.5" fill="url(#vCherryRed)" stroke="#881337" strokeWidth="2.2" />
+          <ellipse cx="16" cy="38" rx="3.8" ry="2.3" transform="rotate(-30 16 38)" fill="#fff" opacity="0.75" />
+          {/* Right Cherry */}
+          <circle cx="44" cy="45" r="12.5" fill="url(#vCherryRed)" stroke="#881337" strokeWidth="2.2" />
+          <ellipse cx="40" cy="40" rx="3.8" ry="2.3" transform="rotate(-30 40 40)" fill="#fff" opacity="0.75" />
+        </svg>
+      );
+
+    case 'diamond':
+      return (
+        <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Neon Casino Diamond">
+          <defs>
+            <linearGradient id="vDiam" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#e0f2fe" />
+              <stop offset="45%" stopColor="#00f3ff" />
+              <stop offset="100%" stopColor="#0284c7" />
+            </linearGradient>
+          </defs>
+          <polygon
+            points="18,12 46,12 57,26 32,55 7,26"
+            fill="url(#vDiam)"
+            stroke="#0369a1"
+            strokeWidth="2.4"
+            strokeLinejoin="round"
+          />
+          <polyline points="7,26 57,26" stroke="#e0f2fe" strokeWidth="1.8" />
+          <polyline points="18,12 24,26 32,55 40,26 46,12" fill="none" stroke="#bae6fd" strokeWidth="1.6" />
+          <polygon points="24,26 32,12 40,26" fill="#ffffff" opacity="0.55" />
+        </svg>
+      );
+
+    case 'watermelon':
+      return (
+        <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Vegas Watermelon Slice">
+          {/* Outer Green Rind */}
+          <path
+            d="M8 22 A25 25 0 0 0 56 22 Z"
+            fill="#16a34a"
+            stroke="#14532d"
+            strokeWidth="2.4"
+            transform="rotate(-14 32 30)"
+          />
+          {/* White Inner Rind */}
+          <path
+            d="M12 22 A21 21 0 0 0 52 22 Z"
+            fill="#dcfce7"
+            transform="rotate(-14 32 30)"
+          />
+          {/* Juicy Crimson Flesh */}
+          <path
+            d="M14.5 22 A18.5 18.5 0 0 0 49.5 22 Z"
+            fill="#ef4444"
+            transform="rotate(-14 32 30)"
+          />
+          {/* Seeds */}
+          <g fill="#111827" transform="rotate(-14 32 30)">
+            <ellipse cx="24" cy="28" rx="1.6" ry="2.5" />
+            <ellipse cx="32" cy="31" rx="1.6" ry="2.5" />
+            <ellipse cx="40" cy="28" rx="1.6" ry="2.5" />
+            <ellipse cx="28" cy="35" rx="1.5" ry="2.3" />
+            <ellipse cx="36" cy="35" rx="1.5" ry="2.3" />
+          </g>
+        </svg>
+      );
+
+    case 'lemon':
+    default:
+      return (
+        <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Golden Vegas Lemon">
+          <defs>
+            <radialGradient id="vLemon" cx="35%" cy="30%" r="65%">
+              <stop offset="0%" stopColor="#fef9c3" />
+              <stop offset="55%" stopColor="#facc15" />
+              <stop offset="100%" stopColor="#ca8a04" />
+            </radialGradient>
+          </defs>
+          <g transform="rotate(-22 32 34)">
+            <path
+              d="M10 34 C14 20, 24 18, 32 18 C40 18, 50 20, 54 34 C50 48, 40 50, 32 50 C24 50, 14 48, 10 34 Z"
+              fill="url(#vLemon)"
+              stroke="#a16207"
+              strokeWidth="2.4"
+            />
+            <ellipse cx="27" cy="27" rx="8" ry="3" fill="#fff" opacity="0.6" />
+          </g>
+          <path
+            d="M36 16 C43 10, 52 12, 49 19 C43 21, 38 19, 36 16 Z"
+            fill="#22c55e"
+            stroke="#14532d"
+            strokeWidth="1.8"
+          />
+        </svg>
+      );
+  }
+}
+
+/**
+ * Evaluates classic Las Vegas 3-reel payline `[s0, s1, s2]`.
+ * Losing spins return mult = 0 (zero free-token consolation payouts!).
+ */
+function evaluateVegasPayline(symIds) {
+  const [s0, s1, s2] = symIds;
+
+  // 1. Three of a Kind
+  if (s0 === s1 && s1 === s2) {
+    const info = VEGAS_SYMBOLS[s0] || VEGAS_SYMBOLS.lemon;
+    return {
+      tier: s0 === '777' ? 'jackpot' : 'triple',
+      mult: info.mult3,
+      headline:
+        s0 === '777'
+          ? '🚨 TRIPLE FLAMING 777 VEGAS JACKPOT! (50× BET!)'
+          : `🎰 TRIPLE ${info.label}! (${info.mult3}× BET!)`
+    };
+  }
+
+  // 2. Classic Vegas Cherries Rule: Any 2 Cherries on payline = 2x Bet
+  const cherryCount = symIds.filter((s) => s === 'cherry').length;
+  if (cherryCount === 2) {
+    return {
+      tier: 'double',
+      mult: 2,
+      headline: '🍒🍒 TWIN CHERRIES WINNER! (2× BET)'
+    };
+  }
+
+  // 3. Adjacent High-Symbol Pair (777, Diamond, BAR, Bell on Reels 1-2 or 2-3) = 2x Bet
+  const highSet = new Set(['777', 'diamond', 'bar', 'bell']);
+  if ((s0 === s1 && highSet.has(s0)) || (s1 === s2 && highSet.has(s1))) {
+    const matched = s0 === s1 ? VEGAS_SYMBOLS[s0] : VEGAS_SYMBOLS[s1];
+    return {
+      tier: 'double',
+      mult: 2,
+      headline: `✨ DOUBLE ${matched.label} PAIR! (2× BET)`
+    };
+  }
+
+  // 4. Classic Left-Reel Single Cherry Push = 1x Bet back
+  if (s0 === 'cherry') {
+    return {
+      tier: 'push',
+      mult: 1,
+      headline: '🍒 LEFT CHERRY PUSH — BET RETURNED (1×)'
+    };
+  }
+
+  return {
+    tier: 'miss',
+    mult: 0,
+    headline: 'NO PAYLINE MATCH — PULL THE CHROME ARM AGAIN!'
+  };
+}
 
 export default function VegasSlotMachine({
   embedded = false,
-  tokens = 50,
-  tokenLedger = null,
-  slotPullsLeft = ARCADE_RATE_LIMITS.SLOT_PULLS_PER_WINDOW,
-  slotResetMs = 0,
-  gameTokensRemainingToday,
-  onCompleteSlotSpin,
-  onSpendTokensForPulls,
+  tokens = 0,
+  onSpendTokens,
+  onPayoutTokens,
+  onRecordHighScore,
+  onOpenUpload,
   onBackToFeed
 }) {
-  const [reels, setReels] = useState([0, 1, 2]);
+  const betOptions = ARCADE_ECONOMY_RULES.ARCADE_STAKES.SLOT_BETS; // [5, 10, 25, 50]
+  const [betAmount, setBetAmount] = useState(() => (tokens >= 5 ? 5 : 0)); // 0 = Free Demo Mode
+  const [reelStops, setReelStops] = useState([0, 7, 3]); // Initial display: 777 | Diamond | BAR
   const [reelSpinning, setReelSpinning] = useState([false, false, false]);
-  const [heldReels, setHeldReels] = useState([false, false, false]);
-  const [canHoldThisTurn, setCanHoldThisTurn] = useState(true);
-  const [nudgesLeft, setNudgesLeft] = useState(2);
+  const [spinTickOffset, setSpinTickOffset] = useState(0);
   const [leverPulled, setLeverPulled] = useState(false);
-  const [anticipationReel3, setAnticipationReel3] = useState(false);
-  const [winTier, setWinTier] = useState(null); // null | 'jackpot' | 'double' | 'consolation'
-  const [slotResultMsg, setSlotResultMsg] = useState(
-    '🎰 Pull the Chrome Vegas Lever or tap SPIN! Lock lucky symbols with 🔒 HOLD or bump reels with ⏫ NUDGE!'
+
+  // Authentic Fruit-Machine Lucky Features (only granted occasionally after non-winning spins)
+  const [holdAllowed, setHoldAllowed] = useState(false);
+  const [heldReels, setHeldReels] = useState([false, false, false]);
+  const [nudgesLeft, setNudgesLeft] = useState(0);
+
+  const [lastOutcome, setLastOutcome] = useState(null);
+  const [statusBanner, setStatusBanner] = useState(
+    'SELECT YOUR CHIP BET & PULL THE RED CHROME ARM!'
   );
-  const [progressivePot, setProgressivePot] = useState(() =>
-    Number(localStorage.getItem('tm_vegas_slot_pot') || 7770)
+  const [bestWinTokens, setBestWinTokens] = useState(() =>
+    Number(localStorage.getItem('tm_slots_best_win') || 0)
   );
-  const [sessionTokensWon, setSessionTokensWon] = useState(0);
-  const [sessionSpinsCount, setSessionSpinsCount] = useState(0);
-  const [storedHighScore] = useState(() =>
-    Number(localStorage.getItem('tm_slots_highscore') || 0)
-  );
-  const [sessionScore, setSessionScore] = useState(0);
-  const [coinShower, setCoinShower] = useState([]);
-  const [copiedShare, setCopiedShare] = useState(false);
 
   const timersRef = useRef([]);
-  const isAnySpinning = reelSpinning[0] || reelSpinning[1] || reelSpinning[2];
-  const canPull = !isAnySpinning && slotPullsLeft > 0;
+  const spinAnimRef = useRef(null);
+  const leverDragStartYRef = useRef(null);
 
-  const effectiveGameTokensLeft =
-    gameTokensRemainingToday ??
-    Math.max(
-      0,
-      ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.games -
-        (tokenLedger?.byCategory?.games || 0)
-    );
-
-  useEffect(() => {
-    localStorage.setItem('tm_vegas_slot_pot', String(progressivePot));
-  }, [progressivePot]);
-
-  useEffect(() => {
-    if (sessionScore > storedHighScore) {
-      localStorage.setItem('tm_slots_highscore', String(sessionScore));
-    }
-  }, [sessionScore, storedHighScore]);
+  const isAnySpinning = reelSpinning.some(Boolean);
 
   useEffect(() => {
     return () => {
       timersRef.current.forEach((t) => clearTimeout(t));
+      if (spinAnimRef.current) clearInterval(spinAnimRef.current);
     };
   }, []);
 
-  const spawnCoinFountain = useCallback((count = 14) => {
-    const now = Date.now();
-    const coins = Array.from({ length: count }).map((_, idx) => ({
-      id: `coin-${now}-${idx}-${Math.random()}`,
-      leftPct: 12 + Math.round(Math.random() * 76),
-      dx: Math.round((Math.random() - 0.5) * 110),
-      dy: Math.round(-65 - Math.random() * 85),
-      delayMs: idx * 35,
-      emoji: ['🪙', '💎', '🎰', '✨', '🔥'][idx % 5]
-    }));
-    setCoinShower(coins);
-    setTimeout(() => {
-      setCoinShower([]);
-    }, 1400);
-  }, []);
-
-  const evaluateReelsOutcome = useCallback(
-    (finalReels, event = null, fromNudge = false) => {
-      const [r1, r2, r3] = finalReels;
-      const sym1 = SLOT_SYMBOLS[r1] || SLOT_SYMBOLS[0];
-      const sym2 = SLOT_SYMBOLS[r2] || SLOT_SYMBOLS[0];
-      const sym3 = SLOT_SYMBOLS[r3] || SLOT_SYMBOLS[0];
-
-      if (r1 === r2 && r2 === r3) {
-        // TRIPLE JACKPOT!
-        const is777 = sym1.id === '777';
-        const isDiamond = sym1.id === 'diamond';
-        const tokensWon = 25;
-        const xpWon = is777 ? 150 : isDiamond ? 135 : 120;
-        const ptsWon = is777 ? progressivePot : sym1.mult * 450;
-
-        setWinTier('jackpot');
-        setSessionTokensWon((t) => t + tokensWon);
-        setSessionScore((s) => s + ptsWon);
-        setProgressivePot(7770);
-        spawnCoinFountain(22);
-
-        sfx.playJackpot();
-        setTimeout(() => sfx.playAirhorn(), 160);
-
-        const msg = is777
-          ? `🚨 VEGAS 777 MEGA JACKPOT!! +${ptsWon.toLocaleString()} PTS, +${tokensWon} 🪙 Tokens, +${xpWon} XP, +1 Wheel Spin & "💎 High-Roller" Flair!`
-          : `🎰 TRIPLE ${sym1.emoji} ${sym1.name} JACKPOT!! +${ptsWon.toLocaleString()} PTS, +${tokensWon} 🪙 Tokens, +${xpWon} XP & +1 Wheel Spin!`;
-        setSlotResultMsg(msg);
-
-        if (onCompleteSlotSpin && !fromNudge) {
-          onCompleteSlotSpin(
-            {
-              tokensWon,
-              xpWon,
-              spinsWon: 1,
-              flair: '💎 Diamond High-Roller'
-            },
-            event
-          );
-        }
-      } else if (r1 === r2 || r2 === r3 || r1 === r3) {
-        // DOUBLE MATCH!
-        const matchedSym = r1 === r2 ? sym1 : r2 === r3 ? sym2 : sym1;
-        const tokensWon = matchedSym.id === '777' || matchedSym.id === 'diamond' ? 12 : 9;
-        const xpWon = 55;
-        const ptsWon = matchedSym.mult * 140;
-
-        setWinTier('double');
-        setSessionTokensWon((t) => t + tokensWon);
-        setSessionScore((s) => s + ptsWon);
-        spawnCoinFountain(12);
-        sfx.playJackpot();
-
-        setSlotResultMsg(
-          `🔥 DOUBLE ${matchedSym.emoji} ${matchedSym.name} HIT! +${ptsWon.toLocaleString()} PTS, +${tokensWon} 🪙 Tokens & +${xpWon} XP! ${
-            nudgesLeft > 0 ? '(Tip: Use ⏫ NUDGE if the 3rd symbol is peeking!)' : ''
-          }`
-        );
-
-        if (onCompleteSlotSpin && !fromNudge) {
-          onCompleteSlotSpin(
-            {
-              tokensWon,
-              xpWon,
-              spinsWon: 0,
-              flair: null
-            },
-            event
-          );
-        }
-      } else {
-        // Check if any reel has Lucky 7 or Cyber Diamond
-        const hasLucky7OrDiamond = [sym1, sym2, sym3].some(
-          (s) => s.id === '777' || s.id === 'diamond'
-        );
-        const tokensWon = hasLucky7OrDiamond ? 4 : 2;
-        const xpWon = hasLucky7OrDiamond ? 25 : 15;
-        const ptsWon = hasLucky7OrDiamond ? 220 : 85;
-
-        setWinTier('consolation');
-        setSessionTokensWon((t) => t + tokensWon);
-        setSessionScore((s) => s + ptsWon);
-        if (hasLucky7OrDiamond) {
-          sfx.playCandyMatch(2);
-          spawnCoinFountain(6);
-          setSlotResultMsg(
-            `✨ LUCKY VEGAS SCATTER (7️⃣/💎)! +${ptsWon} PTS, +${tokensWon} 🪙 Tokens & +${xpWon} XP!`
-          );
-        } else {
-          sfx.playClownHonk();
-          const fortune = MEME_FORTUNES[Math.floor(Math.random() * MEME_FORTUNES.length)];
-          setSlotResultMsg(`🎲 +${tokensWon} 🪙 Consolation Tokens & +${xpWon} XP! ${fortune}`);
-        }
-
-        if (onCompleteSlotSpin && !fromNudge) {
-          onCompleteSlotSpin(
-            {
-              tokensWon,
-              xpWon,
-              spinsWon: 0,
-              flair: null
-            },
-            event
-          );
-        }
+  // Fast mechanical drum tick while reels are spinning
+  useEffect(() => {
+    if (!isAnySpinning) {
+      if (spinAnimRef.current) {
+        clearInterval(spinAnimRef.current);
+        spinAnimRef.current = null;
       }
-    },
-    [progressivePot, nudgesLeft, spawnCoinFountain, onCompleteSlotSpin]
-  );
+      return undefined;
+    }
+    spinAnimRef.current = setInterval(() => {
+      setSpinTickOffset((n) => (n + 1) % STRIP_LEN);
+    }, 65);
+    return () => {
+      if (spinAnimRef.current) {
+        clearInterval(spinAnimRef.current);
+        spinAnimRef.current = null;
+      }
+    };
+  }, [isAnySpinning]);
 
-  const handleToggleHold = (reelIdx) => {
-    if (isAnySpinning || !canHoldThisTurn) return;
-    sfx.playToggle();
+  const handleSelectBet = (nextBet) => {
+    if (isAnySpinning) return;
+    sfx.playCoinInsert();
+    setBetAmount(nextBet);
+    // Changing bet clears any active holds/nudges (standard Vegas anti-exploit rule)
+    setHoldAllowed(false);
+    setHeldReels([false, false, false]);
+    setNudgesLeft(0);
+    setStatusBanner(
+      nextBet === 0
+        ? '🆓 DEMO MODE SELECTED (0 🪙 COST • 0 🪙 PAYOUT)'
+        : `🪙 ${nextBet}-TOKEN CHIP WAGER LOCKED — PULL THE LEVER!`
+    );
+  };
+
+  const toggleHoldReel = (idx) => {
+    if (isAnySpinning || !holdAllowed) return;
     setHeldReels((prev) => {
       const next = [...prev];
-      const currentlyHeldCount = prev.filter(Boolean).length;
-      if (!next[reelIdx] && currentlyHeldCount >= 1) {
-        // Allow holding max 1 reel per spin for fair arcade balance
-        return [reelIdx === 0, reelIdx === 1, reelIdx === 2];
+      if (!next[idx] && next.filter(Boolean).length >= 2) {
+        // Max 2 reels can be held at once
+        return prev;
       }
-      next[reelIdx] = !next[reelIdx];
+      next[idx] = !next[idx];
+      sfx.playFlipperClick();
       return next;
     });
   };
 
-  const handleNudgeReel = (reelIdx, e) => {
+  const finalizeSpinOutcome = (finalStops, activeBet, fromNudge = false) => {
+    const paylineSyms = finalStops.map((idx) => REEL_STRIP[wrapStop(idx)]);
+    const result = evaluateVegasPayline(paylineSyms);
+
+    const rawPayout = activeBet > 0 ? activeBet * result.mult : 0;
+    const verifiedPayout = validateStakedGamePayout({
+      stakedTokens: activeBet,
+      rawPayout,
+      maxMultiplier: 50
+    });
+
+    if (result.mult > 0) {
+      if (result.tier === 'jackpot') {
+        sfx.playJackpot();
+        setTimeout(() => sfx.playAirhorn(), 180);
+      } else if (result.mult >= 4) {
+        sfx.playJackpot();
+      } else {
+        sfx.playCoinInsert();
+      }
+
+      if (verifiedPayout > 0 && onPayoutTokens) {
+        onPayoutTokens(verifiedPayout, {
+          stakedTokens: activeBet,
+          xp: result.tier === 'jackpot' ? 150 : result.mult >= 6 ? 45 : 15,
+          label: result.headline,
+          emoji: result.tier === 'jackpot' ? '7️⃣' : '🎰'
+        });
+      }
+
+      if (verifiedPayout > bestWinTokens) {
+        setBestWinTokens(verifiedPayout);
+        localStorage.setItem('tm_slots_best_win', String(verifiedPayout));
+        if (onRecordHighScore) onRecordHighScore('slots', verifiedPayout);
+      }
+
+      setHoldAllowed(false);
+      setHeldReels([false, false, false]);
+      setNudgesLeft(0);
+      setLastOutcome({
+        ...result,
+        payout: verifiedPayout,
+        bet: activeBet
+      });
+      setStatusBanner(
+        activeBet > 0
+          ? `${result.headline} → WON +${verifiedPayout} 🪙!`
+          : `${result.headline} (DEMO MODE — WAGER TOKENS TO WIN!)`
+      );
+    } else {
+      // Losing spin: 0 tokens paid! Occasional lucky Hold or Nudge feature if not already from a nudge
+      setLastOutcome({ ...result, payout: 0, bet: activeBet });
+      if (!fromNudge) {
+        const roll = Math.random();
+        if (roll < 0.16) {
+          setHoldAllowed(true);
+          setHeldReels([false, false, false]);
+          setNudgesLeft(0);
+          setStatusBanner('⚡ LUCKY HOLD LIT! TAP UP TO 2 REELS TO LOCK FOR NEXT PULL!');
+        } else if (roll < 0.28) {
+          setHoldAllowed(false);
+          setHeldReels([false, false, false]);
+          setNudgesLeft(1);
+          setStatusBanner('⚡ 1 LUCKY NUDGE LIT! TAP A NUDGE BUTTON BELOW ANY REEL!');
+        } else {
+          setHoldAllowed(false);
+          setHeldReels([false, false, false]);
+          setNudgesLeft(0);
+          setStatusBanner(result.headline);
+        }
+      } else {
+        setNudgesLeft(0);
+        setStatusBanner('NUDGE COMPLETE — NO PAYLINE MATCH. PULL AGAIN!');
+      }
+    }
+  };
+
+  const handleNudgeReel = (reelIdx) => {
     if (isAnySpinning || nudgesLeft <= 0) return;
     sfx.playSlotReelStop(reelIdx);
-    setNudgesLeft((n) => Math.max(0, n - 1));
-    const nextReels = [...reels];
-    nextReels[reelIdx] = (nextReels[reelIdx] + 1) % SLOT_SYMBOLS.length;
-    setReels(nextReels);
-    evaluateReelsOutcome(nextReels, e, true);
+    const nextStops = reelStops.map((s, idx) => (idx === reelIdx ? wrapStop(s - 1) : s));
+    setReelStops(nextStops);
+    setNudgesLeft(0);
+    finalizeSpinOutcome(nextStops, lastOutcome?.bet ?? betAmount, true);
   };
 
-  const handlePullLever = useCallback(
-    (e) => {
-      if (!canPull) return;
+  const triggerPullSpin = () => {
+    if (isAnySpinning) return;
 
-      timersRef.current.forEach((t) => clearTimeout(t));
-      timersRef.current = [];
-
-      // Animate physical side lever pull
-      setLeverPulled(true);
-      setTimeout(() => setLeverPulled(false), 480);
-      sfx.playSlotLeverPull();
-
-      setWinTier(null);
-      setAnticipationReel3(false);
-      setSessionSpinsCount((c) => c + 1);
-      setProgressivePot((p) => p + 45);
-      setSlotResultMsg('🎰 Las Vegas Neon Drums spinning...');
-
-      const usedHold = heldReels.some(Boolean);
-      const nextSpinning = [!heldReels[0], !heldReels[1], !heldReels[2]];
-      setReelSpinning(nextSpinning);
-
-      // Predetermine final symbols with exciting Las Vegas odds
-      const r1 = heldReels[0] ? reels[0] : Math.floor(Math.random() * SLOT_SYMBOLS.length);
-      const luckyRoll = Math.random();
-      const r2 = heldReels[1]
-        ? reels[1]
-        : luckyRoll < 0.42
-        ? r1
-        : Math.floor(Math.random() * SLOT_SYMBOLS.length);
-      const r3 = heldReels[2]
-        ? reels[2]
-        : luckyRoll < 0.16
-        ? r1
-        : Math.floor(Math.random() * SLOT_SYMBOLS.length);
-
-      const finalReels = [r1, r2, r3];
-
-      // Rapidly cycle unheld reels while spinning
-      const spinTicker = setInterval(() => {
-        setReels((prev) => [
-          nextSpinning[0] ? (prev[0] + 1) % SLOT_SYMBOLS.length : prev[0],
-          nextSpinning[1] ? (prev[1] + 1) % SLOT_SYMBOLS.length : prev[1],
-          nextSpinning[2] ? (prev[2] + 1) % SLOT_SYMBOLS.length : prev[2]
-        ]);
-      }, 65);
-
-      // Stop Reel 1 at 560ms
-      const t1 = setTimeout(() => {
-        nextSpinning[0] = false;
-        setReelSpinning((prev) => [false, prev[1], prev[2]]);
-        setReels((prev) => [r1, prev[1], prev[2]]);
-        sfx.playSlotReelStop(0);
-      }, 560);
-
-      // Stop Reel 2 at 1050ms
-      const t2 = setTimeout(() => {
-        nextSpinning[1] = false;
-        setReelSpinning((prev) => [false, false, prev[2]]);
-        setReels((prev) => [r1, r2, prev[2]]);
-        sfx.playSlotReelStop(1);
-        if (r1 === r2 && !heldReels[2]) {
-          setAnticipationReel3(true);
-          setSlotResultMsg('🔥 TWO MATCHED! DRUMROLL FOR TRIPLE VEGAS JACKPOT...');
-        }
-      }, 1050);
-
-      // Stop Reel 3 at 1620ms
-      const t3 = setTimeout(() => {
-        clearInterval(spinTicker);
-        nextSpinning[2] = false;
-        setReelSpinning([false, false, false]);
-        setAnticipationReel3(false);
-        setReels(finalReels);
-        sfx.playSlotReelStop(2);
-
-        // Reset holds if used this turn; re-enable hold every other turn
-        setHeldReels([false, false, false]);
-        setCanHoldThisTurn(!usedHold);
-        if (Math.random() < 0.35) {
-          setNudgesLeft((n) => Math.min(2, n + 1));
-        }
-
-        evaluateReelsOutcome(finalReels, e, false);
-      }, 1620);
-
-      timersRef.current = [t1, t2, t3, { clear: () => clearInterval(spinTicker) }];
-    },
-    [canPull, heldReels, reels, evaluateReelsOutcome]
-  );
-
-  // Keyboard Spacebar support when in standalone view
-  useEffect(() => {
-    if (embedded) return;
-    const onKeyDown = (e) => {
-      if (['INPUT', 'TEXTAREA'].includes(e.target?.tagName)) return;
-      if (e.key === ' ') {
-        e.preventDefault();
-        handlePullLever(e);
+    let activeBet = betAmount;
+    if (activeBet > 0) {
+      if (tokens < activeBet) {
+        sfx.playClownHonk();
+        setStatusBanner(
+          `⚠️ NEED ${activeBet} 🪙 FOR THAT BET! LOWER BET, SWITCH TO DEMO, OR UPLOAD A MEME (+45 🪙)!`
+        );
+        return;
       }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [embedded, handlePullLever]);
-
-  const handleShareSlots = () => {
-    const shareUrl = `${window.location.origin}/?mode=slots`;
-    const shareText = `🎰 I just hit ${sessionScore.toLocaleString()} pts & won ${sessionTokensWon} 🪙 Arcade Tokens on the LAS VEGAS 777 NEON SLOT MACHINE at THE MEMES.net!`;
-    navigator.clipboard?.writeText(`${shareText} ${shareUrl}`).catch(() => {});
-    if (typeof navigator.share === 'function') {
-      navigator
-        .share({
-          title: '🎰 Las Vegas 777 Neon Slots — THE MEMES.net',
-          text: shareText,
-          url: shareUrl
-        })
-        .catch(() => {});
+      if (onSpendTokens) {
+        const ok = onSpendTokens(activeBet, 'One-Arm Bandit Wager');
+        if (!ok) return;
+      }
     }
-    sfx.playPop(2);
-    setCopiedShare(true);
-    setTimeout(() => setCopiedShare(false), 2500);
+
+    timersRef.current.forEach((t) => clearTimeout(t));
+    timersRef.current = [];
+
+    // Animate physical right-side chrome lever pull
+    setLeverPulled(true);
+    sfx.playSlotLeverPull();
+    const leverTimer = setTimeout(() => setLeverPulled(false), 440);
+    timersRef.current.push(leverTimer);
+
+    setLastOutcome(null);
+    setNudgesLeft(0);
+    setStatusBanner(
+      activeBet > 0
+        ? `🎰 ${activeBet} 🪙 INSERTED — MECHANICAL DRUMS SPINNING...`
+        : '🆓 DEMO PULL — DRUMS SPINNING...'
+    );
+
+    // Choose random independent stop index on the 22-stop physical strip for non-held reels
+    const targetStops = reelStops.map((currStop, idx) =>
+      heldReels[idx] ? currStop : Math.floor(Math.random() * STRIP_LEN)
+    );
+
+    const nextSpinMask = [!heldReels[0], !heldReels[1], !heldReels[2]];
+    setReelSpinning(nextSpinMask);
+
+    // Hold consumes after this spin
+    setHoldAllowed(false);
+
+    const stopDelays = [520, 920, 1320];
+    [0, 1, 2].forEach((reelIdx) => {
+      if (heldReels[reelIdx]) return;
+      const t = setTimeout(() => {
+        sfx.playSlotReelStop(reelIdx);
+        setReelStops((prev) => {
+          const copy = [...prev];
+          copy[reelIdx] = targetStops[reelIdx];
+          return copy;
+        });
+        setReelSpinning((prev) => {
+          const copy = [...prev];
+          copy[reelIdx] = false;
+          return copy;
+        });
+      }, stopDelays[reelIdx]);
+      timersRef.current.push(t);
+    });
+
+    const finishDelay = nextSpinMask[2] ? 1370 : nextSpinMask[1] ? 970 : 570;
+    const doneTimer = setTimeout(() => {
+      setHeldReels([false, false, false]);
+      finalizeSpinOutcome(targetStops, activeBet, false);
+    }, finishDelay);
+    timersRef.current.push(doneTimer);
   };
 
-  const cabinetContent = (
-    <div
-      className={`tm-vegas-slot-cabinet ${isAnySpinning ? 'is-spinning' : ''} ${
-        winTier === 'jackpot'
-          ? 'win-jackpot'
-          : winTier === 'double'
-          ? 'win-double'
-          : ''
-      }`}
-    >
-      {/* 1. ARCHED LAS VEGAS NEON MARQUEE TOPPER */}
-      <div className="tm-vegas-slot-topper">
-        <div className="tm-vegas-bulb-ring" aria-hidden="true">
-          {Array.from({ length: MARQUEE_BULB_COUNT }).map((_, i) => (
-            <span
-              key={i}
-              className="tm-vegas-bulb"
-              style={{ '--bulb-idx': i }}
-            />
-          ))}
-        </div>
+  // Drag downward on the red lever knob on iPad / iPhone / Desktop
+  const handleLeverPointerDown = (e) => {
+    if (isAnySpinning) return;
+    leverDragStartYRef.current = e.clientY;
+  };
 
-        <div className="tm-vegas-welcome-ribbon">
-          ✨ WELCOME TO FABULOUS CYBER-VEGAS • THEMEMES.NET ✨
-        </div>
+  const handleLeverPointerUp = (e) => {
+    if (isAnySpinning) return;
+    const startY = leverDragStartYRef.current;
+    leverDragStartYRef.current = null;
+    if (startY !== null && e.clientY - startY > 14) {
+      triggerPullSpin();
+    } else {
+      triggerPullSpin();
+    }
+  };
 
-        <div className="tm-vegas-neon-title">
-          <span>🎰</span> 777 NEON MEME SLOTS <span>🎰</span>
-        </div>
-
-        <div className="tm-vegas-progressive-led">
-          <span className="tm-led-dot" />
-          <span>MEGA 777 PROGRESSIVE POT:</span>
-          <strong>{progressivePot.toLocaleString()} PTS + 25 🪙 + 💎 FLAIR</strong>
-        </div>
-      </div>
-
-      {/* 2. ILLUMINATED VEGAS PAYTABLE GLASS PANEL */}
-      <div className="tm-vegas-paytable-glass">
-        <div className="tm-vegas-pay-row highlight-gold">
-          <span>7️⃣ 7️⃣ 7️⃣ VEGAS 777</span>
-          <strong>+25 🪙 • +150 XP • +1 SPIN</strong>
-        </div>
-        <div className="tm-vegas-pay-row highlight-cyan">
-          <span>💎 💎 💎 CYBER 3X</span>
-          <strong>+25 🪙 • +135 XP • +1 SPIN</strong>
-        </div>
-        <div className="tm-vegas-pay-row highlight-pink">
-          <span>🐸/🦆/🗿 TRIPLE MEME</span>
-          <strong>+25 🪙 • +120 XP • +1 SPIN</strong>
-        </div>
-        <div className="tm-vegas-pay-row">
-          <span>🍒 ANY 2 MATCH</span>
-          <strong>+9–12 🪙 • +55 XP</strong>
-        </div>
-      </div>
-
-      {/* 3. RECESSED 3-REEL CURVED DRUM WINDOW + PHYSICAL 3D CHROME SIDE LEVER */}
-      <div className="tm-vegas-machine-body">
-        <div className="tm-vegas-drum-housing">
-          {/* Glowing Center Payline Indicators */}
-          <div className="tm-vegas-payline-laser" aria-hidden="true">
-            <span className="tm-payline-tag left">▶ PAY</span>
-            <span className="tm-payline-beam" />
-            <span className="tm-payline-tag right">PAY ◀</span>
-          </div>
-
-          <div className="tm-vegas-reels-grid">
-            {reels.map((symIdx, reelIdx) => {
-              const total = SLOT_SYMBOLS.length;
-              const topSym = SLOT_SYMBOLS[(symIdx - 1 + total) % total];
-              const centerSym = SLOT_SYMBOLS[symIdx] || SLOT_SYMBOLS[0];
-              const bottomSym = SLOT_SYMBOLS[(symIdx + 1) % total];
-              const spinning = reelSpinning[reelIdx];
-              const isHeld = heldReels[reelIdx];
-              const isSuspense = reelIdx === 2 && anticipationReel3 && spinning;
-
-              return (
-                <div key={reelIdx} className="tm-vegas-reel-column">
-                  <div
-                    className={`tm-vegas-drum-window ${spinning ? 'spinning' : ''} ${
-                      isHeld ? 'held' : ''
-                    } ${isSuspense ? 'suspense' : ''}`}
-                    style={{ '--reel-accent': centerSym.color }}
-                  >
-                    {/* Cylindrical Top Shadow & Glass Glare */}
-                    <div className="tm-drum-curvature-shade" aria-hidden="true" />
-                    <div className="tm-drum-glass-shine" aria-hidden="true" />
-
-                    {isHeld && <div className="tm-drum-held-stamp">🔒 HELD</div>}
-
-                    <div className={`tm-drum-strip ${spinning ? 'blur-roll' : ''}`}>
-                      {/* Top Peek Symbol */}
-                      <div className="tm-drum-cell peek-top" aria-hidden="true">
-                        <span className="tm-drum-peek-emoji">{topSym.emoji}</span>
-                      </div>
-
-                      {/* Center Payline Symbol */}
-                      <div className="tm-drum-cell payline-center">
-                        <div className="tm-drum-main-emoji">{centerSym.emoji}</div>
-                        <div
-                          className="tm-drum-main-name"
-                          style={{ color: centerSym.color }}
-                        >
-                          {centerSym.name}
-                        </div>
-                      </div>
-
-                      {/* Bottom Peek Symbol */}
-                      <div className="tm-drum-cell peek-bottom" aria-hidden="true">
-                        <span className="tm-drum-peek-emoji">{bottomSym.emoji}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Classic Vegas Sub-Reel Hold & Nudge Buttons */}
-                  <div className="tm-vegas-reel-subbtns">
-                    <button
-                      type="button"
-                      className={`tm-vegas-hold-btn ${isHeld ? 'active' : ''}`}
-                      disabled={isAnySpinning || !canHoldThisTurn}
-                      onClick={() => handleToggleHold(reelIdx)}
-                      title="Hold this reel for your next spin!"
-                    >
-                      {isHeld ? '🔒 HELD' : '🔓 HOLD'}
-                    </button>
-                    <button
-                      type="button"
-                      className="tm-vegas-nudge-btn"
-                      disabled={isAnySpinning || nudgesLeft <= 0}
-                      onClick={(e) => handleNudgeReel(reelIdx, e)}
-                      title="Bump this reel down 1 symbol!"
-                    >
-                      ⏫ NUDGE
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* AUTHENTIC 3D CHROME & NEON PHYSICAL PULL LEVER ON RIGHT SIDE */}
-        <div className="tm-vegas-lever-mount">
-          <div className="tm-vegas-lever-box">
-            <button
-              type="button"
-              className={`tm-vegas-lever-arm ${leverPulled ? 'pulled' : ''}`}
-              disabled={!canPull}
-              onClick={handlePullLever}
-              title={
-                canPull
-                  ? 'Pull the Las Vegas Slot Machine Lever!'
-                  : `Cooldown active (${formatWindowCountdown(slotResetMs)})`
-              }
-              aria-label="Pull Slot Machine Lever"
-            >
-              <span className="tm-vegas-lever-knob">
-                <span className="tm-knob-shine" />
-                <span className="tm-knob-text">PULL</span>
-              </span>
-              <span className="tm-vegas-lever-shaft" />
-            </button>
-            <div className="tm-vegas-lever-socket" />
-          </div>
-          <div className="tm-vegas-lever-caption">
-            {isAnySpinning ? '⚡ SPINNING' : '🕹️ PULL ARM'}
-          </div>
-        </div>
-      </div>
-
-      {/* 4. DIGITAL RESULT MARQUEE READOUT */}
-      <div className={`tm-vegas-result-readout ${winTier ? `tier-${winTier}` : ''}`}>
-        {slotResultMsg}
-      </div>
-
-      {/* 5. ILLUMINATED CASINO CONTROL DECK */}
-      <div className="tm-vegas-control-deck">
-        <div className="tm-vegas-deck-Meters">
-          <span className="tm-vegas-meter-chip">
-            🎟️ Pulls: <strong>{slotPullsLeft}</strong>/{ARCADE_RATE_LIMITS.SLOT_PULLS_PER_WINDOW}
-            {slotPullsLeft <= 0 && ` (Refills ${formatWindowCountdown(slotResetMs)})`}
-          </span>
-          <span className="tm-vegas-meter-chip">
-            ⏫ Nudges: <strong>{nudgesLeft}</strong>
-          </span>
-          <span className="tm-vegas-meter-chip">
-            🔒 Hold: <strong>{canHoldThisTurn ? 'READY' : 'RECHARGING'}</strong>
-          </span>
-        </div>
-
-        <div className="tm-vegas-deck-buttons">
-          {slotPullsLeft > 0 ? (
-            <button
-              type="button"
-              className="tm-vegas-spin-deck-btn"
-              disabled={!canPull}
-              onClick={handlePullLever}
-            >
-              {isAnySpinning
-                ? '🎰 REELS ROLLING...'
-                : `🎰 PULL LEVER / SPIN (${slotPullsLeft} LEFT)`}
-            </button>
-          ) : onSpendTokensForPulls ? (
-            <button
-              type="button"
-              className="tm-vegas-spin-deck-btn"
-              disabled={tokens < 15}
-              onClick={() => onSpendTokensForPulls()}
-            >
-              🪙 Insert 15 Tokens for +5 Pulls (or wait {formatWindowCountdown(slotResetMs)})
-            </button>
-          ) : (
-            <button type="button" className="tm-vegas-spin-deck-btn" disabled>
-              ⏳ Refills in {formatWindowCountdown(slotResetMs)}
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* 6. CHROME COIN HOPPER TRAY & FLYING GOLDEN COINS FOUNTAIN */}
-      <div className="tm-vegas-coin-tray">
-        {coinShower.map((c) => (
-          <span
-            key={c.id}
-            className="tm-vegas-flying-coin"
-            style={{
-              left: `${c.leftPct}%`,
-              '--dx': `${c.dx}px`,
-              '--dy': `${c.dy}px`,
-              animationDelay: `${c.delayMs}ms`
-            }}
-            aria-hidden="true"
-          >
-            {c.emoji}
-          </span>
-        ))}
-        <div className="tm-coin-tray-lip">
-          <span>🪙 CHROME COIN HOPPER</span>
-          <span>
-            Session Won: <strong style={{ color: '#4ade80' }}>+{sessionTokensWon} 🪙</strong> •{' '}
-            Spins: <strong>{sessionSpinsCount}</strong> • Score:{' '}
-            <strong style={{ color: '#facc15' }}>{sessionScore.toLocaleString()} PTS</strong>
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-
-  if (embedded) {
-    return cabinetContent;
-  }
+  const isWinner = lastOutcome && lastOutcome.mult > 0;
+  const isJackpot = lastOutcome && lastOutcome.tier === 'jackpot';
 
   return (
-    <section className="tm-subgame-wrap" aria-label="Las Vegas 777 Retro Neon Slot Machine">
-      <div className="tm-subgame-card tm-slots-page-shell">
-        <div className="tm-subgame-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-            {onBackToFeed && (
-              <button type="button" className="tm-btn tm-back-pill" onClick={onBackToFeed}>
-                ← Back to Memes
-              </button>
-            )}
-            <div>
-              <h2 className="tm-subgame-title">
-                🎰 LAS VEGAS 777 NEON SLOTS{' '}
-                <span className="tm-subgame-badge">MEMES.NET CASINO</span>
-              </h2>
-              <div className="tm-subgame-subtitle">
-                Pull the 3D Chrome Lever, 🔒 HOLD lucky reels, ⏫ NUDGE near-misses &amp; hit Triple
-                777 for +25 🪙 Tokens!
-              </div>
+    <section
+      className={`tm-bandit-stage ${embedded ? 'tm-bandit-embedded' : 'tm-bandit-standalone'}`}
+      aria-label="Las Vegas 777 One-Arm Bandit Slot Machine"
+    >
+      <div className={`tm-bandit-cabinet-wrap ${isJackpot ? 'tm-bandit-jackpot-glow' : ''}`}>
+        {/* MAIN VEGAS CHROME & NEON CABINET */}
+        <div className="tm-bandit-cabinet">
+          {/* 1. ARCHED 80s LAS VEGAS MARQUEE TOPPER */}
+          <div className="tm-bandit-marquee">
+            <div className="tm-bandit-bulbs" aria-hidden="true">
+              {Array.from({ length: 11 }).map((_, idx) => (
+                <span key={idx} className={`tm-bandit-bulb ${idx % 2 === 0 ? 'even' : 'odd'}`} />
+              ))}
+            </div>
+            <div className="tm-bandit-marquee-sub">★ FABULOUS 1985 NEON CASINO ★</div>
+            <h2 className="tm-bandit-marquee-title">ONE-ARM BANDIT 777</h2>
+          </div>
+
+          {/* 2. BACKLIT CASINO PAYTABLE GLASS */}
+          <div className="tm-bandit-payglass" aria-label="Slot Machine Payout Multipliers">
+            <div className="tm-bandit-paychip jackpot">
+              <span>777×3</span>
+              <strong>50×</strong>
+            </div>
+            <div className="tm-bandit-paychip">
+              <span>💎×3</span>
+              <strong>25×</strong>
+            </div>
+            <div className="tm-bandit-paychip">
+              <span>BAR×3</span>
+              <strong>15×</strong>
+            </div>
+            <div className="tm-bandit-paychip">
+              <span>🔔×3</span>
+              <strong>10×</strong>
+            </div>
+            <div className="tm-bandit-paychip">
+              <span>🍒×3</span>
+              <strong>6×</strong>
+            </div>
+            <div className="tm-bandit-paychip">
+              <span>🍉/🍋×3</span>
+              <strong>4×</strong>
+            </div>
+            <div className="tm-bandit-paychip">
+              <span>2×🍒/PAIR</span>
+              <strong>2×</strong>
+            </div>
+            <div className="tm-bandit-paychip">
+              <span>1×🍒L</span>
+              <strong>1×</strong>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <span
-              className="tm-spin-counter-pill"
-              style={{ borderColor: '#facc15', color: '#facc15' }}
-            >
-              🪙 {effectiveGameTokensLeft} Game Tokens Left Today
-            </span>
-            <button type="button" className="tm-btn" onClick={handleShareSlots}>
-              {copiedShare ? '✅ Link Copied!' : '🔗 Share Machine'}
-            </button>
+          {/* 3. CHROME BEZEL + 3 CURVED IVORY MECHANICAL REEL DRUMS */}
+          <div className="tm-bandit-reel-bezel">
+            <div className="tm-bandit-payline-arrow left" aria-hidden="true">
+              ▶
+            </div>
+            <div className="tm-bandit-payline-laser" aria-hidden="true" />
+            <div className="tm-bandit-payline-arrow right" aria-hidden="true">
+              ◀
+            </div>
+
+            <div className="tm-bandit-drums-grid">
+              {[0, 1, 2].map((reelIdx) => {
+                const spinning = reelSpinning[reelIdx];
+                const centerStop = spinning
+                  ? wrapStop(spinTickOffset * (reelIdx + 2) + reelIdx * 5)
+                  : reelStops[reelIdx];
+                const topSym = REEL_STRIP[wrapStop(centerStop - 1)];
+                const midSym = REEL_STRIP[wrapStop(centerStop)];
+                const botSym = REEL_STRIP[wrapStop(centerStop + 1)];
+                const isHeld = heldReels[reelIdx];
+
+                return (
+                  <div key={reelIdx} className="tm-bandit-drum-col">
+                    <div
+                      className={`tm-bandit-drum-window ${spinning ? 'spinning' : ''} ${
+                        isHeld ? 'held' : ''
+                      } ${isWinner && !spinning ? 'winner' : ''}`}
+                    >
+                      {/* Top Curved Cylinder Peek */}
+                      <div className="tm-bandit-drum-slot peek top">
+                        <SlotSymbolSvg symbolId={topSym} size={embedded ? 34 : 38} />
+                      </div>
+
+                      {/* Center Payline Stop */}
+                      <div className="tm-bandit-drum-slot center">
+                        <SlotSymbolSvg symbolId={midSym} size={embedded ? 50 : 58} />
+                      </div>
+
+                      {/* Bottom Curved Cylinder Peek */}
+                      <div className="tm-bandit-drum-slot peek bottom">
+                        <SlotSymbolSvg symbolId={botSym} size={embedded ? 34 : 38} />
+                      </div>
+
+                      {/* 3D Cylindrical Drum Top/Bottom Shading Glass */}
+                      <div className="tm-bandit-drum-glass" aria-hidden="true" />
+                      {isHeld && <span className="tm-bandit-held-tag">HELD</span>}
+                    </div>
+
+                    {/* Fruit-Machine HOLD / NUDGE Deck Buttons under each drum */}
+                    <div className="tm-bandit-drum-btns">
+                      <button
+                        type="button"
+                        className={`tm-bandit-mini-btn ${isHeld ? 'active-hold' : ''} ${
+                          holdAllowed ? 'lit' : ''
+                        }`}
+                        disabled={!holdAllowed || isAnySpinning}
+                        onClick={() => toggleHoldReel(reelIdx)}
+                      >
+                        {isHeld ? '🔒 HELD' : 'HOLD'}
+                      </button>
+                      <button
+                        type="button"
+                        className={`tm-bandit-mini-btn ${nudgesLeft > 0 ? 'lit-nudge' : ''}`}
+                        disabled={nudgesLeft <= 0 || isAnySpinning}
+                        onClick={() => handleNudgeReel(reelIdx)}
+                      >
+                        ⏫ NUDGE
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 4. DIGITAL VFD LED PAYOUT DISPLAY */}
+          <div className={`tm-bandit-led-bar ${isWinner ? 'win' : ''}`} role="status">
+            {statusBanner}
+          </div>
+
+          {/* 5. CASINO CHIP WAGER DECK + SPIN BUTTON */}
+          <div className="tm-bandit-control-deck">
+            <div className="tm-bandit-wallet-row">
+              <div className="tm-bandit-stat-box">
+                <span>WALLET</span>
+                <strong>🪙 {tokens.toLocaleString()}</strong>
+              </div>
+              <div className="tm-bandit-stat-box">
+                <span>WAGER</span>
+                <strong>{betAmount === 0 ? '🆓 DEMO' : `🪙 ${betAmount}`}</strong>
+              </div>
+              <div className="tm-bandit-stat-box">
+                <span>LAST WIN</span>
+                <strong style={{ color: isWinner ? '#4ade80' : '#94a3b8' }}>
+                  {lastOutcome?.payout ? `+${lastOutcome.payout} 🪙` : '0 🪙'}
+                </strong>
+              </div>
+              <div className="tm-bandit-stat-box">
+                <span>RECORD</span>
+                <strong style={{ color: '#facc15' }}>🏆 {bestWinTokens} 🪙</strong>
+              </div>
+            </div>
+
+            <div className="tm-bandit-bet-row" role="group" aria-label="Select Chip Wager">
+              <span className="tm-bandit-bet-label">BET CHIPS:</span>
+              {betOptions.map((amt) => (
+                <button
+                  key={amt}
+                  type="button"
+                  disabled={isAnySpinning}
+                  className={`tm-bandit-chip-btn ${betAmount === amt ? 'active' : ''} ${
+                    tokens < amt ? 'short' : ''
+                  }`}
+                  onClick={() => handleSelectBet(amt)}
+                >
+                  🪙 {amt}
+                </button>
+              ))}
+              <button
+                type="button"
+                disabled={isAnySpinning}
+                className={`tm-bandit-chip-btn demo ${betAmount === 0 ? 'active' : ''}`}
+                onClick={() => handleSelectBet(0)}
+                title="Practice for free (0 tokens staked, 0 tokens paid)"
+              >
+                🆓 DEMO
+              </button>
+            </div>
+
+            <div className="tm-bandit-action-row">
+              {!embedded && onBackToFeed && (
+                <button type="button" className="tm-bandit-back-btn" onClick={onBackToFeed}>
+                  ← Memes
+                </button>
+              )}
+
+              <button
+                type="button"
+                className="tm-bandit-spin-btn"
+                disabled={isAnySpinning}
+                onClick={triggerPullSpin}
+              >
+                {isAnySpinning
+                  ? '🎰 SPINNING DRUMS...'
+                  : betAmount === 0
+                  ? '🕹️ PULL DEMO SPIN (0 🪙)'
+                  : `🎰 PULL FOR ${betAmount} 🪙 (WIN UP TO ${betAmount * 50} 🪙!)`}
+              </button>
+            </div>
+
+            {tokens < 5 && (
+              <div className="tm-bandit-reload-cta">
+                <span>📸 Out of chips? Memes are the #1 Token Generator (+45 to +75 🪙)!</span>
+                {onOpenUpload && (
+                  <button type="button" className="tm-btn tm-btn-primary" onClick={onOpenUpload}>
+                    📸 Upload Meme (+45 🪙)
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
-        {cabinetContent}
+        {/* PHYSICAL RIGHT-SIDE 3D CHROME ONE-ARM LEVER (MOUNTED ON ALL DEVICES) */}
+        <div className="tm-bandit-arm-housing" aria-label="One-Arm Bandit Pull Lever">
+          <div className="tm-bandit-arm-box" />
+          <div className={`tm-bandit-arm-track ${leverPulled ? 'pulled' : ''}`}>
+            <div className="tm-bandit-arm-shaft" />
+            <button
+              type="button"
+              className="tm-bandit-arm-ball"
+              disabled={isAnySpinning}
+              onPointerDown={handleLeverPointerDown}
+              onPointerUp={handleLeverPointerUp}
+              title="Pull the One-Arm Bandit Lever!"
+            >
+              <span>PULL</span>
+            </button>
+          </div>
+        </div>
       </div>
     </section>
   );

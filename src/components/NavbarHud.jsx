@@ -12,6 +12,8 @@ export default function NavbarHud({
   dailyTokensEarned = 0,
   viewMode = 'feed',
   onSelectViewMode,
+  litePerfMode = false,
+  onToggleLitePerf,
   crtOn,
   onToggleCrt,
   soundOn,
@@ -102,9 +104,17 @@ export default function NavbarHud({
                 type="button"
                 className={`tm-btn tm-subgame-nav-pill ${viewMode === 'pinball' ? 'active' : ''}`}
                 onClick={() => onSelectViewMode('pinball')}
-                title="Play Las Vegas Retro Pinball Machine!"
+                title="Play 5-Table 80s Neon Cyber-Pinball!"
               >
                 🎱 Pinball
+              </button>
+              <button
+                type="button"
+                className={`tm-btn tm-subgame-nav-pill ${viewMode === 'stocks' ? 'active' : ''}`}
+                onClick={() => onSelectViewMode('stocks')}
+                title="Trade hilarious meme stocks on MEMEDAQ '86!"
+              >
+                📈 Stocks
               </button>
             </div>
           )}
@@ -113,13 +123,13 @@ export default function NavbarHud({
           <div
             className="tm-token-wallet-pill"
             onClick={onOpenRewards}
-            title={`Fair Arcade Token Wallet: ${tokens} Tokens • Daily Collection: ${dailyTokensEarned}/${ARCADE_ECONOMY_RULES.MAX_DAILY_TOKENS} max today`}
+            title={`Arcade Token Wallet: ${tokens} Tokens • Daily Earned via Memes/Quests: ${dailyTokensEarned}/${ARCADE_ECONOMY_RULES.MAX_DAILY_EARNED_TOKENS}`}
           >
             <span className="tm-token-coin">🪙</span>
             <div>
               <div className="tm-token-balance">{tokens} Tokens</div>
               <div className="tm-token-cap-sub">
-                {dailyTokensEarned}/{ARCADE_ECONOMY_RULES.MAX_DAILY_TOKENS} Daily Cap
+                {dailyTokensEarned}/{ARCADE_ECONOMY_RULES.MAX_DAILY_EARNED_TOKENS} Earned
               </div>
             </div>
           </div>
@@ -162,6 +172,21 @@ export default function NavbarHud({
           >
             🏆 Ranks
           </button>
+
+          {onToggleLitePerf && (
+            <button
+              type="button"
+              className={`tm-btn tm-btn-icon-mobile ${litePerfMode ? 'tm-btn-crt-active' : ''}`}
+              onClick={onToggleLitePerf}
+              title={
+                litePerfMode
+                  ? 'Turbo iPad/Mobile FPS Mode ON (Smooth low-CPU graphics — tap to toggle)'
+                  : 'Enable Turbo FPS Mode for older iPads & battery saving'
+              }
+            >
+              ⚡
+            </button>
+          )}
 
           <button
             type="button"

@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import MemeMedia from './MemeMedia';
 import { getMemeRarityTier, formatMemeUploadDate } from '../data/starterMemes';
 
 export default function SwipeDeck({
@@ -177,7 +178,7 @@ export default function SwipeDeck({
         <h2 className="tm-card-title">{m.title}</h2>
 
         <div className="tm-img-wrap tm-swipe-img-wrap">
-          <img src={m.image_url} alt={m.title} draggable={false} />
+          <MemeMedia meme={m} mode="swipe" />
         </div>
 
         <div className="tm-swipe-actions">

@@ -3,8 +3,6 @@ import { getSupabaseClient, fetchSupabaseAuthSettings } from './supabaseClient';
 import { sfx } from './utils/soundEngine';
 import {
   loadImageFromFileOrBlob,
-  loadImageFromUrl,
-  renderArtworkWithFilter,
   stampArcadeCartridgeFooter
 } from './utils/canvasMutator';
 import {
@@ -33,7 +31,10 @@ import { updateDynamicSeo } from './utils/seoEngine';
 import NavbarHud from './components/NavbarHud';
 import QuickUploadBar from './components/QuickUploadBar';
 import MemeCard from './components/MemeCard';
-import MemeStudioModal from './components/MemeStudioModal';
+import MemeForge from './components/forge/MemeForge';
+import { publishMeme } from './utils/publishMeme';
+import { validateFile, canvasToCompressedBlob } from './utils/mediaPipeline';
+import { recordPublishDailyPerk } from './utils/memeFeedBridge';
 import MemeEvolutionModal from './components/MemeEvolutionModal';
 import SwipeDeck from './components/SwipeDeck';
 import BattleArena from './components/BattleArena';
@@ -126,8 +127,6 @@ export default function App() {
   const [profileUsername, setProfileUsername] = useState(null);
 
   // Phase 5: Safety, Moderation & Spoiler State
-  const [studioIsSpoiler, setStudioIsSpoiler] = useState(false);
-  const [uploadError, setUploadError] = useState('');
   const [reportedMemeIds, setReportedMemeIds] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('tm_reported') || '[]');
@@ -287,26 +286,10 @@ export default function App() {
   const [authMessage, setAuthMessage] = useState('');
   const failedAuthRef = useRef({ count: 0, lockUntil: 0 });
 
-  // Studio 2.0 Modal State (100% User-Uploaded Images)
+  // Studio & Meme Forge 3.0 State (100% User-Uploaded Media)
   const [showStudio, setShowStudio] = useState(false);
-  const [studioTemplateIdx, setStudioTemplateIdx] = useState(0);
-  const [studioTopText, setStudioTopText] = useState('');
-  const [studioBottomText, setStudioBottomText] = useState('');
-  const [studioTextColor, setStudioTextColor] = useState('#facc15');
-  const [topTextPos, setTopTextPos] = useState({ x: 300, y: 64 });
-  const [bottomTextPos, setBottomTextPos] = useState({ x: 300, y: 490 });
-  const [captionFontSize, setCaptionFontSize] = useState(34);
-  const [captionLayout, setCaptionLayout] = useState('impact'); // 'impact' | 'topbar' | 'cyberbar'
-  const [studioFilter, setStudioFilter] = useState('none'); // 'none' | 'deepfry' | 'vhs' | 'pixelate' | 'chaos' | 'cyber'
-  const [studioTitle, setStudioTitle] = useState('');
-  const [studioCategory, setStudioCategory] = useState('dank');
-  const [studioStickers, setStudioStickers] = useState([]);
-  const [selectedStickerId, setSelectedStickerId] = useState(null);
-  const [customUploadImg, setCustomUploadImg] = useState(null);
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [clipboardStatus, setClipboardStatus] = useState('');
+  const [forgeIntent, setForgeIntent] = useState(null);
   const [isDraggingFile, setIsDraggingFile] = useState(false);
-  const studioCanvasRef = useRef(null);
 
   // Interactive Modes State (Comments, Swipe, King of the Hill 1v1 Battle)
   const [openComments, setOpenComments] = useState({});
@@ -882,21 +865,14 @@ export default function App() {
   // PHASE 2: ZERO-FRICTION GLOBAL DRAG-DROP & CTRL+V PASTE
   // ==========================================
   const loadFileIntoStudio = useCallback(async (fileOrBlob) => {
-    if (fileOrBlob && fileOrBlob.size && fileOrBlob.size > 15 * 1024 * 1024) {
-      setUploadError('Image exceeds 15MB limit. Please choose a smaller file.');
-      setShowStudio(true);
+    const v = await validateFile(fileOrBlob);
+    if (!v.ok) {
+      alert(`⚠️ ${v.error || 'Invalid file'}`);
       return;
     }
-    try {
-      const img = await loadImageFromFileOrBlob(fileOrBlob);
-      sfx.playMutate();
-      setUploadError('');
-      setCustomUploadImg(img);
-      setSelectedStickerId(null);
-      setShowStudio(true);
-    } catch {
-      setUploadError('Could not decode image file. Try PNG, JPG, GIF, or WebP.');
-    }
+    sfx.playMutate();
+    setForgeIntent({ mode: 'file', file: fileOrBlob });
+    setShowStudio(true);
   }, []);
 
   useEffect(() => {
@@ -904,7 +880,7 @@ export default function App() {
       const items = e.clipboardData?.items;
       if (!items) return;
       for (const item of items) {
-        if (item.type && item.type.startsWith('image/')) {
+        if (item.type && (item.type.startsWith('image/') || item.type.startsWith('video/'))) {
           const blob = item.getAsFile();
           if (blob) {
             e.preventDefault();
@@ -932,7 +908,7 @@ export default function App() {
       e.preventDefault();
       setIsDraggingFile(false);
       const file = e.dataTransfer?.files?.[0];
-      if (file && file.type.startsWith('image/')) {
+      if (file) {
         loadFileIntoStudio(file);
       }
     };
@@ -949,83 +925,42 @@ export default function App() {
     };
   }, [loadFileIntoStudio]);
 
-  const handleLoadUrlIntoStudio = useCallback(async (url) => {
-    const img = await loadImageFromUrl(url);
-    sfx.playMutate();
-    setUploadError('');
-    setCustomUploadImg(img);
-    setSelectedStickerId(null);
-    setShowStudio(true);
-  }, []);
-
   // ==========================================
   // FORK & MUTATE HANDLERS + EVOLUTION TREE
   // ==========================================
   const handleOpenBlankStudio = useCallback(() => {
-    setMutatingParentMeme(null);
+    sfx.playToggle();
     setActiveBounty(null);
-    setCustomUploadImg(null);
-    setStudioTitle('');
-    setStudioStickers([]);
-    setSelectedStickerId(null);
-    setStudioFilter('none');
-    setStudioIsSpoiler(false);
-    setUploadError('');
-    setCaptionLayout('impact');
-    setCaptionFontSize(34);
-    setStudioTextColor('#facc15');
-    setTopTextPos({ x: 300, y: 64 });
-    setBottomTextPos({ x: 300, y: 490 });
-    setStudioTopText('');
-    setStudioBottomText('');
+    setMutatingParentMeme(null);
+    setForgeIntent({ mode: 'blank' });
     setShowStudio(true);
   }, []);
 
   const handleAcceptBounty = useCallback((bounty) => {
     if (!bounty) return;
-    sfx.playMutate();
+    sfx.playPowerUp();
     setActiveBounty(bounty);
     setMutatingParentMeme(null);
-    setCustomUploadImg(null);
-    setStudioTemplateIdx(bounty.templateIdx || 0);
-    setStudioCategory(bounty.category || 'dank');
-    setStudioTitle(`BOUNTY: ${bounty.prompt}`);
-    setStudioTopText(bounty.defaultTop || 'WHEN THE BOUNTY DROPS');
-    setStudioBottomText(bounty.defaultBottom || '+200 XP INCOMING');
-    setTopTextPos({ x: 300, y: 64 });
-    setBottomTextPos({ x: 300, y: 490 });
-    setStudioStickers([]);
-    setSelectedStickerId(null);
-    setStudioFilter('none');
+    setForgeIntent({ mode: 'bounty', bounty });
     setShowStudio(true);
   }, []);
 
   const handleTriggerStudioMutate = useCallback((memeToMutate, event) => {
     if (event) event.stopPropagation();
     sfx.playMutate();
-
     setActiveBounty(null);
     setMutatingParentMeme(memeToMutate);
-    setEvolutionModalMeme(null);
-    setStudioTitle(`REMIX: ${memeToMutate.title || 'Untitled'}`);
-    setStudioCategory(memeToMutate.category || 'dank');
-    setStudioTopText('WAIT A SECOND...');
-    setStudioBottomText('PLOT TWIST UNLOCKED 💀');
-    setTopTextPos({ x: 300, y: 64 });
-    setBottomTextPos({ x: 300, y: 490 });
-    setStudioStickers([]);
-    setSelectedStickerId(null);
-    setStudioFilter('none');
+    setForgeIntent({ mode: 'remix', parent: memeToMutate });
+    setShowStudio(true);
+  }, []);
 
-    loadImageFromUrl(memeToMutate.image_url)
-      .then((img) => {
-        setCustomUploadImg(img);
-        setShowStudio(true);
-      })
-      .catch(() => {
-        setCustomUploadImg(null);
-        setShowStudio(true);
-      });
+  const handleCaptionThis = useCallback((memeToCaption, event) => {
+    if (event) event.stopPropagation();
+    sfx.playToggle();
+    setActiveBounty(null);
+    setMutatingParentMeme(memeToCaption);
+    setForgeIntent({ mode: 'caption', parent: memeToCaption });
+    setShowStudio(true);
   }, []);
 
   const handleOpenEvolutionTree = useCallback(
@@ -1254,251 +1189,10 @@ export default function App() {
     [commentInputs, user, combo, awardFairReward]
   );
 
-  // ==========================================
-  // HTML5 CANVAS MEME STUDIO 2.0 RENDERER & EXPORT (100% USER UPLOADS)
-  // ==========================================
-  const drawStudioCanvas = useCallback(
-    (hideSelectionUI = false) => {
-      const canvas = studioCanvasRef.current;
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      const W = 600;
-      const H = 552; // 520px meme area + 32px 16-bit Arcade Cartridge Footer
-      const memeH = 520;
-      canvas.width = W;
-      canvas.height = H;
 
-      const hasTopBar = captionLayout === 'topbar' && Boolean(studioTopText.trim());
-      const topBarH = hasTopBar ? 86 : 0;
-      const artY = topBarH;
-      const artH = memeH - topBarH;
-
-      // 1. Render User-Uploaded Artwork with Chosen Photo Filter / Glitch FX
-      renderArtworkWithFilter(ctx, W, artY, artH, studioFilter, (bctx, bw, bh) => {
-        if (customUploadImg) {
-          bctx.fillStyle = '#090a0f';
-          bctx.fillRect(0, 0, bw, bh);
-          const scale = Math.min(bw / customUploadImg.width, bh / customUploadImg.height);
-          const dw = customUploadImg.width * scale;
-          const dh = customUploadImg.height * scale;
-          bctx.drawImage(customUploadImg, (bw - dw) / 2, (bh - dh) / 2, dw, dh);
-        } else {
-          // Clean Upload Guide Canvas (Zero Default Template Memes)
-          const grad = bctx.createLinearGradient(0, 0, bw, bh);
-          grad.addColorStop(0, '#0a0d1a');
-          grad.addColorStop(1, '#131629');
-          bctx.fillStyle = grad;
-          bctx.fillRect(0, 0, bw, bh);
-
-          // Subtle Cyber Grid Guide
-          bctx.strokeStyle = 'rgba(0, 243, 255, 0.08)';
-          bctx.lineWidth = 1;
-          for (let gx = 0; gx < bw; gx += 40) {
-            bctx.beginPath();
-            bctx.moveTo(gx, 0);
-            bctx.lineTo(gx, bh);
-            bctx.stroke();
-          }
-          for (let gy = 0; gy < bh; gy += 40) {
-            bctx.beginPath();
-            bctx.moveTo(0, gy);
-            bctx.lineTo(bw, gy);
-            bctx.stroke();
-          }
-
-          if (!hideSelectionUI) {
-            bctx.strokeStyle = 'rgba(0, 243, 255, 0.35)';
-            bctx.lineWidth = 2;
-            bctx.setLineDash([8, 6]);
-            bctx.strokeRect(56, bh / 2 - 88, bw - 112, 176);
-            bctx.setLineDash([]);
-
-            bctx.font = '54px sans-serif';
-            bctx.textAlign = 'center';
-            bctx.textBaseline = 'middle';
-            bctx.fillText('📸', bw / 2, bh / 2 - 34);
-
-            bctx.font = '800 18px Inter, system-ui, sans-serif';
-            bctx.fillStyle = '#00f3ff';
-            bctx.fillText('CLICK TO UPLOAD YOUR PHOTO OR SCREENSHOT', bw / 2, bh / 2 + 18);
-
-            bctx.font = '600 13px Inter, system-ui, sans-serif';
-            bctx.fillStyle = '#94a3b8';
-            bctx.fillText('Or Drag & Drop file anywhere • Paste Ctrl+V • Snap Camera', bw / 2, bh / 2 + 46);
-          }
-        }
-      });
-
-      // 2. Draw Draggable Stickers
-      studioStickers.forEach((st) => {
-        const sz = st.size || 60;
-        ctx.save();
-        ctx.font = `${sz}px sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(st.emoji, st.x, st.y);
-
-        if (!hideSelectionUI && st.id === selectedStickerId) {
-          ctx.strokeStyle = '#00f3ff';
-          ctx.lineWidth = 2;
-          ctx.setLineDash([5, 4]);
-          ctx.beginPath();
-          ctx.arc(st.x, st.y, sz * 0.62, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-        ctx.restore();
-      });
-
-      // 3. Draw Captions According to Layout Mode ('impact' | 'topbar' | 'cyberbar')
-      const drawImpactText = (text, xPos, yPos, fill) => {
-        if (!text) return;
-        ctx.save();
-        ctx.font = `900 ${captionFontSize}px Impact, "Arial Black", sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.lineWidth = Math.max(5, Math.round(captionFontSize * 0.2));
-        ctx.strokeStyle = '#000000';
-        ctx.fillStyle = fill;
-        const upper = text.toUpperCase();
-        ctx.strokeText(upper, xPos, yPos, W - 36);
-        ctx.fillText(upper, xPos, yPos, W - 36);
-        ctx.restore();
-      };
-
-      const accentFill = mutatingParentMeme ? '#ff00ff' : studioTextColor || '#facc15';
-
-      if (captionLayout === 'topbar') {
-        if (hasTopBar) {
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, W, topBarH);
-          ctx.fillStyle = '#090a0f';
-          ctx.font = `800 ${Math.min(28, captionFontSize - 4)}px Inter, system-ui, sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(studioTopText, W / 2, topBarH / 2, W - 36);
-        }
-        drawImpactText(studioBottomText, bottomTextPos.x, bottomTextPos.y, accentFill);
-      } else if (captionLayout === 'cyberbar') {
-        if (studioTopText) {
-          ctx.fillStyle = 'rgba(7, 8, 16, 0.82)';
-          ctx.fillRect(0, topTextPos.y - 28, W, 56);
-          ctx.fillStyle = '#00f3ff';
-          ctx.fillRect(0, topTextPos.y + 26, W, 2);
-          ctx.font = `900 ${Math.min(30, captionFontSize)}px "Courier New", monospace`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillStyle = '#00f3ff';
-          ctx.fillText(studioTopText.toUpperCase(), topTextPos.x, topTextPos.y, W - 36);
-        }
-        if (studioBottomText) {
-          ctx.fillStyle = 'rgba(7, 8, 16, 0.82)';
-          ctx.fillRect(0, bottomTextPos.y - 28, W, 56);
-          ctx.fillStyle = '#ec4899';
-          ctx.fillRect(0, bottomTextPos.y - 28, W, 2);
-          ctx.font = `900 ${Math.min(30, captionFontSize)}px "Courier New", monospace`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillStyle = accentFill;
-          ctx.fillText(studioBottomText.toUpperCase(), bottomTextPos.x, bottomTextPos.y, W - 36);
-        }
-      } else {
-        drawImpactText(studioTopText, topTextPos.x, topTextPos.y, '#ffffff');
-        drawImpactText(studioBottomText, bottomTextPos.x, bottomTextPos.y, accentFill);
-      }
-
-      // 4. 16-Bit Arcade Cartridge Footer Bar (Bottom 32px)
-      const nextGen = mutatingParentMeme ? (mutatingParentMeme.generation || 0) + 1 : 0;
-      const handle = (user?.username || 'ANON_PLAYER').toUpperCase();
-
-      ctx.fillStyle = '#06070d';
-      ctx.fillRect(0, memeH, W, 32);
-
-      ctx.fillStyle = nextGen > 0 ? '#ec4899' : '#00f3ff';
-      ctx.fillRect(0, memeH, W, 2);
-
-      ctx.font = 'bold 12px "Courier New", monospace';
-      ctx.textBaseline = 'middle';
-      ctx.textAlign = 'left';
-      ctx.fillStyle = '#00f3ff';
-      ctx.fillText('⚡ THEMEMES.NET', 14, memeH + 17);
-
-      ctx.textAlign = 'right';
-      ctx.fillStyle = nextGen > 0 ? '#f472b6' : '#facc15';
-      const rightBadge =
-        nextGen > 0
-          ? `🧬 GEN-${nextGen} REMIX // BY @${handle}`
-          : `🕹️ GEN-0 UPLOAD // BY @${handle}`;
-      ctx.fillText(rightBadge, W - 14, memeH + 17);
-    },
-    [
-      studioTopText,
-      studioBottomText,
-      studioTextColor,
-      topTextPos,
-      bottomTextPos,
-      captionFontSize,
-      captionLayout,
-      studioFilter,
-      studioStickers,
-      selectedStickerId,
-      customUploadImg,
-      mutatingParentMeme,
-      user
-    ]
-  );
-
-  useEffect(() => {
-    if (showStudio) {
-      drawStudioCanvas(false);
-    }
-  }, [showStudio, drawStudioCanvas]);
-
-  const handleCustomImageUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    loadFileIntoStudio(file);
-  };
-
-  const handleDownloadPng = () => {
-    const canvas = studioCanvasRef.current;
-    if (!canvas) return;
-    drawStudioCanvas(true);
-    const dataUrl = canvas.toDataURL('image/png', 0.95);
-    drawStudioCanvas(false);
-
-    const link = document.createElement('a');
-    link.download = `thememes-net-${Date.now()}.png`;
-    link.href = dataUrl;
-    link.click();
-
-    sfx.playPop(combo);
-  };
-
-  const handleCopyClipboardPng = async () => {
-    const canvas = studioCanvasRef.current;
-    if (!canvas) return;
-    try {
-      drawStudioCanvas(true);
-      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
-      drawStudioCanvas(false);
-
-      if (blob && navigator.clipboard?.write && typeof ClipboardItem !== 'undefined') {
-        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-        setClipboardStatus('✅ Copied Image!');
-        sfx.playPop(combo);
-        setTimeout(() => setClipboardStatus(''), 2500);
-      } else {
-        setClipboardStatus('⚠️ Use Download PNG');
-        setTimeout(() => setClipboardStatus(''), 2500);
-      }
-    } catch {
-      setClipboardStatus('⚠️ Copy blocked by browser');
-      setTimeout(() => setClipboardStatus(''), 2500);
-    }
-  };
 
   /**
-   * Phase 1: 1-Click Frictionless Quick Upload directly from the top of the Feed!
+   * Phase 26: Unified Quick Upload (Supports Video, GIF, and WebP Stills with non-destructive captions)
    */
   const handleQuickPublishFile = async ({
     file,
@@ -1514,123 +1208,114 @@ export default function App() {
     }
     lastPublishTimeRef.current = now;
 
-    const img = await loadImageFromFileOrBlob(file);
-    const offCanvas = document.createElement('canvas');
-    const W = 600;
-    const memeH = 520;
-    const H = 552;
-    offCanvas.width = W;
-    offCanvas.height = H;
-    const ctx = offCanvas.getContext('2d');
+    const v = await validateFile(file);
+    if (!v.ok) {
+      throw new Error(v.error || 'Invalid file');
+    }
 
-    ctx.fillStyle = '#090a0f';
-    ctx.fillRect(0, 0, W, memeH);
-    const scale = Math.min(W / img.width, memeH / img.height);
-    const dw = img.width * scale;
-    const dh = img.height * scale;
-    ctx.drawImage(img, (W - dw) / 2, (memeH - dh) / 2, dw, dh);
+    const cleanLayers = [];
+    if (topText) {
+      cleanLayers.push({
+        id: 'top',
+        type: 'text',
+        text: topText.toUpperCase(),
+        font: 'Anton',
+        align: 'center',
+        fill: '#ffffff',
+        stroke: 0.08,
+        strokeColor: '#000000',
+        x: 0.5,
+        y: 0.1,
+        w: 0.9,
+        h: 0.18
+      });
+    }
+    if (bottomText) {
+      cleanLayers.push({
+        id: 'bot',
+        type: 'text',
+        text: bottomText.toUpperCase(),
+        font: 'Anton',
+        align: 'center',
+        fill: '#facc15',
+        stroke: 0.08,
+        strokeColor: '#000000',
+        x: 0.5,
+        y: 0.9,
+        w: 0.9,
+        h: 0.18
+      });
+    }
 
-    const drawOverlayCaption = (txt, yPos, fill) => {
-      if (!txt) return;
-      ctx.save();
-      ctx.font = '900 34px Impact, "Arial Black", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.lineWidth = 7;
-      ctx.strokeStyle = '#000000';
-      ctx.fillStyle = fill;
-      const upper = txt.toUpperCase();
-      ctx.strokeText(upper, W / 2, yPos, W - 36);
-      ctx.fillText(upper, W / 2, yPos, W - 36);
-      ctx.restore();
-    };
+    let media;
+    let overlay = null;
+    if (v.kind === 'video' || v.kind === 'gif') {
+      media = {
+        kind: v.kind,
+        file,
+        width: v.probe?.width || 0,
+        height: v.probe?.height || 0,
+        duration: v.probe?.duration || 0
+      };
+      if (cleanLayers.length) {
+        overlay = { v: 1, layers: cleanLayers };
+      }
+    } else {
+      const img = await loadImageFromFileOrBlob(file);
+      const fullCanvas = document.createElement('canvas');
+      const W = Math.min(1200, img.width || 800);
+      const H = Math.round((W * (img.height || 600)) / (img.width || 800));
+      fullCanvas.width = W;
+      fullCanvas.height = H;
+      const ctx = fullCanvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, W, H);
+      if (cleanLayers.length) {
+        cleanLayers.forEach((l) => {
+          ctx.save();
+          ctx.font = `900 ${Math.round(H * 0.08)}px Impact, sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.strokeStyle = '#000';
+          ctx.lineWidth = Math.round(H * 0.015);
+          ctx.fillStyle = l.fill;
+          ctx.strokeText(l.text, W * l.x, H * l.y, W * l.w);
+          ctx.fillText(l.text, W * l.x, H * l.y, W * l.w);
+          ctx.restore();
+        });
+      }
+      stampArcadeCartridgeFooter(ctx, W, H, { generation: 0, authorName: user?.username || 'AnonMemer' });
+      const blob = await canvasToCompressedBlob(fullCanvas);
 
-    drawOverlayCaption(topText, 56, '#ffffff');
-    drawOverlayCaption(bottomText, 476, '#facc15');
+      // Clean base image for "Caption This"
+      const baseCanvas = document.createElement('canvas');
+      baseCanvas.width = W;
+      baseCanvas.height = H;
+      const bctx = baseCanvas.getContext('2d');
+      bctx.drawImage(img, 0, 0, W, H);
+      const baseBlob = await canvasToCompressedBlob(baseCanvas);
 
-    const author = user?.username || 'AnonMemer';
-    stampArcadeCartridgeFooter(ctx, W, memeH, {
-      generation: 0,
-      authorName: author
-    });
+      media = { kind: 'image', blob, baseBlob, width: W, height: H };
+    }
 
     const fallbackCaption = [topText, bottomText].filter(Boolean).join(' — ');
+    const author = user?.username || 'AnonMemer';
     const finalTitle = title || fallbackCaption || `Fresh Upload by @${author}`;
-    let imageUrl = offCanvas.toDataURL('image/png', 0.92);
-
-    const localFallbackMeme = {
-      id: `local-${Date.now()}`,
-      title: finalTitle,
-      category: quickCat,
-      image_url: imageUrl,
-      author_name: author,
-      score: 1,
-      generation: 0,
-      mutation_count: 0,
-      parent_meme_id: null,
-      root_meme_id: null,
-      is_bounty: false,
-      bounty_id: null,
-      is_spoiler: false,
-      created_at: new Date().toISOString(),
-      reactions: { '🔥': 1, '💀': 0, '😂': 0, '🗿': 0 },
-      comments: []
-    };
 
     const client = getSupabaseClient();
-    let savedToDb = false;
+    const { meme: insertedMeme } = await publishMeme({
+      media,
+      overlay,
+      meta: {
+        title: finalTitle,
+        category: quickCat,
+        author,
+        generation: 0
+      },
+      client
+    });
 
-    if (client) {
-      try {
-        const blob = await new Promise((resolve) => offCanvas.toBlob(resolve, 'image/png'));
-        const fileName = `meme-${Date.now()}-gen0-${Math.random().toString(36).slice(2, 7)}.png`;
-        const { error: uploadErr } = await client.storage
-          .from('memes')
-          .upload(fileName, blob, { contentType: 'image/png' });
-
-        if (!uploadErr) {
-          const { data: pubData } = client.storage.from('memes').getPublicUrl(fileName);
-          if (pubData?.publicUrl) {
-            imageUrl = pubData.publicUrl;
-          }
-        }
-
-        const { data: insertedRow, error: dbErr } = await client
-          .from('memes')
-          .insert([
-            {
-              title: finalTitle,
-              category: quickCat,
-              image_url: imageUrl,
-              author_name: author,
-              score: 1,
-              reactions: { '🔥': 1, '💀': 0, '😂': 0, '🗿': 0 }
-            }
-          ])
-          .select()
-          .single();
-
-        if (!dbErr && insertedRow) {
-          savedToDb = true;
-          setMemes((prev) => [
-            {
-              ...insertedRow,
-              generation: 0,
-              mutation_count: 0,
-              comments: []
-            },
-            ...prev
-          ]);
-        }
-      } catch {
-        // Fallback below
-      }
-    }
-
-    if (!savedToDb) {
-      setMemes((prev) => [{ ...localFallbackMeme, image_url: imageUrl }, ...prev]);
-    }
-
+    setMemes((prev) => [insertedMeme, ...prev]);
+    recordPublishDailyPerk();
     sfx.playLevelUp();
     incrementQuest('q-mutate', 1);
     addCappedWheelSpins(1);
@@ -1643,135 +1328,47 @@ export default function App() {
     setSortBy('latest');
   };
 
-  const handlePublishMeme = async (e) => {
-    e.preventDefault();
-    const canvas = studioCanvasRef.current;
-    if (!canvas) return;
-
-    if (!customUploadImg) {
-      setUploadError(
-        '📸 Please upload, paste (Ctrl+V), or snap your own photo first — all memes on THE MEMES.net are 100% user-uploaded!'
-      );
-      return;
-    }
-
+  /**
+   * Phase 26: Meme Forge 3.0 Unified Publisher
+   */
+  const handleForgePublish = async ({ media, overlay, meta, intent }) => {
     const now = Date.now();
-    if (now - lastPublishTimeRef.current < 4000) {
-      setUploadError('Arcade Cooldown: Wait 4 seconds between publishes to prevent spam.');
-      return;
+    if (now - lastPublishTimeRef.current < 3500) {
+      throw new Error('COOLDOWN');
     }
     lastPublishTimeRef.current = now;
-    setUploadError('');
 
-    setIsPublishing(true);
-    drawStudioCanvas(true);
-
-    const fallbackCaption = [studioTopText.trim(), studioBottomText.trim()]
-      .filter(Boolean)
-      .join(' — ');
-    const finalTitle =
-      studioTitle.trim() || fallbackCaption || `Community Upload by @${user?.username || 'AnonMemer'}`;
-    const author = user?.username || 'AnonMemer';
-    const nextGen = mutatingParentMeme ? (mutatingParentMeme.generation || 0) + 1 : 0;
-    const parentId = mutatingParentMeme ? mutatingParentMeme.id : null;
-    const rootId = mutatingParentMeme
-      ? mutatingParentMeme.root_meme_id || mutatingParentMeme.id
-      : null;
-
-    let imageUrl = canvas.toDataURL('image/png', 0.92);
-
-    const localFallbackMeme = {
-      id: `local-${Date.now()}`,
-      title: finalTitle,
-      category: studioCategory,
-      image_url: imageUrl,
-      author_name: author,
-      score: 1,
-      generation: nextGen,
-      mutation_count: 0,
-      parent_meme_id: parentId,
-      root_meme_id: rootId,
-      is_bounty: Boolean(activeBounty),
-      bounty_id: activeBounty?.id || null,
-      is_spoiler: Boolean(studioIsSpoiler),
-      created_at: new Date().toISOString(),
-      reactions: { '🔥': 1, '💀': 0, '😂': 0, '🗿': 0 },
-      comments: []
-    };
+    const parent = intent?.parent || mutatingParentMeme || null;
+    const isBounty = intent?.mode === 'bounty' || Boolean(activeBounty);
+    const parentId = parent?.id || null;
+    const rootId = parent?.root_meme_id || parent?.parent_meme_id || parentId || null;
+    const generation = parent && !isBounty ? (parent.generation || 0) + 1 : 0;
 
     const client = getSupabaseClient();
-    let savedToDb = false;
+    const { meme: insertedMeme } = await publishMeme({
+      media,
+      overlay,
+      meta: {
+        ...meta,
+        author: user?.username || 'AnonMemer',
+        parentId,
+        rootId,
+        generation,
+        isBounty,
+        bountyId: activeBounty?.id || intent?.bounty?.id || null
+      },
+      client
+    });
 
-    if (client) {
-      try {
-        const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
-        const fileName = `meme-${Date.now()}-gen${nextGen}-${Math.random().toString(36).slice(2, 7)}.png`;
-        const { error: uploadErr } = await client.storage
-          .from('memes')
-          .upload(fileName, blob, { contentType: 'image/png' });
+    setMemes((prev) => [
+      insertedMeme,
+      ...prev.map((m) =>
+        parentId && m.id === parentId ? { ...m, mutation_count: (m.mutation_count || 0) + 1 } : m
+      )
+    ]);
 
-        if (!uploadErr) {
-          const { data: pubData } = client.storage.from('memes').getPublicUrl(fileName);
-          if (pubData?.publicUrl) {
-            imageUrl = pubData.publicUrl;
-          }
-        }
-
-        const isParentUuid =
-          parentId && !String(parentId).startsWith('seed-') && !String(parentId).startsWith('local-');
-
-        const payload = {
-          title: finalTitle,
-          category: studioCategory,
-          image_url: imageUrl,
-          author_name: author,
-          score: 1,
-          reactions: { '🔥': 1, '💀': 0, '😂': 0, '🗿': 0 },
-          ...(isParentUuid ? { parent_meme_id: parentId } : {})
-        };
-
-        const { data: insertedRow, error: dbErr } = await client
-          .from('memes')
-          .insert([payload])
-          .select()
-          .single();
-
-        if (!dbErr && insertedRow) {
-          savedToDb = true;
-          setMemes((prev) => [
-            {
-              ...insertedRow,
-              generation: insertedRow.generation ?? nextGen,
-              mutation_count: 0,
-              parent_meme_id: parentId,
-              root_meme_id: rootId || insertedRow.id,
-              is_bounty: Boolean(activeBounty),
-              bounty_id: activeBounty?.id || null,
-              is_spoiler: Boolean(studioIsSpoiler),
-              comments: []
-            },
-            ...prev.map((m) =>
-              m.id === parentId ? { ...m, mutation_count: (m.mutation_count || 0) + 1 } : m
-            )
-          ]);
-        }
-      } catch {
-        // Fallback handled below
-      }
-    }
-
-    if (!savedToDb) {
-      setMemes((prev) => [
-        { ...localFallbackMeme, image_url: imageUrl },
-        ...prev.map((m) =>
-          m.id === parentId ? { ...m, mutation_count: (m.mutation_count || 0) + 1 } : m
-        )
-      ]);
-    }
-
-    // Credit +50 XP Creator Royalty to the Parent Meme Author on Fork & Mutate
-    if (mutatingParentMeme?.author_name) {
-      const parentAuthor = mutatingParentMeme.author_name;
+    if (parent?.author_name) {
+      const parentAuthor = parent.author_name;
       setRoyaltiesMap((prev) => ({
         ...prev,
         [parentAuthor]: (prev[parentAuthor] || 0) + 50
@@ -1781,39 +1378,36 @@ export default function App() {
       }
     }
 
+    recordPublishDailyPerk();
     sfx.playLevelUp();
     incrementQuest('q-mutate', 1);
     addCappedWheelSpins(1);
-    if (activeBounty) {
+
+    if (isBounty) {
       setBountiesCompleted((c) => c + 1);
       awardUploadTokensWithPioneerCheck({
         baseTokens: ARCADE_ECONOMY_RULES.REWARDS.BOUNTY_UPLOAD.tokens,
         baseXp: ARCADE_ECONOMY_RULES.REWARDS.BOUNTY_UPLOAD.xp,
-        event: e,
+        event: null,
         emoji: '🎯'
       });
     } else {
       awardUploadTokensWithPioneerCheck({
-        baseTokens: mutatingParentMeme
+        baseTokens: parent
           ? ARCADE_ECONOMY_RULES.REWARDS.REMIX_MEME.tokens
           : ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens,
-        baseXp: mutatingParentMeme
+        baseXp: parent
           ? ARCADE_ECONOMY_RULES.REWARDS.REMIX_MEME.xp
           : ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.xp,
-        event: e,
-        emoji: mutatingParentMeme ? '🧬' : '🚀'
+        event: null,
+        emoji: parent ? '🧬' : '🚀'
       });
     }
 
-    setIsPublishing(false);
     setShowStudio(false);
+    setForgeIntent(null);
     setMutatingParentMeme(null);
     setActiveBounty(null);
-    setStudioIsSpoiler(false);
-    setStudioTitle('');
-    setStudioStickers([]);
-    setSelectedStickerId(null);
-    setCustomUploadImg(null);
     setViewMode('feed');
     setSortBy('latest');
   };
@@ -2424,49 +2018,18 @@ export default function App() {
       setTimeout(() => sfx.playAirhorn(), 180);
 
       const randCap = VIRAL_CAPTIONS[Math.floor(Math.random() * VIRAL_CAPTIONS.length)];
-      const filters = ['deepfry', 'vhs', 'cyber', 'chaos', 'pixelate'];
-      const randFilter = filters[Math.floor(Math.random() * filters.length)];
-      const layouts = ['impact', 'topbar', 'cyberbar'];
-      const randLayout = layouts[Math.floor(Math.random() * layouts.length)];
-      const stickerPool = ['🔥', '😂', '🌟', '👑', '🗿', '🚀', '⚡', '🦆'];
-
-      setStudioTopText(randCap[0]);
-      setStudioBottomText(randCap[1]);
-      setStudioFilter(randFilter);
-      setCaptionLayout(randLayout);
-      setStudioTitle(`REMIX: ${randCap[0]}`);
-      setStudioCategory(['dank', 'tech', 'gaming', 'relatable'][Math.floor(Math.random() * 4)]);
-      setStudioStickers([
-        {
-          id: `st-${Date.now()}-1`,
-          emoji: stickerPool[Math.floor(Math.random() * stickerPool.length)],
-          x: 95 + Math.round(Math.random() * 90),
-          y: 170 + Math.round(Math.random() * 140),
-          size: 64
-        },
-        {
-          id: `st-${Date.now()}-2`,
-          emoji: stickerPool[Math.floor(Math.random() * stickerPool.length)],
-          x: 420 + Math.round(Math.random() * 90),
-          y: 180 + Math.round(Math.random() * 140),
-          size: 64
-        }
-      ]);
-
-      if (!customUploadImg && memes.length > 0) {
-        const randomUserMeme = memes[Math.floor(Math.random() * memes.length)];
+      const randomUserMeme = memes.length > 0 ? memes[Math.floor(Math.random() * memes.length)] : null;
+      if (randomUserMeme) {
         setMutatingParentMeme(randomUserMeme);
-        loadImageFromUrl(randomUserMeme.image_url)
-          .then((img) => {
-            setCustomUploadImg(img);
-            setShowStudio(true);
-          })
-          .catch(() => {
-            setShowStudio(true);
-          });
-      } else {
-        setShowStudio(true);
       }
+      setForgeIntent({
+        mode: 'remix',
+        parent: randomUserMeme,
+        imageUrl: randomUserMeme?.image_url || null,
+        initialText: `${randCap[0]} ${randCap[1]}`
+      });
+      setShowStudio(true);
+
       if (e) {
         spawnParticles(
           e.clientX || window.innerWidth / 2,
@@ -2476,7 +2039,7 @@ export default function App() {
         );
       }
     },
-    [customUploadImg, memes, spawnParticles]
+    [memes, spawnParticles]
   );
 
   const handleClaimDailyStreak = useCallback(
@@ -2688,6 +2251,23 @@ export default function App() {
   const visibleMemes = useMemo(() => {
     return filteredMemes.slice(0, visibleCount);
   }, [filteredMemes, visibleCount]);
+
+  const trendingFormats = useMemo(() => {
+    if (!memes || !memes.length) return [];
+    const counts = new Map();
+    memes.forEach((m) => {
+      const k = m.root_meme_id || m.base_image_url || m.id;
+      counts.set(k, (counts.get(k) || 0) + 1);
+    });
+    return memes
+      .filter((m) => Boolean(m.base_image_url || m.image_url))
+      .map((m) => ({
+        ...m,
+        formatCount: counts.get(m.root_meme_id || m.base_image_url || m.id) || 1
+      }))
+      .sort((a, b) => b.formatCount - a.formatCount || (b.mutation_count || 0) - (a.mutation_count || 0))
+      .slice(0, 8);
+  }, [memes]);
 
   // Automatic Infinite-Scroll Observer on Sentinel
   useEffect(() => {
@@ -3094,6 +2674,7 @@ export default function App() {
         <BossKeyOverlay
           onExitBossMode={() => setBossKeyActive(false)}
           onSecretWorkXp={() => {}}
+          memes={memes}
         />
       )}
 
@@ -3517,8 +3098,11 @@ export default function App() {
                 <input
                   ref={quickUploadInputRef}
                   type="file"
-                  accept="image/*"
-                  onChange={handleCustomImageUpload}
+                  accept="image/*,image/gif,video/mp4,video/webm,video/quicktime"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) loadFileIntoStudio(file);
+                  }}
                   style={{ display: 'none' }}
                 />
                 <div style={{ fontSize: '52px', marginBottom: '8px' }}>🚀📸✨</div>
@@ -3564,7 +3148,42 @@ export default function App() {
               </div>
             </section>
           ) : (
-            <main className="tm-grid">
+            <>
+              {trendingFormats.length > 0 && (
+                <section className="tm-trending-formats-wrap" aria-label="Trending Community Formats">
+                  <div className="tm-trending-formats-header">
+                    <span>🔥 TRENDING COMMUNITY FORMATS</span>
+                    <span className="tm-trending-formats-sub">Tap any base to add your own spin!</span>
+                  </div>
+                  <div className="tm-trending-formats-scroller">
+                    {trendingFormats.map((tf) => (
+                      <div
+                        key={tf.id}
+                        className="tm-format-card"
+                        onClick={(e) => handleCaptionThis(tf, e)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') handleCaptionThis(tf, e);
+                        }}
+                      >
+                        <div className="tm-format-thumb-box">
+                          <img
+                            src={tf.base_image_url || tf.poster_url || tf.image_url}
+                            alt={tf.title}
+                            loading="lazy"
+                          />
+                        </div>
+                        <div className="tm-format-info">
+                          <span className="tm-format-title">{tf.title.slice(0, 24)}</span>
+                          <span className="tm-format-badge">✏️ Caption ({tf.formatCount}x)</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+              <main className="tm-grid">
               {visibleMemes.map((meme, idx) => (
                 <div key={meme.id} style={{ display: 'contents' }}>
                   <MemeCard
@@ -3581,6 +3200,7 @@ export default function App() {
                     onAddComment={handleAddComment}
                     onOpenEvolutionTree={handleOpenEvolutionTree}
                     onTriggerStudioMutate={handleTriggerStudioMutate}
+                    onCaptionThis={handleCaptionThis}
                     onOpenTheater={handleOpenTheater}
                     onShareMeme={handleShareMeme}
                     onOpenProfile={(username) => {
@@ -3589,6 +3209,7 @@ export default function App() {
                     }}
                     onReportMeme={handleReportMeme}
                     onOpenAiRoast={handleOpenAiRoast}
+                    litePerfMode={litePerfMode}
                   />
                   {idx === 3 && (
                     <article className="tm-card tm-infeed-arcade-card" aria-label="Side Entertainment Arcade Break">
@@ -3649,6 +3270,7 @@ export default function App() {
                 </div>
               ))}
             </main>
+          </>
           )}
 
           {!isLoadingFeed && visibleCount < filteredMemes.length && (
@@ -3884,6 +3506,15 @@ export default function App() {
           tokens={tokens}
           onSpendTokens={handleSpendTokens}
           onPayoutTokens={handlePayoutGameTokens}
+          memes={memes}
+          onCreditCreator={(creatorAuthor) => {
+            if (creatorAuthor) {
+              setRoyaltiesMap((prev) => ({
+                ...prev,
+                [creatorAuthor]: (prev[creatorAuthor] || 0) + 15
+              }));
+            }
+          }}
           onOpenUpload={() => {
             sfx.playToggle();
             setViewMode('feed');
@@ -3902,6 +3533,7 @@ export default function App() {
           tokens={tokens}
           onSpendTokens={handleSpendTokens}
           onPayoutTokens={handlePayoutGameTokens}
+          memes={memes}
           onOpenUpload={() => {
             sfx.playToggle();
             setViewMode('feed');
@@ -3920,6 +3552,8 @@ export default function App() {
           tokens={tokens}
           onSpendTokens={handleSpendTokens}
           onPayoutTokens={handlePayoutGameTokens}
+          memes={memes}
+          onOpenTheater={handleOpenTheater}
           onOpenUpload={() => {
             sfx.playToggle();
             setViewMode('feed');
@@ -4042,6 +3676,7 @@ export default function App() {
           onEarnPetXp={awardXpOnly}
           onWinPinataReward={handleWinPinataReward}
           pinataClaimedToday={pinataClaimedToday}
+          memes={memes}
           onSelectViewMode={(mode) => {
             sfx.playToggle();
             closeAllModals();
@@ -4104,53 +3739,16 @@ export default function App() {
         />
       )}
 
-      {/* MODAL 1: HTML5 CANVAS MEME STUDIO 2.0 (+ FORK & MUTATE / BOUNTY / SPOILER) */}
+      {/* MODAL 1: MEME FORGE 3.0 STUDIO (+ FORK & MUTATE / BOUNTY / SPOILER) */}
       {showStudio && (
-        <MemeStudioModal
-          mutatingParentMeme={mutatingParentMeme}
-          activeBounty={activeBounty}
-          studioIsSpoiler={studioIsSpoiler}
-          setStudioIsSpoiler={setStudioIsSpoiler}
-          uploadError={uploadError}
-          studioCanvasRef={studioCanvasRef}
-          studioTemplateIdx={studioTemplateIdx}
-          setStudioTemplateIdx={setStudioTemplateIdx}
-          studioTopText={studioTopText}
-          setStudioTopText={setStudioTopText}
-          studioBottomText={studioBottomText}
-          setStudioBottomText={setStudioBottomText}
-          topTextPos={topTextPos}
-          setTopTextPos={setTopTextPos}
-          bottomTextPos={bottomTextPos}
-          setBottomTextPos={setBottomTextPos}
-          captionFontSize={captionFontSize}
-          setCaptionFontSize={setCaptionFontSize}
-          captionLayout={captionLayout}
-          setCaptionLayout={setCaptionLayout}
-          studioTextColor={studioTextColor}
-          setStudioTextColor={setStudioTextColor}
-          studioFilter={studioFilter}
-          setStudioFilter={setStudioFilter}
-          studioTitle={studioTitle}
-          setStudioTitle={setStudioTitle}
-          studioCategory={studioCategory}
-          setStudioCategory={setStudioCategory}
-          studioStickers={studioStickers}
-          setStudioStickers={setStudioStickers}
-          selectedStickerId={selectedStickerId}
-          setSelectedStickerId={setSelectedStickerId}
-          customUploadImg={customUploadImg}
-          setCustomUploadImg={setCustomUploadImg}
-          setMutatingParentMeme={setMutatingParentMeme}
-          onCustomImageUpload={handleCustomImageUpload}
-          onLoadUrlIntoStudio={handleLoadUrlIntoStudio}
-          onOpenBlankStudio={handleOpenBlankStudio}
-          onDownloadPng={handleDownloadPng}
-          onCopyClipboardPng={handleCopyClipboardPng}
-          clipboardStatus={clipboardStatus}
-          onClose={() => setShowStudio(false)}
-          onPublishMeme={handlePublishMeme}
-          isPublishing={isPublishing}
+        <MemeForge
+          intent={forgeIntent}
+          user={user}
+          onClose={() => {
+            setShowStudio(false);
+            setForgeIntent(null);
+          }}
+          onPublish={handleForgePublish}
         />
       )}
 

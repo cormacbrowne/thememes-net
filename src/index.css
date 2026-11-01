@@ -7764,3 +7764,479 @@ body {
   text-overflow: ellipsis;
   flex-shrink: 0;
 }
+
+/* ============================================================================
+ * PHASE 26: UNIFIED MEDIA, NON-DESTRUCTIVE OVERLAYS & MEME FORGE 3.0
+ * ============================================================================ */
+
+/* Media Box & Video Autoplay */
+.tm-media-box {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #05060b;
+}
+
+.tm-media-box img,
+.tm-media-box video {
+  width: 100%;
+  height: auto;
+  max-height: 75vh;
+  object-fit: contain;
+  display: block;
+}
+
+.tm-media-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(7, 8, 16, 0.85);
+  border: 1px solid rgba(0, 243, 255, 0.5);
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-weight: 900;
+  color: #00f3ff;
+  backdrop-filter: blur(4px);
+  z-index: 5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+.tm-media-play {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00f3ff, #ff0055);
+  color: #ffffff;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  cursor: pointer;
+  z-index: 6;
+  box-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
+  transition: transform 0.15s ease;
+}
+
+.tm-media-play:hover {
+  transform: scale(1.1);
+}
+
+.tm-media-unmute {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(7, 8, 16, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* Non-Destructive HTML Caption Overlay */
+.tm-ov-root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 4;
+}
+
+.tm-ov-layer {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center center;
+  pointer-events: none;
+}
+
+/* Caption This Button */
+.tm-caption-this-btn {
+  background: rgba(0, 243, 255, 0.12);
+  border: 1px solid rgba(0, 243, 255, 0.45);
+  color: #00f3ff;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+
+.tm-caption-this-btn:hover {
+  background: rgba(0, 243, 255, 0.25);
+  border-color: #00f3ff;
+  transform: translateY(-1px);
+}
+
+/* Trending Community Formats Horizontal Scroller */
+.tm-trending-formats-wrap {
+  margin: 14px auto 20px;
+  padding: 12px 16px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(250, 204, 21, 0.25);
+  border-radius: 14px;
+  backdrop-filter: blur(8px);
+}
+
+.tm-trending-formats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 900;
+  color: #facc15;
+  letter-spacing: 0.5px;
+}
+
+.tm-trending-formats-sub {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.tm-trending-formats-scroller {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+}
+
+.tm-format-card {
+  flex: 0 0 130px;
+  background: rgba(7, 8, 16, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.tm-format-card:hover {
+  transform: translateY(-3px);
+  border-color: #00f3ff;
+  box-shadow: 0 6px 16px rgba(0, 243, 255, 0.25);
+}
+
+.tm-format-thumb-box {
+  width: 100%;
+  height: 90px;
+  background: #020408;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.tm-format-thumb-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tm-format-info {
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tm-format-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tm-format-badge {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #facc15;
+}
+
+/* Meme Forge 3.0 Studio Modal & Tool Panel */
+.tm-forge-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 4, 10, 0.88);
+  backdrop-filter: blur(10px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.tm-forge-window {
+  width: 100%;
+  max-width: 960px;
+  max-height: 95vh;
+  display: flex;
+  flex-direction: column;
+  background: #090d1a;
+  border: 2px solid rgba(0, 243, 255, 0.4);
+  box-shadow: 0 0 35px rgba(0, 243, 255, 0.2);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.tm-forge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  background: #060914;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tm-forge-title {
+  font-size: 16px;
+  font-weight: 900;
+  color: #00f3ff;
+  letter-spacing: 0.5px;
+}
+
+.tm-forge-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tm-forge-body {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-height: 380px;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .tm-forge-body {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+}
+
+.tm-forge-main {
+  flex: 1.5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: #03060f;
+  position: relative;
+}
+
+.tm-forge-stage-box {
+  position: relative;
+  max-width: 100%;
+  max-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.8);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tm-forge-stage-canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+}
+
+.tm-forge-empty {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px dashed rgba(0, 243, 255, 0.4);
+  border-radius: 12px;
+  padding: 24px;
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+.tm-forge-empty:hover {
+  border-color: #00f3ff;
+  color: #00f3ff;
+  background: rgba(0, 243, 255, 0.08);
+}
+
+.tm-forge-tools {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #070a16;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  min-width: 300px;
+}
+
+.tm-forge-tabs {
+  display: flex;
+  background: #040711;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  overflow-x: auto;
+}
+
+.tm-forge-tab {
+  flex: 1;
+  padding: 10px 8px;
+  font-size: 11.5px;
+  font-weight: 800;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  text-align: center;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+}
+
+.tm-forge-tab.active {
+  color: #00f3ff;
+  border-bottom-color: #00f3ff;
+  background: rgba(0, 243, 255, 0.06);
+}
+
+.tm-forge-tool-body {
+  padding: 14px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.tm-forge-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tm-tool-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+.tm-tool-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tm-swatch-row {
+  display: flex;
+  gap: 6px;
+}
+
+.tm-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+}
+
+.tm-swatch.active {
+  border-color: #00f3ff;
+  box-shadow: 0 0 8px #00f3ff;
+}
+
+.tm-emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.tm-emoji-tile {
+  font-size: 24px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.tm-emoji-tile:hover {
+  background: rgba(0, 243, 255, 0.15);
+  border-color: #00f3ff;
+  transform: scale(1.15);
+}
+
+.tm-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.tm-aspect-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tm-forge-publish {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  background: #050814;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-wrap: wrap;
+}
+
+.tm-forge-publish input[type="text"] {
+  flex: 2;
+  min-width: 160px;
+}
+
+.tm-forge-publish select {
+  flex: 1;
+  min-width: 140px;
+}
+
+.tm-forge-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ff0055;
+  cursor: pointer;
+}
+
+.tm-w-full {
+  width: 100%;
+}
+

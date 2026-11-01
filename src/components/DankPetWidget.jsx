@@ -21,6 +21,7 @@ export default function DankPetWidget({
   onEarnPetXp,
   onWinPinataReward,
   pinataClaimedToday = false,
+  memes = [],
   onSelectViewMode
 }) {
   const [minimized, setMinimized] = useState(false);
@@ -446,7 +447,7 @@ export default function DankPetWidget({
           type="button"
           className="tm-donotpress-btn"
           onClick={handlePressChaosButton}
-          title="Trigger a dodging Meme Piñata challenge, Boss Fight, or 80s Arcade Alert!"
+          title={memes && memes.length > 0 ? `Latest Feed Drop: "${memes[0].title}" by @${memes[0].author_name}` : 'Trigger a dodging Meme Piñata challenge, Boss Fight, or 80s Arcade Alert!'}
         >
           <span className="tm-donotpress-led">🚨</span>
           <span>DO NOT PRESS</span>

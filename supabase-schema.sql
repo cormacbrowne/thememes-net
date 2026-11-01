@@ -45,6 +45,34 @@ create policy "Anyone can upload memes"
   on public.memes for insert
   with check (true);
 
+-- ============================================================================
+-- PHASE 26: VIDEO, ANIMATED GIF & NON-DESTRUCTIVE MEME FORGE 3.0 MIGRATION
+-- ============================================================================
+
+-- 1. Extend public.memes with Phase 26 motion & overlay columns
+alter table public.memes
+  add column if not exists media_type text default 'image' check (media_type in ('image', 'gif', 'video')),
+  add column if not exists poster_url text,
+  add column if not exists duration_sec numeric,
+  add column if not exists width integer,
+  add column if not exists height integer,
+  add column if not exists overlay jsonb,
+  add column if not exists base_image_url text;
+
+-- 2. Expand Supabase Storage bucket limits to 50MB and add video / gif MIME types
+update storage.buckets
+set file_size_limit = 52428800,
+    allowed_mime_types = array[
+      'image/png',
+      'image/jpeg',
+      'image/webp',
+      'image/gif',
+      'video/mp4',
+      'video/webm',
+      'video/quicktime'
+    ]
+where id = 'memes';
+
 create policy "Authors or authenticated creators can update their own memes"
   on public.memes for update
   using (auth.uid() = user_id or user_id is null);
@@ -68,6 +96,34 @@ create policy "Public can view votes"
 create policy "Anyone can cast or update their own vote"
   on public.votes for insert
   with check (true);
+
+-- ============================================================================
+-- PHASE 26: VIDEO, ANIMATED GIF & NON-DESTRUCTIVE MEME FORGE 3.0 MIGRATION
+-- ============================================================================
+
+-- 1. Extend public.memes with Phase 26 motion & overlay columns
+alter table public.memes
+  add column if not exists media_type text default 'image' check (media_type in ('image', 'gif', 'video')),
+  add column if not exists poster_url text,
+  add column if not exists duration_sec numeric,
+  add column if not exists width integer,
+  add column if not exists height integer,
+  add column if not exists overlay jsonb,
+  add column if not exists base_image_url text;
+
+-- 2. Expand Supabase Storage bucket limits to 50MB and add video / gif MIME types
+update storage.buckets
+set file_size_limit = 52428800,
+    allowed_mime_types = array[
+      'image/png',
+      'image/jpeg',
+      'image/webp',
+      'image/gif',
+      'video/mp4',
+      'video/webm',
+      'video/quicktime'
+    ]
+where id = 'memes';
 
 create policy "Users can modify their vote"
   on public.votes for update
@@ -136,3 +192,31 @@ create policy "Users can view their notifications"
 create policy "Anyone can insert notification"
   on public.notifications for insert
   with check (true);
+
+-- ============================================================================
+-- PHASE 26: VIDEO, ANIMATED GIF & NON-DESTRUCTIVE MEME FORGE 3.0 MIGRATION
+-- ============================================================================
+
+-- 1. Extend public.memes with Phase 26 motion & overlay columns
+alter table public.memes
+  add column if not exists media_type text default 'image' check (media_type in ('image', 'gif', 'video')),
+  add column if not exists poster_url text,
+  add column if not exists duration_sec numeric,
+  add column if not exists width integer,
+  add column if not exists height integer,
+  add column if not exists overlay jsonb,
+  add column if not exists base_image_url text;
+
+-- 2. Expand Supabase Storage bucket limits to 50MB and add video / gif MIME types
+update storage.buckets
+set file_size_limit = 52428800,
+    allowed_mime_types = array[
+      'image/png',
+      'image/jpeg',
+      'image/webp',
+      'image/gif',
+      'video/mp4',
+      'video/webm',
+      'video/quicktime'
+    ]
+where id = 'memes';

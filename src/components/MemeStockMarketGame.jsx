@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { sfx } from '../utils/soundEngine';
+import { getCategoryActivity, getRecentMemeHeadlines } from '../utils/memeFeedBridge';
 
 // ==========================================
 // MEMEDAQ '86 — 80s NEON WALL STREET MEME STOCK MARKET SIMULATOR
@@ -167,6 +168,7 @@ function loadPortfolio() {
 
 export default function MemeStockMarketGame({
   tokens = 0,
+  memes = [],
   onSpendTokens,
   onPayoutTokens,
   onRecordHighScore,
@@ -214,9 +216,27 @@ export default function MemeStockMarketGame({
       // Trigger a funny breaking news flash every 5 ticks
       let activeEvent = null;
       if (tickCountRef.current % 5 === 0) {
-        activeEvent = MARKET_NEWS_EVENTS[Math.floor(Math.random() * MARKET_NEWS_EVENTS.length)];
-        setNewsFlash(activeEvent.headline);
+        const memeHeadlines = getRecentMemeHeadlines(memes);
+        if (memeHeadlines.length > 0 && Math.random() < 0.4) {
+          setNewsFlash(memeHeadlines[Math.floor(Math.random() * memeHeadlines.length)]);
+        } else {
+          activeEvent = MARKET_NEWS_EVENTS[Math.floor(Math.random() * MARKET_NEWS_EVENTS.length)];
+          setNewsFlash(activeEvent.headline);
+        }
       }
+
+      // Category activity from user memes gives a small sector drift
+      const catActivity = getCategoryActivity(memes);
+      const sectorMap = {
+        'Space Doggo': 'gaming',
+        'Blue-Chip': 'relatable',
+        'Dank ETF': 'dank',
+        'Chaos Hardware': 'gaming',
+        'Utility': 'tech',
+        'Food Tech': 'relatable',
+        'Cyber AI': 'tech',
+        'Degen Penny': 'dank'
+      };
 
       setMarket((prev) => {
         const next = {};
@@ -229,8 +249,13 @@ export default function MemeStockMarketGame({
           const randomMove = (Math.random() - 0.492) * 2 * c.volatility;
           const newsMove = activeEvent && activeEvent.ticker === c.ticker ? activeEvent.impact : 0;
           const rumorMove = curr.rumorBias || 0;
+          const cat = sectorMap[c.sector] || 'dank';
+          const catBoost =
+            catActivity.all > 0 && catActivity[cat]
+              ? Math.min(0.012, (catActivity[cat] / catActivity.all) * 0.015)
+              : 0;
 
-          const pctChange = meanPull + randomMove + newsMove + rumorMove;
+          const pctChange = meanPull + randomMove + newsMove + rumorMove + catBoost;
           const rawNext = oldPrice * (1 + pctChange);
           const clamped = Math.max(
             c.minPrice,
@@ -260,7 +285,7 @@ export default function MemeStockMarketGame({
     }, 1850);
 
     return () => clearInterval(interval);
-  }, [paused]);
+  }, [paused, memes]);
 
   const activeCompany =
     MEME_COMPANIES.find((c) => c.ticker === selectedTicker) || MEME_COMPANIES[0];

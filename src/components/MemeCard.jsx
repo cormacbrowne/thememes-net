@@ -1,4 +1,5 @@
 import { useRef, useCallback, useState, memo } from 'react';
+import MemeMedia from './MemeMedia';
 import {
   getMemeRarityTier,
   COMIC_ACTION_WORDS,
@@ -20,11 +21,13 @@ const MemeCard = memo(function MemeCard({
   onAddComment,
   onOpenEvolutionTree,
   onTriggerStudioMutate,
+  onCaptionThis,
   onOpenTheater,
   onShareMeme,
   onOpenProfile,
   onReportMeme,
-  onOpenAiRoast
+  onOpenAiRoast,
+  litePerfMode = false
 }) {
   const cardRef = useRef(null);
   const lastTapRef = useRef(0);
@@ -107,10 +110,11 @@ const MemeCard = memo(function MemeCard({
   const handleDownloadMemeImage = (e) => {
     e.stopPropagation();
     if (!meme?.image_url) return;
-    triggerComicPop('SAVED PNG! ⬇');
+    triggerComicPop('DOWNLOADED! ⬇');
     const link = document.createElement('a');
     link.href = meme.image_url;
-    link.download = `${(meme.title || 'thememes-net').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 32)}.png`;
+    const ext = meme.media_type === 'video' ? 'mp4' : meme.media_type === 'gif' ? 'gif' : 'webp';
+    link.download = `${(meme.title || 'thememes-net').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 32)}.${ext}`;
     link.target = '_blank';
     document.body.appendChild(link);
     link.click();
@@ -229,11 +233,10 @@ const MemeCard = memo(function MemeCard({
           </div>
         )}
 
-        <img
-          src={meme.image_url}
-          alt={meme.title}
-          loading="lazy"
-          decoding="async"
+        <MemeMedia
+          meme={meme}
+          mode="feed"
+          litePerfMode={litePerfMode}
           className={isBlurred ? 'tm-img-blurred' : ''}
         />
         <span className="tm-dbl-hint">⚡ Double-tap to Upvote</span>
@@ -376,13 +379,25 @@ const MemeCard = memo(function MemeCard({
           )}
         </div>
 
-        <button
-          type="button"
-          className="tm-mutate-btn"
-          onClick={(e) => onTriggerStudioMutate(meme, e)}
-        >
-          🧬 REMIX (+35 🪙)
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {onCaptionThis && (
+            <button
+              type="button"
+              className="tm-caption-this-btn"
+              onClick={(e) => onCaptionThis(meme, e)}
+              title="Caption this clean format / base image"
+            >
+              ✏️ Caption This
+            </button>
+          )}
+          <button
+            type="button"
+            className="tm-mutate-btn"
+            onClick={(e) => onTriggerStudioMutate(meme, e)}
+          >
+            🧬 REMIX (+35 🪙)
+          </button>
+        </div>
       </div>
 
       {/* Inline Comments Drawer */}

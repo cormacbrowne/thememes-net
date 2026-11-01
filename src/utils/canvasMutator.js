@@ -189,33 +189,28 @@ export function renderArtworkWithFilter(ctx, W, areaY, areaH, filterMode, drawAr
 }
 
 /**
- * Draws the 32px 16-Bit Cyber-Arcade Cartridge Footer on exported/published canvases.
+ * Phase 26: subtle ~18px corner cartridge watermark (bottom-right) stamped on exports.
  */
 export function stampArcadeCartridgeFooter(ctx, W, H, meta = {}) {
-  const footerH = 32;
-  const footerY = H - footerH;
+  const gen = Number(meta.generation || 0);
+  const author = meta.author || meta.authorName || 'AnonMemer';
+  const label = `⚡ THEMEMES.NET • GEN-${gen} • @${author}`;
+  const fs = Math.max(9, Math.round(Math.min(W, H) * 0.018));
+  const pillH = Math.max(18, Math.round(fs * 1.8));
   ctx.save();
+  ctx.font = `800 ${fs}px "Courier New", monospace`;
+  const tw = ctx.measureText(label).width;
+  const pad = Math.round(fs * 0.6);
+  const x = W - tw - pad * 2 - 6;
+  const y = H - pillH - 6;
+  ctx.globalAlpha = 0.55;
   ctx.fillStyle = '#070810';
-  ctx.fillRect(0, footerY, W, footerH);
-
-  ctx.strokeStyle = '#00f3ff';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(0, footerY);
-  ctx.lineTo(W, footerY);
-  ctx.stroke();
-
-  ctx.font = '900 12px "Courier New", monospace';
+  ctx.fillRect(x, y, tw + pad * 2, pillH);
+  ctx.globalAlpha = 0.85;
   ctx.fillStyle = '#00f3ff';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
-  ctx.fillText('⚡ THEMEMES.NET // CYBER-ARCADE', 12, footerY + footerH / 2);
-
-  const gen = Number(meta.generation || 0);
-  const author = meta.author || 'AnonMemer';
-  ctx.fillStyle = '#facc15';
-  ctx.textAlign = 'right';
-  ctx.fillText(`GEN-${gen} • @${author}`, W - 12, footerY + footerH / 2);
+  ctx.fillText(label, x + pad, y + pillH / 2);
   ctx.restore();
 }
 

@@ -1,4 +1,6 @@
+import MemeMedia from './MemeMedia';
 import { getMemeRarityTier, formatMemeUploadDate } from '../data/starterMemes';
+import { checkDailyPerk } from '../utils/memeFeedBridge';
 
 export default function BattleArena({
   memes,
@@ -80,6 +82,11 @@ export default function BattleArena({
             📊 <strong>{crowdAgreement}%</strong> of arcade players agreed with your pick!
           </div>
         )}
+        {checkDailyPerk('arena') && (
+          <div style={{ marginTop: '6px', fontSize: '11px', color: '#facc15', fontWeight: 800 }}>
+            🎁 2X DAILY ARENA BOOST ACTIVE (Meme Creator Reward)!
+          </div>
+        )}
       </div>
 
       <div className="tm-battle-grid">
@@ -134,7 +141,7 @@ export default function BattleArena({
                     🔍
                   </button>
                 )}
-                <img src={m.image_url} alt={m.title} />
+                <MemeMedia meme={m} mode="swipe" />
               </div>
 
               <div

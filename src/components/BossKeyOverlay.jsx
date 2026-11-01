@@ -55,10 +55,11 @@ const AI_COPILOT_MEMOS = [
   }
 ];
 
-export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp }) {
+export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp, memes = [] }) {
   const [disguise, setDisguise] = useState('excel');
   const [selectedCell, setSelectedCell] = useState('C6');
   const [excelRows, setExcelRows] = useState(INITIAL_EXCEL_ROWS);
+  const [revealedMeme, setRevealedMeme] = useState(null);
   const [corporateNote, setCorporateNote] = useState(
     'Ready — All enterprise macros verified by Internal Audit.'
   );
@@ -236,6 +237,25 @@ export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp }) {
             >
               📈 Run Monte Carlo Audit (+15 Stealth XP)
             </button>
+            {memes && memes.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setRevealedMeme(memes[0])}
+                style={{
+                  background: '#047857',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '4px 10px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  marginLeft: '6px'
+                }}
+              >
+                📎 Cell D9 (Meme)
+              </button>
+            )}
           </div>
 
           <div className="tm-boss-table-wrap">
@@ -652,6 +672,41 @@ export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp }) {
                 (Tap anywhere to mine +15 Stealth XP while telling your boss &ldquo;IT pushed a bad patch&rdquo;)
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {revealedMeme && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            right: '24px',
+            background: '#090d1a',
+            border: '2px solid #00f3ff',
+            padding: '12px',
+            borderRadius: '12px',
+            zIndex: 999999,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.85)'
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', fontSize: '11px', color: '#00f3ff', fontWeight: 900, gap: '12px' }}>
+            <span>🕵️ SECRET MEME UNLOCKED</span>
+            <button
+              type="button"
+              onClick={() => setRevealedMeme(null)}
+              style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '14px' }}
+            >
+              ✕
+            </button>
+          </div>
+          <img
+            src={revealedMeme.poster_url || revealedMeme.image_url}
+            alt=""
+            style={{ maxWidth: '180px', maxHeight: '180px', display: 'block', borderRadius: '6px', objectFit: 'contain' }}
+          />
+          <div style={{ fontSize: '10.5px', color: '#facc15', marginTop: '6px', fontWeight: 700 }}>
+            @{revealedMeme.author_name}
           </div>
         </div>
       )}

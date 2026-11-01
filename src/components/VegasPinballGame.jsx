@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
+import { checkDailyPerk, consumeDailyPerk } from '../utils/memeFeedBridge';
 
 // ==========================================
 // 80s NEON CYBER-PINBALL — 5 DISTINCT TABLES & OLDER-IPAD 60FPS ENGINE
@@ -289,6 +290,14 @@ export default function VegasPinballGame({
   };
 
   const handleStartPrizeRun = () => {
+    const hasFreePerk = checkDailyPerk('pinball');
+    if (hasFreePerk) {
+      consumeDailyPerk('pinball');
+      sfx.playLevelUp();
+      setHudBanner('🎁 FREE DAILY PRIZE PINBALL (Meme Pioneer Upload Reward)!');
+      resetTableGame(activeTable, entryCost);
+      return;
+    }
     if (tokens < entryCost) {
       sfx.playClownHonk();
       setHudBanner(`⚠️ NEED ${entryCost} 🪙 FOR PRIZE PINBALL! UPLOAD A MEME (+45 🪙) OR PLAY FREE!`);

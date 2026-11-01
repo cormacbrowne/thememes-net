@@ -71,7 +71,19 @@ export function updateDynamicSeo({ activeMeme = null, category = 'all', viewMode
   setMeta('meta[name="twitter:title"]', 'content', pageTitle);
   setMeta('meta[name="twitter:description"]', 'content', pageDesc);
 
-  // Inject dynamic Schema.org SocialMediaPosting JSON-LD when inspecting a meme
+  if (activeMeme?.media_type === 'video') {
+    let ogVid = document.querySelector('meta[property="og:video"]');
+    if (!ogVid) {
+      ogVid = document.createElement('meta');
+      ogVid.setAttribute('property', 'og:video');
+      document.head.appendChild(ogVid);
+    }
+    ogVid.setAttribute('content', activeMeme.image_url);
+  } else {
+    document.querySelector('meta[property="og:video"]')?.remove();
+  }
+
+  // Inject dynamic Schema.org JSON-LD when inspecting a meme
   let ldScript = document.getElementById('tm-dynamic-jsonld');
   if (activeMeme) {
     if (!ldScript) {
@@ -80,11 +92,21 @@ export function updateDynamicSeo({ activeMeme = null, category = 'all', viewMode
       ldScript.type = 'application/ld+json';
       document.head.appendChild(ldScript);
     }
+    const isVid = activeMeme.media_type === 'video';
     const schema = {
       '@context': 'https://schema.org',
-      '@type': 'SocialMediaPosting',
+      '@type': isVid ? 'VideoObject' : 'SocialMediaPosting',
       headline: activeMeme.title,
+      name: activeMeme.title,
+      description: pageDesc,
       datePublished: activeMeme.created_at || new Date().toISOString(),
+      ...(isVid
+        ? {
+            thumbnailUrl: [activeMeme.poster_url || activeMeme.image_url],
+            uploadDate: activeMeme.created_at || new Date().toISOString(),
+            contentUrl: activeMeme.image_url
+          }
+        : {}),
       author: {
         '@type': 'Person',
         name: activeMeme.author_name || 'AnonMemer'
@@ -94,11 +116,15 @@ export function updateDynamicSeo({ activeMeme = null, category = 'all', viewMode
         interactionType: 'https://schema.org/LikeAction',
         userInteractionCount: Number(activeMeme.score || 1)
       },
-      sharedContent: {
-        '@type': 'ImageObject',
-        name: activeMeme.title,
-        caption: `${activeMeme.title} (${activeMeme.category || 'meme'})`
-      }
+      ...(!isVid
+        ? {
+            sharedContent: {
+              '@type': 'ImageObject',
+              name: activeMeme.title,
+              caption: `${activeMeme.title} (${activeMeme.category || 'meme'})`
+            }
+          }
+        : {})
     };
     ldScript.textContent = JSON.stringify(schema);
   } else if (ldScript) {

@@ -353,6 +353,8 @@ function evaluateVegasPayline(symIds) {
 export default function VegasSlotMachine({
   embedded = false,
   tokens = 0,
+  memes = [],
+  onCreditCreator,
   onSpendTokens,
   onPayoutTokens,
   onRecordHighScore,
@@ -363,6 +365,7 @@ export default function VegasSlotMachine({
   const [betAmount, setBetAmount] = useState(() => (tokens >= 5 ? 5 : 0)); // 0 = Free Demo Mode
   const [reelStops, setReelStops] = useState([0, 7, 3]); // Initial display: 777 | Diamond | BAR
   const [reelSpinning, setReelSpinning] = useState([false, false, false]);
+  const featuredMeme = memes && memes.length > 0 ? memes[0] : null;
   const [spinTickOffset, setSpinTickOffset] = useState(0);
   const [leverPulled, setLeverPulled] = useState(false);
 
@@ -469,6 +472,9 @@ export default function VegasSlotMachine({
           label: result.headline,
           emoji: result.tier === 'jackpot' ? '7️⃣' : '🎰'
         });
+        if (onCreditCreator && featuredMeme?.author_name) {
+          onCreditCreator(featuredMeme.author_name);
+        }
       }
 
       if (verifiedPayout > bestWinTokens) {
@@ -636,6 +642,11 @@ export default function VegasSlotMachine({
               ))}
             </div>
             <div className="tm-bandit-marquee-sub">★ FABULOUS 1985 NEON CASINO ★</div>
+            {featuredMeme && (
+              <div style={{ fontSize: '10px', color: '#facc15', fontWeight: 800, marginTop: '2px' }}>
+                ★ FEATURED CREATOR: @{featuredMeme.author_name} ★
+              </div>
+            )}
             <h2 className="tm-bandit-marquee-title">ONE-ARM BANDIT 777</h2>
           </div>
 

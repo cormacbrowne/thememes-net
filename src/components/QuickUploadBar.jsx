@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
 import { VIRAL_CAPTIONS } from '../data/starterMemes';
+import { ACCEPT_MEDIA, validateFile } from '../utils/mediaPipeline';
 
 export default function QuickUploadBar({
   onQuickPublishFile,
@@ -15,6 +16,7 @@ export default function QuickUploadBar({
 }) {
   const [previewUrl, setPreviewUrl] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedKind, setSelectedKind] = useState('image');
   const [quickTitle, setQuickTitle] = useState('');
   const [quickTopCaption, setQuickTopCaption] = useState('');
   const [quickBottomCaption, setQuickBottomCaption] = useState('');
@@ -26,14 +28,17 @@ export default function QuickUploadBar({
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
 
-  const handleSelectBlob = (fileOrBlob) => {
+  const handleSelectBlob = async (fileOrBlob) => {
     if (!fileOrBlob) return;
-    if (fileOrBlob.size > 15 * 1024 * 1024) {
-      setStatusMsg('⚠️ Image is over 15MB. Please pick a smaller image.');
+    setStatusMsg('Checking media...');
+    const res = await validateFile(fileOrBlob);
+    if (!res.ok) {
+      setStatusMsg(res.error || '⚠️ Invalid file');
       return;
     }
-    setStatusMsg('');
+    setStatusMsg(res.tip || '');
     setSelectedFile(fileOrBlob);
+    setSelectedKind(res.kind || 'image');
     const objectUrl = URL.createObjectURL(fileOrBlob);
     setPreviewUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev);
@@ -119,7 +124,7 @@ export default function QuickUploadBar({
         e.preventDefault();
         setIsDragOver(false);
         const file = e.dataTransfer?.files?.[0];
-        if (file && file.type.startsWith('image/')) {
+        if (file) {
           handleSelectBlob(file);
         }
       }}
@@ -127,14 +132,14 @@ export default function QuickUploadBar({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept={ACCEPT_MEDIA}
         onChange={handleFileChange}
         style={{ display: 'none' }}
       />
       <input
         ref={cameraInputRef}
         type="file"
-        accept="image/*"
+        accept={ACCEPT_MEDIA}
         capture="environment"
         onChange={handleFileChange}
         style={{ display: 'none' }}
@@ -211,12 +216,23 @@ export default function QuickUploadBar({
       ) : (
         <form className="tm-quick-upload-composer" onSubmit={handleQuickSubmit}>
           <div className="tm-quick-preview-box">
-            <img src={previewUrl} alt="Upload preview" className="tm-quick-preview-img" />
+            {selectedKind === 'video' ? (
+              <video
+                src={previewUrl}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="tm-quick-preview-img"
+              />
+            ) : (
+              <img src={previewUrl} alt="Upload preview" className="tm-quick-preview-img" />
+            )}
             <button
               type="button"
               className="tm-quick-remove-btn"
               onClick={handleClearPreview}
-              title="Remove image"
+              title="Remove media"
             >
               ✕
             </button>

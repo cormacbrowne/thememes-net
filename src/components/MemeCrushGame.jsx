@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
+import { getLevelBackdropMeme } from '../utils/memeFeedBridge';
 
 const GRID_SIZE = 8;
 
@@ -423,6 +424,8 @@ function hasAnyValidMove(board, locks, levelDef) {
 
 export default function MemeCrushGame({
   tokens = 0,
+  memes = [],
+  onOpenTheater,
   onSpendTokens,
   onPayoutTokens,
   onRecordHighScore,
@@ -438,6 +441,7 @@ export default function MemeCrushGame({
     () => CRUSH_LEVELS.find((l) => l.id === levelId) || CRUSH_LEVELS[0],
     [levelId]
   );
+  const backdropMeme = useMemo(() => getLevelBackdropMeme(memes, levelId), [memes, levelId]);
 
   // Stake tracking: 0 = Free Practice, >0 = 10-Token Prize Run staked upfront
   const [activeStakeTokens, setActiveStakeTokens] = useState(0);
@@ -1208,6 +1212,20 @@ export default function MemeCrushGame({
                 );
               })}
           </div>
+          {backdropMeme && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', margin: '4px 0', fontSize: '11px', color: '#94a3b8' }}>
+              <span>🎨 Level Art: @{backdropMeme.author_name}</span>
+              {onOpenTheater && (
+                <button
+                  type="button"
+                  style={{ background: 'none', border: 'none', color: '#00f3ff', cursor: 'pointer', textDecoration: 'underline', fontSize: '11px', padding: 0 }}
+                  onClick={() => onOpenTheater(backdropMeme)}
+                >
+                  View Meme
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* 4. NON-SCROLLING TOUCH-LOCKED 8x8 CARVED NEON BOARD */}

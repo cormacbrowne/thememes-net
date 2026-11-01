@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import MemeMedia from './MemeMedia';
 import { getMemeRarityTier, formatMemeUploadDate } from '../data/starterMemes';
 import { sfx } from '../utils/soundEngine';
 
@@ -145,11 +146,12 @@ export default function VerticalReelsView({
                 onDoubleClick={(e) => handleDoubleTap(meme, e)}
                 onTouchEnd={(e) => handleTouchEnd(meme, e)}
               >
-                <img
-                  src={meme.image_url}
-                  alt={meme.title}
+                <MemeMedia
+                  meme={meme}
+                  mode="reel"
+                  active={idx === currentIndex}
+                  preload={Math.abs(idx - currentIndex) <= 1 ? 'auto' : 'metadata'}
                   className="tm-reels-img"
-                  loading={Math.abs(idx - currentIndex) <= 1 ? 'eager' : 'lazy'}
                 />
 
                 {/* Explosive Heart / Flame Double-Tap Burst */}

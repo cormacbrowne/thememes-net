@@ -72,8 +72,18 @@ thememes-net/
     ├── utils/
     │   ├── soundEngine.js             # iOS Safari Playback-Unlocked Comedy Synthesizer (4 Sound Packs + 8 Soundboard Pads)
     │   ├── canvasMutator.js           # loadMemeIntoStudioCanvas() & stampArcadeCartridgeFooter()
+    │   ├── mediaPipeline.js           # Phase 26: validation, media probing, video poster gen, WebP compression
+    │   ├── publishMeme.js             # Phase 26: unified Supabase storage upload & db insert pipeline
+    │   ├── videoAutoplay.js           # Phase 26: shared IntersectionObserver video autoplay coordinator
+    │   ├── memeFeedBridge.js          # Phase 26: feeds real community memes into Slots, Stocks, Crush, Pet & Pinball
     │   └── seoEngine.js               # Dynamic Title, Meta, OpenGraph & Schema.org JSON-LD Structured Data Engine
+    ├── hooks/
+    │   ├── useBoxSize.js              # ResizeObserver hook for overlay layers
+    │   └── useMemeEditor.js           # Phase 26: undo/redo, layers state & IndexedDB autosave
     └── components/
+        ├── forge/                     # Phase 26: Meme Forge 3.0 Studio (MemeForge, ForgeStage, ForgeToolPanel, draftStore, forgeEngine)
+        ├── MemeMedia.jsx              # Phase 26: unified image / animated GIF / video player + overlay renderer
+        ├── MemeOverlay.jsx            # Phase 26: non-destructive absolutely positioned HTML caption/sticker overlay
         ├── NavbarHud.jsx              # Simplified top HUD with Fair Token Wallet, Daily Cap indicator, ⚡ Turbo FPS toggle & Sub-Game pills
         ├── QuickUploadBar.jsx         # 1-Click inline Quick-Upload Bar (+75 🪙 First Upload Pioneer Bonus, 🎲 Random Funny Caption, drag-drop/paste/camera)
         ├── VegasSlotMachine.jsx       # Classic Las Vegas One-Arm Bandit 777 Slot Machine (SVG 777/BAR/Bell/Cherry/Diamond drums, chrome lever, chip wagers)
@@ -123,6 +133,13 @@ thememes-net/
    - `mutation_count` (`integer`, default `0`)
    - `parent_meme_id` (`uuid`, nullable foreign key to `memes.id`)
    - `root_meme_id` (`uuid`, nullable foreign key to `memes.id`)
+   - `media_type` (`text` — `'image' | 'gif' | 'video'`, default `'image'`)
+   - `poster_url` (`text`, nullable JPEG preview for video/gif)
+   - `duration_sec` (`numeric`, nullable video duration)
+   - `width` (`integer`, nullable original media width)
+   - `height` (`integer`, nullable original media height)
+   - `overlay` (`jsonb`, nullable non-destructive caption/sticker layer state)
+   - `base_image_url` (`text`, nullable clean base without baked text for "Caption This" remixing)
    - `created_at` (`timestamptz`)
 2. **`public.comments`**:
    - `id` (`uuid`, primary key)
@@ -366,6 +383,19 @@ thememes-net/
 - [x] **🍬 10 Distinct Levels in Meme Crush & 🎱 5 Distinct Tables in Cyber-Pinball**:
   - [x] **Meme Crush (`src/components/MemeCrushGame.jsx`)**: 10 distinct 80s Neon levels with unique carved `void` board geometries and varied objectives (**Crystal Jelly**, **Double Frost**, **Candy Orders**, **`📼` 80s Mixtape Cassette Drop** to exit row, and **`🔒` Cyber-Ice Laser Locks**), with `10 🪙` Prize Run (`12/18/26 🪙` payout on clear) or `0 🪙` Free Practice.
   - [x] **Cyber-Pinball (`src/components/VegasPinballGame.jsx`)**: 5 distinct 80s Neon tables (*Vegas Strip '85*, *Outrun Turbo Highway* with boost pads & patrolling DeLorean, *Invader Cyber-Grid* with alien formation & wormhole portals, *Miami Vice Lagoon* with Shark Pit & dual spinners, and *Cosmic Reactor Boss* with central gravity well & moving shield), with `10 🪙` Coin-Op Prize Run (`8/15/22/32 🪙` score tiers) or `0 🪙` Free Practice.
+
+### ✅ Phase 26: Video & Animated GIF Memes, Meme Forge 3.0 & Community Formats Integration (Completed)
+- [x] **🎬 Real Video & Animated GIF Memes Pipeline (`src/utils/mediaPipeline.js`, `src/utils/publishMeme.js`, `src/components/MemeMedia.jsx`, `src/components/MemeOverlay.jsx`)**:
+  - [x] Direct upload of MP4, WebM, MOV (<=50MB, <=60s) and animated GIFs (<=15MB) without destructive canvas rasterization, retaining fluid animation and audio tracks.
+  - [x] Automatic poster generation (`makePoster`), client WebP compression with JPEG fallback for stills, and shared `IntersectionObserver` video autoplay (`src/utils/videoAutoplay.js`) with 2-video concurrency cap and `litePerfMode` poster tap-to-play.
+  - [x] Non-destructive caption overlay system (`<MemeOverlay />`) rendering normalized HTML layers over `<video>` and `<img>` tags, plus optional client-side Canvas `captureStream` burn-in for video downloads.
+- [x] **🎨 Meme Forge 3.0 Studio (`src/components/forge/`, `src/hooks/useMemeEditor.js`)**:
+  - [x] Unlimited draggable/scalable/rotatable text layers with word-wrap auto-fit and full typography controls (Anton, Bebas Neue, Comic Neue, Permanent Marker, Press Start 2P, Inter).
+  - [x] Multi-panel layout templates (Classic, Twitter Topbar, 2-Panel Compare, 2x2 Comic, VS, POV), crop/pan/zoom tools, sticker drawer with custom PNG upload, and 60-step undo/redo.
+  - [x] Debounced IndexedDB draft autosave (`draftStore.js`) with automatic restore prompt on launch.
+  - [x] 1-Click **"✏️ Caption This"** remix engine leveraging `base_image_url` for viral community template spawning.
+- [x] **🕹️ Extras x Memes Community Integration (`src/utils/memeFeedBridge.js`)**:
+  - [x] Real feed memes integrated across Slots, MEMEDAQ price ticks & breaking news, Meme Crush level art, Dank Pet reactions, Boss Key easter eggs, and free daily Pinball/Arena perks for meme creators.
 
 ---
 

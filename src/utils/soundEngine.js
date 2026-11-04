@@ -1556,6 +1556,240 @@ export class SoundEngine {
       // Ignore audio errors
     }
   }
+
+  /**
+   * 🃏 CASINO CARD DEAL / SLIDE SNAP (Neon 21's Blackjack)
+   */
+  playCardDeal() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(10);
+      const now = this.ctx.currentTime;
+      const noise = this._getNoiseBuffer();
+      if (noise) {
+        const src = this.ctx.createBufferSource();
+        src.buffer = noise;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1800, now);
+        filter.frequency.exponentialRampToValueAtTime(3200, now + 0.055);
+        filter.Q.setValueAtTime(2.2, now);
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.22, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.065);
+        src.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        src.start(now);
+        src.stop(now + 0.07);
+      }
+      const osc = this.ctx.createOscillator();
+      const oscGain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(520, now);
+      osc.frequency.exponentialRampToValueAtTime(980, now + 0.045);
+      oscGain.gain.setValueAtTime(0.11, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+      osc.connect(oscGain);
+      oscGain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.055);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🃏 HOLOGRAPHIC CARD FLIP REVEAL
+   */
+  playCardFlip() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(14);
+      const now = this.ctx.currentTime;
+      [660, 990, 1320].forEach((f, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, now + idx * 0.028);
+        gain.gain.setValueAtTime(0.12, now + idx * 0.028);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.028 + 0.09);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now + idx * 0.028);
+        osc.stop(now + idx * 0.028 + 0.1);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🪙 CERAMIC CASINO CHIP STACK CLINK (Roulette & 21's)
+   */
+  playChipStack() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(12);
+      const now = this.ctx.currentTime;
+      [1480, 2240].forEach((f, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, now + idx * 0.025);
+        gain.gain.setValueAtTime(0.15, now + idx * 0.025);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.025 + 0.075);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now + idx * 0.025);
+        osc.stop(now + idx * 0.025 + 0.08);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🎡 ROULETTE WHEEL LAUNCH TURBINE WHOOSH
+   */
+  playRouletteSpin() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(22);
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.exponentialRampToValueAtTime(720, now + 0.28);
+      osc.frequency.exponentialRampToValueAtTime(360, now + 0.45);
+      gain.gain.setValueAtTime(0.16, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.48);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.5);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * ⚪ ROULETTE POCKET FRET / DEFLECTOR BALL TICK
+   */
+  playRouletteBallTick(speedRatio = 0.5) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      const baseFreq = 680 + Math.min(1, Math.max(0, speedRatio)) * 520;
+      osc.frequency.setValueAtTime(baseFreq, now);
+      osc.frequency.exponentialRampToValueAtTime(280, now + 0.028);
+      gain.gain.setValueAtTime(0.11, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.032);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.035);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * ⚡ NEON LIGHTNING MULTIPLIER STRIKE (Lightning Roulette & Pinball Fever)
+   */
+  playLightningStrike() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(28);
+      const now = this.ctx.currentTime;
+      const notes = [1567.98, 1174.66, 2093.0, 880, 2637.02];
+      notes.forEach((f, idx) => {
+        const start = now + idx * 0.032;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(f, start);
+        osc.frequency.exponentialRampToValueAtTime(f * 0.55, start + 0.045);
+        gain.gain.setValueAtTime(0.15, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.05);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.055);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🎱 PINBALL CABINET NUDGE THUMP
+   */
+  playPinballNudge() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(24);
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(135, now);
+      osc.frequency.exponentialRampToValueAtTime(38, now + 0.11);
+      gain.gain.setValueAtTime(0.32, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.13);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🤖 80s CYBER-ORACLE AI ASSISTANT SYNTH CHIME
+   */
+  playAiAssistantChime() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      [587.33, 880, 1174.66, 1760].forEach((f, idx) => {
+        const start = now + idx * 0.04;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, start);
+        gain.gain.setValueAtTime(0.11, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.12);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.13);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
 }
 
 export const sfx = new SoundEngine();

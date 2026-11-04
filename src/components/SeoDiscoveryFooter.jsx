@@ -83,6 +83,12 @@ export default function SeoDiscoveryFooter({
           <div>
             <h3 className="tm-seo-heading">🕹️ Side-Entertainment Games &amp; Tools</h3>
             <div className="tm-seo-links">
+              <button type="button" className="tm-seo-link" onClick={() => onSelectViewMode('blackjack')}>
+                🃏 Neon 21&apos;s Blackjack vs Dealer Bot &apos;86
+              </button>
+              <button type="button" className="tm-seo-link" onClick={() => onSelectViewMode('roulette')}>
+                🎡 Neon Lightning Roulette &apos;86 (150× Multipliers)
+              </button>
               <button type="button" className="tm-seo-link" onClick={() => onSelectViewMode('slots')}>
                 🎰 Las Vegas 777 Neon Slot Machine
               </button>

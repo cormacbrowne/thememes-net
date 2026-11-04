@@ -32,7 +32,9 @@ export default function NavbarHud({
   onOpenAuthModal,
   onResetFeed,
   canGoBack,
-  onNavigateBack
+  onNavigateBack,
+  aiAssistantOpen = false,
+  onToggleAiAssistant
 }) {
   const reactorPct = xpConversionState ? xpConversionState.progressPct : 0;
   const reactorProgressXp = xpConversionState ? xpConversionState.progressXp : 0;
@@ -98,6 +100,22 @@ export default function NavbarHud({
           {/* Side-Entertainment Quick Shortcuts */}
           {onSelectViewMode && (
             <div className="tm-nav-subgames tm-hide-mobile">
+              <button
+                type="button"
+                className={`tm-btn tm-subgame-nav-pill ${viewMode === 'blackjack' ? 'active' : ''}`}
+                onClick={() => onSelectViewMode('blackjack')}
+                title="Play Neon 21's Blackjack vs Dealer Bot '86!"
+              >
+                🃏 21&apos;s
+              </button>
+              <button
+                type="button"
+                className={`tm-btn tm-subgame-nav-pill ${viewMode === 'roulette' ? 'active' : ''}`}
+                onClick={() => onSelectViewMode('roulette')}
+                title="Spin Neon Lightning Roulette '86 (Up to 150x Multipliers)!"
+              >
+                🎡 Roulette
+              </button>
               <button
                 type="button"
                 className={`tm-btn tm-subgame-nav-pill ${viewMode === 'slots' ? 'active' : ''}`}
@@ -261,6 +279,17 @@ export default function NavbarHud({
           >
             🏆 Ranks
           </button>
+
+          {onToggleAiAssistant && (
+            <button
+              type="button"
+              className={`tm-btn tm-ai-nav-btn ${aiAssistantOpen ? 'active' : ''}`}
+              onClick={onToggleAiAssistant}
+              title="Open CYBER-ORACLE '86 — Interactive AI Assistant & Smart Strategy Guide"
+            >
+              🤖 <span className="tm-hide-mobile">AI</span>
+            </button>
+          )}
 
           {onToggleLitePerf && (
             <button

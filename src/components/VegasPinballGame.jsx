@@ -219,6 +219,19 @@ function buildInitialEngineState(tbl) {
     portalCooldown: 0,
     sinkCooldown: 0,
     floatTexts: [], // { x, y, text, color, life }
+    // Phase 27 Upgraded Engagement Mechanics:
+    skillGauge: 50,
+    comboCount: 0,
+    comboTimer: 0,
+    feverTicks: 0,
+    missionProgress: 0,
+    missionGoal: tbl.id === 5 ? 10 : 8,
+    missionsCleared: 0,
+    nudgeHeat: 0,
+    tiltTicks: 0,
+    shakeTicks: 0,
+    mysteryText: '',
+    mysteryTicks: 0,
     balls: [
       {
         id: 1,
@@ -251,7 +264,12 @@ export default function VegasPinballGame({
   const [hudBallsLeft, setHudBallsLeft] = useState(3);
   const [hudMultiplier, setHudMultiplier] = useState(1);
   const [hudShield, setHudShield] = useState(false);
-  const [hudBanner, setHudBanner] = useState('PULL LAUNCH OR PRESS SPACE TO SHOOT!');
+  const [hudCombo, setHudCombo] = useState(0);
+  const [hudFever, setHudFever] = useState(false);
+  const [hudMission, setHudMission] = useState({ cur: 0, goal: 8 });
+  const [hudBanner, setHudBanner] = useState(
+    '🎯 TIME YOUR LAUNCH IN THE GOLD ZONE FOR A +1,500 SKILL SHOT!'
+  );
   const [gameOverInfo, setGameOverInfo] = useState(null); // null | { score, payout, staked }
   const [bestScore, setBestScore] = useState(() =>
     Number(localStorage.getItem('tm_pinball_highscore') || 0)
@@ -263,17 +281,21 @@ export default function VegasPinballGame({
 
   const resetTableGame = (nextTbl, stakeAmt = 0) => {
     stakedRef.current = stakeAmt;
-    stateRef.current = buildInitialEngineState(nextTbl);
+    const initSt = buildInitialEngineState(nextTbl);
+    stateRef.current = initSt;
     setStakedTokens(stakeAmt);
     setHudScore(0);
     setHudBallsLeft(3);
     setHudMultiplier(1);
     setHudShield(false);
+    setHudCombo(0);
+    setHudFever(false);
+    setHudMission({ cur: 0, goal: initSt.missionGoal });
     setGameOverInfo(null);
     setHudBanner(
       stakeAmt > 0
-        ? `🪙 ${stakeAmt}-TOKEN PRIZE GAME LIVE! SCORE 8K / 15K / 25K / 40K+ TO WIN UP TO 35 🪙!`
-        : `🆓 PRACTICE TABLE: ${nextTbl.name.toUpperCase()} — TAP LAUNCH!`
+        ? `🪙 ${stakeAmt}-TOKEN PRIZE GAME LIVE! HIT GOLD SKILL SHOT & 6× COMBO FEVER!`
+        : `🆓 ${nextTbl.name.toUpperCase()} — LAUNCH IN THE GOLD ZONE FOR +1,500 SKILL SHOT!`
     );
   };
 
@@ -320,22 +342,74 @@ export default function VegasPinballGame({
     const st = stateRef.current;
     if (!st || st.gameOver) return;
     let launched = false;
+    const isGoldSkillShot = st.skillGauge >= 66 && st.skillGauge <= 96;
     st.balls.forEach((b) => {
       if (b.inShooter || (b.x > LANE_WALL_X && b.y > 430 && Math.abs(b.vy) < 1.5)) {
-        b.vy = -(12.2 + Math.random() * 1.1);
-        b.vx = -0.6;
+        b.vy = isGoldSkillShot ? -13.3 : -(11.8 + (st.skillGauge / 100) * 1.4);
+        b.vx = -0.7;
         launched = true;
       }
     });
     if (launched) {
       sfx.playPlungerLaunch();
-      setHudBanner(`🚀 SILVER BALL LAUNCHED ON ${st.table.name.toUpperCase()}!`);
+      if (isGoldSkillShot) {
+        sfx.playLightningStrike?.();
+        st.score += 1500 * st.multiplier;
+        st.multiplier = Math.min(5, st.multiplier + 1);
+        st.drainShield = true;
+        setHudScore(st.score);
+        setHudMultiplier(st.multiplier);
+        setHudShield(true);
+        st.floatTexts.push({
+          x: 200,
+          y: 120,
+          text: '🎯 SKILL SHOT +1500 & SHIELD!',
+          color: '#facc15',
+          life: 40
+        });
+        setHudBanner('🎯 PERFECT GOLD SKILL SHOT! +1,500 PTS + MULTIPLIER UP + SHIELD LIT!');
+      } else {
+        st.score += 250;
+        setHudScore(st.score);
+        setHudBanner(`🚀 SILVER BALL LAUNCHED ON ${st.table.name.toUpperCase()}!`);
+      }
     }
   }, [setHudBanner]);
+
+  const nudgeTable = useCallback(() => {
+    const st = stateRef.current;
+    if (!st || st.gameOver || st.tiltTicks > 0) return;
+    const activePlayBalls = st.balls.filter((b) => !b.inShooter);
+    if (activePlayBalls.length === 0) return;
+
+    sfx.playPinballNudge?.();
+    st.shakeTicks = 10;
+    st.nudgeHeat += 42;
+
+    if (st.nudgeHeat >= 105) {
+      st.tiltTicks = 135; // 2.25 sec flipper lock warning
+      st.leftDown = false;
+      st.rightDown = false;
+      sfx.playDamageGong();
+      setHudBanner('🚨 TILT OVERLOAD! FLIPPERS LOCKED FOR 2 SECONDS — EASY ON THE CABINET!');
+      return;
+    }
+
+    activePlayBalls.forEach((b) => {
+      b.vy -= 3.4;
+      b.vx += (174 - b.x) * 0.035 + (Math.random() - 0.5) * 1.8;
+    });
+    setHudBanner(
+      st.nudgeHeat >= 65
+        ? '⚠️ CABINET NUDGED! CAREFUL — ONE MORE NUDGE WILL TILT!'
+        : '💥 CABINET NUDGE! BALL KICKED AWAY FROM DRAIN!'
+    );
+  }, []);
 
   const setFlipperState = useCallback((side, isDown) => {
     const st = stateRef.current;
     if (!st || st.gameOver) return;
+    if (st.tiltTicks > 0 && isDown) return;
     if (side === 'left') {
       if (isDown && !st.leftDown) sfx.playFlipperClick();
       st.leftDown = isDown;
@@ -345,7 +419,7 @@ export default function VegasPinballGame({
     }
   }, []);
 
-  // Keyboard bindings (Left/Right Arrows, A/D, Spacebar to Launch)
+  // Keyboard bindings (Left/Right Arrows, A/D, Spacebar to Launch, Down/N to Nudge)
   useEffect(() => {
     const onKeyDown = (e) => {
       if (e.target && ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
@@ -358,6 +432,9 @@ export default function VegasPinballGame({
       } else if (e.code === 'Space' || e.code === 'ArrowUp') {
         e.preventDefault();
         launchPlunger();
+      } else if (e.code === 'ArrowDown' || e.code === 'KeyN' || e.code === 'KeyW') {
+        e.preventDefault();
+        nudgeTable();
       }
     };
     const onKeyUp = (e) => {
@@ -373,7 +450,7 @@ export default function VegasPinballGame({
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
     };
-  }, [setFlipperState, launchPlunger]);
+  }, [setFlipperState, launchPlunger, nudgeTable]);
 
   // Main 60fps Canvas Physics & Fast Layered-Alpha Neon Renderer
   useEffect(() => {
@@ -402,16 +479,56 @@ export default function VegasPinballGame({
       }
     };
 
-    const addPoints = (st, basePts, fxX, fxY, label = null, color = '#facc15') => {
-      const pts = Math.round(basePts * st.multiplier);
+    const addPoints = (st, basePts, fxX, fxY, label = null, color = '#facc15', isMajorHit = false) => {
+      const feverMult = st.feverTicks > 0 ? 2 : 1;
+      const pts = Math.round(basePts * st.multiplier * feverMult);
       st.score += pts;
       setHudScore(st.score);
-      if (fxX !== undefined && fxY !== undefined && st.floatTexts.length < 10) {
+
+      if (isMajorHit) {
+        st.comboCount += 1;
+        st.comboTimer = 210; // 3.5 seconds to keep chain alive
+        setHudCombo(st.comboCount);
+
+        if (st.comboCount > 0 && st.comboCount % 6 === 0 && st.feverTicks <= 0) {
+          st.feverTicks = 660; // 11 seconds of 2x Fever Overdrive + Auto Ball Saver!
+          st.drainShield = true;
+          setHudShield(true);
+          setHudFever(true);
+          sfx.playLightningStrike?.();
+          setHudBanner('🌈 6× COMBO! NEON FEVER OVERDRIVE ACTIVATED (2× POINTS + AUTO BALL SAVER)!');
+        }
+
+        st.missionProgress += 1;
+        if (st.missionProgress >= st.missionGoal) {
+          st.missionProgress = 0;
+          st.missionsCleared += 1;
+          const missionBonus = 3500 * st.multiplier;
+          st.score += missionBonus;
+          st.drainShield = true;
+          setHudScore(st.score);
+          setHudShield(true);
+          sfx.playJackpot();
+          st.floatTexts.push({
+            x: 174,
+            y: 205,
+            text: `🏆 MISSION CLEAR +${missionBonus}!`,
+            color: '#4ade80',
+            life: 44
+          });
+          setHudBanner(
+            `🏆 ${st.table.name.toUpperCase()} MISSION CLEARED! +${missionBonus.toLocaleString()} PTS + SHIELD!`
+          );
+        }
+        setHudMission({ cur: st.missionProgress, goal: st.missionGoal });
+      }
+
+      if (fxX !== undefined && fxY !== undefined && st.floatTexts.length < 12) {
         st.floatTexts.push({
           x: fxX,
           y: fxY,
-          text: label || `+${pts}`,
-          color,
+          text: label || `+${pts}${feverMult > 1 ? '🔥' : ''}`,
+          color: feverMult > 1 ? '#facc15' : color,
           life: 28
         });
       }
@@ -484,6 +601,28 @@ export default function VegasPinballGame({
       st.tick += 1;
       if (st.portalCooldown > 0) st.portalCooldown -= 1;
       if (st.sinkCooldown > 0) st.sinkCooldown -= 1;
+      if (st.shakeTicks > 0) st.shakeTicks -= 1;
+      if (st.tiltTicks > 0) st.tiltTicks -= 1;
+      if (st.nudgeHeat > 0) st.nudgeHeat = Math.max(0, st.nudgeHeat - 0.35);
+      if (st.mysteryTicks > 0) st.mysteryTicks -= 1;
+
+      // Oscillate Skill Shot Plunger Gauge (0..100)
+      st.skillGauge = Math.round(50 + Math.sin(st.tick * 0.095) * 50);
+
+      // Update Combo Chain & Neon Fever Overdrive timers
+      if (st.comboTimer > 0) {
+        st.comboTimer -= 1;
+        if (st.comboTimer === 0 && st.comboCount > 0) {
+          st.comboCount = 0;
+          setHudCombo(0);
+        }
+      }
+      if (st.feverTicks > 0) {
+        st.feverTicks -= 1;
+        if (st.feverTicks === 0) {
+          setHudFever(false);
+        }
+      }
 
       const tbl = st.table;
 
@@ -646,7 +785,7 @@ export default function VegasPinballGame({
               st.bumperFlashes[idx] = 10;
               sfx.playPinballBumper(idx % 4);
               spawnNeonImpact(st, bx, by, bmp.color, bmp.r + 22);
-              addPoints(st, bmp.pts, bx, by - bmp.r, null, bmp.color);
+              addPoints(st, bmp.pts, bx, by - bmp.r, null, bmp.color, sub === 0);
             }
           });
 
@@ -666,7 +805,7 @@ export default function VegasPinballGame({
               b.vy = uy * 8.6;
               sfx.playMetalPipe();
               spawnNeonImpact(st, st.movingX, mb.y, mb.color, mb.r + 22);
-              addPoints(st, mb.pts, st.movingX, mb.y - 16, `+${mb.pts * st.multiplier}!`, mb.color);
+              addPoints(st, mb.pts, st.movingX, mb.y - 16, `+${mb.pts * st.multiplier}!`, mb.color, sub === 0);
             }
           }
         }
@@ -770,7 +909,7 @@ export default function VegasPinballGame({
             }
           }
 
-          // 5. Jackpot / Shark / Reactor Sinkhole
+          // 5. Jackpot / Shark / Reactor Sinkhole + Mystery Vault Bonus
           if (tbl.sinkhole && st.sinkCooldown <= 0) {
             const sk = tbl.sinkhole;
             if (Math.hypot(b.x - sk.x, b.y - sk.y) < sk.r + 4) {
@@ -780,7 +919,29 @@ export default function VegasPinballGame({
               b.vy = Math.sin(angle) * 8.5;
               sfx.playJackpot();
               spawnNeonImpact(st, sk.x, sk.y, '#facc15', 44);
-              addPoints(st, 1100, sk.x, sk.y, `💥 ${sk.label} +1100!`, '#facc15');
+              addPoints(st, 1100, sk.x, sk.y, `💥 ${sk.label} +1100!`, '#facc15', true);
+
+              // Mystery Vault Random Bonus!
+              const mysteryPrizes = [
+                '🌈 FEVER OVERDRIVE!',
+                '⚡ +1× MULTIPLIER!',
+                '💎 +2000 MYSTERY JACKPOT!',
+                '🚨 2-BALL FRENZY!'
+              ];
+              const pickPrize = mysteryPrizes[Math.floor(Math.random() * mysteryPrizes.length)];
+              st.mysteryText = pickPrize;
+              st.mysteryTicks = 130;
+              if (pickPrize.includes('FEVER')) {
+                st.feverTicks = 600;
+                setHudFever(true);
+              } else if (pickPrize.includes('MULTIPLIER')) {
+                st.multiplier = Math.min(5, st.multiplier + 1);
+                setHudMultiplier(st.multiplier);
+              } else if (pickPrize.includes('2000')) {
+                st.score += 2000;
+                setHudScore(st.score);
+              }
+
               if (st.balls.length + spawnedMultiballs.length < 2) {
                 spawnedMultiballs.push({
                   id: Date.now() + Math.random(),
@@ -791,7 +952,9 @@ export default function VegasPinballGame({
                   inShooter: false,
                   trail: []
                 });
-                setHudBanner(`🎰 ${sk.label} 2-BALL FRENZY UNLOCKED!`);
+                setHudBanner(`🎰 ${sk.label} MYSTERY VAULT: ${pickPrize} + MULTIBALL!`);
+              } else {
+                setHudBanner(`🎰 ${sk.label} MYSTERY VAULT AWARDED: ${pickPrize}`);
               }
             }
           }
@@ -805,18 +968,23 @@ export default function VegasPinballGame({
           });
         }
 
-        // Check Bottom Drain
+        // Check Bottom Drain (Saved by Plasma Drain Shield OR active Fever Overdrive!)
         if (b.y > H - 10) {
-          if (st.drainShield && !b.inShooter) {
-            // Plasma Drain Shield saves the ball!
-            st.drainShield = false;
-            setHudShield(false);
+          if ((st.drainShield || st.feverTicks > 0) && !b.inShooter) {
+            if (st.feverTicks <= 0) {
+              st.drainShield = false;
+              setHudShield(false);
+            }
             b.y = H - 36;
-            b.vy = -11.8;
-            b.vx = (Math.random() - 0.5) * 4;
+            b.vy = -12.1;
+            b.vx = (Math.random() - 0.5) * 4.5;
             sfx.playAlienBeam();
-            spawnNeonImpact(st, b.x, H - 28, '#00f3ff', 42);
-            setHudBanner('🛡️ PLASMA DRAIN SHIELD SAVED YOUR BALL!');
+            spawnNeonImpact(st, b.x, H - 28, st.feverTicks > 0 ? '#facc15' : '#00f3ff', 42);
+            setHudBanner(
+              st.feverTicks > 0
+                ? '🌈 NEON FEVER AUTO-SAVER REBOUNDED YOUR BALL!'
+                : '🛡️ PLASMA DRAIN SHIELD SAVED YOUR BALL!'
+            );
           } else {
             drained = true;
           }
@@ -952,27 +1120,75 @@ export default function VegasPinballGame({
       ctx.stroke();
       ctx.restore();
 
-      // Table Neon Emblem & Multiplier Readout in Center Ring
-      ctx.fillStyle = tbl.accent;
-      ctx.globalAlpha = 0.32;
-      ctx.font = '900 18px Impact, Arial Black, sans-serif';
+      // Table Neon Emblem, Mission Progress & Fever Overdrive Readout in Center Ring
+      ctx.fillStyle = st.feverTicks > 0 ? '#facc15' : tbl.accent;
+      ctx.globalAlpha = 0.45;
+      ctx.font = '900 16px Impact, Arial Black, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(tbl.name.toUpperCase(), cx, cy + 58);
-      ctx.globalAlpha = 0.55;
-      ctx.fillStyle = st.multiplier > 1 ? '#facc15' : '#00f3ff';
-      ctx.font = '900 15px sans-serif';
-      ctx.fillText(`${st.multiplier}× NEON`, cx, cy + 5);
+      ctx.fillText(
+        st.feverTicks > 0 ? '🌈 2× FEVER OVERDRIVE!' : tbl.name.toUpperCase(),
+        cx,
+        cy + 58
+      );
+      ctx.globalAlpha = 0.78;
+      ctx.fillStyle = st.feverTicks > 0 ? '#fde047' : st.multiplier > 1 ? '#facc15' : '#00f3ff';
+      ctx.font = '900 14px sans-serif';
+      ctx.fillText(
+        st.comboCount > 1
+          ? `🔥 ${st.comboCount}× COMBO • ${st.multiplier}×`
+          : `${st.multiplier}× NEON`,
+        cx,
+        cy - 2
+      );
+      ctx.font = '900 10px sans-serif';
+      ctx.fillStyle = '#4ade80';
+      ctx.fillText(`🎯 MISSION: ${st.missionProgress}/${st.missionGoal}`, cx, cy + 14);
+      if (st.mysteryTicks > 0 && st.mysteryText) {
+        ctx.fillStyle = '#facc15';
+        ctx.font = '900 11px sans-serif';
+        ctx.fillText(st.mysteryText, cx, cy - 22);
+      }
+      if (st.tiltTicks > 0) {
+        ctx.fillStyle = '#ef4444';
+        ctx.font = '900 16px Impact, sans-serif';
+        ctx.fillText('🚨 TILT! FLIPPERS LOCKED!', cx, 260);
+      }
       ctx.globalAlpha = 1;
 
-      // 1d. Sequential Animated Neon Chase Chevrons in Shooter Lane & Inlanes
-      const chasePhase = Math.floor(st.tick / 6) % 6;
-      for (let i = 0; i < 6; i++) {
-        const lit = i === 5 - chasePhase;
-        const ay = 165 + i * 52;
-        ctx.fillStyle = lit ? '#00f3ff' : 'rgba(236, 72, 153, 0.28)';
-        ctx.font = '900 12px sans-serif';
+      // 1d. Sequential Animated Neon Chase Chevrons + Skill Shot Power Meter in Shooter Lane
+      const hasBallInShooter = st.balls.some((b) => b.inShooter && Math.abs(b.vy) < 1.5);
+      if (hasBallInShooter) {
+        // Draw Live Skill Shot Timing Bar at x=358..376, y=380..465
+        const barX = 359;
+        const barY = 375;
+        const barW = 16;
+        const barH = 88;
+        ctx.fillStyle = 'rgba(5, 8, 20, 0.85)';
+        ctx.fillRect(barX, barY, barW, barH);
+        // Gold Sweet Spot Zone (top 66%..96% -> y from top)
+        ctx.fillStyle = 'rgba(250, 204, 21, 0.38)';
+        ctx.fillRect(barX + 1, barY + 4, barW - 2, 26);
+        const fillH = Math.round((st.skillGauge / 100) * barH);
+        const inGold = st.skillGauge >= 66 && st.skillGauge <= 96;
+        ctx.fillStyle = inGold ? '#facc15' : '#00f3ff';
+        ctx.fillRect(barX + 2, barY + barH - fillH, barW - 4, fillH);
+        ctx.strokeStyle = inGold ? '#ffffff' : '#ec4899';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(barX, barY, barW, barH);
+        ctx.fillStyle = '#fde047';
+        ctx.font = '900 8px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('▲', SHOOTER_X + 1, ay);
+        ctx.fillText('SKILL', SHOOTER_X + 1, barY - 4);
+      } else {
+        const chasePhase = Math.floor(st.tick / 6) % 6;
+        for (let i = 0; i < 6; i++) {
+          const lit = i === 5 - chasePhase;
+          const ay = 165 + i * 52;
+          ctx.fillStyle = lit ? '#00f3ff' : 'rgba(236, 72, 153, 0.28)';
+          ctx.font = '900 12px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('▲', SHOOTER_X + 1, ay);
+        }
       }
       // Center jackpot directional neon chevrons
       for (let i = 0; i < 3; i++) {
@@ -1233,10 +1449,11 @@ export default function VegasPinballGame({
       ctx.lineWidth = 2;
       ctx.strokeRect(356, 512, 22, 34);
 
-      // Plasma Drain Shield Laser across Bottom Gap
-      if (st.drainShield) {
-        ctx.globalAlpha = 0.3;
-        ctx.strokeStyle = '#00f3ff';
+      // Plasma Drain Shield OR Rainbow Fever Auto-Saver Laser across Bottom Gap
+      if (st.drainShield || st.feverTicks > 0) {
+        const laserCol = st.feverTicks > 0 ? '#facc15' : '#00f3ff';
+        ctx.globalAlpha = 0.35;
+        ctx.strokeStyle = laserCol;
         ctx.lineWidth = 11;
         ctx.beginPath();
         ctx.moveTo(106, H - 22);
@@ -1404,7 +1621,7 @@ export default function VegasPinballGame({
         </div>
 
         {/* 3. DIGITAL VFD SCOREBOARD */}
-        <div className="tm-pin2-hud">
+        <div className="tm-pin2-hud" style={{ gridTemplateColumns: 'repeat(6, 1fr)' }}>
           <div className="tm-pin2-stat">
             <span>SCORE</span>
             <strong>{hudScore.toLocaleString()}</strong>
@@ -1415,17 +1632,31 @@ export default function VegasPinballGame({
           </div>
           <div className="tm-pin2-stat">
             <span>MULT</span>
-            <strong style={{ color: '#facc15' }}>{hudMultiplier}×</strong>
+            <strong style={{ color: hudFever ? '#facc15' : '#fde047' }}>
+              {hudMultiplier}×{hudFever ? '🔥' : ''}
+            </strong>
+          </div>
+          <div className="tm-pin2-stat">
+            <span>COMBO</span>
+            <strong style={{ color: hudCombo >= 4 ? '#f472b6' : '#38bdf8' }}>
+              {hudFever ? '🌈FEVER' : `${hudCombo}×`}
+            </strong>
+          </div>
+          <div className="tm-pin2-stat">
+            <span>MISSION</span>
+            <strong style={{ color: '#4ade80' }}>
+              {hudMission.cur}/{hudMission.goal}
+            </strong>
           </div>
           <div className="tm-pin2-stat">
             <span>SHIELD</span>
-            <strong style={{ color: hudShield ? '#00f3ff' : '#64748b' }}>
-              {hudShield ? '🛡️ ON' : 'OFF'}
+            <strong style={{ color: hudShield || hudFever ? '#00f3ff' : '#64748b' }}>
+              {hudShield || hudFever ? '🛡️ ON' : 'OFF'}
             </strong>
           </div>
           <div className="tm-pin2-stat">
             <span>BEST</span>
-            <strong style={{ color: '#4ade80' }}>{bestScore.toLocaleString()}</strong>
+            <strong style={{ color: '#facc15' }}>{bestScore.toLocaleString()}</strong>
           </div>
         </div>
 
@@ -1520,13 +1751,25 @@ export default function VegasPinballGame({
             ◀ LEFT FLIP
           </button>
 
-          <button
-            type="button"
-            className="tm-pin2-launch-btn"
-            onClick={launchPlunger}
-          >
-            🚀 LAUNCH
-          </button>
+          <div style={{ display: 'flex', gap: '5px' }}>
+            <button
+              type="button"
+              className="tm-pin2-launch-btn"
+              style={{ flex: 1 }}
+              onClick={launchPlunger}
+              title="Launch Ball (Time in the Gold Zone for +1,500 Skill Shot!)"
+            >
+              🚀 LAUNCH
+            </button>
+            <button
+              type="button"
+              className="tm-pin2-nudge-btn"
+              onClick={nudgeTable}
+              title="Nudge the table to save a ball heading for the drain! (Don't spam or you'll TILT!)"
+            >
+              💥 NUDGE
+            </button>
+          </div>
 
           <button
             type="button"

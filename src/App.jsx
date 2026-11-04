@@ -43,7 +43,10 @@ import VerticalReelsView from './components/VerticalReelsView';
 import MemeCrushGame from './components/MemeCrushGame';
 import VegasPinballGame from './components/VegasPinballGame';
 import VegasSlotMachine from './components/VegasSlotMachine';
+import VegasBlackjackGame from './components/VegasBlackjackGame';
+import VegasRouletteGame from './components/VegasRouletteGame';
 import MemeStockMarketGame from './components/MemeStockMarketGame';
+import ArcadeAiAssistant from './components/ArcadeAiAssistant';
 import ParticleOverlay from './components/ParticleOverlay';
 import AuthModal from './components/AuthModal';
 import MemeTheaterModal from './components/MemeTheaterModal';
@@ -90,7 +93,7 @@ export default function App() {
   const [viewMode, setViewMode] = useState(() => {
     if (typeof window === 'undefined') return 'feed';
     const mode = new URLSearchParams(window.location.search).get('mode');
-    return ['feed', 'reels', 'slots', 'crush', 'pinball', 'stocks', 'swipe', 'battle'].includes(mode)
+    return ['feed', 'reels', 'blackjack', 'roulette', 'slots', 'crush', 'pinball', 'stocks', 'swipe', 'battle'].includes(mode)
       ? mode
       : 'feed';
   });
@@ -191,8 +194,9 @@ export default function App() {
     }
   });
 
-  // Phase 8 & 9: Rewards Vault, Wheel of Chaos, Daily Quests, AI Roast & Boss Key State
+  // Phase 8 & 9: Rewards Vault, Wheel of Chaos, Daily Quests, AI Roast, AI Copilot & Boss Key State
   const [showRewardsModal, setShowRewardsModal] = useState(false);
+  const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
   const [lootSpins, setLootSpins] = useState(() =>
     Math.min(
       ARCADE_RATE_LIMITS.MAX_STORED_WHEEL_SPINS,
@@ -519,7 +523,7 @@ export default function App() {
     () => computeXpConversionState(xp, xpConverted, tokenLedger),
     [xp, xpConverted, tokenLedger]
   );
-  const isFixedArcadeGame = ['slots', 'crush', 'pinball', 'stocks'].includes(viewMode);
+  const isFixedArcadeGame = ['blackjack', 'roulette', 'slots', 'crush', 'pinball', 'stocks'].includes(viewMode);
 
   const addCappedWheelSpins = useCallback((delta = 1) => {
     setLootSpins((prev) =>
@@ -798,11 +802,11 @@ export default function App() {
    * Verified Staked Game Payout Helper (Only pays out when real tokens were staked/invested!)
    */
   const handlePayoutGameTokens = useCallback(
-    (rawPayout, { stakedTokens = 0, xp: xpGain = 20, label = '', emoji = '🪙' } = {}) => {
+    (rawPayout, { stakedTokens = 0, xp: xpGain = 20, label = '', emoji = '🪙', maxMultiplier = 160 } = {}) => {
       const verified = validateStakedGamePayout({
         stakedTokens,
         rawPayout,
-        maxMultiplier: 55
+        maxMultiplier
       });
       if (verified <= 0) return 0;
       tokensRef.current += verified;
@@ -2841,6 +2845,26 @@ export default function App() {
           <nav className="tm-fixed-game-pills" aria-label="Switch Arcade Game">
             <button
               type="button"
+              className={`tm-fixed-game-pill ${viewMode === 'blackjack' ? 'active' : ''}`}
+              onClick={() => {
+                sfx.playCardDeal();
+                setViewMode('blackjack');
+              }}
+            >
+              🃏 21&apos;s
+            </button>
+            <button
+              type="button"
+              className={`tm-fixed-game-pill ${viewMode === 'roulette' ? 'active' : ''}`}
+              onClick={() => {
+                sfx.playRouletteSpin();
+                setViewMode('roulette');
+              }}
+            >
+              🎡 Roulette
+            </button>
+            <button
+              type="button"
               className={`tm-fixed-game-pill ${viewMode === 'slots' ? 'active' : ''}`}
               onClick={() => {
                 sfx.playToggle();
@@ -2892,6 +2916,17 @@ export default function App() {
               title="Open Token Wallet & Daily Quests"
             >
               🪙 <strong>{tokens}</strong>
+            </button>
+            <button
+              type="button"
+              className={`tm-fixed-icon-btn ${aiAssistantOpen ? 'active' : ''}`}
+              onClick={() => {
+                sfx.playAiAssistantChime();
+                setAiAssistantOpen((prev) => !prev);
+              }}
+              title="Open CYBER-ORACLE '86 AI Assistant & Strategy Advisor"
+            >
+              🤖
             </button>
             <button
               type="button"
@@ -3014,6 +3049,11 @@ export default function App() {
             }}
             canGoBack={activeNavDepth > 0}
             onNavigateBack={handleNavigateBack}
+            aiAssistantOpen={aiAssistantOpen}
+            onToggleAiAssistant={() => {
+              sfx.playAiAssistantChime();
+              setAiAssistantOpen((prev) => !prev);
+            }}
           />
 
           {/* PHASE 1: MEME-FIRST MODE SWITCHER, DISCOVERY TABS & SEARCH */}
@@ -3051,6 +3091,28 @@ export default function App() {
               <span className="tm-mode-divider" aria-hidden="true">
                 🕹️ TOKEN GAMES:
               </span>
+              <button
+                type="button"
+                className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'blackjack' ? 'active' : ''}`}
+                onClick={() => {
+                  sfx.playCardDeal();
+                  setViewMode('blackjack');
+                }}
+                title="Play Neon 21's Blackjack vs Dealer Bot '86 (Split, Double Down, 5-Card Charlie & AI Visor)!"
+              >
+                🃏 Neon 21&apos;s <span className="tm-mode-hot-badge">NEW</span>
+              </button>
+              <button
+                type="button"
+                className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'roulette' ? 'active' : ''}`}
+                onClick={() => {
+                  sfx.playRouletteSpin();
+                  setViewMode('roulette');
+                }}
+                title="Spin Neon Lightning Roulette '86 with 150x Lightning Numbers!"
+              >
+                🎡 Roulette <span className="tm-mode-hot-badge">150×</span>
+              </button>
               <button
                 type="button"
                 className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'slots' ? 'active' : ''}`}
@@ -3363,17 +3425,37 @@ export default function App() {
                   />
                   {idx === 3 && (
                     <article className="tm-card tm-infeed-arcade-card" aria-label="Side Entertainment Arcade Break">
-                      <div className="tm-infeed-arcade-badge">🕹️ 80s NEON TOKEN ARCADE</div>
-                      <div style={{ fontSize: '34px', margin: '6px 0' }}>🎰📈🍬🎱</div>
+                      <div className="tm-infeed-arcade-badge">🕹️ 80s NEON TOKEN ARCADE &amp; CASINO</div>
+                      <div style={{ fontSize: '34px', margin: '6px 0' }}>🃏🎡🎰📈🍬🎱</div>
                       <h3 style={{ margin: '0 0 6px', fontSize: '18px', color: '#facc15' }}>
-                        READY TO GAMBLE OR INVEST YOUR MEME TOKENS?
+                        READY TO PLAY NEON 21&apos;S, LIGHTNING ROULETTE &amp; ARCADE CABINETS?
                       </h3>
                       <p style={{ margin: '0 0 12px', fontSize: '12.5px', color: '#cbd5e1', lineHeight: 1.5 }}>
-                        Pull the <strong>🎰 One-Arm Bandit</strong>, trade meme stonks on{' '}
-                        <strong>📈 MEMEDAQ &apos;86</strong>, conquer 10 levels of <strong>🍬 Meme Crush</strong>, or play 5 tables of{' '}
-                        <strong>🎱 80s Pinball</strong>!
+                        Challenge Dealer Bot &apos;86 in <strong>🃏 Neon 21&apos;s Blackjack</strong>, spin{' '}
+                        <strong>🎡 Lightning Roulette (150×)</strong>, pull the <strong>🎰 One-Arm Bandit</strong>, trade{' '}
+                        <strong>📈 MEMEDAQ &apos;86</strong>, or fire up <strong>🎱 Upgraded 80s Pinball</strong>!
                       </p>
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          className="tm-btn tm-btn-primary"
+                          onClick={() => {
+                            sfx.playCardDeal();
+                            setViewMode('blackjack');
+                          }}
+                        >
+                          🃏 Neon 21&apos;s
+                        </button>
+                        <button
+                          type="button"
+                          className="tm-btn tm-btn-primary"
+                          onClick={() => {
+                            sfx.playRouletteSpin();
+                            setViewMode('roulette');
+                          }}
+                        >
+                          🎡 Lightning Roulette
+                        </button>
                         <button
                           type="button"
                           className="tm-btn tm-btn-primary"
@@ -3475,6 +3557,93 @@ export default function App() {
               </h2>
             </div>
             <div className="tm-arcade-steer-grid tm-arcade-steer-grid-4">
+              {/* Cabinet 0A: Neon 21's Cyber-Blackjack */}
+              <div
+                className="tm-arcade-steer-card tm-steer-blackjack"
+                onClick={() => {
+                  sfx.playCardDeal();
+                  setViewMode('blackjack');
+                }}
+              >
+                <div className="tm-arcade-steer-top">
+                  <span className="tm-arcade-steer-pill">🃏 NEON 21&apos;S • SPLIT / DOUBLE / 5-CARD CHARLIE</span>
+                  <span className="tm-arcade-steer-best">
+                    🏆 Best: {Number(localStorage.getItem('tm_blackjack_highscore') || 0).toLocaleString()} pts
+                  </span>
+                </div>
+                <div className="tm-arcade-steer-body">
+                  <div className="tm-arcade-steer-icons">🃏🂡🥽🔥</div>
+                  <div>
+                    <h3 className="tm-arcade-steer-title">NEON 21&apos;S — CYBER BLACKJACK</h3>
+                    <p className="tm-arcade-steer-desc">
+                      Face <strong>Dealer Bot &apos;86</strong> with 3D holographic neon cards! Features{' '}
+                      <strong>Double Down</strong>, <strong>Split Pairs</strong>,{' '}
+                      <strong>5-Card Charlie (3× Auto-Win)</strong>, <strong>Perfect Pair + 21+3 Side Bets</strong> &amp; a live{' '}
+                      <strong>🥽 Cyber-Visor AI Strategy Advisor</strong>!
+                    </p>
+                  </div>
+                </div>
+                <div className="tm-arcade-steer-footer">
+                  <span className="tm-arcade-steer-payout">
+                    🪙 Wager 5–50 Tokens (3:2 Blackjack • Up to 15× Side Bet) or Free Practice
+                  </span>
+                  <button
+                    type="button"
+                    className="tm-btn tm-btn-primary tm-arcade-steer-cta"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      sfx.playCardDeal();
+                      setViewMode('blackjack');
+                    }}
+                  >
+                    ▶ Deal Neon 21&apos;s
+                  </button>
+                </div>
+              </div>
+
+              {/* Cabinet 0B: Neon Lightning Roulette '86 */}
+              <div
+                className="tm-arcade-steer-card tm-steer-roulette"
+                onClick={() => {
+                  sfx.playRouletteSpin();
+                  setViewMode('roulette');
+                }}
+              >
+                <div className="tm-arcade-steer-top">
+                  <span className="tm-arcade-steer-pill">🎡 LIGHTNING ROULETTE &apos;86 • 50× TO 150× STRIKES</span>
+                  <span className="tm-arcade-steer-best">
+                    🏆 Best: {Number(localStorage.getItem('tm_roulette_highscore') || 0).toLocaleString()} pts
+                  </span>
+                </div>
+                <div className="tm-arcade-steer-body">
+                  <div className="tm-arcade-steer-icons">🎡⚡🔴⚫</div>
+                  <div>
+                    <h3 className="tm-arcade-steer-title">NEON LIGHTNING ROULETTE &apos;86</h3>
+                    <p className="tm-arcade-steer-desc">
+                      60fps European 37-pocket physics wheel with real ball orbit &amp; pocket rattle! Every spin strikes{' '}
+                      <strong>3 Random ⚡ Lightning Numbers</strong> boosting straight-up payouts to{' '}
+                      <strong>50×, 75×, 100×, or 150×</strong>!
+                    </p>
+                  </div>
+                </div>
+                <div className="tm-arcade-steer-footer">
+                  <span className="tm-arcade-steer-payout">
+                    🪙 Stack 1–25 Token Chips • 1-Tap Lucky 7s &amp; Lightning Presets
+                  </span>
+                  <button
+                    type="button"
+                    className="tm-btn tm-btn-primary tm-arcade-steer-cta"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      sfx.playRouletteSpin();
+                      setViewMode('roulette');
+                    }}
+                  >
+                    ▶ Spin Roulette Wheel
+                  </button>
+                </div>
+              </div>
+
               {/* Cabinet 1: Authentic Las Vegas One-Arm Bandit 777 Slot Machine */}
               <div
                 className="tm-arcade-steer-card tm-steer-slots"
@@ -3611,7 +3780,7 @@ export default function App() {
                 }}
               >
                 <div className="tm-arcade-steer-top">
-                  <span className="tm-arcade-steer-pill">🎱 5 PINBALL TABLES • WORMHOLES &amp; BOSSES</span>
+                  <span className="tm-arcade-steer-pill">🎱 5 PINBALL TABLES • SKILL SHOT, NUDGE &amp; FEVER</span>
                   <span className="tm-arcade-steer-best">
                     🏆 Best: {Number(localStorage.getItem('tm_pinball_highscore') || 0).toLocaleString()} pts
                   </span>
@@ -3619,11 +3788,11 @@ export default function App() {
                 <div className="tm-arcade-steer-body">
                   <div className="tm-arcade-steer-icons">🎱🏎️👾🦈</div>
                   <div>
-                    <h3 className="tm-arcade-steer-title">80s CYBER-PINBALL (5 TABLES)</h3>
+                    <h3 className="tm-arcade-steer-title">UPGRADED 80s CYBER-PINBALL (5 TABLES)</h3>
                     <p className="tm-arcade-steer-desc">
-                      Play <strong>Vegas Strip &apos;85</strong>, <strong>Outrun Highway</strong>,{' '}
-                      <strong>Invader Grid</strong>, <strong>Miami Lagoon</strong> &amp;{' '}
-                      <strong>Cosmic Reactor Boss</strong>!
+                      Now upgraded with an oscillating <strong>🎯 Skill Shot Plunger</strong>,{' '}
+                      <strong>💥 Cabinet Nudge &amp; Tilt</strong>, <strong>🔥 6× Combo Neon Fever Overdrive</strong>,{' '}
+                      <strong>🏆 Table Boss Missions</strong> &amp; <strong>🎰 Mystery Vault Sinkholes</strong>!
                     </p>
                   </div>
                 </div>
@@ -3647,6 +3816,42 @@ export default function App() {
             </div>
           </section>
         </>
+      )}
+
+      {/* FIXED ARCADE GAME 0A: NEON 21'S CYBER-BLACKJACK */}
+      {viewMode === 'blackjack' && (
+        <VegasBlackjackGame
+          tokens={tokens}
+          onSpendTokens={handleSpendTokens}
+          onPayoutTokens={handlePayoutGameTokens}
+          onOpenUpload={() => {
+            sfx.playToggle();
+            setViewMode('feed');
+            handleOpenBlankStudio();
+          }}
+          onBackToFeed={() => {
+            sfx.playToggle();
+            setViewMode('feed');
+          }}
+        />
+      )}
+
+      {/* FIXED ARCADE GAME 0B: NEON LIGHTNING ROULETTE '86 */}
+      {viewMode === 'roulette' && (
+        <VegasRouletteGame
+          tokens={tokens}
+          onSpendTokens={handleSpendTokens}
+          onPayoutTokens={handlePayoutGameTokens}
+          onOpenUpload={() => {
+            sfx.playToggle();
+            setViewMode('feed');
+            handleOpenBlankStudio();
+          }}
+          onBackToFeed={() => {
+            sfx.playToggle();
+            setViewMode('feed');
+          }}
+        />
       )}
 
       {/* FIXED ARCADE GAME 1: CLASSIC LAS VEGAS ONE-ARM BANDIT 777 SLOT MACHINE */}
@@ -3872,6 +4077,52 @@ export default function App() {
             }
           }}
           onNavigateBack={handleNavigateBack}
+          onToggleAiAssistant={() => {
+            sfx.playAiAssistantChime();
+            setAiAssistantOpen((prev) => !prev);
+          }}
+        />
+      )}
+
+      {/* PHASE 21: CYBER-ORACLE '86 — INTERACTIVE AI ASSISTANT & PROACTIVE STRATEGY COPILOT */}
+      {!bossKeyActive && (
+        <ArcadeAiAssistant
+          isOpen={aiAssistantOpen}
+          onToggleOpen={(val) => {
+            if (typeof val === 'boolean') {
+              setAiAssistantOpen(val);
+            } else {
+              setAiAssistantOpen((prev) => !prev);
+            }
+          }}
+          tokens={tokens}
+          xp={xp}
+          currentRank={currentRank}
+          tokenLedger={tokenLedger}
+          xpConversionState={xpConversionState}
+          unclaimedRewardsCount={unclaimedRewardsCount}
+          pioneerBonusAvailable={pioneerBonusAvailable}
+          payphoneClaimedToday={payphoneClaimedToday}
+          pinataClaimedToday={pinataClaimedToday}
+          viewMode={viewMode}
+          memes={memes}
+          onSelectViewMode={(mode) => {
+            sfx.playToggle();
+            closeAllModals();
+            setViewMode(mode);
+          }}
+          onOpenUpload={() => {
+            sfx.playToggle();
+            closeAllModals();
+            handleOpenBlankStudio();
+          }}
+          onOpenRewards={() => {
+            sfx.playToggle();
+            closeAllModals();
+            setShowRewardsModal(true);
+          }}
+          onExchangeXpForTokens={handleExchangeXpForTokens}
+          onClaimPayphoneCoinReturn={handleClaimPayphoneCoinReturn}
         />
       )}
 

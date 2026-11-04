@@ -18,7 +18,31 @@ export default function LeaderboardModal({
   const myPinballHigh = Number(localStorage.getItem('tm_pinball_highscore') || 0);
   const myStocksHigh = Number(localStorage.getItem('tm_stocks_highscore') || 0);
   const mySlotsHigh = Number(localStorage.getItem('tm_slots_best_win') || 0);
+  const myBlackjackHigh = Number(localStorage.getItem('tm_blackjack_highscore') || 0);
+  const myRouletteHigh = Number(localStorage.getItem('tm_roulette_highscore') || 0);
   const myHandle = currentUser?.username || 'You (Arcade Player)';
+
+  const blackjackRankings = useMemo(() => {
+    const rivals = [
+      { username: 'CyberCardCounter', score: 12400, badge: '🃏 5-Card Charlie Legend' },
+      { username: 'NeonAce_86', score: 8600, badge: '⚡ Natural 21 King' },
+      { username: 'SplitPairQueen', score: 5400, badge: '💎 Perfect Pair Sniper' },
+      { username: 'DoubleDownDog', score: 2900, badge: '🐕 Bold Doubler' },
+      { username: myHandle, score: myBlackjackHigh, badge: '🃏 Your Table Score', isMe: true }
+    ];
+    return rivals.sort((a, b) => b.score - a.score);
+  }, [myBlackjackHigh, myHandle]);
+
+  const rouletteRankings = useMemo(() => {
+    const rivals = [
+      { username: 'LightningZero86', score: 18500, badge: '⚡ 150x Lightning Hit' },
+      { username: 'NeonCroupierPro', score: 11200, badge: '🎡 Lucky 7s Master' },
+      { username: 'RedBlitzWhale', score: 6800, badge: '🔴 Outside Roller' },
+      { username: 'PocketSniper_X', score: 3400, badge: '🎯 Straight-Up Pro' },
+      { username: myHandle, score: myRouletteHigh, badge: '🎡 Your Wheel Score', isMe: true }
+    ];
+    return rivals.sort((a, b) => b.score - a.score);
+  }, [myRouletteHigh, myHandle]);
 
   const stocksRankings = useMemo(() => {
     const rivals = [
@@ -186,9 +210,99 @@ export default function LeaderboardModal({
           </button>
         </div>
 
-        {/* TAB 0: SUB-GAME HIGH SCORES (STOCKS, SLOTS, MEME CRUSH & VEGAS PINBALL) */}
+        {/* TAB 0: SUB-GAME HIGH SCORES (21'S, ROULETTE, STOCKS, SLOTS, MEME CRUSH & VEGAS PINBALL) */}
         {tab === 'subgames' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
+            {/* Neon 21's Blackjack Column */}
+            <div style={{ background: 'rgba(15, 23, 42, 0.78)', border: '1.5px solid rgba(0, 243, 255, 0.5)', borderRadius: '16px', padding: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '8px' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '16px', color: '#00f3ff' }}>🃏 Neon 21&apos;s Blackjack</h3>
+                  <span style={{ fontSize: '11px', color: '#94a3b8' }}>Your Table Score: {myBlackjackHigh.toLocaleString()} pts</span>
+                </div>
+                {onLaunchSubGame && (
+                  <button
+                    type="button"
+                    className="tm-btn tm-btn-primary"
+                    style={{ padding: '6px 12px', fontSize: '12px' }}
+                    onClick={() => {
+                      onClose();
+                      onLaunchSubGame('blackjack');
+                    }}
+                  >
+                    ▶ Deal 21&apos;s
+                  </button>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {blackjackRankings.map((r, idx) => (
+                  <div
+                    key={`bj-${r.username}-${idx}`}
+                    className={`tm-leaderboard-row ${idx < 3 ? `podium-${idx + 1}` : ''}`}
+                    style={{ padding: '8px 12px' }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span className="tm-medal-badge">{getMedal(idx)}</span>
+                      <div>
+                        <strong style={{ fontSize: '13px', color: r.isMe ? '#4ade80' : '#f8fafc' }}>
+                          @{r.username} {r.isMe ? '(YOU)' : ''}
+                        </strong>
+                        <div style={{ fontSize: '10px', color: '#94a3b8' }}>{r.badge}</div>
+                      </div>
+                    </div>
+                    <strong style={{ color: '#00f3ff', fontSize: '14px' }}>
+                      {r.score.toLocaleString()} pts
+                    </strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Neon Lightning Roulette Column */}
+            <div style={{ background: 'rgba(15, 23, 42, 0.78)', border: '1.5px solid rgba(250, 204, 21, 0.5)', borderRadius: '16px', padding: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '8px' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '16px', color: '#facc15' }}>🎡 Lightning Roulette &apos;86</h3>
+                  <span style={{ fontSize: '11px', color: '#94a3b8' }}>Your Wheel Score: {myRouletteHigh.toLocaleString()} pts</span>
+                </div>
+                {onLaunchSubGame && (
+                  <button
+                    type="button"
+                    className="tm-btn tm-btn-primary"
+                    style={{ padding: '6px 12px', fontSize: '12px' }}
+                    onClick={() => {
+                      onClose();
+                      onLaunchSubGame('roulette');
+                    }}
+                  >
+                    ▶ Spin Wheel
+                  </button>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {rouletteRankings.map((r, idx) => (
+                  <div
+                    key={`roul-${r.username}-${idx}`}
+                    className={`tm-leaderboard-row ${idx < 3 ? `podium-${idx + 1}` : ''}`}
+                    style={{ padding: '8px 12px' }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span className="tm-medal-badge">{getMedal(idx)}</span>
+                      <div>
+                        <strong style={{ fontSize: '13px', color: r.isMe ? '#4ade80' : '#f8fafc' }}>
+                          @{r.username} {r.isMe ? '(YOU)' : ''}
+                        </strong>
+                        <div style={{ fontSize: '10px', color: '#94a3b8' }}>{r.badge}</div>
+                      </div>
+                    </div>
+                    <strong style={{ color: '#facc15', fontSize: '14px' }}>
+                      {r.score.toLocaleString()} pts
+                    </strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* MEMEDAQ '86 Stock Market Column */}
             <div style={{ background: 'rgba(15, 23, 42, 0.78)', border: '1.5px solid rgba(74, 222, 128, 0.45)', borderRadius: '16px', padding: '14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '8px' }}>

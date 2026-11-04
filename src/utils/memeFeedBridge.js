@@ -93,6 +93,8 @@ export function recordPublishDailyPerk() {
     const cur = raw.date === today ? raw : { date: today };
     cur.pinball = true;
     cur.arena = true;
+    cur.blackjack = true;
+    cur.roulette = true;
     localStorage.setItem(PERK_KEY, JSON.stringify(cur));
   } catch {
     // ignore

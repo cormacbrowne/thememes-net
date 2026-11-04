@@ -8,11 +8,12 @@ export default function MobileArcadeDock({
   onSelectMode,
   onOpenBlankStudio,
   onOpenLeaderboard,
-  onNavigateBack
+  onNavigateBack,
+  onToggleAiAssistant
 }) {
   const [showGamesMenu, setShowGamesMenu] = useState(false);
 
-  const isSideGameActive = ['slots', 'crush', 'pinball', 'stocks', 'battle', 'swipe'].includes(viewMode);
+  const isSideGameActive = ['blackjack', 'roulette', 'slots', 'crush', 'pinball', 'stocks', 'battle', 'swipe'].includes(viewMode);
 
   const handlePickMode = (mode) => {
     setShowGamesMenu(false);
@@ -30,15 +31,46 @@ export default function MobileArcadeDock({
         >
           <div className="tm-dock-games-drawer-head">
             <span>🕹️ SIDE-ENTERTAINMENT ARCADE</span>
-            <button
-              type="button"
-              className="tm-link-btn"
-              onClick={() => setShowGamesMenu(false)}
-            >
-              ✕
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {onToggleAiAssistant && (
+                <button
+                  type="button"
+                  className="tm-btn tm-btn-primary"
+                  style={{ padding: '4px 9px', fontSize: '11px' }}
+                  onClick={() => {
+                    setShowGamesMenu(false);
+                    onToggleAiAssistant();
+                  }}
+                >
+                  🤖 Ask Cyber-AI
+                </button>
+              )}
+              <button
+                type="button"
+                className="tm-link-btn"
+                onClick={() => setShowGamesMenu(false)}
+              >
+                ✕
+              </button>
+            </div>
           </div>
           <div className="tm-dock-games-drawer-grid">
+            <button
+              type="button"
+              className={`tm-dock-game-chip ${viewMode === 'blackjack' ? 'active' : ''}`}
+              onClick={() => handlePickMode('blackjack')}
+            >
+              <span>🃏</span>
+              <strong>Neon 21&apos;s (Blackjack)</strong>
+            </button>
+            <button
+              type="button"
+              className={`tm-dock-game-chip ${viewMode === 'roulette' ? 'active' : ''}`}
+              onClick={() => handlePickMode('roulette')}
+            >
+              <span>🎡</span>
+              <strong>Lightning Roulette</strong>
+            </button>
             <button
               type="button"
               className={`tm-dock-game-chip ${viewMode === 'slots' ? 'active' : ''}`}

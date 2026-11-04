@@ -50,6 +50,14 @@ export function updateDynamicSeo({ activeMeme = null, category = 'all', viewMode
     pageTitle = "MEMEDAQ '86 — Meme Stock Market Simulator | THE MEMES.net Cyber-Arcade";
     pageDesc =
       'Trade hilarious meme stocks ($DOGE, $CHAD, $PEPE, $CATS, $MOON) on the 80s Neon MEMEDAQ Stock Market Simulator using your earned meme tokens!';
+  } else if (viewMode === 'blackjack') {
+    pageTitle = "Neon 21's Blackjack — 80s Cyber Casino Card Game | THE MEMES.net";
+    pageDesc =
+      "Play Neon 21's Blackjack against Dealer Bot '86! Hit, Stand, Double Down, Split Pairs, trigger 5-Card Charlie 3x wins & Perfect Pair side bets!";
+  } else if (viewMode === 'roulette') {
+    pageTitle = "Neon Lightning Roulette '86 — 60fps 80s Casino Wheel | THE MEMES.net";
+    pageDesc =
+      'Spin the 37-pocket 80s Neon Roulette Wheel with Lightning Multipliers up to 150x! Place Straight, Dozen, Red/Black & Quick-Preset bets!';
   } else if (viewMode === 'reels') {
     pageTitle = 'Vertical Meme Reels — Fullscreen Viral Memes | THE MEMES.net';
   } else if (viewMode === 'swipe') {

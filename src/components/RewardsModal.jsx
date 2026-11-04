@@ -295,6 +295,26 @@ export default function RewardsModal({
                 className="tm-btn tm-btn-primary"
                 onClick={() => {
                   onClose();
+                  onLaunchSubGame('blackjack');
+                }}
+              >
+                🃏 Neon 21&apos;s (Blackjack)
+              </button>
+              <button
+                type="button"
+                className="tm-btn tm-btn-primary"
+                onClick={() => {
+                  onClose();
+                  onLaunchSubGame('roulette');
+                }}
+              >
+                🎡 Lightning Roulette
+              </button>
+              <button
+                type="button"
+                className="tm-btn tm-btn-primary"
+                onClick={() => {
+                  onClose();
                   onLaunchSubGame('slots');
                 }}
               >

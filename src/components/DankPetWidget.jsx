@@ -1,9 +1,90 @@
 import { useState, useEffect, useRef } from 'react';
 import { sfx } from '../utils/soundEngine';
 
-const CHAOS_EVENTS = ['pinata', 'boss', 'police', 'jackpot'];
+const CHAOS_EVENTS = ['pinata', 'boss', 'ufo', 'police', 'jackpot'];
 const MAX_TARGET_HP = 8;
 const ESCAPE_DURATION_MS = 7200;
+
+const CHEEKY_BUTTON_LABELS = [
+  'DO NOT PRESS',
+  'I SAID DO NOT!',
+  'STILL PRESSING?!',
+  'ABSOLUTE MADLAD!',
+  'WAIT STOP IT! 💀'
+];
+
+const PAYPHONE_DIRECTORY = [
+  {
+    code: '555-GECKO',
+    label: '📈 555-GECKO (Wall St Tip)',
+    msg: '☎️ GECKO-FROG: "Greed is good, kid! Load up on $STONK & $DOGE before the short squeeze hits MEMEDAQ \'86!" (+25 XP)'
+  },
+  {
+    code: '555-PIZZA',
+    label: '🍕 555-PIZZA (Pizza Rain!)',
+    msg: '☎️ RADICAL PIZZA CO.: "30-second orbital pepperoni drop incoming to your screen right now!" (+20 XP)'
+  },
+  {
+    code: '555-BOSS',
+    label: '💼 555-BOSS (CEO Panic Key)',
+    msg: '☎️ CORPORATE RECEPTION: "Alert! The CEO is walking past your desk! Engaging Enterprise Spreadsheet Camouflage!"'
+  },
+  {
+    code: '555-RAVE',
+    label: '🕺 555-RAVE (Synth Rave FX)',
+    msg: '☎️ DJ SYNTH-86: "Dropping 1986 neon laser overdrive across the entire arcade! (Tap again to clear)" (+20 XP)'
+  },
+  {
+    code: '555-UFO86',
+    label: '🛸 555-UFO86 (Area 51 Beam)',
+    msg: '☎️ AREA 51 BUNKER: "Wait—how did you get this number?! UFO tractor beam locked onto your coordinates!"'
+  },
+  {
+    code: '555-ORACLE',
+    label: '🔮 555-ORACLE (80s Fortune)',
+    msg: '☎️ CYBER-ORACLE \'86: "Your next meme upload will go platinum, and Triple 777s await your next pull!" (+25 XP)'
+  }
+];
+
+function playDtmfTone(digit) {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = sfx.ctx || new AudioCtx();
+    sfx.ctx = ctx;
+    if (ctx.state === 'suspended') ctx.resume();
+    const dtmfMap = {
+      '1': [697, 1209],
+      '2': [697, 1336],
+      '3': [697, 1477],
+      '4': [770, 1209],
+      '5': [770, 1336],
+      '6': [770, 1477],
+      '7': [852, 1209],
+      '8': [852, 1336],
+      '9': [852, 1477],
+      '*': [941, 1209],
+      '0': [941, 1336],
+      '#': [941, 1477]
+    };
+    const freqs = dtmfMap[String(digit)] || [770, 1336];
+    const now = ctx.currentTime;
+    freqs.forEach((f) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(f, now);
+      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.15);
+    });
+  } catch {
+    // Ignore audio context restriction
+  }
+}
 
 function randomArenaPos(prevPos = { x: 50, y: 50 }) {
   let nx = 18 + Math.round(Math.random() * 64);
@@ -21,12 +102,23 @@ export default function DankPetWidget({
   onEarnPetXp,
   onWinPinataReward,
   pinataClaimedToday = false,
+  onClaimPayphoneCoinReturn,
+  payphoneClaimedToday = false,
+  onTriggerBossMode,
+  onLaunchStampede,
+  onChangeChaosMutator,
   memes = [],
   onSelectViewMode
 }) {
   const [minimized, setMinimized] = useState(false);
   const [eventIdx, setEventIdx] = useState(0);
-  const [activeEvent, setActiveEvent] = useState(null); // null | 'pinata' | 'boss' | 'police' | 'jackpot'
+  const [activeEvent, setActiveEvent] = useState(null); // null | 'pinata' | 'boss' | 'ufo' | 'police' | 'jackpot'
+  const [showPayphone, setShowPayphone] = useState(false);
+  const [dialedDigits, setDialedDigits] = useState('1-800-MEME');
+  const [payphoneLineMsg, setPayphoneLineMsg] = useState(
+    '📟 INSERT DIME OR TAP SCRATCHED BOOTH GRAFFITI BELOW TO DIAL SECRET 1986 HOTLINES!'
+  );
+  const [raveActive, setRaveActive] = useState(false);
   const [hp, setHp] = useState(MAX_TARGET_HP);
   const [timeLeftMs, setTimeLeftMs] = useState(ESCAPE_DURATION_MS);
   const [escaped, setEscaped] = useState(false);
@@ -56,7 +148,7 @@ export default function DankPetWidget({
 
   useEffect(() => {
     clearArenaTimers();
-    if (activeEvent !== 'pinata' && activeEvent !== 'boss') return undefined;
+    if (activeEvent !== 'pinata' && activeEvent !== 'boss' && activeEvent !== 'ufo') return undefined;
 
     const startedAt = Date.now();
     timerRef.current = setInterval(() => {
@@ -70,6 +162,8 @@ export default function DankPetWidget({
         setVictoryMsg(
           activeEvent === 'pinata'
             ? '🪅💨 TOO SLOW! The Piñata dodged away with the tokens! (Click directly on it 8x next time!)'
+            : activeEvent === 'ufo'
+            ? '🛸💨 AREA 51 SAUCER WARPED INTO HYPERSPACE! Too slow!'
             : '🗿💨 GIGA-MOAI TELEPORTED AWAY! Too slow!'
         );
       }
@@ -86,7 +180,7 @@ export default function DankPetWidget({
     const today = new Date().toISOString().slice(0, 10);
     const dailyKey = `tm_chaos_btn_xp_${today}`;
     const dailyCount = Number(localStorage.getItem(dailyKey) || 0);
-    if (dailyCount < 3 && onEarnPetXp) {
+    if (dailyCount < 6 && onEarnPetXp) {
       localStorage.setItem(dailyKey, String(dailyCount + 1));
       onEarnPetXp(amount, e, emoji);
     }
@@ -119,6 +213,8 @@ export default function DankPetWidget({
       sfx.playBoing(3);
     } else if (nextEvent === 'boss') {
       sfx.playAnimeShock();
+    } else if (nextEvent === 'ufo') {
+      sfx.playAlienBeam();
     } else if (nextEvent === 'police') {
       sfx.playPoliceSiren();
       awardDailyEventXp(10, e, '🚔');
@@ -133,6 +229,74 @@ export default function DankPetWidget({
         setActiveEvent((curr) => (curr === 'jackpot' ? null : curr));
       }, 3800);
     }
+  };
+
+  const handlePressKeypadDigit = (digit) => {
+    playDtmfTone(digit);
+    setDialedDigits((prev) => {
+      const clean = prev === '1-800-MEME' ? '' : prev;
+      return (clean + digit).slice(-12);
+    });
+  };
+
+  const handleDialSpeedNumber = (entry, e) => {
+    // Play rapid 3-tone dial sequence
+    playDtmfTone('5');
+    setTimeout(() => playDtmfTone('8'), 95);
+    setTimeout(() => playDtmfTone('#'), 190);
+
+    setDialedDigits(entry.code);
+    setPayphoneLineMsg(entry.msg);
+
+    if (entry.code === '555-GECKO') {
+      sfx.playStockBell?.(true);
+      awardDailyEventXp(25, e, '📈');
+    } else if (entry.code === '555-PIZZA') {
+      sfx.playAirhorn();
+      awardDailyEventXp(20, e, '🍕');
+      if (onLaunchStampede) onLaunchStampede('pizza-rain', e);
+    } else if (entry.code === '555-BOSS') {
+      sfx.playToggle();
+      setTimeout(() => {
+        setShowPayphone(false);
+        if (onTriggerBossMode) onTriggerBossMode();
+      }, 550);
+    } else if (entry.code === '555-RAVE') {
+      const nextRave = !raveActive;
+      setRaveActive(nextRave);
+      awardDailyEventXp(20, e, '🕺');
+      if (onChangeChaosMutator) {
+        onChangeChaosMutator(nextRave ? 'rave' : 'none', e);
+      }
+    } else if (entry.code === '555-UFO86') {
+      sfx.playAlienBeam();
+      setShowPayphone(false);
+      setVictoryMsg('');
+      setEscaped(false);
+      setMissFlash(false);
+      setHp(MAX_TARGET_HP);
+      setTimeLeftMs(ESCAPE_DURATION_MS);
+      setTargetPos(randomArenaPos());
+      setActiveEvent('ufo');
+    } else if (entry.code === '555-ORACLE') {
+      sfx.playLevelUp();
+      awardDailyEventXp(25, e, '🔮');
+    }
+  };
+
+  const handleFlickCoinReturn = (e) => {
+    if (payphoneClaimedToday) {
+      sfx.playMetalPipe();
+      setPayphoneLineMsg(
+        '🪙 *CLINK!* Coin return flap is empty right now — check back tomorrow for more forgotten arcade quarters!'
+      );
+      return;
+    }
+    sfx.playJackpot();
+    const tokensWon = onClaimPayphoneCoinReturn ? onClaimPayphoneCoinReturn(e) : 5;
+    setPayphoneLineMsg(
+      `🎉 *CHA-CHING!* Two forgotten 1986 arcade quarters tumbled out of the Coin Return Flap! (+${tokensWon || 5} 🪙 Tokens & +50 XP!)`
+    );
   };
 
   const handleArenaMiss = () => {
@@ -155,6 +319,8 @@ export default function DankPetWidget({
 
     if (activeEvent === 'pinata') {
       sfx.playMetalPipe();
+    } else if (activeEvent === 'ufo') {
+      sfx.playAlienBeam();
     } else {
       sfx.playLaserZap();
     }
@@ -174,6 +340,9 @@ export default function DankPetWidget({
             '🪅 SMASHED! (+20 XP — Daily Piñata token prize already claimed today. Upload a meme for +45 🪙!)'
           );
         }
+      } else if (activeEvent === 'ufo') {
+        awardDailyEventXp(25, e, '🛸');
+        setVictoryMsg('🛸 AREA 51 SAUCER CAPTURED! +25 XP earned!');
       } else {
         awardDailyEventXp(25, e, '🗿');
         setVictoryMsg('💥 GIGA-MOAI DEFEATED! +25 XP earned!');
@@ -194,18 +363,121 @@ export default function DankPetWidget({
           sfx.playToggle();
           setMinimized(false);
         }}
-        title="Restore the 🚨 DO NOT PRESS Chaos Button!"
+        title="Restore the 🚨 DO NOT PRESS Button & 1986 Payphone!"
       >
-        <span>🚨</span>
-        <span>Chaos Btn</span>
+        <span>🚨☎️</span>
+        <span>Chaos Dock</span>
       </button>
     );
   }
 
+  const buttonCaption = CHEEKY_BUTTON_LABELS[eventIdx % CHEEKY_BUTTON_LABELS.length];
+
   return (
     <>
-      {/* INTERACTIVE DODGING PIÑATA & BOSS SKILL MINI-EVENTS */}
-      {(activeEvent === 'pinata' || activeEvent === 'boss') && (
+      {/* 1986 NEON ARCADE PAYPHONE & HACKER HOTLINE MODAL */}
+      {showPayphone && (
+        <div
+          className="tm-chaos-event-overlay"
+          role="dialog"
+          aria-label="1986 Neon Arcade Payphone Hotline"
+          onClick={() => setShowPayphone(false)}
+        >
+          <div
+            className="tm-payphone-booth-card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="tm-payphone-header">
+              <div>
+                <div className="tm-payphone-eyebrow">☎️ BELL CYBER-BOOTH • 1986 COIN-OP LINE</div>
+                <h3 className="tm-payphone-title">1-800-MEME-86 SECRET HOTLINE</h3>
+              </div>
+              <button
+                type="button"
+                className="tm-dank-pet-close"
+                onClick={() => setShowPayphone(false)}
+                title="Hang up Payphone"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* VFD Digital Caller Display */}
+            <div className="tm-payphone-vfd">
+              <div className="tm-payphone-vfd-num">DIALED: {dialedDigits}</div>
+              <div className="tm-payphone-vfd-msg">{payphoneLineMsg}</div>
+              {dialedDigits === '555-GECKO' && onSelectViewMode && (
+                <button
+                  type="button"
+                  className="tm-btn tm-btn-primary"
+                  style={{ marginTop: '6px', padding: '4px 10px', fontSize: '11px' }}
+                  onClick={() => {
+                    setShowPayphone(false);
+                    onSelectViewMode('stocks');
+                  }}
+                >
+                  📈 Open MEMEDAQ &apos;86 Now
+                </button>
+              )}
+            </div>
+
+            <div className="tm-payphone-body-grid">
+              {/* 12-Button Touch-Tone DTMF Musical Keypad */}
+              <div className="tm-payphone-keypad">
+                {['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '#'].map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    className="tm-payphone-key"
+                    onClick={() => handlePressKeypadDigit(d)}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+
+              {/* Scratched Booth Graffiti Speed-Dial Numbers */}
+              <div className="tm-payphone-graffiti">
+                <div className="tm-payphone-graffiti-title">
+                  ✏️ SCRATCHED ON BOOTH WALL (TAP TO DIAL):
+                </div>
+                <div className="tm-payphone-graffiti-list">
+                  {PAYPHONE_DIRECTORY.map((entry) => (
+                    <button
+                      key={entry.code}
+                      type="button"
+                      className={`tm-payphone-speed-btn ${
+                        dialedDigits === entry.code ? 'active' : ''
+                      }`}
+                      onClick={(e) => handleDialSpeedNumber(entry, e)}
+                    >
+                      {entry.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Tactile Chrome Coin Return Flap */}
+            <div className="tm-payphone-coin-return-bar">
+              <button
+                type="button"
+                className={`tm-payphone-coin-flap-btn ${
+                  payphoneClaimedToday ? 'claimed' : 'unclaimed'
+                }`}
+                onClick={handleFlickCoinReturn}
+              >
+                {payphoneClaimedToday
+                  ? '🪙 Coin Return Flap Checked Today (Empty)'
+                  : '🪙 Flick Coin Return Flap (+5 🪙 Forgotten Quarters & +50 XP!)'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* INTERACTIVE DODGING PIÑATA, BOSS & UFO SKILL MINI-EVENTS */}
+      {(activeEvent === 'pinata' || activeEvent === 'boss' || activeEvent === 'ufo') && (
         <div className="tm-chaos-event-overlay" role="dialog" aria-label="Interactive Arcade Skill Event">
           <div className={`tm-chaos-event-card ${hitShake ? 'tm-shake' : ''}`}>
             <button
@@ -226,12 +498,16 @@ export default function DankPetWidget({
                 ? pinataClaimedToday
                   ? '🪅 GOLDEN PIÑATA PRACTICE (XP ONLY TODAY)'
                   : '🪅 DODGING PIÑATA CHALLENGE (+5 🪙 IF SMASHED!)'
+                : activeEvent === 'ufo'
+                ? '🛸 AREA 51 UFO INTERCEPTION (+25 XP)'
                 : '🚨 DODGING BOSS ENCOUNTER (+25 XP)'}
             </div>
 
             <h3 style={{ margin: '4px 0 6px', fontSize: '16px', color: '#facc15' }}>
               {activeEvent === 'pinata'
                 ? 'CLICK THE MOVING PIÑATA 8X BEFORE IT ESCAPES!'
+                : activeEvent === 'ufo'
+                ? 'ZAP THE TELEPORTING ALIEN SAUCER 8X BEFORE HYPERSPACE!'
                 : 'ZAP MOVING GIGA-MOAI 8X BEFORE ESCAPE!'}
             </h3>
 
@@ -341,10 +617,10 @@ export default function DankPetWidget({
                   title="WHACK!"
                 >
                   <span style={{ fontSize: '34px', lineHeight: 1 }}>
-                    {activeEvent === 'pinata' ? '🪅' : '🗿'}
+                    {activeEvent === 'pinata' ? '🪅' : activeEvent === 'ufo' ? '🛸' : '🗿'}
                   </span>
                   <span style={{ fontSize: '9px', fontWeight: 900, color: '#fff' }}>
-                    WHACK!
+                    {activeEvent === 'ufo' ? 'ZAP!' : 'WHACK!'}
                   </span>
                 </button>
               )}
@@ -441,22 +717,36 @@ export default function DankPetWidget({
         </div>
       )}
 
-      {/* CORNER BIG RED "DO NOT PRESS" CHAOS BUTTON */}
+      {/* CORNER BIG RED "DO NOT PRESS" CHAOS BUTTON + 1986 NEON PAYPHONE HOTLINE */}
       <div className="tm-donotpress-dock">
+        <button
+          type="button"
+          className="tm-payphone-dock-btn"
+          onClick={() => {
+            playDtmfTone('5');
+            setShowPayphone(true);
+          }}
+          title="Open the 1986 Neon Arcade Payphone & Secret Hotline (Check Coin Return Slot for +5 🪙!)"
+        >
+          <span>☎️</span>
+          <span className="tm-hide-mobile">1-800-MEME</span>
+          {!payphoneClaimedToday && <span className="tm-payphone-coin-dot" title="Unclaimed quarters in Coin Return!" />}
+        </button>
+
         <button
           type="button"
           className="tm-donotpress-btn"
           onClick={handlePressChaosButton}
-          title={memes && memes.length > 0 ? `Latest Feed Drop: "${memes[0].title}" by @${memes[0].author_name}` : 'Trigger a dodging Meme Piñata challenge, Boss Fight, or 80s Arcade Alert!'}
+          title={memes && memes.length > 0 ? `Latest Feed Drop: "${memes[0].title}" by @${memes[0].author_name}` : 'Trigger a dodging Meme Piñata challenge, Boss Fight, UFO or 80s Arcade Alert!'}
         >
           <span className="tm-donotpress-led">🚨</span>
-          <span>DO NOT PRESS</span>
+          <span>{buttonCaption}</span>
         </button>
         <button
           type="button"
           className="tm-donotpress-hide"
           onClick={() => setMinimized(true)}
-          title="Minimize button"
+          title="Minimize dock"
         >
           ✕
         </button>

@@ -29,7 +29,7 @@ export default function BattleArena({
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
             {onOpenBlankStudio && (
               <button type="button" className="tm-btn tm-btn-primary" onClick={onOpenBlankStudio}>
-                + Upload Meme to Arena (+100 XP)
+                + Upload Meme to Arena (+45 🪙 &amp; +120 XP)
               </button>
             )}
             {onBackToFeed && (

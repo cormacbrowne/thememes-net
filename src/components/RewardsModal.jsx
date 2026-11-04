@@ -14,6 +14,11 @@ export default function RewardsModal({
   xp,
   tokens = 25,
   tokenLedger,
+  xpConversionState = null,
+  xpAutoConvert = true,
+  onToggleXpAutoConvert,
+  onExchangeXpForTokens,
+  reactorFlash = false,
   lootSpins,
   wheelSpinsLeftInWindow = ARCADE_RATE_LIMITS.WHEEL_SPINS_PER_WINDOW,
   wheelResetMs = 0,
@@ -139,9 +144,149 @@ export default function RewardsModal({
               🎯 Daily Visit &amp; Quests: <strong>{tokenLedger?.byCategory?.quests || 0}</strong>/{ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.quests}
             </div>
             <div className="tm-ledger-cap-pill">
-              🎰 Games: <strong>Wager &amp; Gamble Your 🪙!</strong>
+              ⚡ XP Reactor Mint: <strong>{tokenLedger?.byCategory?.xpConversion || 0}</strong>/{ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.xpConversion}
             </div>
           </div>
+
+          {/* ⚡ XP-TO-TOKEN NEON FUSION CORE GRAPHIC & EXCHANGE CONTROLS */}
+          {xpConversionState && (
+            <div className={`tm-xp-fusion-core-card ${reactorFlash ? 'flash' : ''}`}>
+              <div className="tm-xp-fusion-left">
+                <div className="tm-xp-fusion-svg-box">
+                  <svg width="86" height="86" viewBox="0 0 86 86">
+                    <defs>
+                      <linearGradient id="tmVaultFusionGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#00f3ff" />
+                        <stop offset="50%" stopColor="#ec4899" />
+                        <stop offset="100%" stopColor="#facc15" />
+                      </linearGradient>
+                    </defs>
+                    <circle
+                      cx="43"
+                      cy="43"
+                      r="35"
+                      fill="rgba(2, 6, 23, 0.9)"
+                      stroke="rgba(148, 163, 184, 0.2)"
+                      strokeWidth="7"
+                    />
+                    <circle
+                      cx="43"
+                      cy="43"
+                      r="35"
+                      fill="none"
+                      stroke="url(#tmVaultFusionGrad)"
+                      strokeWidth="7"
+                      strokeLinecap="round"
+                      strokeDasharray={2 * Math.PI * 35}
+                      strokeDashoffset={
+                        2 * Math.PI * 35 -
+                        ((xpConversionState.readyTokens > 0 ? 100 : xpConversionState.progressPct) /
+                          100) *
+                          (2 * Math.PI * 35)
+                      }
+                      transform="rotate(-90 43 43)"
+                      style={{ transition: 'stroke-dashoffset 0.5s cubic-bezier(0.22, 1, 0.36, 1)' }}
+                    />
+                  </svg>
+                  <div className="tm-xp-fusion-svg-center">
+                    <div style={{ fontSize: '18px', lineHeight: 1 }}>
+                      {reactorFlash ? '🪙' : xpConversionState.readyTokens > 0 ? '🔥' : '⚡'}
+                    </div>
+                    <div style={{ fontSize: '11px', fontWeight: 900, color: '#facc15', marginTop: '2px' }}>
+                      {xpConversionState.readyTokens > 0
+                        ? `+${xpConversionState.readyTokens}🪙`
+                        : `${xpConversionState.progressPct}%`}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="tm-xp-fusion-info">
+                  <div className="tm-xp-fusion-badge-row">
+                    <span className="tm-xp-fusion-title">⚡ XP-TO-TOKEN NEON FUSION CORE</span>
+                    <span className="tm-xp-fusion-rate-pill">
+                      100 XP = +5 🪙 (Rank XP Never Drops!)
+                    </span>
+                  </div>
+
+                  <div className="tm-xp-fusion-status-text">
+                    {xpConversionState.isDailyCapped ? (
+                      <span style={{ color: '#4ade80' }}>
+                        ✅ Daily Reactor Cap Reached ({xpConversionState.dailyConvertedTokens}/
+                        {xpConversionState.maxDailyTokens} 🪙 minted today)!
+                      </span>
+                    ) : xpConversionState.readyTokens > 0 ? (
+                      <span style={{ color: '#facc15' }}>
+                        🔥 <strong>{xpConversionState.readyUnits * 100} XP</strong> ready to exchange for{' '}
+                        <strong>+{xpConversionState.readyTokens} 🪙 Tokens</strong>! (+{' '}
+                        {xpConversionState.progressXp}/100 XP toward next batch)
+                      </span>
+                    ) : (
+                      <span>
+                         Reactor Charge: <strong style={{ color: '#00f3ff' }}>{xpConversionState.progressXp} / 100 XP</strong>{' '}
+                        — Only <strong style={{ color: '#facc15' }}>{xpConversionState.xpRemaining} XP</strong> away from{' '}
+                        <strong style={{ color: '#4ade80' }}>+5 🪙 Tokens</strong>!
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Segmented 10-cell plasma bar showing exact proximity to next +5 🪙 */}
+                  <div className="tm-xp-fusion-segments">
+                    {Array.from({ length: 10 }).map((_, idx) => {
+                      const threshold = (idx + 1) * 10;
+                      const filled =
+                        xpConversionState.readyTokens > 0 ||
+                        xpConversionState.progressXp >= threshold;
+                      const partial =
+                        !filled &&
+                        xpConversionState.progressXp > idx * 10 &&
+                        xpConversionState.progressXp < threshold;
+                      return (
+                        <div
+                          key={idx}
+                          className={`tm-xp-fusion-seg ${filled ? 'filled' : ''} ${
+                            partial ? 'partial' : ''
+                          }`}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="tm-xp-fusion-actions">
+                <button
+                  type="button"
+                  className={`tm-btn ${xpAutoConvert ? 'tm-btn-crt-active' : ''}`}
+                  onClick={onToggleXpAutoConvert}
+                  title="When Auto-Convert is ON, every 100 XP earned automatically mints +5 🪙 Tokens into your wallet!"
+                  style={{ fontSize: '11px', padding: '7px 11px' }}
+                >
+                  {xpAutoConvert ? '🤖 Auto-Convert: ON' : '🖐️ Auto-Convert: OFF (Manual)'}
+                </button>
+
+                <button
+                  type="button"
+                  className="tm-btn tm-btn-primary"
+                  disabled={xpConversionState.readyTokens <= 0 || xpConversionState.isDailyCapped}
+                  onClick={(e) => onExchangeXpForTokens && onExchangeXpForTokens(e)}
+                  style={{
+                    fontSize: '12px',
+                    padding: '8px 14px',
+                    opacity:
+                      xpConversionState.readyTokens > 0 && !xpConversionState.isDailyCapped
+                        ? 1
+                        : 0.65
+                  }}
+                >
+                  {xpConversionState.isDailyCapped
+                    ? '✅ 50/50 🪙 Minted Today'
+                    : xpConversionState.readyTokens > 0
+                      ? `⚡ Exchange ${xpConversionState.readyUnits * 100} XP → +${xpConversionState.readyTokens} 🪙 Now!`
+                      : `⚡ ${xpConversionState.xpRemaining} XP to Next +5 🪙`}
+                </button>
+              </div>
+            </div>
+          )}
 
           {onLaunchSubGame && (
             <div style={{ display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }}>

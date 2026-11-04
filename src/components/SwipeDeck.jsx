@@ -30,7 +30,7 @@ export default function SwipeDeck({
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
             {onOpenBlankStudio && (
               <button type="button" className="tm-btn tm-btn-primary" onClick={onOpenBlankStudio}>
-                + Upload Your Meme (+100 XP)
+                + Upload Your Meme (+45 🪙 &amp; +120 XP)
               </button>
             )}
             {onBackToFeed && (

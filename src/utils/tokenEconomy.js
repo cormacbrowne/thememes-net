@@ -9,11 +9,17 @@
 
 export const ARCADE_ECONOMY_RULES = {
   STARTER_WELCOME_TOKENS: 25,
-  MAX_DAILY_EARNED_TOKENS: 230, // Earned via uploads + visits + engagement (excludes gambling return of staked principal)
+  MAX_DAILY_EARNED_TOKENS: 280, // Exact sum of category caps: 180 upload + 25 engagement + 25 quests + 50 xpConversion
   CATEGORY_DAILY_CAPS: {
-    upload: 180,     // Primary token engine: up to ~3-4 rewarded meme uploads/remixes per day
-    engagement: 25,  // Modest daily cap for genuine upvotes, meaningful comments & reactions (1x per unique meme)
-    quests: 25       // Daily visit streak, daily quests & 1x/day skill mini-events (Piñata / Goblin / Konami)
+    upload: 180,       // Primary token engine: up to ~3-4 rewarded meme uploads/remixes per day
+    engagement: 25,    // Modest daily cap for genuine upvotes, meaningful comments & reactions (1x per unique meme)
+    quests: 25,        // Daily visit streak, daily quests & 1x/day skill mini-events (Piñata / Goblin / Konami / Payphone)
+    xpConversion: 50   // XP-to-Token Reactor: up to +50 Tokens/day minted from converting earned XP (100 XP -> +5 Tokens)
+  },
+  XP_CONVERSION: {
+    XP_THRESHOLD: 100,       // Every 100 XP converts into Tokens
+    TOKENS_MINTED: 5,        // +5 Arcade Tokens per 100 XP milestone
+    MAX_DAILY_TOKENS: 50     // Max 10 reactor conversions per day (+50 Tokens)
   },
   REWARDS: {
     // Primary Token Generators (Creating & Sharing Memes!)
@@ -31,21 +37,22 @@ export const ARCADE_ECONOMY_RULES = {
     REACT_UNIQUE_MEME: { tokens: 1, xp: 10 },
     REACT_MEME: { tokens: 1, xp: 10 },
 
-    // Zero-Token Actions (Award XP only — eliminates rapid click-farming on a single meme)
-    BOOKMARK_UNIQUE_MEME: { tokens: 0, xp: 10 },
-    BOOKMARK_MEME: { tokens: 0, xp: 10 },
+    // Zero-Token Actions (Award XP only — feeds the 100-XP Token Reactor without click-farming!)
+    BOOKMARK_UNIQUE_MEME: { tokens: 0, xp: 15 },
+    BOOKMARK_MEME: { tokens: 0, xp: 15 },
     SHARE_UNIQUE_MEME: { tokens: 0, xp: 15 },
     SHARE_MEME: { tokens: 0, xp: 15 },
-    ROAST_UNIQUE_MEME: { tokens: 0, xp: 15 },
-    ROAST_MEME: { tokens: 0, xp: 15 },
+    ROAST_UNIQUE_MEME: { tokens: 0, xp: 20 },
+    ROAST_MEME: { tokens: 0, xp: 20 },
 
     // Daily Visits, Quests & Skill Events (Strictly 1x/day & capped at 25/day total)
     DAILY_STREAK: { tokens: 10, xp: 100 },
-    DAILY_QUEST: { tokens: 5, xp: 90 },
-    QUEST_CLAIM: { tokens: 5, xp: 90 },
+    DAILY_QUEST: { tokens: 5, xp: 120 },
+    QUEST_CLAIM: { tokens: 5, xp: 120 },
     PINATA_WHACK_WIN: { tokens: 5, xp: 50 },
+    PAYPHONE_COIN_RETURN: { tokens: 5, xp: 50 },
     GOBLIN_CATCH: { tokens: 5, xp: 60 },
-    KONAMI_DAILY: { tokens: 5, xp: 80 },
+    KONAMI_DAILY: { tokens: 5, xp: 100 },
     WHEEL_RARE_JACKPOT: { tokens: 8, xp: 100 }
   },
   ARCADE_STAKES: {
@@ -55,6 +62,7 @@ export const ARCADE_ECONOMY_RULES = {
     CRUSH_CONTINUE_COST: 10,
     PINBALL_ENTRY_COST: 10,
     PINBALL_EXTRA_BALL_COST: 10,
+    PINBALL_PAYOUT_TIERS: { 8000: 10, 15000: 16, 25000: 24, 40000: 35 },
     STOCK_FEE_RATE: 0.01 // 1% brokerage spread prevents rapid buy/sell arbitrage
   }
 };
@@ -77,7 +85,8 @@ export function createFreshDailyLedger(existingActionKeys = []) {
     byCategory: {
       upload: 0,
       engagement: 0,
-      quests: 0
+      quests: 0,
+      xpConversion: 0
     },
     // Persist per-meme & pioneer action keys across days so users cannot re-toggle votes on old memes
     rewardedActionKeys: Array.isArray(existingActionKeys)
@@ -106,7 +115,8 @@ export function loadTokenLedger() {
       byCategory: {
         upload: Math.max(0, Number(raw.byCategory?.upload || 0)),
         engagement: Math.max(0, Number(raw.byCategory?.engagement || 0)),
-        quests: Math.max(0, Number(raw.byCategory?.quests || 0))
+        quests: Math.max(0, Number(raw.byCategory?.quests || 0)),
+        xpConversion: Math.max(0, Number(raw.byCategory?.xpConversion || 0))
       },
       rewardedActionKeys: Array.isArray(raw.rewardedActionKeys)
         ? raw.rewardedActionKeys.slice(-800)
@@ -264,4 +274,50 @@ export function validateStakedGamePayout({ stakedTokens = 0, rawPayout = 0, maxM
   if (stake <= 0) return 0; // Free Practice / Demo mode ALWAYS pays 0 tokens
   const cleanPayout = Math.max(0, Math.floor(Number(rawPayout) || 0));
   return Math.min(cleanPayout, Math.max(stake, stake * maxMultiplier));
+}
+
+/**
+ * Computes the live state of the XP-to-Token Reactor without reducing total Rank XP.
+ * Every 100 unconverted XP mints +5 🪙 (up to 50 🪙/day via the XP Reactor).
+ */
+export function computeXpConversionState(xp = 0, convertedXp = 0, ledger = null) {
+  const { XP_THRESHOLD, TOKENS_MINTED, MAX_DAILY_TOKENS } = ARCADE_ECONOMY_RULES.XP_CONVERSION;
+  const totalXp = Math.max(0, Math.floor(Number(xp) || 0));
+  const safeConvertedXp = Math.max(0, Math.min(totalXp, Math.floor(Number(convertedXp) || 0)));
+  const unconvertedXp = Math.max(0, totalXp - safeConvertedXp);
+
+  const dailyConvertedTokens = Math.max(0, Number(ledger?.byCategory?.xpConversion || 0));
+  const globalUsed = Math.max(0, Number(ledger?.totalToday || 0));
+  const globalRemaining = Math.max(0, ARCADE_ECONOMY_RULES.MAX_DAILY_EARNED_TOKENS - globalUsed);
+  const dailyRemainingTokens = Math.min(
+    globalRemaining,
+    Math.max(0, MAX_DAILY_TOKENS - dailyConvertedTokens)
+  );
+
+  const maxConvertibleUnitsToday = Math.floor(dailyRemainingTokens / TOKENS_MINTED);
+  const rawReadyUnits = Math.floor(unconvertedXp / XP_THRESHOLD);
+  const readyUnits = Math.min(rawReadyUnits, maxConvertibleUnitsToday);
+  const readyTokens = readyUnits * TOKENS_MINTED;
+
+  const progressXp = unconvertedXp % XP_THRESHOLD;
+  const progressPct = Math.min(100, Math.round((progressXp / XP_THRESHOLD) * 100));
+  const xpRemaining = XP_THRESHOLD - progressXp;
+
+  return {
+    xpThreshold: XP_THRESHOLD,
+    tokensPerBatch: TOKENS_MINTED,
+    maxDailyTokens: MAX_DAILY_TOKENS,
+    totalXp,
+    convertedXp: safeConvertedXp,
+    unconvertedXp,
+    rawReadyUnits,
+    readyUnits,
+    readyTokens,
+    progressXp,
+    progressPct,
+    xpRemaining,
+    dailyConvertedTokens,
+    dailyRemainingTokens,
+    isDailyCapped: dailyRemainingTokens < TOKENS_MINTED
+  };
 }

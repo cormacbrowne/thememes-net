@@ -86,6 +86,28 @@ const MEME_COMPANIES = [
     color: '#c084fc'
   },
   {
+    ticker: 'STONK',
+    name: 'Meme Man Financial Corp.',
+    emoji: '📈',
+    sector: 'Wall St ETF',
+    basePrice: 21,
+    minPrice: 5,
+    maxPrice: 135,
+    volatility: 0.076,
+    color: '#a3e635'
+  },
+  {
+    ticker: 'HONK',
+    name: 'Cyber Goose Logistics',
+    emoji: '🪿',
+    sector: 'Chaos Freight',
+    basePrice: 12,
+    minPrice: 3,
+    maxPrice: 90,
+    volatility: 0.092,
+    color: '#fb7185'
+  },
+  {
     ticker: 'MOON',
     name: 'TrustMeBro Holdings LP',
     emoji: '🌕',
@@ -113,8 +135,20 @@ const MARKET_NEWS_EVENTS = [
   { ticker: 'PIZA', impact: -0.17, headline: '🔥 $PIZA: Lab accidentally burns 4,000 trays of garlic bread!' },
   { ticker: 'AI', impact: 0.25, headline: '🤖 $AI: Neural model convinces VCs that fingers have 7 knuckles!' },
   { ticker: 'AI', impact: -0.22, headline: '🔌 $AI: Mainframe trained exclusively on 2011 rage comics!' },
+  { ticker: 'STONK', impact: 0.26, headline: '📈 $STONK: Meme Man appointed Chairman of the Federal Reserve! STONKS ONLY GO UP!' },
+  { ticker: 'STONK', impact: -0.18, headline: '📉 $STONK: Typo on earnings slide spells "STINKS" — algos panic!' },
+  { ticker: 'HONK', impact: 0.28, headline: '🪿 $HONK: Untamed Cyber Goose steals Wall Street Opening Bell — bulls cheer!' },
+  { ticker: 'HONK', impact: -0.2, headline: '🥖 $HONK: Delivery drones distracted by floating sourdough loaf!' },
   { ticker: 'MOON', impact: 0.36, headline: '🌕 $MOON: Mystery whale posts 3 rocket emojis — FOMO stampede!' },
   { ticker: 'MOON', impact: -0.34, headline: '🚨 $MOON: CFO admits corporate vault was a shoebox! RUG PULL!' }
+];
+
+const MARKET_REGIMES = [
+  { id: 'normal', label: '⚡ CYBER FLOOR ACTIVE', drift: 0, color: '#38bdf8' },
+  { id: 'bull', label: '🐂 WALL ST BULL RUN', drift: 0.014, color: '#4ade80' },
+  { id: 'squeeze', label: '🚀 SHORT SQUEEZE ALERT', drift: 0.022, color: '#facc15' },
+  { id: 'whale', label: '🐋 WHALE ACCUMULATION', drift: 0.01, color: '#f472b6' },
+  { id: 'chop', label: '🌪️ HIGH VOLATILITY CHOP', drift: -0.004, color: '#fb923c' }
 ];
 
 const PORTFOLIO_STORAGE_KEY = 'tm_stock_portfolio_v1';
@@ -178,14 +212,29 @@ export default function MemeStockMarketGame({
   const [market, setMarket] = useState(buildInitialMarketState);
   const [portfolio, setPortfolio] = useState(loadPortfolio); // { [ticker]: { shares, totalCostTokens } }
   const [selectedTicker, setSelectedTicker] = useState('DOGE');
+  const [chartMode, setChartMode] = useState('wave'); // 'wave' | 'candles'
+  const [marketRegime, setMarketRegime] = useState(MARKET_REGIMES[0]);
   const [newsFlash, setNewsFlash] = useState(
     "📟 MEMEDAQ '86 FLOOR OPEN: Buy meme dips with 🪙 Tokens & sell rallies for profit!"
   );
   const [tradeFeedback, setTradeFeedback] = useState('');
   const [hotlineCooldown, setHotlineCooldown] = useState(0);
+  const [hypeCooldown, setHypeCooldown] = useState(0);
+  const [autoTakeProfit, setAutoTakeProfit] = useState(false);
+  const [dividendsEarned, setDividendsEarned] = useState(0);
   const [paused, setPaused] = useState(false);
 
   const tickCountRef = useRef(0);
+  const portfolioRef = useRef(portfolio);
+  const regimeRef = useRef(marketRegime);
+
+  useEffect(() => {
+    portfolioRef.current = portfolio;
+  }, [portfolio]);
+
+  useEffect(() => {
+    regimeRef.current = marketRegime;
+  }, [marketRegime]);
 
   // Persist portfolio cleanly
   useEffect(() => {
@@ -196,14 +245,15 @@ export default function MemeStockMarketGame({
     }
   }, [portfolio]);
 
-  // Hotline cooldown ticker (only runs while > 0)
+  // Cooldown tickers (only run while > 0)
   useEffect(() => {
-    if (hotlineCooldown <= 0) return undefined;
+    if (hotlineCooldown <= 0 && hypeCooldown <= 0) return undefined;
     const t = setInterval(() => {
       setHotlineCooldown((c) => Math.max(0, c - 1));
+      setHypeCooldown((c) => Math.max(0, c - 1));
     }, 1000);
     return () => clearInterval(t);
-  }, [hotlineCooldown]);
+  }, [hotlineCooldown, hypeCooldown]);
 
   // Live 1.8s Market Simulation Engine (auto-pauses when tab is hidden for older iPad battery/CPU!)
   useEffect(() => {
@@ -212,6 +262,12 @@ export default function MemeStockMarketGame({
     const interval = setInterval(() => {
       if (typeof document !== 'undefined' && document.hidden) return;
       tickCountRef.current += 1;
+
+      // Rotate Market Regime every 9 ticks
+      if (tickCountRef.current % 9 === 0) {
+        const nextRegime = MARKET_REGIMES[Math.floor(Math.random() * MARKET_REGIMES.length)];
+        setMarketRegime(nextRegime);
+      }
 
       // Trigger a funny breaking news flash every 5 ticks
       let activeEvent = null;
@@ -225,6 +281,32 @@ export default function MemeStockMarketGame({
         }
       }
 
+      // Automatic Shareholder Dividend Drop every 12 ticks when holding shares!
+      if (tickCountRef.current % 12 === 0) {
+        const currentPort = portfolioRef.current || {};
+        let totalHeldShares = 0;
+        let totalInvested = 0;
+        Object.values(currentPort).forEach((pos) => {
+          if (pos && pos.shares > 0) {
+            totalHeldShares += pos.shares;
+            totalInvested += pos.totalCostTokens || 0;
+          }
+        });
+        if (totalHeldShares > 0 && totalInvested > 0 && onPayoutTokens) {
+          const divBonus = Math.min(4, Math.max(1, Math.floor(totalHeldShares / 3)));
+          onPayoutTokens(divBonus, {
+            stakedTokens: totalInvested,
+            xp: 10,
+            label: `💰 SHAREHOLDER DIVIDEND: +${divBonus} 🪙!`,
+            emoji: '💰'
+          });
+          setDividendsEarned((d) => d + divBonus);
+          setTradeFeedback(
+            `💰 SHAREHOLDER DIVIDEND PAID: +${divBonus} 🪙 credited for holding ${totalHeldShares} shares!`
+          );
+        }
+      }
+
       // Category activity from user memes gives a small sector drift
       const catActivity = getCategoryActivity(memes);
       const sectorMap = {
@@ -235,11 +317,14 @@ export default function MemeStockMarketGame({
         'Utility': 'tech',
         'Food Tech': 'relatable',
         'Cyber AI': 'tech',
+        'Wall St ETF': 'dank',
+        'Chaos Freight': 'gaming',
         'Degen Penny': 'dank'
       };
 
       setMarket((prev) => {
         const next = {};
+        const regimeDrift = regimeRef.current?.drift || 0;
         MEME_COMPANIES.forEach((c) => {
           const curr = prev[c.ticker];
           const oldPrice = curr.price;
@@ -255,7 +340,8 @@ export default function MemeStockMarketGame({
               ? Math.min(0.012, (catActivity[cat] / catActivity.all) * 0.015)
               : 0;
 
-          const pctChange = meanPull + randomMove + newsMove + rumorMove + catBoost;
+          const pctChange =
+            meanPull + randomMove + newsMove + rumorMove + catBoost + regimeDrift * 0.35;
           const rawNext = oldPrice * (1 + pctChange);
           const clamped = Math.max(
             c.minPrice,
@@ -285,7 +371,7 @@ export default function MemeStockMarketGame({
     }, 1850);
 
     return () => clearInterval(interval);
-  }, [paused, memes]);
+  }, [paused, memes, onPayoutTokens]);
 
   const activeCompany =
     MEME_COMPANIES.find((c) => c.ticker === selectedTicker) || MEME_COMPANIES[0];
@@ -453,19 +539,97 @@ export default function MemeStockMarketGame({
     );
   };
 
-  // Build crisp 80s Neon SVG Area & Price Line Chart
+  // Viral Meme Hype Post: Broadcasts a bullish thread on the selected ticker
+  const handleLaunchViralHype = () => {
+    if (hypeCooldown > 0) return;
+    sfx.playAirhorn();
+    setHypeCooldown(22);
+
+    const target = activeCompany.ticker;
+    setMarket((prev) => ({
+      ...prev,
+      [target]: {
+        ...prev[target],
+        rumorBias: 0.085
+      }
+    }));
+
+    setNewsFlash(
+      `📢 VIRAL MEME THREAD: Retail traders flood into $${target} (${activeCompany.name}) after dank meme goes nuclear!`
+    );
+    setTradeFeedback(
+      `📢 Viral Hype broadcasted for $${target}! Bullish buying pressure injected for the next several ticks!`
+    );
+  };
+
+  // Auto-Take-Profit (+20%) Trading Bot
+  useEffect(() => {
+    if (!autoTakeProfit) return;
+    MEME_COMPANIES.forEach((c) => {
+      const pos = portfolio[c.ticker];
+      if (!pos || pos.shares <= 0 || pos.totalCostTokens <= 0) return;
+      const curPrice = market[c.ticker]?.price || c.basePrice;
+      const proceeds = calcSellProceeds(pos.shares, curPrice);
+      const profit = proceeds - pos.totalCostTokens;
+      const profitRatio = profit / pos.totalCostTokens;
+
+      if (profitRatio >= 0.2 && profit >= 1) {
+        sfx.playStockBell(true);
+        setPortfolio((prev) => ({
+          ...prev,
+          [c.ticker]: { shares: 0, totalCostTokens: 0 }
+        }));
+        if (onPayoutTokens) {
+          onPayoutTokens(proceeds, {
+            stakedTokens: pos.totalCostTokens,
+            xp: 30,
+            label: `🤖 AUTO-PROFIT SOLD ${pos.shares} $${c.ticker} (+${profit} 🪙!)`,
+            emoji: '🤖'
+          });
+        }
+        setTradeFeedback(
+          `🤖 AUTO-TAKE-PROFIT (+${Math.round(profitRatio * 100)}%): Sold ${pos.shares} sh of $${c.ticker} for ${proceeds} 🪙 (+${profit} 🪙 net profit)!`
+        );
+      }
+    });
+  }, [autoTakeProfit, market, portfolio, onPayoutTokens]);
+
+  // Build crisp 80s Neon SVG Area, Candlestick & Volume Histogram Chart
   const chartData = useMemo(() => {
     const pts = activeQuote.history || [activeCompany.basePrice];
-    const minP = Math.min(...pts) * 0.94;
-    const maxP = Math.max(...pts) * 1.06;
+    const rawMin = Math.min(...pts);
+    const rawMax = Math.max(...pts);
+    const minP = rawMin * 0.94;
+    const maxP = rawMax * 1.06;
     const span = Math.max(0.5, maxP - minP);
     const w = 360;
     const h = 128;
 
+    const toY = (val) => Number((h - ((val - minP) / span) * (h - 22) - 12).toFixed(1));
+
     const coords = pts.map((val, idx) => {
       const x = Number(((idx / Math.max(1, pts.length - 1)) * w).toFixed(1));
-      const y = Number((h - ((val - minP) / span) * (h - 16) - 8).toFixed(1));
-      return { x, y, val };
+      const y = toY(val);
+      const prevVal = idx > 0 ? pts[idx - 1] : val;
+      const openY = toY(prevVal);
+      const closeY = y;
+      const highVal = Math.max(prevVal, val) * 1.012;
+      const lowVal = Math.min(prevVal, val) * 0.988;
+      const wickHighY = toY(highVal);
+      const wickLowY = toY(lowVal);
+      const pctMove = prevVal > 0 ? Math.abs((val - prevVal) / prevVal) : 0.01;
+      const volHeight = Math.min(20, Math.max(3, Math.round(pctMove * 260 + 4)));
+      return {
+        x,
+        y,
+        val,
+        isBull: val >= prevVal,
+        bodyTop: Math.min(openY, closeY),
+        bodyHeight: Math.max(2.5, Math.abs(closeY - openY)),
+        wickHighY,
+        wickLowY,
+        volHeight
+      };
     });
 
     const polyline = coords.map((c) => `${c.x},${c.y}`).join(' ');
@@ -475,7 +639,7 @@ export default function MemeStockMarketGame({
       activeHolding.shares > 0 ? activeHolding.totalCostTokens / activeHolding.shares : null;
     const avgEntryY =
       avgEntryPrice !== null && avgEntryPrice >= minP && avgEntryPrice <= maxP
-        ? Number((h - ((avgEntryPrice - minP) / span) * (h - 16) - 8).toFixed(1))
+        ? toY(avgEntryPrice)
         : null;
 
     const isUpSession = pts[pts.length - 1] >= pts[0];
@@ -491,7 +655,9 @@ export default function MemeStockMarketGame({
       avgEntryPrice,
       avgEntryY,
       isUpSession,
-      sessionPct
+      sessionPct,
+      highPrice: rawMax.toFixed(2),
+      lowPrice: rawMin.toFixed(2)
     };
   }, [activeQuote.history, activeCompany.basePrice, activeHolding]);
 
@@ -515,7 +681,22 @@ export default function MemeStockMarketGame({
               </button>
             )}
             <div>
-              <div className="tm-stocks-eyebrow">📟 WALL ST. CYBER-TERMINAL • 1% BROKER SPREAD</div>
+              <div className="tm-stocks-eyebrow" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <span>📟 WALL ST. CYBER-TERMINAL • 10 MEME TICKERS</span>
+                <span
+                  style={{
+                    color: marketRegime.color,
+                    border: `1px solid ${marketRegime.color}`,
+                    padding: '1px 7px',
+                    borderRadius: '999px',
+                    fontSize: '10px',
+                    fontWeight: 900,
+                    background: 'rgba(2, 6, 23, 0.75)'
+                  }}
+                >
+                  {marketRegime.label}
+                </span>
+              </div>
               <h2 className="tm-stocks-title">MEMEDAQ &apos;86 STOCK EXCHANGE</h2>
             </div>
           </div>
@@ -538,7 +719,7 @@ export default function MemeStockMarketGame({
               </strong>
             </div>
             <div className="tm-stocks-kpi">
-              <span>OPEN P&amp;L</span>
+              <span>OPEN P&amp;L {dividendsEarned > 0 ? `(💰+${dividendsEarned})` : ''}</span>
               <strong
                 style={{
                   color:
@@ -558,10 +739,20 @@ export default function MemeStockMarketGame({
           </div>
         </header>
 
-        {/* LIVE BREAKING MEME NEWS WIRE + INSIDER HOTLINE */}
+        {/* LIVE BREAKING MEME NEWS WIRE + INSIDER HOTLINE + VIRAL HYPE + AUTO-PROFIT */}
         <div className="tm-stocks-newswire" role="status">
           <span className="tm-stocks-news-text">{newsFlash}</span>
           <div className="tm-stocks-news-btns">
+            <button
+              type="button"
+              className="tm-stocks-wire-btn"
+              disabled={hypeCooldown > 0}
+              onClick={handleLaunchViralHype}
+              title={`Broadcast a viral bullish meme thread for $${activeCompany.ticker}!`}
+              style={{ borderColor: hypeCooldown > 0 ? undefined : '#4ade80', color: hypeCooldown > 0 ? undefined : '#4ade80' }}
+            >
+              {hypeCooldown > 0 ? `📢 Hype (${hypeCooldown}s)` : `📢 Hype $${activeCompany.ticker}`}
+            </button>
             <button
               type="button"
               className="tm-stocks-wire-btn"
@@ -570,6 +761,21 @@ export default function MemeStockMarketGame({
               title="Call Gordon Gecko-Frog for a 1986 floor rumor!"
             >
               {hotlineCooldown > 0 ? `☎️ Rumor (${hotlineCooldown}s)` : '☎️ Insider Tip'}
+            </button>
+            <button
+              type="button"
+              className="tm-stocks-wire-btn"
+              onClick={() => {
+                sfx.playToggle();
+                setAutoTakeProfit((v) => !v);
+              }}
+              title="Automatically sell any held stock as soon as it hits +20% profit!"
+              style={{
+                borderColor: autoTakeProfit ? '#facc15' : undefined,
+                color: autoTakeProfit ? '#facc15' : undefined
+              }}
+            >
+              {autoTakeProfit ? '🤖 Auto +20%: ON' : '🤖 Auto +20%: OFF'}
             </button>
             <button
               type="button"
@@ -584,7 +790,7 @@ export default function MemeStockMarketGame({
 
         {/* MAIN 2-PANE TRADING FLOOR (FITS FIXED VIEWPORT ON IPAD & IPHONE) */}
         <div className="tm-stocks-grid">
-          {/* LEFT / TOP: 8 MEME COMPANY TICKER BOARD */}
+          {/* LEFT / TOP: 10 MEME COMPANY TICKER BOARD */}
           <div className="tm-stocks-list" role="listbox" aria-label="Meme Stock Tickers">
             {MEME_COMPANIES.map((c) => {
               const q = market[c.ticker];
@@ -635,13 +841,59 @@ export default function MemeStockMarketGame({
                     {activeCompany.emoji} ${activeCompany.ticker}
                   </span>
                   <span className="tm-stocks-active-company">{activeCompany.name}</span>
-                </div>
-                <div className="tm-stocks-active-quote">
-                  <strong>🪙 {activeQuote.price.toFixed(2)}</strong>
-                  <span className={chartData.isUpSession ? 'up' : 'down'}>
-                    {chartData.isUpSession ? '+' : ''}
-                    {chartData.sessionPct}% (30t)
+                  <span
+                    style={{
+                      marginLeft: '8px',
+                      fontSize: '10px',
+                      color: '#94a3b8',
+                      fontWeight: 700
+                    }}
+                  >
+                    H: {chartData.highPrice} • L: {chartData.lowPrice}
                   </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'inline-flex', gap: '4px' }}>
+                    <button
+                      type="button"
+                      className="tm-stocks-wire-btn"
+                      style={{
+                        padding: '2px 7px',
+                        fontSize: '10px',
+                        borderColor: chartMode === 'wave' ? '#00f3ff' : undefined,
+                        color: chartMode === 'wave' ? '#00f3ff' : undefined
+                      }}
+                      onClick={() => {
+                        sfx.playToggle();
+                        setChartMode('wave');
+                      }}
+                    >
+                      📈 Wave
+                    </button>
+                    <button
+                      type="button"
+                      className="tm-stocks-wire-btn"
+                      style={{
+                        padding: '2px 7px',
+                        fontSize: '10px',
+                        borderColor: chartMode === 'candles' ? '#facc15' : undefined,
+                        color: chartMode === 'candles' ? '#facc15' : undefined
+                      }}
+                      onClick={() => {
+                        sfx.playToggle();
+                        setChartMode('candles');
+                      }}
+                    >
+                      🕯️ Candles
+                    </button>
+                  </div>
+                  <div className="tm-stocks-active-quote">
+                    <strong>🪙 {activeQuote.price.toFixed(2)}</strong>
+                    <span className={chartData.isUpSession ? 'up' : 'down'}>
+                      {chartData.isUpSession ? '+' : ''}
+                      {chartData.sessionPct}% (30t)
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -676,6 +928,19 @@ export default function MemeStockMarketGame({
                     />
                   ))}
 
+                  {/* Volume Histogram Bars along bottom of CRT */}
+                  {chartData.coords.map((c, idx) => (
+                    <rect
+                      key={`vol-${idx}`}
+                      x={Math.max(0, c.x - 3)}
+                      y={chartData.h - c.volHeight}
+                      width="5"
+                      height={c.volHeight}
+                      rx="1"
+                      fill={c.isBull ? 'rgba(74, 222, 128, 0.22)' : 'rgba(244, 63, 94, 0.22)'}
+                    />
+                  ))}
+
                   {/* Average Entry Cost Line */}
                   {chartData.avgEntryY !== null && (
                     <line
@@ -689,27 +954,67 @@ export default function MemeStockMarketGame({
                     />
                   )}
 
-                  <path
-                    d={chartData.areaPath}
-                    fill={chartData.isUpSession ? 'url(#tmStockAreaBull)' : 'url(#tmStockAreaBear)'}
-                  />
-                  <polyline
-                    fill="none"
-                    stroke={chartData.isUpSession ? '#4ade80' : '#f43f5e'}
-                    strokeWidth="2.8"
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    points={chartData.polyline}
-                  />
+                  {chartMode === 'candles' ? (
+                    chartData.coords.map((c, idx) => (
+                      <g key={`cdl-${idx}`}>
+                        <line
+                          x1={c.x}
+                          y1={c.wickHighY}
+                          x2={c.x}
+                          y2={c.wickLowY}
+                          stroke={c.isBull ? '#4ade80' : '#f43f5e'}
+                          strokeWidth="1.3"
+                        />
+                        <rect
+                          x={Math.max(0, c.x - 3.2)}
+                          y={c.bodyTop}
+                          width="6.4"
+                          height={c.bodyHeight}
+                          rx="1"
+                          fill={c.isBull ? '#4ade80' : '#f43f5e'}
+                        />
+                      </g>
+                    ))
+                  ) : (
+                    <>
+                      <path
+                        d={chartData.areaPath}
+                        fill={
+                          chartData.isUpSession
+                            ? 'url(#tmStockAreaBull)'
+                            : 'url(#tmStockAreaBear)'
+                        }
+                      />
+                      <polyline
+                        fill="none"
+                        stroke={chartData.isUpSession ? '#4ade80' : '#f43f5e'}
+                        strokeWidth="2.8"
+                        strokeLinejoin="round"
+                        strokeLinecap="round"
+                        points={chartData.polyline}
+                      />
+                    </>
+                  )}
+
                   {chartData.coords.length > 0 && (
-                    <circle
-                      cx={chartData.coords[chartData.coords.length - 1].x}
-                      cy={chartData.coords[chartData.coords.length - 1].y}
-                      r="4.2"
-                      fill={chartData.isUpSession ? '#4ade80' : '#f43f5e'}
-                      stroke="#fff"
-                      strokeWidth="1.5"
-                    />
+                    <g>
+                      <circle
+                        cx={chartData.coords[chartData.coords.length - 1].x}
+                        cy={chartData.coords[chartData.coords.length - 1].y}
+                        r="8"
+                        fill="none"
+                        stroke={chartData.isUpSession ? 'rgba(74,222,128,0.45)' : 'rgba(244,63,94,0.45)'}
+                        strokeWidth="2"
+                      />
+                      <circle
+                        cx={chartData.coords[chartData.coords.length - 1].x}
+                        cy={chartData.coords[chartData.coords.length - 1].y}
+                        r="4.2"
+                        fill={chartData.isUpSession ? '#4ade80' : '#f43f5e'}
+                        stroke="#fff"
+                        strokeWidth="1.5"
+                      />
+                    </g>
                   )}
                 </svg>
               </div>

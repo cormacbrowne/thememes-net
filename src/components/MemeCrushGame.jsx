@@ -392,7 +392,7 @@ function findBoardMatches(board, levelDef) {
   return { matchedSet, specialsToSpawn };
 }
 
-function hasAnyValidMove(board, locks, levelDef) {
+function findHintMove(board, locks, levelDef) {
   for (let r = 0; r < GRID_SIZE; r++) {
     for (let c = 0; c < GRID_SIZE; c++) {
       if (levelDef.isVoid(r, c) || locks[r][c] || !board[r][c]) continue;
@@ -408,18 +408,23 @@ function hasAnyValidMove(board, locks, levelDef) {
 
         const a = board[r][c];
         const b = board[nr][nc];
-        if (a.special === 'color-bomb' || b.special === 'color-bomb') return true;
-        if (a.special && b.special) return true;
+        if (a.special === 'color-bomb' && !b.isCassette) return [`${r},${c}`, `${nr},${nc}`];
+        if (b.special === 'color-bomb' && !a.isCassette) return [`${r},${c}`, `${nr},${nc}`];
+        if (a.special && b.special) return [`${r},${c}`, `${nr},${nc}`];
 
         const copy = board.map((row) => [...row]);
         copy[r][c] = b;
         copy[nr][nc] = a;
         const { matchedSet } = findBoardMatches(copy, levelDef);
-        if (matchedSet.size > 0) return true;
+        if (matchedSet.size > 0) return [`${r},${c}`, `${nr},${nc}`];
       }
     }
   }
-  return false;
+  return null;
+}
+
+function hasAnyValidMove(board, locks, levelDef) {
+  return Boolean(findHintMove(board, locks, levelDef));
 }
 
 export default function MemeCrushGame({
@@ -461,12 +466,47 @@ export default function MemeCrushGame({
   const [busy, setBusy] = useState(false);
   const [hammerCharges, setHammerCharges] = useState(0);
   const [hammerActive, setHammerActive] = useState(false);
+  const [rainbowZapCharges, setRainbowZapCharges] = useState(1);
+  const [feverPct, setFeverPct] = useState(0);
+  const [feverTurnsLeft, setFeverTurnsLeft] = useState(0);
+  const [poppingKeys, setPoppingKeys] = useState(() => new Set());
+  const [blastFx, setBlastFx] = useState([]); // { id, type: 'laser-h'|'laser-v'|'bomb-ring', r, c }
+  const [cellPopups, setCellPopups] = useState([]); // { id, r, c, text, color }
+  const [centerCallout, setCenterCallout] = useState(null); // { id, text, sub, color }
+  const [boardShake, setBoardShake] = useState(false);
+  const [hintState, setHintState] = useState({ boardRef: null, selectedRef: null, cells: [] });
   const [comboBanner, setComboBanner] = useState('');
   const [roundResult, setRoundResult] = useState(null); // null | { won, stars, payout, score }
 
   const dragStartRef = useRef(null);
   const spawnedCassettesRef = useRef(0);
   const paidOutRef = useRef(false);
+  const feverTurnsRef = useRef(0);
+
+  useEffect(() => {
+    feverTurnsRef.current = feverTurnsLeft;
+  }, [feverTurnsLeft]);
+
+  // Idle Smart-Hint Glow after 4.2s of inactivity
+  useEffect(() => {
+    if (busy || roundResult || movesLeft <= 0) return undefined;
+    const t = setTimeout(() => {
+      const pair = findHintMove(board, lockGrid, levelDef);
+      if (pair) {
+        setHintState({ boardRef: board, selectedRef: selectedCell, cells: pair });
+      }
+    }, 4200);
+    return () => clearTimeout(t);
+  }, [board, lockGrid, levelDef, busy, roundResult, movesLeft, selectedCell]);
+
+  const hintCells =
+    !busy &&
+    !roundResult &&
+    movesLeft > 0 &&
+    hintState.boardRef === board &&
+    hintState.selectedRef === selectedCell
+      ? hintState.cells
+      : [];
 
   const resetToLevel = useCallback((targetLevelId, stakedAmt = 0) => {
     const def = CRUSH_LEVELS.find((l) => l.id === targetLevelId) || CRUSH_LEVELS[0];
@@ -485,6 +525,15 @@ export default function MemeCrushGame({
     setBusy(false);
     setHammerCharges(0);
     setHammerActive(false);
+    setRainbowZapCharges(1);
+    setFeverPct(0);
+    setFeverTurnsLeft(0);
+    feverTurnsRef.current = 0;
+    setPoppingKeys(new Set());
+    setBlastFx([]);
+    setCellPopups([]);
+    setCenterCallout(null);
+    setHintState({ boardRef: null, selectedRef: null, cells: [] });
     setComboBanner(
       stakedAmt > 0
         ? `🪙 ${stakedAmt}-TOKEN PRIZE RUN ACTIVE — CLEAR OBJECTIVES TO WIN UP TO ${starPayouts[3]} 🪙!`
@@ -641,12 +690,14 @@ export default function MemeCrushGame({
 
   /**
    * Expands special candy blasts recursively (Striped H/V, 3x3 Packet Bomb, Seeking Rocket)
+   * and records visual laser/shockwave FX events for the board overlay!
    */
   const expandBlastSet = useCallback(
     (initialKeys, currBoard, currJelly, currLocks) => {
       const clearSet = new Set(initialKeys);
       const queue = [...initialKeys];
       const visitedSpecial = new Set();
+      const fxEvents = [];
 
       while (queue.length > 0) {
         const key = queue.shift();
@@ -658,6 +709,7 @@ export default function MemeCrushGame({
 
         if (tile.special === 'striped-h') {
           sfx.playLaserZap();
+          fxEvents.push({ id: `fx-${ uidSeq++ }`, type: 'laser-h', r, c });
           for (let cc = 0; cc < GRID_SIZE; cc++) {
             if (!levelDef.isVoid(r, cc)) {
               const nk = `${r},${cc}`;
@@ -669,6 +721,7 @@ export default function MemeCrushGame({
           }
         } else if (tile.special === 'striped-v') {
           sfx.playLaserZap();
+          fxEvents.push({ id: `fx-${ uidSeq++ }`, type: 'laser-v', r, c });
           for (let rr = 0; rr < GRID_SIZE; rr++) {
             if (!levelDef.isVoid(rr, c)) {
               const nk = `${rr},${c}`;
@@ -680,6 +733,7 @@ export default function MemeCrushGame({
           }
         } else if (tile.special === 'packet-bomb') {
           sfx.playSpecialBomb();
+          fxEvents.push({ id: `fx-${ uidSeq++ }`, type: 'bomb-ring', r, c });
           for (let dr = -1; dr <= 1; dr++) {
             for (let dc = -1; dc <= 1; dc++) {
               const nr = r + dr;
@@ -714,13 +768,15 @@ export default function MemeCrushGame({
             }
           }
           if (targetKey) {
+            const [tr, tc] = targetKey.split(',').map(Number);
+            fxEvents.push({ id: `fx-${ uidSeq++ }`, type: 'bomb-ring', r: tr, c: tc });
             clearSet.add(targetKey);
             queue.push(targetKey);
           }
         }
       }
 
-      return clearSet;
+      return { clearSet, fxEvents };
     },
     [levelDef]
   );
@@ -738,6 +794,7 @@ export default function MemeCrushGame({
       let cascadeStep = 0;
       let pendingForced = forcedClearKeys;
       let pendingSpecials = forcedSpecials;
+      const feverMult = feverTurnsRef.current > 0 ? 2 : 1;
 
       const wait = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -770,6 +827,12 @@ export default function MemeCrushGame({
           setCassettesDropped((d) => d + ejectedThisPass);
           setScore((s) => s + ejectedThisPass * 600);
           setComboBanner(`📼 MIXTAPE EJECTED! (+${ejectedThisPass * 600} PTS)`);
+          setCenterCallout({
+            id: `call-${uidSeq++}`,
+            text: '📼 MIXTAPE DROPPED!',
+            sub: `+${ejectedThisPass * 600} PTS`,
+            color: '#facc15'
+          });
         }
 
         if (matchKeys.size === 0 && ejectedThisPass === 0) {
@@ -778,7 +841,31 @@ export default function MemeCrushGame({
 
         if (matchKeys.size > 0) {
           cascadeStep += 1;
-          const expanded = expandBlastSet(matchKeys, currBoard, currJelly, currLocks);
+          const { clearSet: expanded, fxEvents } = expandBlastSet(
+            matchKeys,
+            currBoard,
+            currJelly,
+            currLocks
+          );
+
+          // 1. Show Popping Scale/Flash & Laser/Bomb Visual FX on the board!
+          setPoppingKeys(new Set(expanded));
+          if (fxEvents.length > 0) {
+            setBlastFx(fxEvents);
+            setBoardShake(true);
+            setTimeout(() => setBoardShake(false), 340);
+          }
+
+          // Compute center of matched cluster for floating score popup
+          let sumR = 0;
+          let sumC = 0;
+          let countPts = 0;
+          expanded.forEach((key) => {
+            const [r, c] = key.split(',').map(Number);
+            sumR += r;
+            sumC += c;
+            countPts += 1;
+          });
 
           let ptsEarned = 0;
           let newlyBrokenLocks = 0;
@@ -792,12 +879,12 @@ export default function MemeCrushGame({
             if (currLocks[r][c]) {
               currLocks[r][c] = false;
               newlyBrokenLocks += 1;
-              ptsEarned += 120;
+              ptsEarned += 120 * feverMult;
             }
             if (currJelly[r][c] > 0) {
               currJelly[r][c] = Math.max(0, currJelly[r][c] - 1);
               sfx.playJellyShatter();
-              ptsEarned += 110;
+              ptsEarned += 110 * feverMult;
             }
             // Cassettes are indestructible!
             if (tile.isCassette) return;
@@ -805,7 +892,64 @@ export default function MemeCrushGame({
             if (tile.type >= 0) {
               newlyCollected[tile.type] = (newlyCollected[tile.type] || 0) + 1;
             }
-            ptsEarned += 45 * cascadeStep;
+            ptsEarned += 45 * cascadeStep * feverMult;
+          });
+
+          // Spawn floating score popup over matched cells
+          if (countPts > 0 && ptsEarned > 0) {
+            const avgR = sumR / countPts;
+            const avgC = sumC / countPts;
+            const popId = `pop-${uidSeq++}`;
+            setCellPopups((prev) => [
+              ...prev.slice(-5),
+              {
+                id: popId,
+                r: avgR,
+                c: avgC,
+                text:
+                  feverMult > 1
+                    ? `🔥 +${ptsEarned} (2× FEVER!)`
+                    : cascadeStep >= 2
+                    ? `⚡ +${ptsEarned} (${cascadeStep}×)`
+                    : `+${ptsEarned}`,
+                color:
+                  feverMult > 1
+                    ? '#facc15'
+                    : cascadeStep >= 3
+                    ? '#f472b6'
+                    : '#00f3ff'
+              }
+            ]);
+          }
+
+          // Escalating Center Combo Callout Banner
+          if (cascadeStep >= 2 || expanded.size >= 5 || fxEvents.length > 0) {
+            const callouts = [
+              { text: 'SWEET! 🍬', color: '#4ade80' },
+              { text: 'ELECTRIC! ⚡', color: '#00f3ff' },
+              { text: 'MEGA CASCADE! 🔥', color: '#f97316' },
+              { text: 'SUPERNOVA! 🌈', color: '#f472b6' },
+              { text: 'UNSTOPPABLE! 👑', color: '#facc15' }
+            ];
+            const pick =
+              callouts[Math.min(callouts.length - 1, Math.max(1, cascadeStep - 1))];
+            setCenterCallout({
+              id: `call-${uidSeq++}`,
+              text: fxEvents.length > 0 && cascadeStep === 1 ? 'LASER BLAST! ⚡' : pick.text,
+              sub: `+${ptsEarned} PTS${feverMult > 1 ? ' • 2× FEVER' : ''}`,
+              color: pick.color
+            });
+          }
+
+          await wait(135);
+          setPoppingKeys(new Set());
+          setBlastFx([]);
+
+          // Now clear matched cells
+          expanded.forEach((key) => {
+            const [r, c] = key.split(',').map(Number);
+            const tile = currBoard[r]?.[c];
+            if (!tile || tile.isCassette) return;
             currBoard[r][c] = null;
           });
 
@@ -831,6 +975,46 @@ export default function MemeCrushGame({
           }
           setScore((s) => s + ptsEarned);
 
+          // Charge Neon Disco Fever Meter!
+          setFeverPct((prevPct) => {
+            const nextPct = prevPct + 16 + cascadeStep * 8 + (fxEvents.length > 0 ? 12 : 0);
+            if (nextPct >= 100) {
+              // Trigger 🕺 DISCO FEVER OVERDRIVE!
+              sfx.playJackpot();
+              setFeverTurnsLeft(3);
+              feverTurnsRef.current = 3;
+              setRainbowZapCharges((z) => Math.min(2, z + 1));
+              setComboBanner('🕺 DISCO FEVER OVERDRIVE! 2× SCORE + BONUS SPECIAL CANDY ZAPPED!');
+              setCenterCallout({
+                id: `call-${uidSeq++}`,
+                text: '🕺 DISCO FEVER!',
+                sub: '2× SCORE + FREE SPECIAL CANDY!',
+                color: '#facc15'
+              });
+              // Upgrade a random regular candy on the board into a Special Candy!
+              const regularCoords = [];
+              for (let rr = 0; rr < GRID_SIZE; rr++) {
+                for (let cc = 0; cc < GRID_SIZE; cc++) {
+                  const t = currBoard[rr]?.[cc];
+                  if (t && !t.isCassette && !t.special && !levelDef.isVoid(rr, cc)) {
+                    regularCoords.push([rr, cc]);
+                  }
+                }
+              }
+              if (regularCoords.length > 0) {
+                const [zr, zc] =
+                  regularCoords[Math.floor(Math.random() * regularCoords.length)];
+                const specials = ['striped-h', 'striped-v', 'packet-bomb'];
+                currBoard[zr][zc] = createCandyTile(
+                  currBoard[zr][zc].type,
+                  specials[Math.floor(Math.random() * specials.length)]
+                );
+              }
+              return 0;
+            }
+            return nextPct;
+          });
+
           // Award 1 pocket Cyber-Hammer if player hits a 3x+ natural cascade!
           if (cascadeStep === 3) {
             setHammerCharges((h) => Math.min(2, h + 1));
@@ -842,7 +1026,7 @@ export default function MemeCrushGame({
           setBoard(currBoard.map((row) => [...row]));
           setJellyGrid(currJelly.map((row) => [...row]));
           setLockGrid(currLocks.map((row) => [...row]));
-          await wait(175);
+          await wait(140);
         }
 
         // Gravity drop through playable cells in each column (locked tiles act as anchors; unlocked fall cleanly)
@@ -929,10 +1113,62 @@ export default function MemeCrushGame({
         setComboBanner('🔀 NO MOVES LEFT — NEON GRID AUTO-SHUFFLED!');
       }
 
+      if (feverTurnsRef.current > 0) {
+        const nextTurns = Math.max(0, feverTurnsRef.current - 1);
+        feverTurnsRef.current = nextTurns;
+        setFeverTurnsLeft(nextTurns);
+      }
+
+      setTimeout(() => {
+        setCenterCallout(null);
+        setCellPopups([]);
+      }, 950);
+
       setBusy(false);
     },
     [levelDef, expandBlastSet]
   );
+
+  // Rainbow Zap Booster: Zaps every candy of the most common color on the board!
+  const handleRainbowZapBooster = async () => {
+    if (busy || roundResult || rainbowZapCharges <= 0) return;
+    const counts = {};
+    for (let r = 0; r < GRID_SIZE; r++) {
+      for (let c = 0; c < GRID_SIZE; c++) {
+        const t = board[r][c];
+        if (t && !t.isCassette && t.type >= 0 && !levelDef.isVoid(r, c)) {
+          counts[t.type] = (counts[t.type] || 0) + 1;
+        }
+      }
+    }
+    const entries = Object.entries(counts);
+    if (entries.length === 0) return;
+    entries.sort((a, b) => b[1] - a[1]);
+    const targetType = Number(entries[0][0]);
+
+    setRainbowZapCharges((z) => Math.max(0, z - 1));
+    sfx.playAlienBeam();
+    setBoardShake(true);
+    setTimeout(() => setBoardShake(false), 420);
+
+    const zapSet = new Set();
+    for (let r = 0; r < GRID_SIZE; r++) {
+      for (let c = 0; c < GRID_SIZE; c++) {
+        const t = board[r][c];
+        if (t && !t.isCassette && t.type === targetType) {
+          zapSet.add(`${r},${c}`);
+        }
+      }
+    }
+
+    setCenterCallout({
+      id: `call-${uidSeq++}`,
+      text: `🌈 RAINBOW ZAP!`,
+      sub: `ZAPPED ${zapSet.size} ${CANDY_TYPES[targetType]?.emoji || '🍬'} TILES!`,
+      color: '#00f3ff'
+    });
+    await resolveCascades(board, jellyGrid, lockGrid, zapSet, []);
+  };
 
   const attemptSwap = async (r1, c1, r2, c2) => {
     if (busy || roundResult || movesLeft <= 0) return;
@@ -1158,7 +1394,7 @@ export default function MemeCrushGame({
           })}
         </div>
 
-        {/* 3. LIVE OBJECTIVES & MOVES HUD */}
+        {/* 3. LIVE OBJECTIVES, DISCO FEVER METER & MOVES HUD */}
         <div className="tm-crush2-hud">
           <div className="tm-crush2-stat">
             <span>MOVES</span>
@@ -1167,6 +1403,22 @@ export default function MemeCrushGame({
           <div className="tm-crush2-stat">
             <span>SCORE</span>
             <strong>{score.toLocaleString()}</strong>
+          </div>
+
+          <div
+            className={`tm-crush2-fever-pill ${feverTurnsLeft > 0 ? 'overdrive' : ''}`}
+            title="Fill the Disco Fever meter to 100% for 2× Score Overdrive + a free Special Candy on the board!"
+          >
+            <div className="tm-crush2-fever-top">
+              <span>{feverTurnsLeft > 0 ? `🕺 2× FEVER (${feverTurnsLeft} MV)` : '🔥 FEVER'}</span>
+              <span>{feverTurnsLeft > 0 ? 'MAX!' : `${Math.min(100, feverPct)}%`}</span>
+            </div>
+            <div className="tm-crush2-fever-track">
+              <div
+                className="tm-crush2-fever-fill"
+                style={{ width: `${feverTurnsLeft > 0 ? 100 : Math.min(100, feverPct)}%` }}
+              />
+            </div>
           </div>
 
           <div className="tm-crush2-goals">
@@ -1229,7 +1481,11 @@ export default function MemeCrushGame({
         </div>
 
         {/* 4. NON-SCROLLING TOUCH-LOCKED 8x8 CARVED NEON BOARD */}
-        <div className="tm-crush2-board-wrap">
+        <div
+          className={`tm-crush2-board-wrap ${boardShake ? 'tm-crush2-board-shake' : ''} ${
+            feverTurnsLeft > 0 ? 'tm-crush2-board-fever' : ''
+          }`}
+        >
           <div
             className="tm-crush2-grid"
             onPointerMove={handlePointerMove}
@@ -1243,9 +1499,12 @@ export default function MemeCrushGame({
                   return <div key={`void-${r}-${c}`} className="tm-crush2-void-cell" />;
                 }
 
+                const cellKey = `${r},${c}`;
                 const jellyLvl = jellyGrid[r][c];
                 const isLocked = lockGrid[r][c];
                 const isSelected = selectedCell?.r === r && selectedCell?.c === c;
+                const isPopping = poppingKeys.has(cellKey);
+                const isHint = hintCells.includes(cellKey);
                 const isExitCell =
                   levelDef.goals.cassettes > 0 && r === getBottomPlayableRow(levelDef, c);
                 const candyInfo =
@@ -1253,13 +1512,13 @@ export default function MemeCrushGame({
 
                 return (
                   <button
-                    key={`${r}-${c}`}
+                    key={cellKey}
                     type="button"
                     className={`tm-crush2-cell ${jellyLvl === 1 ? 'jelly-1' : ''} ${
                       jellyLvl >= 2 ? 'jelly-2' : ''
                     } ${isLocked ? 'locked' : ''} ${isSelected ? 'selected' : ''} ${
-                      isExitCell ? 'exit-row' : ''
-                    }`}
+                      isPopping ? 'popping' : ''
+                    } ${isHint ? 'hint-glow' : ''} ${isExitCell ? 'exit-row' : ''}`}
                     onPointerDown={(e) => handlePointerDown(r, c, e)}
                     onClick={() => handleCellTap(r, c)}
                   >
@@ -1267,7 +1526,9 @@ export default function MemeCrushGame({
                       <div
                         className={`tm-crush2-candy ${
                           tile.isCassette ? 'cassette' : ''
-                        } ${tile.special ? `sp-${tile.special}` : ''}`}
+                        } ${tile.special ? `sp-${tile.special}` : ''} ${
+                          isPopping ? 'candy-pop' : ''
+                        }`}
                         style={
                           tile.isCassette
                             ? undefined
@@ -1306,6 +1567,65 @@ export default function MemeCrushGame({
                   </button>
                 );
               })
+            )}
+
+            {/* LIVE SPECIAL CANDY LASER BEAMS & BOMB SHOCKWAVES OVERLAY */}
+            {blastFx.map((fx) => {
+              if (fx.type === 'laser-h') {
+                return (
+                  <div
+                    key={fx.id}
+                    className="tm-crush2-laser-h"
+                    style={{ top: `${((fx.r + 0.5) / GRID_SIZE) * 100}%` }}
+                  />
+                );
+              }
+              if (fx.type === 'laser-v') {
+                return (
+                  <div
+                    key={fx.id}
+                    className="tm-crush2-laser-v"
+                    style={{ left: `${((fx.c + 0.5) / GRID_SIZE) * 100}%` }}
+                  />
+                );
+              }
+              return (
+                <div
+                  key={fx.id}
+                  className="tm-crush2-bomb-ring"
+                  style={{
+                    top: `${((fx.r + 0.5) / GRID_SIZE) * 100}%`,
+                    left: `${((fx.c + 0.5) / GRID_SIZE) * 100}%`
+                  }}
+                />
+              );
+            })}
+
+            {/* FLOATING SCORE POPUPS OVER MATCHED CELLS */}
+            {cellPopups.map((pop) => (
+              <div
+                key={pop.id}
+                className="tm-crush2-cell-popup"
+                style={{
+                  top: `${((pop.r + 0.5) / GRID_SIZE) * 100}%`,
+                  left: `${((pop.c + 0.5) / GRID_SIZE) * 100}%`,
+                  color: pop.color
+                }}
+              >
+                {pop.text}
+              </div>
+            ))}
+
+            {/* BIG CENTER ESCALATING COMBO CALLOUT BANNER */}
+            {centerCallout && (
+              <div
+                key={centerCallout.id}
+                className="tm-crush2-center-callout"
+                style={{ '--callout-color': centerCallout.color }}
+              >
+                <div className="tm-crush2-callout-main">{centerCallout.text}</div>
+                <div className="tm-crush2-callout-sub">{centerCallout.sub}</div>
+              </div>
             )}
           </div>
 
@@ -1377,6 +1697,16 @@ export default function MemeCrushGame({
         <footer className="tm-crush2-footer">
           <span className="tm-crush2-status">{comboBanner || levelDef.desc}</span>
           <div className="tm-crush2-tools">
+            <button
+              type="button"
+              disabled={rainbowZapCharges <= 0 || busy}
+              className="tm-crush2-tool-btn"
+              onClick={handleRainbowZapBooster}
+              title="Zaps all candies of the most frequent color on the board! (+1 earned on Disco Fever!)"
+              style={{ borderColor: rainbowZapCharges > 0 ? '#00f3ff' : undefined, color: rainbowZapCharges > 0 ? '#00f3ff' : undefined }}
+            >
+              🌈 Zap ({rainbowZapCharges})
+            </button>
             <button
               type="button"
               disabled={hammerCharges <= 0 || busy}

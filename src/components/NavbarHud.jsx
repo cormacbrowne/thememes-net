@@ -10,6 +10,10 @@ export default function NavbarHud({
   xpProgress,
   tokens = 50,
   dailyTokensEarned = 0,
+  xpConversionState = null,
+  xpAutoConvert = true,
+  reactorFlash = false,
+  onExchangeXpForTokens,
   viewMode = 'feed',
   onSelectViewMode,
   litePerfMode = false,
@@ -30,6 +34,16 @@ export default function NavbarHud({
   canGoBack,
   onNavigateBack
 }) {
+  const reactorPct = xpConversionState ? xpConversionState.progressPct : 0;
+  const reactorProgressXp = xpConversionState ? xpConversionState.progressXp : 0;
+  const reactorRemainingXp = xpConversionState ? xpConversionState.xpRemaining : 100;
+  const reactorReadyTokens = xpConversionState ? xpConversionState.readyTokens : 0;
+  const reactorCapped = xpConversionState ? xpConversionState.isDailyCapped : false;
+  const ringRadius = 13;
+  const ringCircumference = 2 * Math.PI * ringRadius;
+  const ringDashOffset =
+    ringCircumference - ((reactorReadyTokens > 0 ? 100 : reactorPct) / 100) * ringCircumference;
+
   return (
     <>
       {/* COMBO TIMER PROGRESS BAR */}
@@ -121,9 +135,9 @@ export default function NavbarHud({
 
           {/* Fair Arcade Token Wallet & Daily Collection Cap Indicator */}
           <div
-            className="tm-token-wallet-pill"
+            className={`tm-token-wallet-pill ${reactorFlash ? 'tm-wallet-mint-flash' : ''}`}
             onClick={onOpenRewards}
-            title={`Arcade Token Wallet: ${tokens} Tokens • Daily Earned via Memes/Quests: ${dailyTokensEarned}/${ARCADE_ECONOMY_RULES.MAX_DAILY_EARNED_TOKENS}`}
+            title={`Arcade Token Wallet: ${tokens} Tokens • Daily Earned via Memes/Quests/Reactor: ${dailyTokensEarned}/${ARCADE_ECONOMY_RULES.MAX_DAILY_EARNED_TOKENS}`}
           >
             <span className="tm-token-coin">🪙</span>
             <div>
@@ -133,6 +147,81 @@ export default function NavbarHud({
               </div>
             </div>
           </div>
+
+          {/* LIVE XP-TO-TOKEN CONVERSION GRAPHIC RING */}
+          {xpConversionState && (
+            <div
+              className={`tm-xp-reactor-pill ${reactorReadyTokens > 0 ? 'ready' : ''} ${
+                reactorFlash ? 'flash' : ''
+              }`}
+              onClick={(e) => {
+                if (reactorReadyTokens > 0 && onExchangeXpForTokens) {
+                  onExchangeXpForTokens(e);
+                } else if (onOpenRewards) {
+                  onOpenRewards();
+                }
+              }}
+              title={
+                reactorCapped
+                  ? `XP-to-Token Reactor: Daily 50 🪙 limit reached! Resets at midnight.`
+                  : reactorReadyTokens > 0
+                    ? `Click to Exchange ${xpConversionState.readyUnits * 100} XP → +${reactorReadyTokens} 🪙 right now! (Your Rank XP never drops)`
+                    : `XP-to-Token Reactor (${xpAutoConvert ? 'AUTO' : 'MANUAL'}): ${reactorProgressXp}/100 XP — Only ${reactorRemainingXp} XP until +5 🪙 mints!`
+              }
+            >
+              <div className="tm-xp-reactor-svg-wrap">
+                <svg width="34" height="34" viewBox="0 0 34 34" className="tm-xp-reactor-svg">
+                  <defs>
+                    <linearGradient id="tmXpReactorGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#22d3ee" />
+                      <stop offset="55%" stopColor="#f472b6" />
+                      <stop offset="100%" stopColor="#facc15" />
+                    </linearGradient>
+                  </defs>
+                  <circle
+                    cx="17"
+                    cy="17"
+                    r={ringRadius}
+                    fill="rgba(15, 23, 42, 0.9)"
+                    stroke="rgba(148, 163, 184, 0.22)"
+                    strokeWidth="3.5"
+                  />
+                  <circle
+                    cx="17"
+                    cy="17"
+                    r={ringRadius}
+                    fill="none"
+                    stroke="url(#tmXpReactorGrad)"
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                    strokeDasharray={ringCircumference}
+                    strokeDashoffset={ringDashOffset}
+                    transform="rotate(-90 17 17)"
+                    style={{ transition: 'stroke-dashoffset 0.45s cubic-bezier(0.22, 1, 0.36, 1)' }}
+                  />
+                </svg>
+                <span className="tm-xp-reactor-center-icon">
+                  {reactorFlash ? '🪙' : reactorReadyTokens > 0 ? '🔥' : '⚡'}
+                </span>
+              </div>
+              <div className="tm-xp-reactor-meta tm-hide-mobile">
+                <div className="tm-xp-reactor-top">
+                  {reactorFlash
+                    ? '+5 🪙 MINTED!'
+                    : reactorReadyTokens > 0
+                      ? `MINT +${reactorReadyTokens} 🪙!`
+                      : `${reactorProgressXp}/100 XP`}
+                </div>
+                <div className="tm-xp-reactor-sub">
+                  {reactorCapped
+                    ? 'MAX 50🪙/DAY'
+                    : reactorReadyTokens > 0
+                      ? 'TAP TO EXCHANGE'
+                      : `${reactorRemainingXp} XP → +5 🪙`}
+                </div>
+              </div>
+            </div>
+          )}
 
           <div
             className="tm-xp-box tm-hide-mobile"

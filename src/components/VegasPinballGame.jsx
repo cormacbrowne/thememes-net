@@ -160,10 +160,10 @@ const PINBALL_TABLES = [
 function computePinballTokenPayout(finalScore, stakedTokens) {
   if (stakedTokens <= 0) return 0;
   let raw = 0;
-  if (finalScore >= 40000) raw = 32;
-  else if (finalScore >= 25000) raw = 22;
-  else if (finalScore >= 15000) raw = 15;
-  else if (finalScore >= 8000) raw = 8;
+  if (finalScore >= 40000) raw = 35;
+  else if (finalScore >= 25000) raw = 24;
+  else if (finalScore >= 15000) raw = 16;
+  else if (finalScore >= 8000) raw = 10;
   return validateStakedGamePayout({
     stakedTokens,
     rawPayout: raw,
@@ -210,6 +210,10 @@ function buildInitialEngineState(tbl) {
     lanesLit: [false, false, false, false],
     targetsLit: [false, false, false, false],
     bumperFlashes: new Array(tbl.bumpers.length).fill(0),
+    leftSlingFlash: 0,
+    rightSlingFlash: 0,
+    neonWaves: [], // { x, y, r, maxR, color, life, maxLife }
+    sparks: [], // { x, y, vx, vy, color, life }
     movingX: tbl.movingBumper ? (tbl.movingBumper.minX + tbl.movingBumper.maxX) / 2 : 174,
     movingDir: 1,
     portalCooldown: 0,
@@ -222,7 +226,8 @@ function buildInitialEngineState(tbl) {
         y: 495,
         vx: 0,
         vy: 0,
-        inShooter: true
+        inShooter: true,
+        trail: []
       }
     ]
   };
@@ -267,7 +272,7 @@ export default function VegasPinballGame({
     setGameOverInfo(null);
     setHudBanner(
       stakeAmt > 0
-        ? `🪙 ${stakeAmt}-TOKEN PRIZE GAME LIVE! SCORE 8K / 15K / 25K / 40K+ TO WIN UP TO 32 🪙!`
+        ? `🪙 ${stakeAmt}-TOKEN PRIZE GAME LIVE! SCORE 8K / 15K / 25K / 40K+ TO WIN UP TO 35 🪙!`
         : `🆓 PRACTICE TABLE: ${nextTbl.name.toUpperCase()} — TAP LAUNCH!`
     );
   };
@@ -376,6 +381,26 @@ export default function VegasPinballGame({
       stateRef.current = buildInitialEngineState(PINBALL_TABLES[0]);
     }
     let rafId = null;
+
+    const spawnNeonImpact = (st, x, y, color = '#00f3ff', maxR = 38) => {
+      if (st.neonWaves.length < 8) {
+        st.neonWaves.push({ x, y, r: 8, maxR, color, life: 16, maxLife: 16 });
+      }
+      if (st.sparks.length < 28) {
+        for (let i = 0; i < 6; i++) {
+          const ang = (Math.PI * 2 * i) / 6 + Math.random() * 0.5;
+          const spd = 2.2 + Math.random() * 2.8;
+          st.sparks.push({
+            x,
+            y,
+            vx: Math.cos(ang) * spd,
+            vy: Math.sin(ang) * spd,
+            color,
+            life: 14
+          });
+        }
+      }
+    };
 
     const addPoints = (st, basePts, fxX, fxY, label = null, color = '#facc15') => {
       const pts = Math.round(basePts * st.multiplier);
@@ -551,7 +576,10 @@ export default function VegasPinballGame({
                 b.vx -= (1 + bounce) * dot * ux;
                 b.vy -= (1 + bounce) * dot * uy;
                 if (isSlingshot && sub === 0) {
+                  if (segIdx === 10) st.leftSlingFlash = 10;
+                  if (segIdx === 13) st.rightSlingFlash = 10;
                   sfx.playPinballBumper(1);
+                  spawnNeonImpact(st, b.x, b.y, st.table.secondary, 34);
                   addPoints(st, 140, b.x, b.y, '+140', '#00f3ff');
                 }
               }
@@ -617,6 +645,7 @@ export default function VegasPinballGame({
               b.vy = uy * kick;
               st.bumperFlashes[idx] = 10;
               sfx.playPinballBumper(idx % 4);
+              spawnNeonImpact(st, bx, by, bmp.color, bmp.r + 22);
               addPoints(st, bmp.pts, bx, by - bmp.r, null, bmp.color);
             }
           });
@@ -636,10 +665,16 @@ export default function VegasPinballGame({
               b.vx = ux * 8.6;
               b.vy = uy * 8.6;
               sfx.playMetalPipe();
+              spawnNeonImpact(st, st.movingX, mb.y, mb.color, mb.r + 22);
               addPoints(st, mb.pts, st.movingX, mb.y - 16, `+${mb.pts * st.multiplier}!`, mb.color);
             }
           }
         }
+
+        // Record Neon Comet Trail for each ball
+        if (!b.trail) b.trail = [];
+        b.trail.push({ x: b.x, y: b.y });
+        if (b.trail.length > 9) b.trail.shift();
 
         // Non-substepped triggers (Lanes, Targets, Boost Pads, Portals, Sinkhole, Spinners)
         if (!b.inShooter) {
@@ -649,6 +684,7 @@ export default function VegasPinballGame({
             if (!st.lanesLit[idx] && Math.abs(b.x - lx) < 16 && Math.abs(b.y - 64) < 14) {
               st.lanesLit[idx] = true;
               sfx.playSpinnerTick();
+              spawnNeonImpact(st, lx, 64, '#00f3ff', 28);
               addPoints(st, 200, lx, 54, tbl.lanesWord[idx], '#00f3ff');
               if (st.lanesLit.every(Boolean)) {
                 st.lanesLit = [false, false, false, false];
@@ -676,6 +712,7 @@ export default function VegasPinballGame({
               st.targetsLit[idx] = true;
               b.vx = tc.x < 100 ? Math.abs(b.vx) + 3 : -Math.abs(b.vx) - 3;
               sfx.playLaserZap();
+              spawnNeonImpact(st, tc.x, tc.y, '#4ade80', 30);
               addPoints(st, 300, tc.x, tc.y, tbl.targetWord[idx], '#4ade80');
               if (st.targetsLit.every(Boolean)) {
                 st.targetsLit = [false, false, false, false];
@@ -690,7 +727,8 @@ export default function VegasPinballGame({
                     y: 120,
                     vx: (Math.random() - 0.5) * 6,
                     vy: 3,
-                    inShooter: false
+                    inShooter: false,
+                    trail: []
                   });
                   setHudBanner(`🚨 ${tbl.targetWord.join('-')} MULTIBALL UNLEASHED + SHIELD LIT!`);
                 }
@@ -709,6 +747,7 @@ export default function VegasPinballGame({
             ) {
               b.vy = -12.4;
               sfx.playSpinnerTick();
+              spawnNeonImpact(st, pad.x + pad.w / 2, pad.y + pad.h / 2, '#fb923c', 32);
               addPoints(st, 150, pad.x + 12, pad.y, 'TURBO!', '#fb923c');
             }
           });
@@ -722,7 +761,10 @@ export default function VegasPinballGame({
               b.y = tbl.portals.exit.y;
               b.vx = tbl.portals.exit.vx;
               b.vy = tbl.portals.exit.vy;
+              b.trail = [];
               sfx.playAlienBeam();
+              spawnNeonImpact(st, ent.x, ent.y, '#c084fc', 38);
+              spawnNeonImpact(st, tbl.portals.exit.x, tbl.portals.exit.y, '#00f3ff', 38);
               addPoints(st, 850, ent.x, ent.y, '🌀 WARP +850!', '#c084fc');
               setHudBanner('🌀 WORMHOLE TELEPORT! +850 BONUS!');
             }
@@ -737,6 +779,7 @@ export default function VegasPinballGame({
               b.vx = Math.cos(angle) * 8.5 * (Math.random() < 0.5 ? 1 : -1);
               b.vy = Math.sin(angle) * 8.5;
               sfx.playJackpot();
+              spawnNeonImpact(st, sk.x, sk.y, '#facc15', 44);
               addPoints(st, 1100, sk.x, sk.y, `💥 ${sk.label} +1100!`, '#facc15');
               if (st.balls.length + spawnedMultiballs.length < 2) {
                 spawnedMultiballs.push({
@@ -745,7 +788,8 @@ export default function VegasPinballGame({
                   y: sk.y + 18,
                   vx: -b.vx,
                   vy: 5.5,
-                  inShooter: false
+                  inShooter: false,
+                  trail: []
                 });
                 setHudBanner(`🎰 ${sk.label} 2-BALL FRENZY UNLOCKED!`);
               }
@@ -771,6 +815,7 @@ export default function VegasPinballGame({
             b.vy = -11.8;
             b.vx = (Math.random() - 0.5) * 4;
             sfx.playAlienBeam();
+            spawnNeonImpact(st, b.x, H - 28, '#00f3ff', 42);
             setHudBanner('🛡️ PLASMA DRAIN SHIELD SAVED YOUR BALL!');
           } else {
             drained = true;
@@ -784,10 +829,30 @@ export default function VegasPinballGame({
 
       st.balls = [...survivingBalls, ...spawnedMultiballs];
 
-      // Decay bumper flashes & float texts
+      // Decay bumper flashes, slingshot flashes, neon ripples, sparks & float texts
       for (let i = 0; i < st.bumperFlashes.length; i++) {
         if (st.bumperFlashes[i] > 0) st.bumperFlashes[i] -= 1;
       }
+      if (st.leftSlingFlash > 0) st.leftSlingFlash -= 1;
+      if (st.rightSlingFlash > 0) st.rightSlingFlash -= 1;
+
+      st.neonWaves = st.neonWaves
+        .map((w) => ({
+          ...w,
+          r: w.r + (w.maxR - w.r) * 0.25,
+          life: w.life - 1
+        }))
+        .filter((w) => w.life > 0);
+
+      st.sparks = st.sparks
+        .map((sp) => ({
+          ...sp,
+          x: sp.x + sp.vx,
+          y: sp.y + sp.vy,
+          life: sp.life - 1
+        }))
+        .filter((sp) => sp.life > 0);
+
       st.floatTexts = st.floatTexts
         .map((ft) => ({ ...ft, y: ft.y - 0.9, life: ft.life - 1 }))
         .filter((ft) => ft.life > 0);
@@ -807,7 +872,8 @@ export default function VegasPinballGame({
               y: 495,
               vx: 0,
               vy: 0,
-              inShooter: true
+              inShooter: true,
+              trail: []
             }
           ];
           setHudBanner(`🎱 BALL ${4 - st.ballsLeft} READY — TAP LAUNCH!`);
@@ -829,27 +895,92 @@ export default function VegasPinballGame({
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, W, H);
 
-      // Subtle Retro Perspective Grid Lines (Zero blur shader!)
-      ctx.strokeStyle = 'rgba(0, 243, 255, 0.09)';
+      // 1b. 1986 Segmented Synthwave Neon Sun & Horizon Glow (Fast Alpha Geometry)
+      const sunX = 176;
+      const sunY = 136;
+      const sunR = 54;
+      ctx.globalAlpha = 0.22;
+      const sunGrad = ctx.createLinearGradient(sunX, sunY - sunR, sunX, sunY + sunR);
+      sunGrad.addColorStop(0, '#facc15');
+      sunGrad.addColorStop(0.55, tbl.accent);
+      sunGrad.addColorStop(1, tbl.secondary);
+      ctx.fillStyle = sunGrad;
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2);
+      ctx.fill();
+      // Horizontal retro scanline cutouts across lower half of sun
+      ctx.fillStyle = tbl.bgTop;
+      ctx.globalAlpha = 0.55;
+      for (let sy = sunY + 6; sy < sunY + sunR; sy += 9) {
+        ctx.fillRect(sunX - sunR, sy, sunR * 2, 3.2);
+      }
+      ctx.globalAlpha = 1;
+
+      // Subtle Retro Perspective Neon Grid Lines & Outer Playfield Neon Arch
+      ctx.strokeStyle = 'rgba(0, 243, 255, 0.12)';
       ctx.lineWidth = 1;
-      for (let gy = 80; gy < H; gy += 48) {
+      for (let gy = 80; gy < H; gy += 44) {
         ctx.beginPath();
         ctx.moveTo(18, gy);
         ctx.lineTo(LANE_WALL_X, gy);
         ctx.stroke();
       }
-      for (let gx = 58; gx < LANE_WALL_X; gx += 48) {
+      for (let gx = 54; gx < LANE_WALL_X; gx += 44) {
         ctx.beginPath();
-        ctx.moveTo(gx, 40);
-        ctx.lineTo(gx, H - 60);
+        ctx.moveTo(gx, 36);
+        ctx.lineTo(gx, H - 55);
         ctx.stroke();
       }
 
-      // Table Watermark Emblem
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-      ctx.font = '900 22px Impact, Arial Black, sans-serif';
+      // 1c. Table-Specific Neon Centerpiece Art (x=176, y=338)
+      const cx = 176;
+      const cy = 338;
+      ctx.save();
+      ctx.globalAlpha = 0.34;
+      ctx.strokeStyle = tbl.accent;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 46, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.strokeStyle = tbl.secondary;
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 34, st.tick * 0.03, st.tick * 0.03 + Math.PI * 1.4);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx, cy, 24, -st.tick * 0.04, -st.tick * 0.04 + Math.PI * 1.3);
+      ctx.stroke();
+      ctx.restore();
+
+      // Table Neon Emblem & Multiplier Readout in Center Ring
+      ctx.fillStyle = tbl.accent;
+      ctx.globalAlpha = 0.32;
+      ctx.font = '900 18px Impact, Arial Black, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(tbl.name.toUpperCase(), 182, 348);
+      ctx.fillText(tbl.name.toUpperCase(), cx, cy + 58);
+      ctx.globalAlpha = 0.55;
+      ctx.fillStyle = st.multiplier > 1 ? '#facc15' : '#00f3ff';
+      ctx.font = '900 15px sans-serif';
+      ctx.fillText(`${st.multiplier}× NEON`, cx, cy + 5);
+      ctx.globalAlpha = 1;
+
+      // 1d. Sequential Animated Neon Chase Chevrons in Shooter Lane & Inlanes
+      const chasePhase = Math.floor(st.tick / 6) % 6;
+      for (let i = 0; i < 6; i++) {
+        const lit = i === 5 - chasePhase;
+        const ay = 165 + i * 52;
+        ctx.fillStyle = lit ? '#00f3ff' : 'rgba(236, 72, 153, 0.28)';
+        ctx.font = '900 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('▲', SHOOTER_X + 1, ay);
+      }
+      // Center jackpot directional neon chevrons
+      for (let i = 0; i < 3; i++) {
+        const lit = (Math.floor(st.tick / 8) + i) % 3 === 0;
+        ctx.fillStyle = lit ? '#facc15' : 'rgba(0, 243, 255, 0.22)';
+        ctx.font = '900 11px sans-serif';
+        ctx.fillText('▲', cx, 290 - i * 13);
+      }
 
       // 2. Gravity Well (Table 5)
       if (tbl.gravityWell) {
@@ -1022,17 +1153,78 @@ export default function VegasPinballGame({
         ctx.fillText(mb.label, st.movingX, mb.y + 5);
       }
 
-      // 11. Neon Walls & Slingshots
-      ctx.strokeStyle = tbl.accent;
-      ctx.lineWidth = 3;
+      // 11. Illuminated Neon Slingshot Kicker Triangles & Triple-Layer Neon Glass Tube Walls
+      // Left Slingshot Fill (48,376 -> 48,434 -> 94,446)
+      ctx.globalAlpha = st.leftSlingFlash > 0 ? 0.55 : 0.16;
+      ctx.fillStyle = st.leftSlingFlash > 0 ? '#ffffff' : tbl.secondary;
+      ctx.beginPath();
+      ctx.moveTo(48, 376);
+      ctx.lineTo(48, 434);
+      ctx.lineTo(94, 446);
+      ctx.closePath();
+      ctx.fill();
+
+      // Right Slingshot Fill (300,376 -> 300,434 -> 254,446)
+      ctx.globalAlpha = st.rightSlingFlash > 0 ? 0.55 : 0.16;
+      ctx.fillStyle = st.rightSlingFlash > 0 ? '#ffffff' : tbl.secondary;
+      ctx.beginPath();
+      ctx.moveTo(300, 376);
+      ctx.lineTo(300, 434);
+      ctx.lineTo(254, 446);
+      ctx.closePath();
+      ctx.fill();
+
+      // Triple-Layer Neon Tube Walls (Outer Halo + Mid Neon Tube + White-Hot Filament)
       ctx.lineCap = 'round';
       staticWalls.forEach((seg, idx) => {
-        ctx.strokeStyle = idx >= 9 ? tbl.secondary : tbl.accent;
+        const isSling = idx >= 9;
+        const tubeCol = isSling ? tbl.secondary : tbl.accent;
+        // Pass 1: Outer Neon Halo
+        ctx.globalAlpha = 0.22;
+        ctx.strokeStyle = tubeCol;
+        ctx.lineWidth = 9.5;
+        ctx.beginPath();
+        ctx.moveTo(seg[0], seg[1]);
+        ctx.lineTo(seg[2], seg[3]);
+        ctx.stroke();
+
+        // Pass 2: Mid Vibrant Neon Tube
+        ctx.globalAlpha = 0.95;
+        ctx.strokeStyle = tubeCol;
+        ctx.lineWidth = 3.8;
+        ctx.beginPath();
+        ctx.moveTo(seg[0], seg[1]);
+        ctx.lineTo(seg[2], seg[3]);
+        ctx.stroke();
+
+        // Pass 3: White-Hot Inner Filament
+        ctx.globalAlpha = 0.8;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.2;
         ctx.beginPath();
         ctx.moveTo(seg[0], seg[1]);
         ctx.lineTo(seg[2], seg[3]);
         ctx.stroke();
       });
+      ctx.globalAlpha = 1;
+
+      // 11b. Expanding Neon Shockwave Ripples & Flying Neon Sparks on Hits
+      st.neonWaves.forEach((w) => {
+        ctx.globalAlpha = Math.max(0, (w.life / w.maxLife) * 0.7);
+        ctx.strokeStyle = w.color;
+        ctx.lineWidth = 2.6;
+        ctx.beginPath();
+        ctx.arc(w.x, w.y, w.r, 0, Math.PI * 2);
+        ctx.stroke();
+      });
+      st.sparks.forEach((sp) => {
+        ctx.globalAlpha = Math.max(0, sp.life / 14);
+        ctx.fillStyle = sp.color;
+        ctx.beginPath();
+        ctx.arc(sp.x, sp.y, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1;
 
       // Plunger Spring Visual in Bottom-Right Shooter Lane
       ctx.fillStyle = '#f43f5e';
@@ -1043,8 +1235,16 @@ export default function VegasPinballGame({
 
       // Plasma Drain Shield Laser across Bottom Gap
       if (st.drainShield) {
+        ctx.globalAlpha = 0.3;
         ctx.strokeStyle = '#00f3ff';
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 11;
+        ctx.beginPath();
+        ctx.moveTo(106, H - 22);
+        ctx.lineTo(242, H - 22);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.moveTo(106, H - 22);
         ctx.lineTo(242, H - 22);
@@ -1058,9 +1258,19 @@ export default function VegasPinballGame({
       ].forEach((fl) => {
         const tx = fl.px + Math.cos(fl.ang) * FLIPPER_LEN;
         const ty = fl.py + Math.sin(fl.ang) * FLIPPER_LEN;
+        // Outer Neon Flipper Glow
+        ctx.globalAlpha = 0.28;
+        ctx.strokeStyle = '#00f3ff';
+        ctx.lineWidth = 17;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(fl.px, fl.py);
+        ctx.lineTo(tx, ty);
+        ctx.stroke();
+
+        ctx.globalAlpha = 1;
         ctx.strokeStyle = '#00f3ff';
         ctx.lineWidth = 11;
-        ctx.lineCap = 'round';
         ctx.beginPath();
         ctx.moveTo(fl.px, fl.py);
         ctx.lineTo(tx, ty);
@@ -1074,8 +1284,30 @@ export default function VegasPinballGame({
         ctx.stroke();
       });
 
-      // 13. Chrome Pinballs
+      // 13. Neon Comet Ball Trails & Chrome Pinballs
+      const trailColors = ['#00f3ff', '#f472b6', '#facc15', '#4ade80', '#c084fc'];
+      const activeTrailCol = trailColors[(st.multiplier - 1) % trailColors.length];
       st.balls.forEach((b) => {
+        if (b.trail && b.trail.length > 1) {
+          for (let i = 0; i < b.trail.length - 1; i++) {
+            const pt = b.trail[i];
+            const ratio = (i + 1) / b.trail.length;
+            ctx.globalAlpha = ratio * 0.42;
+            ctx.fillStyle = activeTrailCol;
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, BALL_R * ratio * 0.9, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.globalAlpha = 1;
+        }
+        // Outer Neon Ball Halo
+        ctx.globalAlpha = 0.32;
+        ctx.fillStyle = activeTrailCol;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, BALL_R + 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
         ctx.fillStyle = '#e2e8f0';
         ctx.beginPath();
         ctx.arc(b.x, b.y, BALL_R, 0, Math.PI * 2);
@@ -1146,9 +1378,9 @@ export default function VegasPinballGame({
                 type="button"
                 className="tm-crush2-prize-btn"
                 onClick={handleStartPrizeRun}
-                title="Insert 10 Tokens to play for 8–32 Token high-score payouts!"
+                title="Insert 10 Tokens to play for 10–35 Token high-score payouts!"
               >
-                🪙 Insert {entryCost} (Win up to 32 🪙)
+                🪙 Insert {entryCost} (Win up to 35 🪙)
               </button>
             )}
           </div>

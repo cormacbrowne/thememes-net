@@ -25,6 +25,7 @@ import {
   evaluateTokenAward,
   hasActionBeenRewarded,
   validateStakedGamePayout,
+  computeXpConversionState,
   getTodayDateString
 } from './utils/tokenEconomy';
 import { updateDynamicSeo } from './utils/seoEngine';
@@ -138,8 +139,20 @@ export default function App() {
   const lastPublishTimeRef = useRef(0);
   const loadMoreSentinelRef = useRef(null);
 
-  // Gamification, Fair Arcade Tokens, CRT Shader, Turbo iPad FPS Mode, Sound Pack & Combo State
-  const [xp, setXp] = useState(() => Number(localStorage.getItem('tm_xp') || 60));
+  // Gamification, Fair Arcade Tokens, XP-to-Token Reactor, CRT Shader, Turbo iPad FPS Mode, Sound Pack & Combo State
+  const [xp, setXp] = useState(() => Number(localStorage.getItem('tm_xp') || 75));
+  const [xpConverted, setXpConverted] = useState(() => {
+    const saved = localStorage.getItem('tm_xp_converted_v1');
+    if (saved !== null) return Math.max(0, Number(saved) || 0);
+    // Start existing/new players at 75/100 XP in the Reactor (only 25 XP away from their first +5 🪙 mint!)
+    const initialXp = Number(localStorage.getItem('tm_xp') || 75);
+    return Math.max(0, initialXp - 75);
+  });
+  const [xpAutoConvert, setXpAutoConvert] = useState(
+    () => localStorage.getItem('tm_xp_autoconvert_v1') !== 'false'
+  );
+  const [reactorFlash, setReactorFlash] = useState(false);
+  const bossStealthCountRef = useRef(0);
   const [tokens, setTokens] = useState(() => loadTokenBalance());
   const tokensRef = useRef(tokens);
   const [tokenLedger, setTokenLedger] = useState(() => loadTokenLedger());
@@ -328,10 +341,18 @@ export default function App() {
     return Math.min(100, Math.max(5, Math.round((current / needed) * 100)));
   }, [xp, currentRank, nextRank]);
 
-  // Persist XP, Tokens, Token Ledger, Votes, Reactions, CRT, Bounties, Royalties & Reported Memes
+  // Persist XP, XP Reactor, Tokens, Token Ledger, Votes, Reactions, CRT, Bounties, Royalties & Reported Memes
   useEffect(() => {
     localStorage.setItem('tm_xp', String(xp));
   }, [xp]);
+
+  useEffect(() => {
+    localStorage.setItem('tm_xp_converted_v1', String(xpConverted));
+  }, [xpConverted]);
+
+  useEffect(() => {
+    localStorage.setItem('tm_xp_autoconvert_v1', String(xpAutoConvert));
+  }, [xpAutoConvert]);
 
   useEffect(() => {
     tokensRef.current = tokens;
@@ -490,6 +511,14 @@ export default function App() {
     tokenLedger,
     `daily:pinata:${getTodayDateString()}`
   );
+  const payphoneClaimedToday = hasActionBeenRewarded(
+    tokenLedger,
+    `daily:payphone_coin:${getTodayDateString()}`
+  );
+  const xpConversionState = useMemo(
+    () => computeXpConversionState(xp, xpConverted, tokenLedger),
+    [xp, xpConverted, tokenLedger]
+  );
   const isFixedArcadeGame = ['slots', 'crush', 'pinball', 'stocks'].includes(viewMode);
 
   const addCappedWheelSpins = useCallback((delta = 1) => {
@@ -508,13 +537,16 @@ export default function App() {
   const unclaimedRewardsCount = useMemo(() => {
     let count = lootSpins > 0 ? lootSpins : 0;
     if (!streakClaimedToday) count += 1;
+    if (xpConversionState.readyUnits > 0 && !xpConversionState.isDailyCapped) {
+      count += 1;
+    }
     for (const q of DAILY_QUESTS) {
       if ((questProgress[q.id] || 0) >= q.target && !claimedQuests[q.id]) {
         count += 1;
       }
     }
     return count;
-  }, [lootSpins, streakClaimedToday, questProgress, claimedQuests]);
+  }, [lootSpins, streakClaimedToday, xpConversionState, questProgress, claimedQuests]);
 
   // ==========================================
   // INITIALIZE SUPABASE & REALTIME FEED
@@ -800,6 +832,107 @@ export default function App() {
     },
     [awardFairReward]
   );
+
+  /**
+   * 1986 Neon Payphone Coin Return Slot Handler (1x/day +5 🪙 & +50 XP!)
+   */
+  const handleClaimPayphoneCoinReturn = useCallback(
+    (e) => {
+      const res = awardFairReward({
+        category: 'quests',
+        requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.PAYPHONE_COIN_RETURN.tokens,
+        xpGain: ARCADE_ECONOMY_RULES.REWARDS.PAYPHONE_COIN_RETURN.xp,
+        actionKey: `daily:payphone_coin:${getTodayDateString()}`,
+        event: e,
+        emoji: '☎️'
+      });
+      return res.awardedTokens || 0;
+    },
+    [awardFairReward]
+  );
+
+  /**
+   * Boss Mode Stealth XP Handler (Awards +15 XP up to 12 clicks per session so Boss Mode feeds the XP Reactor!)
+   */
+  const handleBossSecretXp = useCallback(() => {
+    if (bossStealthCountRef.current >= 12) return;
+    bossStealthCountRef.current += 1;
+    awardXpOnly(15, null, '💼', '+15 Stealth XP!');
+  }, [awardXpOnly]);
+
+  /**
+   * XP-to-Token Reactor Exchange Handler (Manual or Auto-Triggered)
+   * Converts 100 XP units -> +5 🪙 Tokens without ever reducing Rank XP!
+   */
+  const handleExchangeXpForTokens = useCallback(
+    (manualEvent = null) => {
+      const state = computeXpConversionState(xp, xpConverted, tokenLedger);
+      if (state.readyUnits <= 0 || state.isDailyCapped) return 0;
+
+      const requestedTokens = state.readyUnits * state.tokensPerBatch;
+      const evalRes = evaluateTokenAward({
+        ledger: tokenLedger,
+        category: 'xpConversion',
+        requestedTokens,
+        actionKey: null
+      });
+
+      if (!evalRes.allowed || evalRes.awardedTokens <= 0) return 0;
+
+      const unitsActuallyMinted = Math.max(
+        1,
+        Math.floor(evalRes.awardedTokens / state.tokensPerBatch)
+      );
+      const xpConsumed = unitsActuallyMinted * state.xpThreshold;
+
+      setTokenLedger(evalRes.nextLedger);
+      setXpConverted((prev) => prev + xpConsumed);
+      tokensRef.current += evalRes.awardedTokens;
+      setTokens(tokensRef.current);
+
+      setReactorFlash(true);
+      setTimeout(() => setReactorFlash(false), 1800);
+      sfx.playJackpot();
+
+      const clientX =
+        manualEvent?.clientX || (typeof window !== 'undefined' ? window.innerWidth * 0.65 : 500);
+      const clientY = manualEvent?.clientY || 68;
+      spawnParticles(
+        clientX,
+        clientY,
+        `⚡ XP REACTOR: +${evalRes.awardedTokens} 🪙!`,
+        '🪙'
+      );
+
+      setGoblinFortuneToast(
+        `⚡ XP-TO-TOKEN REACTOR: Converted ${xpConsumed} XP → +${evalRes.awardedTokens} 🪙 Tokens! (Your Lv.${currentRank.level} Rank XP stays intact!)`
+      );
+      setTimeout(() => setGoblinFortuneToast(''), 4800);
+
+      return evalRes.awardedTokens;
+    },
+    [xp, xpConverted, tokenLedger, spawnParticles, currentRank.level]
+  );
+
+  const handleToggleXpAutoConvert = useCallback(() => {
+    sfx.playToggle();
+    setXpAutoConvert((prev) => !prev);
+  }, []);
+
+  // Automatic XP-to-Token Reactor Trigger when Auto-Convert is ON and 100+ unconverted XP is reached
+  useEffect(() => {
+    if (!xpAutoConvert) return undefined;
+    if (xpConversionState.readyUnits <= 0 || xpConversionState.isDailyCapped) return undefined;
+    const timer = setTimeout(() => {
+      handleExchangeXpForTokens(null);
+    }, 380);
+    return () => clearTimeout(timer);
+  }, [
+    xpAutoConvert,
+    xpConversionState.readyUnits,
+    xpConversionState.isDailyCapped,
+    handleExchangeXpForTokens
+  ]);
 
   /**
    * Awards Primary Meme Upload Tokens + 1-Time +30 🪙 First-Upload Pioneer Bonus!
@@ -1921,7 +2054,7 @@ export default function App() {
         const h = window.innerHeight;
         const bursts = [
           { x: w * 0.25, y: h * 0.3, emoji: '👑', label: 'GOD MODE!' },
-          { x: w * 0.75, y: h * 0.3, emoji: '💎', label: canClaimReward ? '+20 🪙!' : 'FIREWORKS!' },
+          { x: w * 0.75, y: h * 0.3, emoji: '💎', label: canClaimReward ? '+5 🪙!' : 'FIREWORKS!' },
           { x: w * 0.5, y: h * 0.45, emoji: '🚀', label: 'GIGA-CHAD!' }
         ];
         bursts.forEach((b, idx) => {
@@ -2022,11 +2155,24 @@ export default function App() {
       if (randomUserMeme) {
         setMutatingParentMeme(randomUserMeme);
       }
+      const chaosEmojiPool = ['🔥', '💀', '😂', '👑', '🕶️', '🚀', '🗿', '💎'];
+      const pickSticker = (xPct, yPct) => ({
+        emoji: chaosEmojiPool[Math.floor(Math.random() * chaosEmojiPool.length)],
+        xPct,
+        yPct,
+        size: 64
+      });
       setForgeIntent({
-        mode: 'remix',
+        mode: 'chaos',
         parent: randomUserMeme,
         imageUrl: randomUserMeme?.image_url || null,
-        initialText: `${randCap[0]} ${randCap[1]}`
+        initialText: `${randCap[0]} ${randCap[1]}`,
+        chaos: {
+          top: randCap[0],
+          bottom: randCap[1],
+          stickers: [pickSticker(0.2, 0.28), pickSticker(0.8, 0.72)],
+          filter: { contrast: 118, saturate: 135, hue: 0, deepfry: false }
+        }
       });
       setShowStudio(true);
 
@@ -2034,7 +2180,7 @@ export default function App() {
         spawnParticles(
           e.clientX || window.innerWidth / 2,
           e.clientY || 120,
-          '🎲 STUDIO PRESET!',
+          '🎲 CHAOS ROULETTE!',
           '🎲'
         );
       }
@@ -2580,7 +2726,7 @@ export default function App() {
           className={`tm-loot-goblin ${activeGoblin.dir}`}
           style={{ top: `${activeGoblin.topPct}%` }}
           onClick={handleCatchGoblin}
-          title="Catch the Wild Golden Loot Goblin (+5 Tokens max 1x/day & +40 XP)!"
+          title="Catch the Wild Golden Loot Goblin (+5 Tokens max 1x/day & +60 XP)!"
         >
           <span className="tm-goblin-icon">👾✨</span>
           <span className="tm-goblin-tag">CATCH ME! WILD LOOT!</span>
@@ -2673,7 +2819,7 @@ export default function App() {
       {bossKeyActive && (
         <BossKeyOverlay
           onExitBossMode={() => setBossKeyActive(false)}
-          onSecretWorkXp={() => {}}
+          onSecretWorkXp={handleBossSecretXp}
           memes={memes}
         />
       )}
@@ -2786,6 +2932,10 @@ export default function App() {
             xpProgress={xpProgress}
             tokens={tokens}
             dailyTokensEarned={tokenLedger?.totalToday || 0}
+            xpConversionState={xpConversionState}
+            xpAutoConvert={xpAutoConvert}
+            reactorFlash={reactorFlash}
+            onExchangeXpForTokens={handleExchangeXpForTokens}
             viewMode={viewMode}
             onSelectViewMode={(mode) => {
               sfx.playToggle();
@@ -3352,7 +3502,7 @@ export default function App() {
                 </div>
                 <div className="tm-arcade-steer-footer">
                   <span className="tm-arcade-steer-payout">
-                    🪙 Wager 5–50 Tokens • Up to 40× Jackpot
+                    🪙 Wager 5–50 Tokens • Up to 50× Jackpot
                   </span>
                   <button
                     type="button"
@@ -3479,7 +3629,7 @@ export default function App() {
                 </div>
                 <div className="tm-arcade-steer-footer">
                   <span className="tm-arcade-steer-payout">
-                    🪙 10 Token Coin-Op Run (Win up to 32 🪙) or Free Practice
+                    🪙 10 Token Coin-Op Run (Win up to 35 🪙) or Free Practice
                   </span>
                   <button
                     type="button"
@@ -3670,12 +3820,17 @@ export default function App() {
         </div>
       )}
 
-      {/* PHASE 20: INTERACTIVE "DO NOT PRESS" CHAOS BUTTON & SKILL-BASED DODGING PIÑATA */}
+      {/* PHASE 20: INTERACTIVE "DO NOT PRESS" CHAOS BUTTON, 1986 NEON PAYPHONE & SKILL-BASED DODGING PIÑATA */}
       {!bossKeyActive && !isFixedArcadeGame && (
         <DankPetWidget
           onEarnPetXp={awardXpOnly}
           onWinPinataReward={handleWinPinataReward}
           pinataClaimedToday={pinataClaimedToday}
+          onClaimPayphoneCoinReturn={handleClaimPayphoneCoinReturn}
+          payphoneClaimedToday={payphoneClaimedToday}
+          onTriggerBossMode={() => setBossKeyActive(true)}
+          onLaunchStampede={handleLaunchStampede}
+          onChangeChaosMutator={handleChangeChaosMutator}
           memes={memes}
           onSelectViewMode={(mode) => {
             sfx.playToggle();
@@ -3824,12 +3979,17 @@ export default function App() {
         />
       )}
 
-      {/* MODAL 6: ARCADE VAULT (FAIR TOKEN LEDGER, ONE-ARM BANDIT, WHEEL OF CHAOS, TRAILS, DAILY STREAK & QUESTS) */}
+      {/* MODAL 6: ARCADE VAULT (FAIR TOKEN LEDGER, XP REACTOR, ONE-ARM BANDIT, WHEEL OF CHAOS, TRAILS, DAILY STREAK & QUESTS) */}
       {showRewardsModal && (
         <RewardsModal
           xp={xp}
           tokens={tokens}
           tokenLedger={tokenLedger}
+          xpConversionState={xpConversionState}
+          xpAutoConvert={xpAutoConvert}
+          onToggleXpAutoConvert={handleToggleXpAutoConvert}
+          onExchangeXpForTokens={handleExchangeXpForTokens}
+          reactorFlash={reactorFlash}
           lootSpins={lootSpins}
           wheelSpinsLeftInWindow={wheelSpinsLeftInWindow}
           wheelResetMs={wheelResetMs}

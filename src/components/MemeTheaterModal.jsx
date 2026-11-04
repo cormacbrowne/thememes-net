@@ -234,7 +234,7 @@ export default function MemeTheaterModal({
                   onTriggerStudioMutate(meme, e);
                 }}
               >
-                🧬 Remix Meme (+150 XP)
+                🧬 Remix Meme (+35 🪙 &amp; +110 XP)
               </button>
             </div>
           </div>

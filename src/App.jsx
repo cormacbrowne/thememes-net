@@ -2845,6 +2845,16 @@ export default function App() {
           <nav className="tm-fixed-game-pills" aria-label="Switch Arcade Game">
             <button
               type="button"
+              className={`tm-fixed-game-pill ${viewMode === 'pinball' ? 'active' : ''}`}
+              onClick={() => {
+                sfx.playPinballBumper(0);
+                setViewMode('pinball');
+              }}
+            >
+              🎱 Pinball
+            </button>
+            <button
+              type="button"
               className={`tm-fixed-game-pill ${viewMode === 'blackjack' ? 'active' : ''}`}
               onClick={() => {
                 sfx.playCardDeal();
@@ -2892,16 +2902,6 @@ export default function App() {
               }}
             >
               🍬 Crush
-            </button>
-            <button
-              type="button"
-              className={`tm-fixed-game-pill ${viewMode === 'pinball' ? 'active' : ''}`}
-              onClick={() => {
-                sfx.playToggle();
-                setViewMode('pinball');
-              }}
-            >
-              🎱 Pinball
             </button>
           </nav>
 
@@ -3093,6 +3093,17 @@ export default function App() {
               </span>
               <button
                 type="button"
+                className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'pinball' ? 'active' : ''}`}
+                onClick={() => {
+                  sfx.playPinballBumper(0);
+                  setViewMode('pinball');
+                }}
+                title="Play 5-Table 80s Hyper-Neon Cyber-Pinball (Center-Stage Widescreen Showcase)"
+              >
+                🎱 Neon Pinball <span className="tm-mode-hot-badge">5 TBLS</span>
+              </button>
+              <button
+                type="button"
                 className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'blackjack' ? 'active' : ''}`}
                 onClick={() => {
                   sfx.playCardDeal();
@@ -3145,17 +3156,6 @@ export default function App() {
                 title="Play 10-Level 80s Neon Meme Crush Saga"
               >
                 🍬 Meme Crush <span className="tm-mode-hot-badge">10 LVLS</span>
-              </button>
-              <button
-                type="button"
-                className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'pinball' ? 'active' : ''}`}
-                onClick={() => {
-                  sfx.playPinballBumper(0);
-                  setViewMode('pinball');
-                }}
-                title="Play 5-Table 80s Neon Cyber-Pinball"
-              >
-                🎱 Pinball <span className="tm-mode-hot-badge">5 TBLS</span>
               </button>
             </div>
 

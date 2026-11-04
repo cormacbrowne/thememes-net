@@ -1790,6 +1790,101 @@ export class SoundEngine {
       // Ignore audio errors
     }
   }
+
+  /**
+   * 🚗 K.I.T.T. KNIGHT RIDER ANAMORPHIC SCANNER "WHOOSH-WHOOSH" SWEEP
+   */
+  playKittScanner() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(18);
+      const now = this.ctx.currentTime;
+
+      // Dual-pass Knight Industries scanner turbine sweep
+      [0, 0.24].forEach((offset, pass) => {
+        const start = now + offset;
+        const osc = this.ctx.createOscillator();
+        const sub = this.ctx.createOscillator();
+        const filter = this.ctx.createBiquadFilter();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sawtooth';
+        sub.type = 'triangle';
+        const fStart = pass === 0 ? 185 : 540;
+        const fPeak = pass === 0 ? 560 : 175;
+        osc.frequency.setValueAtTime(fStart, start);
+        osc.frequency.exponentialRampToValueAtTime(fPeak, start + 0.21);
+        sub.frequency.setValueAtTime(fStart * 0.5, start);
+        sub.frequency.exponentialRampToValueAtTime(fPeak * 0.5, start + 0.21);
+
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(fStart * 1.8, start);
+        filter.frequency.exponentialRampToValueAtTime(fPeak * 1.8, start + 0.21);
+        filter.Q.setValueAtTime(4.2, now);
+
+        gain.gain.setValueAtTime(0.001, start);
+        gain.gain.linearRampToValueAtTime(0.16, start + 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.23);
+
+        osc.connect(filter);
+        sub.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(start);
+        sub.start(start);
+        osc.stop(start + 0.24);
+        sub.stop(start + 0.24);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🔴 HAL 9000 DISCOVERY ONE POD BAY TELEMETRY HUM & BEEP
+   */
+  playHalBeep() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(14);
+      const now = this.ctx.currentTime;
+
+      // Deep 2001 Discovery One computer ambient drone
+      const drone = this.ctx.createOscillator();
+      const droneGain = this.ctx.createGain();
+      drone.type = 'sine';
+      drone.frequency.setValueAtTime(110, now);
+      drone.frequency.linearRampToValueAtTime(98, now + 0.36);
+      droneGain.gain.setValueAtTime(0.12, now);
+      droneGain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+      drone.connect(droneGain);
+      droneGain.connect(this.ctx.destination);
+      drone.start(now);
+      drone.stop(now + 0.39);
+
+      // Clean heuristic telemetry two-tone bleep
+      [880, 659.25].forEach((freq, idx) => {
+        const start = now + idx * 0.11;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.09, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.095);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.1);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
 }
 
 export const sfx = new SoundEngine();

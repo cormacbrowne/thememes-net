@@ -102,6 +102,14 @@ export default function NavbarHud({
             <div className="tm-nav-subgames tm-hide-mobile">
               <button
                 type="button"
+                className={`tm-btn tm-subgame-nav-pill ${viewMode === 'pinball' ? 'active' : ''}`}
+                onClick={() => onSelectViewMode('pinball')}
+                title="Play 5-Table 80s Hyper-Neon Cyber-Pinball (Center-Stage Widescreen)!"
+              >
+                🎱 Pinball
+              </button>
+              <button
+                type="button"
                 className={`tm-btn tm-subgame-nav-pill ${viewMode === 'blackjack' ? 'active' : ''}`}
                 onClick={() => onSelectViewMode('blackjack')}
                 title="Play Neon 21's Blackjack vs Dealer Bot '86!"
@@ -131,14 +139,6 @@ export default function NavbarHud({
                 title="Play Meme Crush Saga — Candy-Crush Style Match-3 Puzzle!"
               >
                 🍬 Crush
-              </button>
-              <button
-                type="button"
-                className={`tm-btn tm-subgame-nav-pill ${viewMode === 'pinball' ? 'active' : ''}`}
-                onClick={() => onSelectViewMode('pinball')}
-                title="Play 5-Table 80s Neon Cyber-Pinball!"
-              >
-                🎱 Pinball
               </button>
               <button
                 type="button"

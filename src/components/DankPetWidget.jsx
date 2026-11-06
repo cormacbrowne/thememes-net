@@ -108,12 +108,23 @@ export default function DankPetWidget({
   onLaunchStampede,
   onChangeChaosMutator,
   memes = [],
-  onSelectViewMode
+  onSelectViewMode,
+  viewMode = 'feed',
+  externalPayphoneOpen = false,
+  onToggleExternalPayphone = null
 }) {
-  const [minimized, setMinimized] = useState(false);
+  const [minimized, setMinimized] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth <= 1024;
+  });
   const [eventIdx, setEventIdx] = useState(0);
   const [activeEvent, setActiveEvent] = useState(null); // null | 'pinata' | 'boss' | 'ufo' | 'police' | 'jackpot'
-  const [showPayphone, setShowPayphone] = useState(false);
+  const [internalPayphoneOpen, setInternalPayphoneOpen] = useState(false);
+  const showPayphone = internalPayphoneOpen || Boolean(externalPayphoneOpen);
+  const setShowPayphone = (val) => {
+    setInternalPayphoneOpen(Boolean(val));
+    if (onToggleExternalPayphone) onToggleExternalPayphone(Boolean(val));
+  };
   const [dialedDigits, setDialedDigits] = useState('1-800-MEME');
   const [payphoneLineMsg, setPayphoneLineMsg] = useState(
     '📟 INSERT DIME OR TAP SCRATCHED BOOTH GRAFFITI BELOW TO DIAL SECRET 1986 HOTLINES!'
@@ -354,7 +365,12 @@ export default function DankPetWidget({
     }
   };
 
-  if (minimized) {
+  const isFeedMode = viewMode === 'feed';
+
+  if (minimized && !showPayphone && !activeEvent) {
+    if (!isFeedMode || (typeof window !== 'undefined' && window.innerWidth <= 1024)) {
+      return null;
+    }
     return (
       <button
         type="button"
@@ -366,7 +382,7 @@ export default function DankPetWidget({
         title="Restore the 🚨 DO NOT PRESS Button & 1986 Payphone!"
       >
         <span>🚨☎️</span>
-        <span>Chaos Dock</span>
+        <span>Chaos</span>
       </button>
     );
   }
@@ -717,40 +733,42 @@ export default function DankPetWidget({
         </div>
       )}
 
-      {/* CORNER BIG RED "DO NOT PRESS" CHAOS BUTTON + 1986 NEON PAYPHONE HOTLINE */}
-      <div className="tm-donotpress-dock">
-        <button
-          type="button"
-          className="tm-payphone-dock-btn"
-          onClick={() => {
-            playDtmfTone('5');
-            setShowPayphone(true);
-          }}
-          title="Open the 1986 Neon Arcade Payphone & Secret Hotline (Check Coin Return Slot for +5 🪙!)"
-        >
-          <span>☎️</span>
-          <span className="tm-hide-mobile">1-800-MEME</span>
-          {!payphoneClaimedToday && <span className="tm-payphone-coin-dot" title="Unclaimed quarters in Coin Return!" />}
-        </button>
+      {/* CORNER BIG RED "DO NOT PRESS" CHAOS BUTTON + 1986 NEON PAYPHONE HOTLINE (ONLY ON FEED VIEW) */}
+      {isFeedMode && !minimized && (
+        <div className="tm-donotpress-dock">
+          <button
+            type="button"
+            className="tm-payphone-dock-btn"
+            onClick={() => {
+              playDtmfTone('5');
+              setShowPayphone(true);
+            }}
+            title="Open the 1986 Neon Arcade Payphone & Secret Hotline (Check Coin Return Slot for +5 🪙!)"
+          >
+            <span>☎️</span>
+            <span className="tm-hide-mobile">1-800-MEME</span>
+            {!payphoneClaimedToday && <span className="tm-payphone-coin-dot" title="Unclaimed quarters in Coin Return!" />}
+          </button>
 
-        <button
-          type="button"
-          className="tm-donotpress-btn"
-          onClick={handlePressChaosButton}
-          title={memes && memes.length > 0 ? `Latest Feed Drop: "${memes[0].title}" by @${memes[0].author_name}` : 'Trigger a dodging Meme Piñata challenge, Boss Fight, UFO or 80s Arcade Alert!'}
-        >
-          <span className="tm-donotpress-led">🚨</span>
-          <span>{buttonCaption}</span>
-        </button>
-        <button
-          type="button"
-          className="tm-donotpress-hide"
-          onClick={() => setMinimized(true)}
-          title="Minimize dock"
-        >
-          ✕
-        </button>
-      </div>
+          <button
+            type="button"
+            className="tm-donotpress-btn"
+            onClick={handlePressChaosButton}
+            title={memes && memes.length > 0 ? `Latest Feed Drop: "${memes[0].title}" by @${memes[0].author_name}` : 'Trigger a dodging Meme Piñata challenge, Boss Fight, UFO or 80s Arcade Alert!'}
+          >
+            <span className="tm-donotpress-led">🚨</span>
+            <span>{buttonCaption}</span>
+          </button>
+          <button
+            type="button"
+            className="tm-donotpress-hide"
+            onClick={() => setMinimized(true)}
+            title="Minimize dock"
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </>
   );
 }

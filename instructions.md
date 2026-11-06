@@ -397,6 +397,26 @@ thememes-net/
 - [x] **🕹️ Extras x Memes Community Integration (`src/utils/memeFeedBridge.js`)**:
   - [x] Real feed memes integrated across Slots, MEMEDAQ price ticks & breaking news, Meme Crush level art, Dank Pet reactions, Boss Key easter eggs, and free daily Pinball/Arena perks for meme creators.
 
+### ✅ Phase 27: Cyber-Security Hardening, Automatic Device Optimizer (iPhone / iPhone Duo / iPad / Android / PC), iOS K.I.T.T. & HAL 9000 Voice Fix, Non-Intrusive Phone Caller, iPhone Meme Forge Fix, Enlarged Game Stages & Neon Coin Dozer '86 (Completed)
+- [x] **🛡️ Cyber-Security & Threat Hardening (`src/utils/securityGuard.js`, `vercel.json`, `index.html`, `src/utils/mediaPipeline.js`, `src/utils/publishMeme.js`)**:
+  - [x] Added production security headers in `vercel.json` (`Content-Security-Policy`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, `Strict-Transport-Security`) and CSP/Referrer meta tags in `index.html`.
+  - [x] Built `src/utils/securityGuard.js` with `sanitizeMediaUrl` (blocks `javascript:`, `vbscript:`, `data:text/html`, and `data:image/svg+xml` XSS vectors), `sanitizeUserText` (strips Bidi-spoofing and script tags), `sanitizeOverlayPayload`, `safeJsonParse` (prototype pollution filter), and `verifySafeMediaFile` (inspects the first 256 bytes of uploaded files to block SVG/HTML/script polyglots).
+- [x] **📲 Automatic Device Detection & Adaptive Experience Engine (`src/utils/deviceProfile.js`, `src/App.jsx`, `src/index.css`)**:
+  - [x] Automatically detects `iphone`, `iphone-duo` (dual-screen/foldable iPhone Duo, Surface Duo, Galaxy Z Fold, Pixel Fold via viewport segments, foldable UA tokens, and unfolded touch book aspect ratios), `ipad-mini`, `ipad`, `android-phone`, `android-tablet`, and `pc`.
+  - [x] Synchronizes `data-device`, `data-form-factor`, `data-os`, and `data-orientation` on `<html>` + `.tm-app`, and displays an interactive device optimization badge in the control bar.
+- [x] **🗣️ K.I.T.T. & HAL 9000 Voice Fixed on iPhone (`src/utils/soundEngine.js`, `src/components/ArcadeAiAssistant.jsx`)**:
+  - [x] Unlocked iOS Safari `window.speechSynthesis` on the first touch gesture inside `unlockIosAudio()`.
+  - [x] Eliminated the iOS WebKit synchronous `speechSynthesis.cancel()` + `speak()` race condition, added `utterRef` retention against WebKit garbage collection, prioritized `localService` English voices, and added a procedural WebAudio **Formant Vocal Modulator (`sfx.playAiVocalFormants`)** so K.I.T.T. and HAL 9000 always produce audible sci-fi vocal synthesis even when the iPhone hardware mute switch is ON.
+- [x] **☎️ Phone Caller (`1-800-MEME`) & AI FAB Game Control Interference Fixed (`src/components/DankPetWidget.jsx`, `src/components/ArcadeAiAssistant.jsx`, `src/App.jsx`)**:
+  - [x] Hidden the floating `.tm-ai-copilot-fab` and `.tm-donotpress-dock` on all games and interactive modes (`viewMode !== 'feed'`), defaulted the chaos dock to minimized on mobile/tablet (`<= 1024px`), and added a dedicated `☎️` Payphone trigger directly in `.tm-fixed-arcade-bar` and the main control bar.
+- [x] **🎨 Meme Forge 3.0 iPhone Sizing & Usability Fix (`src/components/forge/ForgeStage.jsx`, `src/hooks/useBoxSize.js`, `src/index.css`)**:
+  - [x] Fixed the Retina `ResizeObserver` canvas expansion loop in `ForgeStage.jsx` by locking `<canvas>`, `<video>`, and `<img>` to `position: absolute; inset: 0; width: 100%; height: 100%` and adding full `.tm-forge*` responsive mobile styles (`33dvh` top stage + scrollable bottom tools + `16px` no-zoom inputs on iOS).
+- [x] **🪙 New Arcade Game — Neon Coin Dozer '86 (`src/components/VegasCoinPusherGame.jsx`, `/?mode=pusher`)**:
+  - [x] 60fps HTML5 Canvas 3D-perspective arcade Penny-Falls / Coin Pusher machine with reciprocating **Chrome Pusher Bar**, **Skill-Timing Drop Window**, multi-pass coin-to-coin momentum transfer, **Front Collection Lip & Payoff Tray** vs **Left/Right Side Loss Gutters**, collectible 3D prizes (**💎 Neon Diamond +8 🪙**, **🎁 Mystery Box +12 🪙 + 5-Coin Shower**, **🏆 Golden Trophy +20 🪙 + 15s Laser Side-Walls**), **⚡ 3-Coin Barrage**, **💥 Cabinet Nudge** (with 3-strike TILT lock), **🌈 Bulldozer Fever**, and both **🆓 Free Play** and **🪙 Token Mode**.
+- [x] **🎡 Enlarged Roulette Wheel & Pinball Stages + 📈 Stock Market Candles Visibility Fix (`src/components/VegasRouletteGame.jsx`, `src/components/MemeStockMarketGame.jsx`, `src/index.css`)**:
+  - [x] Upgraded Roulette wheel canvas to `480x480` HD resolution (`min(430px, 56dvh)` on desktop/tablet) and expanded the Pinball canvas to `max-height: calc(100dvh - 155px)` so the main game elements fill most of the screen.
+  - [x] Defaulted `MEMEDAQ '86` to `🕯️ Candles` mode (with underlying trend wave + clamped OHLC wicks/bodies) and enforced `min-height: 155px` on `.tm-stocks-svg-wrap` / `.tm-stocks-svg` with scrollable `.tm-stocks-desk` so the chart and candlesticks are always 100% visible.
+
 ---
 
 ## 6. Development Commands

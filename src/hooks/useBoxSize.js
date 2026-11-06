@@ -9,7 +9,11 @@ export default function useBoxSize(ref) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return undefined;
-    const update = () => setSize({ W: el.clientWidth, H: el.clientHeight });
+    const update = () => {
+      const nextW = Math.round(el.clientWidth || 0);
+      const nextH = Math.round(el.clientHeight || 0);
+      setSize((prev) => (prev.W === nextW && prev.H === nextH ? prev : { W: nextW, H: nextH }));
+    };
     update();
     if (typeof ResizeObserver === 'undefined') return undefined;
     const ro = new ResizeObserver(update);

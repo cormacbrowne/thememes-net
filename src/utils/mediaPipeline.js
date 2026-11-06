@@ -1,7 +1,8 @@
 // ==========================================
-// PHASE 26: MEDIA PIPELINE (validate / probe / poster / compress / upload)
+// PHASE 26 & 27: MEDIA PIPELINE (validate / security-firewall / probe / poster / compress / upload)
 // Videos + GIFs are NEVER re-encoded through canvas. Stills become WebP/JPEG.
 // ==========================================
+import { verifySafeMediaFile, sanitizeMediaUrl } from './securityGuard';
 
 export const MEDIA_LIMITS = {
   IMAGE_MAX_BYTES: 15 * 1024 * 1024,
@@ -11,7 +12,7 @@ export const MEDIA_LIMITS = {
 };
 
 export const ACCEPT_MEDIA =
-  'image/*,image/gif,video/mp4,video/webm,video/quicktime,.mov,.mp4,.webm';
+  'image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm,video/quicktime,.png,.jpg,.jpeg,.webp,.gif,.mov,.mp4,.webm';
 
 export const VIDEO_TIP = '💡 For best results, upload MP4 — iPhone .mov (HEVC) may not play on Chrome/Android.';
 
@@ -22,6 +23,10 @@ export function getMediaKind(file) {
   if (!file) return null;
   const type = (file.type || '').toLowerCase();
   const name = (file.name || '').toLowerCase();
+  // Security hardening: never accept SVG or HTML files as media
+  if (type.includes('svg') || type.includes('html') || /\.(svg|svgz|html|htm|xhtml|xml)$/i.test(name)) {
+    return null;
+  }
   if (type === 'image/gif' || name.endsWith('.gif')) return 'gif';
   if (type.startsWith('image/')) return 'image';
   if (VIDEO_TYPES.includes(type) || /\.(mp4|webm|mov)$/.test(name)) return 'video';
@@ -92,6 +97,10 @@ export async function probeMedia(file) {
 
 /** Returns { ok, kind, error, tip, probe } with friendly errors. */
 export async function validateFile(file) {
+  const securityCheck = await verifySafeMediaFile(file);
+  if (!securityCheck.safe) {
+    return { ok: false, error: securityCheck.reason };
+  }
   const kind = getMediaKind(file);
   if (!kind) {
     return { ok: false, error: '⚠️ Unsupported file. Use PNG, JPG, WebP, GIF, MP4, WebM or MOV.' };
@@ -217,8 +226,8 @@ export function extFor(contentType) {
 /** Thumbnail-safe still URL for legacy <img> spots. */
 export function getMemeThumb(meme) {
   if (!meme) return '';
-  if (meme.media_type === 'video') return meme.poster_url || '';
-  return meme.image_url || meme.poster_url || '';
+  if (meme.media_type === 'video') return sanitizeMediaUrl(meme.poster_url || '');
+  return sanitizeMediaUrl(meme.image_url || meme.poster_url || '');
 }
 
 export function formatDuration(sec) {

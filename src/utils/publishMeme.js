@@ -8,6 +8,11 @@ import {
   guessContentType,
   makePoster
 } from './mediaPipeline';
+import {
+  sanitizeMediaUrl,
+  sanitizeUserText,
+  sanitizeOverlayPayload
+} from './securityGuard';
 
 const DEFAULT_REACTIONS = { '🔥': 1, '💀': 0, '😂': 0, '🗿': 0 };
 
@@ -100,21 +105,26 @@ export async function publishMeme({ media, overlay = null, meta = {}, client = n
     comments: []
   };
 
+  const safeOverlay = sanitizeOverlayPayload(overlay);
+  const safeImageUrl = sanitizeMediaUrl(imageUrl);
+  const safePosterUrl = posterUrl ? sanitizeMediaUrl(posterUrl) : null;
+  const safeBaseImageUrl = baseImageUrl ? sanitizeMediaUrl(baseImageUrl) : null;
+
   const phase26 = {
     media_type: kind,
-    poster_url: posterUrl,
+    poster_url: safePosterUrl,
     duration_sec: media.duration ? Number(media.duration.toFixed(2)) : null,
     width: media.width ? Math.round(media.width) : null,
     height: media.height ? Math.round(media.height) : null,
-    overlay: overlay || null,
-    base_image_url: baseImageUrl
+    overlay: safeOverlay,
+    base_image_url: safeBaseImageUrl
   };
 
   const baseRow = {
-    title: meta.title,
-    category: meta.category || 'dank',
-    image_url: imageUrl,
-    author_name: meta.author || 'AnonMemer',
+    title: sanitizeUserText(meta.title || 'Untitled Meme', 140),
+    category: sanitizeUserText(meta.category || 'dank', 32),
+    image_url: safeImageUrl,
+    author_name: sanitizeUserText(meta.author || 'AnonMemer', 48),
     score: 1,
     reactions: DEFAULT_REACTIONS,
     ...(isUuidLike(meta.parentId) ? { parent_meme_id: meta.parentId } : {})

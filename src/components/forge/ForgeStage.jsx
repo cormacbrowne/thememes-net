@@ -21,11 +21,13 @@ export default function ForgeStage({ editor, images, tab, onPanelTap, imageVersi
     const c = canvasRef.current;
     if (!c || motion || !W || !H) return;
     const dpr = Math.min(2, window.devicePixelRatio || 1);
-    c.width = Math.round(W * dpr);
-    c.height = Math.round(H * dpr);
+    const safeW = Math.min(1200, Math.max(1, W));
+    const safeH = Math.min(1200, Math.max(1, H));
+    c.width = Math.round(safeW * dpr);
+    c.height = Math.round(safeH * dpr);
     const ctx = c.getContext('2d');
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    drawBase(ctx, W, H, doc, images, { emptyHint: true });
+    drawBase(ctx, safeW, safeH, doc, images, { emptyHint: true });
   }, [doc, images, imageVersion, W, H, motion]);
 
   const toLocal = (e) => {
@@ -157,12 +159,28 @@ export default function ForgeStage({ editor, images, tab, onPanelTap, imageVersi
       >
         {motion ? (
           motion.kind === 'video' ? (
-            <video src={motion.url} poster={motion.posterUrl || undefined} muted loop autoPlay playsInline />
+            <video
+              src={motion.url}
+              poster={motion.posterUrl || undefined}
+              muted
+              loop
+              autoPlay
+              playsInline
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+            />
           ) : (
-            <img src={motion.url} alt="GIF base" draggable={false} />
+            <img
+              src={motion.url}
+              alt="GIF base"
+              draggable={false}
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+            />
           )
         ) : (
-          <canvas ref={canvasRef} />
+          <canvas
+            ref={canvasRef}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }}
+          />
         )}
         {W > 0 &&
           doc.layers.map((l) => (

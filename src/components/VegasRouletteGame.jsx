@@ -393,8 +393,10 @@ export default function VegasRouletteGame({
             }
           }
 
-          // 2. Clear & Draw Outer Neon Rim
-          ctx.clearRect(0, 0, W, H);
+          // 2. Clear & Scale to High-Res 480x480 Canvas
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.save();
+          ctx.scale(canvas.width / W, canvas.height / H);
 
           // Outer Ambient Halo
           ctx.globalAlpha = 0.2;
@@ -568,6 +570,7 @@ export default function VegasRouletteGame({
             ctx.fill();
           });
           ctx.globalAlpha = 1;
+          ctx.restore();
         }
       }
       rafId = requestAnimationFrame(renderLoop);
@@ -651,9 +654,15 @@ export default function VegasRouletteGame({
             <div className="tm-roul-canvas-box">
               <canvas
                 ref={canvasRef}
-                width={280}
-                height={280}
+                width={480}
+                height={480}
                 className="tm-roul-canvas"
+                onClick={() => {
+                  if (!spinning && totalBetAmount > 0) {
+                    handleSpinWheel();
+                  }
+                }}
+                title="Tap the Wheel or click SPIN WHEEL to launch the chrome ball!"
               />
               {lastWinInfo && (
                 <div className="tm-roul-win-overlay-pill">

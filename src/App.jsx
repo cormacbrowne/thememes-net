@@ -45,7 +45,10 @@ import VegasPinballGame from './components/VegasPinballGame';
 import VegasSlotMachine from './components/VegasSlotMachine';
 import VegasBlackjackGame from './components/VegasBlackjackGame';
 import VegasRouletteGame from './components/VegasRouletteGame';
+import VegasCoinPusherGame from './components/VegasCoinPusherGame';
 import MemeStockMarketGame from './components/MemeStockMarketGame';
+import { useDeviceProfile, DEVICE_PROFILES } from './utils/deviceProfile';
+import { getSecurityAuditReport } from './utils/securityGuard';
 import ArcadeAiAssistant from './components/ArcadeAiAssistant';
 import ParticleOverlay from './components/ParticleOverlay';
 import AuthModal from './components/AuthModal';
@@ -93,10 +96,12 @@ export default function App() {
   const [viewMode, setViewMode] = useState(() => {
     if (typeof window === 'undefined') return 'feed';
     const mode = new URLSearchParams(window.location.search).get('mode');
-    return ['feed', 'reels', 'blackjack', 'roulette', 'slots', 'crush', 'pinball', 'stocks', 'swipe', 'battle'].includes(mode)
+    return ['feed', 'reels', 'blackjack', 'roulette', 'pusher', 'slots', 'crush', 'pinball', 'stocks', 'swipe', 'battle'].includes(mode)
       ? mode
       : 'feed';
   });
+  const { profile: deviceProfile, setOverride: setDeviceOverride } = useDeviceProfile();
+  const [payphoneModalOpen, setPayphoneModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(() => {
     if (typeof window === 'undefined') return '';
     return new URLSearchParams(window.location.search).get('q') || '';
@@ -523,7 +528,7 @@ export default function App() {
     () => computeXpConversionState(xp, xpConverted, tokenLedger),
     [xp, xpConverted, tokenLedger]
   );
-  const isFixedArcadeGame = ['blackjack', 'roulette', 'slots', 'crush', 'pinball', 'stocks'].includes(viewMode);
+  const isFixedArcadeGame = ['blackjack', 'roulette', 'pusher', 'slots', 'crush', 'pinball', 'stocks'].includes(viewMode);
 
   const addCappedWheelSpins = useCallback((delta = 1) => {
     setLootSpins((prev) =>
@@ -2711,7 +2716,9 @@ export default function App() {
     <div
       className={`tm-app ${isFixedArcadeGame ? 'tm-app-game-fixed' : ''} ${
         litePerfMode ? 'tm-lite-perf' : ''
-      } ${screenShake ? 'tm-shake' : ''} tm-mutator-${chaosMutator}`}
+      } ${screenShake ? 'tm-shake' : ''} tm-mutator-${chaosMutator} tm-device-${deviceProfile.id}`}
+      data-device={deviceProfile.id}
+      data-form={deviceProfile.formFactor}
     >
       {/* ACTIVE-BY-DEFAULT SYNTHWAVE PERSPECTIVE GRID & NEON GLOW BACKDROP */}
       <div className="tm-synthwave-bg" aria-hidden="true">
@@ -2845,6 +2852,16 @@ export default function App() {
           <nav className="tm-fixed-game-pills" aria-label="Switch Arcade Game">
             <button
               type="button"
+              className={`tm-fixed-game-pill ${viewMode === 'pusher' ? 'active' : ''}`}
+              onClick={() => {
+                sfx.playCoinDrop?.();
+                setViewMode('pusher');
+              }}
+            >
+              🪙 Dozer
+            </button>
+            <button
+              type="button"
               className={`tm-fixed-game-pill ${viewMode === 'pinball' ? 'active' : ''}`}
               onClick={() => {
                 sfx.playPinballBumper(0);
@@ -2916,6 +2933,17 @@ export default function App() {
               title="Open Token Wallet & Daily Quests"
             >
               🪙 <strong>{tokens}</strong>
+            </button>
+            <button
+              type="button"
+              className="tm-fixed-icon-btn"
+              onClick={() => {
+                sfx.playToggle();
+                setPayphoneModalOpen(true);
+              }}
+              title="Open 1986 Arcade Payphone Hotline (1-800-MEME)"
+            >
+              ☎️
             </button>
             <button
               type="button"
@@ -3093,6 +3121,17 @@ export default function App() {
               </span>
               <button
                 type="button"
+                className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'pusher' ? 'active' : ''}`}
+                onClick={() => {
+                  sfx.playCoinDrop?.();
+                  setViewMode('pusher');
+                }}
+                title="Play Neon Coin Dozer '86 — Push Coins & Prizes Over the Lip into the Collection Tray!"
+              >
+                🪙 Coin Dozer <span className="tm-mode-hot-badge">NEW</span>
+              </button>
+              <button
+                type="button"
                 className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'pinball' ? 'active' : ''}`}
                 onClick={() => {
                   sfx.playPinballBumper(0);
@@ -3232,6 +3271,45 @@ export default function App() {
             )}
 
             <div className="tm-controls-right">
+              <button
+                type="button"
+                className="tm-device-badge-btn"
+                onClick={() => {
+                  const order = ['auto', 'iphone', 'iphone-duo', 'ipad-mini', 'ipad', 'android-phone', 'android-tablet', 'pc'];
+                  const cur = deviceProfile.override || 'auto';
+                  const next = order[(order.indexOf(cur) + 1) % order.length];
+                  setDeviceOverride(next);
+                  sfx.playToggle?.();
+                  const nextLabel = next === 'auto' ? `Auto (${DEVICE_PROFILES[deviceProfile.detectedId]?.label || 'Detected'})` : DEVICE_PROFILES[next]?.label;
+                  setGoblinFortuneToast(`📲 Device Optimizer: ${nextLabel} — ${DEVICE_PROFILES[next === 'auto' ? deviceProfile.detectedId : next]?.description || ''}`);
+                }}
+                title={`Active Device Optimization: ${deviceProfile.badge} (${deviceProfile.description}). Click to cycle/test device profiles (iPhone, iPhone Duo, iPad Mini, iPad, Android, PC)!`}
+              >
+                {deviceProfile.shortBadge}
+              </button>
+              <button
+                type="button"
+                className="tm-device-badge-btn tm-security-badge-btn"
+                onClick={() => {
+                  const rep = getSecurityAuditReport();
+                  sfx.playAiAssistantChime?.();
+                  setGoblinFortuneToast(`🛡️ Cyber-Shield ${rep.status} (${rep.score}): CSP + XSS URI Guard + Binary Media Firewall + Prototype Guard Active!`);
+                }}
+                title="Cyber-Security Status: 100% Hardened (Click to run instant security verification)"
+              >
+                🛡️ Safe
+              </button>
+              <button
+                type="button"
+                className="tm-device-badge-btn"
+                onClick={() => {
+                  sfx.playToggle?.();
+                  setPayphoneModalOpen(true);
+                }}
+                title="Open 1986 Payphone Hotline (1-800-MEME) — Claim +5 🪙 Coin Return!"
+              >
+                ☎️ 1-800-MEME
+              </button>
               {viewMode === 'feed' && (
                 <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', flex: 1 }}>
                   <input
@@ -3440,6 +3518,16 @@ export default function App() {
                           type="button"
                           className="tm-btn tm-btn-primary"
                           onClick={() => {
+                            sfx.playCoinDrop?.();
+                            setViewMode('pusher');
+                          }}
+                        >
+                          🪙 Coin Dozer &apos;86
+                        </button>
+                        <button
+                          type="button"
+                          className="tm-btn tm-btn-primary"
+                          onClick={() => {
                             sfx.playCardDeal();
                             setViewMode('blackjack');
                           }}
@@ -3557,6 +3645,49 @@ export default function App() {
               </h2>
             </div>
             <div className="tm-arcade-steer-grid tm-arcade-steer-grid-4">
+              {/* Cabinet 00: Neon Coin Dozer '86 — Arcade Penny Falls & Prize Machine */}
+              <div
+                className="tm-arcade-steer-card tm-steer-roulette"
+                onClick={() => {
+                  sfx.playCoinDrop?.();
+                  setViewMode('pusher');
+                }}
+              >
+                <div className="tm-arcade-steer-top">
+                  <span className="tm-arcade-steer-pill">🪙 NEON COIN DOZER &apos;86 • PENNY-FALLS PRIZE PUSHER</span>
+                  <span className="tm-arcade-steer-best">
+                    🏆 Best: {Number(localStorage.getItem('tm_pusher_highscore') || 0).toLocaleString()} pts
+                  </span>
+                </div>
+                <div className="tm-arcade-steer-body">
+                  <div className="tm-arcade-steer-icons">🪙🎁💎🏆</div>
+                  <div>
+                    <h3 className="tm-arcade-steer-title">NEON COIN DOZER &apos;86 — PRIZE PUSHER</h3>
+                    <p className="tm-arcade-steer-desc">
+                      Drop coins onto the reciprocating <strong>Chrome Pusher Shelf</strong> to nudge cascades of coins,{' '}
+                      <strong>💎 Neon Diamonds (+8 🪙)</strong>, <strong>🎁 Mystery Boxes (+12 🪙)</strong> &amp;{' '}
+                      <strong>🏆 Golden Trophies (+20 🪙)</strong> over the front lip into the payoff tray!
+                    </p>
+                  </div>
+                </div>
+                <div className="tm-arcade-steer-footer">
+                  <span className="tm-arcade-steer-payout">
+                    🪙 Free Practice Bucket or 1 Token per Coin Drop • Bulldozer Fever Shields
+                  </span>
+                  <button
+                    type="button"
+                    className="tm-btn tm-btn-primary tm-arcade-steer-cta"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      sfx.playCoinDrop?.();
+                      setViewMode('pusher');
+                    }}
+                  >
+                    ▶ Play Coin Dozer &apos;86
+                  </button>
+                </div>
+              </div>
+
               {/* Cabinet 0A: Neon 21's Cyber-Blackjack */}
               <div
                 className="tm-arcade-steer-card tm-steer-blackjack"
@@ -3818,6 +3949,32 @@ export default function App() {
         </>
       )}
 
+      {/* FIXED ARCADE GAME 00: NEON COIN DOZER '86 (PENNY-FALLS COIN & PRIZE PUSHER) */}
+      {viewMode === 'pusher' && (
+        <VegasCoinPusherGame
+          tokens={tokens}
+          onSpendTokens={handleSpendTokens}
+          onEarnTokens={(amt, evt, label) => {
+            handlePayoutGameTokens(amt, {
+              stakedTokens: Math.max(1, amt),
+              xp: 12,
+              label: label || `+${amt} 🪙 Dozer Tray Win!`,
+              emoji: '🪙'
+            });
+          }}
+          onEarnXp={(xpAmt) => awardXpOnly(xpAmt, null, '🪙', `+${xpAmt} XP`)}
+          onOpenBlankStudio={() => {
+            sfx.playToggle();
+            setViewMode('feed');
+            handleOpenBlankStudio();
+          }}
+          onSelectViewMode={(mode) => {
+            sfx.playToggle();
+            setViewMode(mode);
+          }}
+        />
+      )}
+
       {/* FIXED ARCADE GAME 0A: NEON 21'S CYBER-BLACKJACK */}
       {viewMode === 'blackjack' && (
         <VegasBlackjackGame
@@ -4026,8 +4183,11 @@ export default function App() {
       )}
 
       {/* PHASE 20: INTERACTIVE "DO NOT PRESS" CHAOS BUTTON, 1986 NEON PAYPHONE & SKILL-BASED DODGING PIÑATA */}
-      {!bossKeyActive && !isFixedArcadeGame && (
+      {!bossKeyActive && (
         <DankPetWidget
+          viewMode={viewMode}
+          externalPayphoneOpen={payphoneModalOpen}
+          onToggleExternalPayphone={setPayphoneModalOpen}
           onEarnPetXp={awardXpOnly}
           onWinPinataReward={handleWinPinataReward}
           pinataClaimedToday={pinataClaimedToday}

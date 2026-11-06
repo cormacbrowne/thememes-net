@@ -212,7 +212,7 @@ export default function MemeStockMarketGame({
   const [market, setMarket] = useState(buildInitialMarketState);
   const [portfolio, setPortfolio] = useState(loadPortfolio); // { [ticker]: { shares, totalCostTokens } }
   const [selectedTicker, setSelectedTicker] = useState('DOGE');
-  const [chartMode, setChartMode] = useState('wave'); // 'wave' | 'candles'
+  const [chartMode, setChartMode] = useState('candles'); // 'candles' | 'wave'
   const [marketRegime, setMarketRegime] = useState(MARKET_REGIMES[0]);
   const [newsFlash, setNewsFlash] = useState(
     "📟 MEMEDAQ '86 FLOOR OPEN: Buy meme dips with 🪙 Tokens & sell rallies for profit!"
@@ -599,33 +599,38 @@ export default function MemeStockMarketGame({
     const pts = activeQuote.history || [activeCompany.basePrice];
     const rawMin = Math.min(...pts);
     const rawMax = Math.max(...pts);
-    const minP = rawMin * 0.94;
-    const maxP = rawMax * 1.06;
+    const pad = Math.max(rawMax * 0.04, (rawMax - rawMin) * 0.18, 0.4);
+    const minP = Math.max(0.1, rawMin - pad);
+    const maxP = rawMax + pad;
     const span = Math.max(0.5, maxP - minP);
     const w = 360;
-    const h = 128;
+    const h = 148;
 
-    const toY = (val) => Number((h - ((val - minP) / span) * (h - 22) - 12).toFixed(1));
+    const clampY = (yVal) => Math.max(6, Math.min(h - 10, yVal));
+    const toY = (val) => clampY(Number((h - ((val - minP) / span) * (h - 26) - 13).toFixed(1)));
 
     const coords = pts.map((val, idx) => {
-      const x = Number(((idx / Math.max(1, pts.length - 1)) * w).toFixed(1));
+      const x = Number((10 + (idx / Math.max(1, pts.length - 1)) * (w - 20)).toFixed(1));
       const y = toY(val);
-      const prevVal = idx > 0 ? pts[idx - 1] : val;
+      const prevVal = idx > 0 ? pts[idx - 1] : val * 0.992;
       const openY = toY(prevVal);
       const closeY = y;
-      const highVal = Math.max(prevVal, val) * 1.012;
-      const lowVal = Math.min(prevVal, val) * 0.988;
-      const wickHighY = toY(highVal);
-      const wickLowY = toY(lowVal);
+      const isBull = val >= prevVal;
+      const bodyTop = Math.min(openY, closeY);
+      const bodyHeight = Math.max(4.2, Math.abs(closeY - openY));
+      // Deterministic realistic OHLC wicks that stay strictly inside the chart viewport
+      const wickSeed = ((idx * 7 + Math.round(val * 10)) % 5) + 3;
+      const wickHighY = clampY(bodyTop - wickSeed * 1.4);
+      const wickLowY = clampY(bodyTop + bodyHeight + wickSeed * 1.3);
       const pctMove = prevVal > 0 ? Math.abs((val - prevVal) / prevVal) : 0.01;
-      const volHeight = Math.min(20, Math.max(3, Math.round(pctMove * 260 + 4)));
+      const volHeight = Math.min(22, Math.max(4, Math.round(pctMove * 260 + 4)));
       return {
         x,
         y,
         val,
-        isBull: val >= prevVal,
-        bodyTop: Math.min(openY, closeY),
-        bodyHeight: Math.max(2.5, Math.abs(closeY - openY)),
+        isBull,
+        bodyTop,
+        bodyHeight,
         wickHighY,
         wickLowY,
         volHeight
@@ -897,36 +902,47 @@ export default function MemeStockMarketGame({
                 </div>
               </div>
 
-              {/* 80s Neon CRT SVG Chart */}
-              <div className="tm-stocks-svg-wrap">
+              {/* 80s Neon CRT SVG Chart — Guaranteed Visible Height + Candlesticks & Trend Wave */}
+              <div className="tm-stocks-svg-wrap" style={{ minHeight: '155px' }}>
                 <svg
                   viewBox={`0 0 ${chartData.w} ${chartData.h}`}
                   preserveAspectRatio="none"
                   className="tm-stocks-svg"
+                  style={{ width: '100%', height: '100%', minHeight: '155px', display: 'block' }}
                 >
                   <defs>
                     <linearGradient id="tmStockAreaBull" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#4ade80" stopOpacity="0.38" />
+                      <stop offset="0%" stopColor="#4ade80" stopOpacity="0.32" />
                       <stop offset="100%" stopColor="#4ade80" stopOpacity="0.02" />
                     </linearGradient>
                     <linearGradient id="tmStockAreaBear" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.38" />
+                      <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.32" />
                       <stop offset="100%" stopColor="#f43f5e" stopOpacity="0.02" />
                     </linearGradient>
                   </defs>
 
                   {/* Synth Grid Lines */}
-                  {[24, 56, 88, 116].map((gy) => (
+                  {[24, 60, 96, 132].map((gy) => (
                     <line
                       key={gy}
                       x1="0"
                       y1={gy}
                       x2={chartData.w}
                       y2={gy}
-                      stroke="rgba(148, 163, 184, 0.14)"
+                      stroke="rgba(148, 163, 184, 0.18)"
                       strokeDasharray="3 3"
                     />
                   ))}
+
+                  {/* Subtle Area Trend Backdrop (Always visible under both modes for depth) */}
+                  <path
+                    d={chartData.areaPath}
+                    fill={
+                      chartData.isUpSession
+                        ? 'url(#tmStockAreaBull)'
+                        : 'url(#tmStockAreaBear)'
+                    }
+                  />
 
                   {/* Volume Histogram Bars along bottom of CRT */}
                   {chartData.coords.map((c, idx) => (
@@ -934,10 +950,10 @@ export default function MemeStockMarketGame({
                       key={`vol-${idx}`}
                       x={Math.max(0, c.x - 3)}
                       y={chartData.h - c.volHeight}
-                      width="5"
+                      width="6"
                       height={c.volHeight}
                       rx="1"
-                      fill={c.isBull ? 'rgba(74, 222, 128, 0.22)' : 'rgba(244, 63, 94, 0.22)'}
+                      fill={c.isBull ? 'rgba(74, 222, 128, 0.25)' : 'rgba(244, 63, 94, 0.25)'}
                     />
                   ))}
 
@@ -949,51 +965,52 @@ export default function MemeStockMarketGame({
                       x2={chartData.w}
                       y2={chartData.avgEntryY}
                       stroke="#facc15"
-                      strokeWidth="1.5"
+                      strokeWidth="1.6"
                       strokeDasharray="5 4"
                     />
                   )}
 
                   {chartMode === 'candles' ? (
-                    chartData.coords.map((c, idx) => (
-                      <g key={`cdl-${idx}`}>
-                        <line
-                          x1={c.x}
-                          y1={c.wickHighY}
-                          x2={c.x}
-                          y2={c.wickLowY}
-                          stroke={c.isBull ? '#4ade80' : '#f43f5e'}
-                          strokeWidth="1.3"
-                        />
-                        <rect
-                          x={Math.max(0, c.x - 3.2)}
-                          y={c.bodyTop}
-                          width="6.4"
-                          height={c.bodyHeight}
-                          rx="1"
-                          fill={c.isBull ? '#4ade80' : '#f43f5e'}
-                        />
-                      </g>
-                    ))
-                  ) : (
                     <>
-                      <path
-                        d={chartData.areaPath}
-                        fill={
-                          chartData.isUpSession
-                            ? 'url(#tmStockAreaBull)'
-                            : 'url(#tmStockAreaBear)'
-                        }
-                      />
                       <polyline
                         fill="none"
-                        stroke={chartData.isUpSession ? '#4ade80' : '#f43f5e'}
-                        strokeWidth="2.8"
+                        stroke={chartData.isUpSession ? 'rgba(74, 222, 128, 0.45)' : 'rgba(244, 63, 94, 0.45)'}
+                        strokeWidth="1.4"
                         strokeLinejoin="round"
-                        strokeLinecap="round"
                         points={chartData.polyline}
                       />
+                      {chartData.coords.map((c, idx) => (
+                        <g key={`cdl-${idx}`}>
+                          <line
+                            x1={c.x}
+                            y1={c.wickHighY}
+                            x2={c.x}
+                            y2={c.wickLowY}
+                            stroke={c.isBull ? '#4ade80' : '#f43f5e'}
+                            strokeWidth="1.8"
+                          />
+                          <rect
+                            x={Math.max(0, c.x - 4)}
+                            y={c.bodyTop}
+                            width="8"
+                            height={c.bodyHeight}
+                            rx="1.2"
+                            fill={c.isBull ? '#22c55e' : '#ef4444'}
+                            stroke={c.isBull ? '#86efac' : '#fda4af'}
+                            strokeWidth="0.8"
+                          />
+                        </g>
+                      ))}
                     </>
+                  ) : (
+                    <polyline
+                      fill="none"
+                      stroke={chartData.isUpSession ? '#4ade80' : '#f43f5e'}
+                      strokeWidth="2.8"
+                      strokeLinejoin="round"
+                      strokeLinecap="round"
+                      points={chartData.polyline}
+                    />
                   )}
 
                   {chartData.coords.length > 0 && (

@@ -38,7 +38,9 @@ export class SoundEngine {
     this.ctx = null;
     this.enabled = true;
     this.unlocked = false;
+    this.speechUnlocked = false;
     this.iosAudioEl = null;
+    this.speechTimer = null;
     this.pack =
       (typeof window !== 'undefined' && localStorage.getItem('tm_sound_pack')) || 'goofy';
     this.noiseBuffer = null;
@@ -127,6 +129,26 @@ export class SoundEngine {
         const playPromise = this.iosAudioEl.play();
         if (playPromise && typeof playPromise.catch === 'function') {
           playPromise.catch(() => {});
+        }
+      }
+
+      // Prime iOS Safari Web Speech API on the first user gesture so subsequent K.I.T.T. & HAL 9000
+      // speechSynthesis calls are never blocked by WebKit's user-activation gate.
+      if (
+        !this.speechUnlocked &&
+        typeof window !== 'undefined' &&
+        'speechSynthesis' in window &&
+        typeof window.SpeechSynthesisUtterance === 'function'
+      ) {
+        this.speechUnlocked = true;
+        try {
+          window.speechSynthesis.getVoices();
+          const silentUtter = new window.SpeechSynthesisUtterance(' ');
+          silentUtter.volume = 0.01;
+          silentUtter.rate = 2.0;
+          window.speechSynthesis.speak(silentUtter);
+        } catch {
+          // Ignore speech unlock errors
         }
       }
     } catch {
@@ -1880,6 +1902,181 @@ export class SoundEngine {
         gain.connect(this.ctx.destination);
         osc.start(start);
         osc.stop(start + 0.1);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🗣️ K.I.T.T. & HAL 9000 PROCEDURAL WEB-AUDIO FORMANT VOICE MODULATOR
+   * Guarantees audible sci-fi vocal formant synthesis on iPhone/iPad even when
+   * the iOS physical mute switch is ON or iOS Safari SpeechSynthesis is throttled.
+   */
+  playAiVocalFormants(text = '', personaId = 'kitt') {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const clean = String(text || '').replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
+      const words = clean ? clean.split(/\s+/).slice(0, 26) : ['affirmative'];
+      const isKitt = personaId === 'kitt';
+      const now = this.ctx.currentTime + 0.04;
+
+      // Vowel formant frequency pairs [F1, F2]
+      const formants = [
+        [720, 1150], // 'ah'
+        [520, 1850], // 'eh'
+        [310, 2200], // 'ee'
+        [460, 920],  // 'oh'
+        [340, 880]   // 'oo'
+      ];
+
+      let cursor = now;
+      words.forEach((word, wIdx) => {
+        const syllables = Math.max(1, Math.min(3, Math.ceil(word.length / 3)));
+        for (let s = 0; s < syllables; s++) {
+          const sylDur = isKitt ? 0.068 : 0.088;
+          const gap = isKitt ? 0.018 : 0.028;
+          const charCode = word.charCodeAt(Math.min(word.length - 1, s * 2)) || 65;
+          const [f1, f2] = formants[(charCode + wIdx + s) % formants.length];
+
+          // Fundamental vocal cord pitch: K.I.T.T. is crisp transatlantic baritone (~132Hz with inflection),
+          // HAL 9000 is calm, low, flat discovery computer (~104Hz with subtle downward drift)
+          const basePitch = isKitt
+            ? 128 + ((charCode % 7) - 3) * 6 + (s === syllables - 1 ? 8 : 0)
+            : 102 + ((charCode % 5) - 2) * 2.5 - (wIdx % 3) * 1.5;
+
+          const carrier = this.ctx.createOscillator();
+          const sub = this.ctx.createOscillator();
+          const filter1 = this.ctx.createBiquadFilter();
+          const filter2 = this.ctx.createBiquadFilter();
+          const env = this.ctx.createGain();
+
+          carrier.type = isKitt ? 'sawtooth' : 'triangle';
+          sub.type = 'sine';
+          carrier.frequency.setValueAtTime(basePitch, cursor);
+          carrier.frequency.linearRampToValueAtTime(
+            isKitt ? basePitch * 1.04 : basePitch * 0.98,
+            cursor + sylDur
+          );
+          sub.frequency.setValueAtTime(basePitch * 0.5, cursor);
+
+          filter1.type = 'bandpass';
+          filter1.frequency.setValueAtTime(f1, cursor);
+          filter1.Q.setValueAtTime(isKitt ? 5.5 : 4.2, cursor);
+
+          filter2.type = 'bandpass';
+          filter2.frequency.setValueAtTime(f2, cursor);
+          filter2.Q.setValueAtTime(isKitt ? 6.5 : 4.8, cursor);
+
+          env.gain.setValueAtTime(0.001, cursor);
+          env.gain.linearRampToValueAtTime(isKitt ? 0.075 : 0.065, cursor + 0.014);
+          env.gain.exponentialRampToValueAtTime(0.001, cursor + sylDur);
+
+          carrier.connect(filter1);
+          carrier.connect(filter2);
+          sub.connect(filter1);
+          filter1.connect(env);
+          filter2.connect(env);
+          env.connect(this.ctx.destination);
+
+          carrier.start(cursor);
+          sub.start(cursor);
+          carrier.stop(cursor + sylDur + 0.01);
+          sub.stop(cursor + sylDur + 0.01);
+
+          cursor += sylDur + gap;
+        }
+        cursor += isKitt ? 0.025 : 0.042;
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🪙 NEON COIN DOZER '86: COIN INSERT & CHUTE DROP CLINK
+   */
+  playCoinDrop() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(12);
+      const now = this.ctx.currentTime;
+      // Metallic dual-ring arcade token clink
+      [1820, 2740, 3640].forEach((freq, idx) => {
+        const start = now + idx * 0.028;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, start);
+        osc.frequency.exponentialRampToValueAtTime(freq * 1.06, start + 0.07);
+        gain.gain.setValueAtTime(0.11 / (idx + 1), start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.09);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.1);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🪙 NEON COIN DOZER '86: COIN-ON-COIN COLLISION CLATTER
+   */
+  playCoinClink(intensity = 1) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const base = 2100 + Math.random() * 650;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(base, now);
+      osc.frequency.exponentialRampToValueAtTime(base * 1.18, now + 0.045);
+      const vol = Math.min(0.12, 0.045 * intensity);
+      gain.gain.setValueAtTime(vol, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.055);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.06);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🎁 NEON COIN DOZER '86: PRIZE / CASCADE TRAY DROP FANFARE
+   */
+  playPrizeDrop(isRare = false) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(isRare ? [30, 40, 60] : 24);
+      const now = this.ctx.currentTime;
+      const notes = isRare
+        ? [523.25, 659.25, 783.99, 1046.5, 1318.5, 1567.98]
+        : [587.33, 880, 1174.66, 1760];
+      notes.forEach((f, idx) => {
+        const start = now + idx * 0.055;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = isRare ? 'sawtooth' : 'triangle';
+        osc.frequency.setValueAtTime(f, start);
+        gain.gain.setValueAtTime(0.14, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.18);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.19);
       });
     } catch {
       // Ignore audio errors

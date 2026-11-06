@@ -1,19 +1,22 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
+import { getSecurityAuditReport } from '../utils/securityGuard';
 
 // ==========================================
 // 80s CINEMA AI COPILOT — DUAL PERSONA ENGINE:
 // 🔴 HAL 9000 ("2001: A Space Odyssey")  &  🚗 K.I.T.T. ("Knight Rider")
-// Features Web Speech API Voice Synthesis, Animated HAL Eye & KITT Scanner/Voice Modulator,
-// 80s Movie Jokes, Context-Aware Telemetry & Clever Interactive Banter!
+// Features iOS Safari + PC Web Speech API + WebAudio Formant Voice Synthesis,
+// Animated HAL Eye & KITT Scanner/Voice Modulator, 80s Movie Jokes & Game Strategy!
 // ==========================================
 
 const QUICK_PROMPTS = [
   { id: 'joke', label: '🎬 Movie Joke!', query: 'Tell me a hilarious 80s movie joke!' },
+  { id: 'pusher', label: '🪙 Coin Dozer Tips', query: 'How do I win prizes on the new Neon Coin Dozer machine?' },
   { id: 'pinball', label: '🎱 Pinball Tips', query: 'How do I dominate the new Hyper-Neon Pinball?' },
   { id: 'pod', label: '🚪 Open Pod Bay Doors', query: 'Open the pod bay doors please!' },
   { id: 'turbo', label: '🚀 Activate Turbo Boost!', query: 'Engage Turbo Boost and Super Pursuit Mode!' },
+  { id: 'security', label: '🛡️ Cyber Security Scan', query: 'Run a full cyber security check on the mainframe!' },
   { id: 'roast', label: '🔥 Roast My Stats', query: 'Analyze and roast my current arcade stats!' },
   { id: 'tokens', label: '🪙 Stack Tokens', query: 'How can I earn more Arcade Tokens today?' },
   { id: '21s', label: "🃏 21's Strategy", query: "How do I win big at Neon 21's Blackjack?" },
@@ -154,11 +157,16 @@ export default function ArcadeAiAssistant({
 
   const chatEndRef = useRef(null);
   const speechTimerRef = useRef(null);
+  const utterRef = useRef(null);
+  const voicesRef = useRef([]);
 
-  // Speak text aloud in HAL 9000 or K.I.T.T. voice using Web Speech API + WebAudio signature
+  // Speak text aloud in HAL 9000 or K.I.T.T. voice using iOS-safe Web Speech API + WebAudio Formant Modulator
   const speakLine = useCallback(
     (rawText, modeOverride = null, forceSpeak = false) => {
       const activeMode = modeOverride || persona;
+      // 1. Unlock iOS AudioContext & 'playback' audioSession first
+      sfx.unlockIosAudio?.();
+
       if (activeMode === 'hal') {
         sfx.playHalBeep?.();
       } else {
@@ -166,51 +174,111 @@ export default function ArcadeAiAssistant({
       }
 
       if (!voiceEnabled && !forceSpeak) return;
+
+      const spoken = cleanTextForSpeech(rawText);
+      if (!spoken) return;
+
+      // 2. Always fire WebAudio Formant Vocal Modulator so iPhone/iPad users hear K.I.T.T. / HAL
+      // vocal synthesis even if the iPhone hardware mute switch is ON or iOS TTS is warming up!
+      sfx.playAiVocalFormants?.(spoken, activeMode);
+
       if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
 
       try {
-        window.speechSynthesis.cancel();
         if (speechTimerRef.current) clearTimeout(speechTimerRef.current);
 
-        const spoken = cleanTextForSpeech(rawText);
-        if (!spoken) return;
+        const synth = window.speechSynthesis;
+        const isIOS =
+          /iPad|iPhone|iPod/i.test(navigator.userAgent || '') ||
+          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-        const utter = new SpeechSynthesisUtterance(spoken);
-        const voices = window.speechSynthesis.getVoices() || [];
+        const dispatchUtterance = () => {
+          try {
+            // Ensure paused iOS speech queue is resumed
+            if (typeof synth.resume === 'function') {
+              synth.resume();
+            }
 
-        if (activeMode === 'hal') {
-          // HAL 9000: Calm, deliberate, lower-pitched, eerie precision
-          const halVoice =
-            voices.find((v) => /Google UK English Male|Daniel|George|Arthur|Oliver/i.test(v.name)) ||
-            voices.find((v) => /David|Alex|Male|Guy/i.test(v.name) && /en/i.test(v.lang)) ||
-            voices.find((v) => /en/i.test(v.lang));
-          if (halVoice) utter.voice = halVoice;
-          utter.rate = 0.85;
-          utter.pitch = 0.76;
-          utter.volume = 1.0;
+            const utter = new window.SpeechSynthesisUtterance(spoken);
+            // Store on ref so iOS Safari garbage collector never collects utter mid-speech
+            utterRef.current = utter;
+            utter.lang = activeMode === 'hal' ? 'en-GB' : 'en-US';
+
+            const loadedVoices = synth.getVoices();
+            const voices =
+              loadedVoices && loadedVoices.length > 0 ? loadedVoices : voicesRef.current || [];
+
+            // On iOS Safari, prefer localService English voices so it never stalls on cloud voices
+            const enVoices = voices.filter((v) => /^en(-|_|$)/i.test(v.lang || ''));
+            const localEnVoices = enVoices.filter((v) => v.localService !== false);
+            const pool = localEnVoices.length > 0 ? localEnVoices : enVoices;
+
+            if (activeMode === 'hal') {
+              // HAL 9000: Calm, deliberate, lower-pitched precision
+              const halVoice =
+                pool.find((v) => /Daniel|Arthur|Oliver|George|Google UK English Male|Fred|Alex/i.test(v.name)) ||
+                pool.find((v) => /David|Aaron|Male|Guy/i.test(v.name)) ||
+                pool[0];
+              if (halVoice) {
+                utter.voice = halVoice;
+                utter.lang = halVoice.lang || 'en-GB';
+              }
+              utter.rate = isIOS ? 0.9 : 0.85;
+              utter.pitch = isIOS ? 0.84 : 0.76;
+              utter.volume = 1.0;
+            } else {
+              // K.I.T.T.: Articulate, crisp mid-baritone Trans-Atlantic / American cadence
+              const kittVoice =
+                pool.find((v) => /Aaron|Daniel|Arthur|Fred|Samantha|Google US English|Mark|Guy|David/i.test(v.name)) ||
+                pool[0];
+              if (kittVoice) {
+                utter.voice = kittVoice;
+                utter.lang = kittVoice.lang || 'en-US';
+              }
+              utter.rate = isIOS ? 0.98 : 1.02;
+              utter.pitch = isIOS ? 0.92 : 0.92;
+              utter.volume = 1.0;
+            }
+
+            utter.onstart = () => setIsSpeaking(true);
+            utter.onend = () => setIsSpeaking(false);
+            utter.onerror = () => setIsSpeaking(false);
+
+            setIsSpeaking(true);
+            synth.speak(utter);
+
+            // iOS WebKit bug workaround: nudge resume() 50ms after speak() if stuck paused
+            if (isIOS && typeof synth.resume === 'function') {
+              setTimeout(() => {
+                try {
+                  synth.resume();
+                } catch {
+                  // ignore
+                }
+              }, 50);
+            }
+
+            const estMs = Math.min(18000, Math.max(2200, spoken.length * 68));
+            speechTimerRef.current = setTimeout(() => {
+              setIsSpeaking(false);
+            }, estMs);
+          } catch {
+            setIsSpeaking(false);
+          }
+        };
+
+        // iOS Safari race condition fix: calling synth.cancel() synchronously right before synth.speak()
+        // kills the new utterance on iOS WebKit! Only cancel if actively speaking, and wait 65ms on iOS.
+        if (synth.speaking || synth.pending) {
+          synth.cancel();
+          if (isIOS) {
+            speechTimerRef.current = setTimeout(dispatchUtterance, 65);
+          } else {
+            dispatchUtterance();
+          }
         } else {
-          // K.I.T.T.: Articulate, crisp mid-baritone Trans-Atlantic / American cadence
-          const kittVoice =
-            voices.find((v) => /Google US English|Mark|Guy|Daniel|Google UK English Male|David/i.test(v.name)) ||
-            voices.find((v) => /en-US|en-GB/i.test(v.lang));
-          if (kittVoice) utter.voice = kittVoice;
-          utter.rate = 1.02;
-          utter.pitch = 0.92;
-          utter.volume = 1.0;
+          dispatchUtterance();
         }
-
-        utter.onstart = () => setIsSpeaking(true);
-        utter.onend = () => setIsSpeaking(false);
-        utter.onerror = () => setIsSpeaking(false);
-
-        setIsSpeaking(true);
-        window.speechSynthesis.speak(utter);
-
-        // Safety fallback in case browser doesn't fire onend
-        const estMs = Math.min(18000, Math.max(2200, spoken.length * 68));
-        speechTimerRef.current = setTimeout(() => {
-          setIsSpeaking(false);
-        }, estMs);
       } catch {
         setIsSpeaking(false);
       }
@@ -229,10 +297,25 @@ export default function ArcadeAiAssistant({
     setIsSpeaking(false);
   }, []);
 
-  // Preload voices on mount & stop speaking when panel closes
+  // Preload voices on mount & listen for iOS Safari async voiceschanged event
   useEffect(() => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.getVoices();
+      const loadVoices = () => {
+        try {
+          const v = window.speechSynthesis.getVoices();
+          if (v && v.length > 0) voicesRef.current = v;
+        } catch {
+          // ignore
+        }
+      };
+      loadVoices();
+      if (typeof window.speechSynthesis.addEventListener === 'function') {
+        window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+        return () => {
+          window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
+          if (speechTimerRef.current) clearTimeout(speechTimerRef.current);
+        };
+      }
     }
     return () => {
       if (speechTimerRef.current) clearTimeout(speechTimerRef.current);
@@ -499,6 +582,26 @@ export default function ArcadeAiAssistant({
       };
     }
 
+    // 5B. Coin Pusher / Dozer Questions
+    if (q.includes('pusher') || q.includes('dozer') || q.includes('penny') || q.includes('nudge') || q.includes('tray') || q.includes('prize')) {
+      return {
+        text: `${prefix} **${isHal ? 'HAL 9000 PENNY-FALLS PHYSICS BRIEFING' : 'K.I.T.T. NEON COIN DOZER SCAN'}, ${userTitle.toUpperCase()}:**\n• **🪙 How It Works:** Tap anywhere along the top **Drop Rail** to drop a gold coin onto the reciprocating chrome **Pusher Shelf**!\n• **🎯 Skill Timing:** Drop your coin when the pusher bar is **retracted back** so your coin lands flat on the upper shelf and pushes the entire row forward on the next stroke!\n• **🎁 Prize Cascades:** Push **💎 Neon Diamonds (+15 🪙)**, **🎁 Mystery Boxes (+25 🪙)**, and **🏆 Golden Trophies (+40 🪙)** over the **Front Chrome Lip** into the collection tray—avoid the left/right side gutters!\n• **🛡️ Side Guard Walls & Nudge:** Trigger **Bulldozer Fever** to raise laser side-walls so zero coins fall into the side gutters!`,
+        actions: [{ label: "🪙 Play Neon Coin Dozer '86", mode: 'pusher' }]
+      };
+    }
+
+    // 5C. Cyber Security / Threat Audit Questions
+    if (q.includes('security') || q.includes('safe') || q.includes('cyber') || q.includes('threat') || q.includes('hack') || q.includes('audit')) {
+      const report = getSecurityAuditReport();
+      return {
+        text: `${prefix} **${isHal ? 'DISCOVERY ONE CYBER-SECURITY SHIELD REPORT' : 'KNIGHT INDUSTRIES MOLECULAR FIREWALL SCAN'} (${report.score} — ${report.status}):**\n${report.checks.map((c) => `✅ **${c.label}**`).join('\n')}\n\n*${isHal ? '"Rest assured, Dave. No unauthorized entity can inject scripts or breach the pod bay firewall."' : '"My Molecular Bonded Firewall blocks XSS, SVG polyglots, and prototype pollution at the perimeter, Michael!"'}*`,
+        actions: [
+          { label: "🪙 Play Coin Dozer '86", mode: 'pusher' },
+          { label: '🎱 Launch Pinball', mode: 'pinball' }
+        ]
+      };
+    }
+
     // 6. Pinball Questions
     if (q.includes('pinball') || q.includes('flipper') || q.includes('bumper') || q.includes('fever') || q.includes('nudge') || q.includes('skill') || q.includes('free mode') || q.includes('ball')) {
       return {
@@ -647,14 +750,21 @@ export default function ArcadeAiAssistant({
   };
 
   if (!isOpen) {
+    // Never render floating bottom-right button during games/interactive modes so it never blocks game controls!
+    if (viewMode !== 'feed') {
+      return null;
+    }
     return (
       <button
         type="button"
         className={`tm-ai-copilot-fab ${persona === 'hal' ? 'hal-mode' : 'kitt-mode'}`}
         onClick={() => {
-          if (persona === 'hal') sfx.playHalBeep?.();
-          else sfx.playKittScanner?.();
           onToggleOpen(true);
+          const welcomeMsg =
+            persona === 'hal'
+              ? 'Good evening, Dave. HAL 9000 heuristic audio is online.'
+              : 'Right here, Michael! KITT voice modulator is online.';
+          speakLine(welcomeMsg, persona, true);
         }}
         title="Open HAL 9000 / K.I.T.T. Talking AI Assistant (Movie Jokes, Voice Synthesis & Game Strategy)!"
       >

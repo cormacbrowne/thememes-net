@@ -20,7 +20,19 @@ export default function LeaderboardModal({
   const mySlotsHigh = Number(localStorage.getItem('tm_slots_best_win') || 0);
   const myBlackjackHigh = Number(localStorage.getItem('tm_blackjack_highscore') || 0);
   const myRouletteHigh = Number(localStorage.getItem('tm_roulette_highscore') || 0);
+  const myPusherHigh = Number(localStorage.getItem('tm_pusher_highscore') || 0);
   const myHandle = currentUser?.username || 'You (Arcade Player)';
+
+  const pusherRankings = useMemo(() => {
+    const rivals = [
+      { username: 'PennyFallsKing86', score: 19400, badge: '🏆 Golden Trophy Cascade' },
+      { username: 'DozerFeverWhale', score: 13200, badge: '🌈 Bulldozer Fever Pro' },
+      { username: 'TrayAvalanche_X', score: 7850, badge: '🎁 Mystery Box Sniper' },
+      { username: 'SkillDropWizard', score: 3900, badge: '🎯 Retracted Shelf Pro' },
+      { username: myHandle, score: myPusherHigh, badge: '🪙 Your Dozer Score', isMe: true }
+    ];
+    return rivals.sort((a, b) => b.score - a.score);
+  }, [myPusherHigh, myHandle]);
 
   const blackjackRankings = useMemo(() => {
     const rivals = [
@@ -210,9 +222,54 @@ export default function LeaderboardModal({
           </button>
         </div>
 
-        {/* TAB 0: SUB-GAME HIGH SCORES (21'S, ROULETTE, STOCKS, SLOTS, MEME CRUSH & VEGAS PINBALL) */}
+        {/* TAB 0: SUB-GAME HIGH SCORES (COIN DOZER, 21'S, ROULETTE, STOCKS, SLOTS, MEME CRUSH & VEGAS PINBALL) */}
         {tab === 'subgames' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
+            {/* Neon Coin Dozer '86 Column */}
+            <div style={{ background: 'rgba(15, 23, 42, 0.78)', border: '1.5px solid rgba(250, 204, 21, 0.55)', borderRadius: '16px', padding: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '8px' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '16px', color: '#facc15' }}>🪙 Neon Coin Dozer &apos;86</h3>
+                  <span style={{ fontSize: '11px', color: '#94a3b8' }}>Your Dozer Score: {myPusherHigh.toLocaleString()} pts</span>
+                </div>
+                {onLaunchSubGame && (
+                  <button
+                    type="button"
+                    className="tm-btn tm-btn-primary"
+                    style={{ padding: '6px 12px', fontSize: '12px' }}
+                    onClick={() => {
+                      onClose();
+                      onLaunchSubGame('pusher');
+                    }}
+                  >
+                    ▶ Play Dozer
+                  </button>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {pusherRankings.map((r, idx) => (
+                  <div
+                    key={`push-${r.username}-${idx}`}
+                    className={`tm-leaderboard-row ${idx < 3 ? `podium-${idx + 1}` : ''}`}
+                    style={{ padding: '8px 12px' }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span className="tm-medal-badge">{getMedal(idx)}</span>
+                      <div>
+                        <strong style={{ fontSize: '13px', color: r.isMe ? '#4ade80' : '#f8fafc' }}>
+                          @{r.username} {r.isMe ? '(YOU)' : ''}
+                        </strong>
+                        <div style={{ fontSize: '10px', color: '#94a3b8' }}>{r.badge}</div>
+                      </div>
+                    </div>
+                    <strong style={{ color: '#facc15', fontSize: '14px' }}>
+                      {r.score.toLocaleString()} pts
+                    </strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Neon 21's Blackjack Column */}
             <div style={{ background: 'rgba(15, 23, 42, 0.78)', border: '1.5px solid rgba(0, 243, 255, 0.5)', borderRadius: '16px', padding: '14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '8px' }}>

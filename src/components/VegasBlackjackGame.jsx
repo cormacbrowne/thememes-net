@@ -863,22 +863,13 @@ export default function VegasBlackjackGame({
           </div>
         </header>
 
-        {/* 2. DEALER BOT '86 & CYBER-VISOR BANNER */}
+        {/* 2. COMPACT SINGLE-LINE DEALER STATUS STRIP (Never expands or covers Dealer Cards!) */}
         <div className="tm-bj-dealer-bar">
           <div className="tm-bj-dealer-avatar">{dealerMood.face}</div>
           <div className="tm-bj-dealer-speech">
-            <div className="tm-bj-dealer-tag">{dealerMood.tag}</div>
-            <div className="tm-bj-dealer-line">{dealerMood.line}</div>
+            <span className="tm-bj-dealer-tag">{dealerMood.tag}:</span>{' '}
+            <span className="tm-bj-dealer-line">{dealerMood.line}</span>
           </div>
-          {visorTip && (
-            <div
-              className="tm-bj-visor-advice"
-              style={{ '--visor-col': visorTip.color }}
-            >
-              <span className="tm-bj-visor-badge">🥽 ADVISOR: {visorTip.action}</span>
-              <span className="tm-bj-visor-sub">{visorTip.reason}</span>
-            </div>
-          )}
         </div>
 
         {/* 3. NEON CASINO FELT PLAYFIELD (DEALER ZONE + PLAYER HANDS ZONE) */}
@@ -887,8 +878,8 @@ export default function VegasBlackjackGame({
             ★ BLACKJACK PAYS 3 TO 2 ★ DEALER STANDS ON ALL 17s ★ 5-CARD CHARLIE PAYS 3 TO 1 ★
           </div>
 
-          {/* DEALER HAND AREA */}
-          <div className="tm-bj-zone">
+          {/* DEALER HAND AREA — UNOBSTRUCTED AT TOP OF FELT */}
+          <div className="tm-bj-zone tm-bj-dealer-cards-zone">
             <div className="tm-bj-zone-head">
               <span className="tm-bj-zone-label">🤖 DEALER HAND</span>
               {dealerCards.length > 0 && (
@@ -1024,8 +1015,17 @@ export default function VegasBlackjackGame({
           </div>
         </div>
 
-        {/* 4. BOTTOM CONTROL DECK: CHIP SELECTOR OR HIT / STAND / DOUBLE / SPLIT */}
+        {/* 4. BOTTOM CONTROL DECK: CYBER-VISOR HINT BAR + CHIP SELECTOR OR HIT / STAND / DOUBLE / SPLIT */}
         <div className="tm-bj-controls">
+          {visorTip && (
+            <div
+              className="tm-bj-visor-bottom-pill"
+              style={{ '--visor-col': visorTip.color }}
+            >
+              <span className="tm-bj-visor-badge">🥽 HINT: {visorTip.action}</span>
+              <span className="tm-bj-visor-sub">{visorTip.reason}</span>
+            </div>
+          )}
           {phase === 'playing' ? (
             <div className="tm-bj-action-row">
               <button

@@ -34,7 +34,8 @@ export default function NavbarHud({
   canGoBack,
   onNavigateBack,
   aiAssistantOpen = false,
-  onToggleAiAssistant
+  onToggleAiAssistant,
+  onOpenSurprise
 }) {
   const reactorPct = xpConversionState ? xpConversionState.progressPct : 0;
   const reactorProgressXp = xpConversionState ? xpConversionState.progressXp : 0;
@@ -165,6 +166,16 @@ export default function NavbarHud({
               >
                 📈 Stocks
               </button>
+              {onOpenSurprise && (
+                <button
+                  type="button"
+                  className="tm-btn tm-subgame-nav-pill tm-wtf-surprise-btn"
+                  onClick={onOpenSurprise}
+                  title="🪿 DO NOT CLICK: Unleash HONK.EXE Cyber-Goose & 3:00 AM Interdimensional Chaos Lab!"
+                >
+                  🪿 WTF?!
+                </button>
+              )}
             </div>
           )}
 

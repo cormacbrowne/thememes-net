@@ -1899,31 +1899,60 @@ export default function VegasPinballGame({
       aria-label="80s Hyper-Neon Cyber-Pinball Widescreen Arcade Machine"
     >
       <div className="tm-pin2-cabinet tm-pin2-widescreen-showcase">
-        {/* 1. COMPACT TOP MARQUEE & EXPLICIT FREE / PRIZE MODE SWITCHER */}
-        <header className="tm-pin2-header">
-          <div className="tm-pin2-title-wrap">
+        {/* 1. ULTRA-COMPACT SINGLE-LINE TOP BAR (Table Switcher + Live Scoreboard + Mode Toggle) */}
+        <header className="tm-pin2-slim-topbar">
+          <div className="tm-pin2-slim-left">
             {onBackToFeed && (
               <button type="button" className="tm-bandit-back-btn" onClick={onBackToFeed}>
-                ← Memes
+                ←
               </button>
             )}
-            <div>
-              <div className="tm-pin2-eyebrow">{activeTable.badge}</div>
-              <h2 className="tm-pin2-title">
-                🎱 {activeTable.name.toUpperCase()} — HYPER-NEON PINBALL
-              </h2>
+            <div className="tm-pin2-table-strip" role="tablist" aria-label="Select Pinball Table">
+              {PINBALL_TABLES.map((tbl) => (
+                <button
+                  key={tbl.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={tbl.id === activeTable.id}
+                  className={`tm-pin2-tbl-pill ${tbl.id === activeTable.id ? 'active' : ''}`}
+                  style={{ '--tbl-col': tbl.accent }}
+                  onClick={() => handleSelectTable(tbl.id)}
+                >
+                  {tbl.short}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="tm-pin2-stake-wrap">
-            <span className="tm-crush2-wallet">🪙 {tokens}</span>
+          <div className="tm-pin2-slim-hud">
+            <span className="tm-pin2-mini-stat">
+              SCORE <strong>{hudScore.toLocaleString()}</strong>
+            </span>
+            <span className="tm-pin2-mini-stat">
+              BALLS <strong>{'🎱'.repeat(Math.max(0, hudBallsLeft)) || '0'}</strong>
+            </span>
+            <span className="tm-pin2-mini-stat">
+              MULT <strong style={{ color: '#facc15' }}>{hudMultiplier}×{hudFever ? '🔥' : hudCombo > 1 ? ` (${hudCombo}c)` : ''}</strong>
+            </span>
+            <span className="tm-pin2-mini-stat hide-xs">
+              SHIELD{' '}
+              <strong style={{ color: hudShield || hudFever ? '#00f3ff' : '#64748b' }}>
+                {hudShield || hudFever ? '🛡️ON' : 'OFF'}
+              </strong>
+            </span>
+            <span className="tm-pin2-mini-stat hide-xs">
+              BEST <strong style={{ color: '#facc15' }}>{bestScore.toLocaleString()}</strong>
+            </span>
+          </div>
+
+          <div className="tm-pin2-slim-right">
             <button
               type="button"
               className={`tm-bj-mode-pill ${stakedTokens === 0 ? 'active' : ''}`}
               onClick={handleStartFreePlay}
-              title="Play Unlimited Free Practice Pinball (0 Tokens Required!)"
+              title="Play Unlimited Free Practice Pinball"
             >
-              🆓 Free Play {stakedTokens === 0 ? 'ON' : ''}
+              🆓 Free
             </button>
             <button
               type="button"
@@ -1931,9 +1960,7 @@ export default function VegasPinballGame({
               onClick={handleStartPrizeRun}
               title="Insert 10 Tokens to play for 10–35 Token high-score payouts!"
             >
-              {stakedTokens > 0 && !gameOverInfo
-                ? '🏆 10-🪙 Prize Run LIVE'
-                : `🪙 Prize Mode (${entryCost} 🪙)`}
+              {stakedTokens > 0 && !gameOverInfo ? '🏆 10🪙 LIVE' : `🪙 ${entryCost}🪙 Prize`}
             </button>
             <button
               type="button"
@@ -1941,72 +1968,22 @@ export default function VegasPinballGame({
               onClick={handleStartFreePlay}
               title="Reset table and launch a fresh 3-ball game"
             >
-              🔄 New Game
+              🔄
             </button>
           </div>
         </header>
 
-        {/* 2. 5-TABLE SELECTOR STRIP */}
-        <div className="tm-pin2-table-strip" role="tablist" aria-label="Select Pinball Table">
-          {PINBALL_TABLES.map((tbl) => (
-            <button
-              key={tbl.id}
-              type="button"
-              role="tab"
-              aria-selected={tbl.id === activeTable.id}
-              className={`tm-pin2-tbl-pill ${tbl.id === activeTable.id ? 'active' : ''}`}
-              style={{ '--tbl-col': tbl.accent }}
-              onClick={() => handleSelectTable(tbl.id)}
-            >
-              {tbl.short}
-            </button>
-          ))}
-        </div>
-
-        {/* 3. DIGITAL VFD SCOREBOARD (7 CLEAN COLUMNS) */}
-        <div className="tm-pin2-hud" style={{ gridTemplateColumns: 'repeat(7, 1fr)' }}>
-          <div className="tm-pin2-stat">
-            <span>SCORE</span>
-            <strong>{hudScore.toLocaleString()}</strong>
-          </div>
-          <div className="tm-pin2-stat">
-            <span>BALLS</span>
-            <strong>{'🎱'.repeat(Math.max(0, hudBallsLeft)) || '0'}</strong>
-          </div>
-          <div className="tm-pin2-stat">
-            <span>MULT</span>
-            <strong style={{ color: hudFever ? '#facc15' : '#fde047' }}>
-              {hudMultiplier}×{hudFever ? '🔥' : ''}
-            </strong>
-          </div>
-          <div className="tm-pin2-stat">
-            <span>COMBO</span>
-            <strong style={{ color: hudCombo >= 4 ? '#ff007f' : '#00f3ff' }}>
-              {hudFever ? '🌈FEVER' : `${hudCombo}×`}
-            </strong>
-          </div>
-          <div className="tm-pin2-stat">
-            <span>MISSION</span>
-            <strong style={{ color: '#00ff88' }}>
-              {hudMission.cur}/{hudMission.goal}
-            </strong>
-          </div>
-          <div className="tm-pin2-stat">
-            <span>SHIELD</span>
-            <strong style={{ color: hudShield || hudFever ? '#00f3ff' : '#64748b' }}>
-              {hudShield || hudFever ? '🛡️ ON' : 'OFF'}
-            </strong>
-          </div>
-          <div className="tm-pin2-stat">
-            <span>BEST</span>
-            <strong style={{ color: '#facc15' }}>{bestScore.toLocaleString()}</strong>
-          </div>
-        </div>
-
-        {/* 4. CENTER-STAGE MAIN SHOW: LEFT TELEMETRY WING (PC) + HUGE NEON PLAYFIELD + RIGHT COMMAND WING (PC) */}
+        {/* 2. CENTER-STAGE MAIN SHOW: HUGE FULL-HEIGHT PINBALL PLAYFIELD + COMPACT SIDE WINGS (PC) */}
         <div className="tm-pin2-main-arena">
           {/* PC LEFT WING: LIVE ROLLOVER & DROP TARGET TELEMETRY */}
           <aside className="tm-pin2-side-wing left-wing">
+            <div className="tm-pin2-wing-card">
+              <div className="tm-pin2-wing-label">🎱 {activeTable.name.toUpperCase()}</div>
+              <div className="tm-pin2-wing-sub" style={{ color: '#67e8f9', fontWeight: 800 }}>
+                {hudBanner}
+              </div>
+            </div>
+
             <div className="tm-pin2-wing-card">
               <div className="tm-pin2-wing-label">⚡ TOP ROLLOVER LANES (2×–5× MULT)</div>
               <div className="tm-pin2-word-row">
@@ -2018,9 +1995,6 @@ export default function VegasPinballGame({
                     {ch}
                   </span>
                 ))}
-              </div>
-              <div className="tm-pin2-wing-sub">
-                Light all 4 lanes to boost Multiplier &amp; ignite Plasma Drain Shield!
               </div>
             </div>
 
@@ -2036,13 +2010,10 @@ export default function VegasPinballGame({
                   </span>
                 ))}
               </div>
-              <div className="tm-pin2-wing-sub">
-                Hit all 4 side targets to unleash <strong>🚨 MULTIBALL +2,000 PTS</strong>!
-              </div>
             </div>
 
             <div className="tm-pin2-wing-card">
-              <div className="tm-pin2-wing-label">🏆 TABLE BOSS MISSION</div>
+              <div className="tm-pin2-wing-label">🏆 TABLE BOSS MISSION ({hudMission.cur}/{hudMission.goal})</div>
               <div className="tm-pin2-mission-bar">
                 <div
                   className="tm-pin2-mission-fill"
@@ -2051,14 +2022,10 @@ export default function VegasPinballGame({
                   }}
                 />
               </div>
-              <div className="tm-pin2-wing-sub">
-                {hudMission.cur}/{hudMission.goal} Major Bumper/Sinkhole Hits →{' '}
-                <strong>+3,500 PT JACKPOT</strong>!
-              </div>
             </div>
           </aside>
 
-          {/* CENTER PLAYFIELD — THE MAIN SHOW! */}
+          {/* CENTER PLAYFIELD — MAXIMIZED TO FILL SCREEN REAL ESTATE! */}
           <div className="tm-pin2-canvas-wrap">
             <canvas
               ref={canvasRef}
@@ -2142,48 +2109,61 @@ export default function VegasPinballGame({
           {/* PC RIGHT WING: ARCADE ACTION BUTTONS & PC KEYBOARD CONTROLS */}
           <aside className="tm-pin2-side-wing right-wing">
             <div className="tm-pin2-wing-card">
-              <div className="tm-pin2-wing-label">🚀 PLUNGER LAUNCH &amp; SKILL SHOT</div>
+              <div className="tm-pin2-wing-label">🚀 PLUNGER &amp; FLIPPER DECK</div>
               <button
                 type="button"
                 className={`tm-pin2-big-launch-btn ${ballWaitingInShooter ? 'pulse-ready' : ''}`}
                 onClick={launchPlunger}
               >
-                {ballWaitingInShooter ? '🚀 LAUNCH BALL NOW [SPACE]' : '🚀 RE-LAUNCH / PLUNGER'}
+                {ballWaitingInShooter ? '🚀 LAUNCH BALL NOW [SPACE]' : '🚀 PLUNGER [SPACE]'}
               </button>
-              <div className="tm-pin2-wing-sub">
-                Time your launch in the <strong>Gold Zone</strong> for <strong>+1,500 Pts &amp; Shield</strong>!
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginTop: '4px' }}>
+                <button
+                  type="button"
+                  className="tm-pin2-flip-btn left"
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    setFlipperState('left', true);
+                  }}
+                  onPointerUp={() => setFlipperState('left', false)}
+                  onPointerLeave={() => setFlipperState('left', false)}
+                >
+                  ◀ LEFT [A]
+                </button>
+                <button
+                  type="button"
+                  className="tm-pin2-flip-btn right"
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    setFlipperState('right', true);
+                  }}
+                  onPointerUp={() => setFlipperState('right', false)}
+                  onPointerLeave={() => setFlipperState('right', false)}
+                >
+                  RIGHT [D] ▶
+                </button>
               </div>
+              <button
+                type="button"
+                className="tm-pin2-nudge-btn"
+                style={{ width: '100%', marginTop: '4px' }}
+                onClick={nudgeTable}
+              >
+                💥 NUDGE CABINET [N / ↓]
+              </button>
             </div>
 
             <div className="tm-pin2-wing-card">
-              <div className="tm-pin2-wing-label">🕹️ PC &amp; TOUCH CONTROLS</div>
+              <div className="tm-pin2-wing-label">💰 10-🪙 PRIZE PAYOUTS</div>
               <div className="tm-pin2-key-list">
                 <div>
-                  <kbd>SPACE</kbd> / <kbd>↑</kbd> <span>Launch Plunger</span>
+                  <strong>8,000+ pts</strong> <span>10 🪙</span>
                 </div>
                 <div>
-                  <kbd>←</kbd> / <kbd>A</kbd> <span>Left Flipper</span>
+                  <strong>15,000+ pts</strong> <span>16 🪙</span>
                 </div>
                 <div>
-                  <kbd>→</kbd> / <kbd>D</kbd> <span>Right Flipper</span>
-                </div>
-                <div>
-                  <kbd>↓</kbd> / <kbd>N</kbd> <span>Nudge Cabinet</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="tm-pin2-wing-card">
-              <div className="tm-pin2-wing-label">💰 TOKEN PAYOUT TABLE (10-🪙 RUN)</div>
-              <div className="tm-pin2-key-list">
-                <div>
-                  <strong>8,000+ pts</strong> <span>10 🪙 (Break Even)</span>
-                </div>
-                <div>
-                  <strong>15,000+ pts</strong> <span>16 🪙 Payout</span>
-                </div>
-                <div>
-                  <strong>25,000+ pts</strong> <span>24 🪙 Payout</span>
+                  <strong>25,000+ pts</strong> <span>24 🪙</span>
                 </div>
                 <div>
                   <strong>40,000+ pts</strong> <span>35 🪙 Jackpot!</span>
@@ -2193,8 +2173,8 @@ export default function VegasPinballGame({
           </aside>
         </div>
 
-        {/* 5. DEDICATED THUMB-FRIENDLY FLIPPER & PLUNGER DECK */}
-        <div className="tm-pin2-controls">
+        {/* 3. MOBILE / TABLET THUMB FLIPPER BAR (Hidden on Desktop where controls are in Right Wing!) */}
+        <div className="tm-pin2-controls tm-pin2-mobile-controls">
           <button
             type="button"
             className="tm-pin2-flip-btn left"
@@ -2206,16 +2186,15 @@ export default function VegasPinballGame({
             onPointerLeave={() => setFlipperState('left', false)}
             onPointerCancel={() => setFlipperState('left', false)}
           >
-            ◀ LEFT FLIP [A / ←]
+            ◀ FLIP
           </button>
 
-          <div style={{ display: 'flex', gap: '6px' }}>
+          <div style={{ display: 'flex', gap: '5px' }}>
             <button
               type="button"
               className={`tm-pin2-launch-btn ${ballWaitingInShooter ? 'pulse-ready' : ''}`}
               style={{ flex: 1 }}
               onClick={launchPlunger}
-              title="Launch Ball (Press Spacebar or Click here!)"
             >
               🚀 LAUNCH
             </button>
@@ -2223,7 +2202,6 @@ export default function VegasPinballGame({
               type="button"
               className="tm-pin2-nudge-btn"
               onClick={nudgeTable}
-              title="Nudge the table to save a ball heading for the drain! (Don't spam or you'll TILT!)"
             >
               💥 NUDGE
             </button>
@@ -2240,11 +2218,9 @@ export default function VegasPinballGame({
             onPointerLeave={() => setFlipperState('right', false)}
             onPointerCancel={() => setFlipperState('right', false)}
           >
-            RIGHT FLIP [D / →] ▶
+            FLIP ▶
           </button>
         </div>
-
-        <div className="tm-pin2-banner">{hudBanner}</div>
       </div>
     </section>
   );

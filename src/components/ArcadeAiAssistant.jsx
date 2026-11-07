@@ -160,7 +160,7 @@ export default function ArcadeAiAssistant({
   const utterRef = useRef(null);
   const voicesRef = useRef([]);
 
-  // Speak text aloud in HAL 9000 or K.I.T.T. voice using iOS-safe Web Speech API + WebAudio Formant Modulator
+  // Speak text aloud in HAL 9000 or K.I.T.T. voice using crystal-clear iOS/PC Web Speech API
   const speakLine = useCallback(
     (rawText, modeOverride = null, forceSpeak = false) => {
       const activeMode = modeOverride || persona;
@@ -178,11 +178,11 @@ export default function ArcadeAiAssistant({
       const spoken = cleanTextForSpeech(rawText);
       if (!spoken) return;
 
-      // 2. Always fire WebAudio Formant Vocal Modulator so iPhone/iPad users hear K.I.T.T. / HAL
-      // vocal synthesis even if the iPhone hardware mute switch is ON or iOS TTS is warming up!
-      sfx.playAiVocalFormants?.(spoken, activeMode);
-
-      if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+      if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+        // Fallback only if browser lacks Web Speech API completely
+        sfx.playAiVocalFormants?.(spoken, activeMode);
+        return;
+      }
 
       try {
         if (speechTimerRef.current) clearTimeout(speechTimerRef.current);
@@ -194,60 +194,82 @@ export default function ArcadeAiAssistant({
 
         const dispatchUtterance = () => {
           try {
-            // Ensure paused iOS speech queue is resumed
             if (typeof synth.resume === 'function') {
               synth.resume();
             }
-
-            const utter = new window.SpeechSynthesisUtterance(spoken);
-            // Store on ref so iOS Safari garbage collector never collects utter mid-speech
-            utterRef.current = utter;
-            utter.lang = activeMode === 'hal' ? 'en-GB' : 'en-US';
 
             const loadedVoices = synth.getVoices();
             const voices =
               loadedVoices && loadedVoices.length > 0 ? loadedVoices : voicesRef.current || [];
 
-            // On iOS Safari, prefer localService English voices so it never stalls on cloud voices
-            const enVoices = voices.filter((v) => /^en(-|_|$)/i.test(v.lang || ''));
+            // Exclude novelty/muffled voices ('Fred', 'Albert', 'Zarvox', etc.) that ruin speech clarity
+            const noveltyRegex =
+              /Fred|Albert|Ralph|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Deranged|Good News|Hysterical|Pipe Organ|Trinoids|Whisper|Zarvox|Junior|Kathy/i;
+            const enVoices = voices.filter(
+              (v) => /^en(-|_|$)/i.test(v.lang || '') && !noveltyRegex.test(v.name || '')
+            );
             const localEnVoices = enVoices.filter((v) => v.localService !== false);
-            const pool = localEnVoices.length > 0 ? localEnVoices : enVoices;
+            const pool = isIOS && localEnVoices.length > 0 ? localEnVoices : enVoices;
 
+            let chosenVoice = null;
             if (activeMode === 'hal') {
-              // HAL 9000: Calm, deliberate, lower-pitched precision
-              const halVoice =
-                pool.find((v) => /Daniel|Arthur|Oliver|George|Google UK English Male|Fred|Alex/i.test(v.name)) ||
-                pool.find((v) => /David|Aaron|Male|Guy/i.test(v.name)) ||
+              // HAL 9000: Crystal-clear British/Neutral baritone (Daniel, Arthur, Oliver, Ryan, Alex)
+              chosenVoice =
+                pool.find((v) => /(Daniel|Arthur|Oliver).*(Enhanced|Premium|Natural)/i.test(v.name)) ||
+                pool.find((v) => /Google UK English Male|Microsoft Ryan|Microsoft George|Daniel|Arthur|Oliver/i.test(v.name)) ||
+                pool.find((v) => /Aaron|Alex|David|Guy|Christopher/i.test(v.name)) ||
                 pool[0];
-              if (halVoice) {
-                utter.voice = halVoice;
-                utter.lang = halVoice.lang || 'en-GB';
-              }
-              utter.rate = isIOS ? 0.9 : 0.85;
-              utter.pitch = isIOS ? 0.84 : 0.76;
-              utter.volume = 1.0;
             } else {
-              // K.I.T.T.: Articulate, crisp mid-baritone Trans-Atlantic / American cadence
-              const kittVoice =
-                pool.find((v) => /Aaron|Daniel|Arthur|Fred|Samantha|Google US English|Mark|Guy|David/i.test(v.name)) ||
+              // K.I.T.T.: Crisp, articulate Knight Industries voice (Aaron, Alex, Guy, Christopher, Daniel, Samantha)
+              chosenVoice =
+                pool.find((v) => /(Aaron|Alex|Daniel|Samantha).*(Enhanced|Premium|Natural)/i.test(v.name)) ||
+                pool.find((v) => /Microsoft Guy|Microsoft Christopher|Google US English|Aaron|Alex|Daniel|Arthur|Samantha/i.test(v.name)) ||
                 pool[0];
-              if (kittVoice) {
-                utter.voice = kittVoice;
-                utter.lang = kittVoice.lang || 'en-US';
-              }
-              utter.rate = isIOS ? 0.98 : 1.02;
-              utter.pitch = isIOS ? 0.92 : 0.92;
-              utter.volume = 1.0;
             }
 
-            utter.onstart = () => setIsSpeaking(true);
-            utter.onend = () => setIsSpeaking(false);
-            utter.onerror = () => setIsSpeaking(false);
+            // Split into sentence chunks so iOS Safari & Chrome speak every sentence clearly without rushing or cutting off
+            const sentences = spoken
+              .split(/(?<=[.!?])\s+/)
+              .map((s) => s.trim())
+              .filter(Boolean);
+            const chunks = sentences.length > 0 ? sentences : [spoken];
 
+            // Retain all chunks in utterRef so WebKit garbage collector never collects active utterances
+            const utteranceQueue = chunks.map((chunkText, idx) => {
+              const utter = new window.SpeechSynthesisUtterance(chunkText);
+              if (chosenVoice) {
+                utter.voice = chosenVoice;
+                utter.lang = chosenVoice.lang || (activeMode === 'hal' ? 'en-GB' : 'en-US');
+              } else {
+                utter.lang = activeMode === 'hal' ? 'en-GB' : 'en-US';
+              }
+
+              // Keep pitch close to 1.0 (0.94 / 1.0) so browser TTS never introduces phase-vocoder muffling!
+              if (activeMode === 'hal') {
+                utter.rate = isIOS ? 0.94 : 0.92;
+                utter.pitch = 0.94;
+                utter.volume = 1.0;
+              } else {
+                utter.rate = isIOS ? 1.0 : 1.02;
+                utter.pitch = 1.0;
+                utter.volume = 1.0;
+              }
+
+              if (idx === 0) {
+                utter.onstart = () => setIsSpeaking(true);
+              }
+              if (idx === chunks.length - 1) {
+                utter.onend = () => setIsSpeaking(false);
+              }
+              utter.onerror = () => setIsSpeaking(false);
+              return utter;
+            });
+
+            utterRef.current = utteranceQueue;
             setIsSpeaking(true);
-            synth.speak(utter);
 
-            // iOS WebKit bug workaround: nudge resume() 50ms after speak() if stuck paused
+            utteranceQueue.forEach((u) => synth.speak(u));
+
             if (isIOS && typeof synth.resume === 'function') {
               setTimeout(() => {
                 try {
@@ -255,10 +277,10 @@ export default function ArcadeAiAssistant({
                 } catch {
                   // ignore
                 }
-              }, 50);
+              }, 60);
             }
 
-            const estMs = Math.min(18000, Math.max(2200, spoken.length * 68));
+            const estMs = Math.min(20000, Math.max(2400, spoken.length * 72));
             speechTimerRef.current = setTimeout(() => {
               setIsSpeaking(false);
             }, estMs);
@@ -267,18 +289,12 @@ export default function ArcadeAiAssistant({
           }
         };
 
-        // iOS Safari race condition fix: calling synth.cancel() synchronously right before synth.speak()
-        // kills the new utterance on iOS WebKit! Only cancel if actively speaking, and wait 65ms on iOS.
+        // Wait 95ms so the subtle 80ms intro ping finishes completely BEFORE the voice speaks
+        // (and so iOS WebKit synth.cancel() never races with synth.speak())
         if (synth.speaking || synth.pending) {
           synth.cancel();
-          if (isIOS) {
-            speechTimerRef.current = setTimeout(dispatchUtterance, 65);
-          } else {
-            dispatchUtterance();
-          }
-        } else {
-          dispatchUtterance();
         }
+        speechTimerRef.current = setTimeout(dispatchUtterance, 95);
       } catch {
         setIsSpeaking(false);
       }

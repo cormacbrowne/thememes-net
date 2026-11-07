@@ -63,6 +63,7 @@ import AiRoastModal from './components/AiRoastModal';
 import BossKeyOverlay from './components/BossKeyOverlay';
 import SeoDiscoveryFooter from './components/SeoDiscoveryFooter';
 import DankPetWidget from './components/DankPetWidget';
+import UnhandledGooseSurprise from './components/UnhandledGooseSurprise';
 
 export default function App() {
   // Core Feed & Filter State (100% User-Uploaded Memes Only — Zero Template Memes)
@@ -103,6 +104,12 @@ export default function App() {
   });
   const { profile: deviceProfile, setOverride: setDeviceOverride } = useDeviceProfile();
   const [payphoneModalOpen, setPayphoneModalOpen] = useState(false);
+  const [surpriseOpen, setSurpriseOpen] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const params = new URLSearchParams(window.location.search);
+    const rawMode = (params.get('mode') || '').toLowerCase();
+    return ['goose', 'wtf', 'surprise', 'honk'].includes(rawMode) || params.get('surprise') === '1';
+  });
   const [searchQuery, setSearchQuery] = useState(() => {
     if (typeof window === 'undefined') return '';
     return new URLSearchParams(window.location.search).get('q') || '';
@@ -2937,6 +2944,17 @@ export default function App() {
             </button>
             <button
               type="button"
+              className="tm-fixed-icon-btn tm-wtf-surprise-btn"
+              onClick={() => {
+                sfx.playGooseHonk?.();
+                setSurpriseOpen(true);
+              }}
+              title="🪿 WTF?! Unleash HONK.EXE Cyber-Goose & 3:00 AM Interdimensional Chaos Lab!"
+            >
+              🪿
+            </button>
+            <button
+              type="button"
               className="tm-fixed-icon-btn"
               onClick={() => {
                 sfx.playToggle();
@@ -3083,6 +3101,10 @@ export default function App() {
               sfx.playAiAssistantChime();
               setAiAssistantOpen((prev) => !prev);
             }}
+            onOpenSurprise={() => {
+              sfx.playGooseHonk?.();
+              setSurpriseOpen(true);
+            }}
           />
 
           {/* PHASE 1: MEME-FIRST MODE SWITCHER, DISCOVERY TABS & SEARCH */}
@@ -3196,6 +3218,17 @@ export default function App() {
                 title="Play 10-Level 80s Neon Meme Crush Saga"
               >
                 🍬 Meme Crush <span className="tm-mode-hot-badge">10 LVLS</span>
+              </button>
+              <button
+                type="button"
+                className="tm-mode-btn tm-wtf-surprise-btn"
+                onClick={() => {
+                  sfx.playGooseHonk?.();
+                  setSurpriseOpen(true);
+                }}
+                title="🪿 DO NOT CLICK: Unleash HONK.EXE Cyber-Goose, 3AM Shopping Network & Ministry of Meme Revenue Audit!"
+              >
+                🪿 WTF?! Surprise
               </button>
             </div>
 
@@ -4450,6 +4483,17 @@ export default function App() {
           onClose={() => setRoastModalMeme(null)}
         />
       )}
+
+      {/* MODAL 8: 🪿 HONK.EXE KLEPTOMANIAC CYBER-GOOSE & 3AM INTERDIMENSIONAL CHAOS LAB */}
+      <UnhandledGooseSurprise
+        isOpen={surpriseOpen}
+        onClose={() => setSurpriseOpen(false)}
+        onOpenMode={(mode) => {
+          setSurpriseOpen(false);
+          sfx.playToggle?.();
+          setViewMode(mode);
+        }}
+      />
 
       {/* PHASE 10: CRAWLABLE SEO DISCOVERY DIRECTORY & FAQ HUB */}
       {!isFixedArcadeGame && (

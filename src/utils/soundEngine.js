@@ -1814,94 +1814,114 @@ export class SoundEngine {
   }
 
   /**
-   * 🚗 K.I.T.T. KNIGHT RIDER ANAMORPHIC SCANNER "WHOOSH-WHOOSH" SWEEP
+   * 🚗 K.I.T.T. KNIGHT RIDER SUBTLE MICRO-SCANNER PRE-SPEECH CUE (90ms)
    */
   playKittScanner() {
     if (!this.enabled) return;
     try {
       this.init();
       if (!this.ctx) return;
-      this.triggerHaptic(18);
+      this.triggerHaptic(12);
       const now = this.ctx.currentTime;
 
-      // Dual-pass Knight Industries scanner turbine sweep
-      [0, 0.24].forEach((offset, pass) => {
-        const start = now + offset;
-        const osc = this.ctx.createOscillator();
-        const sub = this.ctx.createOscillator();
-        const filter = this.ctx.createBiquadFilter();
-        const gain = this.ctx.createGain();
+      const osc = this.ctx.createOscillator();
+      const filter = this.ctx.createBiquadFilter();
+      const gain = this.ctx.createGain();
 
-        osc.type = 'sawtooth';
-        sub.type = 'triangle';
-        const fStart = pass === 0 ? 185 : 540;
-        const fPeak = pass === 0 ? 560 : 175;
-        osc.frequency.setValueAtTime(fStart, start);
-        osc.frequency.exponentialRampToValueAtTime(fPeak, start + 0.21);
-        sub.frequency.setValueAtTime(fStart * 0.5, start);
-        sub.frequency.exponentialRampToValueAtTime(fPeak * 0.5, start + 0.21);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(340, now);
+      osc.frequency.exponentialRampToValueAtTime(580, now + 0.08);
 
-        filter.type = 'bandpass';
-        filter.frequency.setValueAtTime(fStart * 1.8, start);
-        filter.frequency.exponentialRampToValueAtTime(fPeak * 1.8, start + 0.21);
-        filter.Q.setValueAtTime(4.2, now);
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(520, now);
+      filter.Q.setValueAtTime(2.5, now);
 
-        gain.gain.setValueAtTime(0.001, start);
-        gain.gain.linearRampToValueAtTime(0.16, start + 0.06);
-        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.23);
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.045, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.085);
 
-        osc.connect(filter);
-        sub.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.ctx.destination);
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.ctx.destination);
 
-        osc.start(start);
-        sub.start(start);
-        osc.stop(start + 0.24);
-        sub.stop(start + 0.24);
-      });
+      osc.start(now);
+      osc.stop(now + 0.09);
     } catch {
       // Ignore audio errors
     }
   }
 
   /**
-   * 🔴 HAL 9000 DISCOVERY ONE POD BAY TELEMETRY HUM & BEEP
+   * 🔴 HAL 9000 DISCOVERY ONE SUBTLE CONSOLE PRE-SPEECH PING (85ms)
    */
   playHalBeep() {
     if (!this.enabled) return;
     try {
       this.init();
       if (!this.ctx) return;
-      this.triggerHaptic(14);
+      this.triggerHaptic(10);
       const now = this.ctx.currentTime;
 
-      // Deep 2001 Discovery One computer ambient drone
-      const drone = this.ctx.createOscillator();
-      const droneGain = this.ctx.createGain();
-      drone.type = 'sine';
-      drone.frequency.setValueAtTime(110, now);
-      drone.frequency.linearRampToValueAtTime(98, now + 0.36);
-      droneGain.gain.setValueAtTime(0.12, now);
-      droneGain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
-      drone.connect(droneGain);
-      droneGain.connect(this.ctx.destination);
-      drone.start(now);
-      drone.stop(now + 0.39);
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(784, now);
+      gain.gain.setValueAtTime(0.04, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.075);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.08);
+    } catch {
+      // Ignore audio errors
+    }
+  }
 
-      // Clean heuristic telemetry two-tone bleep
-      [880, 659.25].forEach((freq, idx) => {
-        const start = now + idx * 0.11;
-        const osc = this.ctx.createOscillator();
+  /**
+   * 🪿 ROGUE CYBER-GOOSE HONK ("HONK.EXE")
+   */
+  playGooseHonk() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic([25, 30, 35]);
+      const now = this.ctx.currentTime;
+
+      [0, 0.14].forEach((offset, idx) => {
+        const start = now + offset;
+        const osc1 = this.ctx.createOscillator();
+        const osc2 = this.ctx.createOscillator();
+        const filter = this.ctx.createBiquadFilter();
         const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, start);
-        gain.gain.setValueAtTime(0.09, start);
-        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.095);
-        osc.connect(gain);
+
+        const base = idx === 0 ? 430 : 495;
+        osc1.type = 'sawtooth';
+        osc2.type = 'square';
+        osc1.frequency.setValueAtTime(base, start);
+        osc1.frequency.exponentialRampToValueAtTime(base * 1.24, start + 0.045);
+        osc1.frequency.exponentialRampToValueAtTime(base * 0.88, start + 0.11);
+
+        osc2.frequency.setValueAtTime(base * 1.5, start);
+        osc2.frequency.exponentialRampToValueAtTime(base * 1.32, start + 0.11);
+
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1150, start);
+        filter.Q.setValueAtTime(4.2, start);
+
+        gain.gain.setValueAtTime(0.001, start);
+        gain.gain.linearRampToValueAtTime(0.22, start + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.115);
+
+        osc1.connect(filter);
+        osc2.connect(filter);
+        filter.connect(gain);
         gain.connect(this.ctx.destination);
-        osc.start(start);
-        osc.stop(start + 0.1);
+
+        osc1.start(start);
+        osc2.start(start);
+        osc1.stop(start + 0.12);
+        osc2.stop(start + 0.12);
       });
     } catch {
       // Ignore audio errors

@@ -83,6 +83,9 @@ export default function SeoDiscoveryFooter({
           <div>
             <h3 className="tm-seo-heading">🕹️ Side-Entertainment Games &amp; Tools</h3>
             <div className="tm-seo-links">
+              <button type="button" className="tm-seo-link" onClick={() => onSelectViewMode('pusher')}>
+                🪙 Neon Coin Dozer &apos;86 (Penny-Falls Prize Pusher)
+              </button>
               <button type="button" className="tm-seo-link" onClick={() => onSelectViewMode('blackjack')}>
                 🃏 Neon 21&apos;s Blackjack vs Dealer Bot &apos;86
               </button>

@@ -13,7 +13,7 @@ export default function MobileArcadeDock({
 }) {
   const [showGamesMenu, setShowGamesMenu] = useState(false);
 
-  const isSideGameActive = ['blackjack', 'roulette', 'slots', 'crush', 'pinball', 'stocks', 'battle', 'swipe'].includes(viewMode);
+  const isSideGameActive = ['pusher', 'blackjack', 'roulette', 'slots', 'crush', 'pinball', 'stocks', 'battle', 'swipe'].includes(viewMode);
 
   const handlePickMode = (mode) => {
     setShowGamesMenu(false);
@@ -55,6 +55,19 @@ export default function MobileArcadeDock({
             </div>
           </div>
           <div className="tm-dock-games-drawer-grid">
+            <button
+              type="button"
+              className={`tm-dock-game-chip ${viewMode === 'pusher' ? 'active' : ''}`}
+              onClick={() => handlePickMode('pusher')}
+              style={{
+                gridColumn: '1 / -1',
+                borderColor: '#facc15',
+                background: 'linear-gradient(135deg, rgba(250, 204, 21, 0.25), rgba(236, 72, 153, 0.22))'
+              }}
+            >
+              <span>🪙</span>
+              <strong style={{ color: '#fde047' }}>🔥 Neon Coin Dozer &apos;86 (NEW Prize Pusher!)</strong>
+            </button>
             <button
               type="button"
               className={`tm-dock-game-chip ${viewMode === 'blackjack' ? 'active' : ''}`}
@@ -154,6 +167,15 @@ export default function MobileArcadeDock({
         >
           <span className="tm-dock-icon">🎬</span>
           <span>Reels</span>
+        </button>
+
+        <button
+          type="button"
+          className={`tm-dock-btn ${viewMode === 'pusher' && !isAnyModalOpen ? 'active' : ''}`}
+          onClick={() => handlePickMode('pusher')}
+        >
+          <span className="tm-dock-icon">🪙</span>
+          <span>Dozer</span>
         </button>
 
         <button

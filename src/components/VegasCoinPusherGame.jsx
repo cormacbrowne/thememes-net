@@ -2,28 +2,33 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
 
 // ==========================================
-// PHASE 27: NEON COIN DOZER '86 (3D-PERSPECTIVE ARCADE COIN PUSHER & PRIZE MACHINE)
-// Authentic Penny-Falls / Coin Pusher physics with reciprocating Chrome Pusher Bar,
-// coin-to-coin momentum chains, Front Collection Tray vs Side Loss Gutters,
-// collectible 3D Prizes (Diamonds, Mystery Loot Boxes, Golden Trophies),
-// Skill-Timing Drop Meter, Cabinet Nudge with TILT sensor, and Bulldozer Fever!
+// PHASE 27: NEON COIN DOZER '86 — SUPER-ADDICTIVE PENNY-FALLS & MINI-SLOT EDITION
+// Features:
+// - 3D-Perspective Reciprocating Chrome Pusher Shelf + Mega-Shove Overdrive
+// - Moving "🎯 SKILL GATE" that awards +2 Bonus Coins & spins the Backbox 3-Reel Mini-Slot!
+// - Backbox Mini-Slot Jackpots: Coin Avalanche (10 Coins), Diamond Drop, Mega Dozer Shove, Laser Shields!
+// - Cliffhanger "Teetering on the Edge" wobble & glow for coins millimeter-close to dropping!
+// - 5 Collectible 80s Prizes (💎 Diamond, 🎁 Loot Box, 🕹️ Joystick, 🏆 Trophy, 👑 Cyber Crown)
+// - Hold-to-Stream / 🔥 Auto-Drop Toggle + 3-Coin Barrage + Cabinet Nudge
 // ==========================================
 
 const W = 620;
 const H = 720;
 
-// Playfield geometry (trapezoidal pseudo-3D cabinet perspective)
-const BED_TOP_Y = 128;
-const PUSHER_MIN_Y = 152;
-const PUSHER_MAX_Y = 258;
-const PUSHER_FEVER_MAX_Y = 282;
-const FRONT_LIP_Y = 566;
-const TRAY_BOTTOM_Y = 696;
+const BED_TOP_Y = 148;
+const PUSHER_MIN_Y = 172;
+const PUSHER_MAX_Y = 276;
+const PUSHER_FEVER_MAX_Y = 304;
+const PUSHER_MEGA_SHOVE_Y = 326;
+const FRONT_LIP_Y = 568;
+const TRAY_BOTTOM_Y = 702;
 
-// Left and right bed rails widen slightly from back to front for 3D perspective
+const GUTTER_START_Y = 345;
+const GUTTER_END_Y = 550;
+
 const getBedBoundsAtY = (y) => {
   const t = Math.max(0, Math.min(1, (y - BED_TOP_Y) / (FRONT_LIP_Y - BED_TOP_Y)));
-  const halfWidth = 188 + t * 56; // 376px wide at back -> 488px wide at front lip
+  const halfWidth = 188 + t * 58;
   return {
     left: W / 2 - halfWidth,
     right: W / 2 + halfWidth,
@@ -31,125 +36,133 @@ const getBedBoundsAtY = (y) => {
   };
 };
 
-// Side loss gutters exist along the lower half of the bed (unless Fever Laser Walls are active)
-const GUTTER_START_Y = 335;
-const GUTTER_END_Y = 552;
-
 const PRIZE_CATALOG = [
   {
     kind: 'diamond',
     emoji: '💎',
     label: 'Neon Diamond',
-    radius: 26,
-    mass: 1.55,
+    radius: 25,
+    mass: 1.4,
     tokens: 8,
     points: 1000,
-    color: '#00f3ff',
-    glow: 'rgba(0, 243, 255, 0.7)'
+    color: '#00f3ff'
   },
   {
     kind: 'lootbox',
     emoji: '🎁',
     label: 'Mystery Box',
-    radius: 28,
-    mass: 1.75,
+    radius: 27,
+    mass: 1.5,
     tokens: 12,
     points: 1800,
-    color: '#f472b6',
-    glow: 'rgba(244, 114, 182, 0.75)'
+    color: '#f472b6'
+  },
+  {
+    kind: 'joystick',
+    emoji: '🕹️',
+    label: 'Gold Joystick',
+    radius: 27,
+    mass: 1.55,
+    tokens: 15,
+    points: 2400,
+    color: '#a855f7'
   },
   {
     kind: 'trophy',
     emoji: '🏆',
-    label: '86 Gold Trophy',
-    radius: 30,
-    mass: 1.95,
+    label: '86 Trophy',
+    radius: 29,
+    mass: 1.65,
     tokens: 20,
     points: 3500,
-    color: '#facc15',
-    glow: 'rgba(250, 204, 21, 0.85)'
+    color: '#facc15'
+  },
+  {
+    kind: 'crown',
+    emoji: '👑',
+    label: 'Cyber Crown',
+    radius: 30,
+    mass: 1.75,
+    tokens: 30,
+    points: 5000,
+    color: '#4ade80'
   }
 ];
+
+const SLOT_SYMBOLS = ['🪙', '💎', '🎁', '⚡', '🏆'];
 
 let entityIdSeq = 1;
 
 function createCoinEntity(x, y, overrides = {}) {
-  const isSilver = overrides.kind === 'silver' || (!overrides.kind && Math.random() < 0.14);
-  const kind = overrides.kind || (isSilver ? 'silver' : 'gold');
-  const radius = overrides.radius || (kind === 'silver' ? 21 : 19.5);
+  const roll = Math.random();
+  const defaultKind = roll < 0.08 ? 'goldstack' : roll < 0.24 ? 'silver' : 'gold';
+  const kind = overrides.kind || defaultKind;
+  const radius =
+    overrides.radius || (kind === 'goldstack' ? 22.5 : kind === 'silver' ? 20.5 : 19.2);
+
   return {
     id: `c-${entityIdSeq++}`,
     kind,
-    emoji: overrides.emoji || (kind === 'silver' ? '⚡' : '🪙'),
-    label: overrides.label || (kind === 'silver' ? '2× Cyber Chip' : 'Gold Coin'),
+    emoji:
+      overrides.emoji ||
+      (kind === 'goldstack' ? '💰' : kind === 'silver' ? '⚡' : '🪙'),
+    label:
+      overrides.label ||
+      (kind === 'goldstack' ? '3× Coin Stack' : kind === 'silver' ? '2× Cyber Chip' : 'Gold Coin'),
     x,
     y,
     vx: overrides.vx || 0,
     vy: overrides.vy || 0,
     radius,
-    mass: overrides.mass || (kind === 'silver' ? 1.15 : 1.0),
-    tokens: overrides.tokens ?? (kind === 'silver' ? 2 : 1),
-    points: overrides.points ?? (kind === 'silver' ? 250 : 100),
-    color: overrides.color || (kind === 'silver' ? '#38bdf8' : '#facc15'),
-    glow: overrides.glow || (kind === 'silver' ? 'rgba(56, 189, 248, 0.5)' : 'rgba(250, 204, 21, 0.45)'),
+    mass: overrides.mass || (kind === 'goldstack' ? 1.25 : kind === 'silver' ? 1.1 : 1.0),
+    tokens: overrides.tokens ?? (kind === 'goldstack' ? 3 : kind === 'silver' ? 2 : 1),
+    points: overrides.points ?? (kind === 'goldstack' ? 400 : kind === 'silver' ? 250 : 120),
+    color:
+      overrides.color ||
+      (kind === 'goldstack' ? '#4ade80' : kind === 'silver' ? '#38bdf8' : '#facc15'),
     isPrize: Boolean(overrides.isPrize),
-    dropping: Boolean(overrides.dropping), // Falling from drop chute onto shelf
-    targetShelfY: overrides.targetShelfY || 185,
-    shimmerOffset: Math.random() * Math.PI * 2,
-    state: 'bed' // 'bed' | 'tray' | 'gutter'
+    dropping: Boolean(overrides.dropping),
+    passedGate: false,
+    targetShelfY: overrides.targetShelfY || 198,
+    shimmerOffset: Math.random() * Math.PI * 2
   };
 }
 
 function createInitialBed() {
   const items = [];
-  // Seed a dense, authentic multi-row coin bed from y=220 down to y=556 (right on the edge of the front lip!)
+  // Dense, juicy coin bed packed all the way to the front cliffhanger lip (y=562)
+  // so the very first coin drops immediately trigger satisfying tray cascades!
   const rows = [
-    { y: 235, count: 7 },
-    { y: 274, count: 8 },
-    { y: 314, count: 9 },
-    { y: 355, count: 10 },
-    { y: 396, count: 10 },
-    { y: 438, count: 11 },
-    { y: 480, count: 11 },
-    { y: 520, count: 11 },
-    { y: 552, count: 10 } // Teetering right on the front lip!
+    { y: 248, count: 8 },
+    { y: 284, count: 9 },
+    { y: 320, count: 10 },
+    { y: 358, count: 10 },
+    { y: 396, count: 11 },
+    { y: 434, count: 11 },
+    { y: 472, count: 12 },
+    { y: 508, count: 12 },
+    { y: 540, count: 12 },
+    { y: 561, count: 11 } // Teetering right on the front lip!
   ];
 
   rows.forEach((row) => {
     const bounds = getBedBoundsAtY(row.y);
-    const usableW = bounds.right - bounds.left - 48;
+    const usableW = bounds.right - bounds.left - 44;
     for (let i = 0; i < row.count; i++) {
       const frac = row.count > 1 ? i / (row.count - 1) : 0.5;
-      const jitterX = (Math.random() - 0.5) * 10;
-      const jitterY = (Math.random() - 0.5) * 9;
-      const x = bounds.left + 24 + frac * usableW + jitterX;
+      const jitterX = (Math.random() - 0.5) * 9;
+      const jitterY = (Math.random() - 0.5) * 7;
+      const x = bounds.left + 22 + frac * usableW + jitterX;
       const y = row.y + jitterY;
       items.push(createCoinEntity(x, y));
     }
   });
 
-  // Place 3 exciting prizes in the middle/lower bed ready to be nudged forward!
-  const p1 = PRIZE_CATALOG[0]; // Diamond near front-left
-  items.push(
-    createCoinEntity(W / 2 - 75, 468, {
-      ...p1,
-      isPrize: true
-    })
-  );
-  const p2 = PRIZE_CATALOG[1]; // Mystery Box center
-  items.push(
-    createCoinEntity(W / 2 + 68, 412, {
-      ...p2,
-      isPrize: true
-    })
-  );
-  const p3 = PRIZE_CATALOG[2]; // Trophy upper-mid
-  items.push(
-    createCoinEntity(W / 2, 336, {
-      ...p3,
-      isPrize: true
-    })
-  );
+  // Pre-place 4 juicy prizes on the bed (including a Diamond close to the front lip!)
+  items.push(createCoinEntity(W / 2 - 58, 524, { ...PRIZE_CATALOG[0], isPrize: true }));
+  items.push(createCoinEntity(W / 2 + 72, 448, { ...PRIZE_CATALOG[1], isPrize: true }));
+  items.push(createCoinEntity(W / 2 - 84, 378, { ...PRIZE_CATALOG[2], isPrize: true }));
+  items.push(createCoinEntity(W / 2 + 12, 316, { ...PRIZE_CATALOG[3], isPrize: true }));
 
   return items;
 }
@@ -164,34 +177,46 @@ export default function VegasCoinPusherGame({
 }) {
   const canvasRef = useRef(null);
 
-  // Free Play vs Token Mode (defaults to Free Play if player has < 5 tokens so anyone can play immediately)
   const [freePlay, setFreePlay] = useState(() => tokens < 5);
-  const [practiceCoins, setPracticeCoins] = useState(45);
+  const [practiceCoins, setPracticeCoins] = useState(60);
+  const [autoDrop, setAutoDrop] = useState(false);
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(() =>
     Number(localStorage.getItem('tm_pusher_highscore') || 0)
   );
   const [coinsWonSession, setCoinsWonSession] = useState(0);
-  const [prizesWonSession, setPrizesWonSession] = useState(0);
-  const [feverProgress, setFeverProgress] = useState(0); // 0..12
+  const [, setPrizesWonSession] = useState(0);
+  const [collectedPrizeKinds, setCollectedPrizeKinds] = useState([]);
+  const [feverProgress, setFeverProgress] = useState(0);
   const [feverSecondsLeft, setFeverSecondsLeft] = useState(0);
   const [tiltWarnings, setTiltWarnings] = useState(0);
   const [isTilted, setIsTilted] = useState(false);
+  const [slotReels, setSlotReels] = useState(['🪙', '💎', '🪙']);
+  const [slotSpinning, setSlotSpinning] = useState(false);
   const [statusBanner, setStatusBanner] = useState(
-    '🪙 TAP ANYWHERE ON THE TOP DROP RAIL (OR PRESS SPACE) TO DROP COINS ONTO THE MOVING PUSHER SHELF!'
+    '🎯 AIM FOR THE MOVING GREEN SKILL GATE TO SPIN THE MINI-SLOT & RAIN BONUS COINS!'
   );
 
-  // Mutable simulation state for 60fps canvas loop
+  // Multiplier grows as you collect unique prizes!
+  const prizeMultiplier = 1 + Math.min(2, collectedPrizeKinds.length * 0.25);
+
   const simRef = useRef({
     coins: createInitialBed(),
     fallingTrayCoins: [],
+    trayPile: [], // Visual pile of won coins gleaming in the bottom tray
     floatingTexts: [],
     sparks: [],
     pusherPhase: 0,
     pusherY: PUSHER_MIN_Y,
-    pusherExtendedRatio: 0, // 0 = retracted (PERFECT DROP!), 1 = fully extended
+    pusherExtendedRatio: 0,
+    megaShoveUntil: 0,
     aimX: W / 2,
     aimDir: 1,
+    gateX: W / 2,
+    gateDir: 1,
+    gateFlashUntil: 0,
+    slotReels: ['🪙', '💎', '🪙'],
+    slotSpinUntil: 0,
     feverUntil: 0,
     shakeMag: 0,
     lastDropAt: 0,
@@ -200,40 +225,120 @@ export default function VegasCoinPusherGame({
     recentDropsSincePrize: 0
   });
 
-  // Sync latest callbacks & mode into refs for RAF loop access
   const callbacksRef = useRef({
     freePlay,
     onEarnTokens,
     onEarnXp,
-    highScore
+    highScore,
+    prizeMultiplier
   });
   useEffect(() => {
-    callbacksRef.current = { freePlay, onEarnTokens, onEarnXp, highScore };
-  }, [freePlay, onEarnTokens, onEarnXp, highScore]);
+    callbacksRef.current = { freePlay, onEarnTokens, onEarnXp, highScore, prizeMultiplier };
+  }, [freePlay, onEarnTokens, onEarnXp, highScore, prizeMultiplier]);
 
-  // Auto-regenerate practice coins in Free Play mode & countdown Fever timer
-  useEffect(() => {
-    const iv = setInterval(() => {
-      setPracticeCoins((prev) => (prev < 45 ? Math.min(45, prev + 2) : prev));
-      const rem = Math.max(0, Math.ceil((simRef.current.feverUntil - performance.now()) / 1000));
-      setFeverSecondsLeft(rem);
-    }, 1000);
-    return () => clearInterval(iv);
+  // Trigger Backbox 3-Reel Mini-Slot Spin when a coin passes through the moving Skill Gate!
+  const triggerMiniSlotSpin = useCallback(() => {
+    const s = simRef.current;
+    if (performance.now() < s.slotSpinUntil) return;
+    s.slotSpinUntil = performance.now() + 1150;
+    setSlotSpinning(true);
+    sfx.playRouletteSpin?.();
+
+    setTimeout(() => {
+      setSlotSpinning(false);
+      const roll = Math.random();
+      let outcome;
+      if (roll < 0.22) {
+        outcome = ['🪙', '🪙', '🪙']; // Coin Avalanche!
+        setStatusBanner('🎰 MINI-SLOT HIT: 🪙🪙🪙 10-COIN AVALANCHE RAINING ONTO THE SHELF!');
+        sfx.playJackpot?.();
+        for (let k = 0; k < 10; k++) {
+          setTimeout(() => {
+            const rx = W / 2 + (Math.random() - 0.5) * 260;
+            s.coins.push(
+              createCoinEntity(rx, BED_TOP_Y - 12, {
+                dropping: true,
+                passedGate: true,
+                targetShelfY: PUSHER_MIN_Y + 22 + Math.random() * 48,
+                vy: 7.4
+              })
+            );
+            sfx.playCoinDrop?.();
+          }, k * 95);
+        }
+      } else if (roll < 0.42) {
+        outcome = ['⚡', '⚡', '⚡']; // Mega Dozer Shove + Laser Shields!
+        s.megaShoveUntil = performance.now() + 7000;
+        s.feverUntil = Math.max(s.feverUntil, performance.now() + 10000);
+        setFeverSecondsLeft(10);
+        setStatusBanner('🎰 MINI-SLOT HIT: ⚡⚡⚡ MEGA DOZER STROKE + 10s LASER SIDE-WALLS!');
+        sfx.playPrizeDrop?.(true);
+      } else if (roll < 0.60) {
+        outcome = ['💎', '💎', '💎']; // Twin Diamond Drop!
+        setStatusBanner('🎰 MINI-SLOT HIT: 💎💎💎 TWIN NEON DIAMONDS DROPPED ONTO THE BED!');
+        sfx.playPrizeDrop?.(true);
+        [-65, 65].forEach((offset) => {
+          s.coins.push(
+            createCoinEntity(W / 2 + offset, BED_TOP_Y - 18, {
+              ...PRIZE_CATALOG[0],
+              isPrize: true,
+              dropping: true,
+              passedGate: true,
+              targetShelfY: PUSHER_MAX_Y + 45,
+              vy: 6.2
+            })
+          );
+        });
+      } else if (roll < 0.76) {
+        outcome = ['🎁', '🎁', '🎁']; // Mystery Prize Drop!
+        const pr = PRIZE_CATALOG[Math.floor(Math.random() * PRIZE_CATALOG.length)];
+        setStatusBanner(`🎰 MINI-SLOT HIT: 🎁🎁🎁 GIANT ${pr.emoji} ${pr.label.toUpperCase()} DROPPED!`);
+        sfx.playPrizeDrop?.(true);
+        s.coins.push(
+          createCoinEntity(W / 2 + (Math.random() - 0.5) * 90, BED_TOP_Y - 18, {
+            ...pr,
+            isPrize: true,
+            dropping: true,
+            passedGate: true,
+            targetShelfY: PUSHER_MAX_Y + 35,
+            vy: 6.2
+          })
+        );
+      } else {
+        // 2-of-a-kind consolations still drop +3 bonus coins!
+        const sym = SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)];
+        outcome = [sym, sym, '🪙'];
+        setStatusBanner(`🎰 SKILL GATE BONUS: ${sym}${sym}🪙 +3 EXTRA COINS DROPPED ONTO THE SHELF!`);
+        for (let k = 0; k < 3; k++) {
+          const rx = W / 2 + (k - 1) * 75;
+          s.coins.push(
+            createCoinEntity(rx, BED_TOP_Y - 10, {
+              dropping: true,
+              passedGate: true,
+              targetShelfY: PUSHER_MIN_Y + 24,
+              vy: 7.2
+            })
+          );
+        }
+      }
+      s.slotReels = outcome;
+      setSlotReels(outcome);
+    }, 1150);
   }, []);
 
   const spawnSparks = (x, y, color = '#facc15', count = 14) => {
     const s = simRef.current;
     for (let i = 0; i < count; i++) {
       const ang = Math.random() * Math.PI * 2;
-      const spd = 1.5 + Math.random() * 4.8;
+      const spd = 1.6 + Math.random() * 5.2;
       s.sparks.push({
         x,
         y,
         vx: Math.cos(ang) * spd,
-        vy: Math.sin(ang) * spd - 1.4,
+        vy: Math.sin(ang) * spd - 1.5,
         color,
         alpha: 1,
-        size: 2.5 + Math.random() * 3.5
+        size: 2.5 + Math.random() * 3.8
       });
     }
   };
@@ -246,24 +351,24 @@ export default function VegasCoinPusherGame({
       color,
       scale,
       alpha: 1,
-      vy: -1.6
+      vy: -1.65
     });
   };
 
-  // Drop a single coin at X
+  // Drop a coin at targetX
   const handleDropCoin = useCallback(
     (targetX = null, isFreeShower = false) => {
       if (isTilted) return;
       const now = performance.now();
       const s = simRef.current;
 
-      if (!isFreeShower && now - s.lastDropAt < 110) return;
+      if (!isFreeShower && now - s.lastDropAt < 95) return;
 
       if (!isFreeShower) {
         if (freePlay) {
           if (practiceCoins <= 0) {
-            setPracticeCoins(35);
-            setStatusBanner('🆓 FREE PRACTICE BUCKET REFILLED (+35 COINS)! KEEP PUSHING!');
+            setPracticeCoins(50);
+            setStatusBanner('🆓 FREE PRACTICE BUCKET REFILLED (+50 COINS)! KEEP DOZING!');
             sfx.playCoinDrop?.();
             return;
           }
@@ -271,8 +376,8 @@ export default function VegasCoinPusherGame({
         } else {
           if (tokens < 1) {
             setFreePlay(true);
-            setPracticeCoins(40);
-            setStatusBanner('🆓 Switched to FREE PLAY Mode (+40 Practice Coins)! Or upload a meme for +45 🪙!');
+            setPracticeCoins(50);
+            setStatusBanner('🆓 Switched to FREE PLAY Mode (+50 Coins)! Or upload a meme for +45 🪙!');
             return;
           }
           if (onSpendTokens) {
@@ -288,70 +393,93 @@ export default function VegasCoinPusherGame({
       const boundsTop = getBedBoundsAtY(PUSHER_MIN_Y + 25);
       const dropX =
         targetX != null
-          ? Math.max(boundsTop.left + 28, Math.min(boundsTop.right - 28, targetX))
-          : Math.max(boundsTop.left + 28, Math.min(boundsTop.right - 28, s.aimX));
+          ? Math.max(boundsTop.left + 26, Math.min(boundsTop.right - 26, targetX))
+          : Math.max(boundsTop.left + 26, Math.min(boundsTop.right - 26, s.aimX));
 
-      // Skill timing check: if pusher is retracted (< 0.38 extended), the coin lands flat on the upper shelf
-      // right in front of the pusher face and pushes the entire pile on the next stroke!
-      const isSkillDrop = s.pusherExtendedRatio <= 0.42;
+      const isSkillDrop = s.pusherExtendedRatio <= 0.45;
       const landingY = isSkillDrop
-        ? Math.max(PUSHER_MIN_Y + 20, s.pusherY + 18)
-        : Math.min(PUSHER_MAX_Y + 28, s.pusherY + 24 + Math.random() * 14);
+        ? Math.max(PUSHER_MIN_Y + 18, s.pusherY + 16)
+        : Math.min(PUSHER_MAX_Y + 26, s.pusherY + 22 + Math.random() * 14);
 
-      const newCoin = createCoinEntity(dropX, BED_TOP_Y - 18, {
+      const newCoin = createCoinEntity(dropX, BED_TOP_Y - 26, {
         dropping: true,
         targetShelfY: landingY,
-        vy: isSkillDrop ? 7.2 : 6.0,
-        vx: (Math.random() - 0.5) * 0.6
+        vy: isSkillDrop ? 7.6 : 6.4,
+        vx: (Math.random() - 0.5) * 0.5
       });
 
       s.coins.push(newCoin);
       s.recentDropsSincePrize += 1;
 
       if (isSkillDrop && !isFreeShower) {
-        spawnFloatingText(dropX, BED_TOP_Y + 34, '🎯 SKILL TIMING DROP!', '#4ade80', 0.92);
+        spawnFloatingText(dropX, BED_TOP_Y + 24, '🎯 FLAT SHELF DROP!', '#4ade80', 0.9);
       }
 
-      // Periodically spawn a new special Prize onto the upper shelf every 11 coin drops!
-      if (s.recentDropsSincePrize >= 11) {
+      // Spawn a new collectible Prize every 9 drops!
+      if (s.recentDropsSincePrize >= 9) {
         s.recentDropsSincePrize = 0;
         const prizeTpl = PRIZE_CATALOG[Math.floor(Math.random() * PRIZE_CATALOG.length)];
-        const prizeX = W / 2 + (Math.random() - 0.5) * 160;
+        const prizeX = W / 2 + (Math.random() - 0.5) * 170;
         s.coins.push(
-          createCoinEntity(prizeX, BED_TOP_Y - 24, {
+          createCoinEntity(prizeX, BED_TOP_Y - 28, {
             ...prizeTpl,
             isPrize: true,
             dropping: true,
-            targetShelfY: PUSHER_MAX_Y + 22,
-            vy: 5.5
+            passedGate: true,
+            targetShelfY: PUSHER_MAX_Y + 20,
+            vy: 5.8
           })
         );
-        spawnFloatingText(prizeX, BED_TOP_Y + 60, `✨ NEW ${prizeTpl.emoji} ${prizeTpl.label.toUpperCase()} SPAWNED!`, prizeTpl.color, 1.05);
+        spawnFloatingText(
+          prizeX,
+          BED_TOP_Y + 54,
+          `✨ ${prizeTpl.emoji} ${prizeTpl.label.toUpperCase()} SPAWNED!`,
+          prizeTpl.color,
+          1.08
+        );
         sfx.playPowerup?.();
       }
     },
     [freePlay, isTilted, onSpendTokens, practiceCoins, tokens]
   );
 
-  // 3-Coin Power Spread Drop
+  // Auto-regenerate practice coins & handle Auto-Drop stream
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setPracticeCoins((prev) => (prev < 60 ? Math.min(60, prev + 3) : prev));
+      const rem = Math.max(0, Math.ceil((simRef.current.feverUntil - performance.now()) / 1000));
+      setFeverSecondsLeft(rem);
+    }, 1000);
+    return () => clearInterval(iv);
+  }, []);
+
+  useEffect(() => {
+    if (!autoDrop || isTilted) return undefined;
+    const iv = setInterval(() => {
+      handleDropCoin(simRef.current.aimX + (Math.random() - 0.5) * 28, false);
+    }, 340);
+    return () => clearInterval(iv);
+  }, [autoDrop, isTilted, handleDropCoin]);
+
+  // 3-Coin Power Barrage
   const handleSpreadDrop = () => {
     if (isTilted) return;
     if (!freePlay && tokens < 3) {
       handleDropCoin(W / 2);
       return;
     }
-    [-110, 0, 110].forEach((offset, idx) => {
+    [-115, 0, 115].forEach((offset, idx) => {
       setTimeout(() => {
         handleDropCoin(W / 2 + offset + (Math.random() - 0.5) * 14, false);
-      }, idx * 120);
+      }, idx * 105);
     });
   };
 
-  // Cabinet Nudge (shakes coins forward toward the front lip, with 3-strike TILT alarm)
+  // Cabinet Nudge
   const handleNudgeCabinet = () => {
     if (isTilted) return;
     const s = simRef.current;
-    s.shakeMag = 11;
+    s.shakeMag = 12;
     sfx.playVineBoom?.();
 
     const nextWarnings = tiltWarnings + 1;
@@ -359,6 +487,7 @@ export default function VegasCoinPusherGame({
 
     if (nextWarnings >= 3) {
       setIsTilted(true);
+      setAutoDrop(false);
       setStatusBanner('🚨 TILT ALARM! CABINET LOCKED FOR 4 SECONDS — EASY ON THE GLASS!');
       sfx.playSadTrombone?.();
       setTimeout(() => {
@@ -369,27 +498,24 @@ export default function VegasCoinPusherGame({
       return;
     }
 
-    // Nudge all coins on the bed slightly forward toward the front lip!
     s.coins.forEach((c) => {
       if (!c.dropping) {
-        c.y += 3.2 + Math.random() * 2.8;
-        c.x += (Math.random() - 0.5) * 3.5;
+        c.y += 4.2 + Math.random() * 3.2;
+        c.x += (Math.random() - 0.5) * 3.2;
       }
     });
-    setStatusBanner(`💥 CABINET NUDGED! COINS SHIFTED TOWARD THE EDGE! (TILT WARNING ${nextWarnings}/3)`);
+    setStatusBanner(`💥 CABINET NUDGED! CLIFFHANGER COINS SHOVED FORWARD! (TILT ${nextWarnings}/3)`);
     setTimeout(() => {
       setTiltWarnings((w) => Math.max(0, w - 1));
     }, 6500);
   };
 
-  // Reset / Re-rack Coin Bed
   const handleResetBed = () => {
     simRef.current.coins = createInitialBed();
     sfx.playCoinDrop?.();
-    setStatusBanner('🔄 FRESH COIN & PRIZE BED RACKED! DROP COINS ON THE RETRACTED SHELF!');
+    setStatusBanner('🔄 FRESH COIN & PRIZE BED RACKED! CLIFFHANGER COINS READY AT THE LIP!');
   };
 
-  // Keyboard shortcuts (Space = Drop at Aim, Left/Right = Move Aim, N = Nudge)
   useEffect(() => {
     const onKeyDown = (e) => {
       if (e.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
@@ -397,9 +523,9 @@ export default function VegasCoinPusherGame({
         e.preventDefault();
         handleDropCoin(simRef.current.aimX);
       } else if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
-        simRef.current.aimX = Math.max(150, simRef.current.aimX - 24);
+        simRef.current.aimX = Math.max(145, simRef.current.aimX - 24);
       } else if (e.code === 'ArrowRight' || e.code === 'KeyD') {
-        simRef.current.aimX = Math.min(W - 150, simRef.current.aimX + 24);
+        simRef.current.aimX = Math.min(W - 145, simRef.current.aimX + 24);
       } else if (e.code === 'KeyN') {
         handleNudgeCabinet();
       }
@@ -419,48 +545,73 @@ export default function VegasCoinPusherGame({
 
       const s = simRef.current;
       const isFever = now < s.feverUntil;
+      const isMegaShove = now < s.megaShoveUntil;
 
       // 1. Reciprocating Chrome Pusher Bar motion
-      const pusherSpeed = isFever ? 2.55 : 1.85;
+      const pusherSpeed = isFever ? 2.65 : 1.95;
       s.pusherPhase += dt * pusherSpeed;
-      const maxPush = isFever ? PUSHER_FEVER_MAX_Y : PUSHER_MAX_Y;
+      const maxPush = isMegaShove
+        ? PUSHER_MEGA_SHOVE_Y
+        : isFever
+        ? PUSHER_FEVER_MAX_Y
+        : PUSHER_MAX_Y;
       const prevPusherY = s.pusherY;
-      const wave = 0.5 - 0.5 * Math.cos(s.pusherPhase); // 0 (retracted) .. 1 (extended)
+      const wave = 0.5 - 0.5 * Math.cos(s.pusherPhase);
       s.pusherExtendedRatio = wave;
       s.pusherY = PUSHER_MIN_Y + (maxPush - PUSHER_MIN_Y) * wave;
       const pusherDeltaY = Math.max(0, s.pusherY - prevPusherY);
 
-      // 2. Oscillate top drop aim cursor gently when user isn't hovering
-      s.aimX += s.aimDir * 75 * dt;
-      if (s.aimX > W - 148) {
-        s.aimX = W - 148;
-        s.aimDir = -1;
-      } else if (s.aimX < 148) {
-        s.aimX = 148;
-        s.aimDir = 1;
+      // 2. Moving "🎯 SKILL GATE" across the top drop chute
+      s.gateX += s.gateDir * 112 * dt;
+      if (s.gateX > W - 175) {
+        s.gateX = W - 175;
+        s.gateDir = -1;
+      } else if (s.gateX < 175) {
+        s.gateX = 175;
+        s.gateDir = 1;
       }
 
       if (s.shakeMag > 0) {
         s.shakeMag = Math.max(0, s.shakeMag - 32 * dt);
       }
 
-      // 3. Update coins dropping from top chute onto the upper shelf
+      // 3. Update coins dropping from top chute & check Skill Gate pass-through!
       for (let i = 0; i < s.coins.length; i++) {
         const c = s.coins[i];
         if (c.dropping) {
           c.y += c.vy;
           c.x += c.vx;
-          c.vy += 0.32;
+          c.vy += 0.35;
+
+          // Check if coin passed through the moving Skill Gate (y around BED_TOP_Y - 4)
+          if (!c.passedGate && c.y >= BED_TOP_Y - 8 && c.y <= BED_TOP_Y + 22) {
+            c.passedGate = true;
+            if (Math.abs(c.x - s.gateX) <= 44) {
+              s.gateFlashUntil = now + 550;
+              spawnSparks(s.gateX, BED_TOP_Y, '#4ade80', 16);
+              spawnFloatingText(s.gateX, BED_TOP_Y - 10, '🎯 SKILL GATE HIT! +2 COINS & SLOT SPIN!', '#4ade80', 1.02);
+              // Spawn 2 immediate bonus coins on the shelf
+              [-26, 26].forEach((ox) => {
+                s.coins.push(
+                  createCoinEntity(
+                    Math.max(160, Math.min(W - 160, c.x + ox)),
+                    PUSHER_MIN_Y + 22,
+                    { vy: 2.8 }
+                  )
+                );
+              });
+              triggerMiniSlotSpin();
+            }
+          }
+
           if (c.y >= c.targetShelfY) {
             c.y = c.targetShelfY;
             c.dropping = false;
             c.vx = 0;
-            // Give a forward impulse when landing on the shelf so it nudges adjacent coins
-            c.vy = 2.4;
-            sfx.playCoinClink?.(0.8);
+            c.vy = 2.9; // Strong landing impulse to nudge the pile!
+            sfx.playCoinClink?.(0.85);
           }
         } else {
-          // Apply velocity & high shelf friction
           c.x += c.vx;
           c.y += c.vy;
           c.vx *= 0.72;
@@ -469,17 +620,16 @@ export default function VegasCoinPusherGame({
       }
 
       // 4. Pusher Bar Mechanical Sweeping Force
-      // Any coin on the shelf whose top edge is behind/touching the advancing pusher face gets pushed forward!
       if (pusherDeltaY > 0) {
         for (let i = 0; i < s.coins.length; i++) {
           const c = s.coins[i];
           if (c.dropping) continue;
-          const coinTop = c.y - c.radius * 0.85;
-          if (coinTop < s.pusherY && c.y < s.pusherY + 38) {
-            const targetY = s.pusherY + c.radius * 0.85;
-            const pushAmt = Math.max(pusherDeltaY * 1.08, targetY - c.y);
+          const coinTop = c.y - c.radius * 0.88;
+          if (coinTop < s.pusherY && c.y < s.pusherY + 42) {
+            const targetY = s.pusherY + c.radius * 0.88;
+            const pushAmt = Math.max(pusherDeltaY * 1.14, targetY - c.y);
             c.y += pushAmt;
-            c.vy = Math.max(c.vy, pusherDeltaY * 0.85);
+            c.vy = Math.max(c.vy, pusherDeltaY * 0.92);
           }
         }
       }
@@ -497,7 +647,7 @@ export default function VegasCoinPusherGame({
 
             const dx = b.x - a.x;
             const dy = b.y - a.y;
-            const minDist = (a.radius + b.radius) * 0.91; // Slight overlap allowed for realistic stacked coins
+            const minDist = (a.radius + b.radius) * 0.91;
             const distSq = dx * dx + dy * dy;
 
             if (distSq > 0.0001 && distSq < minDist * minDist) {
@@ -506,33 +656,29 @@ export default function VegasCoinPusherGame({
               const nx = dx / dist;
               const ny = dy / dist;
 
-              // Bias momentum transfer forward (downward toward the front lip) so back-row pushes cascade to the front!
               const aIsHigher = a.y < b.y;
               if (aIsHigher) {
-                a.x -= nx * overlap * 0.25;
-                a.y -= Math.max(0, ny * overlap * 0.15);
-                b.x += nx * overlap * 0.65;
-                b.y += Math.abs(ny) * overlap * 0.88;
+                a.x -= nx * overlap * 0.22;
+                a.y -= Math.max(0, ny * overlap * 0.12);
+                b.x += nx * overlap * 0.62;
+                b.y += Math.abs(ny) * overlap * 0.92;
               } else {
-                b.x += nx * overlap * 0.25;
-                b.y -= Math.max(0, -ny * overlap * 0.15);
-                a.x -= nx * overlap * 0.65;
-                a.y += Math.abs(ny) * overlap * 0.88;
+                b.x += nx * overlap * 0.22;
+                b.y -= Math.max(0, -ny * overlap * 0.12);
+                a.x -= nx * overlap * 0.62;
+                a.y += Math.abs(ny) * overlap * 0.92;
               }
             }
           }
 
-          // Keep coins from being pushed above the back wall
           if (a.y < PUSHER_MIN_Y + a.radius * 0.7) {
             a.y = PUSHER_MIN_Y + a.radius * 0.7;
           }
 
-          // Side rail & Side Gutter boundary check
           const bounds = getBedBoundsAtY(a.y);
           const inGutterZone = a.y >= GUTTER_START_Y && a.y <= GUTTER_END_Y;
 
           if (isFever || !inGutterZone || a.isPrize) {
-            // Prizes and Fever-shielded coins bounce safely inside the chrome side rails!
             const minX = bounds.left + a.radius;
             const maxX = bounds.right - a.radius;
             if (a.x < minX) {
@@ -560,43 +706,48 @@ export default function VegasCoinPusherGame({
         const bounds = getBedBoundsAtY(c.y);
         const inGutterZone = c.y >= GUTTER_START_Y && c.y <= GUTTER_END_Y;
 
-        // Check side gutter loss (only non-prize coins when Fever shields are off)
-        if (!isFever && inGutterZone && !c.isPrize && (c.x < bounds.left + 4 || c.x > bounds.right - 4)) {
+        if (!isFever && inGutterZone && !c.isPrize && (c.x < bounds.left + 3 || c.x > bounds.right - 3)) {
           s.fallingTrayCoins.push({
             ...c,
-            vy: 4.5,
+            vy: 4.8,
             vx: c.x < W / 2 ? -2.2 : 2.2,
             isLostGutter: true,
             alpha: 1
           });
-          spawnFloatingText(
-            c.x < W / 2 ? bounds.left + 16 : bounds.right - 16,
-            c.y,
-            'SIDE GUTTER',
-            '#94a3b8',
-            0.78
-          );
           continue;
         }
 
-        // Check FRONT COLLECTION TRAY WIN!
+        // FRONT COLLECTION TRAY WIN!
         if (c.y >= FRONT_LIP_Y) {
           trayWinsThisFrame += 1;
           s.fallingTrayCoins.push({
             ...c,
-            vy: 5.5 + Math.random() * 2.5,
-            vx: (Math.random() - 0.5) * 2.5,
+            vy: 5.8 + Math.random() * 2.5,
+            vx: (Math.random() - 0.5) * 2.4,
             isLostGutter: false,
             alpha: 1
           });
 
+          // Add gleaming coin to visual tray pile at the bottom!
+          s.trayPile.push({
+            x: Math.max(120, Math.min(W - 120, c.x + (Math.random() - 0.5) * 24)),
+            y: TRAY_BOTTOM_Y - 16 - (s.trayPile.length % 18) * 2.2,
+            radius: Math.min(22, c.radius * 0.88),
+            color: c.color,
+            emoji: c.emoji,
+            isPrize: c.isPrize
+          });
+          if (s.trayPile.length > 36) s.trayPile.shift();
+
           const cb = callbacksRef.current;
           const timeSinceLast = now - s.lastTrayWinAt;
-          s.comboCount = timeSinceLast < 2200 ? Math.min(8, s.comboCount + 1) : 1;
+          s.comboCount = timeSinceLast < 2400 ? Math.min(10, s.comboCount + 1) : 1;
           s.lastTrayWinAt = now;
 
-          const mult = isFever ? 2 : 1;
-          const ptsEarned = c.points * mult + (s.comboCount > 1 ? s.comboCount * 50 : 0);
+          const feverMult = isFever ? 2 : 1;
+          const ptsEarned = Math.round(
+            c.points * feverMult * (cb.prizeMultiplier || 1) + (s.comboCount > 1 ? s.comboCount * 60 : 0)
+          );
           const tokenAward = c.tokens * (isFever && !c.isPrize ? 2 : 1);
 
           setScore((prev) => {
@@ -611,12 +762,13 @@ export default function VegasCoinPusherGame({
           setCoinsWonSession((prev) => prev + tokenAward);
           if (c.isPrize) {
             setPrizesWonSession((prev) => prev + 1);
+            setCollectedPrizeKinds((prev) => (prev.includes(c.kind) ? prev : [...prev, c.kind]));
+            s.shakeMag = 8;
           }
 
           if (cb.freePlay) {
-            // In Free Play, winning coins refills practice bucket + awards arcade XP!
-            setPracticeCoins((prev) => Math.min(60, prev + tokenAward));
-            cb.onEarnXp?.(c.isPrize ? 35 : 8);
+            setPracticeCoins((prev) => Math.min(75, prev + tokenAward));
+            cb.onEarnXp?.(c.isPrize ? 40 : 10);
           } else {
             cb.onEarnTokens?.(
               tokenAward,
@@ -624,49 +776,55 @@ export default function VegasCoinPusherGame({
               c.isPrize ? `${c.emoji} ${c.label} Dozer Prize!` : '🪙 Coin Dozer Tray Drop',
               'subgame'
             );
-            cb.onEarnXp?.(c.isPrize ? 45 : 10);
+            cb.onEarnXp?.(c.isPrize ? 50 : 12);
           }
 
-          spawnSparks(c.x, FRONT_LIP_Y + 12, c.color, c.isPrize ? 28 : 12);
+          spawnSparks(c.x, FRONT_LIP_Y + 12, c.color, c.isPrize ? 30 : 14);
           spawnFloatingText(
             c.x,
-            FRONT_LIP_Y - 8,
+            FRONT_LIP_Y - 10,
             c.isPrize
               ? `${c.emoji} ${c.label.toUpperCase()} +${tokenAward} 🪙 (+${ptsEarned} PTS)!`
               : `+${tokenAward} 🪙 ${s.comboCount > 1 ? `(${s.comboCount}× CASCADE!)` : ''}`,
             c.isPrize ? '#f472b6' : '#4ade80',
-            c.isPrize ? 1.18 : 0.95
+            c.isPrize ? 1.2 : 0.98
           );
 
           // Special Prize Bonus Effects!
-          if (c.kind === 'lootbox') {
-            setStatusBanner('🎁 MYSTERY BOX COLLECTED! TRIGGERING 5-COIN CEILING SHOWER!');
-            for (let k = 0; k < 5; k++) {
+          if (c.kind === 'lootbox' || c.kind === 'crown') {
+            const showerCount = c.kind === 'crown' ? 10 : 6;
+            setStatusBanner(
+              `${c.emoji} ${c.label.toUpperCase()} WON! TRIGGERING ${showerCount}-COIN CEILING SHOWER!`
+            );
+            for (let k = 0; k < showerCount; k++) {
               setTimeout(() => {
-                const rx = W / 2 + (Math.random() - 0.5) * 220;
+                const rx = W / 2 + (Math.random() - 0.5) * 230;
                 s.coins.push(
-                  createCoinEntity(rx, BED_TOP_Y - 16, {
+                  createCoinEntity(rx, BED_TOP_Y - 14, {
                     dropping: true,
-                    targetShelfY: PUSHER_MIN_Y + 28 + Math.random() * 45,
-                    vy: 6.8
+                    passedGate: true,
+                    targetShelfY: PUSHER_MIN_Y + 26 + Math.random() * 44,
+                    vy: 7.0
                   })
                 );
                 sfx.playCoinDrop?.();
-              }, k * 140);
+              }, k * 110);
             }
+          } else if (c.kind === 'joystick') {
+            s.megaShoveUntil = Math.max(s.megaShoveUntil, now + 8000);
+            setStatusBanner('🕹️ GOLDEN JOYSTICK COLLECTED! ⚡ 8s MEGA DOZER SUPER-STROKE ACTIVATED!');
           } else if (c.kind === 'trophy') {
             s.feverUntil = Math.max(s.feverUntil, now + 15000);
             setFeverSecondsLeft(15);
             setStatusBanner('🏆 GOLDEN TROPHY WON! 🛡️ 15s BULLDOZER FEVER & LASER SIDE-WALLS ACTIVATED!');
           }
 
-          // Advance Bulldozer Fever Meter
           setFeverProgress((prev) => {
-            const next = prev + (c.isPrize ? 3 : 1);
+            const next = prev + (c.isPrize ? 4 : 1);
             if (next >= 12) {
               s.feverUntil = Math.max(s.feverUntil, performance.now() + 14000);
               setFeverSecondsLeft(14);
-              setStatusBanner('🌈 BULLDOZER FEVER ACTIVE (14s)! LASER SIDE-WALLS UP + 2× EXTENDED DOZER STROKE!');
+              setStatusBanner('🌈 BULLDOZER FEVER ACTIVE (14s)! LASER SIDE-WALLS UP + 2× DOZER STROKE!');
               sfx.playPrizeDrop?.(true);
               return 0;
             }
@@ -688,10 +846,9 @@ export default function VegasCoinPusherGame({
         }
       }
 
-      // Keep coin bed healthy: if total coins on bed drops below 42, gently feed replacement coins on the back shelf
-      if (remaining.length < 42) {
+      if (remaining.length < 48) {
         const bounds = getBedBoundsAtY(PUSHER_MIN_Y + 30);
-        const rx = bounds.left + 36 + Math.random() * (bounds.right - bounds.left - 72);
+        const rx = bounds.left + 34 + Math.random() * (bounds.right - bounds.left - 68);
         remaining.push(createCoinEntity(rx, PUSHER_MIN_Y + 24));
       }
 
@@ -701,9 +858,9 @@ export default function VegasCoinPusherGame({
       s.fallingTrayCoins = s.fallingTrayCoins.filter((fc) => {
         fc.x += fc.vx;
         fc.y += fc.vy;
-        fc.vy += 0.42;
-        if (fc.y > TRAY_BOTTOM_Y - 18) {
-          fc.alpha -= 0.08;
+        fc.vy += 0.45;
+        if (fc.y > TRAY_BOTTOM_Y - 22) {
+          fc.alpha -= 0.09;
         }
         return fc.alpha > 0 && fc.y < H + 30;
       });
@@ -718,7 +875,7 @@ export default function VegasCoinPusherGame({
 
       s.floatingTexts = s.floatingTexts.filter((ft) => {
         ft.y += ft.vy;
-        ft.alpha -= 0.018;
+        ft.alpha -= 0.017;
         return ft.alpha > 0;
       });
 
@@ -742,47 +899,71 @@ export default function VegasCoinPusherGame({
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, W, H);
 
-      // 2. Top Illuminated Marquee & Drop Zone Header
       const topBounds = getBedBoundsAtY(BED_TOP_Y);
       const botBounds = getBedBoundsAtY(FRONT_LIP_Y);
 
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
-      ctx.fillRect(16, 12, W - 32, 96);
-      ctx.strokeStyle = isFever ? '#f472b6' : '#00f3ff';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(16, 12, W - 32, 96);
+      // 2. Top Illuminated Backbox with 3-Reel Mini-Slot & Skill Timing Bar
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
+      ctx.fillRect(14, 10, W - 28, 102);
+      ctx.strokeStyle = isFever ? '#f472b6' : '#facc15';
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(14, 10, W - 28, 102);
 
+      // Mini-Slot 3 Reels Box on the Top-Left/Center
+      const isSlotSpinningNow = now < s.slotSpinUntil;
+      ctx.fillStyle = '#050814';
+      ctx.strokeStyle = '#00f3ff';
+      ctx.lineWidth = 2;
+      ctx.fillRect(26, 18, 152, 46);
+      ctx.strokeRect(26, 18, 152, 46);
+
+      ctx.fillStyle = '#67e8f9';
+      ctx.font = '900 9px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('🎰 SKILL GATE SLOT', 102, 29);
+
+      for (let r = 0; r < 3; r++) {
+        const rx = 44 + r * 44;
+        ctx.fillStyle = 'rgba(30, 41, 59, 0.9)';
+        ctx.fillRect(rx, 33, 36, 26);
+        const sym = isSlotSpinningNow
+          ? SLOT_SYMBOLS[Math.floor((now / 65 + r * 2) % SLOT_SYMBOLS.length)]
+          : s.slotReels[r];
+        ctx.font = '18px sans-serif';
+        ctx.fillText(sym, rx + 18, 52);
+      }
+
+      // Header Marquee Title & Skill Timing Window
       ctx.fillStyle = '#facc15';
-      ctx.font = '900 17px Orbitron, Impact, sans-serif';
+      ctx.font = '900 15px Orbitron, Impact, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(
         isFever
-          ? '🌈 BULLDOZER FEVER — LASER SIDE SHIELDS + 2× PUSH!'
-          : '🪙 TAP ANYWHERE ON THIS DROP ZONE TO INSERT COIN',
-        W / 2,
-        36
+          ? '🌈 BULLDOZER FEVER — 2× PUSH & LASER SHIELDS!'
+          : '🪙 TAP OR HOLD TO DROP COINS THROUGH THE SKILL GATE!',
+        388,
+        32
       );
 
-      // Skill Timing Indicator Bar inside Header
-      const isSweetSpot = s.pusherExtendedRatio <= 0.42;
+      const isSweetSpot = s.pusherExtendedRatio <= 0.45;
       ctx.fillStyle = isSweetSpot ? 'rgba(74, 222, 128, 0.22)' : 'rgba(148, 163, 184, 0.14)';
-      ctx.fillRect(70, 48, W - 140, 22);
+      ctx.fillRect(190, 40, 398, 22);
       ctx.strokeStyle = isSweetSpot ? '#4ade80' : 'rgba(148, 163, 184, 0.4)';
-      ctx.strokeRect(70, 48, W - 140, 22);
+      ctx.strokeRect(190, 40, 398, 22);
       ctx.fillStyle = isSweetSpot ? '#4ade80' : '#cbd5e1';
-      ctx.font = '800 12px monospace';
+      ctx.font = '800 11px monospace';
       ctx.fillText(
         isSweetSpot
-          ? '🎯 PUSHER RETRACTED — PERFECT DROP WINDOW (LANDS FLAT ON SHELF!)'
-          : '⏳ PUSHER EXTENDING — WAIT OR DROP TO STACK',
-        W / 2,
-        63
+          ? '🎯 SHELF OPEN — PERFECT DROP WINDOW (MAXIMUM FORWARD PUSH!)'
+          : '⏳ DOZER PUSHING FORWARD — DROP TO STACK COINS',
+        389,
+        55
       );
 
       // Moving Aiming Coin Cursor on Top Rail
       ctx.save();
       ctx.beginPath();
-      ctx.arc(s.aimX, 92, 15, 0, Math.PI * 2);
+      ctx.arc(s.aimX, 94, 15, 0, Math.PI * 2);
       ctx.fillStyle = '#facc15';
       ctx.shadowColor = '#facc15';
       ctx.shadowBlur = 14;
@@ -791,19 +972,35 @@ export default function VegasCoinPusherGame({
       ctx.strokeStyle = '#ffffff';
       ctx.stroke();
       ctx.fillStyle = '#0f172a';
-      ctx.font = '900 11px sans-serif';
-      ctx.fillText('DROP', s.aimX, 96);
+      ctx.font = '900 10px sans-serif';
+      ctx.fillText('DROP', s.aimX, 98);
       ctx.restore();
 
       // Aiming Laser Guide Line
       ctx.save();
       ctx.setLineDash([5, 5]);
-      ctx.strokeStyle = isSweetSpot ? 'rgba(74, 222, 128, 0.55)' : 'rgba(250, 204, 21, 0.45)';
+      ctx.strokeStyle = isSweetSpot ? 'rgba(74, 222, 128, 0.6)' : 'rgba(250, 204, 21, 0.45)';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(s.aimX, 108);
-      ctx.lineTo(s.aimX, s.pusherY + 18);
+      ctx.moveTo(s.aimX, 110);
+      ctx.lineTo(s.aimX, s.pusherY + 16);
       ctx.stroke();
+      ctx.restore();
+
+      // 2B. Moving Neon "🎯 SKILL GATE" across the Drop Chute!
+      const gateFlashing = now < s.gateFlashUntil;
+      ctx.save();
+      ctx.fillStyle = gateFlashing ? 'rgba(74, 222, 128, 0.45)' : 'rgba(0, 243, 255, 0.22)';
+      ctx.strokeStyle = gateFlashing ? '#4ade80' : '#00f3ff';
+      ctx.lineWidth = 2.5;
+      ctx.shadowColor = gateFlashing ? '#4ade80' : '#00f3ff';
+      ctx.shadowBlur = gateFlashing ? 18 : 10;
+      ctx.fillRect(s.gateX - 44, BED_TOP_Y - 22, 88, 18);
+      ctx.strokeRect(s.gateX - 44, BED_TOP_Y - 22, 88, 18);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 10px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('🎯 +2🪙 & SPIN', s.gateX, BED_TOP_Y - 10);
       ctx.restore();
 
       // 3. Trapezoidal 3D Coin Bed Surface
@@ -822,8 +1019,7 @@ export default function VegasCoinPusherGame({
       ctx.fillStyle = bedGrad;
       ctx.fill();
 
-      // Perspective Grid Lines on Playfield
-      ctx.strokeStyle = 'rgba(0, 243, 255, 0.12)';
+      ctx.strokeStyle = 'rgba(0, 243, 255, 0.13)';
       ctx.lineWidth = 1;
       for (let frac = 0.15; frac < 0.9; frac += 0.15) {
         const tx = topBounds.left + (topBounds.right - topBounds.left) * frac;
@@ -833,7 +1029,7 @@ export default function VegasCoinPusherGame({
         ctx.lineTo(bx, FRONT_LIP_Y);
         ctx.stroke();
       }
-      for (let gy = 200; gy < FRONT_LIP_Y; gy += 60) {
+      for (let gy = 210; gy < FRONT_LIP_Y; gy += 60) {
         const gb = getBedBoundsAtY(gy);
         ctx.beginPath();
         ctx.moveTo(gb.left, gy);
@@ -847,7 +1043,6 @@ export default function VegasCoinPusherGame({
       const gEnd = getBedBoundsAtY(GUTTER_END_Y);
 
       if (isFever) {
-        // Glowing Laser Side-Wall Shields!
         ctx.save();
         ctx.strokeStyle = '#00f3ff';
         ctx.shadowColor = '#00f3ff';
@@ -861,7 +1056,6 @@ export default function VegasCoinPusherGame({
         ctx.stroke();
         ctx.restore();
       } else {
-        // Danger Side Loss Gutters
         ctx.save();
         ctx.strokeStyle = 'rgba(239, 68, 68, 0.65)';
         ctx.lineWidth = 5;
@@ -899,7 +1093,7 @@ export default function VegasCoinPusherGame({
       const pusherGrad = ctx.createLinearGradient(0, BED_TOP_Y, 0, s.pusherY);
       pusherGrad.addColorStop(0, '#1e293b');
       pusherGrad.addColorStop(0.75, '#334155');
-      pusherGrad.addColorStop(1, isFever ? '#ec4899' : '#00f3ff');
+      pusherGrad.addColorStop(1, isMegaShove ? '#facc15' : isFever ? '#ec4899' : '#00f3ff');
 
       ctx.beginPath();
       ctx.moveTo(topBounds.left + 4, BED_TOP_Y);
@@ -910,10 +1104,9 @@ export default function VegasCoinPusherGame({
       ctx.fillStyle = pusherGrad;
       ctx.fill();
 
-      // Heavy 3D Chrome Front Bumper Lip of the Pusher Bar
-      ctx.fillStyle = isFever ? '#f472b6' : '#00f3ff';
-      ctx.shadowColor = isFever ? '#f472b6' : '#00f3ff';
-      ctx.shadowBlur = 14;
+      ctx.fillStyle = isMegaShove ? '#facc15' : isFever ? '#f472b6' : '#00f3ff';
+      ctx.shadowColor = isMegaShove ? '#facc15' : isFever ? '#f472b6' : '#00f3ff';
+      ctx.shadowBlur = 15;
       ctx.fillRect(
         pusherBounds.left + 6,
         s.pusherY - 12,
@@ -921,14 +1114,17 @@ export default function VegasCoinPusherGame({
         12
       );
 
-      // Diagonal hazard stripes on pusher bar
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.55)';
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.72)';
       ctx.font = '900 13px Orbitron, monospace';
       ctx.textAlign = 'center';
       ctx.fillText(
-        isFever ? '⚡ HYPER DOZER OVERDRIVE ⚡' : '◄◄ NEON DOZER BAR 1986 ►►',
+        isMegaShove
+          ? '⚡ MEGA DOZER SUPER-STROKE ⚡'
+          : isFever
+          ? '🌈 BULLDOZER FEVER OVERDRIVE 🌈'
+          : '◄◄ NEON DOZER BAR 1986 ►►',
         W / 2,
-        s.pusherY - 22
+        s.pusherY - 20
       );
       ctx.restore();
 
@@ -950,24 +1146,50 @@ export default function VegasCoinPusherGame({
         FRONT_LIP_Y + 8
       );
 
-      // Payoff Tray Chute below Front Lip
       const trayGrad = ctx.createLinearGradient(0, FRONT_LIP_Y + 12, 0, TRAY_BOTTOM_Y);
       trayGrad.addColorStop(0, '#090d1a');
       trayGrad.addColorStop(1, '#111c38');
       ctx.fillStyle = trayGrad;
-      ctx.fillRect(botBounds.left - 8, FRONT_LIP_Y + 12, botBounds.right - botBounds.left + 16, TRAY_BOTTOM_Y - FRONT_LIP_Y - 12);
-      ctx.strokeStyle = 'rgba(74, 222, 128, 0.55)';
+      ctx.fillRect(
+        botBounds.left - 8,
+        FRONT_LIP_Y + 12,
+        botBounds.right - botBounds.left + 16,
+        TRAY_BOTTOM_Y - FRONT_LIP_Y - 12
+      );
+      ctx.strokeStyle = 'rgba(74, 222, 128, 0.6)';
       ctx.lineWidth = 2;
-      ctx.strokeRect(botBounds.left - 8, FRONT_LIP_Y + 12, botBounds.right - botBounds.left + 16, TRAY_BOTTOM_Y - FRONT_LIP_Y - 12);
+      ctx.strokeRect(
+        botBounds.left - 8,
+        FRONT_LIP_Y + 12,
+        botBounds.right - botBounds.left + 16,
+        TRAY_BOTTOM_Y - FRONT_LIP_Y - 12
+      );
 
-      ctx.fillStyle = 'rgba(74, 222, 128, 0.25)';
-      ctx.font = '900 20px Orbitron, Impact, sans-serif';
-      ctx.fillText('🪙 PRIZE & TOKEN COLLECTION TRAY 🎁', W / 2, FRONT_LIP_Y + 76);
+      ctx.fillStyle = 'rgba(74, 222, 128, 0.28)';
+      ctx.font = '900 18px Orbitron, Impact, sans-serif';
+      ctx.fillText('🪙 PRIZE & TOKEN COLLECTION TRAY 🎁', W / 2, FRONT_LIP_Y + 58);
       ctx.restore();
 
-      // 7. Draw Coins & Prizes sorted by Y (back-to-front painter's algorithm for authentic 3D stacking!)
+      // 6B. Draw Accumulated Gleaming Coins inside the Bottom Collection Tray!
+      s.trayPile.forEach((tc) => {
+        ctx.save();
+        ctx.beginPath();
+        ctx.ellipse(tc.x, tc.y, tc.radius, tc.radius * 0.78, 0, 0, Math.PI * 2);
+        ctx.fillStyle = tc.color;
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(tc.emoji, tc.x, tc.y);
+        ctx.restore();
+      });
+
+      // 7. Draw Coins & Prizes on the Bed (with Cliffhanger Edge Wobble!)
       const renderList = [...s.coins].sort((a, b) => {
-        if (a.isPrize !== b.isPrize) return a.isPrize ? 1 : -1; // Prizes sit proudly on top of coins
+        if (a.isPrize !== b.isPrize) return a.isPrize ? 1 : -1;
         if (a.dropping !== b.dropping) return a.dropping ? 1 : -1;
         return a.y - b.y;
       });
@@ -976,16 +1198,26 @@ export default function VegasCoinPusherGame({
         ctx.save();
         ctx.globalAlpha = alpha;
 
-        // Perspective scale: coins slightly larger near front lip
-        const persp = 0.9 + Math.max(0, Math.min(0.22, ((c.y - BED_TOP_Y) / (FRONT_LIP_Y - BED_TOP_Y)) * 0.2));
+        const isTeetering = !c.dropping && c.y >= FRONT_LIP_Y - 22;
+        const wobbleX = isTeetering ? Math.sin(now * 0.028 + c.shimmerOffset) * 1.6 : 0;
+        const cx = c.x + wobbleX;
+        const cy = c.y;
+
+        const persp = 0.9 + Math.max(0, Math.min(0.24, ((cy - BED_TOP_Y) / (FRONT_LIP_Y - BED_TOP_Y)) * 0.22));
         const rx = c.radius * persp;
-        const ry = c.radius * persp * 0.86; // Foreshortened 3D oval coin
+        const ry = c.radius * persp * 0.86;
 
         // 3D Coin Rim / Thickness Cylinder
-        const rimDepth = c.isPrize ? 7 : 5;
+        const rimDepth = c.isPrize ? 7.5 : c.kind === 'goldstack' ? 7 : 5;
         ctx.beginPath();
-        ctx.ellipse(c.x, c.y + rimDepth, rx, ry, 0, 0, Math.PI * 2);
-        ctx.fillStyle = c.isPrize ? '#701a75' : c.kind === 'silver' ? '#0369a1' : '#a16207';
+        ctx.ellipse(cx, cy + rimDepth, rx, ry, 0, 0, Math.PI * 2);
+        ctx.fillStyle = c.isPrize
+          ? '#701a75'
+          : c.kind === 'goldstack'
+          ? '#15803d'
+          : c.kind === 'silver'
+          ? '#0369a1'
+          : '#a16207';
         ctx.fill();
         ctx.lineWidth = 1.5;
         ctx.strokeStyle = 'rgba(0,0,0,0.65)';
@@ -993,19 +1225,23 @@ export default function VegasCoinPusherGame({
 
         // Top Face of Coin / Prize Disc
         ctx.beginPath();
-        ctx.ellipse(c.x, c.y, rx, ry, 0, 0, Math.PI * 2);
+        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
         const faceGrad = ctx.createRadialGradient(
-          c.x - rx * 0.3,
-          c.y - ry * 0.3,
+          cx - rx * 0.3,
+          cy - ry * 0.3,
           2,
-          c.x,
-          c.y,
+          cx,
+          cy,
           rx
         );
         if (c.isPrize) {
           faceGrad.addColorStop(0, '#ffffff');
           faceGrad.addColorStop(0.45, c.color);
           faceGrad.addColorStop(1, '#1e1b4b');
+        } else if (c.kind === 'goldstack') {
+          faceGrad.addColorStop(0, '#dcfce7');
+          faceGrad.addColorStop(0.55, '#4ade80');
+          faceGrad.addColorStop(1, '#15803d');
         } else if (c.kind === 'silver') {
           faceGrad.addColorStop(0, '#e0f2fe');
           faceGrad.addColorStop(0.55, '#38bdf8');
@@ -1016,29 +1252,27 @@ export default function VegasCoinPusherGame({
           faceGrad.addColorStop(1, '#ca8a04');
         }
         ctx.fillStyle = faceGrad;
-        if (c.isPrize || c.y > FRONT_LIP_Y - 26) {
-          ctx.shadowColor = c.y > FRONT_LIP_Y - 26 ? '#4ade80' : c.color;
-          ctx.shadowBlur = c.isPrize ? 14 : 9;
+        if (c.isPrize || isTeetering) {
+          ctx.shadowColor = isTeetering ? '#4ade80' : c.color;
+          ctx.shadowBlur = c.isPrize ? 15 : 11;
         }
         ctx.fill();
 
-        // Inner stamped arcade ring
-        ctx.lineWidth = c.isPrize ? 2.2 : 1.4;
-        ctx.strokeStyle = c.isPrize ? '#ffffff' : 'rgba(255, 255, 255, 0.65)';
+        ctx.lineWidth = c.isPrize || isTeetering ? 2.4 : 1.4;
+        ctx.strokeStyle = isTeetering ? '#4ade80' : c.isPrize ? '#ffffff' : 'rgba(255, 255, 255, 0.65)';
         ctx.stroke();
 
         ctx.beginPath();
-        ctx.ellipse(c.x, c.y, rx * 0.74, ry * 0.74, 0, 0, Math.PI * 2);
+        ctx.ellipse(cx, cy, rx * 0.74, ry * 0.74, 0, 0, Math.PI * 2);
         ctx.strokeStyle = 'rgba(15, 23, 42, 0.35)';
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        // Emoji / Stamp Icon
         ctx.fillStyle = '#0f172a';
-        ctx.font = `${Math.round(rx * (c.isPrize ? 0.95 : 0.78))}px sans-serif`;
+        ctx.font = `${Math.round(rx * (c.isPrize ? 0.96 : 0.78))}px sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(c.emoji, c.x, c.y + 1);
+        ctx.fillText(c.emoji, cx, cy + 1);
 
         ctx.restore();
       };
@@ -1077,9 +1311,8 @@ export default function VegasCoinPusherGame({
 
     rafId = requestAnimationFrame(stepSimulation);
     return () => cancelAnimationFrame(rafId);
-  }, []);
+  }, [triggerMiniSlotSpin]);
 
-  // Pointer interaction on the canvas: move aim X & drop coin where clicked/tapped
   const getCanvasPoint = (e) => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: W / 2, y: 80 };
@@ -1109,7 +1342,7 @@ export default function VegasCoinPusherGame({
         {/* LEFT / TOP COMPACT TELEMETRY & CONTROLS DECK */}
         <div className="tm-pusher-side-deck">
           <div className="tm-pusher-brand-card">
-            <div className="tm-pusher-eyebrow">🪙 VEGAS PENNY-FALLS ARCADE • 1986 EDITION</div>
+            <div className="tm-pusher-eyebrow">🪙 VEGAS PENNY-FALLS &amp; MINI-SLOT • 1986 EDITION</div>
             <h2 className="tm-pusher-title">NEON COIN DOZER &apos;86</h2>
             <p className="tm-pusher-sub">{statusBanner}</p>
 
@@ -1137,10 +1370,10 @@ export default function VegasCoinPusherGame({
               </button>
             </div>
 
-            {/* Live Score & Tray Telemetry */}
+            {/* Live Score, Tray Won & Mini-Slot Readout */}
             <div className="tm-pusher-stats-grid">
               <div className="tm-pusher-stat">
-                <span>SCORE</span>
+                <span>SCORE ({prizeMultiplier.toFixed(2)}×)</span>
                 <strong>{score.toLocaleString()}</strong>
               </div>
               <div className="tm-pusher-stat">
@@ -1152,8 +1385,10 @@ export default function VegasCoinPusherGame({
                 <strong style={{ color: '#4ade80' }}>+{coinsWonSession} 🪙</strong>
               </div>
               <div className="tm-pusher-stat">
-                <span>PRIZES</span>
-                <strong style={{ color: '#f472b6' }}>🎁 {prizesWonSession}</strong>
+                <span>MINI-SLOT</span>
+                <strong style={{ color: '#facc15' }}>
+                  {slotSpinning ? '🎰 SPIN...' : slotReels.join(' ')}
+                </strong>
               </div>
             </div>
 
@@ -1189,6 +1424,22 @@ export default function VegasCoinPusherGame({
               </button>
               <button
                 type="button"
+                className={`tm-pusher-action-btn spread ${autoDrop ? 'active-autodrop' : ''}`}
+                disabled={isTilted}
+                onClick={() => {
+                  sfx.playToggle?.();
+                  setAutoDrop((prev) => !prev);
+                }}
+                style={{
+                  borderColor: autoDrop ? '#4ade80' : '#00f3ff',
+                  background: autoDrop ? 'rgba(34, 197, 94, 0.24)' : undefined,
+                  color: autoDrop ? '#4ade80' : '#67e8f9'
+                }}
+              >
+                {autoDrop ? '🔥 AUTO-DROP: ON' : '🔥 AUTO-DROP: OFF'}
+              </button>
+              <button
+                type="button"
                 className="tm-pusher-action-btn spread"
                 disabled={isTilted}
                 onClick={handleSpreadDrop}
@@ -1201,7 +1452,7 @@ export default function VegasCoinPusherGame({
                 disabled={isTilted}
                 onClick={handleNudgeCabinet}
               >
-                💥 NUDGE TABLE ({tiltWarnings}/3)
+                💥 NUDGE ({tiltWarnings}/3)
               </button>
               <button
                 type="button"
@@ -1212,11 +1463,24 @@ export default function VegasCoinPusherGame({
               </button>
             </div>
 
-            {/* Prize Legend */}
+            {/* Collectible Prize Vault Shelf */}
             <div className="tm-pusher-prize-legend">
-              <span>💎 Diamond: <strong>+8 🪙</strong></span>
-              <span>🎁 Loot Box: <strong>+12 🪙 + Shower</strong></span>
-              <span>🏆 Trophy: <strong>+20 🪙 + Shields</strong></span>
+              {PRIZE_CATALOG.map((pr) => {
+                const won = collectedPrizeKinds.includes(pr.kind);
+                return (
+                  <span
+                    key={pr.kind}
+                    style={{
+                      opacity: won ? 1 : 0.65,
+                      color: won ? '#4ade80' : '#cbd5e1',
+                      fontWeight: won ? 900 : 700
+                    }}
+                    title={`${pr.label}: +${pr.tokens} 🪙`}
+                  >
+                    {pr.emoji} +{pr.tokens}🪙 {won ? '✓' : ''}
+                  </span>
+                );
+              })}
             </div>
 
             <div className="tm-pusher-footer-links">

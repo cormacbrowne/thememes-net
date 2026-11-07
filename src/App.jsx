@@ -95,7 +95,8 @@ export default function App() {
   });
   const [viewMode, setViewMode] = useState(() => {
     if (typeof window === 'undefined') return 'feed';
-    const mode = new URLSearchParams(window.location.search).get('mode');
+    const rawMode = (new URLSearchParams(window.location.search).get('mode') || '').toLowerCase();
+    const mode = ['dozer', 'coindozer', 'coinpusher'].includes(rawMode) ? 'pusher' : rawMode;
     return ['feed', 'reels', 'blackjack', 'roulette', 'pusher', 'slots', 'crush', 'pinball', 'stocks', 'swipe', 'battle'].includes(mode)
       ? mode
       : 'feed';

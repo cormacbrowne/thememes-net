@@ -102,6 +102,23 @@ export default function NavbarHud({
             <div className="tm-nav-subgames tm-hide-mobile">
               <button
                 type="button"
+                className={`tm-btn tm-subgame-nav-pill ${viewMode === 'pusher' ? 'active' : ''}`}
+                onClick={() => onSelectViewMode('pusher')}
+                style={{
+                  borderColor: '#facc15',
+                  background:
+                    viewMode === 'pusher'
+                      ? 'linear-gradient(135deg, #facc15, #f97316)'
+                      : 'rgba(250, 204, 21, 0.16)',
+                  color: viewMode === 'pusher' ? '#090d16' : '#fde047',
+                  fontWeight: 900
+                }}
+                title="Play Neon Coin Dozer '86 — Push Coins, Diamonds & Prizes Over the Edge!"
+              >
+                🪙 Coin Dozer
+              </button>
+              <button
+                type="button"
                 className={`tm-btn tm-subgame-nav-pill ${viewMode === 'pinball' ? 'active' : ''}`}
                 onClick={() => onSelectViewMode('pinball')}
                 title="Play 5-Table 80s Hyper-Neon Cyber-Pinball (Center-Stage Widescreen)!"

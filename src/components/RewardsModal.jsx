@@ -295,6 +295,16 @@ export default function RewardsModal({
                 className="tm-btn tm-btn-primary"
                 onClick={() => {
                   onClose();
+                  onLaunchSubGame('pusher');
+                }}
+              >
+                🪙 Neon Coin Dozer &apos;86
+              </button>
+              <button
+                type="button"
+                className="tm-btn tm-btn-primary"
+                onClick={() => {
+                  onClose();
                   onLaunchSubGame('blackjack');
                 }}
               >

@@ -6,6 +6,9 @@ import {
   stampArcadeCartridgeFooter
 } from './utils/canvasMutator';
 import {
+  STARTER_MEMES,
+  STUDIO_TEMPLATES,
+  isSeedMeme,
   VIRAL_CAPTIONS,
   RANKS,
   DAILY_BOUNTIES,
@@ -66,18 +69,20 @@ import DankPetWidget from './components/DankPetWidget';
 import UnhandledGooseSurprise from './components/UnhandledGooseSurprise';
 
 export default function App() {
-  // Core Feed & Filter State (100% User-Uploaded Memes Only — Zero Template Memes)
+  // Core Feed & Filter State (Community Uploads + Offline-Resilient @TheMemesHQ Seed Memes)
   const [memes, setMemes] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem('tm_user_memes') || '[]');
-      return Array.isArray(saved)
-        ? saved.filter((m) => m && !String(m.id).startsWith('seed-'))
+      const userUploads = Array.isArray(saved)
+        ? saved.filter((m) => m && !isSeedMeme(m))
         : [];
+      const seen = new Set(userUploads.map((m) => String(m.id)));
+      return [...userUploads, ...STARTER_MEMES.filter((m) => !seen.has(String(m.id)))];
     } catch {
-      return [];
+      return [...STARTER_MEMES];
     }
   });
-  const [isLoadingFeed, setIsLoadingFeed] = useState(true);
+  const [isLoadingFeed, setIsLoadingFeed] = useState(false);
   const [visibleCount, setVisibleCount] = useState(6);
   const [sortBy, setSortBy] = useState('latest'); // 'latest' | 'top' | 'new24h'
   const [showSavedOnly, setShowSavedOnly] = useState(false);
@@ -415,7 +420,7 @@ export default function App() {
   useEffect(() => {
     try {
       const localOnly = memes
-        .filter((m) => m && !String(m.id).startsWith('seed-'))
+        .filter((m) => m && !isSeedMeme(m))
         .slice(0, 20)
         .map((m) => {
           if (m.image_url && m.image_url.startsWith('data:') && m.image_url.length > 120000) {
@@ -607,7 +612,13 @@ export default function App() {
             String(m.id).startsWith('local-') &&
             !liveIds.has(String(m.id))
         );
-        return [...normalized, ...localUserUploads];
+        const prevSeedsById = new Map(
+          prev.filter((m) => m && isSeedMeme(m)).map((m) => [String(m.id), m])
+        );
+        const mergedSeeds = STARTER_MEMES
+          .filter((m) => !liveIds.has(String(m.id)))
+          .map((m) => prevSeedsById.get(String(m.id)) || m);
+        return [...normalized, ...localUserUploads, ...mergedSeeds];
       });
       setIsLoadingFeed(false);
     } catch {
@@ -2168,6 +2179,10 @@ export default function App() {
       setTimeout(() => sfx.playAirhorn(), 180);
 
       const randCap = VIRAL_CAPTIONS[Math.floor(Math.random() * VIRAL_CAPTIONS.length)];
+      const randTpl =
+        STUDIO_TEMPLATES.length > 0
+          ? STUDIO_TEMPLATES[Math.floor(Math.random() * STUDIO_TEMPLATES.length)]
+          : null;
       const randomUserMeme = memes.length > 0 ? memes[Math.floor(Math.random() * memes.length)] : null;
       if (randomUserMeme) {
         setMutatingParentMeme(randomUserMeme);
@@ -2182,7 +2197,7 @@ export default function App() {
       setForgeIntent({
         mode: 'chaos',
         parent: randomUserMeme,
-        imageUrl: randomUserMeme?.image_url || null,
+        imageUrl: randomUserMeme?.base_image_url || randomUserMeme?.image_url || randTpl?.src || null,
         initialText: `${randCap[0]} ${randCap[1]}`,
         chaos: {
           top: randCap[0],
@@ -2404,6 +2419,10 @@ export default function App() {
         return true;
       })
       .sort((a, b) => {
+        // Phase 28.1: Real community uploads always rank above @TheMemesHQ seed memes once they exist
+        const aSeed = isSeedMeme(a);
+        const bSeed = isSeedMeme(b);
+        if (aSeed !== bSeed) return aSeed ? 1 : -1;
         if (sortBy === 'latest' || sortBy === 'new24h') {
           return new Date(b.created_at || 0) - new Date(a.created_at || 0);
         }
@@ -2422,8 +2441,14 @@ export default function App() {
       const k = m.root_meme_id || m.base_image_url || m.id;
       counts.set(k, (counts.get(k) || 0) + 1);
     });
+    const seenBase = new Set();
     return memes
-      .filter((m) => Boolean(m.base_image_url || m.image_url))
+      .filter((m) => {
+        const baseKey = m.base_image_url || m.image_url;
+        if (!baseKey || seenBase.has(baseKey)) return false;
+        seenBase.add(baseKey);
+        return true;
+      })
       .map((m) => ({
         ...m,
         formatCount: counts.get(m.root_meme_id || m.base_image_url || m.id) || 1

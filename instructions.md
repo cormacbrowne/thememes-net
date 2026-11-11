@@ -4,6 +4,85 @@
 
 ---
 
+## 0. 🎯 CURRENT ROUND — Phase 28: "Fun First, Findable" (READ THIS FIRST)
+
+> **Context (Nov 2026 review):** The site has 27 phases of features but **no visitors and no engagement**. The bottleneck is not missing features. A first-time visitor lands on an **empty meme feed** (`STARTER_MEMES = []`, `STUDIO_TEMPLATES = []`) under a wall of buttons, and Google sees an **empty SPA shell** where every URL canonicalizes to `/`.
+>
+> **Ground rules for agents this round:**
+> - ❌ **No new games, toys, assistants, or easter eggs.** Improve, simplify, and expose what already exists.
+> - ✅ Work tasks **in priority order**. Each task lists its acceptance criteria, so verify them (`npm run build` + `npm run lint` + manual mobile 390px check) before ticking a box.
+> - ✅ Keep all existing security (`securityGuard.js`, CSP) and the token economy intact. If you add a 3rd-party script/domain, update the CSP in **both** `index.html` and `vercel.json`.
+> - ✅ When done, move the task into a "Phase 28 (Completed)" entry in Section 5 like the earlier phases.
+
+### P1 — Fix the cold start: a meme site must have memes (HIGHEST IMPACT)
+- [x] **28.1 Seed content.** Reverse the Phase 21 "zero templates" decision. Add **≥ 60 seed memes** spread across `#DANK`, `#TECH`, `#GAMING`, `#RELATABLE` (≥ 12 each). Use only legally safe images (original, CC0/public-domain, or generated with the site's own Forge templates + captions). Store them locally in `public/seed/` (WebP, ≤ 80KB each) so they work offline and need no CSP change. Label them with creator `@TheMemesHQ`. Real community uploads always rank above seed memes once they exist.
+- [x] **28.2 Restore studio templates.** Fill `STUDIO_TEMPLATES` with **15–25 classic blank meme formats** (Drake-style 2-panel, distracted-X, expanding brain, two-buttons, etc., recreated as original/legally safe art) so "✏️ Caption This" and the Forge produce a funny result in under 20 seconds with no upload needed.
+- **Acceptance:** In a fresh incognito window with Supabase unreachable, the feed, Reels, Swipe, and 1v1 Arena all show memes immediately, and the Forge opens with a template grid.
+- **Completion Note (28.1–28.2 Before / After):**
+  - `STARTER_MEMES` count: `0` → **`64` seed memes** (`16` each in `#DANK`, `#TECH`, `#GAMING`, `#RELATABLE`), all labelled `@TheMemesHQ` (`is_seed: true`) and ranked below real community uploads via `isSeedMeme()` comparator in `filteredMemes`.
+  - `STUDIO_TEMPLATES` count: `0` → **`20` original blank meme formats** (`tpl-*.webp`), surfaced in a 1-click visual template grid on Forge open (`MemeForge.jsx` + `ForgeToolPanel.jsx` `🎨 Templates` tab) and linked via `base_image_url` for instant `< 20s` "✏️ Caption This" remixing + `🎲 Random Caption`.
+  - Local offline WebP assets (`public/seed/`): `0` files → **`84` `.webp` files** (`64` captioned seeds + `20` blank templates, `540×480` each), individual file size **`3.0 KB – 9.8 KB`** (`≤ 80 KB` limit), total directory size **`379.3 KB`**.
+  - Cold-start feed state (`isLoadingFeed` on mount): `true` (0 memes when offline) → **`false` (`64` memes rendered on Frame 1 across Feed, Reels, Swipe Deck, and 1v1 Battle Arena with zero network dependency)**.
+
+### P2 — The 5-second "this is fun" first impression
+- [ ] **28.3 Declutter the first screen.** On a 390×844 viewport, the first screen should show **one meme + ≤ 6 controls** (e.g., Memes / Reels / +Create / Games / Profile). Move `🪿 WTF?!`, `☎️ Payphone`, Boss Key, CRT, Turbo, device badge, and the soundboard into one `🕹️ Extras` drawer. Do the same audit on desktop `NavbarHud.jsx` + `.tm-controls` and halve the visible button count.
+- [ ] **28.4 Progressive reveal, no ambush.** On the first visit, no auto popups, pet, AI assistant FAB, or chaos dock. Unlock them gradually (e.g., after 3 votes show the pet, after the first meme created show the games toast) using `localStorage` flags. Never play audio before a user gesture.
+- [ ] **28.5 Mobile defaults to the best loop.** On touch devices, the default view = **Reels** (full-screen meme, double-tap to upvote, swipe for the next one), with a clear 1-tap "Remix this" button. Desktop keeps the grid.
+- [ ] **28.6 One-tap viral share.** "Share" on any meme copies/sends a link that opens **that exact meme** (`/?m=<id>` or `/m/<id>`) in Theater view, plus a small "Make your own →" CTA for the recipient. Shared links are the main growth loop.
+- **Acceptance:** A new user can view → laugh → upvote → remix → share in **< 30 seconds** without reading instructions.
+
+### P3 — Speed (fun dies on a slow load; also a ranking factor)
+- [ ] **28.7 Code-split everything that isn't the feed.** `App.jsx` (163KB) statically imports ~42 modules, so every game, Boss Key, Goose, AI assistant, and modal loads up front. Convert all games/modals/overlays to `React.lazy()` + `<Suspense>` with the existing skeleton styles. Split game-specific CSS out of `index.css` (273KB) into per-component CSS files imported by the lazy component.
+- **Acceptance:** `npm run build` shows initial JS ≤ ~250KB gzipped. Lighthouse mobile Performance ≥ 80 and LCP < 2.5s on the homepage. Report before/after numbers in the Phase 28 completion notes.
+
+### P4 — Easy SEO wins (currently Google sees ~1 thin, empty page)
+- [ ] **28.8 Real crawlable landing pages.** The `?mode=`/`?category=` sitemap URLs all canonicalize to `/`, and the HTML body is empty, so Google indexes nothing useful. Create **path-based routes** with **prerendered static HTML** (a post-build script that writes `dist/<route>/index.html` with a unique `<title>`, meta description, self-referencing canonical, `<h1>`, and 150–300 words of real intro text inside `#root`, which React then replaces). Add `"cleanUrls": true` + SPA rewrites to `vercel.json`. Initial routes, targeting **low-competition long-tail searches** instead of "memes":
+  - `/meme-generator` (templates grid) · `/meme-soundboard` ("vine boom soundboard")
+  - `/games/coin-pusher` ("coin pusher game online free") · `/games/pinball` · `/games/slots` · `/games/blackjack` · `/games/roulette` · `/games/meme-crush` · `/games/meme-stock-market`
+  - **Prank pages from Boss Key screens (high search volume, easy win):** `/fake-windows-update-screen`, `/fake-blue-screen-prank`, `/fake-excel-boss-screen`. Each opens that disguise full-screen with an F11/fullscreen tip.
+  - `/memes/dank`, `/memes/programming`, `/memes/gaming`, `/memes/relatable` (prerender the seed memes as `<img alt="…">` + captions).
+  Keep the old `?mode=` URLs working by redirecting them to the new paths (301 in `vercel.json` where possible).
+- [ ] **28.9 Sitemap + head fixes.** Regenerate `public/sitemap.xml` with only the new path URLs + `<lastmod>`. Make `seoEngine.js` update `<link rel="canonical">` and `og:url` on client navigation. Replace the 512×512 square `og:image`/`twitter:image` with a **1200×630 social card** (`public/og-card.png`). Drop the "#1" claim and the meta keywords tag. Write honest titles, e.g. "Free Meme Generator, Soundboard & Retro Arcade Games | THE MEMES.net".
+- [ ] **28.10 Analytics so we know if anything works.** Add **Vercel Web Analytics** (`@vercel/analytics`, `<Analytics />` in `main.jsx`) and update the CSP if needed. Track custom events for: meme viewed, upvote, remix opened, meme published, share clicked, game started.
+- **Acceptance:** `curl https://thememes.net/games/coin-pusher` (after deploy) returns HTML with a unique title, canonical, and visible text. All sitemap URLs return 200 with self-canonicals.
+
+### P5 — "Super cool" polish: make the first real user's visit memorable (do AFTER P1–P4)
+> These are **upgrades to the core loop, not new games**. Everything must be **off or subtle by default**, respect `prefers-reduced-motion`, work under `litePerfMode`, and lazy-load (P3 rules apply). **Never fake activity** (no fake "users online" or fake upvotes), because users notice and it kills trust.
+
+- [ ] **28.11 🎵 THE MEMES FM: procedural synthwave radio.** A small **cassette-deck widget** (`src/components/MemesRadio.jsx` + a `src/utils/musicEngine.js` built on the existing Web Audio `soundEngine.js` context). The music is generated live (drum machine + bassline + arpeggio + pad, seeded patterns), so there are **no audio files, licensing, or CSP changes**.
+  - 4 stations: `📼 Synthwave Drive` (default), `☕ Lo-fi Meme Beats`, `👾 8-Bit Chiptune`, `🛗 Vaporwave Elevator` (auto-plays while a Boss Key disguise is up, for comedy).
+  - **OFF by default.** First play only happens from a user tap (iOS unlock). Remember on/off + station + volume in `localStorage` (`tm_radio`). Auto-pause on `document.hidden`, and duck to 20% while a video meme with sound or K.I.T.T./HAL speech plays.
+  - **Reactive music:** the filter opens and a drum fill plays on upvote combos (`3x+` = riser, `5x` = "drop"). Publishing a meme triggers a key change + celebratory stinger. Games can request their own station (e.g., Chiptune in Pinball).
+  - **Beat-synced visuals:** expose a `beat` event. The synthwave grid, the `THE MEMES.net` logo glow, and the active Reels card pulse subtly on the kick drum (CSS variable `--beat`, no React re-renders).
+  - Visible placement: one `📼` button in the top bar. The full deck (play/skip/station/volume + spinning cassette reels showing the track name, e.g. "Track 03: Doge Highway '86") lives in the Extras drawer.
+- [ ] **28.12 "Insert Coin" first-visit intro.** A one-time 2-second skippable boot moment: CRT power-on flicker → `INSERT COIN` → tap anywhere → coin-drop sound + radio fades in (if the user opts in) → straight into the first meme. Tap = audio unlock, so the moment doubles as a technical fix. Never shown again (`tm_intro_seen`).
+- [ ] **28.13 Make the user feel seen when their meme goes live.** After publishing: a full-screen "🚀 YOUR MEME IS LIVE" celebration (confetti + stinger + share buttons), then a **real** in-app notification ("🔥 Someone upvoted your meme!") via the existing `notifications` table / Supabase Realtime. Add a small creator stats card (views, upvotes, remixes) on the profile. This is the #1 reason creators come back.
+- [ ] **28.14 Live presence (only when it's true).** Use Supabase Realtime Presence: show "🟢 N memers online" **only when N ≥ 2**, and float other people's real upvote/reaction emojis briefly across the meme they're on (Twitch-emote style). Hide it completely when nobody else is there.
+- [ ] **28.15 Daily Caption Battle (return reason).** Repurpose the Daily Bounty: one template per day (from 28.2), everyone captions it, and the top caption wins tomorrow's "👑 Caption King" banner + profile badge. Add an end-of-day countdown. Seed day-one with a few `@TheMemesHQ` captions (clearly labelled).
+- [ ] **28.16 Give tokens a purpose: cosmetics.** Let tokens/XP unlock **cosmetics** instead of handing out more tokens: card frames (holo, gold, VHS-glitch), cursor/touch trails, radio stations, cassette skins, and profile titles. Add a simple "🛍️ Arcade Shop" tab in `RewardsModal.jsx`. Spending tokens on self-expression makes earning them feel worthwhile.
+- [ ] **28.17 Juice the core actions (micro-delight).** Upvote = tiny screen-punch + pitch-rising pop that climbs with the combo + `navigator.vibrate(10)` on Android. Every 10th meme viewed in Reels drops a surprise "golden meme" (random cosmetic or +XP). Hitting the end of the feed shows a funny "You've reached the end of the internet 🫠" card with Remix/Games CTAs instead of a dead end.
+- **Acceptance:** With the radio OFF, the site behaves exactly as before (no audio context started, no extra CPU). With it ON, Lighthouse Performance drops by ≤ 5 points and iPhone Safari plays audio correctly with the mute switch on and off.
+
+### P6 — Growth-loop & "wow" features (do AFTER P5; ship one at a time and check analytics between each)
+> **Scope guard:** the site's past problem was too many features and too few users. Each P6 item must either **bring new people in** or **make people come back**. Ship one, deploy, look at the 28.10 analytics for a few days, then do the next.
+
+- [ ] **28.18 🎉 Meme Party Mode (Jackbox-style; the flagship "super cool" feature).** One person opens `/party` on a laptop/TV, which shows a 4-letter room code + QR. Friends join on their phones (no login, just a nickname). Each round: a template appears, everyone captions it on their phone, captions are shown anonymously on the big screen with THE MEMES FM playing, everyone votes, and points + a podium follow. 5 rounds per game. Built with Supabase Realtime channels (broadcast + presence), with all game state held by the host client. The winning memes can be published to the feed with one tap. Every party brings 3–8 new people to the site at once.
+- [ ] **28.19 📱 "Export for TikTok/Reels/Shorts."** One button renders any meme as a **9:16 MP4** (6–10s): a zoom/punch-in animation, captions popping in on the beat, a THE MEMES FM jingle, and a `thememes.net` end-card watermark. Uses the existing `captureStream` pipeline from Phase 26. Every exported video posted elsewhere is free advertising.
+- [ ] **28.20 Per-meme pages with real link previews.** `/m/<id>` routes where a Vercel Function (or Routing Middleware) injects that meme's title, image `og:image` (or a generated 1200×630 card via `@vercel/og` with the meme + logo frame), and `<img alt>` into the HTML for crawlers and chat apps. Shared links then show the actual meme in iMessage/WhatsApp/Discord/X, and each meme becomes an indexable page. Add them to a dynamic sitemap.
+- [ ] **28.21 Auto alt text = Google Images traffic.** Every meme gets `alt` text built from its title + caption text + category (e.g., "Programming meme: 'It works on my machine' – expanding brain format"). This improves accessibility and makes memes show up in Google Images. Prerender it on the category and `/m/<id>` pages.
+- [ ] **28.22 🧬 Meme Telephone (remix chains).** A "Pass it on" button on any meme: the next person must remix it (new caption or one Forge edit) within 24h to keep the chain alive. The Evolution Tree already exists, so show chains as a playful "Gen 1 → Gen 7" strip with a "🔥 longest chain this week" leaderboard.
+- [ ] **28.23 🎃 Seasonal auto-themes.** Swap a theme by date with zero maintenance: Halloween (orange grid, spooky radio station, ghost cursor), Christmas/New Year (snowfall, jingle-synth station, countdown), April Fools (site "upside-down" button), Summer (Miami Vice palette). Use CSS variables + a date check only, with no new assets beyond tiny SVGs.
+- [ ] **28.24 📊 "My Meme Wrapped" share card.** Weekly/monthly personal recap: memes viewed, top category ("You're 63% #TECH"), favourite reaction, best meme, rank, longest combo. Rendered as a 1080×1920 story image + 1200×630 card with one-tap share. People share these.
+- [ ] **28.25 🔔 Opt-in web push (PWA).** After a user has published or played a party game, offer (never on first visit) push notifications for "Your meme got upvoted", "Daily Caption Battle results", and "Your remix chain is dying!". Works on Android/desktop and on iOS 16.4+ when the site is added to the home screen. Max 1 push/day.
+- [ ] **28.26 🤖 Discord bot `/meme`.** A small bot (Vercel Function interactions endpoint) with `/meme` (random top meme), `/caption <text>` (renders today's template with your caption), and `/battle` (2 memes, server votes with reactions). Every post links back to the meme page. Discord is where meme-loving groups hang out.
+- [ ] **28.27 ✂️ Feature cull (after ~2–4 weeks of analytics).** Rank every game/toy/overlay by usage from 28.10. Move anything under ~2% usage out of the main UI into the Extras drawer (or remove it). Report the list to the owner before deleting anything. Less clutter = more fun for the features people actually love.
+
+### 🙋 Owner actions (cannot be done by agents)
+1. **Google Search Console:** verify `thememes.net` (DNS TXT), submit `sitemap.xml`, and "Request indexing" for the homepage + top 5 landing pages after P4 deploys. Do the same in **Bing Webmaster Tools** (one-click import from GSC).
+2. **Seed the first traffic:** post the Coin Pusher / Pinball / fake-update-prank pages to r/WebGames, r/incremental_games (Coin Dozer), r/InternetIsBeautiful, and list the games on **itch.io** (HTML5 embed + link back). Backlinks from these posts are what move rankings for a brand-new domain.
+
+---
+
 ## 1. Key Architectural & Visual Style Decisions
 
 1. **Development Execution Order**:
@@ -424,6 +503,14 @@ thememes-net/
   - [x] **Ultra-Maximized Pinball Screen Real Estate**: Consolidated the Pinball top header, table selector strip, and 7-box HUD scoreboard into a single `34px` `.tm-pin2-slim-topbar`, moved desktop flipper/plunger/nudge buttons into the right side wing, removed the bottom banner, and expanded `.tm-pin2-canvas` to `max-height: calc(100dvh - 94px)`.
   - [x] **Crystal-Clear K.I.T.T. & HAL 9000 Speech**: Removed the simultaneous `sfx.playAiVocalFormants` synthesizer buzzing over `window.speechSynthesis.speak()`, shortened the pre-speech cue to `85ms` with a `95ms` delay before speaking, excluded distorted novelty voices (`Fred`, `Albert`, `Zarvox`, `Ralph`), and set natural pitch (`0.94` HAL / `1.0` K.I.T.T.) with sentence chunking.
   - [x] **🪿 `WTF?!` Experimental Surprise (`UnhandledGooseSurprise.jsx`)**: Accessible via the glowing **`🪿 WTF?!`** button in `NavbarHud.jsx`, `.tm-fixed-arcade-bar`, and `.tm-controls` (or `?mode=goose` / `?mode=wtf`), featuring 4 interactive comedy modes: **🪿 `HONK.EXE` Kleptomaniac Cyber-Goose Heist**, **📺 `3:00 AM Interdimensional Shopping Channel` ("Billy Memes Live!")**, **🕵️‍♂️ `Ministry of Meme Revenue — Unlicensed Chuckle Tax Audit`**, and **🔮 `1986 Casio Quantum Mind-Reader`**.
+
+### ✅ Phase 28: "Fun First, Findable" (P1 Tasks 28.1–28.2 Completed)
+- [x] **28.1 Seed Content (`src/data/starterMemes.js`, `public/seed/seed-*.webp`, `src/App.jsx`)**:
+  - [x] Reversed the empty cold-start (`STARTER_MEMES = []` → **`64` original seed memes**: `16` `#DANK`, `16` `#TECH`, `16` `#GAMING`, `16` `#RELATABLE`), all stored locally in `public/seed/` as lightweight lossless WebP files (`3.0 KB – 9.8 KB` each, well under the `≤ 80 KB` limit) requiring zero external network requests and zero CSP changes.
+  - [x] Labelled all seed memes with creator `@TheMemesHQ` (`is_seed: true`), initialized `memes` state immediately on mount (`isLoadingFeed = false`) so the Feed, Reels, Swipe Deck, and 1v1 Battle Arena all populate on Frame 1 even offline, and added `isSeedMeme()` priority sorting in `filteredMemes` so real community uploads always rank above seed memes once they exist.
+- [x] **28.2 Restore Studio Templates (`src/data/starterMemes.js`, `public/seed/tpl-*.webp`, `src/components/forge/MemeForge.jsx`, `src/components/forge/ForgeToolPanel.jsx`, `src/index.css`)**:
+  - [x] Populated `STUDIO_TEMPLATES` (`0` → **`20` original blank meme formats**: 2-Panel Reject/Approve, 4-Tier Expanding Galaxy Brain, Two Red Buttons Panic Sweat, Distracted By Shiny New Thing, This Is Fine, Change My Mind Booth, Buff Champion vs Smol Doge, Stonks Up, Not Stonks Crash, Yelling vs Unbothered Cat, Gigachad Verdict, 4-Step Clown Makeup, Astronaut Always Has Been, Brain At 3 AM, Surprised Shock Reaction, Trade Offer, IQ Bell Curve, Highway Exit Drift, Twin Pointing Spider-Clones, Last Place Champagne Celebration).
+  - [x] Surfaced the 20-format **Studio Template Grid** immediately when opening the Forge (`.tm-forge-starter-hub` + `🎨 Templates` tab in `ForgeToolPanel.jsx`), pre-loaded clean `base_image_url` blank templates and editable captions on **"✏️ Caption This"** and Daily Bounties, and added a **`🎲 Random Caption`** button in the Text tab so users can produce and publish a funny meme in under 20 seconds with no file upload required.
 
 ---
 

@@ -7,7 +7,6 @@ import {
   makeDoc,
   makeTextLayer,
   makeSticker,
-  layoutById,
   renderDocToCanvas,
   ensureFontsLoaded,
   loadImg,
@@ -21,6 +20,7 @@ import {
   extFor,
   guessContentType
 } from '../../utils/mediaPipeline';
+import { STUDIO_TEMPLATES, VIRAL_CAPTIONS } from '../../data/starterMemes';
 import { sfx } from '../../utils/soundEngine';
 
 const CATEGORIES = [
@@ -86,15 +86,36 @@ async function buildFromIntent(intent = {}) {
     return out;
   }
   if ((intent.mode === 'remix' || intent.mode === 'caption') && parent) {
+    const src = intent.mode === 'caption' ? parent.base_image_url || parent.image_url : parent.image_url;
+    const matchingTpl = STUDIO_TEMPLATES.find((t) => t.src === src);
+    const randPair = VIRAL_CAPTIONS[Math.floor(Math.random() * VIRAL_CAPTIONS.length)] || [
+      'WAIT A SECOND...',
+      'PLOT TWIST UNLOCKED 💀'
+    ];
     const fresh =
       intent.mode === 'remix'
-        ? [makeTextLayer({ text: 'WAIT A SECOND...', y: 0.1, h: 0.18 }), makeTextLayer({ text: 'PLOT TWIST UNLOCKED 💀', y: 0.9, h: 0.18 })]
-        : layoutById('classic').layers();
-    out.title = intent.mode === 'remix' ? `REMIX: ${parent.title || 'Untitled'}` : `Caption This: ${parent.title || ''}`.trim();
+        ? [
+            makeTextLayer({ text: 'WAIT A SECOND...', y: 0.1, h: 0.18 }),
+            makeTextLayer({ text: 'PLOT TWIST UNLOCKED 💀', y: 0.9, h: 0.18, fill: '#facc15' })
+          ]
+        : [
+            makeTextLayer({ text: matchingTpl?.defaultTop || randPair[0], y: 0.1, h: 0.18 }),
+            makeTextLayer({
+              text: matchingTpl?.defaultBottom || randPair[1],
+              y: 0.9,
+              h: 0.18,
+              fill: '#facc15'
+            })
+          ];
+    out.title =
+      intent.mode === 'remix'
+        ? `REMIX: ${parent.title || 'Untitled'}`
+        : matchingTpl
+          ? `${matchingTpl.defaultTop} — ${matchingTpl.defaultBottom}`
+          : `Caption This: ${parent.title || ''}`.trim();
     if (isMotionParent) {
       out.doc = makeDoc({ base: await motionFromMeme(parent), layers: fresh });
     } else {
-      const src = intent.mode === 'caption' ? parent.base_image_url || parent.image_url : parent.image_url;
       out.doc = makeDoc({ panels: [{ src }], layers: fresh });
     }
     return out;
@@ -106,7 +127,7 @@ async function buildFromIntent(intent = {}) {
     const baseMeme = b.baseMeme;
     const layers = [
       makeTextLayer({ text: b.defaultTop || 'WHEN THE BOUNTY DROPS', y: 0.1, h: 0.18 }),
-      makeTextLayer({ text: b.defaultBottom || '+200 XP INCOMING', y: 0.9, h: 0.18 })
+      makeTextLayer({ text: b.defaultBottom || '+200 XP INCOMING', y: 0.9, h: 0.18, fill: '#facc15' })
     ];
     if (baseMeme && (baseMeme.media_type === 'video' || baseMeme.media_type === 'gif')) {
       out.doc = makeDoc({ base: await motionFromMeme(baseMeme), layers });
@@ -121,13 +142,21 @@ async function buildFromIntent(intent = {}) {
     const layers = [
       makeTextLayer({ text: c.top, y: 0.1, h: 0.18 }),
       makeTextLayer({ text: c.bottom, y: 0.9, h: 0.18, fill: '#facc15' }),
-      ...(c.stickers || []).map((emoji, i) => makeSticker({ emoji, x: i ? 0.78 : 0.22, y: 0.45, rot: i ? 14 : -12 }))
+      ...(c.stickers || []).map((st, i) =>
+        makeSticker({
+          emoji: typeof st === 'string' ? st : st?.emoji || '🔥',
+          x: i ? 0.78 : 0.22,
+          y: 0.45,
+          rot: i ? 14 : -12
+        })
+      )
     ];
     if (isMotionParent) {
       out.doc = makeDoc({ base: await motionFromMeme(parent), layers });
     } else {
-      out.doc = makeDoc({ panels: parent ? [{ src: parent.image_url }] : [], layers });
-      out.doc.filter = c.filter || 'none';
+      const chaosSrc = intent.imageUrl || parent?.base_image_url || parent?.image_url || STUDIO_TEMPLATES[0]?.src || '';
+      out.doc = makeDoc({ panels: chaosSrc ? [{ src: chaosSrc }] : [], layers });
+      out.doc.filter = typeof c.filter === 'string' ? c.filter : 'none';
     }
     return out;
   }
@@ -142,7 +171,9 @@ async function buildFromIntent(intent = {}) {
 export default function MemeForge({ intent, user, onClose, onPublish }) {
   const editor = useMemeEditor(makeDoc());
   const { doc, set, live, undo, redo, reset, selectedId, setSelectedId } = editor;
-  const [tab, setTab] = useState('text');
+  const [tab, setTab] = useState(() =>
+    !intent?.mode || intent?.mode === 'blank' ? 'templates' : 'text'
+  );
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('dank');
   const [isSpoiler, setIsSpoiler] = useState(false);
@@ -171,13 +202,16 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
       setCategory(res.category);
       setError(res.error);
       setStatus(res.tip);
+      setTab(!intent?.mode || intent?.mode === 'blank' ? 'templates' : 'text');
+      const firstText = res.doc?.layers?.find((l) => l.type === 'text');
+      if (firstText) setSelectedId(firstText.id);
       const saved = await loadDraft();
       if (!cancelled && saved?.doc) setDraft(saved);
     })();
     return () => {
       cancelled = true;
     };
-  }, [intent, reset]);
+  }, [intent, reset, setSelectedId]);
 
   // Load images referenced by panels + PNG stickers
   useEffect(() => {
@@ -343,10 +377,61 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
     }
   };
 
+  const handleSelectTemplate = useCallback(
+    (tpl) => {
+      if (!tpl) return;
+      sfx.playPop(1);
+      setError('');
+      setStatus(`✨ Loaded "${tpl.name}" — customize caption below or hit 🚀 Publish!`);
+      setCategory(tpl.category || 'dank');
+      setTitle(`${tpl.defaultTop} — ${tpl.defaultBottom}`);
+      const topLayer = makeTextLayer({ text: tpl.defaultTop || 'TOP TEXT', y: 0.1, h: 0.18 });
+      const botLayer = makeTextLayer({
+        text: tpl.defaultBottom || 'BOTTOM TEXT',
+        y: 0.9,
+        h: 0.18,
+        fill: '#facc15'
+      });
+      set((d) => ({
+        ...d,
+        base: null,
+        panels: d.panels.map((p, i) =>
+          i === activePanel
+            ? { ...p, src: tpl.src, blob: null, zoom: 1, panX: 0, panY: 0, rot: 0, flipX: false, natW: 0, natH: 0 }
+            : p
+        ),
+        layers: [topLayer, botLayer]
+      }));
+      setSelectedId(topLayer.id);
+      setTab('text');
+    },
+    [activePanel, set, setSelectedId]
+  );
+
+  const handleRandomizeCaption = useCallback(() => {
+    sfx.playBoing(2);
+    const pair = VIRAL_CAPTIONS[Math.floor(Math.random() * VIRAL_CAPTIONS.length)] || [
+      'WHEN THE CODE COMPILES',
+      'ZERO ERRORS ON FIRST TRY'
+    ];
+    const topLayer = makeTextLayer({ text: pair[0], y: 0.1, h: 0.18 });
+    const botLayer = makeTextLayer({ text: pair[1], y: 0.9, h: 0.18, fill: '#facc15' });
+    set((d) => {
+      const nonText = d.layers.filter((l) => l.type !== 'text');
+      return {
+        ...d,
+        layers: [topLayer, botLayer, ...nonText]
+      };
+    });
+    setSelectedId(topLayer.id);
+    setTitle(`${pair[0]} — ${pair[1]}`);
+    setStatus('🎲 Loaded a random viral caption!');
+  }, [set, setSelectedId]);
+
   const handlePublish = async (e) => {
     e?.preventDefault?.();
     if (!hasMedia) {
-      setError('📸 Upload, paste (Ctrl+V), or snap your own photo, GIF or video first — all memes are 100% user-made!');
+      setError('📸 Pick a Studio Template below or upload/paste (Ctrl+V) a photo, GIF or video first!');
       return;
     }
     setBusy(true);
@@ -405,9 +490,16 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
   };
 
   const tools = useMemo(
-    () => ({ handleMediaFile, removeSelected, openFile: () => fileRef.current?.click(), openSticker: () => stickerRef.current?.click() }),
+    () => ({
+      handleMediaFile,
+      handleSelectTemplate,
+      handleRandomizeCaption,
+      removeSelected,
+      openFile: () => fileRef.current?.click(),
+      openSticker: () => stickerRef.current?.click()
+    }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activePanel, removeSelected]
+    [activePanel, removeSelected, handleSelectTemplate, handleRandomizeCaption]
   );
 
   return (
@@ -483,9 +575,33 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
         <div className="tm-forge-body">
           <div className="tm-forge-main">
             {!hasMedia && (
-              <button type="button" className="tm-forge-empty" onClick={() => fileRef.current?.click()}>
-                📸 Upload photo, GIF or video (MP4 ≤60s) — or paste with Ctrl+V
-              </button>
+              <div className="tm-forge-starter-hub">
+                <div className="tm-forge-starter-top">
+                  <div>
+                    <strong className="tm-forge-starter-title">🎨 Pick a Blank Meme Format (No Upload Needed)</strong>
+                    <span className="tm-forge-starter-sub">
+                      Tap any classic template to load it with a funny caption in 1 click — or upload your own media:
+                    </span>
+                  </div>
+                  <button type="button" className="tm-btn tm-btn-primary" onClick={() => fileRef.current?.click()}>
+                    📸 Upload Photo / GIF / MP4
+                  </button>
+                </div>
+                <div className="tm-forge-template-grid" role="list" aria-label="Studio Blank Meme Templates">
+                  {STUDIO_TEMPLATES.map((tpl) => (
+                    <button
+                      key={tpl.id}
+                      type="button"
+                      className="tm-forge-template-card"
+                      onClick={() => handleSelectTemplate(tpl)}
+                      title={`Use "${tpl.name}" template`}
+                    >
+                      <img src={tpl.src} alt={tpl.name} loading="lazy" />
+                      <span className="tm-forge-template-name">{tpl.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
             <ForgeStage
               editor={editor}

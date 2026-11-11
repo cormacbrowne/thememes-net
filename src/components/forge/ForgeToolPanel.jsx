@@ -1,5 +1,6 @@
 import { FONT_PACK, LAYOUTS, ASPECTS, makeTextLayer, makeSticker } from './forgeEngine';
 import { STUDIO_FILTERS } from '../../utils/canvasMutator';
+import { STUDIO_TEMPLATES } from '../../data/starterMemes';
 
 const COLOR_SWATCHES = ['#ffffff', '#facc15', '#00f3ff', '#ff0055', '#22c55e', '#000000'];
 const EMOJI_PALETTE = ['🔥', '💀', '😂', '🗿', '🚀', '⚡', '👑', '🦆', '💎', '🤡', '🍕', '🐸', '💯', '🕶️', '🍿', '⚠️'];
@@ -51,6 +52,7 @@ export default function ForgeToolPanel({
       {/* Tab Navigation */}
       <div className="tm-forge-tabs">
         {[
+          ['templates', '🎨 Templates'],
           ['text', '🔤 Text'],
           ['layout', '📐 Layout'],
           ['image', '🖼️ Image'],
@@ -69,12 +71,51 @@ export default function ForgeToolPanel({
       </div>
 
       <div className="tm-forge-tool-body">
+        {/* TAB 0: STUDIO BLANK TEMPLATES */}
+        {tab === 'templates' && (
+          <div className="tm-forge-pane">
+            <div className="tm-tool-row" style={{ justifyContent: 'space-between' }}>
+              <span className="tm-label">20 Classic Formats (Tap to Caption):</span>
+              <button type="button" className="tm-btn" onClick={tools.openFile}>
+                📸 Upload Own
+              </button>
+            </div>
+            <div className="tm-forge-panel-template-grid">
+              {STUDIO_TEMPLATES.map((tpl) => {
+                const isCurrent = doc.panels.some((p) => p.src === tpl.src);
+                return (
+                  <button
+                    key={tpl.id}
+                    type="button"
+                    className={`tm-forge-template-card compact ${isCurrent ? 'active' : ''}`}
+                    onClick={() => tools.handleSelectTemplate?.(tpl)}
+                    title={tpl.name}
+                  >
+                    <img src={tpl.src} alt={tpl.name} loading="lazy" />
+                    <span className="tm-forge-template-name">{tpl.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* TAB 1: TEXT */}
         {tab === 'text' && (
           <div className="tm-forge-pane">
-            <button type="button" className="tm-btn tm-btn-primary tm-w-full" onClick={handleAddText}>
-              + Add Text Box
-            </button>
+            <div className="tm-grid-2col">
+              <button type="button" className="tm-btn tm-btn-primary" onClick={handleAddText}>
+                + Add Text Box
+              </button>
+              <button
+                type="button"
+                className="tm-btn"
+                onClick={() => tools.handleRandomizeCaption?.()}
+                title="Fill with a random funny viral caption"
+              >
+                🎲 Random Caption
+              </button>
+            </div>
 
             {selected && selected.type === 'text' ? (
               <div className="tm-tool-section">

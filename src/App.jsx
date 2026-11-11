@@ -45,7 +45,15 @@ import ParticleOverlay from './components/ParticleOverlay';
 import MemeSkeletonGrid from './components/MemeSkeletonGrid';
 import MobileArcadeDock from './components/MobileArcadeDock';
 import SeoDiscoveryFooter from './components/SeoDiscoveryFooter';
+import { RadioToggleButton } from './components/MemesRadio';
+import {
+  setRadioContextStation,
+  setRadioMuted,
+  radioEvent,
+  armRadioResumeOnGesture
+} from './utils/radioBus';
 
+const InsertCoinIntro = lazy(() => import('./components/InsertCoinIntro'));
 const MemeForge = lazy(() => import('./components/forge/MemeForge'));
 const MemeEvolutionModal = lazy(() => import('./components/MemeEvolutionModal'));
 const SwipeDeck = lazy(() => import('./components/SwipeDeck'));
@@ -360,6 +368,16 @@ export default function App() {
   );
   const [bossKeyActive, setBossKeyActive] = useState(false);
 
+  // Phase 28.12: One-time 2-second skippable "Insert Coin" CRT boot moment (never shown again once seen)
+  const [showIntro, setShowIntro] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return !localStorage.getItem('tm_intro_seen');
+    } catch {
+      return false;
+    }
+  });
+
   // Phase 12–15: Chaos Reality Mutators, Golden Loot Goblin, Konami God Mode & Touch/Cursor Trails
   const [chaosMutator, setChaosMutator] = useState('none'); // 'none' | 'rave' | 'australian' | 'deepfry' | 'matrix'
   const [cursorTrail, setCursorTrail] = useState(() => {
@@ -600,6 +618,31 @@ export default function App() {
   );
   const isFixedArcadeGame = ['blackjack', 'roulette', 'pusher', 'slots', 'crush', 'pinball', 'stocks'].includes(viewMode);
 
+  // Phase 28.11: THE MEMES FM radio hooks (resume on gesture if left ON, mute sync, context station & combo reactivity)
+  useEffect(() => {
+    armRadioResumeOnGesture();
+  }, []);
+
+  useEffect(() => {
+    setRadioMuted(!soundOn);
+  }, [soundOn]);
+
+  useEffect(() => {
+    if (bossKeyActive) {
+      setRadioContextStation('vaporwave');
+    } else if (['pinball', 'crush', 'pusher', 'battle', 'swipe'].includes(viewMode)) {
+      setRadioContextStation('chiptune');
+    } else if (['stocks', 'blackjack', 'roulette', 'slots'].includes(viewMode)) {
+      setRadioContextStation('synthwave');
+    } else {
+      setRadioContextStation(null);
+    }
+  }, [bossKeyActive, viewMode]);
+
+  useEffect(() => {
+    radioEvent('combo', combo);
+  }, [combo]);
+
   const addCappedWheelSpins = useCallback((delta = 1) => {
     setLootSpins((prev) =>
       Math.min(ARCADE_RATE_LIMITS.MAX_STORED_WHEEL_SPINS, Math.max(0, prev + delta))
@@ -785,7 +828,7 @@ export default function App() {
   const awardXpOnly = useCallback(
     (flatXp, event, emoji = '⚡', labelOverride = null) => {
       const gained = Math.max(0, Math.floor(Number(flatXp) || 0));
-      const nextCombo = Math.min(3, combo + 1);
+      const nextCombo = Math.min(5, combo + 1);
       setCombo(nextCombo);
       setComboTimer(100);
 
@@ -1024,6 +1067,7 @@ export default function App() {
    */
   const awardUploadTokensWithPioneerCheck = useCallback(
     ({ baseTokens, baseXp, event, emoji = '🚀' }) => {
+      radioEvent('publish');
       let currentLedger = tokenLedger;
       let totalAwarded = 0;
 
@@ -2848,6 +2892,13 @@ export default function App() {
       {/* OPTIONAL CRT SCANLINE & PHOSPHOR SHADER OVERLAY */}
       {crtOn && <div className="tm-crt-overlay" aria-hidden="true" />}
 
+      {/* PHASE 28.12: ONE-TIME "INSERT COIN" FIRST-VISIT CRT BOOT INTRO */}
+      {showIntro && (
+        <Suspense fallback={null}>
+          <InsertCoinIntro onComplete={() => setShowIntro(false)} />
+        </Suspense>
+      )}
+
       {/* ROAMING GOLDEN LOOT GOBLIN SURPRISE EVENT */}
       {activeGoblin && !bossKeyActive && !isFixedArcadeGame && (
         <button
@@ -3055,6 +3106,7 @@ export default function App() {
             >
               🪙 <strong>{tokens}</strong>
             </button>
+            <RadioToggleButton className="tm-fixed-icon-btn" />
             <button
               type="button"
               className="tm-fixed-icon-btn"

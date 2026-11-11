@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
+import { setRadioDuck } from '../utils/radioBus';
 import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
 import { getSecurityAuditReport } from '../utils/securityGuard';
 import './ArcadeAiAssistant.css';
@@ -139,6 +140,12 @@ export default function ArcadeAiAssistant({
   });
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [inputVal, setInputVal] = useState('');
+
+  // Duck THE MEMES FM radio to 20% while K.I.T.T. / HAL 9000 speech is playing
+  useEffect(() => {
+    setRadioDuck('speech', isSpeaking);
+    return () => setRadioDuck('speech', false);
+  }, [isSpeaking]);
 
   const [messages, setMessages] = useState(() => [
     {

@@ -1,0 +1,207 @@
+/* =====================================================================
+   INSERT COIN — First-Visit CRT Arcade Boot Moment (Phase 28.12)
+   ===================================================================== */
+
+.tm-intro-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: radial-gradient(circle at 50% 42%, #180b2e 0%, #070810 75%, #000 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  cursor: pointer;
+  user-select: none;
+  animation: tm-intro-power-on 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.24s ease-out, transform 0.24s ease-out;
+}
+
+.tm-intro-backdrop.is-exiting {
+  opacity: 0;
+  transform: scale(1.03);
+  pointer-events: none;
+}
+
+@keyframes tm-intro-power-on {
+  0% {
+    opacity: 0;
+    transform: scaleY(0.015) scaleX(0.4);
+    filter: brightness(4);
+  }
+  45% {
+    opacity: 1;
+    transform: scaleY(0.025) scaleX(1);
+    filter: brightness(2.5);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+.tm-intro-crt-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at center, rgba(0, 243, 255, 0.28), transparent 65%);
+  animation: tm-intro-flash-fade 0.8s ease-out forwards;
+}
+
+@keyframes tm-intro-flash-fade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.15;
+  }
+}
+
+.tm-intro-scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.03) 0px,
+    rgba(255, 255, 255, 0.03) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+.tm-intro-cabinet {
+  position: relative;
+  max-width: 390px;
+  width: 100%;
+  text-align: center;
+  padding: 26px 22px 20px;
+  border-radius: 18px;
+  border: 2px solid rgba(0, 243, 255, 0.45);
+  background: rgba(9, 10, 20, 0.88);
+  box-shadow: 0 0 36px rgba(236, 72, 153, 0.35), inset 0 0 24px rgba(0, 243, 255, 0.12);
+}
+
+.tm-intro-boot-line {
+  font-family: 'Press Start 2P', ui-monospace, monospace;
+  font-size: 9px;
+  color: #4ade80;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+}
+
+.tm-intro-logo {
+  display: inline-block;
+  background: linear-gradient(135deg, #facc15 0%, #f97316 50%, #ec4899 100%);
+  color: #090a0f;
+  font-weight: 900;
+  font-size: 26px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  letter-spacing: -0.5px;
+  box-shadow: 0 0 24px rgba(249, 115, 22, 0.55);
+  margin-bottom: 6px;
+}
+
+.tm-intro-sub {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: #a5f3fc;
+  margin-bottom: 18px;
+}
+
+.tm-intro-coin-slot {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 14px;
+  border-radius: 14px;
+  border: 2px solid #facc15;
+  background: linear-gradient(180deg, rgba(250, 204, 21, 0.18), rgba(236, 72, 153, 0.18));
+  color: #fff;
+  cursor: pointer;
+  margin-bottom: 14px;
+  box-shadow: 0 0 20px rgba(250, 204, 21, 0.32);
+}
+
+.tm-intro-coin {
+  font-size: 28px;
+  line-height: 1;
+  animation: tm-intro-coin-bob 1.1s ease-in-out infinite;
+}
+
+@keyframes tm-intro-coin-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.tm-intro-blink {
+  font-family: 'Press Start 2P', ui-monospace, monospace;
+  font-size: 16px;
+  color: #facc15;
+  text-shadow: 0 0 12px rgba(250, 204, 21, 0.75);
+  animation: tm-intro-blink 1s steps(2, start) infinite;
+}
+
+@keyframes tm-intro-blink {
+  to {
+    opacity: 0.35;
+  }
+}
+
+.tm-intro-hint {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #e2e8f0;
+}
+
+.tm-intro-radio-opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #cbd5e1;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.tm-intro-radio-opt input {
+  accent-color: #ec4899;
+  width: 15px;
+  height: 15px;
+}
+
+.tm-intro-skip {
+  display: block;
+  margin: 0 auto;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.tm-intro-skip:hover {
+  color: #f8fafc;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tm-intro-backdrop,
+  .tm-intro-crt-flash,
+  .tm-intro-coin,
+  .tm-intro-blink {
+    animation: none;
+  }
+}

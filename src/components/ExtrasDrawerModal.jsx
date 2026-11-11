@@ -1,4 +1,5 @@
 import MemeSoundboardBar from './MemeSoundboardBar';
+import MemesRadio from './MemesRadio';
 
 export default function ExtrasDrawerModal({
   isOpen,
@@ -63,6 +64,12 @@ export default function ExtrasDrawerModal({
           >
             ✕
           </button>
+        </div>
+
+        {/* SECTION 0: THE MEMES FM PROCEDURAL SYNTHWAVE RADIO DECK */}
+        <div className="tm-extras-section">
+          <div className="tm-extras-section-label">📼 THE MEMES FM — PROCEDURAL RADIO DECK</div>
+          <MemesRadio />
         </div>
 
         {/* SECTION 1: TOYS, EASTER EGGS & UTILITIES */}

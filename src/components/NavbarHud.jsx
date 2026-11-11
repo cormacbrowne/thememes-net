@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
+import { RadioToggleButton } from './MemesRadio';
 
 const ARCADE_GAME_MODES = [
   { id: 'pusher', icon: '🪙', label: "Coin Dozer '86", badge: '3D' },
@@ -194,6 +195,9 @@ export default function NavbarHud({
               </span>
             )}
           </button>
+
+          {/* 2.5 THE MEMES FM COMPACT RADIO TOGGLE */}
+          <RadioToggleButton />
 
           {/* 3. UNIFIED EXTRAS DRAWER BUTTON */}
           {onOpenExtras && (

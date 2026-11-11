@@ -1,0 +1,270 @@
+/* =====================================================================
+   THE MEMES FM — Cassette Deck, 📼 Toggle & Beat-Synced Visuals (28.11)
+   ===================================================================== */
+
+/* ---------- 📼 top-bar toggle ---------- */
+.tm-radio-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 36px;
+}
+
+.tm-radio-toggle.is-on {
+  border-color: #ec4899;
+  box-shadow: 0 0 12px rgba(236, 72, 153, 0.45);
+}
+
+.tm-radio-toggle-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.tm-radio-eq {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+
+.tm-radio-eq i {
+  width: 3px;
+  height: 100%;
+  background: #ec4899;
+  border-radius: 1px;
+  transform-origin: bottom;
+  animation: tm-radio-eq 0.9s ease-in-out infinite;
+}
+
+.tm-radio-eq i:nth-child(2) {
+  animation-delay: -0.3s;
+  background: #00f3ff;
+}
+
+.tm-radio-eq i:nth-child(3) {
+  animation-delay: -0.6s;
+  background: #facc15;
+}
+
+@keyframes tm-radio-eq {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+/* ---------- Cassette deck (Extras drawer) ---------- */
+.tm-radio-deck {
+  background: linear-gradient(160deg, rgba(30, 16, 52, 0.95), rgba(10, 12, 28, 0.95));
+  border: 1px solid rgba(236, 72, 153, 0.45);
+  border-radius: 14px;
+  padding: 14px;
+  color: #e2e8f0;
+}
+
+.tm-radio-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.tm-radio-brand {
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: #facc15;
+  font-size: 13px;
+}
+
+.tm-radio-sub {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.tm-radio-cassette {
+  position: relative;
+  background: linear-gradient(180deg, #1f2937, #0f172a);
+  border: 2px solid #334155;
+  border-radius: 10px;
+  padding: 10px 12px 12px;
+  margin-bottom: 10px;
+}
+
+.tm-radio-label {
+  background: linear-gradient(90deg, #fde68a, #fbcfe8);
+  color: #1e1b4b;
+  border-radius: 6px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.tm-radio-label-station {
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.tm-radio-label-track {
+  font-family: 'Press Start 2P', ui-monospace, monospace;
+  font-size: 9px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tm-radio-reels {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.tm-radio-reel {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 3px solid #e2e8f0;
+  background: repeating-conic-gradient(#0f172a 0deg 30deg, #475569 30deg 60deg);
+  box-shadow: inset 0 0 0 8px #1e293b;
+}
+
+.tm-radio-tape-window {
+  width: 70px;
+  height: 22px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #3f2a1d, #1c130d);
+  border: 1px solid #64748b;
+}
+
+.tm-radio-deck.is-playing .tm-radio-reel {
+  animation: tm-radio-spin 2.2s linear infinite;
+}
+
+@keyframes tm-radio-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.tm-radio-note {
+  font-size: 11px;
+  color: #a5f3fc;
+  margin: 0 0 8px;
+}
+
+.tm-radio-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.tm-radio-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #f8fafc;
+  font-weight: 800;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.tm-radio-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tm-radio-play {
+  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  border-color: transparent;
+}
+
+.tm-radio-volume {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 120px;
+}
+
+.tm-radio-volume input {
+  width: 100%;
+  accent-color: #ec4899;
+}
+
+.tm-radio-stations {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.tm-radio-station {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tm-radio-station.active {
+  border-color: #00f3ff;
+  color: #fff;
+  background: rgba(0, 243, 255, 0.12);
+}
+
+/* ---------- Beat-synced visuals (only while the radio plays) ----------
+   musicEngine.js flips --beat between 1 and 0 on <html> on every kick drum.
+   Only opacity/box-shadow on 3 small targets transition. No React re-renders. */
+.tm-radio-on .tm-synthwave-glow {
+  opacity: calc(0.8 + var(--beat, 0) * 0.2);
+  transition: opacity 0.22s ease-out;
+}
+
+.tm-radio-on .tm-logo-badge {
+  box-shadow: 0 0 calc(20px + var(--beat, 0) * 18px) rgba(236, 72, 153, calc(0.45 + var(--beat, 0) * 0.35));
+  transition: box-shadow 0.2s ease-out;
+}
+
+.tm-radio-on .tm-reels-slide.active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 42px rgba(236, 72, 153, 0.4);
+  opacity: calc(var(--beat, 0) * 0.9);
+  transition: opacity 0.2s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tm-radio-eq i,
+  .tm-radio-deck.is-playing .tm-radio-reel {
+    animation: none;
+  }
+
+  .tm-radio-on .tm-synthwave-glow,
+  .tm-radio-on .tm-logo-badge,
+  .tm-radio-on .tm-reels-slide.active::after {
+    transition: none;
+  }
+}
+
+.tm-lite-perf .tm-radio-eq i,
+.tm-lite-perf .tm-radio-deck.is-playing .tm-radio-reel {
+  animation: none;
+}

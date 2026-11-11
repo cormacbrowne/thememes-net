@@ -1,0 +1,289 @@
+/* 4. NEON COIN DOZER '86 FULL-SCREEN ARCADE CABINET */
+.tm-pusher-arena {
+  width: 100%;
+  height: calc(100dvh - 50px);
+  max-height: calc(100dvh - 50px);
+  padding: 8px 12px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.tm-pusher-layout {
+  width: 100%;
+  max-width: 1360px;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.tm-pusher-side-deck {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.tm-pusher-brand-card {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(7, 10, 25, 0.96));
+  border: 1.5px solid rgba(250, 204, 21, 0.45);
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.65);
+}
+
+.tm-pusher-eyebrow {
+  font-size: 10px;
+  font-weight: 900;
+  color: #00f3ff;
+  letter-spacing: 0.8px;
+}
+
+.tm-pusher-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 900;
+  color: #facc15;
+  text-shadow: 0 0 14px rgba(250, 204, 21, 0.45);
+}
+
+.tm-pusher-sub {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #e2e8f0;
+  background: rgba(2, 6, 23, 0.78);
+  border-left: 3px solid #00f3ff;
+  padding: 6px 8px;
+  border-radius: 6px;
+  line-height: 1.35;
+}
+
+.tm-pusher-mode-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.tm-pusher-mode-btn {
+  padding: 7px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.8);
+  color: #cbd5e1;
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tm-pusher-mode-btn.active {
+  border-color: #4ade80;
+  background: rgba(34, 197, 94, 0.18);
+  color: #4ade80;
+}
+
+.tm-pusher-mode-btn.active.token {
+  border-color: #facc15;
+  background: rgba(250, 204, 21, 0.18);
+  color: #facc15;
+}
+
+.tm-pusher-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.tm-pusher-stat {
+  background: rgba(2, 6, 23, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 10px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.tm-pusher-stat span {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #94a3b8;
+}
+
+.tm-pusher-stat strong {
+  font-size: 15px;
+  font-weight: 900;
+  color: #f8fafc;
+}
+
+.tm-pusher-fever-box {
+  background: rgba(2, 6, 23, 0.85);
+  border: 1px solid rgba(0, 243, 255, 0.35);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.tm-pusher-fever-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 900;
+  color: #67e8f9;
+  margin-bottom: 5px;
+}
+
+.tm-pusher-fever-track {
+  height: 9px;
+  background: rgba(15, 23, 42, 0.95);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.tm-pusher-fever-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00f3ff, #facc15);
+  transition: width 0.25s ease;
+}
+
+.tm-pusher-fever-fill.fever {
+  background: linear-gradient(90deg, #ec4899, #facc15, #00f3ff);
+}
+
+.tm-pusher-controls-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.tm-pusher-action-btn {
+  padding: 10px 8px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(0, 243, 255, 0.45);
+  background: rgba(15, 23, 42, 0.9);
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.tm-pusher-action-btn.primary {
+  grid-column: 1 / -1;
+  padding: 12px;
+  font-size: 14px;
+  background: linear-gradient(135deg, #facc15, #f97316);
+  color: #090d16;
+  border-color: #fef08a;
+  box-shadow: 0 0 18px rgba(250, 204, 21, 0.4);
+}
+
+.tm-pusher-action-btn.spread {
+  border-color: #00f3ff;
+  color: #67e8f9;
+}
+
+.tm-pusher-action-btn.nudge {
+  border-color: #f472b6;
+  color: #f472b6;
+}
+
+.tm-pusher-prize-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: #cbd5e1;
+  background: rgba(2, 6, 23, 0.65);
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+
+.tm-pusher-footer-links {
+  display: flex;
+  gap: 6px;
+}
+
+.tm-pusher-link-btn {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(15, 23, 42, 0.7);
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tm-pusher-stage-wrap {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, rgba(15, 23, 42, 0.88), rgba(4, 7, 17, 0.96));
+  border: 2px solid rgba(0, 243, 255, 0.45);
+  border-radius: 18px;
+  padding: 6px;
+  box-sizing: border-box;
+  box-shadow: inset 0 0 32px rgba(0, 243, 255, 0.14);
+}
+
+.tm-pusher-canvas {
+  height: 100%;
+  max-height: calc(100dvh - 76px);
+  width: auto;
+  max-width: 100%;
+  aspect-ratio: 620 / 720;
+  border-radius: 12px;
+  cursor: pointer;
+  touch-action: manipulation;
+  display: block;
+}
+
+@media (max-width: 900px) {
+  .tm-pusher-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  .tm-pusher-stage-wrap {
+    order: 1;
+    height: 100%;
+    padding: 4px;
+  }
+
+  .tm-pusher-canvas {
+    max-height: 56dvh;
+    width: auto;
+    max-width: 96vw;
+  }
+
+  .tm-pusher-side-deck {
+    order: 2;
+    max-height: 36dvh;
+  }
+
+  .tm-pusher-brand-card {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .tm-pusher-title {
+    font-size: 16px;
+  }
+
+  .tm-pusher-eyebrow,
+  .tm-pusher-prize-legend,
+  .tm-pusher-footer-links {
+    display: none;
+  }
+}

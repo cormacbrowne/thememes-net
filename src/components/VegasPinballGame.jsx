@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
 import { checkDailyPerk, consumeDailyPerk } from '../utils/memeFeedBridge';
+import './VegasPinballGame.css';
 
 // ==========================================
 // 80s HYPER-NEON CYBER-PINBALL — CENTER-STAGE WIDESCREEN ARCADE SHOWCASE

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { generateAiMemeRoast } from '../data/starterMemes';
 import { sfx } from '../utils/soundEngine';
+import './AiRoastModal.css';
 
 export default function AiRoastModal({
   meme,

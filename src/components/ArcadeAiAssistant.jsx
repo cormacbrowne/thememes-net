@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
 import { getSecurityAuditReport } from '../utils/securityGuard';
+import './ArcadeAiAssistant.css';
 
 // ==========================================
 // 80s CINEMA AI COPILOT — DUAL PERSONA ENGINE:

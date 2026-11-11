@@ -1,0 +1,71 @@
+/* Boss Key Corporate Excel Spreadsheet Panic Disguise */
+.tm-boss-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #ffffff;
+  color: #1e293b;
+  font-family: Calibri, 'Segoe UI', Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.tm-boss-topbar {
+  background: #107c41;
+  color: #ffffff;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.tm-boss-exit-btn {
+  background: #ffffff;
+  color: #107c41;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.tm-boss-formula-bar {
+  background: #f1f5f9;
+  border-bottom: 1px solid #cbd5e1;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-family: Consolas, monospace;
+  display: flex;
+  gap: 12px;
+}
+
+.tm-boss-cell-ref {
+  font-weight: 700;
+  color: #64748b;
+}
+
+.tm-boss-table-wrap {
+  padding: 16px;
+  overflow: auto;
+}
+
+.tm-boss-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.tm-boss-table th,
+.tm-boss-table td {
+  border: 1px solid #cbd5e1;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.tm-boss-table th {
+  background: #e2e8f0;
+  font-weight: 700;
+}
+

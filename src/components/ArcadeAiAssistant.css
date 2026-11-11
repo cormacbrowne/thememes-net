@@ -1,0 +1,786 @@
+.tm-ai-copilot-fab {
+  position: fixed;
+  right: 18px;
+  bottom: 22px;
+  z-index: 950;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 2px solid #00f3ff;
+  background: linear-gradient(135deg, rgba(8, 15, 36, 0.96), rgba(38, 12, 54, 0.96));
+  color: #f8fafc;
+  font-size: 12.5px;
+  font-weight: 900;
+  letter-spacing: 0.6px;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.85), 0 0 22px rgba(0, 243, 255, 0.45);
+  transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.16s ease;
+}
+.tm-ai-copilot-fab:hover {
+  transform: translateY(-2px) scale(1.05);
+  border-color: #facc15;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.9), 0 0 28px rgba(250, 204, 21, 0.55);
+}
+.tm-ai-copilot-fab.active {
+  border-color: #f472b6;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.85), 0 0 24px rgba(244, 114, 182, 0.55);
+}
+
+.tm-ai-copilot-fab-orb {
+  font-size: 17px;
+}
+
+.tm-ai-copilot-fab-badge {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #facc15;
+  color: #020617;
+  font-size: 10.5px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .tm-ai-copilot-fab {
+    bottom: 78px;
+    right: 12px;
+    padding: 8px 13px;
+  }
+}
+
+.tm-ai-copilot-panel {
+  position: fixed;
+  right: 18px;
+  bottom: 76px;
+  z-index: 985;
+  width: min(410px, calc(100vw - 24px));
+  max-height: min(620px, calc(100dvh - 110px));
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(160deg, rgba(8, 13, 30, 0.98), rgba(24, 10, 42, 0.98));
+  border: 2px solid #00f3ff;
+  border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.92), 0 0 38px rgba(0, 243, 255, 0.32);
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .tm-ai-copilot-panel {
+    right: 12px;
+    bottom: 130px;
+    max-height: calc(100dvh - 155px);
+  }
+}
+
+.tm-ai-copilot-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom: 1px solid rgba(0, 243, 255, 0.32);
+}
+
+.tm-ai-copilot-head-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tm-ai-copilot-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(0, 243, 255, 0.25), rgba(236, 72, 153, 0.25));
+  border: 1.5px solid #00f3ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.tm-ai-copilot-title {
+  font-size: 13px;
+  font-weight: 900;
+  color: #00f3ff;
+  letter-spacing: 0.6px;
+}
+
+.tm-ai-copilot-sub {
+  font-size: 10.5px;
+  color: #94a3b8;
+}
+
+.tm-ai-copilot-close {
+  background: rgba(2, 6, 23, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: #e2e8f0;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.tm-ai-copilot-telemetry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(2, 6, 23, 0.9);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  font-size: 10.5px;
+  color: #cbd5e1;
+}
+
+.tm-ai-copilot-suggestions {
+  padding: 8px 12px;
+  background: rgba(15, 23, 42, 0.65);
+  border-bottom: 1px solid rgba(0, 243, 255, 0.22);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tm-ai-suggestions-label {
+  font-size: 10px;
+  font-weight: 900;
+  color: #facc15;
+  letter-spacing: 0.6px;
+}
+
+.tm-ai-suggestions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.tm-ai-suggestion-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 9px;
+  border-radius: 10px;
+  background: rgba(2, 6, 23, 0.85);
+  border: 1px solid rgba(250, 204, 21, 0.35);
+}
+
+.tm-ai-suggestion-text {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: #e2e8f0;
+  min-width: 0;
+}
+.tm-ai-suggestion-text strong {
+  display: block;
+  color: #fde047;
+  font-size: 11px;
+}
+.tm-ai-suggestion-text span {
+  display: block;
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+.tm-ai-suggestion-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.tm-ai-suggestion-cta {
+  flex-shrink: 0;
+  padding: 4px 9px;
+  border-radius: 8px;
+  border: 1px solid #00f3ff;
+  background: rgba(0, 243, 255, 0.16);
+  color: #00f3ff;
+  font-size: 10.5px;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tm-ai-suggestion-cta:hover {
+  background: #00f3ff;
+  color: #020617;
+}
+
+/* Chat Messages Stream */
+.tm-ai-copilot-messages {
+  flex: 1;
+  min-height: 150px;
+  overflow-y: auto;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tm-ai-msg {
+  display: flex;
+  flex-direction: column;
+  max-width: 90%;
+}
+.tm-ai-msg.bot {
+  align-self: flex-start;
+}
+.tm-ai-msg.user {
+  align-self: flex-end;
+}
+
+.tm-ai-msg-bubble {
+  padding: 8px 11px;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.tm-ai-msg.bot .tm-ai-msg-bubble {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(0, 243, 255, 0.35);
+  color: #f1f5f9;
+}
+.tm-ai-msg.user .tm-ai-msg-bubble {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.32), rgba(168, 85, 247, 0.32));
+  border: 1px solid #f472b6;
+  color: #ffffff;
+}
+
+.tm-ai-msg-actions {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.tm-ai-msg-action-btn {
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid #facc15;
+  background: rgba(250, 204, 21, 0.15);
+  color: #fde047;
+  font-size: 10.5px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.tm-ai-msg-action-btn:hover {
+  background: #facc15;
+  color: #020617;
+}
+
+.tm-ai-quick-prompts {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  padding: 6px 10px;
+  background: rgba(2, 6, 23, 0.85);
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.tm-ai-quick-chip {
+  flex-shrink: 0;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 243, 255, 0.35);
+  background: rgba(15, 23, 42, 0.9);
+  color: #cbd5e1;
+  font-size: 10.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.tm-ai-quick-chip:hover {
+  border-color: #00f3ff;
+  color: #00f3ff;
+}
+
+.tm-ai-copilot-input-bar {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px;
+  background: rgba(15, 23, 42, 0.96);
+  border-top: 1px solid rgba(0, 243, 255, 0.28);
+}
+
+.tm-ai-copilot-input {
+  flex: 1;
+  padding: 7px 11px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(2, 6, 23, 0.92);
+  color: #f8fafc;
+  font-size: 12px;
+}
+.tm-ai-copilot-input:focus {
+  outline: none;
+  border-color: #00f3ff;
+}
+
+.tm-ai-copilot-send {
+  padding: 7px 13px;
+  border-radius: 10px;
+  border: 1.5px solid #00f3ff;
+  background: linear-gradient(135deg, #00f3ff, #ec4899);
+  color: #020617;
+  font-size: 11.5px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+/* Cyber-Oracle '86 Inner Drawer Elements */
+.tm-ai-fab-icon {
+  font-size: 18px;
+}
+.tm-ai-fab-text {
+  font-weight: 900;
+}
+.tm-ai-fab-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 10px #4ade80;
+}
+
+.tm-ai-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(15, 23, 42, 0.96);
+  border-bottom: 1px solid rgba(0, 243, 255, 0.32);
+}
+
+.tm-ai-head-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tm-ai-avatar-orb {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, rgba(0, 243, 255, 0.25), rgba(236, 72, 153, 0.25));
+  border: 1.5px solid #00f3ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+}
+
+.tm-ai-eyebrow {
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.7px;
+  color: #4ade80;
+}
+
+.tm-ai-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 900;
+  color: #00f3ff;
+}
+
+.tm-ai-suggestions-box {
+  padding: 8px 12px;
+  background: rgba(15, 23, 42, 0.72);
+  border-bottom: 1px solid rgba(0, 243, 255, 0.25);
+}
+
+.tm-ai-sug-header {
+  font-size: 10px;
+  font-weight: 900;
+  color: #facc15;
+  letter-spacing: 0.6px;
+  margin-bottom: 6px;
+}
+
+.tm-ai-sug-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.tm-ai-sug-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 9px;
+  border-radius: 10px;
+  background: rgba(2, 6, 23, 0.88);
+  border: 1px solid rgba(250, 204, 21, 0.35);
+}
+
+.tm-ai-sug-icon {
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+.tm-ai-sug-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.tm-ai-sug-title {
+  font-size: 11px;
+  font-weight: 900;
+  color: #fde047;
+}
+
+.tm-ai-sug-sub {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.tm-ai-sug-btn {
+  flex-shrink: 0;
+  padding: 5px 9px;
+  border-radius: 8px;
+  border: 1px solid #00f3ff;
+  background: rgba(0, 243, 255, 0.16);
+  color: #00f3ff;
+  font-size: 10.5px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.tm-ai-sug-btn:hover {
+  background: #00f3ff;
+  color: #020617;
+}
+
+.tm-ai-chat-stream {
+  flex: 1;
+  min-height: 150px;
+  overflow-y: auto;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tm-ai-msg.ai {
+  align-self: flex-start;
+}
+.tm-ai-msg.ai .tm-ai-msg-bubble {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(0, 243, 255, 0.35);
+  color: #f1f5f9;
+}
+
+.tm-ai-action-chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #facc15;
+  background: rgba(250, 204, 21, 0.16);
+  color: #fde047;
+  font-size: 10.5px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.tm-ai-action-chip:hover {
+  background: #facc15;
+  color: #020617;
+}
+
+.tm-ai-quick-chips {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  padding: 6px 10px;
+  background: rgba(2, 6, 23, 0.88);
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.tm-ai-prompt-pill {
+  flex-shrink: 0;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 243, 255, 0.38);
+  background: rgba(15, 23, 42, 0.92);
+  color: #e2e8f0;
+  font-size: 10.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.tm-ai-prompt-pill:hover {
+  border-color: #facc15;
+  color: #fde047;
+}
+
+.tm-ai-input-row {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px;
+  background: rgba(15, 23, 42, 0.96);
+  border-top: 1px solid rgba(0, 243, 255, 0.3);
+}
+
+.tm-ai-text-input {
+  flex: 1;
+  padding: 7px 11px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(2, 6, 23, 0.92);
+  color: #f8fafc;
+  font-size: 12px;
+}
+.tm-ai-text-input:focus {
+  outline: none;
+  border-color: #00f3ff;
+}
+
+.tm-ai-send-btn {
+  padding: 7px 13px;
+  border-radius: 10px;
+  border: 1.5px solid #00f3ff;
+  background: linear-gradient(135deg, #00f3ff, #ec4899);
+  color: #020617;
+  font-size: 11.5px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   HAL 9000 ("2001: A SPACE ODYSSEY") & K.I.T.T. ("KNIGHT RIDER") AI PERSONAS
+   ========================================================================== */
+
+.tm-ai-copilot-fab.hal-mode {
+  border-color: #ef4444;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.9), 0 0 24px rgba(239, 68, 68, 0.55);
+}
+
+.tm-ai-copilot-fab.kitt-mode {
+  border-color: #ef4444;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.9), 0 0 24px rgba(250, 204, 21, 0.45);
+}
+
+.tm-ai-copilot-panel.hal-theme {
+  border-color: #ef4444;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.95), 0 0 42px rgba(239, 68, 68, 0.35);
+}
+
+.tm-ai-copilot-panel.kitt-theme {
+  border-color: #ef4444;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.95), 0 0 42px rgba(239, 68, 68, 0.32);
+}
+
+/* 🔴 HAL 9000 Camera Eye Lens */
+.tm-hal-eye-lens {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    #fef08a 0%,
+    #ef4444 32%,
+    #991b1b 62%,
+    #090a0f 100%
+  );
+  border: 2.5px solid #cbd5e1;
+  box-shadow:
+    0 0 16px rgba(239, 68, 68, 0.8),
+    inset 0 0 8px rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tm-hal-pupil {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fef9c3;
+  box-shadow: 0 0 10px #ffffff, 0 0 18px #ef4444;
+}
+
+.tm-hal-eye-lens.speaking {
+  animation: tmHalSpeakPulse 0.45s infinite alternate;
+}
+
+@keyframes tmHalSpeakPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 14px rgba(239, 68, 68, 0.75);
+  }
+  100% {
+    transform: scale(1.12);
+    box-shadow: 0 0 30px rgba(239, 68, 68, 1), 0 0 44px rgba(250, 204, 21, 0.85);
+  }
+}
+
+/* 🚗 K.I.T.T. 3-Bar Red LED Voice Modulator */
+.tm-kitt-voice-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #050508;
+  border: 2px solid #ef4444;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.55), inset 0 0 10px rgba(239, 68, 68, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 5px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.tm-kitt-bar {
+  width: 5px;
+  height: 12px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #fde047 0%, #ef4444 35%, #ef4444 65%, #fde047 100%);
+  box-shadow: 0 0 8px #ef4444;
+  transition: height 0.12s ease;
+}
+
+.tm-kitt-bar.b2 {
+  height: 22px;
+}
+
+.tm-kitt-voice-box.speaking .tm-kitt-bar.b1 {
+  animation: tmKittModulate 0.22s infinite alternate;
+}
+.tm-kitt-voice-box.speaking .tm-kitt-bar.b2 {
+  animation: tmKittModulate 0.16s infinite alternate-reverse;
+}
+.tm-kitt-voice-box.speaking .tm-kitt-bar.b3 {
+  animation: tmKittModulate 0.25s infinite alternate;
+}
+
+@keyframes tmKittModulate {
+  0% {
+    height: 6px;
+    opacity: 0.7;
+  }
+  100% {
+    height: 28px;
+    opacity: 1;
+  }
+}
+
+/* Persona Switcher & Larson Scanner Bar */
+.tm-ai-persona-switcher-bar {
+  background: rgba(5, 7, 16, 0.96);
+  border-bottom: 1px solid rgba(239, 68, 68, 0.35);
+  padding: 6px 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tm-ai-mode-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.tm-ai-persona-btn {
+  padding: 6px 10px;
+  border-radius: 9px;
+  border: 1.5px solid rgba(148, 163, 184, 0.3);
+  background: rgba(15, 23, 42, 0.85);
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tm-ai-persona-btn.kitt.active {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.35), rgba(250, 204, 21, 0.22));
+  border-color: #ef4444;
+  color: #fde047;
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.45);
+}
+
+.tm-ai-persona-btn.hal.active {
+  background: linear-gradient(135deg, rgba(185, 28, 28, 0.42), rgba(15, 23, 42, 0.95));
+  border-color: #ef4444;
+  color: #fecaca;
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.55);
+}
+
+/* 🚗 Knight Rider Red Anamorphic Larson Scanner */
+.tm-kitt-scanner-track {
+  width: 100%;
+  height: 7px;
+  border-radius: 999px;
+  background: #050508;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  overflow: hidden;
+  position: relative;
+}
+
+.tm-kitt-scanner-beam {
+  width: 32%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, #ef4444, #fef08a, #ef4444, transparent);
+  box-shadow: 0 0 14px #ef4444;
+  animation: tmKittLarsonSweep 1.35s ease-in-out infinite alternate;
+}
+
+@keyframes tmKittLarsonSweep {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(212%);
+  }
+}
+
+.tm-hal-telemetry-strip {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 9.5px;
+  font-weight: 900;
+  color: #f87171;
+  letter-spacing: 0.6px;
+}
+
+.tm-ai-voice-toggle {
+  padding: 4px 9px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 243, 255, 0.45);
+  background: rgba(2, 6, 23, 0.9);
+  color: #67e8f9;
+  font-size: 10.5px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.tm-ai-voice-toggle.on {
+  border-color: #4ade80;
+  color: #4ade80;
+  background: rgba(34, 197, 94, 0.15);
+}
+
+.tm-ai-speak-chip {
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid #ef4444;
+  background: rgba(239, 68, 68, 0.18);
+  color: #fca5a5;
+  font-size: 10.5px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.tm-ai-speak-chip:hover {
+  background: #ef4444;
+  color: #ffffff;
+}

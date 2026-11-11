@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { fetchSupabaseAuthSettings } from '../supabaseClient';
+import './AuthModal.css';
 
 const SOCIAL_PROVIDERS = [
   {

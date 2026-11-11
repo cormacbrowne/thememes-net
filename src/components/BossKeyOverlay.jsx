@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { sfx } from '../utils/soundEngine';
+import './BossKeyOverlay.css';
 
 const DISGUISE_MODES = [
   { id: 'excel', label: '📊 1. Excel Sheet' },

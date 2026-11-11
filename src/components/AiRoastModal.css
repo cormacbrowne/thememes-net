@@ -1,0 +1,72 @@
+.tm-roast-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  align-items: center;
+}
+
+.tm-roast-img-box {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 243, 255, 0.35);
+  background: #06070d;
+}
+
+.tm-roast-img-box img {
+  width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+  display: block;
+}
+
+.tm-roast-laser-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #00f3ff;
+  box-shadow: 0 0 16px #00f3ff, 0 0 28px #ec4899;
+  z-index: 5;
+  animation: tmLaserScan 2.2s ease-in-out infinite alternate;
+}
+
+@keyframes tmLaserScan {
+  0% {
+    top: 4%;
+  }
+  100% {
+    top: 94%;
+  }
+}
+
+.tm-roast-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tm-roast-score-banner {
+  background: rgba(0, 243, 255, 0.08);
+  border: 1px solid rgba(0, 243, 255, 0.3);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+}
+
+.tm-roast-stat-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 7px 10px;
+  border-radius: 8px;
+}
+
+.tm-roast-verdict-box {
+  margin-top: 14px;
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  border-radius: 12px;
+  padding: 12px 14px;
+}

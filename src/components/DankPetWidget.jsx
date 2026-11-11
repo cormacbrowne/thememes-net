@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { sfx } from '../utils/soundEngine';
+import './DankPetWidget.css';
 
 const CHAOS_EVENTS = ['pinata', 'boss', 'ufo', 'police', 'jackpot'];
 const MAX_TARGET_HP = 8;

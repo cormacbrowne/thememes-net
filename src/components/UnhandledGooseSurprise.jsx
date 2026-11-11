@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
+import './UnhandledGooseSurprise.css';
 
 // ==========================================
 // PHASE 27.2: EXPERIMENTAL COMEDY SURPRISE ENGINE —

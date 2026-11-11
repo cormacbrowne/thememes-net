@@ -1,0 +1,248 @@
+/* Rewards Modal: Daily Streak, Wheel of Chaos & Quests */
+.tm-streak-box {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.16), rgba(236, 72, 153, 0.14));
+  border: 1px solid rgba(249, 115, 22, 0.45);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.tm-wheel-section {
+  background: rgba(9, 11, 22, 0.78);
+  border: 1px solid rgba(0, 243, 255, 0.24);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.tm-spin-counter-pill {
+  background: rgba(250, 204, 21, 0.15);
+  border: 1px solid #facc15;
+  color: #facc15;
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+
+.tm-wheel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+  gap: 10px;
+}
+
+.tm-wheel-slot {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 10px 12px;
+  transition: all 0.12s ease;
+}
+
+.tm-wheel-slot.active {
+  background: rgba(250, 204, 21, 0.2);
+  border-color: var(--slot-color, #facc15);
+  box-shadow: 0 0 22px var(--slot-color, #facc15);
+  transform: scale(1.04);
+}
+
+.tm-wheel-win-banner {
+  margin-top: 12px;
+  background: rgba(34, 197, 94, 0.16);
+  border: 1px solid #22c55e;
+  color: #86efac;
+  padding: 10px 14px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.tm-spin-cta-btn {
+  padding: 12px 24px !important;
+  font-size: 14px !important;
+}
+
+.tm-flair-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tm-flair-chip {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tm-flair-chip.active {
+  background: rgba(236, 72, 153, 0.22);
+  border-color: #ec4899;
+  color: #f472b6;
+  box-shadow: 0 0 12px rgba(236, 72, 153, 0.35);
+}
+
+.tm-quests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tm-quest-row {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.tm-quest-row.completed {
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.tm-quest-icon {
+  font-size: 22px;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tm-quest-claimed-badge {
+  font-size: 12px;
+  font-weight: 800;
+  color: #22c55e;
+}
+
+/* 3-Reel Brainrot Slot Machine */
+.tm-slot-machine-box {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.14), rgba(0, 243, 255, 0.1));
+  border: 1.5px solid rgba(236, 72, 153, 0.45);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.tm-slot-reels-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.tm-slot-reel {
+  background: rgba(6, 8, 16, 0.9);
+  border: 2px solid rgba(250, 204, 21, 0.45);
+  border-radius: 14px;
+  padding: 14px 8px;
+  text-align: center;
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.8);
+  transition: transform 0.12s ease;
+}
+
+.tm-slot-reel.rolling {
+  border-color: #00f3ff;
+  transform: scale(0.97);
+}
+
+.tm-slot-emoji {
+  font-size: 38px;
+  line-height: 1.1;
+}
+
+.tm-slot-name {
+  font-size: 11px;
+  font-weight: 800;
+  color: #cbd5e1;
+  margin-top: 6px;
+}
+
+.tm-slot-result-banner {
+  margin-top: 12px;
+  background: rgba(250, 204, 21, 0.14);
+  border: 1px solid rgba(250, 204, 21, 0.5);
+  color: #fde047;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+/* Phase 2: Fair Token Economy Ledger in RewardsModal */
+.tm-fair-ledger-card {
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(26, 15, 46, 0.92));
+  border: 1.5px solid rgba(250, 204, 21, 0.45);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.tm-fair-ledger-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tm-ledger-caps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.tm-ledger-cap-pill {
+  background: rgba(5, 7, 15, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 6px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+.tm-ledger-cap-pill strong {
+  color: #facc15;
+  font-weight: 900;
+}
+
+.tm-vault-subgame-banner {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.tm-vault-subgame-btn {
+  border-radius: 14px;
+  padding: 11px 14px;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  border: 1.5px solid rgba(0, 243, 255, 0.5);
+  background: linear-gradient(135deg, rgba(0, 243, 255, 0.16), rgba(236, 72, 153, 0.2));
+  color: #f8fafc;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.tm-vault-subgame-btn:hover {
+  transform: translateY(-2px);
+  border-color: #facc15;
+  color: #facc15;
+}

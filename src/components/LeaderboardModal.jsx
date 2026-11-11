@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { RANKS, formatMemeUploadDate } from '../data/starterMemes';
+import './LeaderboardModal.css';
 
 export default function LeaderboardModal({
   memes,

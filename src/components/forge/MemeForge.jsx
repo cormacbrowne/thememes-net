@@ -3,6 +3,7 @@ import useMemeEditor from '../../hooks/useMemeEditor';
 import ForgeStage from './ForgeStage';
 import ForgeToolPanel from './ForgeToolPanel';
 import { loadDraft, clearDraft, hydrate } from './draftStore';
+import './MemeForge.css';
 import {
   makeDoc,
   makeTextLayer,

@@ -9,6 +9,7 @@ import {
 
 const MemeCard = memo(function MemeCard({
   meme,
+  priority = false,
   myVote,
   isBookmarked = false,
   onToggleBookmark,
@@ -236,6 +237,8 @@ const MemeCard = memo(function MemeCard({
         <MemeMedia
           meme={meme}
           mode="feed"
+          priority={priority}
+          imgLoading={priority ? 'eager' : 'lazy'}
           litePerfMode={litePerfMode}
           className={isBlurred ? 'tm-img-blurred' : ''}
         />

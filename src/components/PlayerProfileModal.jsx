@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { RANKS, computePlayerBadges, formatMemeUploadDate } from '../data/starterMemes';
+import './PlayerProfileModal.css';
 
 export default function PlayerProfileModal({
   username,

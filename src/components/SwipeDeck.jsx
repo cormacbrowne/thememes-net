@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import MemeMedia from './MemeMedia';
 import { getMemeRarityTier, formatMemeUploadDate } from '../data/starterMemes';
+import './SwipeDeck.css';
 
 export default function SwipeDeck({
   filteredMemes,

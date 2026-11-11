@@ -15,7 +15,8 @@ const MemeMedia = memo(function MemeMedia({
   preload = 'metadata',
   litePerfMode = false,
   className = '',
-  imgLoading = 'lazy'
+  imgLoading = 'lazy',
+  priority = false
 }) {
   const videoRef = useRef(null);
   const [muted, setMuted] = useState(true);
@@ -47,11 +48,21 @@ const MemeMedia = memo(function MemeMedia({
 
   if (!meme) return null;
   const boxStyle = meme.width && meme.height ? { aspectRatio: `${meme.width} / ${meme.height}` } : undefined;
+  const effectiveLoading = priority ? 'eager' : imgLoading;
 
   if (!isVideo) {
     return (
       <div className={`tm-media-box ${className}`} style={boxStyle}>
-        <img src={meme.image_url} alt={meme.title} loading={imgLoading} decoding="async" draggable={false} />
+        <img
+          src={meme.image_url}
+          alt={meme.title}
+          width={meme.width || 540}
+          height={meme.height || 480}
+          loading={effectiveLoading}
+          fetchPriority={priority ? 'high' : undefined}
+          decoding={priority ? 'sync' : 'async'}
+          draggable={false}
+        />
         <MemeOverlay overlay={meme.overlay} />
         {meme.media_type === 'gif' && <span className="tm-media-badge">GIF</span>}
       </div>
@@ -61,7 +72,15 @@ const MemeMedia = memo(function MemeMedia({
   if (showPosterOnly) {
     return (
       <div className={`tm-media-box ${className}`} style={boxStyle}>
-        <img src={meme.poster_url || ''} alt={meme.title} loading="lazy" decoding="async" />
+        <img
+          src={meme.poster_url || ''}
+          alt={meme.title}
+          width={meme.width || 540}
+          height={meme.height || 480}
+          loading={effectiveLoading}
+          fetchPriority={priority ? 'high' : undefined}
+          decoding={priority ? 'sync' : 'async'}
+        />
         <MemeOverlay overlay={meme.overlay} />
         <button
           type="button"

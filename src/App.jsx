@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
 import { getSupabaseClient, fetchSupabaseAuthSettings } from './supabaseClient';
 import { sfx } from './utils/soundEngine';
 import {
@@ -35,38 +35,48 @@ import { updateDynamicSeo } from './utils/seoEngine';
 import NavbarHud from './components/NavbarHud';
 import QuickUploadBar from './components/QuickUploadBar';
 import MemeCard from './components/MemeCard';
-import MemeForge from './components/forge/MemeForge';
 import { publishMeme } from './utils/publishMeme';
 import { validateFile, canvasToCompressedBlob } from './utils/mediaPipeline';
 import { recordPublishDailyPerk } from './utils/memeFeedBridge';
-import MemeEvolutionModal from './components/MemeEvolutionModal';
-import SwipeDeck from './components/SwipeDeck';
-import BattleArena from './components/BattleArena';
 import VerticalReelsView from './components/VerticalReelsView';
-import MemeCrushGame from './components/MemeCrushGame';
-import VegasPinballGame from './components/VegasPinballGame';
-import VegasSlotMachine from './components/VegasSlotMachine';
-import VegasBlackjackGame from './components/VegasBlackjackGame';
-import VegasRouletteGame from './components/VegasRouletteGame';
-import VegasCoinPusherGame from './components/VegasCoinPusherGame';
-import MemeStockMarketGame from './components/MemeStockMarketGame';
 import { useDeviceProfile, DEVICE_PROFILES, getDeviceProfileSnapshot } from './utils/deviceProfile';
 import { getSecurityAuditReport } from './utils/securityGuard';
-import ArcadeAiAssistant from './components/ArcadeAiAssistant';
 import ParticleOverlay from './components/ParticleOverlay';
-import AuthModal from './components/AuthModal';
-import MemeTheaterModal from './components/MemeTheaterModal';
-import LeaderboardModal from './components/LeaderboardModal';
-import PlayerProfileModal from './components/PlayerProfileModal';
 import MemeSkeletonGrid from './components/MemeSkeletonGrid';
 import MobileArcadeDock from './components/MobileArcadeDock';
-import ExtrasDrawerModal from './components/ExtrasDrawerModal';
-import RewardsModal from './components/RewardsModal';
-import AiRoastModal from './components/AiRoastModal';
-import BossKeyOverlay from './components/BossKeyOverlay';
 import SeoDiscoveryFooter from './components/SeoDiscoveryFooter';
-import DankPetWidget from './components/DankPetWidget';
-import UnhandledGooseSurprise from './components/UnhandledGooseSurprise';
+
+const MemeForge = lazy(() => import('./components/forge/MemeForge'));
+const MemeEvolutionModal = lazy(() => import('./components/MemeEvolutionModal'));
+const SwipeDeck = lazy(() => import('./components/SwipeDeck'));
+const BattleArena = lazy(() => import('./components/BattleArena'));
+const MemeCrushGame = lazy(() => import('./components/MemeCrushGame'));
+const VegasPinballGame = lazy(() => import('./components/VegasPinballGame'));
+const VegasSlotMachine = lazy(() => import('./components/VegasSlotMachine'));
+const VegasBlackjackGame = lazy(() => import('./components/VegasBlackjackGame'));
+const VegasRouletteGame = lazy(() => import('./components/VegasRouletteGame'));
+const VegasCoinPusherGame = lazy(() => import('./components/VegasCoinPusherGame'));
+const MemeStockMarketGame = lazy(() => import('./components/MemeStockMarketGame'));
+const ArcadeAiAssistant = lazy(() => import('./components/ArcadeAiAssistant'));
+const AuthModal = lazy(() => import('./components/AuthModal'));
+const MemeTheaterModal = lazy(() => import('./components/MemeTheaterModal'));
+const LeaderboardModal = lazy(() => import('./components/LeaderboardModal'));
+const PlayerProfileModal = lazy(() => import('./components/PlayerProfileModal'));
+const ExtrasDrawerModal = lazy(() => import('./components/ExtrasDrawerModal'));
+const RewardsModal = lazy(() => import('./components/RewardsModal'));
+const AiRoastModal = lazy(() => import('./components/AiRoastModal'));
+const BossKeyOverlay = lazy(() => import('./components/BossKeyOverlay'));
+const DankPetWidget = lazy(() => import('./components/DankPetWidget'));
+const UnhandledGooseSurprise = lazy(() => import('./components/UnhandledGooseSurprise'));
+
+const MODAL_SKELETON_FALLBACK = (
+  <div className="tm-modal-backdrop" role="status" aria-live="polite">
+    <div className="tm-modal tm-skeleton-card" style={{ maxWidth: 540, padding: 24 }}>
+      <div className="tm-skeleton-line" style={{ width: '58%', height: 20, marginBottom: 14 }} />
+      <div className="tm-skeleton-media" style={{ height: 220, borderRadius: 12 }} />
+    </div>
+  </div>
+);
 
 function extractSharedMemeIdFromLocation() {
   if (typeof window === 'undefined') return null;
@@ -2937,11 +2947,13 @@ export default function App() {
 
       {/* BOSS KEY CORPORATE SPREADSHEET PANIC OVERLAY */}
       {bossKeyActive && (
-        <BossKeyOverlay
-          onExitBossMode={() => setBossKeyActive(false)}
-          onSecretWorkXp={handleBossSecretXp}
-          memes={memes}
-        />
+        <Suspense fallback={MODAL_SKELETON_FALLBACK}>
+          <BossKeyOverlay
+            onExitBossMode={() => setBossKeyActive(false)}
+            onSecretWorkXp={handleBossSecretXp}
+            memes={memes}
+          />
+        </Suspense>
       )}
 
       {/* FIXED NON-SCROLLING IPAD/IPHONE ARCADE TOP BAR VS FULL FEED NAVIGATION */}
@@ -3347,6 +3359,7 @@ export default function App() {
                 <div key={meme.id} style={{ display: 'contents' }}>
                   <MemeCard
                     meme={meme}
+                    priority={idx < 2}
                     myVote={userVotes[meme.id] || 0}
                     isBookmarked={bookmarkedIds.includes(String(meme.id))}
                     onToggleBookmark={handleToggleBookmark}
@@ -3792,149 +3805,163 @@ export default function App() {
 
       {/* FIXED ARCADE GAME 00: NEON COIN DOZER '86 (PENNY-FALLS COIN & PRIZE PUSHER) */}
       {viewMode === 'pusher' && (
-        <VegasCoinPusherGame
-          tokens={tokens}
-          onSpendTokens={handleSpendTokens}
-          onEarnTokens={(amt, evt, label) => {
-            handlePayoutGameTokens(amt, {
-              stakedTokens: Math.max(1, amt),
-              xp: 12,
-              label: label || `+${amt} 🪙 Dozer Tray Win!`,
-              emoji: '🪙'
-            });
-          }}
-          onEarnXp={(xpAmt) => awardXpOnly(xpAmt, null, '🪙', `+${xpAmt} XP`)}
-          onOpenBlankStudio={() => {
-            sfx.playToggle();
-            setViewMode('feed');
-            handleOpenBlankStudio();
-          }}
-          onSelectViewMode={(mode) => {
-            sfx.playToggle();
-            setViewMode(mode);
-          }}
-        />
+        <Suspense fallback={<MemeSkeletonGrid count={3} />}>
+          <VegasCoinPusherGame
+            tokens={tokens}
+            onSpendTokens={handleSpendTokens}
+            onEarnTokens={(amt, evt, label) => {
+              handlePayoutGameTokens(amt, {
+                stakedTokens: Math.max(1, amt),
+                xp: 12,
+                label: label || `+${amt} 🪙 Dozer Tray Win!`,
+                emoji: '🪙'
+              });
+            }}
+            onEarnXp={(xpAmt) => awardXpOnly(xpAmt, null, '🪙', `+${xpAmt} XP`)}
+            onOpenBlankStudio={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+              handleOpenBlankStudio();
+            }}
+            onSelectViewMode={(mode) => {
+              sfx.playToggle();
+              setViewMode(mode);
+            }}
+          />
+        </Suspense>
       )}
 
       {/* FIXED ARCADE GAME 0A: NEON 21'S CYBER-BLACKJACK */}
       {viewMode === 'blackjack' && (
-        <VegasBlackjackGame
-          tokens={tokens}
-          onSpendTokens={handleSpendTokens}
-          onPayoutTokens={handlePayoutGameTokens}
-          onOpenUpload={() => {
-            sfx.playToggle();
-            setViewMode('feed');
-            handleOpenBlankStudio();
-          }}
-          onBackToFeed={() => {
-            sfx.playToggle();
-            setViewMode('feed');
-          }}
-        />
+        <Suspense fallback={<MemeSkeletonGrid count={3} />}>
+          <VegasBlackjackGame
+            tokens={tokens}
+            onSpendTokens={handleSpendTokens}
+            onPayoutTokens={handlePayoutGameTokens}
+            onOpenUpload={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+              handleOpenBlankStudio();
+            }}
+            onBackToFeed={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+            }}
+          />
+        </Suspense>
       )}
 
       {/* FIXED ARCADE GAME 0B: NEON LIGHTNING ROULETTE '86 */}
       {viewMode === 'roulette' && (
-        <VegasRouletteGame
-          tokens={tokens}
-          onSpendTokens={handleSpendTokens}
-          onPayoutTokens={handlePayoutGameTokens}
-          onOpenUpload={() => {
-            sfx.playToggle();
-            setViewMode('feed');
-            handleOpenBlankStudio();
-          }}
-          onBackToFeed={() => {
-            sfx.playToggle();
-            setViewMode('feed');
-          }}
-        />
+        <Suspense fallback={<MemeSkeletonGrid count={3} />}>
+          <VegasRouletteGame
+            tokens={tokens}
+            onSpendTokens={handleSpendTokens}
+            onPayoutTokens={handlePayoutGameTokens}
+            onOpenUpload={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+              handleOpenBlankStudio();
+            }}
+            onBackToFeed={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+            }}
+          />
+        </Suspense>
       )}
 
       {/* FIXED ARCADE GAME 1: CLASSIC LAS VEGAS ONE-ARM BANDIT 777 SLOT MACHINE */}
       {viewMode === 'slots' && (
-        <VegasSlotMachine
-          embedded={false}
-          tokens={tokens}
-          onSpendTokens={handleSpendTokens}
-          onPayoutTokens={handlePayoutGameTokens}
-          memes={memes}
-          onCreditCreator={(creatorAuthor) => {
-            if (creatorAuthor) {
-              setRoyaltiesMap((prev) => ({
-                ...prev,
-                [creatorAuthor]: (prev[creatorAuthor] || 0) + 15
-              }));
-            }
-          }}
-          onOpenUpload={() => {
-            sfx.playToggle();
-            setViewMode('feed');
-            handleOpenBlankStudio();
-          }}
-          onBackToFeed={() => {
-            sfx.playToggle();
-            setViewMode('feed');
-          }}
-        />
+        <Suspense fallback={<MemeSkeletonGrid count={3} />}>
+          <VegasSlotMachine
+            embedded={false}
+            tokens={tokens}
+            onSpendTokens={handleSpendTokens}
+            onPayoutTokens={handlePayoutGameTokens}
+            memes={memes}
+            onCreditCreator={(creatorAuthor) => {
+              if (creatorAuthor) {
+                setRoyaltiesMap((prev) => ({
+                  ...prev,
+                  [creatorAuthor]: (prev[creatorAuthor] || 0) + 15
+                }));
+              }
+            }}
+            onOpenUpload={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+              handleOpenBlankStudio();
+            }}
+            onBackToFeed={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+            }}
+          />
+        </Suspense>
       )}
 
       {/* FIXED ARCADE GAME 2: MEMEDAQ '86 STOCK MARKET SIMULATOR */}
       {viewMode === 'stocks' && (
-        <MemeStockMarketGame
-          tokens={tokens}
-          onSpendTokens={handleSpendTokens}
-          onPayoutTokens={handlePayoutGameTokens}
-          memes={memes}
-          onOpenUpload={() => {
-            sfx.playToggle();
-            setViewMode('feed');
-            handleOpenBlankStudio();
-          }}
-          onBackToFeed={() => {
-            sfx.playToggle();
-            setViewMode('feed');
-          }}
-        />
+        <Suspense fallback={<MemeSkeletonGrid count={3} />}>
+          <MemeStockMarketGame
+            tokens={tokens}
+            onSpendTokens={handleSpendTokens}
+            onPayoutTokens={handlePayoutGameTokens}
+            memes={memes}
+            onOpenUpload={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+              handleOpenBlankStudio();
+            }}
+            onBackToFeed={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+            }}
+          />
+        </Suspense>
       )}
 
       {/* FIXED ARCADE GAME 3: MEME CRUSH SAGA — 10 DISTINCT 80s NEON LEVELS */}
       {viewMode === 'crush' && (
-        <MemeCrushGame
-          tokens={tokens}
-          onSpendTokens={handleSpendTokens}
-          onPayoutTokens={handlePayoutGameTokens}
-          memes={memes}
-          onOpenTheater={handleOpenTheater}
-          onOpenUpload={() => {
-            sfx.playToggle();
-            setViewMode('feed');
-            handleOpenBlankStudio();
-          }}
-          onBackToFeed={() => {
-            sfx.playToggle();
-            setViewMode('feed');
-          }}
-        />
+        <Suspense fallback={<MemeSkeletonGrid count={3} />}>
+          <MemeCrushGame
+            tokens={tokens}
+            onSpendTokens={handleSpendTokens}
+            onPayoutTokens={handlePayoutGameTokens}
+            memes={memes}
+            onOpenTheater={handleOpenTheater}
+            onOpenUpload={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+              handleOpenBlankStudio();
+            }}
+            onBackToFeed={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+            }}
+          />
+        </Suspense>
       )}
 
       {/* FIXED ARCADE GAME 4: 80s NEON CYBER-PINBALL — 5 DISTINCT TABLES */}
       {viewMode === 'pinball' && (
-        <VegasPinballGame
-          tokens={tokens}
-          onSpendTokens={handleSpendTokens}
-          onPayoutTokens={handlePayoutGameTokens}
-          onOpenUpload={() => {
-            sfx.playToggle();
-            setViewMode('feed');
-            handleOpenBlankStudio();
-          }}
-          onBackToFeed={() => {
-            sfx.playToggle();
-            setViewMode('feed');
-          }}
-        />
+        <Suspense fallback={<MemeSkeletonGrid count={3} />}>
+          <VegasPinballGame
+            tokens={tokens}
+            onSpendTokens={handleSpendTokens}
+            onPayoutTokens={handlePayoutGameTokens}
+            onOpenUpload={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+              handleOpenBlankStudio();
+            }}
+            onBackToFeed={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+            }}
+          />
+        </Suspense>
       )}
 
       {/* MODE 2: VERTICAL FULL-SCREEN REELS (TIKTOK / INSTAGRAM STYLE) */}
@@ -3967,46 +3994,50 @@ export default function App() {
 
       {/* MODE 3: PHYSICS HYPER-SWIPE DECK */}
       {viewMode === 'swipe' && (
-        <SwipeDeck
-          filteredMemes={filteredMemes}
-          swipeIndex={swipeIndex}
-          swipeAnim={swipeAnim}
-          onTriggerSwipe={triggerSwipe}
-          onPrevCard={handlePrevSwipeCard}
-          onBackToFeed={() => {
-            sfx.playToggle();
-            setViewMode('feed');
-          }}
-          onTriggerStudioMutate={handleTriggerStudioMutate}
-          onOpenTheater={handleOpenTheater}
-          onOpenBlankStudio={() => {
-            closeAllModals();
-            handleOpenBlankStudio();
-          }}
-        />
+        <Suspense fallback={<MemeSkeletonGrid count={3} />}>
+          <SwipeDeck
+            filteredMemes={filteredMemes}
+            swipeIndex={swipeIndex}
+            swipeAnim={swipeAnim}
+            onTriggerSwipe={triggerSwipe}
+            onPrevCard={handlePrevSwipeCard}
+            onBackToFeed={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+            }}
+            onTriggerStudioMutate={handleTriggerStudioMutate}
+            onOpenTheater={handleOpenTheater}
+            onOpenBlankStudio={() => {
+              closeAllModals();
+              handleOpenBlankStudio();
+            }}
+          />
+        </Suspense>
       )}
 
       {/* MODE 4: KING OF THE HILL 1v1 MEME BATTLE ARENA */}
       {viewMode === 'battle' && (
-        <BattleArena
-          memes={memes}
-          battlePair={battlePair}
-          battleWinner={battleWinner}
-          battleStreak={battleStreak}
-          championWins={championWins}
-          crowdAgreement={crowdAgreement}
-          onBattlePick={handleBattlePick}
-          onSkipMatchup={handleSkipMatchup}
-          onBackToFeed={() => {
-            sfx.playToggle();
-            setViewMode('feed');
-          }}
-          onOpenTheater={handleOpenTheater}
-          onOpenBlankStudio={() => {
-            closeAllModals();
-            handleOpenBlankStudio();
-          }}
-        />
+        <Suspense fallback={<MemeSkeletonGrid count={3} />}>
+          <BattleArena
+            memes={memes}
+            battlePair={battlePair}
+            battleWinner={battleWinner}
+            battleStreak={battleStreak}
+            championWins={championWins}
+            crowdAgreement={crowdAgreement}
+            onBattlePick={handleBattlePick}
+            onSkipMatchup={handleSkipMatchup}
+            onBackToFeed={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+            }}
+            onOpenTheater={handleOpenTheater}
+            onOpenBlankStudio={() => {
+              closeAllModals();
+              handleOpenBlankStudio();
+            }}
+          />
+        </Suspense>
       )}
 
       {/* COMMUNITY MODERATION TOAST */}
@@ -4025,28 +4056,30 @@ export default function App() {
       )}
 
       {/* PHASE 20 & 28.4: PROGRESSIVELY UNLOCKED "DO NOT PRESS" CHAOS DOCK & 1986 NEON PAYPHONE */}
-      {!bossKeyActive && (
-        <DankPetWidget
-          viewMode={viewMode}
-          unlocked={petUnlocked}
-          externalPayphoneOpen={payphoneModalOpen}
-          onToggleExternalPayphone={setPayphoneModalOpen}
-          onEarnPetXp={awardXpOnly}
-          onWinPinataReward={handleWinPinataReward}
-          pinataClaimedToday={pinataClaimedToday}
-          onClaimPayphoneCoinReturn={handleClaimPayphoneCoinReturn}
-          payphoneClaimedToday={payphoneClaimedToday}
-          onTriggerBossMode={() => setBossKeyActive(true)}
-          onLaunchStampede={handleLaunchStampede}
-          onChangeChaosMutator={handleChangeChaosMutator}
-          memes={memes}
-          onSelectViewMode={(mode) => {
-            sfx.playToggle();
-            closeAllModals();
-            setViewMode(mode);
-            window.scrollTo?.({ top: 0, behavior: 'smooth' });
-          }}
-        />
+      {!bossKeyActive && (petUnlocked || payphoneModalOpen) && (
+        <Suspense fallback={null}>
+          <DankPetWidget
+            viewMode={viewMode}
+            unlocked={petUnlocked}
+            externalPayphoneOpen={payphoneModalOpen}
+            onToggleExternalPayphone={setPayphoneModalOpen}
+            onEarnPetXp={awardXpOnly}
+            onWinPinataReward={handleWinPinataReward}
+            pinataClaimedToday={pinataClaimedToday}
+            onClaimPayphoneCoinReturn={handleClaimPayphoneCoinReturn}
+            payphoneClaimedToday={payphoneClaimedToday}
+            onTriggerBossMode={() => setBossKeyActive(true)}
+            onLaunchStampede={handleLaunchStampede}
+            onChangeChaosMutator={handleChangeChaosMutator}
+            memes={memes}
+            onSelectViewMode={(mode) => {
+              sfx.playToggle();
+              closeAllModals();
+              setViewMode(mode);
+              window.scrollTo?.({ top: 0, behavior: 'smooth' });
+            }}
+          />
+        </Suspense>
       )}
 
       {/* PHASE 5 & 28.3: 5-BUTTON THUMB-FRIENDLY MOBILE BOTTOM ARCADE DOCK (Memes / Reels / +Create / Games / Profile) */}
@@ -4104,335 +4137,363 @@ export default function App() {
       )}
 
       {/* PHASE 21 & 28.4: CYBER-ORACLE '86 — PROGRESSIVELY UNLOCKED AI ASSISTANT */}
-      {!bossKeyActive && (
-        <ArcadeAiAssistant
-          isOpen={aiAssistantOpen}
-          fabUnlocked={aiUnlocked}
-          onToggleOpen={(val) => {
-            if (typeof val === 'boolean') {
-              setAiAssistantOpen(val);
-            } else {
-              setAiAssistantOpen((prev) => !prev);
-            }
-          }}
-          tokens={tokens}
-          xp={xp}
-          currentRank={currentRank}
-          tokenLedger={tokenLedger}
-          xpConversionState={xpConversionState}
-          unclaimedRewardsCount={unclaimedRewardsCount}
-          pioneerBonusAvailable={pioneerBonusAvailable}
-          payphoneClaimedToday={payphoneClaimedToday}
-          pinataClaimedToday={pinataClaimedToday}
-          viewMode={viewMode}
-          memes={memes}
-          onSelectViewMode={(mode) => {
-            sfx.playToggle();
-            closeAllModals();
-            setViewMode(mode);
-          }}
-          onOpenUpload={() => {
-            sfx.playToggle();
-            closeAllModals();
-            handleOpenBlankStudio();
-          }}
-          onOpenRewards={() => {
-            sfx.playToggle();
-            closeAllModals();
-            setShowRewardsModal(true);
-          }}
-          onExchangeXpForTokens={handleExchangeXpForTokens}
-          onClaimPayphoneCoinReturn={handleClaimPayphoneCoinReturn}
-        />
+      {!bossKeyActive && (aiAssistantOpen || (aiUnlocked && viewMode === 'feed')) && (
+        <Suspense fallback={null}>
+          <ArcadeAiAssistant
+            isOpen={aiAssistantOpen}
+            fabUnlocked={aiUnlocked}
+            onToggleOpen={(val) => {
+              if (typeof val === 'boolean') {
+                setAiAssistantOpen(val);
+              } else {
+                setAiAssistantOpen((prev) => !prev);
+              }
+            }}
+            tokens={tokens}
+            xp={xp}
+            currentRank={currentRank}
+            tokenLedger={tokenLedger}
+            xpConversionState={xpConversionState}
+            unclaimedRewardsCount={unclaimedRewardsCount}
+            pioneerBonusAvailable={pioneerBonusAvailable}
+            payphoneClaimedToday={payphoneClaimedToday}
+            pinataClaimedToday={pinataClaimedToday}
+            viewMode={viewMode}
+            memes={memes}
+            onSelectViewMode={(mode) => {
+              sfx.playToggle();
+              closeAllModals();
+              setViewMode(mode);
+            }}
+            onOpenUpload={() => {
+              sfx.playToggle();
+              closeAllModals();
+              handleOpenBlankStudio();
+            }}
+            onOpenRewards={() => {
+              sfx.playToggle();
+              closeAllModals();
+              setShowRewardsModal(true);
+            }}
+            onExchangeXpForTokens={handleExchangeXpForTokens}
+            onClaimPayphoneCoinReturn={handleClaimPayphoneCoinReturn}
+          />
+        </Suspense>
       )}
 
       {/* MODAL 0: FULLSCREEN THEATER LIGHTBOX & DEEP-LINK PERMALINK (/?m=<id> or /m/<id>) */}
       {theaterMeme && (
-        <MemeTheaterModal
-          meme={theaterMeme}
-          filteredMemes={filteredMemes}
-          memes={memes}
-          myVote={userVotes[theaterMeme.id] || 0}
-          commentInput={commentInputs[theaterMeme.id] || ''}
-          onCommentInputChange={handleCommentInputChange}
-          onAddComment={handleAddComment}
-          onVote={handleVote}
-          onReaction={handleReaction}
-          onTriggerStudioMutate={handleTriggerStudioMutate}
-          onCaptionThis={handleCaptionThis}
-          onOpenBlankStudio={handleOpenBlankStudio}
-          openedFromShareLink={openedFromShareLink}
-          onSelectMeme={handleOpenTheater}
-          onClose={handleCloseTheater}
-          onShareMeme={handleShareMeme}
-        />
+        <Suspense fallback={MODAL_SKELETON_FALLBACK}>
+          <MemeTheaterModal
+            meme={theaterMeme}
+            filteredMemes={filteredMemes}
+            memes={memes}
+            myVote={userVotes[theaterMeme.id] || 0}
+            commentInput={commentInputs[theaterMeme.id] || ''}
+            onCommentInputChange={handleCommentInputChange}
+            onAddComment={handleAddComment}
+            onVote={handleVote}
+            onReaction={handleReaction}
+            onTriggerStudioMutate={handleTriggerStudioMutate}
+            onCaptionThis={handleCaptionThis}
+            onOpenBlankStudio={handleOpenBlankStudio}
+            openedFromShareLink={openedFromShareLink}
+            onSelectMeme={handleOpenTheater}
+            onClose={handleCloseTheater}
+            onShareMeme={handleShareMeme}
+          />
+        </Suspense>
       )}
 
       {/* MODAL 1: MEME FORGE 3.0 STUDIO (+ FORK & MUTATE / BOUNTY / SPOILER) */}
       {showStudio && (
-        <MemeForge
-          intent={forgeIntent}
-          user={user}
-          onClose={() => {
-            setShowStudio(false);
-            setForgeIntent(null);
-          }}
-          onPublish={handleForgePublish}
-        />
+        <Suspense fallback={MODAL_SKELETON_FALLBACK}>
+          <MemeForge
+            intent={forgeIntent}
+            user={user}
+            onClose={() => {
+              setShowStudio(false);
+              setForgeIntent(null);
+            }}
+            onPublish={handleForgePublish}
+          />
+        </Suspense>
       )}
 
       {/* MODAL 2: MEME EVOLUTION TREE INSPECTOR */}
-      <MemeEvolutionModal
-        evolutionModalMeme={evolutionModalMeme}
-        evolutionNodes={evolutionNodes}
-        loadingEvolution={loadingEvolution}
-        onClose={() => setEvolutionModalMeme(null)}
-        onTriggerStudioMutate={handleTriggerStudioMutate}
-      />
+      {evolutionModalMeme && (
+        <Suspense fallback={MODAL_SKELETON_FALLBACK}>
+          <MemeEvolutionModal
+            evolutionModalMeme={evolutionModalMeme}
+            evolutionNodes={evolutionNodes}
+            loadingEvolution={loadingEvolution}
+            onClose={() => setEvolutionModalMeme(null)}
+            onTriggerStudioMutate={handleTriggerStudioMutate}
+          />
+        </Suspense>
+      )}
 
       {/* MODAL 3: HARDENED OAUTH 2.0 (APPLE / GOOGLE / FACEBOOK / DISCORD) & MAGIC LINK AUTH */}
       {showAuthModal && (
-        <AuthModal
-          authMode={authMode}
-          setAuthMode={setAuthMode}
-          authUsername={authUsername}
-          setAuthUsername={setAuthUsername}
-          authEmail={authEmail}
-          setAuthEmail={setAuthEmail}
-          authPassword={authPassword}
-          setAuthPassword={setAuthPassword}
-          authMessage={authMessage}
-          onSocialOAuthLogin={handleSocialOAuthLogin}
-          onMagicLinkSubmit={handleMagicLinkSubmit}
-          onQuickGuestLogin={handleQuickGuestLogin}
-          onAuthSubmit={handleAuthSubmit}
-          onClose={() => setShowAuthModal(false)}
-        />
+        <Suspense fallback={MODAL_SKELETON_FALLBACK}>
+          <AuthModal
+            authMode={authMode}
+            setAuthMode={setAuthMode}
+            authUsername={authUsername}
+            setAuthUsername={setAuthUsername}
+            authEmail={authEmail}
+            setAuthEmail={setAuthEmail}
+            authPassword={authPassword}
+            setAuthPassword={setAuthPassword}
+            authMessage={authMessage}
+            onSocialOAuthLogin={handleSocialOAuthLogin}
+            onMagicLinkSubmit={handleMagicLinkSubmit}
+            onQuickGuestLogin={handleQuickGuestLogin}
+            onAuthSubmit={handleAuthSubmit}
+            onClose={() => setShowAuthModal(false)}
+          />
+        </Suspense>
       )}
 
       {/* MODAL 4: HALL OF FAME LEADERBOARD */}
       {showLeaderboard && (
-        <LeaderboardModal
-          memes={memes}
-          currentUser={user}
-          currentXp={xp}
-          royaltiesMap={royaltiesMap}
-          onClose={() => setShowLeaderboard(false)}
-          onOpenProfile={(username) => {
-            setShowLeaderboard(false);
-            setProfileUsername(username);
-          }}
-          onTriggerStudioMutate={handleTriggerStudioMutate}
-          onSelectMeme={handleOpenTheater}
-          onLaunchSubGame={(mode) => {
-            sfx.playToggle();
-            setShowLeaderboard(false);
-            setViewMode(mode);
-          }}
-        />
+        <Suspense fallback={MODAL_SKELETON_FALLBACK}>
+          <LeaderboardModal
+            memes={memes}
+            currentUser={user}
+            currentXp={xp}
+            royaltiesMap={royaltiesMap}
+            onClose={() => setShowLeaderboard(false)}
+            onOpenProfile={(username) => {
+              setShowLeaderboard(false);
+              setProfileUsername(username);
+            }}
+            onTriggerStudioMutate={handleTriggerStudioMutate}
+            onSelectMeme={handleOpenTheater}
+            onLaunchSubGame={(mode) => {
+              sfx.playToggle();
+              setShowLeaderboard(false);
+              setViewMode(mode);
+            }}
+          />
+        </Suspense>
       )}
 
       {/* MODAL 5: CREATOR ARCADE PROFILE & ACHIEVEMENT BADGE CASE */}
       {profileUsername && (
-        <PlayerProfileModal
-          username={profileUsername}
-          memes={memes}
-          currentUser={user}
-          currentXp={xp}
-          battleStreak={battleStreak}
-          bountiesCompleted={bountiesCompleted}
-          royaltiesMap={royaltiesMap}
-          unlockedFlairs={unlockedFlairs}
-          equippedFlair={equippedFlair}
-          roastsRun={roastsRun}
-          goblinsCaught={goblinsCaught}
-          konamiUnlocked={konamiUnlocked}
-          onClose={() => setProfileUsername(null)}
-          onSelectMeme={handleOpenTheater}
-          onTriggerStudioMutate={handleTriggerStudioMutate}
-        />
+        <Suspense fallback={MODAL_SKELETON_FALLBACK}>
+          <PlayerProfileModal
+            username={profileUsername}
+            memes={memes}
+            currentUser={user}
+            currentXp={xp}
+            battleStreak={battleStreak}
+            bountiesCompleted={bountiesCompleted}
+            royaltiesMap={royaltiesMap}
+            unlockedFlairs={unlockedFlairs}
+            equippedFlair={equippedFlair}
+            roastsRun={roastsRun}
+            goblinsCaught={goblinsCaught}
+            konamiUnlocked={konamiUnlocked}
+            onClose={() => setProfileUsername(null)}
+            onSelectMeme={handleOpenTheater}
+            onTriggerStudioMutate={handleTriggerStudioMutate}
+          />
+        </Suspense>
       )}
 
       {/* MODAL 6: ARCADE VAULT (FAIR TOKEN LEDGER, XP REACTOR, ONE-ARM BANDIT, WHEEL OF CHAOS, TRAILS, DAILY STREAK & QUESTS) */}
       {showRewardsModal && (
-        <RewardsModal
-          xp={xp}
-          tokens={tokens}
-          tokenLedger={tokenLedger}
-          xpConversionState={xpConversionState}
-          xpAutoConvert={xpAutoConvert}
-          onToggleXpAutoConvert={handleToggleXpAutoConvert}
-          onExchangeXpForTokens={handleExchangeXpForTokens}
-          reactorFlash={reactorFlash}
-          lootSpins={lootSpins}
-          wheelSpinsLeftInWindow={wheelSpinsLeftInWindow}
-          wheelResetMs={wheelResetMs}
-          streakDays={streakDays}
-          streakClaimedToday={streakClaimedToday}
-          onClaimDailyStreak={handleClaimDailyStreak}
-          onCompleteWheelSpin={handleCompleteWheelSpin}
-          onSpendTokens={handleSpendTokens}
-          onPayoutTokens={handlePayoutGameTokens}
-          onOpenUpload={() => {
-            sfx.playToggle();
-            setShowRewardsModal(false);
-            setViewMode('feed');
-            handleOpenBlankStudio();
-          }}
-          unlockedFlairs={unlockedFlairs}
-          equippedFlair={equippedFlair}
-          onEquipFlair={(flair) => {
-            sfx.playToggle();
-            setEquippedFlair(flair);
-          }}
-          cursorTrail={cursorTrail}
-          onSelectCursorTrail={(trailId) => {
-            sfx.playToggle();
-            setCursorTrail(trailId);
-          }}
-          konamiUnlocked={konamiUnlocked}
-          questProgress={questProgress}
-          claimedQuests={claimedQuests}
-          onClaimQuestReward={handleClaimQuestReward}
-          onLaunchSubGame={(mode) => {
-            sfx.playToggle();
-            setShowRewardsModal(false);
-            setViewMode(mode);
-          }}
-          onClose={() => setShowRewardsModal(false)}
-        />
+        <Suspense fallback={MODAL_SKELETON_FALLBACK}>
+          <RewardsModal
+            xp={xp}
+            tokens={tokens}
+            tokenLedger={tokenLedger}
+            xpConversionState={xpConversionState}
+            xpAutoConvert={xpAutoConvert}
+            onToggleXpAutoConvert={handleToggleXpAutoConvert}
+            onExchangeXpForTokens={handleExchangeXpForTokens}
+            reactorFlash={reactorFlash}
+            lootSpins={lootSpins}
+            wheelSpinsLeftInWindow={wheelSpinsLeftInWindow}
+            wheelResetMs={wheelResetMs}
+            streakDays={streakDays}
+            streakClaimedToday={streakClaimedToday}
+            onClaimDailyStreak={handleClaimDailyStreak}
+            onCompleteWheelSpin={handleCompleteWheelSpin}
+            onSpendTokens={handleSpendTokens}
+            onPayoutTokens={handlePayoutGameTokens}
+            onOpenUpload={() => {
+              sfx.playToggle();
+              setShowRewardsModal(false);
+              setViewMode('feed');
+              handleOpenBlankStudio();
+            }}
+            unlockedFlairs={unlockedFlairs}
+            equippedFlair={equippedFlair}
+            onEquipFlair={(flair) => {
+              sfx.playToggle();
+              setEquippedFlair(flair);
+            }}
+            cursorTrail={cursorTrail}
+            onSelectCursorTrail={(trailId) => {
+              sfx.playToggle();
+              setCursorTrail(trailId);
+            }}
+            konamiUnlocked={konamiUnlocked}
+            questProgress={questProgress}
+            claimedQuests={claimedQuests}
+            onClaimQuestReward={handleClaimQuestReward}
+            onLaunchSubGame={(mode) => {
+              sfx.playToggle();
+              setShowRewardsModal(false);
+              setViewMode(mode);
+            }}
+            onClose={() => setShowRewardsModal(false)}
+          />
+        </Suspense>
       )}
 
       {/* MODAL 7: AI DANK-O-METER & SAVAGE ROAST SCANNER */}
       {roastModalMeme && (
-        <AiRoastModal
-          meme={roastModalMeme}
-          onPostRoastComment={handlePostRoastComment}
-          onTriggerStudioMutate={handleTriggerStudioMutate}
-          onClose={() => setRoastModalMeme(null)}
-        />
+        <Suspense fallback={MODAL_SKELETON_FALLBACK}>
+          <AiRoastModal
+            meme={roastModalMeme}
+            onPostRoastComment={handlePostRoastComment}
+            onTriggerStudioMutate={handleTriggerStudioMutate}
+            onClose={() => setRoastModalMeme(null)}
+          />
+        </Suspense>
       )}
 
       {/* MODAL 8: UNIFIED 🕹️ EXTRAS DRAWER (Soundboard, WTF?!, Payphone, Boss Key, CRT, Turbo, Device Badge & Shortcuts) */}
-      <ExtrasDrawerModal
-        isOpen={extrasDrawerOpen}
-        onClose={() => setExtrasDrawerOpen(false)}
-        onLaunchWtfSurprise={() => {
-          sfx.playGooseHonk?.();
-          setSurpriseOpen(true);
-        }}
-        onOpenPayphone={() => {
-          sfx.playToggle?.();
-          setPayphoneModalOpen(true);
-        }}
-        onToggleBossKey={() => setBossKeyActive(true)}
-        crtMode={crtOn}
-        onToggleCrtMode={() => {
-          sfx.playToggle();
-          setCrtOn((prev) => !prev);
-        }}
-        turboMode={litePerfMode}
-        onToggleTurboMode={() => {
-          sfx.playToggle();
-          setLitePerfMode((prev) => !prev);
-        }}
-        soundOn={soundOn}
-        onToggleSound={() => {
-          const nextState = !soundOn;
-          sfx.enabled = nextState;
-          setSoundOn(nextState);
-          if (nextState) sfx.playBoing(2);
-        }}
-        soundPack={soundPack}
-        onChangeSoundPack={handleChangeSoundPack}
-        onPlayPad={handlePlaySoundboardPad}
-        onTriggerChaosRoulette={(e) => {
-          setExtrasDrawerOpen(false);
-          handleTriggerChaosRoulette(e);
-        }}
-        onOpenRewards={() => {
-          sfx.playToggle();
-          setShowRewardsModal(true);
-        }}
-        unclaimedRewardsCount={unclaimedRewardsCount}
-        chaosMutator={chaosMutator}
-        onChangeChaosMutator={handleChangeChaosMutator}
-        onSummonGoblin={(e) => {
-          setExtrasDrawerOpen(false);
-          handleSummonGoblin(e);
-        }}
-        goblinsLeftInWindow={goblinsLeftInWindow}
-        goblinResetMs={goblinResetMs}
-        onLaunchStampede={(stampedeId, e) => {
-          setExtrasDrawerOpen(false);
-          handleLaunchStampede(stampedeId, e);
-        }}
-        activeDeviceMeta={{
-          icon: deviceProfile.shortBadge?.split(' ')[0] || '📱',
-          shortLabel: deviceProfile.label || deviceProfile.badge || 'Auto'
-        }}
-        deviceOverride={deviceProfile.override}
-        onOpenDeviceOptimizer={() => {
-          const order = ['auto', 'iphone', 'iphone-duo', 'ipad-mini', 'ipad', 'android-phone', 'android-tablet', 'pc'];
-          const cur = deviceProfile.override || 'auto';
-          const next = order[(order.indexOf(cur) + 1) % order.length];
-          setDeviceOverride(next);
-          sfx.playToggle?.();
-          const nextLabel =
-            next === 'auto'
-              ? `Auto (${DEVICE_PROFILES[deviceProfile.detectedId]?.label || 'Detected'})`
-              : DEVICE_PROFILES[next]?.label;
-          setGoblinFortuneToast(
-            `📲 Device Optimizer: ${nextLabel} — ${
-              DEVICE_PROFILES[next === 'auto' ? deviceProfile.detectedId : next]?.description || ''
-            }`
-          );
-          setTimeout(() => setGoblinFortuneToast(''), 4500);
-        }}
-        onCheckSecurityStatus={() => {
-          const rep = getSecurityAuditReport();
-          sfx.playAiAssistantChime?.();
-          setExtrasDrawerOpen(false);
-          setGoblinFortuneToast(
-            `🛡️ Cyber-Shield ${rep.status} (${rep.score}): CSP + XSS URI Guard + Binary Media Firewall + Prototype Guard Active!`
-          );
-          setTimeout(() => setGoblinFortuneToast(''), 4500);
-        }}
-        onToggleAiAssistant={() => {
-          sfx.playAiAssistantChime();
-          setAiAssistantOpen((prev) => !prev);
-        }}
-        aiPersonaId={typeof window !== 'undefined' ? localStorage.getItem('tm_ai_persona') || 'kitt' : 'kitt'}
-        onOpenLeaderboard={() => {
-          sfx.playToggle();
-          setShowLeaderboard(true);
-        }}
-        onRandomMeme={() => {
-          if (filteredMemes.length > 0) {
-            const pick = filteredMemes[Math.floor(Math.random() * filteredMemes.length)];
-            handleOpenTheater(pick);
-          } else {
-            sfx.playBoing(2);
-          }
-        }}
-        savedOnly={showSavedOnly}
-        savedIdsCount={bookmarkedIds.length}
-        onToggleSavedFilter={() => {
-          setViewMode('feed');
-          setShowSavedOnly((prev) => !prev);
-        }}
-      />
+      {extrasDrawerOpen && (
+        <Suspense fallback={MODAL_SKELETON_FALLBACK}>
+          <ExtrasDrawerModal
+            isOpen={extrasDrawerOpen}
+            onClose={() => setExtrasDrawerOpen(false)}
+            onLaunchWtfSurprise={() => {
+              sfx.playGooseHonk?.();
+              setSurpriseOpen(true);
+            }}
+            onOpenPayphone={() => {
+              sfx.playToggle?.();
+              setPayphoneModalOpen(true);
+            }}
+            onToggleBossKey={() => setBossKeyActive(true)}
+            crtMode={crtOn}
+            onToggleCrtMode={() => {
+              sfx.playToggle();
+              setCrtOn((prev) => !prev);
+            }}
+            turboMode={litePerfMode}
+            onToggleTurboMode={() => {
+              sfx.playToggle();
+              setLitePerfMode((prev) => !prev);
+            }}
+            soundOn={soundOn}
+            onToggleSound={() => {
+              const nextState = !soundOn;
+              sfx.enabled = nextState;
+              setSoundOn(nextState);
+              if (nextState) sfx.playBoing(2);
+            }}
+            soundPack={soundPack}
+            onChangeSoundPack={handleChangeSoundPack}
+            onPlayPad={handlePlaySoundboardPad}
+            onTriggerChaosRoulette={(e) => {
+              setExtrasDrawerOpen(false);
+              handleTriggerChaosRoulette(e);
+            }}
+            onOpenRewards={() => {
+              sfx.playToggle();
+              setShowRewardsModal(true);
+            }}
+            unclaimedRewardsCount={unclaimedRewardsCount}
+            chaosMutator={chaosMutator}
+            onChangeChaosMutator={handleChangeChaosMutator}
+            onSummonGoblin={(e) => {
+              setExtrasDrawerOpen(false);
+              handleSummonGoblin(e);
+            }}
+            goblinsLeftInWindow={goblinsLeftInWindow}
+            goblinResetMs={goblinResetMs}
+            onLaunchStampede={(stampedeId, e) => {
+              setExtrasDrawerOpen(false);
+              handleLaunchStampede(stampedeId, e);
+            }}
+            activeDeviceMeta={{
+              icon: deviceProfile.shortBadge?.split(' ')[0] || '📱',
+              shortLabel: deviceProfile.label || deviceProfile.badge || 'Auto'
+            }}
+            deviceOverride={deviceProfile.override}
+            onOpenDeviceOptimizer={() => {
+              const order = ['auto', 'iphone', 'iphone-duo', 'ipad-mini', 'ipad', 'android-phone', 'android-tablet', 'pc'];
+              const cur = deviceProfile.override || 'auto';
+              const next = order[(order.indexOf(cur) + 1) % order.length];
+              setDeviceOverride(next);
+              sfx.playToggle?.();
+              const nextLabel =
+                next === 'auto'
+                  ? `Auto (${DEVICE_PROFILES[deviceProfile.detectedId]?.label || 'Detected'})`
+                  : DEVICE_PROFILES[next]?.label;
+              setGoblinFortuneToast(
+                `📲 Device Optimizer: ${nextLabel} — ${
+                  DEVICE_PROFILES[next === 'auto' ? deviceProfile.detectedId : next]?.description || ''
+                }`
+              );
+              setTimeout(() => setGoblinFortuneToast(''), 4500);
+            }}
+            onCheckSecurityStatus={() => {
+              const rep = getSecurityAuditReport();
+              sfx.playAiAssistantChime?.();
+              setExtrasDrawerOpen(false);
+              setGoblinFortuneToast(
+                `🛡️ Cyber-Shield ${rep.status} (${rep.score}): CSP + XSS URI Guard + Binary Media Firewall + Prototype Guard Active!`
+              );
+              setTimeout(() => setGoblinFortuneToast(''), 4500);
+            }}
+            onToggleAiAssistant={() => {
+              sfx.playAiAssistantChime();
+              setAiAssistantOpen((prev) => !prev);
+            }}
+            aiPersonaId={typeof window !== 'undefined' ? localStorage.getItem('tm_ai_persona') || 'kitt' : 'kitt'}
+            onOpenLeaderboard={() => {
+              sfx.playToggle();
+              setShowLeaderboard(true);
+            }}
+            onRandomMeme={() => {
+              if (filteredMemes.length > 0) {
+                const pick = filteredMemes[Math.floor(Math.random() * filteredMemes.length)];
+                handleOpenTheater(pick);
+              } else {
+                sfx.playBoing(2);
+              }
+            }}
+            savedOnly={showSavedOnly}
+            savedIdsCount={bookmarkedIds.length}
+            onToggleSavedFilter={() => {
+              setViewMode('feed');
+              setShowSavedOnly((prev) => !prev);
+            }}
+          />
+        </Suspense>
+      )}
 
       {/* MODAL 9: 🪿 HONK.EXE KLEPTOMANIAC CYBER-GOOSE & 3AM INTERDIMENSIONAL CHAOS LAB */}
-      <UnhandledGooseSurprise
-        isOpen={surpriseOpen}
-        onClose={() => setSurpriseOpen(false)}
-        onOpenMode={(mode) => {
-          setSurpriseOpen(false);
-          sfx.playToggle?.();
-          setViewMode(mode);
-        }}
-      />
+      {surpriseOpen && (
+        <Suspense fallback={MODAL_SKELETON_FALLBACK}>
+          <UnhandledGooseSurprise
+            isOpen={surpriseOpen}
+            onClose={() => setSurpriseOpen(false)}
+            onOpenMode={(mode) => {
+              setSurpriseOpen(false);
+              sfx.playToggle?.();
+              setViewMode(mode);
+            }}
+          />
+        </Suspense>
+      )}
 
       {/* PHASE 10: CRAWLABLE SEO DISCOVERY DIRECTORY & FAQ HUB */}
       {!isFixedArcadeGame && (

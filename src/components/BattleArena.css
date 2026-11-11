@@ -1,0 +1,32 @@
+/* King of the Hill 1v1 Arena */
+.tm-battle-card.reigning-king {
+  border-color: rgba(250, 204, 21, 0.55);
+  box-shadow: 0 12px 34px rgba(250, 204, 21, 0.18);
+}
+.tm-king-crown-badge {
+  background: linear-gradient(90deg, #facc15, #f97316);
+  color: #090a0f;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+.tm-challenger-badge {
+  background: rgba(236, 72, 153, 0.2);
+  border: 1px solid rgba(236, 72, 153, 0.45);
+  color: #f472b6;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+.tm-crowd-meter {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.16);
+  border: 1px solid #22c55e;
+  color: #4ade80;
+  font-size: 12px;
+}

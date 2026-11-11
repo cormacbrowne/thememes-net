@@ -19,6 +19,7 @@ export default function VerticalReelsView({
   onBackToFeed
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [visibleReelsCount, setVisibleReelsCount] = useState(8);
   const [burstMemeId, setBurstMemeId] = useState(null);
   const [activeCommentsMemeId, setActiveCommentsMemeId] = useState(null);
   const [localCommentInput, setLocalCommentInput] = useState('');
@@ -26,6 +27,17 @@ export default function VerticalReelsView({
   const containerRef = useRef(null);
 
   const len = filteredMemes?.length || 0;
+  const effectiveVisibleCount = Math.min(len, Math.max(visibleReelsCount, currentIndex + 4));
+
+  const handleContainerScroll = useCallback((e) => {
+    const el = e.currentTarget;
+    if (!el) return;
+    const slideH = el.clientHeight || 1;
+    const approxIdx = Math.round(el.scrollTop / slideH);
+    if (approxIdx + 4 > visibleReelsCount) {
+      setVisibleReelsCount((prev) => Math.min(len, Math.max(prev + 8, approxIdx + 6)));
+    }
+  }, [len, visibleReelsCount]);
 
   // Handle keyboard Up/Down navigation
   useEffect(() => {
@@ -127,8 +139,8 @@ export default function VerticalReelsView({
       </div>
 
       {/* Full-Height Snap Container */}
-      <div ref={containerRef} className="tm-reels-container">
-        {filteredMemes.map((meme, idx) => {
+      <div ref={containerRef} className="tm-reels-container" onScroll={handleContainerScroll}>
+        {filteredMemes.slice(0, effectiveVisibleCount).map((meme, idx) => {
           const rarity = getMemeRarityTier(meme);
           const uploadInfo = formatMemeUploadDate(meme.created_at);
           const myVote = userVotes?.[meme.id] || 0;
@@ -150,6 +162,8 @@ export default function VerticalReelsView({
                 <MemeMedia
                   meme={meme}
                   mode="reel"
+                  priority={idx === 0}
+                  imgLoading={idx < 2 ? 'eager' : 'lazy'}
                   active={idx === currentIndex}
                   preload={Math.abs(idx - currentIndex) <= 1 ? 'auto' : 'metadata'}
                   className="tm-reels-img"

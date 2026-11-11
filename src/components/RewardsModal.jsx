@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import {
   WHEEL_REWARDS,
   DAILY_QUESTS,
@@ -8,7 +8,9 @@ import {
 } from '../data/starterMemes';
 import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
 import { sfx } from '../utils/soundEngine';
-import VegasSlotMachine from './VegasSlotMachine';
+import './RewardsModal.css';
+
+const VegasSlotMachine = lazy(() => import('./VegasSlotMachine'));
 
 export default function RewardsModal({
   xp,
@@ -389,16 +391,24 @@ export default function RewardsModal({
         </div>
 
         {/* 2. RETRO NEON LAS VEGAS 777 ONE-ARM BANDIT CABINET */}
-        <VegasSlotMachine
-          embedded
-          tokens={tokens}
-          onSpendTokens={onSpendTokens}
-          onPayoutTokens={onPayoutTokens}
-          onOpenUpload={() => {
-            onClose();
-            if (onOpenUpload) onOpenUpload();
-          }}
-        />
+        <Suspense
+          fallback={
+            <div className="tm-skeleton-card" style={{ padding: '16px', marginTop: '14px' }}>
+              <div className="tm-skeleton-media" style={{ height: '160px', borderRadius: '12px' }} />
+            </div>
+          }
+        >
+          <VegasSlotMachine
+            embedded
+            tokens={tokens}
+            onSpendTokens={onSpendTokens}
+            onPayoutTokens={onPayoutTokens}
+            onOpenUpload={() => {
+              onClose();
+              if (onOpenUpload) onOpenUpload();
+            }}
+          />
+        </Suspense>
 
         {/* 3. WHEEL OF CHAOS / LOOT BOX SPINNER (WITH TIMED WINDOW LIMITER & WALLET CAP) */}
         <div className="tm-wheel-section" style={{ marginTop: '16px' }}>

@@ -1,0 +1,38 @@
+/* Hall of Fame Leaderboard Modal */
+.tm-leaderboard-modal {
+  max-width: 780px;
+  border-color: rgba(250, 204, 21, 0.45);
+}
+.tm-leaderboard-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.tm-leaderboard-row:hover {
+  transform: translateX(3px);
+  border-color: rgba(0, 243, 255, 0.4);
+}
+.tm-leaderboard-row.podium-1 {
+  background: linear-gradient(90deg, rgba(250, 204, 21, 0.16), rgba(255, 255, 255, 0.04));
+  border-color: rgba(250, 204, 21, 0.6);
+}
+.tm-leaderboard-row.podium-2 {
+  background: linear-gradient(90deg, rgba(203, 213, 225, 0.14), rgba(255, 255, 255, 0.04));
+  border-color: rgba(203, 213, 225, 0.5);
+}
+.tm-leaderboard-row.podium-3 {
+  background: linear-gradient(90deg, rgba(249, 115, 22, 0.15), rgba(255, 255, 255, 0.04));
+  border-color: rgba(249, 115, 22, 0.5);
+}
+.tm-medal-badge {
+  font-size: 20px;
+  font-weight: 900;
+  min-width: 32px;
+  text-align: center;
+}

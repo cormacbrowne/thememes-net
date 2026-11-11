@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import MemeMedia from './MemeMedia';
 import { getMemeRarityTier, formatMemeUploadDate } from '../data/starterMemes';
+import './MemeTheaterModal.css';
 
 export default function MemeTheaterModal({
   meme,

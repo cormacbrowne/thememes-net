@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
+import './VegasCoinPusherGame.css';
 
 // ==========================================
 // PHASE 27: NEON COIN DOZER '86 — SUPER-ADDICTIVE PENNY-FALLS & MINI-SLOT EDITION

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
 import { getLevelBackdropMeme } from '../utils/memeFeedBridge';
+import './MemeCrushGame.css';
 
 const GRID_SIZE = 8;
 

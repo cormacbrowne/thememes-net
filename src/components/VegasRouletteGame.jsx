@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
 import { checkDailyPerk, consumeDailyPerk } from '../utils/memeFeedBridge';
+import './VegasRouletteGame.css';
 
 // ==========================================
 // 80s NEON LIGHTNING ROULETTE '86 — 60FPS CANVAS PHYSICS WHEEL,

@@ -1,6 +1,7 @@
 import MemeMedia from './MemeMedia';
 import { getMemeRarityTier, formatMemeUploadDate } from '../data/starterMemes';
 import { checkDailyPerk } from '../utils/memeFeedBridge';
+import './BattleArena.css';
 
 export default function BattleArena({
   memes,

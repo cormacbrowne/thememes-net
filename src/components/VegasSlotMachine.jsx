@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
+import './VegasSlotMachine.css';
 
 // ==========================================
 // AUTHENTIC 1980s LAS VEGAS ONE-ARM BANDIT REEL STRIP (22 Weighted Stops)

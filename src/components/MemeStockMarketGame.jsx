@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { getCategoryActivity, getRecentMemeHeadlines } from '../utils/memeFeedBridge';
+import './MemeStockMarketGame.css';
 
 // ==========================================
 // MEMEDAQ '86 — 80s NEON WALL STREET MEME STOCK MARKET SIMULATOR

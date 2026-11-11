@@ -1,0 +1,59 @@
+.tm-theater-modal {
+  max-width: 1120px;
+  padding: 20px 24px;
+}
+.tm-theater-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.tm-theater-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.85fr);
+  gap: 22px;
+  margin-top: 16px;
+}
+@media (max-width: 860px) {
+  .tm-theater-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.tm-theater-img-box {
+  position: relative;
+  background: #05060b;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tm-theater-img-box img {
+  width: 100%;
+  max-height: 540px;
+  object-fit: contain;
+  display: block;
+}
+.tm-theater-actions {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.tm-theater-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.tm-theater-panel {
+  background: rgba(9, 10, 18, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  padding: 14px;
+}

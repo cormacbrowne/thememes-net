@@ -50,7 +50,7 @@ import VegasBlackjackGame from './components/VegasBlackjackGame';
 import VegasRouletteGame from './components/VegasRouletteGame';
 import VegasCoinPusherGame from './components/VegasCoinPusherGame';
 import MemeStockMarketGame from './components/MemeStockMarketGame';
-import { useDeviceProfile, DEVICE_PROFILES } from './utils/deviceProfile';
+import { useDeviceProfile, DEVICE_PROFILES, getDeviceProfileSnapshot } from './utils/deviceProfile';
 import { getSecurityAuditReport } from './utils/securityGuard';
 import ArcadeAiAssistant from './components/ArcadeAiAssistant';
 import ParticleOverlay from './components/ParticleOverlay';
@@ -60,13 +60,35 @@ import LeaderboardModal from './components/LeaderboardModal';
 import PlayerProfileModal from './components/PlayerProfileModal';
 import MemeSkeletonGrid from './components/MemeSkeletonGrid';
 import MobileArcadeDock from './components/MobileArcadeDock';
-import MemeSoundboardBar from './components/MemeSoundboardBar';
+import ExtrasDrawerModal from './components/ExtrasDrawerModal';
 import RewardsModal from './components/RewardsModal';
 import AiRoastModal from './components/AiRoastModal';
 import BossKeyOverlay from './components/BossKeyOverlay';
 import SeoDiscoveryFooter from './components/SeoDiscoveryFooter';
 import DankPetWidget from './components/DankPetWidget';
 import UnhandledGooseSurprise from './components/UnhandledGooseSurprise';
+
+function extractSharedMemeIdFromLocation() {
+  if (typeof window === 'undefined') return null;
+  const pathMatch = (window.location.pathname || '').match(/^\/m\/([^/?#]+)/i);
+  if (pathMatch && pathMatch[1]) {
+    try {
+      return decodeURIComponent(pathMatch[1]);
+    } catch {
+      return pathMatch[1];
+    }
+  }
+  const params = new URLSearchParams(window.location.search);
+  return params.get('m') || params.get('meme') || null;
+}
+
+function isTouchDeviceDefault() {
+  if (typeof window === 'undefined') return false;
+  const profile = getDeviceProfileSnapshot();
+  if (profile?.isTouch) return true;
+  if (window.matchMedia?.('(pointer: coarse)').matches) return true;
+  return /iPhone|iPod|iPad|Android/i.test(navigator.userAgent || '');
+}
 
 export default function App() {
   // Core Feed & Filter State (Community Uploads + Offline-Resilient @TheMemesHQ Seed Memes)
@@ -101,14 +123,35 @@ export default function App() {
   });
   const [viewMode, setViewMode] = useState(() => {
     if (typeof window === 'undefined') return 'feed';
-    const rawMode = (new URLSearchParams(window.location.search).get('mode') || '').toLowerCase();
+    const params = new URLSearchParams(window.location.search);
+    const rawMode = (params.get('mode') || '').toLowerCase();
     const mode = ['dozer', 'coindozer', 'coinpusher'].includes(rawMode) ? 'pusher' : rawMode;
-    return ['feed', 'reels', 'blackjack', 'roulette', 'pusher', 'slots', 'crush', 'pinball', 'stocks', 'swipe', 'battle'].includes(mode)
-      ? mode
-      : 'feed';
+    if (
+      [
+        'feed',
+        'reels',
+        'blackjack',
+        'roulette',
+        'pusher',
+        'slots',
+        'crush',
+        'pinball',
+        'stocks',
+        'swipe',
+        'battle'
+      ].includes(mode)
+    ) {
+      return mode;
+    }
+    if (params.get('category') || params.get('q')) {
+      return 'feed';
+    }
+    // Phase 28.5: Touch devices default to full-screen Reels loop; desktop keeps grid feed
+    return isTouchDeviceDefault() ? 'reels' : 'feed';
   });
   const { profile: deviceProfile, setOverride: setDeviceOverride } = useDeviceProfile();
   const [payphoneModalOpen, setPayphoneModalOpen] = useState(false);
+  const [extrasDrawerOpen, setExtrasDrawerOpen] = useState(false);
   const [surpriseOpen, setSurpriseOpen] = useState(() => {
     if (typeof window === 'undefined') return false;
     const params = new URLSearchParams(window.location.search);
@@ -126,11 +169,10 @@ export default function App() {
   const [evolutionModalMeme, setEvolutionModalMeme] = useState(null);
   const [evolutionNodes, setEvolutionNodes] = useState([]);
   const [loadingEvolution, setLoadingEvolution] = useState(false);
-  const [theaterMemeId, setTheaterMemeId] = useState(() => {
-    if (typeof window === 'undefined') return null;
-    const params = new URLSearchParams(window.location.search);
-    return params.get('meme') || null;
-  });
+  const [theaterMemeId, setTheaterMemeId] = useState(() => extractSharedMemeIdFromLocation());
+  const [openedFromShareLink, setOpenedFromShareLink] = useState(() =>
+    Boolean(extractSharedMemeIdFromLocation())
+  );
 
   // Phase 4: Daily Bounties, Hall of Fame Leaderboard & Player Profiles State
   const [bountyIdx, setBountyIdx] = useState(0);
@@ -203,6 +245,28 @@ export default function App() {
     } catch {
       return {};
     }
+  });
+  const [votesCastCount, setVotesCastCount] = useState(() => {
+    if (typeof window === 'undefined') return 0;
+    const saved = Number(localStorage.getItem('tm_votes_cast_count') || 0);
+    if (saved > 0) return saved;
+    try {
+      return Object.values(JSON.parse(localStorage.getItem('tm_votes') || '{}')).filter((v) => v > 0)
+        .length;
+    } catch {
+      return 0;
+    }
+  });
+  const [petUnlocked, setPetUnlocked] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return (
+      localStorage.getItem('tm_pet_unlocked') === 'true' ||
+      Number(localStorage.getItem('tm_votes_cast_count') || 0) >= 3
+    );
+  });
+  const [aiUnlocked, setAiUnlocked] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('tm_first_meme_created') === 'true';
   });
   const [userReactionsMap, setUserReactionsMap] = useState(() => {
     try {
@@ -345,23 +409,6 @@ export default function App() {
     }
     return r;
   }, [xp]);
-
-  const nextRank = useMemo(() => {
-    return (
-      RANKS.find((r) => r.minXp > xp) || {
-        level: currentRank.level + 1,
-        title: 'Immortal Memer',
-        minXp: xp + 1000
-      }
-    );
-  }, [xp, currentRank]);
-
-  const xpProgress = useMemo(() => {
-    const prevMin = currentRank.minXp;
-    const needed = nextRank.minXp - prevMin;
-    const current = xp - prevMin;
-    return Math.min(100, Math.max(5, Math.round((current / needed) * 100)));
-  }, [xp, currentRank, nextRank]);
 
   // Persist XP, XP Reactor, Tokens, Token Ledger, Votes, Reactions, CRT, Bounties, Royalties & Reported Memes
   useEffect(() => {
@@ -1192,6 +1239,17 @@ export default function App() {
 
       // Only reward tokens/XP once per unique meme ID (prevents upvote/downvote toggle farming)
       if (direction > 0) {
+        if (currentVote <= 0) {
+          const nextVotes = votesCastCount + 1;
+          setVotesCastCount(nextVotes);
+          localStorage.setItem('tm_votes_cast_count', String(nextVotes));
+          if (!petUnlocked && nextVotes >= 3) {
+            setPetUnlocked(true);
+            localStorage.setItem('tm_pet_unlocked', 'true');
+            setGoblinFortuneToast('🐸 Cyber-Pet & Chaos Dock unlocked after 3 votes!');
+            setTimeout(() => setGoblinFortuneToast(''), 4500);
+          }
+        }
         const res = awardFairReward({
           category: 'engagement',
           requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.VOTE_UNIQUE_MEME.tokens,
@@ -1231,7 +1289,7 @@ export default function App() {
         }
       }
     },
-    [userVotes, combo, awardFairReward, incrementQuest]
+    [userVotes, combo, awardFairReward, incrementQuest, votesCastCount, petUnlocked]
   );
 
   const handleReaction = useCallback(
@@ -1477,6 +1535,12 @@ export default function App() {
 
     setMemes((prev) => [insertedMeme, ...prev]);
     recordPublishDailyPerk();
+    if (!aiUnlocked) {
+      setAiUnlocked(true);
+      localStorage.setItem('tm_first_meme_created', 'true');
+      setGoblinFortuneToast('🕹️ First meme created! Arcade Games & Cyber-AI Co-Pilot unlocked!');
+      setTimeout(() => setGoblinFortuneToast(''), 5000);
+    }
     sfx.playLevelUp();
     incrementQuest('q-mutate', 1);
     addCappedWheelSpins(1);
@@ -1540,6 +1604,12 @@ export default function App() {
     }
 
     recordPublishDailyPerk();
+    if (!aiUnlocked) {
+      setAiUnlocked(true);
+      localStorage.setItem('tm_first_meme_created', 'true');
+      setGoblinFortuneToast('🕹️ First meme created! Arcade Games & Cyber-AI Co-Pilot unlocked!');
+      setTimeout(() => setGoblinFortuneToast(''), 5000);
+    }
     sfx.playLevelUp();
     incrementQuest('q-mutate', 1);
     addCappedWheelSpins(1);
@@ -1569,7 +1639,6 @@ export default function App() {
     setForgeIntent(null);
     setMutatingParentMeme(null);
     setActiveBounty(null);
-    setViewMode('feed');
     setSortBy('latest');
   };
 
@@ -1850,9 +1919,9 @@ export default function App() {
     });
   }, [rateWindows]);
 
-  // Periodic Golden Loot Goblin Spawner every 95 seconds (paused while playing fixed arcade games)
+  // Periodic Golden Loot Goblin Spawner every 95 seconds (progressively unlocked; paused while playing fixed arcade games)
   useEffect(() => {
-    if (isFixedArcadeGame) return undefined;
+    if (isFixedArcadeGame || (!petUnlocked && !aiUnlocked)) return undefined;
     const timer = setInterval(() => {
       if (
         !bossKeyActive &&
@@ -1871,7 +1940,7 @@ export default function App() {
       }
     }, 95000);
     return () => clearInterval(timer);
-  }, [bossKeyActive, activeGoblin, rateWindows.goblinUsed, isFixedArcadeGame]);
+  }, [bossKeyActive, activeGoblin, rateWindows.goblinUsed, isFixedArcadeGame, petUnlocked, aiUnlocked]);
 
   const handleCatchGoblin = useCallback(
     (e) => {
@@ -2385,23 +2454,6 @@ export default function App() {
     [bookmarkedIds, awardFairReward]
   );
 
-  // Live Upload Activity & Date Stats (helps track when new users upload memes!)
-  const uploadStats = useMemo(() => {
-    const valid = memes.filter((m) => m && !reportedMemeIds.includes(String(m.id)));
-    const sortedByDate = [...valid].sort(
-      (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)
-    );
-    const latestMeme = sortedByDate[0] || null;
-    const latestDateInfo = latestMeme ? formatMemeUploadDate(latestMeme.created_at) : null;
-    const newTodayCount = valid.filter((m) => formatMemeUploadDate(m.created_at).isNewToday).length;
-    return {
-      totalUploads: valid.length,
-      newTodayCount,
-      latestMeme,
-      latestDateInfo
-    };
-  }, [memes, reportedMemeIds]);
-
   const filteredMemes = useMemo(() => {
     return memes
       .filter((m) => {
@@ -2486,16 +2538,22 @@ export default function App() {
     setTheaterMemeId(meme.id);
     if (typeof window !== 'undefined' && window.history?.replaceState) {
       const url = new URL(window.location.href);
-      url.searchParams.set('meme', String(meme.id));
+      url.searchParams.delete('meme');
+      url.searchParams.set('m', String(meme.id));
       window.history.replaceState(window.history.state, '', url.toString());
     }
   }, []);
 
   const handleCloseTheater = useCallback(() => {
     setTheaterMemeId(null);
+    setOpenedFromShareLink(false);
     if (typeof window !== 'undefined' && window.history?.replaceState) {
       const url = new URL(window.location.href);
+      url.searchParams.delete('m');
       url.searchParams.delete('meme');
+      if (/^\/m\/[^/?#]+/i.test(url.pathname)) {
+        url.pathname = '/';
+      }
       window.history.replaceState(window.history.state, '', url.toString());
     }
   }, []);
@@ -2503,16 +2561,27 @@ export default function App() {
   const closeAllModals = useCallback(() => {
     setShowStudio(false);
     setTheaterMemeId(null);
+    setOpenedFromShareLink(false);
     setEvolutionModalMeme(null);
     setShowLeaderboard(false);
     setShowRewardsModal(false);
     setRoastModalMeme(null);
     setProfileUsername(null);
     setShowAuthModal(false);
+    setExtrasDrawerOpen(false);
     if (typeof window !== 'undefined' && window.history?.replaceState) {
       const url = new URL(window.location.href);
-      if (url.searchParams.has('meme')) {
+      let changed = false;
+      if (url.searchParams.has('m') || url.searchParams.has('meme')) {
+        url.searchParams.delete('m');
         url.searchParams.delete('meme');
+        changed = true;
+      }
+      if (/^\/m\/[^/?#]+/i.test(url.pathname)) {
+        url.pathname = '/';
+        changed = true;
+      }
+      if (changed) {
         window.history.replaceState(window.history.state, '', url.toString());
       }
     }
@@ -2526,7 +2595,8 @@ export default function App() {
       showRewardsModal ||
       roastModalMeme ||
       profileUsername ||
-      showAuthModal
+      showAuthModal ||
+      extrasDrawerOpen
   );
 
   const activeNavDepth =
@@ -2538,11 +2608,14 @@ export default function App() {
     (profileUsername ? 1 : 0) +
     (evolutionModalMeme ? 1 : 0) +
     (showStudio ? 1 : 0) +
-    (showAuthModal ? 1 : 0);
+    (showAuthModal ? 1 : 0) +
+    (extrasDrawerOpen ? 1 : 0);
 
   const handleNavigateBack = useCallback(() => {
     sfx.playToggle();
-    if (showAuthModal) {
+    if (extrasDrawerOpen) {
+      setExtrasDrawerOpen(false);
+    } else if (showAuthModal) {
       setShowAuthModal(false);
     } else if (roastModalMeme) {
       setRoastModalMeme(null);
@@ -2565,6 +2638,7 @@ export default function App() {
       setSearchQuery('');
     }
   }, [
+    extrasDrawerOpen,
     showAuthModal,
     roastModalMeme,
     showRewardsModal,
@@ -2630,7 +2704,7 @@ export default function App() {
   useEffect(() => {
     if (typeof window === 'undefined' || !window.history?.replaceState) return;
     const url = new URL(window.location.href);
-    if (viewMode && viewMode !== 'feed') {
+    if (viewMode && viewMode !== 'feed' && !(viewMode === 'reels' && isTouchDeviceDefault())) {
       url.searchParams.set('mode', viewMode);
     } else {
       url.searchParams.delete('mode');
@@ -2641,18 +2715,20 @@ export default function App() {
   const handleShareMeme = useCallback(
     (meme, e) => {
       if (!meme) return;
-      const shareUrl = `${window.location.origin}/?meme=${encodeURIComponent(String(meme.id))}`;
+      const shareUrl = `${window.location.origin}/?m=${encodeURIComponent(String(meme.id))}`;
       navigator.clipboard?.writeText(shareUrl).catch(() => {});
       if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
         navigator
           .share({
             title: `${meme.title} — THE MEMES.net`,
-            text: `Check out "${meme.title}" uploaded by @${meme.author_name || 'Anon'} on THE MEMES.net!`,
+            text: `Check out "${meme.title}" on THE MEMES.net — tap to view or make your own!`,
             url: shareUrl
           })
           .catch(() => {});
       }
       sfx.playPop(1);
+      setGoblinFortuneToast('🔗 Direct meme link copied! Opens this exact meme in Theater view.');
+      setTimeout(() => setGoblinFortuneToast(''), 4000);
       awardFairReward({
         category: 'engagement',
         requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.SHARE_MEME.tokens,
@@ -2969,78 +3045,27 @@ export default function App() {
             </button>
             <button
               type="button"
-              className="tm-fixed-icon-btn tm-wtf-surprise-btn"
-              onClick={() => {
-                sfx.playGooseHonk?.();
-                setSurpriseOpen(true);
-              }}
-              title="🪿 WTF?! Unleash HONK.EXE Cyber-Goose & 3:00 AM Interdimensional Chaos Lab!"
-            >
-              🪿
-            </button>
-            <button
-              type="button"
               className="tm-fixed-icon-btn"
               onClick={() => {
                 sfx.playToggle();
-                setPayphoneModalOpen(true);
+                setExtrasDrawerOpen(true);
               }}
-              title="Open 1986 Arcade Payphone Hotline (1-800-MEME)"
+              title="Open Extras Drawer: Soundboard, WTF?!, Payphone, Boss Key, CRT, Turbo & AI"
             >
-              ☎️
-            </button>
-            <button
-              type="button"
-              className={`tm-fixed-icon-btn ${aiAssistantOpen ? 'active' : ''}`}
-              onClick={() => {
-                sfx.playAiAssistantChime();
-                setAiAssistantOpen((prev) => !prev);
-              }}
-              title="Open CYBER-ORACLE '86 AI Assistant & Strategy Advisor"
-            >
-              🤖
-            </button>
-            <button
-              type="button"
-              className={`tm-fixed-icon-btn ${litePerfMode ? 'active' : ''}`}
-              onClick={() => {
-                sfx.playToggle();
-                setLitePerfMode((prev) => !prev);
-              }}
-              title="Toggle iPad/Mobile Turbo FPS Mode"
-            >
-              ⚡
-            </button>
-            <button
-              type="button"
-              className="tm-fixed-icon-btn"
-              onClick={() => {
-                const nextState = !soundOn;
-                sfx.enabled = nextState;
-                setSoundOn(nextState);
-                if (nextState) sfx.playBoing(2);
-              }}
-              title={soundOn ? 'Mute Arcade Audio' : 'Unmute Arcade Audio'}
-            >
-              {soundOn ? '🔊' : '🔇'}
+              🕹️
             </button>
           </div>
         </header>
       ) : (
         <>
-          {/* PHASE 1: SIMPLIFIED TOP NAVIGATION & FAIR TOKEN WALLET HUD */}
+          {/* PHASE 28.3: DECLUTTERED TOP NAVIGATION & FAIR TOKEN WALLET HUD (<= 6 Primary Controls) */}
           <NavbarHud
             comboTimer={comboTimer}
             combo={combo}
             dbStatus={dbStatus}
             currentRank={currentRank}
-            equippedFlair={equippedFlair}
-            xp={xp}
-            xpProgress={xpProgress}
             tokens={tokens}
-            dailyTokensEarned={tokenLedger?.totalToday || 0}
             xpConversionState={xpConversionState}
-            xpAutoConvert={xpAutoConvert}
             reactorFlash={reactorFlash}
             onExchangeXpForTokens={handleExchangeXpForTokens}
             viewMode={viewMode}
@@ -3049,31 +3074,9 @@ export default function App() {
               closeAllModals();
               setViewMode(mode);
             }}
-            litePerfMode={litePerfMode}
-            onToggleLitePerf={() => {
-              sfx.playToggle();
-              setLitePerfMode((prev) => !prev);
-            }}
-            crtOn={crtOn}
-            onToggleCrt={() => {
-              sfx.playToggle();
-              setCrtOn((prev) => !prev);
-            }}
-            soundOn={soundOn}
-            onToggleSound={() => {
-              const nextState = !soundOn;
-              sfx.enabled = nextState;
-              setSoundOn(nextState);
-              if (nextState) sfx.playBoing(2);
-            }}
             onOpenBlankStudio={() => {
               closeAllModals();
               handleOpenBlankStudio();
-            }}
-            onOpenLeaderboard={() => {
-              sfx.playToggle();
-              closeAllModals();
-              setShowLeaderboard(true);
             }}
             onOpenRewards={() => {
               sfx.playToggle();
@@ -3121,143 +3124,15 @@ export default function App() {
             }}
             canGoBack={activeNavDepth > 0}
             onNavigateBack={handleNavigateBack}
-            aiAssistantOpen={aiAssistantOpen}
-            onToggleAiAssistant={() => {
-              sfx.playAiAssistantChime();
-              setAiAssistantOpen((prev) => !prev);
-            }}
-            onOpenSurprise={() => {
-              sfx.playGooseHonk?.();
-              setSurpriseOpen(true);
+            onOpenExtras={() => {
+              sfx.playToggle();
+              setExtrasDrawerOpen(true);
             }}
           />
 
-          {/* PHASE 1: MEME-FIRST MODE SWITCHER, DISCOVERY TABS & SEARCH */}
-          <section className="tm-controls">
-            <div className="tm-mode-switch">
-              <button
-                type="button"
-                className={`tm-mode-btn ${viewMode === 'feed' ? 'active' : ''}`}
-                onClick={() => setViewMode('feed')}
-              >
-                📱 Memes ({uploadStats.totalUploads})
-              </button>
-              <button
-                type="button"
-                className={`tm-mode-btn ${viewMode === 'reels' ? 'active' : ''}`}
-                onClick={() => setViewMode('reels')}
-                title="Full-Screen Vertical Meme Reels"
-              >
-                🎬 Reels
-              </button>
-              <button
-                type="button"
-                className={`tm-mode-btn ${viewMode === 'swipe' ? 'active' : ''}`}
-                onClick={() => setViewMode('swipe')}
-              >
-                ⚡ Swipe
-              </button>
-              <button
-                type="button"
-                className={`tm-mode-btn ${viewMode === 'battle' ? 'active' : ''}`}
-                onClick={() => setViewMode('battle')}
-              >
-                ⚔️ 1v1 Arena
-              </button>
-              <span className="tm-mode-divider" aria-hidden="true">
-                🕹️ TOKEN GAMES:
-              </span>
-              <button
-                type="button"
-                className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'pusher' ? 'active' : ''}`}
-                onClick={() => {
-                  sfx.playCoinDrop?.();
-                  setViewMode('pusher');
-                }}
-                title="Play Neon Coin Dozer '86 — Push Coins & Prizes Over the Lip into the Collection Tray!"
-              >
-                🪙 Coin Dozer <span className="tm-mode-hot-badge">NEW</span>
-              </button>
-              <button
-                type="button"
-                className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'pinball' ? 'active' : ''}`}
-                onClick={() => {
-                  sfx.playPinballBumper(0);
-                  setViewMode('pinball');
-                }}
-                title="Play 5-Table 80s Hyper-Neon Cyber-Pinball (Center-Stage Widescreen Showcase)"
-              >
-                🎱 Neon Pinball <span className="tm-mode-hot-badge">5 TBLS</span>
-              </button>
-              <button
-                type="button"
-                className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'blackjack' ? 'active' : ''}`}
-                onClick={() => {
-                  sfx.playCardDeal();
-                  setViewMode('blackjack');
-                }}
-                title="Play Neon 21's Blackjack vs Dealer Bot '86 (Split, Double Down, 5-Card Charlie & AI Visor)!"
-              >
-                🃏 Neon 21&apos;s <span className="tm-mode-hot-badge">NEW</span>
-              </button>
-              <button
-                type="button"
-                className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'roulette' ? 'active' : ''}`}
-                onClick={() => {
-                  sfx.playRouletteSpin();
-                  setViewMode('roulette');
-                }}
-                title="Spin Neon Lightning Roulette '86 with 150x Lightning Numbers!"
-              >
-                🎡 Roulette <span className="tm-mode-hot-badge">150×</span>
-              </button>
-              <button
-                type="button"
-                className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'slots' ? 'active' : ''}`}
-                onClick={() => {
-                  sfx.playSlotLeverPull();
-                  setViewMode('slots');
-                }}
-                title="Play Classic Las Vegas One-Arm Bandit 777 Slot Machine"
-              >
-                🎰 Vegas Slots <span className="tm-mode-hot-badge">777</span>
-              </button>
-              <button
-                type="button"
-                className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'stocks' ? 'active' : ''}`}
-                onClick={() => {
-                  sfx.playStockBell?.(true);
-                  setViewMode('stocks');
-                }}
-                title="Trade Funny Meme Stocks on MEMEDAQ '86!"
-              >
-                📈 Meme Stocks <span className="tm-mode-hot-badge">NEW</span>
-              </button>
-              <button
-                type="button"
-                className={`tm-mode-btn tm-mode-btn-subgame ${viewMode === 'crush' ? 'active' : ''}`}
-                onClick={() => {
-                  sfx.playCandyMatch(2);
-                  setViewMode('crush');
-                }}
-                title="Play 10-Level 80s Neon Meme Crush Saga"
-              >
-                🍬 Meme Crush <span className="tm-mode-hot-badge">10 LVLS</span>
-              </button>
-              <button
-                type="button"
-                className="tm-mode-btn tm-wtf-surprise-btn"
-                onClick={() => {
-                  sfx.playGooseHonk?.();
-                  setSurpriseOpen(true);
-                }}
-                title="🪿 DO NOT CLICK: Unleash HONK.EXE Cyber-Goose, 3AM Shopping Network & Ministry of Meme Revenue Audit!"
-              >
-                🪿 WTF?! Surprise
-              </button>
-            </div>
-
-            {viewMode === 'feed' && (
+          {/* PHASE 28.3: STREAMLINED FEED FILTER BAR (Visible only on grid feed; button count halved) */}
+          {viewMode === 'feed' && (
+            <section className="tm-controls">
               <div className="tm-tabs">
                 <button
                   type="button"
@@ -3279,40 +3154,6 @@ export default function App() {
                 >
                   🔥 Top
                 </button>
-                <button
-                  type="button"
-                  className={`tm-tab ${sortBy === 'new24h' && !showSavedOnly ? 'active' : ''}`}
-                  onClick={() => {
-                    setShowSavedOnly(false);
-                    setSortBy('new24h');
-                  }}
-                  title="Memes uploaded in the last 24 hours"
-                >
-                  🆕 New ({uploadStats.newTodayCount})
-                </button>
-                <button
-                  type="button"
-                  className="tm-tab tm-tab-surprise"
-                  onClick={() => {
-                    if (filteredMemes.length > 0) {
-                      const pick = filteredMemes[Math.floor(Math.random() * filteredMemes.length)];
-                      handleOpenTheater(pick);
-                    } else {
-                      sfx.playBoing(2);
-                    }
-                  }}
-                  title="Open a random community meme!"
-                >
-                  🎲 Random Meme
-                </button>
-                <button
-                  type="button"
-                  className={`tm-tab ${showSavedOnly ? 'active' : ''}`}
-                  onClick={() => setShowSavedOnly((prev) => !prev)}
-                  title="View your saved favorite memes"
-                >
-                  ⭐ Saved ({bookmarkedIds.length})
-                </button>
                 {['all', 'dank', 'tech', 'gaming', 'relatable'].map((cat) => (
                   <button
                     key={cat}
@@ -3326,50 +3167,19 @@ export default function App() {
                     #{cat.toUpperCase()}
                   </button>
                 ))}
+                {showSavedOnly && (
+                  <button
+                    type="button"
+                    className="tm-tab active"
+                    onClick={() => setShowSavedOnly(false)}
+                    title="Click to return to all memes"
+                  >
+                    ⭐ Saved ({bookmarkedIds.length}) ✕
+                  </button>
+                )}
               </div>
-            )}
 
-            <div className="tm-controls-right">
-              <button
-                type="button"
-                className="tm-device-badge-btn"
-                onClick={() => {
-                  const order = ['auto', 'iphone', 'iphone-duo', 'ipad-mini', 'ipad', 'android-phone', 'android-tablet', 'pc'];
-                  const cur = deviceProfile.override || 'auto';
-                  const next = order[(order.indexOf(cur) + 1) % order.length];
-                  setDeviceOverride(next);
-                  sfx.playToggle?.();
-                  const nextLabel = next === 'auto' ? `Auto (${DEVICE_PROFILES[deviceProfile.detectedId]?.label || 'Detected'})` : DEVICE_PROFILES[next]?.label;
-                  setGoblinFortuneToast(`📲 Device Optimizer: ${nextLabel} — ${DEVICE_PROFILES[next === 'auto' ? deviceProfile.detectedId : next]?.description || ''}`);
-                }}
-                title={`Active Device Optimization: ${deviceProfile.badge} (${deviceProfile.description}). Click to cycle/test device profiles (iPhone, iPhone Duo, iPad Mini, iPad, Android, PC)!`}
-              >
-                {deviceProfile.shortBadge}
-              </button>
-              <button
-                type="button"
-                className="tm-device-badge-btn tm-security-badge-btn"
-                onClick={() => {
-                  const rep = getSecurityAuditReport();
-                  sfx.playAiAssistantChime?.();
-                  setGoblinFortuneToast(`🛡️ Cyber-Shield ${rep.status} (${rep.score}): CSP + XSS URI Guard + Binary Media Firewall + Prototype Guard Active!`);
-                }}
-                title="Cyber-Security Status: 100% Hardened (Click to run instant security verification)"
-              >
-                🛡️ Safe
-              </button>
-              <button
-                type="button"
-                className="tm-device-badge-btn"
-                onClick={() => {
-                  sfx.playToggle?.();
-                  setPayphoneModalOpen(true);
-                }}
-                title="Open 1986 Payphone Hotline (1-800-MEME) — Claim +5 🪙 Coin Return!"
-              >
-                ☎️ 1-800-MEME
-              </button>
-              {viewMode === 'feed' && (
+              <div className="tm-controls-right">
                 <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', flex: 1 }}>
                   <input
                     type="text"
@@ -3398,9 +3208,9 @@ export default function App() {
                     </button>
                   )}
                 </div>
-              )}
-            </div>
-          </section>
+              </div>
+            </section>
+          )}
         </>
       )}
 
@@ -3666,34 +3476,6 @@ export default function App() {
               </button>
             </div>
           )}
-
-          {/* COLLAPSIBLE MEME SOUNDBOARD & FUN TOY DRAWER (POSITIONED AFTER FEED SO MEMES COME FIRST ON IPHONE) */}
-          <MemeSoundboardBar
-            soundPack={soundPack}
-            onChangeSoundPack={handleChangeSoundPack}
-            soundOn={soundOn}
-            onToggleSound={() => {
-              const nextState = !soundOn;
-              sfx.enabled = nextState;
-              setSoundOn(nextState);
-              if (nextState) sfx.playBoing(2);
-            }}
-            onPlayPad={handlePlaySoundboardPad}
-            onTriggerChaosRoulette={handleTriggerChaosRoulette}
-            onOpenRewards={() => {
-              sfx.playToggle();
-              closeAllModals();
-              setShowRewardsModal(true);
-            }}
-            unclaimedRewardsCount={unclaimedRewardsCount}
-            onToggleBossKey={() => setBossKeyActive(true)}
-            chaosMutator={chaosMutator}
-            onChangeChaosMutator={handleChangeChaosMutator}
-            onSummonGoblin={handleSummonGoblin}
-            goblinsLeftInWindow={goblinsLeftInWindow}
-            goblinResetMs={goblinResetMs}
-            onLaunchStampede={handleLaunchStampede}
-          />
 
           {/* SIDE ENTERTAINMENT LOUNGE: FEATURED 80s NEON ARCADE SUB-GAMES BELOW THE MEME FEED */}
           <section className="tm-arcade-steer-shell" aria-label="Side Entertainment Arcade Lounge">
@@ -4165,6 +3947,7 @@ export default function App() {
           onReaction={handleReaction}
           onToggleBookmark={handleToggleBookmark}
           onTriggerStudioMutate={handleTriggerStudioMutate}
+          onCaptionThis={handleCaptionThis}
           onShareMeme={handleShareMeme}
           onOpenProfile={(username) => {
             sfx.playToggle();
@@ -4241,10 +4024,11 @@ export default function App() {
         </div>
       )}
 
-      {/* PHASE 20: INTERACTIVE "DO NOT PRESS" CHAOS BUTTON, 1986 NEON PAYPHONE & SKILL-BASED DODGING PIÑATA */}
+      {/* PHASE 20 & 28.4: PROGRESSIVELY UNLOCKED "DO NOT PRESS" CHAOS DOCK & 1986 NEON PAYPHONE */}
       {!bossKeyActive && (
         <DankPetWidget
           viewMode={viewMode}
+          unlocked={petUnlocked}
           externalPayphoneOpen={payphoneModalOpen}
           onToggleExternalPayphone={setPayphoneModalOpen}
           onEarnPetXp={awardXpOnly}
@@ -4265,12 +4049,12 @@ export default function App() {
         />
       )}
 
-      {/* PHASE 5: THUMB-FRIENDLY MOBILE BOTTOM ARCADE DOCK */}
+      {/* PHASE 5 & 28.3: 5-BUTTON THUMB-FRIENDLY MOBILE BOTTOM ARCADE DOCK (Memes / Reels / +Create / Games / Profile) */}
       {!isFixedArcadeGame && (
         <MobileArcadeDock
           viewMode={viewMode}
           showStudio={showStudio}
-          showLeaderboard={showLeaderboard}
+          showProfile={Boolean(profileUsername || showAuthModal)}
           isAnyModalOpen={isAnyModalOpen}
           onSelectMode={(mode) => {
             sfx.playToggle();
@@ -4295,6 +4079,22 @@ export default function App() {
               setShowLeaderboard(true);
             }
           }}
+          onOpenExtras={() => {
+            sfx.playToggle();
+            setExtrasDrawerOpen(true);
+          }}
+          onOpenProfile={() => {
+            sfx.playToggle();
+            if (profileUsername) {
+              setProfileUsername(null);
+            } else if (user?.username) {
+              closeAllModals();
+              setProfileUsername(user.username);
+            } else {
+              closeAllModals();
+              setShowAuthModal(true);
+            }
+          }}
           onNavigateBack={handleNavigateBack}
           onToggleAiAssistant={() => {
             sfx.playAiAssistantChime();
@@ -4303,10 +4103,11 @@ export default function App() {
         />
       )}
 
-      {/* PHASE 21: CYBER-ORACLE '86 — INTERACTIVE AI ASSISTANT & PROACTIVE STRATEGY COPILOT */}
+      {/* PHASE 21 & 28.4: CYBER-ORACLE '86 — PROGRESSIVELY UNLOCKED AI ASSISTANT */}
       {!bossKeyActive && (
         <ArcadeAiAssistant
           isOpen={aiAssistantOpen}
+          fabUnlocked={aiUnlocked}
           onToggleOpen={(val) => {
             if (typeof val === 'boolean') {
               setAiAssistantOpen(val);
@@ -4345,7 +4146,7 @@ export default function App() {
         />
       )}
 
-      {/* MODAL 0: FULLSCREEN THEATER LIGHTBOX & DEEP-LINK PERMALINK */}
+      {/* MODAL 0: FULLSCREEN THEATER LIGHTBOX & DEEP-LINK PERMALINK (/?m=<id> or /m/<id>) */}
       {theaterMeme && (
         <MemeTheaterModal
           meme={theaterMeme}
@@ -4358,6 +4159,9 @@ export default function App() {
           onVote={handleVote}
           onReaction={handleReaction}
           onTriggerStudioMutate={handleTriggerStudioMutate}
+          onCaptionThis={handleCaptionThis}
+          onOpenBlankStudio={handleOpenBlankStudio}
+          openedFromShareLink={openedFromShareLink}
           onSelectMeme={handleOpenTheater}
           onClose={handleCloseTheater}
           onShareMeme={handleShareMeme}
@@ -4509,7 +4313,117 @@ export default function App() {
         />
       )}
 
-      {/* MODAL 8: 🪿 HONK.EXE KLEPTOMANIAC CYBER-GOOSE & 3AM INTERDIMENSIONAL CHAOS LAB */}
+      {/* MODAL 8: UNIFIED 🕹️ EXTRAS DRAWER (Soundboard, WTF?!, Payphone, Boss Key, CRT, Turbo, Device Badge & Shortcuts) */}
+      <ExtrasDrawerModal
+        isOpen={extrasDrawerOpen}
+        onClose={() => setExtrasDrawerOpen(false)}
+        onLaunchWtfSurprise={() => {
+          sfx.playGooseHonk?.();
+          setSurpriseOpen(true);
+        }}
+        onOpenPayphone={() => {
+          sfx.playToggle?.();
+          setPayphoneModalOpen(true);
+        }}
+        onToggleBossKey={() => setBossKeyActive(true)}
+        crtMode={crtOn}
+        onToggleCrtMode={() => {
+          sfx.playToggle();
+          setCrtOn((prev) => !prev);
+        }}
+        turboMode={litePerfMode}
+        onToggleTurboMode={() => {
+          sfx.playToggle();
+          setLitePerfMode((prev) => !prev);
+        }}
+        soundOn={soundOn}
+        onToggleSound={() => {
+          const nextState = !soundOn;
+          sfx.enabled = nextState;
+          setSoundOn(nextState);
+          if (nextState) sfx.playBoing(2);
+        }}
+        soundPack={soundPack}
+        onChangeSoundPack={handleChangeSoundPack}
+        onPlayPad={handlePlaySoundboardPad}
+        onTriggerChaosRoulette={(e) => {
+          setExtrasDrawerOpen(false);
+          handleTriggerChaosRoulette(e);
+        }}
+        onOpenRewards={() => {
+          sfx.playToggle();
+          setShowRewardsModal(true);
+        }}
+        unclaimedRewardsCount={unclaimedRewardsCount}
+        chaosMutator={chaosMutator}
+        onChangeChaosMutator={handleChangeChaosMutator}
+        onSummonGoblin={(e) => {
+          setExtrasDrawerOpen(false);
+          handleSummonGoblin(e);
+        }}
+        goblinsLeftInWindow={goblinsLeftInWindow}
+        goblinResetMs={goblinResetMs}
+        onLaunchStampede={(stampedeId, e) => {
+          setExtrasDrawerOpen(false);
+          handleLaunchStampede(stampedeId, e);
+        }}
+        activeDeviceMeta={{
+          icon: deviceProfile.shortBadge?.split(' ')[0] || '📱',
+          shortLabel: deviceProfile.label || deviceProfile.badge || 'Auto'
+        }}
+        deviceOverride={deviceProfile.override}
+        onOpenDeviceOptimizer={() => {
+          const order = ['auto', 'iphone', 'iphone-duo', 'ipad-mini', 'ipad', 'android-phone', 'android-tablet', 'pc'];
+          const cur = deviceProfile.override || 'auto';
+          const next = order[(order.indexOf(cur) + 1) % order.length];
+          setDeviceOverride(next);
+          sfx.playToggle?.();
+          const nextLabel =
+            next === 'auto'
+              ? `Auto (${DEVICE_PROFILES[deviceProfile.detectedId]?.label || 'Detected'})`
+              : DEVICE_PROFILES[next]?.label;
+          setGoblinFortuneToast(
+            `📲 Device Optimizer: ${nextLabel} — ${
+              DEVICE_PROFILES[next === 'auto' ? deviceProfile.detectedId : next]?.description || ''
+            }`
+          );
+          setTimeout(() => setGoblinFortuneToast(''), 4500);
+        }}
+        onCheckSecurityStatus={() => {
+          const rep = getSecurityAuditReport();
+          sfx.playAiAssistantChime?.();
+          setExtrasDrawerOpen(false);
+          setGoblinFortuneToast(
+            `🛡️ Cyber-Shield ${rep.status} (${rep.score}): CSP + XSS URI Guard + Binary Media Firewall + Prototype Guard Active!`
+          );
+          setTimeout(() => setGoblinFortuneToast(''), 4500);
+        }}
+        onToggleAiAssistant={() => {
+          sfx.playAiAssistantChime();
+          setAiAssistantOpen((prev) => !prev);
+        }}
+        aiPersonaId={typeof window !== 'undefined' ? localStorage.getItem('tm_ai_persona') || 'kitt' : 'kitt'}
+        onOpenLeaderboard={() => {
+          sfx.playToggle();
+          setShowLeaderboard(true);
+        }}
+        onRandomMeme={() => {
+          if (filteredMemes.length > 0) {
+            const pick = filteredMemes[Math.floor(Math.random() * filteredMemes.length)];
+            handleOpenTheater(pick);
+          } else {
+            sfx.playBoing(2);
+          }
+        }}
+        savedOnly={showSavedOnly}
+        savedIdsCount={bookmarkedIds.length}
+        onToggleSavedFilter={() => {
+          setViewMode('feed');
+          setShowSavedOnly((prev) => !prev);
+        }}
+      />
+
+      {/* MODAL 9: 🪿 HONK.EXE KLEPTOMANIAC CYBER-GOOSE & 3AM INTERDIMENSIONAL CHAOS LAB */}
       <UnhandledGooseSurprise
         isOpen={surpriseOpen}
         onClose={() => setSurpriseOpen(false)}

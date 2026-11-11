@@ -13011,5 +13011,342 @@ html[data-device="iphone-duo"] button {
   overflow: hidden;
 }
 
+/* ==========================================
+   PHASE 28.3–28.6: DECLUTTERED NAV, EXTRAS DRAWER, REELS LOOP & VIRAL SHARE
+   ========================================== */
+
+.tm-nav-primary-modes {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tm-nav-mode-pill {
+  padding: 7px 13px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  color: #e2e8f0;
+  transition: all 0.16s ease;
+}
+
+.tm-nav-mode-pill:hover {
+  border-color: #00f3ff;
+  color: #ffffff;
+}
+
+.tm-nav-mode-pill.active {
+  background: linear-gradient(135deg, rgba(0, 243, 255, 0.24), rgba(236, 72, 153, 0.24));
+  border-color: #00f3ff;
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(0, 243, 255, 0.25);
+}
+
+.tm-nav-games-dropdown-wrap {
+  position: relative;
+}
+
+.tm-nav-games-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 310px;
+  background: rgba(9, 13, 24, 0.98);
+  border: 1.5px solid #00f3ff;
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.75), 0 0 24px rgba(0, 243, 255, 0.2);
+  z-index: 1200;
+  backdrop-filter: blur(14px);
+}
+
+.tm-nav-games-popover-head {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #facc15;
+  margin-bottom: 8px;
+}
+
+.tm-nav-games-popover-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.tm-nav-game-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(30, 41, 59, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: #f8fafc;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.14s ease;
+}
+
+.tm-nav-game-item:hover,
+.tm-nav-game-item.active {
+  background: rgba(0, 243, 255, 0.16);
+  border-color: #00f3ff;
+}
+
+.tm-nav-game-icon {
+  font-size: 16px;
+}
+
+.tm-nav-game-label {
+  flex: 1;
+}
+
+.tm-nav-game-badge {
+  font-size: 10px;
+  font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(250, 204, 21, 0.18);
+  color: #fde047;
+}
+
+.tm-extras-hud-btn {
+  background: rgba(168, 85, 247, 0.16);
+  border-color: rgba(192, 132, 252, 0.5);
+  color: #f3e8ff;
+  font-weight: 800;
+}
+
+.tm-extras-hud-btn:hover {
+  background: rgba(168, 85, 247, 0.28);
+  border-color: #c084fc;
+}
+
+/* Unified 🕹️ Extras Drawer Modal */
+.tm-extras-drawer-backdrop {
+  z-index: 1500;
+}
+
+.tm-extras-drawer-card {
+  width: min(860px, 95vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  background: linear-gradient(165deg, rgba(9, 13, 24, 0.98), rgba(15, 23, 42, 0.98));
+  border: 2px solid #00f3ff;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 32px rgba(0, 243, 255, 0.22);
+}
+
+.tm-extras-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.tm-extras-drawer-kicker {
+  display: block;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #00f3ff;
+}
+
+.tm-extras-drawer-title {
+  margin: 2px 0 0;
+  font-size: 20px;
+  font-weight: 900;
+  color: #f8fafc;
+}
+
+.tm-extras-section {
+  margin-bottom: 18px;
+}
+
+.tm-extras-section-label {
+  font-size: 11.5px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: #facc15;
+  margin-bottom: 10px;
+}
+
+.tm-extras-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  gap: 10px;
+}
+
+.tm-extras-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(30, 41, 59, 0.65);
+  border: 1.5px solid rgba(148, 163, 184, 0.25);
+  color: #f8fafc;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+}
+
+.tm-extras-tile:hover,
+.tm-extras-tile.active {
+  transform: translateY(-2px);
+  border-color: #00f3ff;
+  background: rgba(0, 243, 255, 0.14);
+}
+
+.tm-extras-tile-wtf {
+  border-color: rgba(244, 114, 182, 0.55);
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.16), rgba(168, 85, 247, 0.16));
+}
+
+.tm-extras-tile-payphone {
+  border-color: rgba(250, 204, 21, 0.5);
+}
+
+.tm-extras-tile-icon {
+  font-size: 22px;
+}
+
+.tm-extras-tile-name {
+  font-size: 13px;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.tm-extras-tile-desc {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.tm-extras-toggles-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tm-extras-toggle-pill {
+  padding: 8px 13px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid rgba(148, 163, 184, 0.3);
+  color: #cbd5e1;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+
+.tm-extras-toggle-pill:hover,
+.tm-extras-toggle-pill.active {
+  border-color: #4ade80;
+  background: rgba(34, 197, 94, 0.16);
+  color: #ffffff;
+}
+
+/* Reels Quick-Loop 1-Tap "Remix this" & "Share" Pills */
+.tm-reels-quick-loop-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.tm-reels-remix-cta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 15px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #facc15, #f97316);
+  border: none;
+  color: #090d16;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(250, 204, 21, 0.4);
+  transition: transform 0.14s ease;
+}
+
+.tm-reels-remix-cta-pill:hover {
+  transform: scale(1.04);
+}
+
+.tm-reels-share-cta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid rgba(0, 243, 255, 0.6);
+  color: #f8fafc;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* Shared Link Recipient Banner & "Make your own ->" CTA in Theater View */
+.tm-shared-meme-recipient-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(0, 243, 255, 0.16), rgba(236, 72, 153, 0.18));
+  border: 1.5px solid #00f3ff;
+  color: #f8fafc;
+  font-size: 13px;
+}
+
+.tm-make-your-own-cta {
+  background: linear-gradient(135deg, #22c55e, #00f3ff) !important;
+  color: #050811 !important;
+  font-weight: 900 !important;
+  border: none !important;
+}
+
+.tm-shared-remix-btn {
+  background: rgba(250, 204, 21, 0.2) !important;
+  border-color: #facc15 !important;
+  color: #fde047 !important;
+  font-weight: 800 !important;
+}
+
+/* Mobile 390x844 First-Screen Declutter Rules */
+@media (max-width: 768px) {
+  /* Hide top NavbarHud in full-screen Reels mode on mobile so 390x844 shows 1 meme + <= 6 controls */
+  .tm-nav.tm-nav-reels-mode {
+    display: none !important;
+  }
+
+  .tm-extras-btn-label {
+    display: none;
+  }
+
+  .tm-trending-formats-wrap {
+    display: none;
+  }
+}
+
+
 
 

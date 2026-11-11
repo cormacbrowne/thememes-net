@@ -22,9 +22,11 @@ export default function MemeSoundboardBar({
   onSummonGoblin,
   goblinsLeftInWindow = ARCADE_RATE_LIMITS.GOBLINS_PER_WINDOW,
   goblinResetMs = 0,
-  onLaunchStampede
+  onLaunchStampede,
+  defaultExpanded = false
 }) {
   const [isExpanded, setIsExpanded] = useState(() => {
+    if (defaultExpanded) return true;
     if (typeof window === 'undefined') return false;
     return localStorage.getItem('tm_soundboard_open') === 'true';
   });

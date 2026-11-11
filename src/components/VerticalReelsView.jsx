@@ -11,6 +11,7 @@ export default function VerticalReelsView({
   onReaction,
   onToggleBookmark,
   onTriggerStudioMutate,
+  onCaptionThis,
   onShareMeme,
   onOpenProfile,
   onOpenTheater,
@@ -103,25 +104,25 @@ export default function VerticalReelsView({
 
   return (
     <div className="tm-reels-viewport">
-      {/* Top Floating Controls */}
+      {/* Top Floating Controls (Desktop shows Grid/+Upload; Mobile uses bottom 5-tab dock) */}
       <div className="tm-reels-top-nav">
         <button
           type="button"
-          className="tm-reels-pill-btn"
+          className="tm-reels-pill-btn tm-hide-mobile"
           onClick={onBackToFeed}
           title="Return to Grid Feed"
         >
           📱 Grid View
         </button>
         <span className="tm-reels-counter">
-          🎬 {currentIndex + 1} / {len}
+          🎬 {currentIndex + 1} / {len} • Double-tap to 🔥
         </span>
         <button
           type="button"
-          className="tm-reels-pill-btn tm-reels-pill-primary"
+          className="tm-reels-pill-btn tm-reels-pill-primary tm-hide-mobile"
           onClick={onOpenBlankStudio}
         >
-          + Upload
+          + Create
         </button>
       </div>
 
@@ -188,6 +189,36 @@ export default function VerticalReelsView({
                   <div className="tm-reels-date">
                     📅 {uploadInfo.dateTime} ({uploadInfo.relative})
                   </div>
+
+                  {/* Clear 1-Tap Remix & Share Quick Loop Bar */}
+                  <div className="tm-reels-quick-loop-row">
+                    <button
+                      type="button"
+                      className="tm-reels-remix-cta-pill"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onCaptionThis) {
+                          onCaptionThis(meme, e);
+                        } else if (onTriggerStudioMutate) {
+                          onTriggerStudioMutate(meme, e);
+                        }
+                      }}
+                      title="Open this exact meme template in the Studio to write your own caption!"
+                    >
+                      ✏️ Remix this
+                    </button>
+                    <button
+                      type="button"
+                      className="tm-reels-share-cta-pill"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onShareMeme) onShareMeme(meme, e);
+                      }}
+                      title="Copy or send a direct link to this exact meme"
+                    >
+                      🔗 Share
+                    </button>
+                  </div>
                 </div>
 
                 {/* Right-Hand Floating Action Bar */}
@@ -201,6 +232,30 @@ export default function VerticalReelsView({
                   >
                     <span className="tm-reels-action-icon">🔥</span>
                     <span className="tm-reels-action-lbl">{meme.score || 0}</span>
+                  </button>
+
+                  {/* 1-Tap Remix this Button */}
+                  <button
+                    type="button"
+                    className="tm-reels-action-btn tm-reels-remix-btn"
+                    onClick={(e) =>
+                      onCaptionThis ? onCaptionThis(meme, e) : onTriggerStudioMutate(meme, e)
+                    }
+                    title="Remix this meme (+150 XP)"
+                  >
+                    <span className="tm-reels-action-icon">✏️</span>
+                    <span className="tm-reels-action-lbl">Remix this</span>
+                  </button>
+
+                  {/* Native Share */}
+                  <button
+                    type="button"
+                    className="tm-reels-action-btn"
+                    onClick={(e) => onShareMeme(meme, e)}
+                    title="Share Meme / Copy Direct Link"
+                  >
+                    <span className="tm-reels-action-icon">🔗</span>
+                    <span className="tm-reels-action-lbl">Share</span>
                   </button>
 
                   {/* Comments Drawer Toggle */}
@@ -218,17 +273,6 @@ export default function VerticalReelsView({
                     </span>
                   </button>
 
-                  {/* 1-Tap Remix / Mutate Button */}
-                  <button
-                    type="button"
-                    className="tm-reels-action-btn tm-reels-remix-btn"
-                    onClick={(e) => onTriggerStudioMutate(meme, e)}
-                    title="Remix Meme in Studio (+150 XP)"
-                  >
-                    <span className="tm-reels-action-icon">🧬</span>
-                    <span className="tm-reels-action-lbl">Remix</span>
-                  </button>
-
                   {/* Save / Bookmark */}
                   {onToggleBookmark && (
                     <button
@@ -241,32 +285,6 @@ export default function VerticalReelsView({
                       <span className="tm-reels-action-lbl">{isSaved ? 'Saved' : 'Save'}</span>
                     </button>
                   )}
-
-                  {/* Native Share */}
-                  <button
-                    type="button"
-                    className="tm-reels-action-btn"
-                    onClick={(e) => onShareMeme(meme, e)}
-                    title="Share Meme / Copy Link"
-                  >
-                    <span className="tm-reels-action-icon">🔗</span>
-                    <span className="tm-reels-action-lbl">Share</span>
-                  </button>
-
-                  {/* Reactions Popover */}
-                  <div className="tm-reels-mini-reactions">
-                    {['💀', '😂', '🗿'].map((emoji) => (
-                      <button
-                        key={emoji}
-                        type="button"
-                        className="tm-reels-mini-react-btn"
-                        onClick={(e) => onReaction(meme.id, emoji, e)}
-                        title={`React ${emoji}`}
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
                 </aside>
 
                 {/* Inline Slide-Up Comments Drawer */}

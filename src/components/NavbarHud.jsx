@@ -1,31 +1,32 @@
+import { useState, useEffect, useRef } from 'react';
 import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
+
+const ARCADE_GAME_MODES = [
+  { id: 'pusher', icon: '🪙', label: "Coin Dozer '86", badge: '3D' },
+  { id: 'pinball', icon: '🎱', label: 'Neon Pinball', badge: '5 Tables' },
+  { id: 'blackjack', icon: '🃏', label: "Neon 21's", badge: 'Cards' },
+  { id: 'roulette', icon: '🎡', label: 'Lightning Roulette', badge: '150x' },
+  { id: 'slots', icon: '🎰', label: 'Vegas 777 Slots', badge: 'Jackpot' },
+  { id: 'crush', icon: '🍬', label: 'Meme Crush Saga', badge: 'Match-3' },
+  { id: 'stocks', icon: '📈', label: "MEMEDAQ '86", badge: 'Trade' },
+  { id: 'swipe', icon: '⚡', label: 'Speed Swipe', badge: 'Fast' },
+  { id: 'battle', icon: '⚔️', label: '1v1 Meme Arena', badge: 'Versus' }
+];
 
 export default function NavbarHud({
   comboTimer,
   combo,
   dbStatus,
   currentRank,
-  equippedFlair,
-  xp,
-  xpProgress,
   tokens = 50,
-  dailyTokensEarned = 0,
   xpConversionState = null,
-  xpAutoConvert = true,
   reactorFlash = false,
   onExchangeXpForTokens,
   viewMode = 'feed',
   onSelectViewMode,
-  litePerfMode = false,
-  onToggleLitePerf,
-  crtOn,
-  onToggleCrt,
-  soundOn,
-  onToggleSound,
   onOpenBlankStudio,
-  onOpenLeaderboard,
   onOpenRewards,
-  unclaimedRewardsCount,
+  unclaimedRewardsCount = 0,
   onOpenProfile,
   user,
   onLogout,
@@ -33,19 +34,24 @@ export default function NavbarHud({
   onResetFeed,
   canGoBack,
   onNavigateBack,
-  aiAssistantOpen = false,
-  onToggleAiAssistant,
-  onOpenSurprise
+  onOpenExtras
 }) {
-  const reactorPct = xpConversionState ? xpConversionState.progressPct : 0;
-  const reactorProgressXp = xpConversionState ? xpConversionState.progressXp : 0;
-  const reactorRemainingXp = xpConversionState ? xpConversionState.xpRemaining : 100;
+  const [gamesMenuOpen, setGamesMenuOpen] = useState(false);
+  const gamesMenuRef = useRef(null);
+
   const reactorReadyTokens = xpConversionState ? xpConversionState.readyTokens : 0;
-  const reactorCapped = xpConversionState ? xpConversionState.isDailyCapped : false;
-  const ringRadius = 13;
-  const ringCircumference = 2 * Math.PI * ringRadius;
-  const ringDashOffset =
-    ringCircumference - ((reactorReadyTokens > 0 ? 100 : reactorPct) / 100) * ringCircumference;
+  const activeGame = ARCADE_GAME_MODES.find((g) => g.id === viewMode);
+
+  useEffect(() => {
+    if (!gamesMenuOpen) return undefined;
+    const handleClickOutside = (e) => {
+      if (gamesMenuRef.current && !gamesMenuRef.current.contains(e.target)) {
+        setGamesMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [gamesMenuOpen]);
 
   return (
     <>
@@ -57,8 +63,8 @@ export default function NavbarHud({
         />
       </div>
 
-      {/* CLEAN, STREAMLINED TOP NAVIGATION BAR */}
-      <header className="tm-nav">
+      {/* STREAMLINED TOP NAVIGATION BAR (<= 6 Primary Controls) */}
+      <header className={`tm-nav ${viewMode === 'reels' ? 'tm-nav-reels-mode' : ''}`}>
         <div className="tm-brand-group">
           {canGoBack && (
             <button
@@ -80,8 +86,8 @@ export default function NavbarHud({
                 src="/logo-512.png"
                 alt="THE MEMES.net Friendly Cyber-Arcade Star Mascot Logo"
                 className="tm-mascot-logo-img"
-                width="38"
-                height="38"
+                width="36"
+                height="36"
                 onError={(e) => {
                   e.currentTarget.src = '/favicon.svg';
                 }}
@@ -97,278 +103,120 @@ export default function NavbarHud({
           </div>
         </div>
 
-        <div className="tm-hud">
-          {/* Side-Entertainment Quick Shortcuts */}
-          {onSelectViewMode && (
-            <div className="tm-nav-subgames tm-hide-mobile">
+        {/* DESKTOP PRIMARY MODE SWITCHER: Memes / Reels / Games */}
+        {onSelectViewMode && (
+          <nav className="tm-nav-primary-modes tm-hide-mobile" aria-label="Primary Views">
+            <button
+              type="button"
+              className={`tm-btn tm-nav-mode-pill ${viewMode === 'feed' ? 'active' : ''}`}
+              onClick={() => onSelectViewMode('feed')}
+            >
+              📱 Memes
+            </button>
+            <button
+              type="button"
+              className={`tm-btn tm-nav-mode-pill ${viewMode === 'reels' ? 'active' : ''}`}
+              onClick={() => onSelectViewMode('reels')}
+            >
+              🎬 Reels
+            </button>
+
+            <div className="tm-nav-games-dropdown-wrap" ref={gamesMenuRef}>
               <button
                 type="button"
-                className={`tm-btn tm-subgame-nav-pill ${viewMode === 'pusher' ? 'active' : ''}`}
-                onClick={() => onSelectViewMode('pusher')}
-                style={{
-                  borderColor: '#facc15',
-                  background:
-                    viewMode === 'pusher'
-                      ? 'linear-gradient(135deg, #facc15, #f97316)'
-                      : 'rgba(250, 204, 21, 0.16)',
-                  color: viewMode === 'pusher' ? '#090d16' : '#fde047',
-                  fontWeight: 900
-                }}
-                title="Play Neon Coin Dozer '86 — Push Coins, Diamonds & Prizes Over the Edge!"
+                className={`tm-btn tm-nav-mode-pill ${activeGame ? 'active' : ''}`}
+                onClick={() => setGamesMenuOpen((prev) => !prev)}
+                aria-expanded={gamesMenuOpen}
+                title="Open Arcade Games Menu"
               >
-                🪙 Coin Dozer
+                🕹️ {activeGame ? activeGame.label : 'Games'} ▾
               </button>
-              <button
-                type="button"
-                className={`tm-btn tm-subgame-nav-pill ${viewMode === 'pinball' ? 'active' : ''}`}
-                onClick={() => onSelectViewMode('pinball')}
-                title="Play 5-Table 80s Hyper-Neon Cyber-Pinball (Center-Stage Widescreen)!"
-              >
-                🎱 Pinball
-              </button>
-              <button
-                type="button"
-                className={`tm-btn tm-subgame-nav-pill ${viewMode === 'blackjack' ? 'active' : ''}`}
-                onClick={() => onSelectViewMode('blackjack')}
-                title="Play Neon 21's Blackjack vs Dealer Bot '86!"
-              >
-                🃏 21&apos;s
-              </button>
-              <button
-                type="button"
-                className={`tm-btn tm-subgame-nav-pill ${viewMode === 'roulette' ? 'active' : ''}`}
-                onClick={() => onSelectViewMode('roulette')}
-                title="Spin Neon Lightning Roulette '86 (Up to 150x Multipliers)!"
-              >
-                🎡 Roulette
-              </button>
-              <button
-                type="button"
-                className={`tm-btn tm-subgame-nav-pill ${viewMode === 'slots' ? 'active' : ''}`}
-                onClick={() => onSelectViewMode('slots')}
-                title="Play THE MEMES.net Las Vegas 777 Slot Machine!"
-              >
-                🎰 Slots
-              </button>
-              <button
-                type="button"
-                className={`tm-btn tm-subgame-nav-pill ${viewMode === 'crush' ? 'active' : ''}`}
-                onClick={() => onSelectViewMode('crush')}
-                title="Play Meme Crush Saga — Candy-Crush Style Match-3 Puzzle!"
-              >
-                🍬 Crush
-              </button>
-              <button
-                type="button"
-                className={`tm-btn tm-subgame-nav-pill ${viewMode === 'stocks' ? 'active' : ''}`}
-                onClick={() => onSelectViewMode('stocks')}
-                title="Trade hilarious meme stocks on MEMEDAQ '86!"
-              >
-                📈 Stocks
-              </button>
-              {onOpenSurprise && (
-                <button
-                  type="button"
-                  className="tm-btn tm-subgame-nav-pill tm-wtf-surprise-btn"
-                  onClick={onOpenSurprise}
-                  title="🪿 DO NOT CLICK: Unleash HONK.EXE Cyber-Goose & 3:00 AM Interdimensional Chaos Lab!"
-                >
-                  🪿 WTF?!
-                </button>
+
+              {gamesMenuOpen && (
+                <div className="tm-nav-games-popover" role="menu">
+                  <div className="tm-nav-games-popover-head">🕹️ SELECT ARCADE CABINET</div>
+                  <div className="tm-nav-games-popover-grid">
+                    {ARCADE_GAME_MODES.map((game) => (
+                      <button
+                        key={game.id}
+                        type="button"
+                        className={`tm-nav-game-item ${viewMode === game.id ? 'active' : ''}`}
+                        onClick={() => {
+                          setGamesMenuOpen(false);
+                          onSelectViewMode(game.id);
+                        }}
+                      >
+                        <span className="tm-nav-game-icon">{game.icon}</span>
+                        <span className="tm-nav-game-label">{game.label}</span>
+                        <span className="tm-nav-game-badge">{game.badge}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
-          )}
+          </nav>
+        )}
 
-          {/* Fair Arcade Token Wallet & Daily Collection Cap Indicator */}
-          <div
-            className={`tm-token-wallet-pill ${reactorFlash ? 'tm-wallet-mint-flash' : ''}`}
-            onClick={onOpenRewards}
-            title={`Arcade Token Wallet: ${tokens} Tokens • Daily Earned via Memes/Quests/Reactor: ${dailyTokensEarned}/${ARCADE_ECONOMY_RULES.MAX_DAILY_EARNED_TOKENS}`}
-          >
-            <span className="tm-token-coin">🪙</span>
-            <div>
-              <div className="tm-token-balance">{tokens} Tokens</div>
-              <div className="tm-token-cap-sub">
-                {dailyTokensEarned}/{ARCADE_ECONOMY_RULES.MAX_DAILY_EARNED_TOKENS} Earned
-              </div>
-            </div>
-          </div>
-
-          {/* LIVE XP-TO-TOKEN CONVERSION GRAPHIC RING */}
-          {xpConversionState && (
-            <div
-              className={`tm-xp-reactor-pill ${reactorReadyTokens > 0 ? 'ready' : ''} ${
-                reactorFlash ? 'flash' : ''
-              }`}
-              onClick={(e) => {
-                if (reactorReadyTokens > 0 && onExchangeXpForTokens) {
-                  onExchangeXpForTokens(e);
-                } else if (onOpenRewards) {
-                  onOpenRewards();
-                }
-              }}
-              title={
-                reactorCapped
-                  ? `XP-to-Token Reactor: Daily 50 🪙 limit reached! Resets at midnight.`
-                  : reactorReadyTokens > 0
-                    ? `Click to Exchange ${xpConversionState.readyUnits * 100} XP → +${reactorReadyTokens} 🪙 right now! (Your Rank XP never drops)`
-                    : `XP-to-Token Reactor (${xpAutoConvert ? 'AUTO' : 'MANUAL'}): ${reactorProgressXp}/100 XP — Only ${reactorRemainingXp} XP until +5 🪙 mints!`
-              }
-            >
-              <div className="tm-xp-reactor-svg-wrap">
-                <svg width="34" height="34" viewBox="0 0 34 34" className="tm-xp-reactor-svg">
-                  <defs>
-                    <linearGradient id="tmXpReactorGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#22d3ee" />
-                      <stop offset="55%" stopColor="#f472b6" />
-                      <stop offset="100%" stopColor="#facc15" />
-                    </linearGradient>
-                  </defs>
-                  <circle
-                    cx="17"
-                    cy="17"
-                    r={ringRadius}
-                    fill="rgba(15, 23, 42, 0.9)"
-                    stroke="rgba(148, 163, 184, 0.22)"
-                    strokeWidth="3.5"
-                  />
-                  <circle
-                    cx="17"
-                    cy="17"
-                    r={ringRadius}
-                    fill="none"
-                    stroke="url(#tmXpReactorGrad)"
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                    strokeDasharray={ringCircumference}
-                    strokeDashoffset={ringDashOffset}
-                    transform="rotate(-90 17 17)"
-                    style={{ transition: 'stroke-dashoffset 0.45s cubic-bezier(0.22, 1, 0.36, 1)' }}
-                  />
-                </svg>
-                <span className="tm-xp-reactor-center-icon">
-                  {reactorFlash ? '🪙' : reactorReadyTokens > 0 ? '🔥' : '⚡'}
-                </span>
-              </div>
-              <div className="tm-xp-reactor-meta tm-hide-mobile">
-                <div className="tm-xp-reactor-top">
-                  {reactorFlash
-                    ? '+5 🪙 MINTED!'
-                    : reactorReadyTokens > 0
-                      ? `MINT +${reactorReadyTokens} 🪙!`
-                      : `${reactorProgressXp}/100 XP`}
-                </div>
-                <div className="tm-xp-reactor-sub">
-                  {reactorCapped
-                    ? 'MAX 50🪙/DAY'
-                    : reactorReadyTokens > 0
-                      ? 'TAP TO EXCHANGE'
-                      : `${reactorRemainingXp} XP → +5 🪙`}
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div
-            className="tm-xp-box tm-hide-mobile"
-            style={{ cursor: 'pointer' }}
-            onClick={() => onOpenProfile(user?.username || 'You (Arcade Player)')}
-            title="Click to inspect your Arcade Player Card & Badges"
-          >
-            <div className="tm-xp-top">
-              <span>
-                Lv.{currentRank.level}{' '}
-                <span className="tm-xp-rank-title">{equippedFlair || currentRank.title}</span>
-              </span>
-              <span style={{ color: '#facc15' }}>{xp} XP</span>
-            </div>
-            <div className="tm-xp-track">
-              <div className="tm-xp-bar" style={{ width: `${xpProgress}%` }} />
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="tm-btn tm-rewards-hud-btn"
-            onClick={onOpenRewards}
-            title="Open Arcade Vault: Token Ledger, Wheel of Chaos, Slots & Quests"
-          >
-            🎰 <span className="tm-hide-mobile">Vault</span>
-            {unclaimedRewardsCount > 0 && (
-              <span className="tm-reward-alert-dot">{unclaimedRewardsCount}</span>
-            )}
-          </button>
-
-          <button
-            type="button"
-            className="tm-btn tm-hide-mobile"
-            onClick={onOpenLeaderboard}
-            title="Open Cyber-Arcade Hall of Fame Leaderboard"
-          >
-            🏆 Ranks
-          </button>
-
-          {onToggleAiAssistant && (
-            <button
-              type="button"
-              className={`tm-btn tm-ai-nav-btn ${aiAssistantOpen ? 'active' : ''}`}
-              onClick={onToggleAiAssistant}
-              title="Open CYBER-ORACLE '86 — Interactive AI Assistant & Smart Strategy Guide"
-            >
-              🤖 <span className="tm-hide-mobile">AI</span>
-            </button>
-          )}
-
-          {onToggleLitePerf && (
-            <button
-              type="button"
-              className={`tm-btn tm-btn-icon-mobile ${litePerfMode ? 'tm-btn-crt-active' : ''}`}
-              onClick={onToggleLitePerf}
-              title={
-                litePerfMode
-                  ? 'Turbo iPad/Mobile FPS Mode ON (Smooth low-CPU graphics — tap to toggle)'
-                  : 'Enable Turbo FPS Mode for older iPads & battery saving'
-              }
-            >
-              ⚡
-            </button>
-          )}
-
-          <button
-            type="button"
-            className="tm-btn tm-btn-icon-mobile"
-            onClick={onToggleSound}
-            title={soundOn ? 'Mute Sound Effects' : 'Enable Sound Effects'}
-          >
-            {soundOn ? '🔊' : '🔇'}
-          </button>
-
-          <button
-            type="button"
-            className={`tm-btn tm-btn-icon-mobile tm-hide-mobile ${crtOn ? 'tm-btn-crt-active' : ''}`}
-            onClick={onToggleCrt}
-            title="Toggle Retro CRT Scanline Shader"
-          >
-            📺
-          </button>
-
+        <div className="tm-hud">
+          {/* 1. +CREATE PRIMARY BUTTON (Desktop) */}
           <button
             type="button"
             className="tm-btn tm-btn-primary tm-hide-mobile"
             onClick={onOpenBlankStudio}
+            title="Create or Remix a Meme in the Studio"
           >
-            📸 + Upload
+            ➕ Create
           </button>
 
+          {/* 2. UNIFIED WALLET / VAULT PILL */}
+          <button
+            type="button"
+            className={`tm-token-wallet-pill ${reactorFlash ? 'tm-wallet-mint-flash' : ''}`}
+            onClick={(e) => {
+              if (reactorReadyTokens > 0 && onExchangeXpForTokens) {
+                onExchangeXpForTokens(e);
+              } else if (onOpenRewards) {
+                onOpenRewards();
+              }
+            }}
+            title={
+              reactorReadyTokens > 0
+                ? `Tap to mint +${reactorReadyTokens} 🪙 from your XP Reactor!`
+                : `Arcade Wallet & Vault (Lv.${currentRank?.level || 1} • Max ${ARCADE_ECONOMY_RULES.MAX_DAILY_EARNED_TOKENS}/day)`
+            }
+          >
+            <span className="tm-token-coin">{reactorReadyTokens > 0 ? '🔥' : '🪙'}</span>
+            <span className="tm-token-balance">{tokens}</span>
+            {(unclaimedRewardsCount > 0 || reactorReadyTokens > 0) && (
+              <span className="tm-reward-alert-dot">
+                {reactorReadyTokens > 0 ? `+${reactorReadyTokens}` : unclaimedRewardsCount}
+              </span>
+            )}
+          </button>
+
+          {/* 3. UNIFIED EXTRAS DRAWER BUTTON */}
+          {onOpenExtras && (
+            <button
+              type="button"
+              className="tm-btn tm-extras-hud-btn"
+              onClick={onOpenExtras}
+              title="Open Extras Drawer: 16-Pad Soundboard, WTF?! Goose, 1-800-MEME Payphone, Boss Key, CRT, Turbo & Device Badge"
+            >
+              🕹️ <span className="tm-extras-btn-label">Extras</span>
+            </button>
+          )}
+
+          {/* 4. PROFILE / JOIN BUTTON (Desktop; Mobile uses bottom dock Profile tab) */}
           {user ? (
-            <div style={{ display: 'inline-flex', gap: '4px' }}>
+            <div className="tm-hide-mobile" style={{ display: 'inline-flex', gap: '4px' }}>
               <button
                 type="button"
                 className="tm-btn tm-user-btn"
                 onClick={() => onOpenProfile(user.username)}
-                title={user.verified ? `Verified via ${user.provider || 'Auth'}` : 'Guest Session'}
+                title={user.verified ? `Verified via ${user.provider || 'Auth'}` : 'Player Profile'}
               >
-                {user.verified ? '🛡️' : '👾'}{' '}
+                {user.verified ? '🛡️' : '👤'}{' '}
                 <span className="tm-username-trunc">@{user.username}</span>
               </button>
               <button
@@ -376,14 +224,19 @@ export default function NavbarHud({
                 className="tm-btn"
                 onClick={onLogout}
                 title="Log out"
-                style={{ padding: '8px 10px' }}
+                style={{ padding: '6px 9px' }}
               >
                 🚪
               </button>
             </div>
           ) : (
-            <button type="button" className="tm-btn tm-auth-cta" onClick={onOpenAuthModal}>
-              🛡️ Join
+            <button
+              type="button"
+              className="tm-btn tm-auth-cta tm-hide-mobile"
+              onClick={onOpenAuthModal}
+              title="Sign in or create your Arcade Profile"
+            >
+              👤 Profile
             </button>
           )}
         </div>

@@ -116,6 +116,7 @@ export default function ArcadeAiAssistant({
   payphoneClaimedToday = false,
   pinataClaimedToday = false,
   viewMode = 'feed',
+  fabUnlocked = false,
   memes = [],
   onSelectViewMode,
   onOpenBlankStudio,
@@ -163,6 +164,7 @@ export default function ArcadeAiAssistant({
   // Speak text aloud in HAL 9000 or K.I.T.T. voice using crystal-clear iOS/PC Web Speech API
   const speakLine = useCallback(
     (rawText, modeOverride = null, forceSpeak = false) => {
+      if (!sfx.hasUserGesture) return;
       const activeMode = modeOverride || persona;
       // 1. Unlock iOS AudioContext & 'playback' audioSession first
       sfx.unlockIosAudio?.();
@@ -766,8 +768,8 @@ export default function ArcadeAiAssistant({
   };
 
   if (!isOpen) {
-    // Never render floating bottom-right button during games/interactive modes so it never blocks game controls!
-    if (viewMode !== 'feed') {
+    // Progressive reveal: hide FAB on first visit until unlocked (and never show during games/reels)
+    if (viewMode !== 'feed' || !fabUnlocked) {
       return null;
     }
     return (

@@ -47,12 +47,11 @@ const PAYPHONE_DIRECTORY = [
 ];
 
 function playDtmfTone(digit) {
+  if (!sfx.enabled || !sfx.hasUserGesture) return;
   try {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = sfx.ctx || new AudioCtx();
-    sfx.ctx = ctx;
-    if (ctx.state === 'suspended') ctx.resume();
+    sfx.init();
+    const ctx = sfx.ctx;
+    if (!ctx) return;
     const dtmfMap = {
       '1': [697, 1209],
       '2': [697, 1336],
@@ -110,6 +109,7 @@ export default function DankPetWidget({
   memes = [],
   onSelectViewMode,
   viewMode = 'feed',
+  unlocked = false,
   externalPayphoneOpen = false,
   onToggleExternalPayphone = null
 }) {
@@ -733,8 +733,8 @@ export default function DankPetWidget({
         </div>
       )}
 
-      {/* CORNER BIG RED "DO NOT PRESS" CHAOS BUTTON + 1986 NEON PAYPHONE HOTLINE (ONLY ON FEED VIEW) */}
-      {isFeedMode && !minimized && (
+      {/* CORNER BIG RED "DO NOT PRESS" CHAOS BUTTON + 1986 NEON PAYPHONE HOTLINE (PROGRESSIVELY UNLOCKED ON FEED VIEW) */}
+      {unlocked && isFeedMode && !minimized && (
         <div className="tm-donotpress-dock">
           <button
             type="button"

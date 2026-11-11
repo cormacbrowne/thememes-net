@@ -3,17 +3,30 @@ import { useState } from 'react';
 export default function MobileArcadeDock({
   viewMode,
   showStudio,
-  showLeaderboard,
+  showProfile,
   isAnyModalOpen,
   onSelectMode,
   onOpenBlankStudio,
   onOpenLeaderboard,
+  onOpenExtras,
+  onOpenProfile,
   onNavigateBack,
   onToggleAiAssistant
 }) {
   const [showGamesMenu, setShowGamesMenu] = useState(false);
 
-  const isSideGameActive = ['pusher', 'blackjack', 'roulette', 'slots', 'crush', 'pinball', 'stocks', 'battle', 'swipe'].includes(viewMode);
+  const isSideGameActive = [
+    'pusher',
+    'blackjack',
+    'roulette',
+    'slots',
+    'crush',
+    'pinball',
+    'stocks',
+    'battle',
+    'arena',
+    'swipe'
+  ].includes(viewMode);
 
   const handlePickMode = (mode) => {
     setShowGamesMenu(false);
@@ -22,27 +35,40 @@ export default function MobileArcadeDock({
 
   return (
     <>
-      {/* Pop-Up Side-Entertainment Games Drawer above the Mobile Dock */}
+      {/* Pop-Up Side-Entertainment Games & Extras Drawer above the Mobile Dock */}
       {showGamesMenu && !isAnyModalOpen && (
         <div
           className="tm-dock-games-drawer"
           role="dialog"
-          aria-label="Side Entertainment Arcade Games"
+          aria-label="Side Entertainment Arcade Games & Extras"
         >
           <div className="tm-dock-games-drawer-head">
-            <span>🕹️ SIDE-ENTERTAINMENT ARCADE</span>
+            <span>🕹️ ARCADE GAMES &amp; EXTRAS</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {onToggleAiAssistant && (
+              {onOpenExtras && (
                 <button
                   type="button"
                   className="tm-btn tm-btn-primary"
                   style={{ padding: '4px 9px', fontSize: '11px' }}
                   onClick={() => {
                     setShowGamesMenu(false);
+                    onOpenExtras();
+                  }}
+                >
+                  🎹 Extras &amp; SFX
+                </button>
+              )}
+              {onToggleAiAssistant && (
+                <button
+                  type="button"
+                  className="tm-btn"
+                  style={{ padding: '4px 9px', fontSize: '11px' }}
+                  onClick={() => {
+                    setShowGamesMenu(false);
                     onToggleAiAssistant();
                   }}
                 >
-                  🤖 Ask Cyber-AI
+                  🤖 AI
                 </button>
               )}
               <button
@@ -62,11 +88,22 @@ export default function MobileArcadeDock({
               style={{
                 gridColumn: '1 / -1',
                 borderColor: '#facc15',
-                background: 'linear-gradient(135deg, rgba(250, 204, 21, 0.25), rgba(236, 72, 153, 0.22))'
+                background:
+                  'linear-gradient(135deg, rgba(250, 204, 21, 0.25), rgba(236, 72, 153, 0.22))'
               }}
             >
               <span>🪙</span>
-              <strong style={{ color: '#fde047' }}>🔥 Neon Coin Dozer &apos;86 (NEW Prize Pusher!)</strong>
+              <strong style={{ color: '#fde047' }}>
+                🔥 Neon Coin Dozer &apos;86 (3D Prize Pusher)
+              </strong>
+            </button>
+            <button
+              type="button"
+              className={`tm-dock-game-chip ${viewMode === 'pinball' ? 'active' : ''}`}
+              onClick={() => handlePickMode('pinball')}
+            >
+              <span>🎱</span>
+              <strong>Pinball (5 Tbl)</strong>
             </button>
             <button
               type="button"
@@ -74,7 +111,7 @@ export default function MobileArcadeDock({
               onClick={() => handlePickMode('blackjack')}
             >
               <span>🃏</span>
-              <strong>Neon 21&apos;s (Blackjack)</strong>
+              <strong>Neon 21&apos;s</strong>
             </button>
             <button
               type="button"
@@ -90,7 +127,15 @@ export default function MobileArcadeDock({
               onClick={() => handlePickMode('slots')}
             >
               <span>🎰</span>
-              <strong>One-Arm Bandit</strong>
+              <strong>Vegas 777 Slots</strong>
+            </button>
+            <button
+              type="button"
+              className={`tm-dock-game-chip ${viewMode === 'crush' ? 'active' : ''}`}
+              onClick={() => handlePickMode('crush')}
+            >
+              <span>🍬</span>
+              <strong>Meme Crush</strong>
             </button>
             <button
               type="button"
@@ -99,22 +144,6 @@ export default function MobileArcadeDock({
             >
               <span>📈</span>
               <strong>Meme Stocks</strong>
-            </button>
-            <button
-              type="button"
-              className={`tm-dock-game-chip ${viewMode === 'crush' ? 'active' : ''}`}
-              onClick={() => handlePickMode('crush')}
-            >
-              <span>🍬</span>
-              <strong>Meme Crush (10 Lv)</strong>
-            </button>
-            <button
-              type="button"
-              className={`tm-dock-game-chip ${viewMode === 'pinball' ? 'active' : ''}`}
-              onClick={() => handlePickMode('pinball')}
-            >
-              <span>🎱</span>
-              <strong>Pinball (5 Tbl)</strong>
             </button>
             <button
               type="button"
@@ -132,10 +161,37 @@ export default function MobileArcadeDock({
               <span>⚡</span>
               <strong>Hyper Swipe</strong>
             </button>
+            {onOpenLeaderboard && (
+              <button
+                type="button"
+                className="tm-dock-game-chip"
+                onClick={() => {
+                  setShowGamesMenu(false);
+                  onOpenLeaderboard();
+                }}
+              >
+                <span>🏆</span>
+                <strong>Hall of Fame Ranks</strong>
+              </button>
+            )}
+            {onOpenExtras && (
+              <button
+                type="button"
+                className="tm-dock-game-chip"
+                onClick={() => {
+                  setShowGamesMenu(false);
+                  onOpenExtras();
+                }}
+              >
+                <span>🕹️</span>
+                <strong>Extras &amp; Soundboard</strong>
+              </button>
+            )}
           </div>
         </div>
       )}
 
+      {/* 5-BUTTON THUMB DOCK: Memes / Reels / +Create / Games / Profile */}
       <nav className="tm-mobile-dock" aria-label="Arcade Bottom Dock">
         {isAnyModalOpen ? (
           <button
@@ -171,23 +227,14 @@ export default function MobileArcadeDock({
 
         <button
           type="button"
-          className={`tm-dock-btn ${viewMode === 'pusher' && !isAnyModalOpen ? 'active' : ''}`}
-          onClick={() => handlePickMode('pusher')}
-        >
-          <span className="tm-dock-icon">🪙</span>
-          <span>Dozer</span>
-        </button>
-
-        <button
-          type="button"
           className={`tm-dock-btn tm-dock-btn-forge ${showStudio ? 'active' : ''}`}
           onClick={() => {
             setShowGamesMenu(false);
             onOpenBlankStudio();
           }}
         >
-          <span className="tm-dock-icon">{showStudio ? '✕' : '📸'}</span>
-          <span>{showStudio ? 'Close' : '+Upload'}</span>
+          <span className="tm-dock-icon">{showStudio ? '✕' : '➕'}</span>
+          <span>{showStudio ? 'Close' : '+Create'}</span>
         </button>
 
         <button
@@ -201,14 +248,14 @@ export default function MobileArcadeDock({
 
         <button
           type="button"
-          className={`tm-dock-btn ${showLeaderboard ? 'active' : ''}`}
+          className={`tm-dock-btn ${showProfile ? 'active' : ''}`}
           onClick={() => {
             setShowGamesMenu(false);
-            onOpenLeaderboard();
+            if (onOpenProfile) onOpenProfile();
           }}
         >
-          <span className="tm-dock-icon">🏆</span>
-          <span>Ranks</span>
+          <span className="tm-dock-icon">👤</span>
+          <span>Profile</span>
         </button>
       </nav>
     </>

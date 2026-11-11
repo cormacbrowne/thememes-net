@@ -13,6 +13,9 @@ export default function MemeTheaterModal({
   onVote,
   onReaction,
   onTriggerStudioMutate,
+  onCaptionThis,
+  onOpenBlankStudio,
+  openedFromShareLink = false,
   onSelectMeme,
   onClose,
   onShareMeme
@@ -166,13 +169,60 @@ export default function MemeTheaterModal({
               </button>
             )}
             <button type="button" className="tm-btn" onClick={handleCopyPermalink}>
-              {copiedLink ? '✅ Shared / Copied!' : '🔗 Share'}
+              {copiedLink ? '✅ Link Copied!' : '🔗 Share'}
             </button>
+            {onOpenBlankStudio && (
+              <button
+                type="button"
+                className="tm-btn tm-btn-primary tm-make-your-own-cta"
+                onClick={() => {
+                  onClose();
+                  onOpenBlankStudio();
+                }}
+                title="Create your own meme in < 15 seconds!"
+              >
+                ✨ Make your own →
+              </button>
+            )}
             <button type="button" className="tm-btn" onClick={onClose} aria-label="Close modal">
               ✕ Close
             </button>
           </div>
         </div>
+
+        {openedFromShareLink && (
+          <div className="tm-shared-meme-recipient-banner">
+            <span>🔥 Someone shared this meme with you on <strong>THE MEMES.net</strong>!</span>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className="tm-btn tm-shared-remix-btn"
+                onClick={(e) => {
+                  onClose();
+                  if (onCaptionThis) {
+                    onCaptionThis(meme, e);
+                  } else if (onTriggerStudioMutate) {
+                    onTriggerStudioMutate(meme, e);
+                  }
+                }}
+              >
+                ✏️ Remix this
+              </button>
+              {onOpenBlankStudio && (
+                <button
+                  type="button"
+                  className="tm-btn tm-btn-primary tm-make-your-own-cta"
+                  onClick={() => {
+                    onClose();
+                    onOpenBlankStudio();
+                  }}
+                >
+                  Make your own →
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Main Split Layout: High-Res Stage (Left) + Lineage & Comments (Right) */}
         <div className="tm-theater-grid">
@@ -231,11 +281,28 @@ export default function MemeTheaterModal({
                 className="tm-mutate-btn"
                 onClick={(e) => {
                   onClose();
-                  onTriggerStudioMutate(meme, e);
+                  if (onCaptionThis) {
+                    onCaptionThis(meme, e);
+                  } else {
+                    onTriggerStudioMutate(meme, e);
+                  }
                 }}
               >
-                🧬 Remix Meme (+35 🪙 &amp; +110 XP)
+                ✏️ Remix this (+35 🪙)
               </button>
+
+              {onOpenBlankStudio && (
+                <button
+                  type="button"
+                  className="tm-btn tm-btn-primary tm-make-your-own-cta"
+                  onClick={() => {
+                    onClose();
+                    onOpenBlankStudio();
+                  }}
+                >
+                  Make your own →
+                </button>
+              )}
             </div>
           </div>
 

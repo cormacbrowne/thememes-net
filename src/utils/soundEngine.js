@@ -37,6 +37,7 @@ export class SoundEngine {
   constructor() {
     this.ctx = null;
     this.enabled = true;
+    this.hasUserGesture = false;
     this.unlocked = false;
     this.speechUnlocked = false;
     this.iosAudioEl = null;
@@ -70,6 +71,7 @@ export class SoundEngine {
 
   _bindGlobalUnlockListeners() {
     const unlockHandler = () => {
+      this.hasUserGesture = true;
       this.unlockIosAudio();
     };
 
@@ -80,7 +82,7 @@ export class SoundEngine {
 
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible' && this.ctx) {
+        if (document.visibilityState === 'visible' && this.hasUserGesture && this.ctx) {
           this._configureIosAudioSession();
           if (this.ctx.state !== 'running') {
             this.ctx.resume().catch(() => {});
@@ -91,6 +93,7 @@ export class SoundEngine {
   }
 
   unlockIosAudio() {
+    if (!this.hasUserGesture) return;
     try {
       this._configureIosAudioSession();
 
@@ -1269,6 +1272,7 @@ export class SoundEngine {
   }
 
   triggerHaptic(ms = 14) {
+    if (!this.hasUserGesture) return;
     try {
       if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
         navigator.vibrate(ms);

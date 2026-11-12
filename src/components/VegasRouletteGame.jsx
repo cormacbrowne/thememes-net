@@ -51,8 +51,11 @@ export default function VegasRouletteGame({
 }) {
   const chipSizes = ARCADE_ECONOMY_RULES.ARCADE_STAKES.ROULETTE_CHIPS || [1, 5, 10, 25];
 
-  const [selectedChip, setSelectedChip] = useState(5);
-  const [practiceMode, setPracticeMode] = useState(false);
+  const smallestChip = chipSizes[0] || 1;
+  const [selectedChip, setSelectedChip] = useState(() =>
+    tokens >= 5 ? 5 : smallestChip
+  );
+  const [practiceMode, setPracticeMode] = useState(() => tokens < smallestChip);
 
   // Bets map: { 'n_17': 10, 'red': 5, 'doz2': 5, ... }
   const [bets, setBets] = useState({});
@@ -62,8 +65,10 @@ export default function VegasRouletteGame({
   const [winningNum, setWinningNum] = useState(null);
   const [lightningMap, setLightningMap] = useState({}); // { 17: 100, 0: 150, 23: 50 }
   const [history, setHistory] = useState([17, 0, 32, 7, 24, 19, 8, 36]);
-  const [statusBanner, setStatusBanner] = useState(
-    'Tap Red/Black or a number to bet (30× straight, 150× lightning).'
+  const [statusBanner, setStatusBanner] = useState(() =>
+    tokens < smallestChip
+      ? 'Free Practice on — tap Red, Black, or numbers to spin.'
+      : 'Tap Red/Black or a number to bet (30× straight, 150× lightning).'
   );
   const [lastWinInfo, setLastWinInfo] = useState(null); // { payout, num, lightningMult }
   const [bestWin, setBestWin] = useState(() =>

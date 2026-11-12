@@ -226,6 +226,15 @@
   overflow-x: hidden;
 }
 
+.tm-gs-compliance {
+  flex-shrink: 0;
+  margin: 4px 0 0;
+  text-align: center;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  color: #94a3b8;
+}
+
 @media (max-width: 860px) {
   .tm-gs-shell {
     padding-top: max(4px, env(safe-area-inset-top));

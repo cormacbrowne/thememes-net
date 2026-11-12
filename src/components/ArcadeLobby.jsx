@@ -211,6 +211,10 @@ export default function ArcadeLobby({
           </div>
         ))
       )}
+
+      <p className="tm-lobby-compliance">
+        Tokens are free, just for fun, can&apos;t be bought or cashed out.
+      </p>
     </section>
   );
 }

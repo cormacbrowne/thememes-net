@@ -1160,6 +1160,29 @@ export default function App() {
     [awardXpOnly]
   );
 
+  // Phase 29.17: One-time 50-token Starter Pack after first meme upvote or upload
+  const claimStarterPackIfFirst = useCallback(
+    (event = null) => {
+      try {
+        if (localStorage.getItem('tm_starter_pack_v1') === 'true') return 0;
+        localStorage.setItem('tm_starter_pack_v1', 'true');
+      } catch {
+        return 0;
+      }
+      const bonus = 50;
+      tokensRef.current += bonus;
+      setTokens(tokensRef.current);
+      sfx.playJackpot?.();
+      const x = event?.clientX || (typeof window !== 'undefined' ? window.innerWidth / 2 : 300);
+      const y = event?.clientY || 120;
+      spawnParticles(x, y, '🎁 Starter Pack: +50 🪙!', '🎁');
+      setGoblinFortuneToast('🎁 Starter Pack: +50 🪙! Play any arcade cabinet or bet in the casino.');
+      setTimeout(() => setGoblinFortuneToast(''), 5500);
+      return bonus;
+    },
+    [spawnParticles]
+  );
+
   /**
    * Skill-Based Dodging Piñata Win Handler (Strictly 1x/day, requires 8 moving hits before escape!)
    */
@@ -1562,6 +1585,7 @@ export default function App() {
         if (res.allowed) {
           incrementQuest('q-upvote', 1);
         }
+        claimStarterPackIfFirst(event);
       }
 
       let updatedScore = 1;
@@ -1599,7 +1623,8 @@ export default function App() {
       awardFairReward,
       incrementQuest,
       votesCastCount,
-      petUnlocked
+      petUnlocked,
+      claimStarterPackIfFirst
     ]
   );
 
@@ -1885,6 +1910,7 @@ export default function App() {
       event,
       emoji: '🚀'
     });
+    claimStarterPackIfFirst(event);
     setLiveCelebrationData({
       meme: insertedMeme,
       rewardSummary: `+${ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens} 🪙 & +${ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.xp} XP`
@@ -1984,6 +2010,7 @@ export default function App() {
         emoji: parent ? '🧬' : '🚀'
       });
     }
+    claimStarterPackIfFirst(null);
 
     setShowStudio(false);
     setForgeIntent(null);

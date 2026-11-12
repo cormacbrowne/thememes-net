@@ -188,6 +188,10 @@ export default function GameShell({
       )}
 
       <div className="tm-gs-body">{children}</div>
+
+      <p className="tm-gs-compliance">
+        Tokens are free, just for fun, can&apos;t be bought or cashed out.
+      </p>
     </section>
   );
 }

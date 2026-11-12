@@ -239,6 +239,7 @@ export default function SeoDiscoveryFooter({
 
         <div className="tm-seo-copyright">
           <span>© 2026 THE MEMES.net // Community Memes &amp; Cyber-Arcade</span>
+          <span>🪙 Tokens are free, just for fun, can&apos;t be bought or cashed out.</span>
           <span>🔒 Secured with OAuth 2.0 (Google • Discord • Facebook)</span>
         </div>
       </div>

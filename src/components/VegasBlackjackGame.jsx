@@ -219,8 +219,11 @@ export default function VegasBlackjackGame({
   const [shoe, setShoe] = useState(() => buildShuffledShoe(4));
   const shoeRef = useRef(shoe);
 
-  const [betAmount, setBetAmount] = useState(10);
-  const [practiceMode, setPracticeMode] = useState(false);
+  const smallestChip = betOptions[0] || 5;
+  const [betAmount, setBetAmount] = useState(() =>
+    tokens >= 10 ? 10 : smallestChip
+  );
+  const [practiceMode, setPracticeMode] = useState(() => tokens < smallestChip);
   const [sideBetOn, setSideBetOn] = useState(false); // 5-Token Perfect Pair + 21+3 side bet
   const [visorOn, setVisorOn] = useState(true);
 

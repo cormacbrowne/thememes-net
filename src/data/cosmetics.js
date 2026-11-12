@@ -145,7 +145,7 @@ export const COSMETIC_CATALOG = [
     unlockXp: 1400
   },
 
-  // Bonus Radio Stations (4 base stations stay free; 2 bonus unlockable!)
+  // Bonus Radio Stations (8 base stations free + seasonal; 4 bonus unlockable in Shop!)
   {
     id: 'station-retrowave',
     type: 'station',
@@ -165,6 +165,26 @@ export const COSMETIC_CATALOG = [
     desc: 'Unlockable 118 BPM driving cyber-electro bass station.',
     tokenCost: 25,
     unlockXp: 1100
+  },
+  {
+    id: 'station-yachtrock',
+    type: 'station',
+    value: 'yachtrock',
+    name: 'Yacht Rock Sunset',
+    icon: '🏝️',
+    desc: 'Unlockable 102 BPM velvet Rhodes & marina breeze groove.',
+    tokenCost: 25,
+    unlockXp: 900
+  },
+  {
+    id: 'station-italodisco',
+    type: 'station',
+    value: 'italodisco',
+    name: "Italo Disco '84",
+    icon: '🪩',
+    desc: 'Unlockable 122 BPM Milanese octave-bass & laser-synth club.',
+    tokenCost: 30,
+    unlockXp: 1300
   },
 
   // Cassette Deck Skins (THE MEMES FM)

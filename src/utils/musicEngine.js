@@ -40,7 +40,9 @@ const STATIONS = {
       { name: "Doge Highway '86", root: 33, prog: [[0, 'min'], [8, 'maj'], [3, 'maj'], [10, 'maj']], seed: 11 },
       { name: 'Neon Stonks Boulevard', root: 38, prog: [[0, 'min'], [5, 'min'], [8, 'maj'], [7, 'maj']], seed: 23 },
       { name: 'Midnight Rickroll Run', root: 36, prog: [[0, 'min'], [10, 'maj'], [8, 'maj'], [10, 'maj']], seed: 37 },
-      { name: 'Chad Turbo Sunset', root: 40, prog: [[0, 'min'], [3, 'maj'], [10, 'maj'], [5, 'min']], seed: 41 }
+      { name: 'Chad Turbo Sunset', root: 40, prog: [[0, 'min'], [3, 'maj'], [10, 'maj'], [5, 'min']], seed: 41 },
+      { name: 'Delorean Meme Warp', root: 35, prog: [[0, 'min'], [7, 'maj'], [8, 'maj'], [10, 'maj']], seed: 43 },
+      { name: 'Cyber Skyline Overpass', root: 37, prog: [[0, 'min'], [5, 'min'], [10, 'maj'], [7, 'maj']], seed: 47 }
     ]
   },
   lofi: {
@@ -51,7 +53,9 @@ const STATIONS = {
       { name: 'Rainy Day Doomscroll', root: 38, prog: [[0, 'min7'], [5, 'min7'], [10, 'maj7'], [3, 'maj7']], seed: 53 },
       { name: 'Study Pepe', root: 41, prog: [[0, 'maj7'], [9, 'min7'], [2, 'min7'], [7, 'dom7']], seed: 67 },
       { name: '3AM Caption Café', root: 36, prog: [[0, 'min7'], [8, 'maj7'], [5, 'min7'], [7, 'dom7']], seed: 71 },
-      { name: 'Cozy Cat Vibes', root: 39, prog: [[0, 'maj7'], [5, 'maj7'], [4, 'min7'], [9, 'min7']], seed: 83 }
+      { name: 'Cozy Cat Vibes', root: 39, prog: [[0, 'maj7'], [5, 'maj7'], [4, 'min7'], [9, 'min7']], seed: 83 },
+      { name: 'Late Night Wojak Tea', root: 40, prog: [[0, 'min7'], [7, 'dom7'], [5, 'maj7'], [3, 'maj7']], seed: 89 },
+      { name: 'Tape Hiss Nostalgia', root: 35, prog: [[0, 'maj7'], [4, 'min7'], [9, 'min7'], [7, 'dom7']], seed: 91 }
     ]
   },
   chiptune: {
@@ -62,7 +66,9 @@ const STATIONS = {
       { name: 'Level 1-1: Meme Kingdom', root: 36, prog: [[0, 'maj'], [5, 'maj'], [7, 'maj'], [5, 'maj']], seed: 97 },
       { name: 'Boss Fight: Giga-Moai', root: 33, prog: [[0, 'min'], [1, 'maj'], [0, 'min'], [7, 'maj']], seed: 101 },
       { name: 'Coin Dozer Overdrive', root: 38, prog: [[0, 'maj'], [9, 'min'], [5, 'maj'], [7, 'maj']], seed: 113 },
-      { name: 'Pixel Frog Quest', root: 35, prog: [[0, 'min'], [8, 'maj'], [10, 'maj'], [7, 'maj']], seed: 127 }
+      { name: 'Pixel Frog Quest', root: 35, prog: [[0, 'min'], [8, 'maj'], [10, 'maj'], [7, 'maj']], seed: 127 },
+      { name: 'Bonus Stage Warp Pipe', root: 41, prog: [[0, 'maj'], [5, 'maj'], [9, 'min'], [7, 'maj']], seed: 129 },
+      { name: 'Final Cartridge Castle', root: 34, prog: [[0, 'min'], [3, 'maj'], [8, 'maj'], [7, 'maj']], seed: 130 }
     ]
   },
   vaporwave: {
@@ -73,7 +79,9 @@ const STATIONS = {
       { name: 'Ｍｅｍｅ Ｍａｌｌ ８４', root: 37, prog: [[0, 'maj7'], [5, 'maj7'], [2, 'min7'], [7, 'dom7']], seed: 131 },
       { name: "Elevator to the Boss's Office", root: 40, prog: [[0, 'maj7'], [9, 'min7'], [5, 'maj7'], [7, 'dom7']], seed: 149 },
       { name: 'Hold Music Forever', root: 36, prog: [[0, 'maj7'], [4, 'min7'], [5, 'maj7'], [7, 'dom7']], seed: 157 },
-      { name: 'Floral Shoppe Doge', root: 38, prog: [[0, 'min7'], [5, 'min7'], [10, 'maj7'], [8, 'maj7']], seed: 163 }
+      { name: 'Floral Shoppe Doge', root: 38, prog: [[0, 'min7'], [5, 'min7'], [10, 'maj7'], [8, 'maj7']], seed: 163 },
+      { name: 'Marble Bust Atrium', root: 39, prog: [[0, 'maj7'], [2, 'min7'], [5, 'maj7'], [4, 'min7']], seed: 167 },
+      { name: 'Fiji Water Fountain', root: 35, prog: [[0, 'min7'], [8, 'maj7'], [3, 'maj7'], [7, 'dom7']], seed: 171 }
     ]
   },
   retrowave: {
@@ -83,7 +91,10 @@ const STATIONS = {
     tracks: [
       { name: 'Miami Palms 1986', root: 35, prog: [[0, 'maj'], [7, 'maj'], [9, 'min'], [5, 'maj']], seed: 173 },
       { name: 'Turbo Testarossa', root: 40, prog: [[0, 'maj'], [5, 'maj'], [9, 'min'], [7, 'maj']], seed: 181 },
-      { name: 'Neon Coastline FM', root: 37, prog: [[0, 'maj7'], [7, 'maj'], [5, 'maj7'], [9, 'min7']], seed: 193 }
+      { name: 'Neon Coastline FM', root: 37, prog: [[0, 'maj7'], [7, 'maj'], [5, 'maj7'], [9, 'min7']], seed: 193 },
+      { name: 'Laser Horizon ' + '88', root: 38, prog: [[0, 'maj'], [9, 'min'], [5, 'maj'], [7, 'maj']], seed: 197 },
+      { name: 'VHS Cassette Boulevard', root: 36, prog: [[0, 'min'], [8, 'maj'], [10, 'maj'], [3, 'maj']], seed: 199 },
+      { name: 'Pink Flamingo Highway', root: 39, prog: [[0, 'maj7'], [5, 'maj7'], [9, 'min7'], [7, 'dom7']], seed: 205 }
     ]
   },
   cyberpunk: {
@@ -93,7 +104,114 @@ const STATIONS = {
     tracks: [
       { name: 'Night City Overdrive', root: 31, prog: [[0, 'min'], [1, 'maj'], [3, 'maj'], [0, 'min']], seed: 211 },
       { name: 'Subgrid Bass Protocol', root: 34, prog: [[0, 'min'], [10, 'maj'], [8, 'maj'], [7, 'maj']], seed: 223 },
-      { name: 'Chrome Runner 2099', root: 33, prog: [[0, 'min'], [5, 'min'], [1, 'maj'], [7, 'maj']], seed: 239 }
+      { name: 'Chrome Runner 2099', root: 33, prog: [[0, 'min'], [5, 'min'], [1, 'maj'], [7, 'maj']], seed: 239 },
+      { name: 'ICE Breaker Daemon', root: 32, prog: [[0, 'min'], [3, 'maj'], [1, 'maj'], [7, 'maj']], seed: 241 },
+      { name: 'Kiroshi Neon Alley', root: 35, prog: [[0, 'min'], [7, 'maj'], [8, 'maj'], [1, 'maj']], seed: 251 },
+      { name: 'Neural Link Overload', root: 30, prog: [[0, 'min'], [5, 'min'], [8, 'maj'], [1, 'maj']], seed: 257 }
+    ]
+  },
+  phonk: {
+    bpm: 132,
+    swing: 0.05,
+    filterBase: 4600,
+    tracks: [
+      { name: 'Pepe Cowbell Drift', root: 33, prog: [[0, 'min'], [1, 'maj'], [0, 'min'], [5, 'min']], seed: 307 },
+      { name: '808 GigaChad Walk', root: 31, prog: [[0, 'min'], [8, 'maj'], [1, 'maj'], [7, 'maj']], seed: 311 },
+      { name: 'Memphis Doge Tape', root: 34, prog: [[0, 'min'], [5, 'min'], [1, 'maj'], [0, 'min']], seed: 313 },
+      { name: 'Midnight Slammed Civic', root: 32, prog: [[0, 'min'], [3, 'maj'], [1, 'maj'], [7, 'maj']], seed: 317 },
+      { name: 'Cowbell Frenzy 1995', root: 35, prog: [[0, 'min'], [1, 'maj'], [8, 'maj'], [7, 'maj']], seed: 331 },
+      { name: 'Drift King Cheems', root: 36, prog: [[0, 'min'], [10, 'maj'], [1, 'maj'], [0, 'min']], seed: 337 }
+    ]
+  },
+  jungle: {
+    bpm: 168,
+    swing: 0.04,
+    filterBase: 6400,
+    tracks: [
+      { name: 'Amen Doge Break', root: 33, prog: [[0, 'min7'], [5, 'min7'], [8, 'maj7'], [7, 'min7']], seed: 401 },
+      { name: '90s Pirate Meme Radio', root: 35, prog: [[0, 'min7'], [3, 'maj7'], [10, 'maj7'], [5, 'min7']], seed: 409 },
+      { name: 'Reese Sub Rollers', root: 31, prog: [[0, 'min'], [8, 'maj'], [10, 'maj'], [7, 'maj']], seed: 419 },
+      { name: 'Liquid Jungle Nyan', root: 36, prog: [[0, 'min7'], [8, 'maj7'], [5, 'min7'], [10, 'maj7']], seed: 421 },
+      { name: 'Hyper Chopped Amen', root: 34, prog: [[0, 'min7'], [7, 'min7'], [8, 'maj7'], [5, 'min7']], seed: 431 },
+      { name: 'Ragga Pepe VIP', root: 32, prog: [[0, 'min'], [1, 'maj'], [5, 'min'], [7, 'maj']], seed: 433 }
+    ]
+  },
+  casinojazz: {
+    bpm: 96,
+    swing: 0.3,
+    filterBase: 3200,
+    tracks: [
+      { name: 'Velvet Felt Nocturne', root: 38, prog: [[0, 'min7'], [5, 'dom7'], [10, 'maj7'], [7, 'dom7']], seed: 503 },
+      { name: 'Penthouse High Roller', root: 41, prog: [[0, 'maj7'], [9, 'min7'], [2, 'min7'], [7, 'dom7']], seed: 509 },
+      { name: 'Champagne Roulette', root: 36, prog: [[0, 'min7'], [5, 'min7'], [10, 'maj7'], [3, 'dom7']], seed: 521 },
+      { name: 'Midnight Blackjack Trio', root: 39, prog: [[0, 'maj7'], [4, 'min7'], [9, 'min7'], [2, 'dom7']], seed: 523 },
+      { name: 'Bellagio Stonks Lounge', root: 37, prog: [[0, 'min7'], [7, 'dom7'], [5, 'maj7'], [2, 'min7']], seed: 541 },
+      { name: 'Neon Martini Shuffle', root: 40, prog: [[0, 'maj7'], [2, 'min7'], [7, 'dom7'], [0, 'maj7']], seed: 547 }
+    ]
+  },
+  western: {
+    bpm: 104,
+    swing: 0.16,
+    filterBase: 4100,
+    tracks: [
+      { name: 'High Noon Doge Duel', root: 33, prog: [[0, 'min'], [5, 'min'], [8, 'maj'], [7, 'maj']], seed: 601 },
+      { name: 'Fistful of Stonks', root: 38, prog: [[0, 'min'], [3, 'maj'], [10, 'maj'], [7, 'maj']], seed: 607 },
+      { name: 'Tumbleweed Saloon', root: 35, prog: [[0, 'min'], [8, 'maj'], [7, 'maj'], [0, 'min']], seed: 613 },
+      { name: 'Good, Bad & Meme', root: 36, prog: [[0, 'min'], [10, 'maj'], [8, 'maj'], [7, 'maj']], seed: 617 },
+      { name: 'Sunset Canyon Gallop', root: 40, prog: [[0, 'min'], [5, 'min'], [1, 'maj'], [7, 'maj']], seed: 619 },
+      { name: 'Gold Rush Outlaw', root: 34, prog: [[0, 'min'], [3, 'maj'], [7, 'maj'], [0, 'min']], seed: 631 }
+    ]
+  },
+  yachtrock: {
+    bpm: 102,
+    swing: 0.12,
+    filterBase: 3600,
+    tracks: [
+      { name: 'Marina Breeze 1979', root: 40, prog: [[0, 'maj7'], [5, 'maj7'], [4, 'min7'], [7, 'dom7']], seed: 701 },
+      { name: 'Piña Colada Portfolio', root: 38, prog: [[0, 'maj7'], [9, 'min7'], [2, 'min7'], [7, 'dom7']], seed: 709 },
+      { name: 'Catalina Neon Deck', root: 41, prog: [[0, 'maj7'], [7, 'dom7'], [5, 'maj7'], [2, 'min7']], seed: 719 },
+      { name: 'Smooth Sailing Wojak', root: 36, prog: [[0, 'maj7'], [4, 'min7'], [9, 'min7'], [5, 'maj7']], seed: 727 },
+      { name: 'Captain Hat Groove', root: 39, prog: [[0, 'maj7'], [5, 'maj7'], [2, 'min7'], [7, 'dom7']], seed: 733 },
+      { name: 'Twilight Harbormaster', root: 37, prog: [[0, 'min7'], [5, 'maj7'], [10, 'maj7'], [7, 'dom7']], seed: 739 }
+    ]
+  },
+  italodisco: {
+    bpm: 122,
+    swing: 0,
+    filterBase: 6200,
+    tracks: [
+      { name: 'Milanese Laser Club', root: 36, prog: [[0, 'min'], [8, 'maj'], [10, 'maj'], [7, 'maj']], seed: 809 },
+      { name: 'Rimini Arcade Night', root: 38, prog: [[0, 'min'], [5, 'min'], [10, 'maj'], [3, 'maj']], seed: 811 },
+      { name: 'Ciao Bella Synth', root: 33, prog: [[0, 'min'], [8, 'maj'], [3, 'maj'], [7, 'maj']], seed: 821 },
+      { name: 'Disco Ball Telemetry', root: 40, prog: [[0, 'maj'], [9, 'min'], [5, 'maj'], [7, 'maj']], seed: 823 },
+      { name: 'Eurobeat Doge Express', root: 35, prog: [[0, 'min'], [10, 'maj'], [8, 'maj'], [7, 'maj']], seed: 827 },
+      { name: 'Turin Midnight Vocoder', root: 37, prog: [[0, 'min'], [3, 'maj'], [8, 'maj'], [10, 'maj']], seed: 829 }
+    ]
+  },
+  spookysynth: {
+    bpm: 112,
+    swing: 0,
+    filterBase: 3400,
+    tracks: [
+      { name: 'Haunted Arcade Cabinet', root: 33, prog: [[0, 'min'], [1, 'maj'], [7, 'maj'], [0, 'min']], seed: 907 },
+      { name: 'Skeleton Dance ' + '86', root: 36, prog: [[0, 'min'], [6, 'min'], [8, 'maj'], [7, 'maj']], seed: 911 },
+      { name: 'Pumpkin Patch Poltergeist', root: 38, prog: [[0, 'min'], [5, 'min'], [1, 'maj'], [7, 'maj']], seed: 919 },
+      { name: 'Midnight Cryptorgan', root: 31, prog: [[0, 'min'], [8, 'maj'], [1, 'maj'], [7, 'maj']], seed: 929 },
+      { name: 'Witching Hour VHS', root: 34, prog: [[0, 'min'], [3, 'maj'], [6, 'min'], [7, 'maj']], seed: 937 },
+      { name: 'Doot Doot Finale', root: 35, prog: [[0, 'min'], [7, 'maj'], [8, 'maj'], [1, 'maj']], seed: 941 }
+    ]
+  },
+  jinglesynth: {
+    bpm: 124,
+    swing: 0.08,
+    filterBase: 6800,
+    tracks: [
+      { name: 'Sleigh Bells Overclock', root: 36, prog: [[0, 'maj'], [5, 'maj'], [7, 'maj'], [0, 'maj']], seed: 953 },
+      { name: '8-Bit North Pole', root: 38, prog: [[0, 'maj'], [9, 'min'], [5, 'maj'], [7, 'maj']], seed: 967 },
+      { name: 'Snowy Mall Atrium', root: 41, prog: [[0, 'maj7'], [5, 'maj7'], [2, 'min7'], [7, 'dom7']], seed: 971 },
+      { name: 'Winter Doge Wonderland', root: 35, prog: [[0, 'maj'], [4, 'min'], [5, 'maj'], [7, 'maj']], seed: 977 },
+      { name: 'Tinsel Synthwave Run', root: 40, prog: [[0, 'maj'], [7, 'maj'], [9, 'min'], [5, 'maj']], seed: 983 },
+      { name: 'Arcade New Year Drop', root: 37, prog: [[0, 'maj'], [5, 'maj'], [9, 'min'], [7, 'maj']], seed: 991 }
     ]
   }
 };
@@ -375,7 +493,7 @@ export function createMusicEngine({ onTrack } = {}) {
       crash(t + 0.38, 0.18);
     }
 
-    if (stationId === 'synthwave') {
+    if (stationId === 'synthwave' || stationId === 'retrowave' || stationId === 'cyberpunk') {
       if (s % 4 === 0) kick(t);
       if (s === 4 || s === 12) snare(t, 0.3, 0.22);
       if (isFill) snare(t, 0.18 + (s - 12) * 0.04, 0.1);
@@ -422,8 +540,142 @@ export function createMusicEngine({ onTrack } = {}) {
       if (pattern.melody[s] >= 0) {
         tone({ time: t, freq: midiToHz(root + 36 + tones[pattern.melody[s] % tones.length]), dur: sixteenth * 1.8, type: 'square', gain: 0.03, release: 0.03 });
       }
+    } else if (stationId === 'phonk') {
+      // Meme Phonk: 808 slides + metallic 808 cowbell riff
+      if (s === 0 || s === 6 || s === 10) kick(t, 1.0);
+      if (s === 4 || s === 12) snare(t, 0.34, 0.14);
+      if (s % 2 === 1 || (isFill && s >= 12)) hat(t, 0.06, 0.03);
+      if (s === 0 || s === 6 || s === 10 || s === 14) {
+        tone({
+          time: t,
+          freq: midiToHz(root + (s === 14 ? 12 : 0)),
+          dur: sixteenth * 3,
+          type: 'sine',
+          gain: 0.34,
+          slideTo: midiToHz(root - 5),
+          release: 0.08
+        });
+      }
+      if (s === 0 || s === 3 || s === 6 || s === 8 || s === 10 || s === 14) {
+        const cowTone = midiToHz(root + 36 + tones[pattern.arpOrder[s] % tones.length]);
+        tone({ time: t, freq: cowTone, dur: sixteenth * 0.9, type: 'square', gain: 0.055, release: 0.04 });
+        tone({ time: t, freq: cowTone * 1.48, dur: sixteenth * 0.7, type: 'square', gain: 0.035, release: 0.03 });
+      }
+    } else if (stationId === 'jungle') {
+      // Fast 168 BPM Breakbeat Jungle / Drum & Bass
+      if (s === 0 || s === 10) kick(t, 0.85);
+      if (s === 4 || s === 12) snare(t, 0.3, 0.12);
+      if (s === 7 || s === 9 || (isFill && s >= 12)) snare(t, 0.16, 0.07);
+      hat(t, s % 2 === 0 ? 0.07 : 0.035, 0.025);
+      if (s % 4 === 0) {
+        tone({
+          time: t,
+          freq: midiToHz(root),
+          dur: sixteenth * 3.5,
+          type: 'sawtooth',
+          gain: 0.13,
+          detune: 11,
+          release: 0.06
+        });
+      }
+      if (s === 0) {
+        tones.forEach((iv, i) => {
+          tone({
+            time: t,
+            freq: midiToHz(root + 24 + iv),
+            dur: sixteenth * 14,
+            type: 'triangle',
+            gain: 0.024,
+            attack: 0.25,
+            release: 0.5,
+            detune: i % 2 ? 8 : -8
+          });
+        });
+      }
+    } else if (stationId === 'casinojazz') {
+      // Velvet Casino Lounge Jazz (swing brush hats, walking bass, Rhodes chords)
+      if (s === 0 || s === 8) kick(t, 0.52);
+      if (s === 4 || s === 12) noise({ time: t, dur: 0.11, gain: 0.09, type: 'bandpass', freq: 2600, q: 1.2 });
+      if (s % 2 === 0 || s % 4 === 3) hat(t, 0.045, 0.05);
+      if (s % 4 === 0) {
+        const walk = tones[Math.floor(s / 4) % tones.length];
+        tone({ time: t, freq: midiToHz(root + walk), dur: sixteenth * 3.4, type: 'triangle', gain: 0.23, attack: 0.01, release: 0.1 });
+      }
+      if (s === 0 || s === 6 || isFill) {
+        tones.forEach((iv, i) => {
+          tone({ time: t + i * 0.014, freq: midiToHz(root + 24 + iv), dur: sixteenth * 5, type: 'sine', gain: 0.042, attack: 0.012, release: 0.35 });
+        });
+      }
+      if (pattern.melody[s] >= 0) {
+        const m = tone({ time: t, freq: midiToHz(root + 36 + tones[pattern.melody[s] % tones.length]), dur: sixteenth * 2.5, type: 'triangle', gain: 0.036, attack: 0.02, release: 0.25 });
+        m.connect(nodes.echoIn);
+      }
+    } else if (stationId === 'western') {
+      // Spaghetti Western (gallop snare/rim, twang guitar, outlaw whistle)
+      if (s === 0 || s === 6 || s === 8 || s === 14) kick(t, 0.68);
+      if (s === 2 || s === 4 || s === 10 || s === 12) snare(t, 0.18, 0.08);
+      if (s % 2 === 0) {
+        tone({ time: t, freq: midiToHz(root + (s % 4 === 2 ? 7 : 0)), dur: sixteenth * 1.4, type: 'triangle', gain: 0.2, release: 0.05 });
+      }
+      if (s === 0 || s === 8) {
+        tones.forEach((iv, i) => {
+          const strum = tone({ time: t + i * 0.025, freq: midiToHz(root + 24 + iv), dur: sixteenth * 3.5, type: 'sawtooth', gain: 0.024, attack: 0.005, release: 0.18 });
+          strum.connect(nodes.echoIn);
+        });
+      }
+      if (s % 4 === 0 && pattern.melody[s] >= 0) {
+        const wh = tone({ time: t, freq: midiToHz(root + 36 + tones[pattern.melody[s] % tones.length]), dur: sixteenth * 3.2, type: 'sine', gain: 0.05, attack: 0.06, release: 0.22 });
+        wh.connect(nodes.echoIn);
+      }
+    } else if (stationId === 'yachtrock') {
+      // Yacht Rock Sunset (smooth electric piano + marina bassline)
+      if (s === 0 || s === 8) kick(t, 0.72);
+      if (s === 4 || s === 12) snare(t, 0.22, 0.14);
+      if (s % 2 === 0) hat(t, s % 4 === 2 ? 0.06 : 0.03, 0.035);
+      if (s === 0 || s === 6 || s === 8 || s === 14) {
+        tone({ time: t, freq: midiToHz(root + (s === 14 ? 7 : 0)), dur: sixteenth * 2.2, type: 'triangle', gain: 0.22, release: 0.08 });
+      }
+      if (pattern.keysHits[s] || s === 0) {
+        tones.forEach((iv, i) => {
+          const ep = tone({ time: t + i * 0.01, freq: midiToHz(root + 24 + iv), dur: sixteenth * 5, type: 'sine', gain: 0.04, attack: 0.01, release: 0.32 });
+          ep.connect(nodes.echoIn);
+        });
+      }
+    } else if (stationId === 'italodisco') {
+      // Italo Disco '84 (driving octave bass, sparkly arps, laser Simmons fills)
+      if (s % 4 === 0) kick(t, 0.92);
+      if (s === 4 || s === 12) snare(t, 0.28, 0.2);
+      if (s % 4 === 2) hat(t, 0.085, 0.05);
+      const oct = s % 2 === 1 ? 12 : 0;
+      tone({ time: t, freq: midiToHz(root + oct), dur: sixteenth * 0.85, type: 'sawtooth', gain: 0.12, release: 0.03 });
+      const arpNote = root + 24 + tones[(s + pattern.arpOrder[s]) % tones.length];
+      const arp = tone({ time: t, freq: midiToHz(arpNote), dur: sixteenth * 0.75, type: 'square', gain: 0.035, release: 0.04 });
+      arp.connect(nodes.echoIn);
+      if (isFill && s >= 12) {
+        tone({ time: t, freq: 520 - (s - 12) * 85, slideTo: 120, dur: sixteenth * 0.9, type: 'sine', gain: 0.14 });
+      }
+    } else if (stationId === 'spookysynth') {
+      // Seasonal Oct: Spooky organ arps & eerie theremin shimmer
+      if (s % 4 === 0) kick(t, 0.8);
+      if (s === 4 || s === 12) snare(t, 0.24, 0.25);
+      if (s % 2 === 0) hat(t, 0.04, 0.03);
+      if (s % 2 === 0) {
+        tone({ time: t, freq: midiToHz(root), dur: sixteenth * 1.6, type: 'sawtooth', gain: 0.11, release: 0.04 });
+      }
+      const org = tone({ time: t, freq: midiToHz(root + 24 + tones[s % tones.length]), dur: sixteenth * 0.9, type: 'square', gain: 0.038, detune: s % 2 ? 12 : -12, release: 0.06 });
+      org.connect(nodes.echoIn);
+    } else if (stationId === 'jinglesynth') {
+      // Seasonal Dec: Crisp sleigh-bell shaker + bright holiday chimes
+      if (s % 4 === 0) kick(t, 0.82);
+      if (s === 4 || s === 12) snare(t, 0.22, 0.16);
+      if (s % 2 === 1) hat(t, 0.075, 0.06);
+      if (s % 2 === 0) {
+        tone({ time: t, freq: midiToHz(root + (s % 4 === 2 ? 12 : 0)), dur: sixteenth * 1.4, type: 'triangle', gain: 0.2, release: 0.04 });
+      }
+      const bell = tone({ time: t, freq: midiToHz(root + 36 + tones[s % tones.length]), dur: sixteenth * 1.1, type: 'sine', gain: 0.055, release: 0.16 });
+      bell.connect(nodes.echoIn);
     } else {
-      // vaporwave elevator
+      // vaporwave elevator / retrowave / cyberpunk ambient pad fallback
       if (s === 0 || s === 8) kick(t, 0.55);
       if (s === 4 || s === 12) snare(t, 0.14, 0.45);
       if (isFill) snare(t, 0.06, 0.2);

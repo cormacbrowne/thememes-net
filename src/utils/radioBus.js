@@ -9,16 +9,42 @@
 
 const STORAGE_KEY = 'tm_radio';
 
-export const RADIO_STATIONS = [
+const BASE_RADIO_STATIONS = [
   { id: 'synthwave', icon: '📼', name: 'Synthwave Drive' },
   { id: 'lofi', icon: '☕', name: 'Lo-fi Meme Beats' },
   { id: 'chiptune', icon: '👾', name: '8-Bit Chiptune' },
   { id: 'vaporwave', icon: '🛗', name: 'Vaporwave Elevator' },
+  { id: 'phonk', icon: '🐸', name: 'Meme Phonk' },
+  { id: 'jungle', icon: '🥁', name: 'Jungle / Drum & Bass' },
+  { id: 'casinojazz', icon: '🎷', name: 'Casino Lounge Jazz' },
+  { id: 'western', icon: '🤠', name: 'Spaghetti Western' },
   { id: 'retrowave', icon: '🌅', name: 'Sunset Outrun FM', cosmeticId: 'station-retrowave' },
-  { id: 'cyberpunk', icon: '⚡', name: 'Dark Cyberbass FM', cosmeticId: 'station-cyberpunk' }
+  { id: 'cyberpunk', icon: '⚡', name: 'Dark Cyberbass FM', cosmeticId: 'station-cyberpunk' },
+  { id: 'yachtrock', icon: '🏝️', name: 'Yacht Rock Sunset', cosmeticId: 'station-yachtrock' },
+  { id: 'italodisco', icon: '🪩', name: "Italo Disco '84", cosmeticId: 'station-italodisco' }
 ];
 
-const STATION_IDS = RADIO_STATIONS.map((s) => s.id);
+export function getSeasonalRadioStations(now = new Date()) {
+  const month = now.getMonth();
+  const list = [];
+  if (month === 9) {
+    list.push({ id: 'spookysynth', icon: '🎃', name: 'Spooky Synth', seasonal: true });
+  } else if (month === 11) {
+    list.push({ id: 'jinglesynth', icon: '🎄', name: 'Jingle Synth', seasonal: true });
+  }
+  return list;
+}
+
+export const RADIO_STATIONS = [
+  ...BASE_RADIO_STATIONS,
+  ...getSeasonalRadioStations()
+];
+
+const STATION_IDS = [
+  ...BASE_RADIO_STATIONS.map((s) => s.id),
+  'spookysynth',
+  'jinglesynth'
+];
 
 function loadPrefs() {
   const fallback = { on: false, station: 'synthwave', volume: 0.6 };

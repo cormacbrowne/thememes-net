@@ -681,7 +681,9 @@ export default function App() {
       setRadioContextStation('vaporwave');
     } else if (['pinball', 'crush', 'pusher', 'battle', 'swipe'].includes(viewMode)) {
       setRadioContextStation('chiptune');
-    } else if (['stocks', 'blackjack', 'roulette', 'slots'].includes(viewMode)) {
+    } else if (['blackjack', 'roulette', 'slots'].includes(viewMode)) {
+      setRadioContextStation('casinojazz');
+    } else if (viewMode === 'stocks') {
       setRadioContextStation('synthwave');
     } else {
       setRadioContextStation(null);

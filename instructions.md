@@ -74,7 +74,7 @@
   - Add the same picker to: the **mobile Reels overlay** (top-right, small), the **mobile Games drawer** in `MobileArcadeDock.jsx`, every **game header** (see 29.15 GameShell), and the **Insert Coin intro** (pick a station before entering).
   - While music plays on mobile, show a tiny dismissible **"now playing" pill** (`📼 Doge Highway '86 ⏭`).
   - **Completion Note:** Upgraded `RadioToggleButton` (`src/components/MemesRadio.jsx` + `.css`) with a split `▾` chevron / long-press popover (station list, `▶/⏸`, `⏭` skip, volume slider, live track name), added `overrideContext` + `startIfOff` options to `setRadioStation` in `src/utils/radioBus.js`, added `RadioStationStrip` to `InsertCoinIntro.jsx` and `MobileArcadeDock.jsx`, placed `RadioToggleButton` in `VerticalReelsView.jsx` top-right nav (plus existing `NavbarHud` & `.tm-fixed-arcade-bar`), and rendered `MobileNowPlayingPill` in `src/App.jsx`.
-- [ ] **29.5 Six new procedural stations** in `src/utils/musicEngine.js` + `RADIO_STATIONS` in `src/utils/radioBus.js` (no audio files, no CSP change, 5–6 tracks each). Make 4 of them free and 2 Arcade Shop cosmetics:
+- [x] **29.5 Six new procedural stations** in `src/utils/musicEngine.js` + `RADIO_STATIONS` in `src/utils/radioBus.js` (no audio files, no CSP change, 5–6 tracks each). Make 4 of them free and 2 Arcade Shop cosmetics:
   - `🐸 Meme Phonk` (cowbell, 808 slides)
   - `🥁 Jungle / Drum & Bass` (fast breakbeats)
   - `🎷 Casino Lounge Jazz` (auto-station for Roulette / 21's / Slots)
@@ -83,6 +83,7 @@
   - `🪩 Italo Disco '84`
   - Seasonal: `🎃 Spooky Synth` (Oct) and `🎄 Jingle Synth` (Dec), auto-added by date, which pairs with 28.23.
   - Also raise every existing station from 4 to 6 tracks.
+  - **Completion Note:** Added 6 procedural stations (`phonk`, `jungle`, `casinojazz`, `western` free; `yachtrock`, `italodisco` as Arcade Shop cosmetics in `src/data/cosmetics.js`) plus Oct/Dec date-activated `spookysynth` and `jinglesynth` in `src/utils/radioBus.js` & `src/utils/musicEngine.js`, raised every station to 6 tracks with genre-specific synthesis, and wired `casinojazz` as the auto-station for `blackjack`, `roulette`, and `slots` in `src/App.jsx`.
 - [ ] **29.6 Radio features:**
   - **Shuffle All Stations** mode
   - ♥ favourite tracks, plus a "♥ My Mixtape" station that plays favourites

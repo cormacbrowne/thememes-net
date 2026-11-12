@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import MemeMedia from './MemeMedia';
 import { getMemeRarityTier, formatMemeUploadDate } from '../data/starterMemes';
 import { sfx } from '../utils/soundEngine';
+import { trackMemeViewed } from '../utils/analytics';
 
 export default function VerticalReelsView({
   filteredMemes,
@@ -29,15 +30,27 @@ export default function VerticalReelsView({
   const len = filteredMemes?.length || 0;
   const effectiveVisibleCount = Math.min(len, Math.max(visibleReelsCount, currentIndex + 4));
 
+  useEffect(() => {
+    const activeMeme = filteredMemes?.[currentIndex];
+    if (activeMeme) {
+      trackMemeViewed(activeMeme, 'reels');
+    }
+  }, [filteredMemes, currentIndex]);
+
   const handleContainerScroll = useCallback((e) => {
     const el = e.currentTarget;
     if (!el) return;
     const slideH = el.clientHeight || 1;
     const approxIdx = Math.round(el.scrollTop / slideH);
+    const clampedIdx = Math.max(0, Math.min(Math.max(0, len - 1), approxIdx));
+    const scrolledMeme = filteredMemes?.[clampedIdx];
+    if (scrolledMeme) {
+      trackMemeViewed(scrolledMeme, 'reels');
+    }
     if (approxIdx + 4 > visibleReelsCount) {
       setVisibleReelsCount((prev) => Math.min(len, Math.max(prev + 8, approxIdx + 6)));
     }
-  }, [len, visibleReelsCount]);
+  }, [filteredMemes, len, visibleReelsCount]);
 
   // Handle keyboard Up/Down navigation
   useEffect(() => {
@@ -45,7 +58,7 @@ export default function VerticalReelsView({
       if (['INPUT', 'TEXTAREA'].includes(e.target?.tagName)) return;
       if (e.key === 'ArrowDown' || e.key === 'j') {
         e.preventDefault();
-        setCurrentIndex((prev) => Math.min(len - 1, prev + 1));
+        setCurrentIndex((prev) => Math.min(Math.max(0, len - 1), prev + 1));
       } else if (e.key === 'ArrowUp' || e.key === 'k') {
         e.preventDefault();
         setCurrentIndex((prev) => Math.max(0, prev - 1));

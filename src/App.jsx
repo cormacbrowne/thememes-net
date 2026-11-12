@@ -32,6 +32,20 @@ import {
   getTodayDateString
 } from './utils/tokenEconomy';
 import { updateDynamicSeo } from './utils/seoEngine';
+import {
+  resolveRouteFromLocation,
+  getCanonicalPathForState,
+  normalizeRoutePath,
+  PRANK_DISGUISE_TO_PATH
+} from './data/seoRoutes';
+import {
+  trackMemeViewed,
+  trackUpvote,
+  trackRemixOpened,
+  trackMemePublished,
+  trackShareClicked,
+  trackGameStarted
+} from './utils/analytics';
 import NavbarHud from './components/NavbarHud';
 import QuickUploadBar from './components/QuickUploadBar';
 import MemeCard from './components/MemeCard';
@@ -86,20 +100,6 @@ const MODAL_SKELETON_FALLBACK = (
   </div>
 );
 
-function extractSharedMemeIdFromLocation() {
-  if (typeof window === 'undefined') return null;
-  const pathMatch = (window.location.pathname || '').match(/^\/m\/([^/?#]+)/i);
-  if (pathMatch && pathMatch[1]) {
-    try {
-      return decodeURIComponent(pathMatch[1]);
-    } catch {
-      return pathMatch[1];
-    }
-  }
-  const params = new URLSearchParams(window.location.search);
-  return params.get('m') || params.get('meme') || null;
-}
-
 function isTouchDeviceDefault() {
   if (typeof window === 'undefined') return false;
   const profile = getDeviceProfileSnapshot();
@@ -109,6 +109,30 @@ function isTouchDeviceDefault() {
 }
 
 export default function App() {
+  const [initialRoute] = useState(() =>
+    typeof window !== 'undefined'
+      ? resolveRouteFromLocation(
+          window.location.pathname,
+          window.location.search,
+          isTouchDeviceDefault()
+        )
+      : {
+          matchedPath: '/',
+          isDedicatedLanding: false,
+          viewMode: 'feed',
+          category: 'all',
+          searchQuery: '',
+          showStudio: false,
+          forgeIntent: null,
+          extrasDrawerOpen: false,
+          extrasFocus: null,
+          bossKeyActive: false,
+          prankDisguise: null,
+          surpriseOpen: false,
+          theaterMemeId: null
+        }
+  );
+
   // Core Feed & Filter State (Community Uploads + Offline-Resilient @TheMemesHQ Seed Memes)
   const [memes, setMemes] = useState(() => {
     try {
@@ -122,6 +146,10 @@ export default function App() {
       return [...STARTER_MEMES];
     }
   });
+  const memesRef = useRef(memes);
+  useEffect(() => {
+    memesRef.current = memes;
+  }, [memes]);
   const [isLoadingFeed, setIsLoadingFeed] = useState(false);
   const [visibleCount, setVisibleCount] = useState(6);
   const [sortBy, setSortBy] = useState('latest'); // 'latest' | 'top' | 'new24h'
@@ -134,52 +162,14 @@ export default function App() {
     }
   });
   const quickUploadInputRef = useRef(null);
-  const [category, setCategory] = useState(() => {
-    if (typeof window === 'undefined') return 'all';
-    const cat = new URLSearchParams(window.location.search).get('category');
-    return ['all', 'dank', 'tech', 'gaming', 'relatable'].includes(cat) ? cat : 'all';
-  });
-  const [viewMode, setViewMode] = useState(() => {
-    if (typeof window === 'undefined') return 'feed';
-    const params = new URLSearchParams(window.location.search);
-    const rawMode = (params.get('mode') || '').toLowerCase();
-    const mode = ['dozer', 'coindozer', 'coinpusher'].includes(rawMode) ? 'pusher' : rawMode;
-    if (
-      [
-        'feed',
-        'reels',
-        'blackjack',
-        'roulette',
-        'pusher',
-        'slots',
-        'crush',
-        'pinball',
-        'stocks',
-        'swipe',
-        'battle'
-      ].includes(mode)
-    ) {
-      return mode;
-    }
-    if (params.get('category') || params.get('q')) {
-      return 'feed';
-    }
-    // Phase 28.5: Touch devices default to full-screen Reels loop; desktop keeps grid feed
-    return isTouchDeviceDefault() ? 'reels' : 'feed';
-  });
+  const [category, setCategory] = useState(initialRoute.category);
+  const [viewMode, setViewMode] = useState(initialRoute.viewMode);
   const { profile: deviceProfile, setOverride: setDeviceOverride } = useDeviceProfile();
   const [payphoneModalOpen, setPayphoneModalOpen] = useState(false);
-  const [extrasDrawerOpen, setExtrasDrawerOpen] = useState(false);
-  const [surpriseOpen, setSurpriseOpen] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    const params = new URLSearchParams(window.location.search);
-    const rawMode = (params.get('mode') || '').toLowerCase();
-    return ['goose', 'wtf', 'surprise', 'honk'].includes(rawMode) || params.get('surprise') === '1';
-  });
-  const [searchQuery, setSearchQuery] = useState(() => {
-    if (typeof window === 'undefined') return '';
-    return new URLSearchParams(window.location.search).get('q') || '';
-  });
+  const [extrasDrawerOpen, setExtrasDrawerOpen] = useState(initialRoute.extrasDrawerOpen);
+  const [extrasFocus, setExtrasFocus] = useState(initialRoute.extrasFocus);
+  const [surpriseOpen, setSurpriseOpen] = useState(initialRoute.surpriseOpen);
+  const [searchQuery, setSearchQuery] = useState(initialRoute.searchQuery);
   const [dbStatus, setDbStatus] = useState('connecting'); // 'connecting' | 'live' | 'local'
 
   // Fork & Mutate + Evolution Tree + Theater Lightbox State
@@ -187,9 +177,9 @@ export default function App() {
   const [evolutionModalMeme, setEvolutionModalMeme] = useState(null);
   const [evolutionNodes, setEvolutionNodes] = useState([]);
   const [loadingEvolution, setLoadingEvolution] = useState(false);
-  const [theaterMemeId, setTheaterMemeId] = useState(() => extractSharedMemeIdFromLocation());
-  const [openedFromShareLink, setOpenedFromShareLink] = useState(() =>
-    Boolean(extractSharedMemeIdFromLocation())
+  const [theaterMemeId, setTheaterMemeId] = useState(initialRoute.theaterMemeId);
+  const [openedFromShareLink, setOpenedFromShareLink] = useState(
+    Boolean(initialRoute.theaterMemeId)
   );
 
   // Phase 4: Daily Bounties, Hall of Fame Leaderboard & Player Profiles State
@@ -366,11 +356,13 @@ export default function App() {
   const [roastsRun, setRoastsRun] = useState(() =>
     Number(localStorage.getItem('tm_roasts_run') || 0)
   );
-  const [bossKeyActive, setBossKeyActive] = useState(false);
+  const [bossKeyActive, setBossKeyActive] = useState(initialRoute.bossKeyActive);
+  const [prankDisguise, setPrankDisguise] = useState(initialRoute.prankDisguise);
 
   // Phase 28.12: One-time 2-second skippable "Insert Coin" CRT boot moment (never shown again once seen)
   const [showIntro, setShowIntro] = useState(() => {
     if (typeof window === 'undefined') return false;
+    if (initialRoute.isDedicatedLanding) return false;
     try {
       return !localStorage.getItem('tm_intro_seen');
     } catch {
@@ -414,8 +406,8 @@ export default function App() {
   const failedAuthRef = useRef({ count: 0, lockUntil: 0 });
 
   // Studio & Meme Forge 3.0 State (100% User-Uploaded Media)
-  const [showStudio, setShowStudio] = useState(false);
-  const [forgeIntent, setForgeIntent] = useState(null);
+  const [showStudio, setShowStudio] = useState(initialRoute.showStudio);
+  const [forgeIntent, setForgeIntent] = useState(initialRoute.forgeIntent);
   const [isDraggingFile, setIsDraggingFile] = useState(false);
 
   // Interactive Modes State (Comments, Swipe, King of the Hill 1v1 Battle)
@@ -1210,6 +1202,7 @@ export default function App() {
   const handleTriggerStudioMutate = useCallback((memeToMutate, event) => {
     if (event) event.stopPropagation();
     sfx.playMutate();
+    trackRemixOpened(memeToMutate, 'remix');
     setActiveBounty(null);
     setMutatingParentMeme(memeToMutate);
     setForgeIntent({ mode: 'remix', parent: memeToMutate });
@@ -1219,6 +1212,7 @@ export default function App() {
   const handleCaptionThis = useCallback((memeToCaption, event) => {
     if (event) event.stopPropagation();
     sfx.playToggle();
+    trackRemixOpened(memeToCaption, 'caption');
     setActiveBounty(null);
     setMutatingParentMeme(memeToCaption);
     setForgeIntent({ mode: 'caption', parent: memeToCaption });
@@ -1294,6 +1288,8 @@ export default function App() {
       // Only reward tokens/XP once per unique meme ID (prevents upvote/downvote toggle farming)
       if (direction > 0) {
         if (currentVote <= 0) {
+          const votedMeme = memesRef.current.find((m) => String(m.id) === String(memeId));
+          trackUpvote(memeId, votedMeme?.category || 'unknown', Math.max(1, safeDelta));
           const nextVotes = votesCastCount + 1;
           setVotesCastCount(nextVotes);
           localStorage.setItem('tm_votes_cast_count', String(nextVotes));
@@ -1588,6 +1584,7 @@ export default function App() {
     });
 
     setMemes((prev) => [insertedMeme, ...prev]);
+    trackMemePublished(insertedMeme, 'quick_upload');
     recordPublishDailyPerk();
     if (!aiUnlocked) {
       setAiUnlocked(true);
@@ -1645,6 +1642,7 @@ export default function App() {
         parentId && m.id === parentId ? { ...m, mutation_count: (m.mutation_count || 0) + 1 } : m
       )
     ]);
+    trackMemePublished(insertedMeme, intent?.mode || (parent ? 'remix' : 'forge'));
 
     if (parent?.author_name) {
       const parentAuthor = parent.author_name;
@@ -2457,7 +2455,9 @@ export default function App() {
     const onKeyDown = (e) => {
       if (e.key === 'Escape' && bossKeyActive) {
         setBossKeyActive(false);
+        setPrankDisguise(null);
       } else if (e.key === 'B' && e.shiftKey && !['INPUT', 'TEXTAREA'].includes(e.target?.tagName)) {
+        setPrankDisguise(null);
         setBossKeyActive((prev) => !prev);
       }
     };
@@ -2589,6 +2589,7 @@ export default function App() {
   const handleOpenTheater = useCallback((meme) => {
     if (!meme) return;
     sfx.playToggle();
+    trackMemeViewed(meme, 'theater');
     setTheaterMemeId(meme.id);
     if (typeof window !== 'undefined' && window.history?.replaceState) {
       const url = new URL(window.location.href);
@@ -2597,6 +2598,12 @@ export default function App() {
       window.history.replaceState(window.history.state, '', url.toString());
     }
   }, []);
+
+  useEffect(() => {
+    if (openedFromShareLink && theaterMeme) {
+      trackMemeViewed(theaterMeme, 'share_link');
+    }
+  }, [openedFromShareLink, theaterMeme]);
 
   const handleCloseTheater = useCallback(() => {
     setTheaterMemeId(null);
@@ -2614,6 +2621,7 @@ export default function App() {
 
   const closeAllModals = useCallback(() => {
     setShowStudio(false);
+    setForgeIntent(null);
     setTheaterMemeId(null);
     setOpenedFromShareLink(false);
     setEvolutionModalMeme(null);
@@ -2623,6 +2631,9 @@ export default function App() {
     setProfileUsername(null);
     setShowAuthModal(false);
     setExtrasDrawerOpen(false);
+    setExtrasFocus(null);
+    setBossKeyActive(false);
+    setPrankDisguise(null);
     if (typeof window !== 'undefined' && window.history?.replaceState) {
       const url = new URL(window.location.href);
       let changed = false;
@@ -2641,6 +2652,30 @@ export default function App() {
     }
   }, []);
 
+  const canonicalPath = useMemo(
+    () =>
+      getCanonicalPathForState({
+        viewMode,
+        category,
+        showStudio,
+        forgeIntent,
+        extrasDrawerOpen,
+        extrasFocus,
+        bossKeyActive,
+        prankDisguise
+      }),
+    [
+      viewMode,
+      category,
+      showStudio,
+      forgeIntent,
+      extrasDrawerOpen,
+      extrasFocus,
+      bossKeyActive,
+      prankDisguise
+    ]
+  );
+
   const isAnyModalOpen = Boolean(
     showStudio ||
       theaterMeme ||
@@ -2650,25 +2685,32 @@ export default function App() {
       roastModalMeme ||
       profileUsername ||
       showAuthModal ||
-      extrasDrawerOpen
+      extrasDrawerOpen ||
+      bossKeyActive
   );
 
+  const hasCanonicalSubpath = canonicalPath !== '/';
+
   const activeNavDepth =
-    (viewMode !== 'feed' || category !== 'all' || searchQuery.trim() !== '' ? 1 : 0) +
+    (!hasCanonicalSubpath && (viewMode !== 'feed' || searchQuery.trim() !== '') ? 1 : 0) +
     (theaterMemeId ? 1 : 0) +
     (showLeaderboard ? 1 : 0) +
     (showRewardsModal ? 1 : 0) +
     (roastModalMeme ? 1 : 0) +
     (profileUsername ? 1 : 0) +
     (evolutionModalMeme ? 1 : 0) +
-    (showStudio ? 1 : 0) +
+    (showStudio && canonicalPath !== '/meme-generator' ? 1 : 0) +
     (showAuthModal ? 1 : 0) +
-    (extrasDrawerOpen ? 1 : 0);
+    (extrasDrawerOpen && canonicalPath !== '/meme-soundboard' ? 1 : 0);
 
   const handleNavigateBack = useCallback(() => {
     sfx.playToggle();
-    if (extrasDrawerOpen) {
+    if (bossKeyActive) {
+      setBossKeyActive(false);
+      setPrankDisguise(null);
+    } else if (extrasDrawerOpen) {
       setExtrasDrawerOpen(false);
+      setExtrasFocus(null);
     } else if (showAuthModal) {
       setShowAuthModal(false);
     } else if (roastModalMeme) {
@@ -2683,6 +2725,7 @@ export default function App() {
       setShowLeaderboard(false);
     } else if (showStudio) {
       setShowStudio(false);
+      setForgeIntent(null);
     } else if (theaterMemeId) {
       handleCloseTheater();
     } else if (viewMode !== 'feed') {
@@ -2692,6 +2735,7 @@ export default function App() {
       setSearchQuery('');
     }
   }, [
+    bossKeyActive,
     extrasDrawerOpen,
     showAuthModal,
     roastModalMeme,
@@ -2707,17 +2751,94 @@ export default function App() {
     searchQuery
   ]);
 
-  // Phase 10: Dynamic Google Search SEO & JSON-LD Structured Data Synchronization
+  // Phase 10 & 28.9: Dynamic Google Search SEO, Canonical & JSON-LD Synchronization
   useEffect(() => {
     updateDynamicSeo({
       activeMeme: theaterMeme || roastModalMeme,
       category,
-      viewMode
+      viewMode,
+      showStudio,
+      forgeIntent,
+      extrasDrawerOpen,
+      extrasFocus,
+      bossKeyActive,
+      prankDisguise
     });
-  }, [theaterMeme, roastModalMeme, category, viewMode]);
+  }, [
+    theaterMeme,
+    roastModalMeme,
+    category,
+    viewMode,
+    showStudio,
+    forgeIntent,
+    extrasDrawerOpen,
+    extrasFocus,
+    bossKeyActive,
+    prankDisguise
+  ]);
 
-  // Synchronize browser history stack so iPhone edge-swipe-back & Android Back button navigate back cleanly
+  // Phase 28.10: Track arcade & interactive game launches
+  const prevTrackedGameRef = useRef(null);
+  useEffect(() => {
+    const trackedGames = new Set([
+      'pusher',
+      'pinball',
+      'slots',
+      'blackjack',
+      'roulette',
+      'crush',
+      'stocks',
+      'battle',
+      'swipe'
+    ]);
+    if (trackedGames.has(viewMode)) {
+      if (prevTrackedGameRef.current !== viewMode) {
+        prevTrackedGameRef.current = viewMode;
+        trackGameStarted(viewMode, isFixedArcadeGame ? 'arcade_cabinet' : 'interactive_mode');
+      }
+    } else {
+      prevTrackedGameRef.current = null;
+    }
+  }, [viewMode, isFixedArcadeGame]);
+
+  // Synchronize browser history stack so path routes, iPhone edge-swipe-back & Back button navigate cleanly
   const historyDepthRef = useRef(0);
+  const lastSyncedPathRef = useRef(initialRoute.matchedPath || '/');
+  const hasMountedPathSyncRef = useRef(false);
+  const skipNextPushRef = useRef(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.history?.replaceState) return;
+    if (theaterMemeId) return;
+
+    const url = new URL(window.location.href);
+    const currentNorm = normalizeRoutePath(url.pathname);
+    const hadLegacyParams = url.searchParams.has('mode') || url.searchParams.has('category');
+    url.searchParams.delete('mode');
+    url.searchParams.delete('category');
+    if (searchQuery.trim()) {
+      url.searchParams.set('q', searchQuery.trim());
+    } else {
+      url.searchParams.delete('q');
+    }
+
+    if (canonicalPath !== currentNorm) {
+      url.pathname = canonicalPath;
+      const useReplace =
+        !hasMountedPathSyncRef.current || skipNextPushRef.current || hadLegacyParams;
+      if (useReplace) {
+        window.history.replaceState(window.history.state, '', url.toString());
+      } else {
+        window.history.pushState({ tmCanonicalPath: canonicalPath }, '', url.toString());
+      }
+    } else if (hadLegacyParams || url.search !== window.location.search) {
+      window.history.replaceState(window.history.state, '', url.toString());
+    }
+
+    hasMountedPathSyncRef.current = true;
+    skipNextPushRef.current = false;
+    lastSyncedPathRef.current = canonicalPath;
+  }, [canonicalPath, searchQuery, theaterMemeId]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.history?.pushState) return;
@@ -2731,6 +2852,28 @@ export default function App() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const onPopState = () => {
+      const nextNorm = normalizeRoutePath(window.location.pathname);
+      if (nextNorm !== lastSyncedPathRef.current) {
+        skipNextPushRef.current = true;
+        const resolved = resolveRouteFromLocation(
+          window.location.pathname,
+          window.location.search,
+          isTouchDeviceDefault()
+        );
+        lastSyncedPathRef.current = resolved.matchedPath;
+        setCategory(resolved.category);
+        setViewMode(resolved.viewMode);
+        setSearchQuery(resolved.searchQuery);
+        setShowStudio(resolved.showStudio);
+        setForgeIntent(resolved.forgeIntent);
+        setExtrasDrawerOpen(resolved.extrasDrawerOpen);
+        setExtrasFocus(resolved.extrasFocus);
+        setBossKeyActive(resolved.bossKeyActive);
+        setPrankDisguise(resolved.prankDisguise);
+        setSurpriseOpen(resolved.surpriseOpen);
+        setTheaterMemeId(resolved.theaterMemeId);
+        return;
+      }
       historyDepthRef.current = Math.max(0, historyDepthRef.current - 1);
       handleNavigateBack();
     };
@@ -2754,18 +2897,6 @@ export default function App() {
     };
   }, [isAnyModalOpen, isFixedArcadeGame]);
 
-  // Synchronize ?mode= URL query parameter so direct links & refreshes preserve the active game
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.history?.replaceState) return;
-    const url = new URL(window.location.href);
-    if (viewMode && viewMode !== 'feed' && !(viewMode === 'reels' && isTouchDeviceDefault())) {
-      url.searchParams.set('mode', viewMode);
-    } else {
-      url.searchParams.delete('mode');
-    }
-    window.history.replaceState(window.history.state, '', url.toString());
-  }, [viewMode]);
-
   const handleShareMeme = useCallback(
     (meme, e) => {
       if (!meme) return;
@@ -2780,6 +2911,7 @@ export default function App() {
           })
           .catch(() => {});
       }
+      trackShareClicked(meme, 'card');
       sfx.playPop(1);
       setGoblinFortuneToast('🔗 Direct meme link copied! Opens this exact meme in Theater view.');
       setTimeout(() => setGoblinFortuneToast(''), 4000);
@@ -3000,7 +3132,17 @@ export default function App() {
       {bossKeyActive && (
         <Suspense fallback={MODAL_SKELETON_FALLBACK}>
           <BossKeyOverlay
-            onExitBossMode={() => setBossKeyActive(false)}
+            initialDisguise={prankDisguise || 'excel'}
+            isPrankPage={Boolean(prankDisguise)}
+            onDisguiseChange={(nextId) => {
+              if (prankDisguise !== null && PRANK_DISGUISE_TO_PATH[nextId]) {
+                setPrankDisguise(nextId);
+              }
+            }}
+            onExitBossMode={() => {
+              setBossKeyActive(false);
+              setPrankDisguise(null);
+            }}
             onSecretWorkXp={handleBossSecretXp}
             memes={memes}
           />
@@ -3112,6 +3254,7 @@ export default function App() {
               className="tm-fixed-icon-btn"
               onClick={() => {
                 sfx.playToggle();
+                setExtrasFocus(null);
                 setExtrasDrawerOpen(true);
               }}
               title="Open Extras Drawer: Soundboard, WTF?!, Payphone, Boss Key, CRT, Turbo & AI"
@@ -3186,10 +3329,11 @@ export default function App() {
               setSearchQuery('');
               window.scrollTo?.({ top: 0, behavior: 'smooth' });
             }}
-            canGoBack={activeNavDepth > 0}
+            canGoBack={activeNavDepth > 0 || hasCanonicalSubpath}
             onNavigateBack={handleNavigateBack}
             onOpenExtras={() => {
               sfx.playToggle();
+              setExtrasFocus(null);
               setExtrasDrawerOpen(true);
             }}
           />
@@ -4120,7 +4264,10 @@ export default function App() {
             pinataClaimedToday={pinataClaimedToday}
             onClaimPayphoneCoinReturn={handleClaimPayphoneCoinReturn}
             payphoneClaimedToday={payphoneClaimedToday}
-            onTriggerBossMode={() => setBossKeyActive(true)}
+            onTriggerBossMode={() => {
+              setPrankDisguise(null);
+              setBossKeyActive(true);
+            }}
             onLaunchStampede={handleLaunchStampede}
             onChangeChaosMutator={handleChangeChaosMutator}
             memes={memes}
@@ -4166,6 +4313,7 @@ export default function App() {
           }}
           onOpenExtras={() => {
             sfx.playToggle();
+            setExtrasFocus(null);
             setExtrasDrawerOpen(true);
           }}
           onOpenProfile={() => {
@@ -4423,7 +4571,11 @@ export default function App() {
         <Suspense fallback={MODAL_SKELETON_FALLBACK}>
           <ExtrasDrawerModal
             isOpen={extrasDrawerOpen}
-            onClose={() => setExtrasDrawerOpen(false)}
+            focusSection={extrasFocus}
+            onClose={() => {
+              setExtrasDrawerOpen(false);
+              setExtrasFocus(null);
+            }}
             onLaunchWtfSurprise={() => {
               sfx.playGooseHonk?.();
               setSurpriseOpen(true);
@@ -4432,7 +4584,10 @@ export default function App() {
               sfx.playToggle?.();
               setPayphoneModalOpen(true);
             }}
-            onToggleBossKey={() => setBossKeyActive(true)}
+            onToggleBossKey={() => {
+              setPrankDisguise(null);
+              setBossKeyActive(true);
+            }}
             crtMode={crtOn}
             onToggleCrtMode={() => {
               sfx.playToggle();
@@ -4455,6 +4610,7 @@ export default function App() {
             onPlayPad={handlePlaySoundboardPad}
             onTriggerChaosRoulette={(e) => {
               setExtrasDrawerOpen(false);
+              setExtrasFocus(null);
               handleTriggerChaosRoulette(e);
             }}
             onOpenRewards={() => {
@@ -4466,12 +4622,14 @@ export default function App() {
             onChangeChaosMutator={handleChangeChaosMutator}
             onSummonGoblin={(e) => {
               setExtrasDrawerOpen(false);
+              setExtrasFocus(null);
               handleSummonGoblin(e);
             }}
             goblinsLeftInWindow={goblinsLeftInWindow}
             goblinResetMs={goblinResetMs}
             onLaunchStampede={(stampedeId, e) => {
               setExtrasDrawerOpen(false);
+              setExtrasFocus(null);
               handleLaunchStampede(stampedeId, e);
             }}
             activeDeviceMeta={{
@@ -4500,6 +4658,7 @@ export default function App() {
               const rep = getSecurityAuditReport();
               sfx.playAiAssistantChime?.();
               setExtrasDrawerOpen(false);
+              setExtrasFocus(null);
               setGoblinFortuneToast(
                 `🛡️ Cyber-Shield ${rep.status} (${rep.score}): CSP + XSS URI Guard + Binary Media Firewall + Prototype Guard Active!`
               );
@@ -4552,6 +4711,7 @@ export default function App() {
         <SeoDiscoveryFooter
           onSelectCategory={(cat) => {
             sfx.playToggle();
+            closeAllModals();
             setCategory(cat);
             setViewMode('feed');
             window.scrollTo?.({ top: 0, behavior: 'smooth' });
@@ -4559,6 +4719,18 @@ export default function App() {
           onOpenBlankStudio={() => {
             closeAllModals();
             handleOpenBlankStudio();
+          }}
+          onOpenSoundboard={() => {
+            sfx.playToggle();
+            closeAllModals();
+            setExtrasFocus('soundboard');
+            setExtrasDrawerOpen(true);
+          }}
+          onOpenPrankDisguise={(disguise) => {
+            sfx.playToggle();
+            closeAllModals();
+            setPrankDisguise(disguise);
+            setBossKeyActive(true);
           }}
           onSelectViewMode={(mode) => {
             sfx.playToggle();

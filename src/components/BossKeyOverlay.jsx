@@ -56,8 +56,18 @@ const AI_COPILOT_MEMOS = [
   }
 ];
 
-export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp, memes = [] }) {
-  const [disguise, setDisguise] = useState('excel');
+export default function BossKeyOverlay({
+  onExitBossMode,
+  onSecretWorkXp,
+  memes = [],
+  initialDisguise = 'excel',
+  isPrankPage = false,
+  onDisguiseChange
+}) {
+  const [disguise, setDisguise] = useState(initialDisguise || 'excel');
+  const [toolbarHidden, setToolbarHidden] = useState(false);
+  const [showFullscreenTip, setShowFullscreenTip] = useState(Boolean(isPrankPage));
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [selectedCell, setSelectedCell] = useState('C6');
   const [excelRows, setExcelRows] = useState(INITIAL_EXCEL_ROWS);
   const [revealedMeme, setRevealedMeme] = useState(null);
@@ -71,6 +81,30 @@ export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp, memes =
   const [webcamFrozen, setWebcamFrozen] = useState(false);
   const [aiMessages, setAiMessages] = useState([AI_COPILOT_MEMOS[0]]);
   const [bsodPct, setBsodPct] = useState(42);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    const onFsChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', onFsChange);
+    return () => document.removeEventListener('fullscreenchange', onFsChange);
+  }, []);
+
+  const selectDisguise = (nextId) => {
+    setDisguise(nextId);
+    if (nextId === 'bsod') sfx.playXpCrash();
+    if (onDisguiseChange) onDisguiseChange(nextId);
+  };
+
+  const handleToggleFullscreen = () => {
+    if (typeof document === 'undefined') return;
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.().catch(() => {});
+    } else {
+      document.exitFullscreen?.().catch(() => {});
+    }
+  };
 
   const earnStealthXp = (amount = 15) => {
     setSecretXpEarned((prev) => prev + amount);
@@ -121,16 +155,15 @@ export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp, memes =
 
   // Number keys 1-6 switch disguises; typing in terminal adds fake code lines
   useEffect(() => {
+    const ignoredKeys = new Set(['Escape', 'F11', 'F5', 'F12', 'Shift', 'Control', 'Alt', 'Meta', 'Tab']);
     const onKey = (e) => {
-      if (e.key === '1') setDisguise('excel');
-      else if (e.key === '2') setDisguise('terminal');
-      else if (e.key === '3') setDisguise('zoom');
-      else if (e.key === '4') setDisguise('ai');
-      else if (e.key === '5') setDisguise('update');
-      else if (e.key === '6') {
-        setDisguise('bsod');
-        sfx.playXpCrash();
-      } else if (disguise === 'terminal' && e.key !== 'Escape') {
+      if (e.key === '1') selectDisguise('excel');
+      else if (e.key === '2') selectDisguise('terminal');
+      else if (e.key === '3') selectDisguise('zoom');
+      else if (e.key === '4') selectDisguise('ai');
+      else if (e.key === '5') selectDisguise('update');
+      else if (e.key === '6') selectDisguise('bsod');
+      else if (disguise === 'terminal' && !ignoredKeys.has(e.key)) {
         handleAppendTerminalLog();
       }
     };
@@ -140,58 +173,111 @@ export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp, memes =
 
   return (
     <div className="tm-boss-overlay" role="dialog" aria-label="Enterprise Productivity Portal">
-      {/* Top Corporate Bar with 6-Tab Stealth Disguise Switcher */}
-      <div
-        className="tm-boss-topbar"
-        style={{
-          background:
-            disguise === 'terminal'
-              ? '#0f172a'
-              : disguise === 'zoom'
-                ? '#1e293b'
-                : disguise === 'ai'
-                  ? '#312e81'
-                  : disguise === 'update' || disguise === 'bsod'
-                    ? '#0067b8'
-                    : '#107c41'
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          <strong>
-            {disguise === 'excel' && '📊 Q4_Enterprise_Cloud_Synergy_Forecast_2026.xlsx'}
-            {disguise === 'terminal' && '💻 root@prod-k8s-cluster-09: ~/enterprise-monolith'}
-            {disguise === 'zoom' && '📹 Executive Q4 Architecture Sync (Recording...)'}
-            {disguise === 'ai' && '🤖 SynergyGPT Enterprise Copilot v5.4 (SOC2 Verified)'}
-            {disguise === 'update' && '🔄 Enterprise OS Security Patch KB5042069'}
-            {disguise === 'bsod' && '💀 System Kernel Diagnostic Utility'}
-          </strong>
-          {secretXpEarned > 0 && (
-            <span
-              style={{
-                fontSize: '11px',
-                background: 'rgba(255,255,255,0.18)',
-                padding: '2px 8px',
-                borderRadius: '999px'
-              }}
-              title="You are secretly earning Arcade XP while pretending to work!"
-            >
-              🕵️ Stealth XP Mined: +{secretXpEarned} XP
-            </span>
-          )}
+      {toolbarHidden && (
+        <div className="tm-boss-floating-unhide">
+          <button
+            type="button"
+            className="tm-boss-floating-btn"
+            onClick={() => setToolbarHidden(false)}
+          >
+            👁️ Controls
+          </button>
+          <button
+            type="button"
+            className="tm-boss-floating-btn"
+            onClick={onExitBossMode}
+          >
+            ✕ Exit (Esc)
+          </button>
         </div>
+      )}
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-          {DISGUISE_MODES.map((m) => (
+      {/* Top Corporate Bar with 6-Tab Stealth Disguise Switcher */}
+      {!toolbarHidden && (
+        <div
+          className="tm-boss-topbar"
+          style={{
+            background:
+              disguise === 'terminal'
+                ? '#0f172a'
+                : disguise === 'zoom'
+                  ? '#1e293b'
+                  : disguise === 'ai'
+                    ? '#312e81'
+                    : disguise === 'update' || disguise === 'bsod'
+                      ? '#0067b8'
+                      : '#107c41'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <strong>
+              {disguise === 'excel' && '📊 Q4_Enterprise_Cloud_Synergy_Forecast_2026.xlsx'}
+              {disguise === 'terminal' && '💻 root@prod-k8s-cluster-09: ~/enterprise-monolith'}
+              {disguise === 'zoom' && '📹 Executive Q4 Architecture Sync (Recording...)'}
+              {disguise === 'ai' && '🤖 SynergyGPT Enterprise Copilot v5.4 (SOC2 Verified)'}
+              {disguise === 'update' && '🔄 Enterprise OS Security Patch KB5042069'}
+              {disguise === 'bsod' && '💀 System Kernel Diagnostic Utility'}
+            </strong>
+            {secretXpEarned > 0 && (
+              <span
+                style={{
+                  fontSize: '11px',
+                  background: 'rgba(255,255,255,0.18)',
+                  padding: '2px 8px',
+                  borderRadius: '999px'
+                }}
+                title="You are secretly earning Arcade XP while pretending to work!"
+              >
+                🕵️ Stealth XP Mined: +{secretXpEarned} XP
+              </span>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+            {DISGUISE_MODES.map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => selectDisguise(m.id)}
+                style={{
+                  background: disguise === m.id ? '#ffffff' : 'rgba(255,255,255,0.16)',
+                  color: disguise === m.id ? '#0f172a' : '#ffffff',
+                  border: 'none',
+                  padding: '5px 10px',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                {m.label}
+              </button>
+            ))}
+
             <button
-              key={m.id}
               type="button"
-              onClick={() => {
-                setDisguise(m.id);
-                if (m.id === 'bsod') sfx.playXpCrash();
-              }}
+              onClick={handleToggleFullscreen}
               style={{
-                background: disguise === m.id ? '#ffffff' : 'rgba(255,255,255,0.16)',
-                color: disguise === m.id ? '#0f172a' : '#ffffff',
+                background: 'rgba(255,255,255,0.22)',
+                color: '#ffffff',
+                border: '1px solid rgba(255,255,255,0.3)',
+                padding: '5px 10px',
+                borderRadius: '6px',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+              title="Toggle browser fullscreen (or press F11 on desktop)"
+            >
+              {isFullscreen ? '⛶ Exit Fullscreen' : '⛶ F11 Fullscreen'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setToolbarHidden(true)}
+              style={{
+                background: 'rgba(15,23,42,0.4)',
+                color: '#ffffff',
                 border: 'none',
                 padding: '5px 10px',
                 borderRadius: '6px',
@@ -199,20 +285,50 @@ export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp, memes =
                 fontWeight: 700,
                 cursor: 'pointer'
               }}
+              title="Hide this toolbar for a realistic edge-to-edge screen"
             >
-              {m.label}
+              👁️ Hide Bar
             </button>
-          ))}
 
-          <button
-            type="button"
-            className="tm-boss-exit-btn"
-            onClick={onExitBossMode}
-          >
-            ⚡ Coast is Clear! (Esc)
-          </button>
+            <button
+              type="button"
+              className="tm-boss-exit-btn"
+              onClick={onExitBossMode}
+            >
+              ⚡ Coast is Clear! (Esc)
+            </button>
+          </div>
         </div>
-      </div>
+      )}
+
+      {showFullscreenTip && !toolbarHidden && (
+        <div className="tm-boss-prank-tip">
+          <span>
+            💡 <strong>Fullscreen Prank Tip:</strong> Press <strong>F11</strong> (or <strong>Ctrl+Cmd+F</strong> on Mac) or tap <strong>⛶ F11 Fullscreen</strong> + <strong>👁️ Hide Bar</strong> for an authentic edge-to-edge screen. Click anywhere to advance %, or press <strong>Esc</strong> to exit to THE MEMES.net.
+          </span>
+          <div className="tm-boss-prank-tip-actions">
+            <button
+              type="button"
+              className="tm-boss-tip-btn"
+              onClick={() => {
+                setToolbarHidden(true);
+                setShowFullscreenTip(false);
+                handleToggleFullscreen();
+              }}
+            >
+              🚀 Go Fullscreen Now
+            </button>
+            <button
+              type="button"
+              className="tm-boss-tip-close"
+              onClick={() => setShowFullscreenTip(false)}
+              aria-label="Dismiss fullscreen tip"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* DISGUISE 1: INTERACTIVE EXCEL SPREADSHEET */}
       {disguise === 'excel' && (
@@ -630,13 +746,13 @@ export default function BossKeyOverlay({ onExitBossMode, onSecretWorkXp, memes =
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
-            padding: '10% 14%',
+            padding: 'clamp(24px, 8vw, 10%) clamp(20px, 6vw, 14%)',
             fontFamily: '"Segoe UI", system-ui, sans-serif',
             cursor: 'pointer',
             userSelect: 'none'
           }}
         >
-          <div style={{ fontSize: '96px', fontWeight: 300, lineHeight: 1, marginBottom: '24px' }}>
+          <div style={{ fontSize: 'clamp(56px, 12vw, 96px)', fontWeight: 300, lineHeight: 1, marginBottom: '24px' }}>
             :(
           </div>
           <div style={{ fontSize: '24px', fontWeight: 400, maxWidth: '680px', lineHeight: 1.45 }}>

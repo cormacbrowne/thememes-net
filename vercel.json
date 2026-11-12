@@ -1,7 +1,118 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "mode", "value": "pusher" }],
+      "destination": "/games/coin-pusher",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "mode", "value": "dozer" }],
+      "destination": "/games/coin-pusher",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "mode", "value": "coindozer" }],
+      "destination": "/games/coin-pusher",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "mode", "value": "coinpusher" }],
+      "destination": "/games/coin-pusher",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "mode", "value": "pinball" }],
+      "destination": "/games/pinball",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "mode", "value": "slots" }],
+      "destination": "/games/slots",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "mode", "value": "blackjack" }],
+      "destination": "/games/blackjack",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "mode", "value": "roulette" }],
+      "destination": "/games/roulette",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "mode", "value": "crush" }],
+      "destination": "/games/meme-crush",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "mode", "value": "stocks" }],
+      "destination": "/games/meme-stock-market",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "mode", "value": "generator" }],
+      "destination": "/meme-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "mode", "value": "soundboard" }],
+      "destination": "/meme-soundboard",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "category", "value": "dank" }],
+      "destination": "/memes/dank",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "category", "value": "tech" }],
+      "destination": "/memes/programming",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "category", "value": "programming" }],
+      "destination": "/memes/programming",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "category", "value": "gaming" }],
+      "destination": "/memes/gaming",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "category", "value": "relatable" }],
+      "destination": "/memes/relatable",
+      "statusCode": 301
+    }
+  ],
   "rewrites": [
     {
       "source": "/m/:id",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/((?!_vercel/|assets/|seed/).*)",
       "destination": "/index.html"
     }
   ],
@@ -31,7 +142,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://i.imgflip.com https://images.unsplash.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none';"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://vitals.vercel-insights.com https://i.imgflip.com https://images.unsplash.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none';"
         }
       ]
     }

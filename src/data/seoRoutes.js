@@ -36,7 +36,8 @@ export const GAME_VIEW_MODE_TO_PATH = {
   roulette: '/games/roulette',
   crush: '/games/meme-crush',
   stocks: '/games/meme-stock-market',
-  derby: '/games/horse-racing'
+  derby: '/games/horse-racing',
+  guess: '/games/guess-the-meme'
 };
 
 export const PRANK_DISGUISE_TO_PATH = {
@@ -183,6 +184,23 @@ export const SEO_ROUTES = [
       "Place your free arcade bets at the glowing starting gate in Neon Derby '86, a retro synthwave meme horse racing cabinet built for desktop and mobile browsers with zero real-money wagering. Watch eight iconic internet champions—Doge Dasher, Stonks Stallion, Nyan Neigh, Pepe Pony, Gigachad Galloper, Rickroll Runner, Sad Keanu Sprinter, and Harambe Hooves—line up in bright neon jockey silks.",
       'Check the live form guide and shifting track conditions across Neon Dry, Acid Rain, and Glitch Track before locking in Win, Place, Show, or Exacta tickets, or roll the Lucky Dip button for an instant random pick. Fractional and decimal odds update cleanly with a transparent 108% overround, while a pre-race seeded draw guarantees fair results untouched by crowd cheers.',
       'Enjoy 22-second parallax races with galloping trails, live ticker commentary, optional spoken play-by-play voiceover, dramatic slow-motion photo finishes, and confetti podium celebrations. Race right away or catch scheduled posts every two minutes, plus daily 8 PM local Derby Cup events for 3x arcade token rewards or unlimited Free Practice runs.'
+    ]
+  },
+  {
+    path: '/games/guess-the-meme',
+    title: 'Guess The Meme Daily — Free Pixelated Meme Trivia Game | THE MEMES.net',
+    description:
+      'Play Guess the Meme Daily free online! Unpixelate 5 classic meme templates over 5 steps, build your daily streak, and share your Wordle-style score grid. No tokens required.',
+    h1: 'Guess The Meme: Daily — Free Pixelated Format Trivia',
+    kicker: 'Daily Wordle-Style Puzzle // 100% Free, Zero Tokens',
+    changefreq: 'daily',
+    priority: '0.9',
+    viewMode: 'guess',
+    category: 'all',
+    introParagraphs: [
+      'Test your internet lore every day in Guess the Meme Daily, a completely free visual meme trivia challenge on THE MEMES.net with zero tokens, downloads, or login required. Each daily puzzle presents five classic meme formats—spanning reaction panels, galaxy brain tiers, and internet icons—that start heavily pixelated in crunchy retro blocks and sharpen step by step.',
+      'Study the silhouette and color layout at Step 1 and pick the matching format name from four choices, or tap Enhance Clarity up to five levels to reveal sharper details. Earlier guesses earn higher point bonuses up to 100 points per round, while everyone around the world plays the exact same date-seeded daily lineup.',
+      'Finish all five memes to unlock your Wordle-style emoji score grid, keep your daily solve streak alive in local storage across devices and visits, and copy your shareable results card with a direct link to challenge friends, plus unlock unlimited endless practice sets anytime you want extra rounds.'
     ]
   },
   {
@@ -472,6 +490,7 @@ export function resolveRouteFromLocation(pathname = '/', search = '', isTouchDev
     'pinball',
     'stocks',
     'derby',
+    'guess',
     'swipe',
     'battle'
   ];

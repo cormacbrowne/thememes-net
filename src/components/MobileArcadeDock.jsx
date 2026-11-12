@@ -26,6 +26,7 @@ export default function MobileArcadeDock({
     'pinball',
     'stocks',
     'derby',
+    'guess',
     'battle',
     'arena',
     'swipe'
@@ -108,6 +109,14 @@ export default function MobileArcadeDock({
             >
               <span>🏇</span>
               <strong>Neon Derby &apos;86</strong>
+            </button>
+            <button
+              type="button"
+              className={`tm-dock-game-chip ${viewMode === 'guess' ? 'active' : ''}`}
+              onClick={() => handlePickMode('guess')}
+            >
+              <span>🧠</span>
+              <strong>Guess The Meme</strong>
             </button>
             <button
               type="button"

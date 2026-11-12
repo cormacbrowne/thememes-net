@@ -105,6 +105,7 @@ const VegasRouletteGame = lazy(() => import('./components/VegasRouletteGame'));
 const VegasCoinPusherGame = lazy(() => import('./components/VegasCoinPusherGame'));
 const MemeStockMarketGame = lazy(() => import('./components/MemeStockMarketGame'));
 const NeonDerbyGame = lazy(() => import('./components/NeonDerbyGame'));
+const GuessTheMemeGame = lazy(() => import('./components/GuessTheMemeGame'));
 const ArcadeAiAssistant = lazy(() => import('./components/ArcadeAiAssistant'));
 const AuthModal = lazy(() => import('./components/AuthModal'));
 const MemeTheaterModal = lazy(() => import('./components/MemeTheaterModal'));
@@ -669,7 +670,7 @@ export default function App() {
     () => computeXpConversionState(xp, xpConverted, tokenLedger),
     [xp, xpConverted, tokenLedger]
   );
-  const isFixedArcadeGame = ['blackjack', 'roulette', 'pusher', 'slots', 'crush', 'pinball', 'stocks', 'derby'].includes(viewMode);
+  const isFixedArcadeGame = ['blackjack', 'roulette', 'pusher', 'slots', 'crush', 'pinball', 'stocks', 'derby', 'guess'].includes(viewMode);
 
   // Phase 28.11 & 29.6: THE MEMES FM radio hooks (resume on gesture if left ON, mute sync, shortcuts, context station & combo reactivity)
   useEffect(() => {
@@ -711,6 +712,8 @@ export default function App() {
       setRadioContextStation('casinojazz');
     } else if (viewMode === 'derby') {
       setRadioContextStation('western');
+    } else if (viewMode === 'guess') {
+      setRadioContextStation('lofi');
     } else if (viewMode === 'stocks') {
       setRadioContextStation('synthwave');
     } else {
@@ -3547,6 +3550,16 @@ export default function App() {
             </button>
             <button
               type="button"
+              className={`tm-fixed-game-pill ${viewMode === 'guess' ? 'active' : ''}`}
+              onClick={() => {
+                sfx.playToggle();
+                setViewMode('guess');
+              }}
+            >
+              🧠 Guess
+            </button>
+            <button
+              type="button"
               className={`tm-fixed-game-pill ${viewMode === 'crush' ? 'active' : ''}`}
               onClick={() => {
                 sfx.playToggle();
@@ -4443,6 +4456,25 @@ export default function App() {
             }}
             onSpendTokens={handleSpendTokens}
             onPayoutTokens={handlePayoutGameTokens}
+            onBackToFeed={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+            }}
+          />
+        </Suspense>
+      )}
+
+      {/* FIXED ARCADE GAME 0A3: GUESS THE MEME DAILY */}
+      {viewMode === 'guess' && (
+        <Suspense fallback={<MemeSkeletonGrid count={3} />}>
+          <GuessTheMemeGame
+            soundOn={soundOn}
+            onToggleSound={() => {
+              const nextState = !soundOn;
+              sfx.enabled = nextState;
+              setSoundOn(nextState);
+              if (nextState) sfx.playToggle();
+            }}
             onBackToFeed={() => {
               sfx.playToggle();
               setViewMode('feed');

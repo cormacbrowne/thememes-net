@@ -4,6 +4,7 @@ import { RadioToggleButton } from './MemesRadio';
 
 const ARCADE_GAME_MODES = [
   { id: 'derby', icon: '🏇', label: "Neon Derby '86", badge: 'NEW' },
+  { id: 'guess', icon: '🧠', label: 'Guess The Meme', badge: 'Daily' },
   { id: 'pusher', icon: '🪙', label: "Coin Dozer '86", badge: '3D' },
   { id: 'pinball', icon: '🎱', label: 'Neon Pinball', badge: '5 Tables' },
   { id: 'blackjack', icon: '🃏', label: "Neon 21's", badge: 'Cards' },

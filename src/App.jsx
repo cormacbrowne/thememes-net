@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
-import { getSupabaseClient, fetchSupabaseAuthSettings } from './supabaseClient';
+import { getSupabaseClient } from './supabaseClient';
 import { sfx } from './utils/soundEngine';
 import {
   STUDIO_TEMPLATES,
@@ -10,6 +10,7 @@ import {
 } from './data/starterMemes';
 import { ARCADE_ECONOMY_RULES } from './utils/tokenEconomy';
 import { useTokenEconomy } from './hooks/useTokenEconomy';
+import { useAuth } from './hooks/useAuth';
 import { useFeed } from './hooks/useFeed';
 import { PRANK_DISGUISE_TO_PATH } from './data/seoRoutes';
 import { useViewMode, useViewModeEffects } from './hooks/useViewMode';
@@ -152,22 +153,6 @@ export default function App() {
   const particleOverlayRef = useRef(null);
   const [goblinFortuneToast, setGoblinFortuneToast] = useState('');
 
-  // Modals & Hardened User Auth State
-  const [user, setUser] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('tm_user') || 'null');
-    } catch {
-      return null;
-    }
-  });
-  const { onlineCount, broadcastEmote } = useLivePresence({ username: user?.username });
-  const [authMode, setAuthMode] = useState('login');
-  const [authEmail, setAuthEmail] = useState('');
-  const [authPassword, setAuthPassword] = useState('');
-  const [authUsername, setAuthUsername] = useState('');
-  const [authMessage, setAuthMessage] = useState('');
-  const failedAuthRef = useRef({ count: 0, lockUntil: 0 });
-
   // Phase 8, 9 & 28.16: AI Roast Run Counter & Toy Widgets
   const [stampedeSprites, setStampedeSprites] = useState([]);
   const [bubbleWrapItems, setBubbleWrapItems] = useState([]);
@@ -251,6 +236,27 @@ export default function App() {
     recordWildGoblinReward
   } = economy;
 
+  const memesRef = useRef([]);
+  const auth = useAuth({ setShowAuthModal, awardXpAndCombo, memesRef });
+  const {
+    user,
+    setUser,
+    authMode,
+    setAuthMode,
+    authEmail,
+    setAuthEmail,
+    authPassword,
+    setAuthPassword,
+    authUsername,
+    setAuthUsername,
+    authMessage,
+    handleSocialOAuthLogin,
+    handleMagicLinkSubmit,
+    handleAuthSubmit,
+    handleQuickGuestLogin
+  } = auth;
+  const { onlineCount, broadcastEmote } = useLivePresence({ username: user?.username });
+
   const feed = useFeed({
     router,
     economy,
@@ -324,6 +330,10 @@ export default function App() {
     handleBattlePick,
     handleSkipMatchup
   } = feed;
+
+  useEffect(() => {
+    memesRef.current = memes;
+  }, [memes]);
 
   // Persist UI Settings
   useEffect(() => {
@@ -401,275 +411,6 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('tm_roasts_run', String(roastsRun));
   }, [roastsRun]);
-
-  // INITIALIZE SUPABASE AUTH SESSION SYNC
-  useEffect(() => {
-    const client = getSupabaseClient();
-    let authSub = null;
-    if (client && client.auth) {
-      const syncAuthSession = (sessionUser) => {
-        if (!sessionUser) return;
-        const email = sessionUser.email || 'Memer';
-        const provider =
-          sessionUser.app_metadata?.provider ||
-          sessionUser.identities?.[0]?.provider ||
-          'email';
-        const handle =
-          sessionUser.user_metadata?.full_name?.replace(/\s+/g, '_') ||
-          sessionUser.user_metadata?.name?.replace(/\s+/g, '_') ||
-          email.split('@')[0];
-        const u = {
-          id: sessionUser.id,
-          username: handle.slice(0, 20),
-          email,
-          provider,
-          verified: true
-        };
-        setUser(u);
-        localStorage.setItem('tm_user', JSON.stringify(u));
-      };
-
-      client.auth.getSession().then(({ data }) => {
-        if (data?.session?.user) {
-          syncAuthSession(data.session.user);
-        }
-      });
-
-      if (typeof client.auth.onAuthStateChange === 'function') {
-        const { data: listener } = client.auth.onAuthStateChange((_event, session) => {
-          if (session?.user) {
-            syncAuthSession(session.user);
-          }
-        });
-        authSub = listener?.subscription;
-      }
-    }
-
-    return () => {
-      if (authSub && typeof authSub.unsubscribe === 'function') {
-        authSub.unsubscribe();
-      }
-    };
-  }, []);
-
-  // ==========================================
-  // PHASE 7 & 11: HARDENED AUTH (PRE-FLIGHT CHECKED OAUTH 2.0 + AUTO-REGISTER + ANTI-SPOOF)
-  // ==========================================
-  const sanitizeHandle = (raw = '') =>
-    raw.replace(/[^a-zA-Z0-9_.-]/g, '').slice(0, 20);
-
-  const handleSocialOAuthLogin = async (provider) => {
-    setAuthMessage(`🔐 Checking ${provider.shortName} OAuth 2.0 status...`);
-    const client = getSupabaseClient();
-
-    // Pre-flight check against `/auth/v1/settings` so we NEVER redirect the user to a raw
-    // 400 JSON error page ("Unsupported provider: provider is not enabled") if keys aren't in Supabase yet!
-    const settings = await fetchSupabaseAuthSettings();
-    const isProviderEnabledOnServer = Boolean(settings?.external?.[provider.id]);
-
-    if (isProviderEnabledOnServer && client && client.auth?.signInWithOAuth) {
-      try {
-        const { data, error } = await client.auth.signInWithOAuth({
-          provider: provider.id,
-          options: {
-            redirectTo: window.location.origin,
-            skipBrowserRedirect: true
-          }
-        });
-        if (!error && data?.url) {
-          window.location.assign(data.url);
-          return;
-        }
-      } catch {
-        // Fallback below
-      }
-    }
-
-    // Seamless PKCE Verified Arcade Session (activates immediately when OAuth keys haven't been added yet)
-    const fallbackHandle =
-      sanitizeHandle(authUsername.trim()) ||
-      `${provider.shortName}_${Math.floor(100 + Math.random() * 899)}`;
-    const verifiedUser = {
-      id: `oauth-${provider.id}-${Date.now()}`,
-      username: fallbackHandle,
-      provider: provider.shortName,
-      verified: true
-    };
-    setUser(verifiedUser);
-    localStorage.setItem('tm_user', JSON.stringify(verifiedUser));
-    setShowAuthModal(false);
-    setAuthMessage('');
-    sfx.playLevelUp();
-    awardXpAndCombo(150, null, '🛡️');
-  };
-
-  const handleMagicLinkSubmit = async (e) => {
-    e.preventDefault();
-    if (!authEmail) return;
-    setAuthMessage('✨ Sending encrypted Magic Link...');
-    const client = getSupabaseClient();
-    if (client && client.auth?.signInWithOtp) {
-      try {
-        const { error } = await client.auth.signInWithOtp({
-          email: authEmail,
-          options: { emailRedirectTo: window.location.origin }
-        });
-        if (!error) {
-          setAuthMessage('✅ Magic Link sent! Check your inbox — or we also logged you in right now!');
-          sfx.playJackpot();
-        }
-      } catch {
-        // Fall through to instant session activation below so rate limits never block the user
-      }
-    }
-
-    const handle = sanitizeHandle(authUsername.trim() || authEmail.split('@')[0]) || 'MagicMemer';
-    const u = {
-      id: `magic-${Date.now()}`,
-      username: handle,
-      email: authEmail,
-      provider: 'MagicLink',
-      verified: true
-    };
-    setUser(u);
-    localStorage.setItem('tm_user', JSON.stringify(u));
-    setShowAuthModal(false);
-    setAuthMessage('');
-    sfx.playJackpot();
-    awardXpAndCombo(100, e, '✨');
-  };
-
-  const handleAuthSubmit = async (e) => {
-    e.preventDefault();
-    const now = Date.now();
-    if (now < failedAuthRef.current.lockUntil) {
-      const waitSec = Math.ceil((failedAuthRef.current.lockUntil - now) / 1000);
-      setAuthMessage(`⏳ Security cooldown active. Try again in ${waitSec}s.`);
-      return;
-    }
-
-    if (authPassword.length < 6) {
-      setAuthMessage('⚠️ Password must be at least 6 characters.');
-      return;
-    }
-
-    setAuthMessage('🔒 Verifying credentials...');
-    const client = getSupabaseClient();
-    const desiredHandle =
-      sanitizeHandle(authUsername.trim() || authEmail.split('@')[0]) || 'ArcadeMemer';
-
-    if (client && authEmail && authPassword) {
-      try {
-        if (authMode === 'signup') {
-          const { data } = await client.auth.signUp({
-            email: authEmail,
-            password: authPassword,
-            options: { data: { full_name: desiredHandle } }
-          });
-          const u = {
-            id: data?.user?.id || `email-${Date.now()}`,
-            username: desiredHandle,
-            email: authEmail,
-            provider: 'Email',
-            verified: true
-          };
-          setUser(u);
-          localStorage.setItem('tm_user', JSON.stringify(u));
-          setShowAuthModal(false);
-          setAuthMessage('');
-          sfx.playLevelUp();
-          awardXpAndCombo(150, e, '🛡️');
-          return;
-        } else {
-          // Try signing in first; if account doesn't exist yet or email confirmation is pending,
-          // automatically register/activate so the user is never stuck!
-          const { data, error } = await client.auth.signInWithPassword({
-            email: authEmail,
-            password: authPassword
-          });
-          if (!error && data?.user) {
-            failedAuthRef.current = { count: 0, lockUntil: 0 };
-            const u = {
-              id: data.user.id,
-              username: desiredHandle,
-              email: authEmail,
-              provider: 'Email',
-              verified: true
-            };
-            setUser(u);
-            localStorage.setItem('tm_user', JSON.stringify(u));
-            setShowAuthModal(false);
-            setAuthMessage('');
-            sfx.playLevelUp();
-            awardXpAndCombo(150, e, '🛡️');
-            return;
-          }
-
-          // Auto-register fallback if account wasn't created yet
-          const { data: signUpData } = await client.auth.signUp({
-            email: authEmail,
-            password: authPassword,
-            options: { data: { full_name: desiredHandle } }
-          });
-          const u = {
-            id: signUpData?.user?.id || `email-${Date.now()}`,
-            username: desiredHandle,
-            email: authEmail,
-            provider: 'Email',
-            verified: true
-          };
-          setUser(u);
-          localStorage.setItem('tm_user', JSON.stringify(u));
-          setShowAuthModal(false);
-          setAuthMessage('');
-          sfx.playLevelUp();
-          awardXpAndCombo(150, e, '🛡️');
-          return;
-        }
-      } catch {
-        // Even if Supabase free-tier email rate limit is reached, activate verified local session immediately
-        const u = {
-          id: `email-${Date.now()}`,
-          username: desiredHandle,
-          email: authEmail,
-          provider: 'Email',
-          verified: true
-        };
-        setUser(u);
-        localStorage.setItem('tm_user', JSON.stringify(u));
-        setShowAuthModal(false);
-        setAuthMessage('');
-        sfx.playLevelUp();
-        awardXpAndCombo(150, e, '🛡️');
-        return;
-      }
-    }
-  };
-
-  const handleQuickGuestLogin = (e) => {
-    const raw = sanitizeHandle(authUsername.trim());
-    const reservedCreators = new Set(
-      memes.map((m) => String(m.author_name || '').toLowerCase())
-    );
-    if (raw && reservedCreators.has(raw.toLowerCase())) {
-      setAuthMessage(`🛡️ Handle @${raw} belongs to a verified creator! Pick a unique handle.`);
-      sfx.playSadTrombone();
-      return;
-    }
-    const cleanName = raw.length >= 3 ? raw : `Player_${Math.floor(100 + Math.random() * 899)}`;
-    const u = {
-      id: `arcade-${Date.now()}`,
-      username: cleanName,
-      verified: true,
-      provider: 'ArcadePass'
-    };
-    setUser(u);
-    localStorage.setItem('tm_user', JSON.stringify(u));
-    setShowAuthModal(false);
-    setAuthMessage('');
-    sfx.playLevelUp();
-    awardXpAndCombo(120, e, '🕹️');
-  };
 
   // ==========================================
   // PHASE 6, 8, 9, 13 & 14: SOUNDBOARD, CHAOS MUTATORS, LOOT GOBLIN, SLOTS & KONAMI GOD MODE

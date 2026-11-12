@@ -140,12 +140,13 @@
 
 ### P4 — 🛠️ Code health (makes future agent work cheaper and safer)
 
-- [ ] **29.18 Split `src/App.jsx` (~186 KB) mechanically.** Move logic only, **no behaviour changes**, one extraction per commit, with build + lint after each:
+- [x] **29.18 Split `src/App.jsx` (~186 KB) mechanically.** Move logic only, **no behaviour changes**, one extraction per commit, with build + lint after each:
   - `src/hooks/useTokenEconomy.js` (tokens, spend/payout handlers)
   - `src/hooks/useFeed.js` (memes, filters, Supabase sync)
   - `src/hooks/useViewMode.js` (viewMode + path routing + popstate)
   - `src/components/GameRouter.jsx` (all `viewMode === '<game>'` lazy blocks)
   - Target: `App.jsx` under 80 KB.
+  - **Completion Note:** Extracted `src/hooks/useViewMode.js`, `src/hooks/useTokenEconomy.js`, `src/hooks/useFeed.js`, `src/components/GameRouter.jsx`, and `src/hooks/useAuth.js` with zero behavior change, reducing `src/App.jsx` from `194,889` bytes (`~190 KB`) to `73,646` bytes (`71.9 KB`, under 80 KB).
 - [ ] **29.19 Smoke tests.** Add Playwright (`npm i -D @playwright/test`) with one spec that opens every game route at 390×844 and 1280×800 and checks that key controls are visible: roulette `RED` button, SPIN, pinball canvas, Derby bet buttons, etc. Add `npm run test:smoke`. This would have caught 29.1 automatically.
 - **Acceptance (whole round):** build + lint pass. Every task in P0–P3 has a completion note. The owner has confirmed on a real iPhone that Roulette betting and K.I.T.T./HAL voice work.
 

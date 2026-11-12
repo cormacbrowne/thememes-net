@@ -782,10 +782,31 @@
   .tm-pin2-flip-btn,
   .tm-pin2-launch-btn,
   .tm-pin2-plunger-btn,
-  .tm-pin2-nudge-btn {
+  .tm-pin2-nudge-btn,
+  .tm-pin2-slim-topbar button {
     min-height: 44px;
+    min-width: 44px;
     padding: 8px 8px;
     font-size: 11px;
     touch-action: manipulation;
+  }
+}
+
+.tm-pin2-landscape-hint {
+  display: none;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(56, 189, 248, 0.55);
+  color: #bae6fd;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+@media (max-height: 520px) and (orientation: landscape) and (pointer: coarse) {
+  .tm-pin2-landscape-hint {
+    display: block;
   }
 }

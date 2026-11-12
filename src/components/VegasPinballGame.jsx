@@ -1904,7 +1904,12 @@ export default function VegasPinballGame({
         <header className="tm-pin2-slim-topbar">
           <div className="tm-pin2-slim-left">
             {onBackToFeed && (
-              <button type="button" className="tm-bandit-back-btn" onClick={onBackToFeed}>
+              <button
+                type="button"
+                className="tm-bandit-back-btn"
+                aria-label="Back to arcade"
+                onClick={onBackToFeed}
+              >
                 ←
               </button>
             )}
@@ -1937,7 +1942,7 @@ export default function VegasPinballGame({
             </span>
             <span className="tm-pin2-mini-stat hide-xs">
               SHIELD{' '}
-              <strong style={{ color: hudShield || hudFever ? '#00f3ff' : '#64748b' }}>
+              <strong style={{ color: hudShield || hudFever ? '#00f3ff' : '#94a3b8' }}>
                 {hudShield || hudFever ? '🛡️ON' : 'OFF'}
               </strong>
             </span>
@@ -1967,12 +1972,17 @@ export default function VegasPinballGame({
               type="button"
               className="tm-bj-mode-pill"
               onClick={handleStartFreePlay}
+              aria-label="Reset pinball table"
               title="Reset table and launch a fresh 3-ball game"
             >
               🔄
             </button>
           </div>
         </header>
+
+        <div className="tm-pin2-landscape-hint" role="note">
+          📱 Rotate to portrait for the full pinball table.
+        </div>
 
         {/* 2. CENTER-STAGE MAIN SHOW: HUGE FULL-HEIGHT PINBALL PLAYFIELD + COMPACT SIDE WINGS (PC) */}
         <div className="tm-pin2-main-arena">

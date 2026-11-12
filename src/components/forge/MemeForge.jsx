@@ -535,10 +535,10 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
             {intent?.mode === 'bounty' && <span className="tm-forge-chip">🎯 CAPTION BATTLE</span>}
           </strong>
           <div className="tm-forge-head-actions">
-            <button type="button" className="tm-btn" onClick={undo} disabled={!editor.canUndo} title="Undo (Ctrl+Z)">
+            <button type="button" className="tm-btn" onClick={undo} disabled={!editor.canUndo} aria-label="Undo" title="Undo (Ctrl+Z)">
               ↶
             </button>
-            <button type="button" className="tm-btn" onClick={redo} disabled={!editor.canRedo} title="Redo (Ctrl+Shift+Z)">
+            <button type="button" className="tm-btn" onClick={redo} disabled={!editor.canRedo} aria-label="Redo" title="Redo (Ctrl+Shift+Z)">
               ↷
             </button>
             <button type="button" className="tm-btn" onClick={onClose} aria-label="Close">

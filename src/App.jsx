@@ -3649,6 +3649,7 @@ export default function App() {
                 setExtrasFocus(null);
                 setExtrasDrawerOpen(true);
               }}
+              aria-label="Open Extras drawer"
               title="Open Extras Drawer: Soundboard, WTF?!, Payphone, Boss Key, CRT, Turbo & AI"
             >
               🕹️

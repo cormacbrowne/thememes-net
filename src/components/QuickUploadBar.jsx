@@ -235,6 +235,7 @@ export default function QuickUploadBar({
               type="button"
               className="tm-quick-remove-btn"
               onClick={handleClearPreview}
+              aria-label="Remove media"
               title="Remove media"
             >
               ✕

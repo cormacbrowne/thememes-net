@@ -608,8 +608,17 @@ export default function VegasRouletteGame({
             <span className="tm-roul-hist-label">RECENT:</span>
             {history.map((num, idx) => {
               const col = getNumberColor(num);
+              const sym = col === 'red' ? '◆' : col === 'black' ? '●' : '★';
               return (
-                <span key={`${num}-${idx}`} className={`tm-roul-hist-ball ${col} ${idx === 0 ? 'latest' : ''}`}>
+                <span
+                  key={`${num}-${idx}`}
+                  className={`tm-roul-hist-ball ${col} ${idx === 0 ? 'latest' : ''}`}
+                  title={`${num} (${col})`}
+                  aria-label={`${num} ${col}`}
+                >
+                  <span className="tm-roul-hist-sym" aria-hidden="true">
+                    {sym}
+                  </span>
                   {num}
                 </span>
               );
@@ -741,9 +750,11 @@ export default function VegasRouletteGame({
                 className={`tm-roul-num-cell zero ${winningNum === 0 ? 'winner' : ''} ${
                   lightningMap[0] ? 'lightning' : ''
                 }`}
+                aria-label="0 green"
                 onClick={() => handlePlaceBet('n_0', 'Green 0 (29:1)')}
               >
                 <span className="tm-roul-num-txt">0</span>
+                <span className="tm-roul-cb-dot" aria-hidden="true">★</span>
                 {lightningMap[0] && (
                   <span className="tm-roul-cell-bolt">⚡{lightningMap[0]}×</span>
                 )}
@@ -764,8 +775,12 @@ export default function VegasRouletteGame({
                       className={`tm-roul-num-cell ${col} ${isWin ? 'winner' : ''} ${
                         lMult ? 'lightning' : ''
                       }`}
+                      aria-label={`${num} ${col}`}
                       onClick={() => handlePlaceBet(`n_${num}`, `#${num} (29:1)`)}
                     >
+                      <span className="tm-roul-cb-dot" aria-hidden="true">
+                        {col === 'red' ? '◆' : '●'}
+                      </span>
                       <span className="tm-roul-num-txt">{num}</span>
                       {lMult && <span className="tm-roul-cell-bolt">⚡{lMult}×</span>}
                       {betVal > 0 && <span className="tm-roul-chip-stack">{betVal}</span>}
@@ -821,9 +836,14 @@ export default function VegasRouletteGame({
                     className={`tm-roul-outside-cell ${ob.isRed ? 'red-zone' : ''} ${
                       ob.isBlack ? 'black-zone' : ''
                     } ${betVal > 0 ? 'has-bet' : ''}`}
+                    aria-label={ob.label}
                     onClick={() => handlePlaceBet(ob.id, ob.label)}
                   >
-                    <span>{ob.short}</span>
+                    <span>
+                      {ob.isRed && <span className="tm-roul-cb-shape" aria-hidden="true">◆ </span>}
+                      {ob.isBlack && <span className="tm-roul-cb-shape" aria-hidden="true">● </span>}
+                      {ob.short}
+                    </span>
                     {betVal > 0 && <span className="tm-roul-chip-stack">{betVal}</span>}
                   </button>
                 );

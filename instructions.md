@@ -126,7 +126,7 @@
   - **Completion Note:** Trimmed status banners & eyebrows to sentence case (`<= 60` chars) with single-line ellipsis on Roulette in `VegasRouletteGame.jsx`/`.css`, `VegasSlotMachine.jsx`, `VegasCoinPusherGame.jsx`, `MemeCrushGame.jsx`, `VegasPinballGame.jsx`, `VegasBlackjackGame.jsx`, and `MemeStockMarketGame.jsx`; shortened K.I.T.T./HAL intros and added `splitAiPreview` (`<= 3` sentences default + `More ▾` / `Less ▴` expander) in `ArcadeAiAssistant.jsx`/`.css`.
 - [x] **29.15 🧱 Shared `<GameShell>` component.** `src/components/GameShell.jsx` + `.css`: one consistent header for every game (`← Back`, title, 🪙 wallet with an animated +/− delta, `🆓 Practice` toggle, `📼` radio picker, `🔊` SFX mute, `?` how-to-play sheet), safe-area padding (`env(safe-area-inset-*)`), a `100dvh` fixed layout, and an `aria-live="polite"` result region. Migrate the games one by one, starting with Roulette and the new P2 games. This prevents per-game header overflow bugs like 29.1.
   - **Completion Note:** Built shared `src/components/GameShell.jsx` + `.css` providing unified `← Back`, title, animated `+`/`-` token wallet delta, `🆓 Practice` toggle, `RadioToggleButton`, `🔊` SFX mute (`settingsStore` synced), `?` how-to-play sheet, `env(safe-area-inset-*)` padding, `100dvh` fixed shell, and `aria-live="polite"` status region; migrated `VegasRouletteGame.jsx`, `NeonDerbyGame.jsx`, `GuessTheMemeGame.jsx`, `MemePlinkoGame.jsx`, and `HigherOrLowerGame.jsx`.
-- [ ] **29.16 👆 Touch & accessibility pass.**
+- [x] **29.16 👆 Touch & accessibility pass.**
   - All tap targets ≥ 44×44 px on phones (Apple HIG).
   - `touch-action: manipulation` on game buttons.
   - Visible `:focus-visible` rings.
@@ -134,6 +134,7 @@
   - Contrast ≥ 4.5:1 for body text.
   - `aria-label` on icon-only buttons.
   - Pinball shows a "rotate to portrait" hint in phone landscape.
+  - **Completion Note:** Added colour-blind markers (`◆`/`●`) + `aria-label`s to `VegasRouletteGame.jsx`/`.css`, a coarse-landscape rotate hint + icon `aria-label`s to `VegasPinballGame.jsx`/`.css`, missing icon-only `aria-label`s in `MemeCard.jsx`, `NavbarHud.jsx`, `QuickUploadBar.jsx`, `MemeForge.jsx`, and `App.jsx`, `#94a3b8` (`>= 4.5:1`) contrast fixes (`AuthModal.css`, `BossKeyOverlay.css`, `VegasSlotMachine.css`, `index.css`), and global `:focus-visible`, `touch-action: manipulation`, plus `@media (max-width: 860px)` `>= 44×44 px` tap target rules in `src/index.css`.
 - [ ] **29.17 🪙 Friendlier economy onboarding.** New players start with 0–few tokens and hit "Need X 🪙" walls in every casino game. Instead: casino games auto-start in Free Practice when tokens < the smallest chip, a one-time **"🎁 Starter Pack: 50 🪙"** is granted after the first meme vote or upload, and a clear footer line reads "Tokens are free, just for fun, can't be bought or cashed out" (good for trust and app-store/ad compliance).
 
 ### P4 — 🛠️ Code health (makes future agent work cheaper and safer)

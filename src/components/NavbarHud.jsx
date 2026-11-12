@@ -189,6 +189,7 @@ export default function NavbarHud({
                 type="button"
                 className="tm-btn"
                 onClick={onLogout}
+                aria-label="Log out"
                 title="Log out"
                 style={{ padding: '6px 9px' }}
               >

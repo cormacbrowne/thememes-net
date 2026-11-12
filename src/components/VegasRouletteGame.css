@@ -404,6 +404,20 @@
   transform: scale(1.04);
   z-index: 2;
 }
+.tm-roul-cb-dot {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  font-size: 7.5px;
+  line-height: 1;
+  opacity: 0.85;
+  pointer-events: none;
+}
+.tm-roul-hist-sym {
+  font-size: 7px;
+  margin-right: 1px;
+  opacity: 0.85;
+}
 .tm-roul-num-cell.lightning {
   border-color: #facc15;
   box-shadow: 0 0 14px rgba(250, 204, 21, 0.7), inset 0 0 8px rgba(250, 204, 21, 0.45);
@@ -751,7 +765,8 @@
   }
 
   .tm-roul-mobile-chips-row .tm-roul-chip-pill {
-    min-height: 40px;
+    min-height: 44px;
+    min-width: 44px;
     padding: 5px 10px;
     font-size: 11.5px;
   }
@@ -763,9 +778,15 @@
   }
 
   .tm-roul-mobile-quick .tm-roul-preset-btn {
-    min-height: 40px;
+    min-height: 44px;
+    min-width: 44px;
     padding: 6px 10px;
     font-size: 11.5px;
+  }
+
+  .tm-roul-outside-cell {
+    min-height: 44px;
+    min-width: 44px;
   }
 
   .tm-roul-mobile-actionbar .tm-roul-spin-btn {

@@ -254,6 +254,7 @@ const MemeCard = memo(function MemeCard({
           <button
             type="button"
             className={`tm-vote-btn up ${myVote === 1 ? 'voted' : ''}`}
+            aria-label="Upvote meme"
             onClick={(e) => {
               triggerComicPop('AWESOME! 🔥');
               onVote(meme.id, 1, e);
@@ -265,6 +266,7 @@ const MemeCard = memo(function MemeCard({
           <button
             type="button"
             className={`tm-vote-btn down ${myVote === -1 ? 'voted' : ''}`}
+            aria-label="Downvote meme"
             onClick={(e) => {
               triggerComicPop('OOF 😅');
               onVote(meme.id, -1, e);
@@ -321,6 +323,7 @@ const MemeCard = memo(function MemeCard({
                 triggerComicPop(isBookmarked ? 'REMOVED' : 'SAVED! ⭐');
                 onToggleBookmark(meme, e);
               }}
+              aria-label={isBookmarked ? 'Remove meme from saved' : 'Save meme'}
               title={isBookmarked ? 'Remove from Saved Memes' : 'Save Meme to Favorites (+15 XP)'}
             >
               {isBookmarked ? '⭐' : '☆'}
@@ -330,6 +333,7 @@ const MemeCard = memo(function MemeCard({
             type="button"
             className="tm-react-btn"
             onClick={handleDownloadMemeImage}
+            aria-label="Download meme image"
             title="Download / Save Meme Image"
           >
             ⬇
@@ -338,6 +342,7 @@ const MemeCard = memo(function MemeCard({
             type="button"
             className="tm-react-btn"
             onClick={handleShareClick}
+            aria-label="Share meme link"
             title="Share Meme / Copy Link"
           >
             {copied ? '✅' : '🔗'}
@@ -350,6 +355,7 @@ const MemeCard = memo(function MemeCard({
                 e.stopPropagation();
                 onReportMeme(meme, e);
               }}
+              aria-label="Flag or hide meme"
               title="Flag / Hide Meme from Feed"
             >
               🚩

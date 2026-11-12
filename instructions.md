@@ -147,7 +147,8 @@
   - `src/components/GameRouter.jsx` (all `viewMode === '<game>'` lazy blocks)
   - Target: `App.jsx` under 80 KB.
   - **Completion Note:** Extracted `src/hooks/useViewMode.js`, `src/hooks/useTokenEconomy.js`, `src/hooks/useFeed.js`, `src/components/GameRouter.jsx`, and `src/hooks/useAuth.js` with zero behavior change, reducing `src/App.jsx` from `194,889` bytes (`~190 KB`) to `73,646` bytes (`71.9 KB`, under 80 KB).
-- [ ] **29.19 Smoke tests.** Add Playwright (`npm i -D @playwright/test`) with one spec that opens every game route at 390×844 and 1280×800 and checks that key controls are visible: roulette `RED` button, SPIN, pinball canvas, Derby bet buttons, etc. Add `npm run test:smoke`. This would have caught 29.1 automatically.
+- [x] **29.19 Smoke tests.** Add Playwright (`npm i -D @playwright/test`) with one spec that opens every game route at 390×844 and 1280×800 and checks that key controls are visible: roulette `RED` button, SPIN, pinball canvas, Derby bet buttons, etc. Add `npm run test:smoke`. This would have caught 29.1 automatically.
+  - **Completion Note:** Installed `@playwright/test`, added `playwright.config.js` (loopback `vite preview` + Chromium/Windows Edge detection), added `tests/smoke.spec.js` testing all 12 game routes across `390×844`, `768×1024`, and `1280×800` (36 tests passing in 30.2s with 0 page errors and `<=2px` horizontal overflow, including Roulette `RED` click -> enabled `SPIN`), and registered `"test:smoke"` in `package.json`.
 - **Acceptance (whole round):** build + lint pass. Every task in P0–P3 has a completion note. The owner has confirmed on a real iPhone that Roulette betting and K.I.T.T./HAL voice work.
 
 ---

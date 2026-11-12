@@ -40,6 +40,7 @@ export class SoundEngine {
     this.hasUserGesture = false;
     this.unlocked = false;
     this.speechUnlocked = false;
+    this._speechPriming = false;
     this.iosAudioEl = null;
     this.speechTimer = null;
     this.pack =
@@ -75,7 +76,7 @@ export class SoundEngine {
       this.unlockIosAudio();
     };
 
-    const events = ['touchstart', 'touchend', 'pointerdown', 'mousedown', 'keydown', 'click'];
+    const events = ['touchend', 'pointerup', 'click', 'keydown'];
     events.forEach((evt) => {
       window.addEventListener(evt, unlockHandler, { passive: true, capture: true });
     });
@@ -92,8 +93,9 @@ export class SoundEngine {
     }
   }
 
-  unlockIosAudio() {
+  unlockIosAudio(options = {}) {
     if (!this.hasUserGesture) return;
+    const { primeSpeech = true } = options;
     try {
       this._configureIosAudioSession();
 
@@ -135,23 +137,40 @@ export class SoundEngine {
         }
       }
 
-      // Prime iOS Safari Web Speech API on the first user gesture so subsequent K.I.T.T. & HAL 9000
-      // speechSynthesis calls are never blocked by WebKit's user-activation gate.
+      // Prime iOS Safari Web Speech API on the first real tap so subsequent K.I.T.T. & HAL 9000
+      // speechSynthesis calls have an active audio/speech session. Only mark speechUnlocked from
+      // onstart/onend so failed primes automatically retry on the next gesture.
       if (
+        primeSpeech &&
         !this.speechUnlocked &&
+        !this._speechPriming &&
         typeof window !== 'undefined' &&
         'speechSynthesis' in window &&
         typeof window.SpeechSynthesisUtterance === 'function'
       ) {
-        this.speechUnlocked = true;
         try {
-          window.speechSynthesis.getVoices();
-          const silentUtter = new window.SpeechSynthesisUtterance(' ');
-          silentUtter.volume = 0.01;
-          silentUtter.rate = 2.0;
-          window.speechSynthesis.speak(silentUtter);
+          const synth = window.speechSynthesis;
+          synth.getVoices();
+          if (!synth.speaking && !synth.pending) {
+            this._speechPriming = true;
+            const silentUtter = new window.SpeechSynthesisUtterance(' ');
+            silentUtter.volume = 0.01;
+            silentUtter.rate = 2.0;
+            silentUtter.onstart = () => {
+              this.speechUnlocked = true;
+              this._speechPriming = false;
+            };
+            silentUtter.onend = () => {
+              this.speechUnlocked = true;
+              this._speechPriming = false;
+            };
+            silentUtter.onerror = () => {
+              this._speechPriming = false;
+            };
+            synth.speak(silentUtter);
+          }
         } catch {
-          // Ignore speech unlock errors
+          this._speechPriming = false;
         }
       }
     } catch {

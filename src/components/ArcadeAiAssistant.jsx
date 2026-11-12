@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { setRadioDuck } from '../utils/radioBus';
+import { getEnglishVoices, speakUtteranceChain } from '../utils/aiSpeech';
 import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
 import { getSecurityAuditReport } from '../utils/securityGuard';
 import './ArcadeAiAssistant.css';
@@ -81,30 +82,6 @@ const MEME_IDEAS_POOL = [
   }
 ];
 
-// Clean markdown and symbols so Web Speech API sounds like a real movie computer
-function cleanTextForSpeech(rawText) {
-  if (!rawText) return '';
-  return rawText
-    .replace(/\*\*/g, '')
-    .replace(/\*/g, '')
-    .replace(/`/g, '')
-    .replace(/🪙/g, ' tokens ')
-    .replace(/×/g, ' times ')
-    .replace(/21's/gi, 'twenty-ones')
-    .replace(/21’s/gi, 'twenty-ones')
-    .replace(/K\.I\.T\.T\./g, 'KITT')
-    .replace(/K\.A\.R\.R\./g, 'KARR')
-    .replace(/MEMEDAQ/gi, 'Meme-Daq')
-    .replace(/Lv\./gi, 'Level ')
-    .replace(/#[a-z0-9_-]+/gi, '')
-    .replace(
-      /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}]/gu,
-      ' '
-    )
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
 export default function ArcadeAiAssistant({
   isOpen,
   onToggleOpen,
@@ -138,6 +115,12 @@ export default function ArcadeAiAssistant({
   const [voiceEnabled, setVoiceEnabled] = useState(() => {
     return localStorage.getItem('tm_ai_voice_muted') !== '1';
   });
+  const [voicePrefs, setVoicePrefs] = useState(() => ({
+    kitt: localStorage.getItem('tm_ai_voice_kitt') || 'auto',
+    hal: localStorage.getItem('tm_ai_voice_hal') || 'auto'
+  }));
+  const [englishVoices, setEnglishVoices] = useState([]);
+  const [speechHint, setSpeechHint] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [inputVal, setInputVal] = useState('');
 
@@ -165,160 +148,72 @@ export default function ArcadeAiAssistant({
   ]);
 
   const chatEndRef = useRef(null);
-  const speechTimerRef = useRef(null);
-  const utterRef = useRef(null);
+  const speechControllerRef = useRef(null);
   const voicesRef = useRef([]);
 
-  // Speak text aloud in HAL 9000 or K.I.T.T. voice using crystal-clear iOS/PC Web Speech API
+  // Speak text aloud in HAL 9000 or K.I.T.T. voice synchronously inside the user gesture
   const speakLine = useCallback(
     (rawText, modeOverride = null, forceSpeak = false) => {
-      if (!sfx.hasUserGesture) return;
       const activeMode = modeOverride || persona;
-      // 1. Unlock iOS AudioContext & 'playback' audioSession first
-      sfx.unlockIosAudio?.();
-
-      if (activeMode === 'hal') {
-        sfx.playHalBeep?.();
-      } else {
-        sfx.playKittScanner?.();
-      }
+      const playIntroPing = (targetMode) => {
+        if (targetMode === 'hal') {
+          sfx.playHalBeep?.();
+        } else {
+          sfx.playKittScanner?.();
+        }
+      };
 
       if (!voiceEnabled && !forceSpeak) return;
 
-      const spoken = cleanTextForSpeech(rawText);
-      if (!spoken) return;
-
-      if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-        // Fallback only if browser lacks Web Speech API completely
-        sfx.playAiVocalFormants?.(spoken, activeMode);
-        return;
+      setSpeechHint('');
+      if (speechControllerRef.current) {
+        speechControllerRef.current.stop();
+        speechControllerRef.current = null;
       }
 
-      try {
-        if (speechTimerRef.current) clearTimeout(speechTimerRef.current);
-
-        const synth = window.speechSynthesis;
-        const isIOS =
-          /iPad|iPhone|iPod/i.test(navigator.userAgent || '') ||
-          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-        const dispatchUtterance = () => {
-          try {
-            if (typeof synth.resume === 'function') {
-              synth.resume();
-            }
-
-            const loadedVoices = synth.getVoices();
-            const voices =
-              loadedVoices && loadedVoices.length > 0 ? loadedVoices : voicesRef.current || [];
-
-            // Exclude novelty/muffled voices ('Fred', 'Albert', 'Zarvox', etc.) that ruin speech clarity
-            const noveltyRegex =
-              /Fred|Albert|Ralph|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Deranged|Good News|Hysterical|Pipe Organ|Trinoids|Whisper|Zarvox|Junior|Kathy/i;
-            const enVoices = voices.filter(
-              (v) => /^en(-|_|$)/i.test(v.lang || '') && !noveltyRegex.test(v.name || '')
-            );
-            const localEnVoices = enVoices.filter((v) => v.localService !== false);
-            const pool = isIOS && localEnVoices.length > 0 ? localEnVoices : enVoices;
-
-            let chosenVoice = null;
-            if (activeMode === 'hal') {
-              // HAL 9000: Crystal-clear British/Neutral baritone (Daniel, Arthur, Oliver, Ryan, Alex)
-              chosenVoice =
-                pool.find((v) => /(Daniel|Arthur|Oliver).*(Enhanced|Premium|Natural)/i.test(v.name)) ||
-                pool.find((v) => /Google UK English Male|Microsoft Ryan|Microsoft George|Daniel|Arthur|Oliver/i.test(v.name)) ||
-                pool.find((v) => /Aaron|Alex|David|Guy|Christopher/i.test(v.name)) ||
-                pool[0];
-            } else {
-              // K.I.T.T.: Crisp, articulate Knight Industries voice (Aaron, Alex, Guy, Christopher, Daniel, Samantha)
-              chosenVoice =
-                pool.find((v) => /(Aaron|Alex|Daniel|Samantha).*(Enhanced|Premium|Natural)/i.test(v.name)) ||
-                pool.find((v) => /Microsoft Guy|Microsoft Christopher|Google US English|Aaron|Alex|Daniel|Arthur|Samantha/i.test(v.name)) ||
-                pool[0];
-            }
-
-            // Split into sentence chunks so iOS Safari & Chrome speak every sentence clearly without rushing or cutting off
-            const sentences = spoken
-              .split(/(?<=[.!?])\s+/)
-              .map((s) => s.trim())
-              .filter(Boolean);
-            const chunks = sentences.length > 0 ? sentences : [spoken];
-
-            // Retain all chunks in utterRef so WebKit garbage collector never collects active utterances
-            const utteranceQueue = chunks.map((chunkText, idx) => {
-              const utter = new window.SpeechSynthesisUtterance(chunkText);
-              if (chosenVoice) {
-                utter.voice = chosenVoice;
-                utter.lang = chosenVoice.lang || (activeMode === 'hal' ? 'en-GB' : 'en-US');
-              } else {
-                utter.lang = activeMode === 'hal' ? 'en-GB' : 'en-US';
-              }
-
-              // Keep pitch close to 1.0 (0.94 / 1.0) so browser TTS never introduces phase-vocoder muffling!
-              if (activeMode === 'hal') {
-                utter.rate = isIOS ? 0.94 : 0.92;
-                utter.pitch = 0.94;
-                utter.volume = 1.0;
-              } else {
-                utter.rate = isIOS ? 1.0 : 1.02;
-                utter.pitch = 1.0;
-                utter.volume = 1.0;
-              }
-
-              if (idx === 0) {
-                utter.onstart = () => setIsSpeaking(true);
-              }
-              if (idx === chunks.length - 1) {
-                utter.onend = () => setIsSpeaking(false);
-              }
-              utter.onerror = () => setIsSpeaking(false);
-              return utter;
-            });
-
-            utterRef.current = utteranceQueue;
-            setIsSpeaking(true);
-
-            utteranceQueue.forEach((u) => synth.speak(u));
-
-            if (isIOS && typeof synth.resume === 'function') {
-              setTimeout(() => {
-                try {
-                  synth.resume();
-                } catch {
-                  // ignore
-                }
-              }, 60);
-            }
-
-            const estMs = Math.min(20000, Math.max(2400, spoken.length * 72));
-            speechTimerRef.current = setTimeout(() => {
-              setIsSpeaking(false);
-            }, estMs);
-          } catch {
-            setIsSpeaking(false);
-          }
-        };
-
-        // Wait 95ms so the subtle 80ms intro ping finishes completely BEFORE the voice speaks
-        // (and so iOS WebKit synth.cancel() never races with synth.speak())
-        if (synth.speaking || synth.pending) {
-          synth.cancel();
+      const savedUri = voicePrefs[activeMode] || 'auto';
+      const controller = speakUtteranceChain({
+        text: rawText,
+        mode: activeMode,
+        voiceUri: savedUri,
+        voicesCache: voicesRef.current,
+        fromGesture: true,
+        onIntroPing: playIntroPing,
+        onStart: () => {
+          setSpeechHint('');
+          setIsSpeaking(true);
+        },
+        onEnd: () => {
+          setIsSpeaking(false);
+        },
+        onWatchdogTimeout: () => {
+          setIsSpeaking(false);
+          setSpeechHint(
+            '🔇 iPhone blocked the voice. Tap 🔊 again, turn off Silent Mode, and check Settings › Accessibility › Spoken Content.'
+          );
         }
-        speechTimerRef.current = setTimeout(dispatchUtterance, 95);
-      } catch {
-        setIsSpeaking(false);
+      });
+
+      speechControllerRef.current = controller;
+      if (controller) {
+        setIsSpeaking(true);
       }
     },
-    [persona, voiceEnabled]
+    [persona, voiceEnabled, voicePrefs]
   );
 
   const stopSpeaking = useCallback(() => {
-    try {
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
+    if (speechControllerRef.current) {
+      speechControllerRef.current.stop();
+      speechControllerRef.current = null;
+    } else {
+      try {
+        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+        }
+      } catch {
+        // ignore
       }
-    } catch {
-      // ignore
     }
     setIsSpeaking(false);
   }, []);
@@ -329,7 +224,10 @@ export default function ArcadeAiAssistant({
       const loadVoices = () => {
         try {
           const v = window.speechSynthesis.getVoices();
-          if (v && v.length > 0) voicesRef.current = v;
+          if (v && v.length > 0) {
+            voicesRef.current = v;
+            setEnglishVoices(getEnglishVoices(v));
+          }
         } catch {
           // ignore
         }
@@ -339,12 +237,12 @@ export default function ArcadeAiAssistant({
         window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
         return () => {
           window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
-          if (speechTimerRef.current) clearTimeout(speechTimerRef.current);
+          speechControllerRef.current?.stop();
         };
       }
     }
     return () => {
-      if (speechTimerRef.current) clearTimeout(speechTimerRef.current);
+      speechControllerRef.current?.stop();
     };
   }, []);
 
@@ -785,12 +683,8 @@ export default function ArcadeAiAssistant({
         type="button"
         className={`tm-ai-copilot-fab ${persona === 'hal' ? 'hal-mode' : 'kitt-mode'}`}
         onClick={() => {
+          sfx.playToggle?.();
           onToggleOpen(true);
-          const welcomeMsg =
-            persona === 'hal'
-              ? 'Good evening, Dave. HAL 9000 heuristic audio is online.'
-              : 'Right here, Michael! KITT voice modulator is online.';
-          speakLine(welcomeMsg, persona, true);
         }}
         title="Open HAL 9000 / K.I.T.T. Talking AI Assistant (Movie Jokes, Voice Synthesis & Game Strategy)!"
       >
@@ -860,7 +754,29 @@ export default function ArcadeAiAssistant({
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div className="tm-ai-head-actions">
+          <select
+            aria-label={persona === 'hal' ? 'HAL 9000 English voice' : 'K.I.T.T. English voice'}
+            className="tm-ai-voice-select"
+            value={voicePrefs[persona] || 'auto'}
+            onChange={(e) => {
+              const nextUri = e.target.value;
+              const storageKey = persona === 'hal' ? 'tm_ai_voice_hal' : 'tm_ai_voice_kitt';
+              localStorage.setItem(storageKey, nextUri);
+              setVoicePrefs((prev) => ({ ...prev, [persona]: nextUri }));
+            }}
+            title="Choose English voice for this AI persona"
+          >
+            <option value="auto">🎙️ Auto</option>
+            {englishVoices.map((v) => {
+              const val = v.voiceURI || v.name;
+              return (
+                <option key={val} value={val}>
+                  {v.name} ({v.lang})
+                </option>
+              );
+            })}
+          </select>
           <button
             type="button"
             className={`tm-ai-voice-toggle ${voiceEnabled ? 'on' : 'off'}`}
@@ -893,6 +809,20 @@ export default function ArcadeAiAssistant({
           </button>
         </div>
       </header>
+
+      {speechHint && (
+        <div className="tm-ai-speech-hint" role="status">
+          <span>{speechHint}</span>
+          <button
+            type="button"
+            className="tm-ai-speech-hint-close"
+            onClick={() => setSpeechHint('')}
+            aria-label="Dismiss voice hint"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* 1b. K.I.T.T. LARSON ANAMORPHIC SCANNER BAR OR HAL 9000 POD BAY TELEMETRY STRIP */}
       <div className="tm-ai-persona-switcher-bar">

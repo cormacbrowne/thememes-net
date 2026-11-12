@@ -50,7 +50,7 @@
   - **Acceptance:** On every game at all 3 sizes, every control is visible and tappable, nothing is clipped, and there is no horizontal scroll. List any game that needed fixing in the completion note.
   - **Completion Note:** Fixed Coin Dozer (`VegasCoinPusherGame.css`), Pinball (`VegasPinballGame.css`), 21's (`VegasBlackjackGame.css`), Slots (`VegasSlotMachine.css`), Meme Crush (`MemeCrushGame.css`), MEMEDAQ (`MemeStockMarketGame.css`), Swipe (`SwipeDeck.css`), 1v1 Arena (`BattleArena.css`), Forge (`MemeForge.css`), and AI Assistant (`ArcadeAiAssistant.css`) + cleaned residual game selectors out of `src/index.css`; scoped desktop-only `!important` rules inside `@media (min-width: ...)`, added self-contained shared button/pill/modal rules for cold-loaded lazy routes, fixed Blackjack `100%` cabinet height and Pinball `calc(100dvh - 180px)` mobile canvas sizing, added safe-area bottom padding, `touch-action: manipulation`, and ≥44px phone tap targets. (Roulette fixed in 29.1.)
 
-- [ ] **29.3 🗣️ K.I.T.T. / HAL 9000 voice is silent on iPhone.**
+- [x] **29.3 🗣️ K.I.T.T. / HAL 9000 voice is silent on iPhone.**
   - **Root causes (verified in code):**
     1. `src/components/ArcadeAiAssistant.jsx` `speakLine()` (L173–313) calls `synth.speak()` inside `setTimeout(dispatchUtterance, 95)`. That delay breaks iOS Safari's user-activation chain, so WebKit silently ignores the utterance.
     2. `src/utils/soundEngine.js` `_bindGlobalUnlockListeners()` (L72–93) unlocks on **`touchstart`**, which iOS does **not** treat as user activation. The one-time speech prime (L140–156, `this.speechUnlocked = true`) is used up on that invalid event and never retried.
@@ -65,6 +65,7 @@
     - Add a **voice picker dropdown** in the assistant header that lists `speechSynthesis.getVoices()` filtered to English (iPhones have different voice names). Save the choice per persona in `localStorage` (`tm_ai_voice_kitt`, `tm_ai_voice_hal`).
     - The welcome message (L793) must **not** auto-speak on mount. Speak it only from a tap.
   - **Acceptance:** On a real iPhone (Safari **and** Chrome, iOS 17+), tapping `🔊 Speak` on a message makes K.I.T.T. and HAL audibly speak on the **first** tap. Switching persona and tapping again also works. Desktop Chrome/Edge/Safari still work.
+  - **Completion Note:** Created shared synchronous iOS-safe speech engine `src/utils/aiSpeech.js` (`speakUtteranceChain` speaks sentence 0 synchronously on tap, chains subsequent sentences on `onend`, triggers intro ping on `onstart` for iOS, and runs a 1500ms watchdog with `playAiVocalFormants` fallback), updated `src/utils/soundEngine.js` to unlock on `touchend`/`pointerup`/`click`/`keydown` only and set `speechUnlocked` inside prime `onstart`/`onend`, and updated `src/components/ArcadeAiAssistant.jsx` + `.css` to remove FAB welcome auto-speak, show the inline iPhone voice hint on timeout, and add per-persona English voice selector persisted to `tm_ai_voice_kitt`/`tm_ai_voice_hal`.
 
 ### P1 — 🎵 THE MEMES FM 2.0 (more music, picker on main screens)
 

@@ -30,22 +30,14 @@ import {
   computeXpConversionState,
   getTodayDateString
 } from './utils/tokenEconomy';
-import { updateDynamicSeo } from './utils/seoEngine';
+import { PRANK_DISGUISE_TO_PATH } from './data/seoRoutes';
 import {
-  resolveRouteFromLocation,
-  getCanonicalPathForState,
-  normalizeRoutePath,
-  PRANK_DISGUISE_TO_PATH
-} from './data/seoRoutes';
-import { recordRecentArcadeGame } from './data/arcadeGamesCatalog';
-import {
-  trackMemeViewed,
   trackUpvote,
   trackRemixOpened,
   trackMemePublished,
-  trackShareClicked,
-  trackGameStarted
+  trackShareClicked
 } from './utils/analytics';
+import { useViewMode, useViewModeEffects } from './hooks/useViewMode';
 import NavbarHud from './components/NavbarHud';
 import QuickUploadBar from './components/QuickUploadBar';
 import MemeCard from './components/MemeCard';
@@ -53,7 +45,7 @@ import { publishMeme } from './utils/publishMeme';
 import { validateFile, canvasToCompressedBlob } from './utils/mediaPipeline';
 import { recordPublishDailyPerk } from './utils/memeFeedBridge';
 import VerticalReelsView from './components/VerticalReelsView';
-import { useDeviceProfile, DEVICE_PROFILES, getDeviceProfileSnapshot } from './utils/deviceProfile';
+import { useDeviceProfile, DEVICE_PROFILES } from './utils/deviceProfile';
 import {
   getSettings,
   applySettingsToRuntime,
@@ -95,8 +87,7 @@ import {
 import {
   sendCreatorNotification,
   fetchCreatorNotifications,
-  markCreatorNotificationsRead,
-  recordLocalMemeView
+  markCreatorNotificationsRead
 } from './utils/notifications';
 
 const InsertCoinIntro = lazy(() => import('./components/InsertCoinIntro'));
@@ -139,38 +130,68 @@ const MODAL_SKELETON_FALLBACK = (
   </div>
 );
 
-function isTouchDeviceDefault() {
-  if (typeof window === 'undefined') return false;
-  const profile = getDeviceProfileSnapshot();
-  if (profile?.isTouch) return true;
-  if (window.matchMedia?.('(pointer: coarse)').matches) return true;
-  return /iPhone|iPod|iPad|Android/i.test(navigator.userAgent || '');
-}
-
 export default function App() {
-  const [initialRoute] = useState(() =>
-    typeof window !== 'undefined'
-      ? resolveRouteFromLocation(
-          window.location.pathname,
-          window.location.search,
-          isTouchDeviceDefault()
-        )
-      : {
-          matchedPath: '/',
-          isDedicatedLanding: false,
-          viewMode: 'feed',
-          category: 'all',
-          searchQuery: '',
-          showStudio: false,
-          forgeIntent: null,
-          extrasDrawerOpen: false,
-          extrasFocus: null,
-          bossKeyActive: false,
-          prankDisguise: null,
-          surpriseOpen: false,
-          theaterMemeId: null
-        }
-  );
+  const router = useViewMode();
+  const {
+    category,
+    setCategory,
+    viewMode,
+    setViewMode,
+    searchQuery,
+    setSearchQuery,
+    showSavedOnly,
+    setShowSavedOnly,
+    sortBy,
+    setSortBy,
+    showStudio,
+    setShowStudio,
+    forgeIntent,
+    setForgeIntent,
+    extrasDrawerOpen,
+    setExtrasDrawerOpen,
+    extrasFocus,
+    setExtrasFocus,
+    bossKeyActive,
+    setBossKeyActive,
+    prankDisguise,
+    setPrankDisguise,
+    surpriseOpen,
+    setSurpriseOpen,
+    theaterMemeId,
+    setTheaterMemeId,
+    openedFromShareLink,
+    showLeaderboard,
+    setShowLeaderboard,
+    showRewardsModal,
+    setShowRewardsModal,
+    rewardsInitialTab,
+    setRewardsInitialTab,
+    profileUsername,
+    setProfileUsername,
+    showAuthModal,
+    setShowAuthModal,
+    battleModalOpen,
+    setBattleModalOpen,
+    liveCelebrationData,
+    setLiveCelebrationData,
+    roastModalMeme,
+    setRoastModalMeme,
+    evolutionModalMeme,
+    setEvolutionModalMeme,
+    payphoneModalOpen,
+    setPayphoneModalOpen,
+    aiAssistantOpen,
+    setAiAssistantOpen,
+    showIntro,
+    setShowIntro,
+    isFixedArcadeGame,
+    hasCanonicalSubpath,
+    activeNavDepth,
+    handleOpenTheater,
+    handleCloseTheater,
+    closeAllModals,
+    handleNavigateBack
+  } = router;
 
   // Core Feed & Filter State (Community Uploads + Offline-Resilient @TheMemesHQ Seed Memes)
   const [memes, setMemes] = useState(() => {
@@ -191,8 +212,6 @@ export default function App() {
   }, [memes]);
   const [isLoadingFeed, setIsLoadingFeed] = useState(false);
   const [visibleCount, setVisibleCount] = useState(6);
-  const [sortBy, setSortBy] = useState('latest'); // 'latest' | 'top' | 'new24h'
-  const [showSavedOnly, setShowSavedOnly] = useState(false);
   const [bookmarkedIds, setBookmarkedIds] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('tm_saved_memes') || '[]');
@@ -201,30 +220,16 @@ export default function App() {
     }
   });
   const quickUploadInputRef = useRef(null);
-  const [category, setCategory] = useState(initialRoute.category);
-  const [viewMode, setViewMode] = useState(initialRoute.viewMode);
   const { profile: deviceProfile, setOverride: setDeviceOverride } = useDeviceProfile();
-  const [payphoneModalOpen, setPayphoneModalOpen] = useState(false);
-  const [extrasDrawerOpen, setExtrasDrawerOpen] = useState(initialRoute.extrasDrawerOpen);
-  const [extrasFocus, setExtrasFocus] = useState(initialRoute.extrasFocus);
-  const [surpriseOpen, setSurpriseOpen] = useState(initialRoute.surpriseOpen);
-  const [searchQuery, setSearchQuery] = useState(initialRoute.searchQuery);
   const [dbStatus, setDbStatus] = useState('connecting'); // 'connecting' | 'live' | 'local'
 
-  // Fork & Mutate + Evolution Tree + Theater Lightbox State
+  // Fork & Mutate + Evolution Tree State
   const [mutatingParentMeme, setMutatingParentMeme] = useState(null);
-  const [evolutionModalMeme, setEvolutionModalMeme] = useState(null);
   const [evolutionNodes, setEvolutionNodes] = useState([]);
   const [loadingEvolution, setLoadingEvolution] = useState(false);
-  const [theaterMemeId, setTheaterMemeId] = useState(initialRoute.theaterMemeId);
-  const [openedFromShareLink, setOpenedFromShareLink] = useState(
-    Boolean(initialRoute.theaterMemeId)
-  );
 
-  // Phase 4 & 28.15: Daily Caption Battle, Hall of Fame Leaderboard & Player Profiles State
+  // Phase 4 & 28.15: Daily Caption Battle & Creator Profiles State
   const [activeBounty, setActiveBounty] = useState(null);
-  const [battleModalOpen, setBattleModalOpen] = useState(false);
-  const [liveCelebrationData, setLiveCelebrationData] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [bountiesCompleted, setBountiesCompleted] = useState(() =>
     Number(localStorage.getItem('tm_bounties') || 0)
@@ -236,8 +241,6 @@ export default function App() {
       return {};
     }
   });
-  const [showLeaderboard, setShowLeaderboard] = useState(false);
-  const [profileUsername, setProfileUsername] = useState(null);
 
   // Phase 5: Safety, Moderation & Spoiler State
   const [reportedMemeIds, setReportedMemeIds] = useState(() => {
@@ -325,15 +328,12 @@ export default function App() {
     }
   });
 
-  // Phase 8, 9 & 28.16: Rewards Vault, Arcade Shop Cosmetics, Wheel of Chaos, Daily Quests, AI Roast, AI Copilot & Boss Key State
-  const [showRewardsModal, setShowRewardsModal] = useState(false);
-  const [rewardsInitialTab, setRewardsInitialTab] = useState('vault');
+  // Phase 8, 9 & 28.16: Rewards Vault, Arcade Shop Cosmetics & Wheel of Chaos State
   const [unlockedCosmetics, setUnlockedCosmetics] = useState(() => loadUnlockedCosmetics());
   const [equippedFrame, setEquippedFrame] = useState(() => loadEquippedFrame());
   const [equippedCassetteSkin, setEquippedCassetteSkin] = useState(() =>
     loadEquippedCassetteSkin()
   );
-  const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
   const [lootSpins, setLootSpins] = useState(() =>
     Math.min(
       ARCADE_RATE_LIMITS.MAX_STORED_WHEEL_SPINS,
@@ -399,23 +399,9 @@ export default function App() {
       return {};
     }
   });
-  const [roastModalMeme, setRoastModalMeme] = useState(null);
   const [roastsRun, setRoastsRun] = useState(() =>
     Number(localStorage.getItem('tm_roasts_run') || 0)
   );
-  const [bossKeyActive, setBossKeyActive] = useState(initialRoute.bossKeyActive);
-  const [prankDisguise, setPrankDisguise] = useState(initialRoute.prankDisguise);
-
-  // Phase 28.12: One-time 2-second skippable "Insert Coin" CRT boot moment (never shown again once seen)
-  const [showIntro, setShowIntro] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    if (initialRoute.isDedicatedLanding) return false;
-    try {
-      return !localStorage.getItem('tm_intro_seen');
-    } catch {
-      return false;
-    }
-  });
 
   // Phase 12–15: Chaos Reality Mutators, Golden Loot Goblin, Konami God Mode & Touch/Cursor Trails
   const [chaosMutator, setChaosMutator] = useState('none'); // 'none' | 'rave' | 'australian' | 'deepfry' | 'matrix'
@@ -445,7 +431,6 @@ export default function App() {
     }
   });
   const { onlineCount, broadcastEmote } = useLivePresence({ username: user?.username });
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('login');
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
@@ -453,9 +438,7 @@ export default function App() {
   const [authMessage, setAuthMessage] = useState('');
   const failedAuthRef = useRef({ count: 0, lockUntil: 0 });
 
-  // Studio & Meme Forge 3.0 State (100% User-Uploaded Media)
-  const [showStudio, setShowStudio] = useState(initialRoute.showStudio);
-  const [forgeIntent, setForgeIntent] = useState(initialRoute.forgeIntent);
+  // Studio & Meme Forge 3.0 Drag State
   const [isDraggingFile, setIsDraggingFile] = useState(false);
 
   // Interactive Modes State (Comments, Swipe, King of the Hill 1v1 Battle)
@@ -690,7 +673,6 @@ export default function App() {
     () => computeXpConversionState(xp, xpConverted, tokenLedger),
     [xp, xpConverted, tokenLedger]
   );
-  const isFixedArcadeGame = ['blackjack', 'roulette', 'pusher', 'slots', 'crush', 'pinball', 'stocks', 'derby', 'guess', 'plinko', 'hilow'].includes(viewMode);
 
   // Phase 28.11 & 29.6: THE MEMES FM radio hooks (resume on gesture if left ON, mute sync, shortcuts, context station & combo reactivity)
   useEffect(() => {
@@ -1375,7 +1357,7 @@ export default function App() {
     sfx.playMutate();
     setForgeIntent({ mode: 'file', file: fileOrBlob });
     setShowStudio(true);
-  }, []);
+  }, [setForgeIntent, setShowStudio]);
 
   useEffect(() => {
     const onPaste = (e) => {
@@ -1436,7 +1418,7 @@ export default function App() {
     setMutatingParentMeme(null);
     setForgeIntent({ mode: 'blank' });
     setShowStudio(true);
-  }, []);
+  }, [setForgeIntent, setShowStudio]);
 
   const handleAcceptBounty = useCallback((bounty) => {
     if (!bounty) return;
@@ -1445,7 +1427,7 @@ export default function App() {
     setMutatingParentMeme(null);
     setForgeIntent({ mode: 'bounty', bounty });
     setShowStudio(true);
-  }, []);
+  }, [setForgeIntent, setShowStudio]);
 
   const handleTriggerStudioMutate = useCallback((memeToMutate, event) => {
     if (event) event.stopPropagation();
@@ -1455,7 +1437,7 @@ export default function App() {
     setMutatingParentMeme(memeToMutate);
     setForgeIntent({ mode: 'remix', parent: memeToMutate });
     setShowStudio(true);
-  }, []);
+  }, [setForgeIntent, setShowStudio]);
 
   const handleCaptionThis = useCallback((memeToCaption, event) => {
     if (event) event.stopPropagation();
@@ -1465,7 +1447,7 @@ export default function App() {
     setMutatingParentMeme(memeToCaption);
     setForgeIntent({ mode: 'caption', parent: memeToCaption });
     setShowStudio(true);
-  }, []);
+  }, [setForgeIntent, setShowStudio]);
 
   const handleOpenEvolutionTree = useCallback(
     async (meme, event) => {
@@ -1512,7 +1494,7 @@ export default function App() {
       setEvolutionNodes(localMatches.length > 0 ? localMatches : [meme]);
       setLoadingEvolution(false);
     },
-    [memes, combo]
+    [memes, combo, setEvolutionModalMeme]
   );
 
   // ==========================================
@@ -2687,7 +2669,7 @@ export default function App() {
         );
       }
     },
-    [memes, spawnParticles]
+    [memes, spawnParticles, setForgeIntent, setShowStudio]
   );
 
   const handleClaimDailyStreak = useCallback(
@@ -2775,7 +2757,7 @@ export default function App() {
       incrementQuest('q-roast', 1);
       awardXpOnly(ARCADE_ECONOMY_RULES.REWARDS.ROAST_MEME.xp, e, '🤖');
     },
-    [incrementQuest, awardXpOnly]
+    [incrementQuest, awardXpOnly, setRoastModalMeme]
   );
 
   const handlePostRoastComment = useCallback(
@@ -2798,21 +2780,6 @@ export default function App() {
     },
     [user, awardXpOnly]
   );
-
-  // Keyboard shortcut for Boss Key Panic Screen ('Escape' exits Boss Mode, Shift+B toggles)
-  useEffect(() => {
-    const onKeyDown = (e) => {
-      if (e.key === 'Escape' && bossKeyActive) {
-        setBossKeyActive(false);
-        setPrankDisguise(null);
-      } else if (e.key === 'B' && e.shiftKey && !['INPUT', 'TEXTAREA'].includes(e.target?.tagName)) {
-        setPrankDisguise(null);
-        setBossKeyActive((prev) => !prev);
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [bossKeyActive]);
 
   // ==========================================
   // PHASE 3 & 5: FILTERING, PAGINATION, MODERATION, THEATER, SWIPE & ARENA
@@ -2935,100 +2902,6 @@ export default function App() {
     return memes.find((m) => String(m.id) === String(theaterMemeId)) || null;
   }, [memes, theaterMemeId]);
 
-  const handleOpenTheater = useCallback((meme) => {
-    if (!meme) return;
-    sfx.playToggle();
-    trackMemeViewed(meme, 'theater');
-    recordLocalMemeView(meme.id);
-    setTheaterMemeId(meme.id);
-    if (typeof window !== 'undefined' && window.history?.replaceState) {
-      const url = new URL(window.location.href);
-      url.searchParams.delete('meme');
-      url.searchParams.set('m', String(meme.id));
-      window.history.replaceState(window.history.state, '', url.toString());
-    }
-  }, []);
-
-  useEffect(() => {
-    if (openedFromShareLink && theaterMeme) {
-      trackMemeViewed(theaterMeme, 'share_link');
-    }
-  }, [openedFromShareLink, theaterMeme]);
-
-  const handleCloseTheater = useCallback(() => {
-    setTheaterMemeId(null);
-    setOpenedFromShareLink(false);
-    if (typeof window !== 'undefined' && window.history?.replaceState) {
-      const url = new URL(window.location.href);
-      url.searchParams.delete('m');
-      url.searchParams.delete('meme');
-      if (/^\/m\/[^/?#]+/i.test(url.pathname)) {
-        url.pathname = '/';
-      }
-      window.history.replaceState(window.history.state, '', url.toString());
-    }
-  }, []);
-
-  const closeAllModals = useCallback(() => {
-    setShowStudio(false);
-    setForgeIntent(null);
-    setTheaterMemeId(null);
-    setOpenedFromShareLink(false);
-    setEvolutionModalMeme(null);
-    setShowLeaderboard(false);
-    setShowRewardsModal(false);
-    setRewardsInitialTab('vault');
-    setBattleModalOpen(false);
-    setLiveCelebrationData(null);
-    setRoastModalMeme(null);
-    setProfileUsername(null);
-    setShowAuthModal(false);
-    setExtrasDrawerOpen(false);
-    setExtrasFocus(null);
-    setBossKeyActive(false);
-    setPrankDisguise(null);
-    if (typeof window !== 'undefined' && window.history?.replaceState) {
-      const url = new URL(window.location.href);
-      let changed = false;
-      if (url.searchParams.has('m') || url.searchParams.has('meme')) {
-        url.searchParams.delete('m');
-        url.searchParams.delete('meme');
-        changed = true;
-      }
-      if (/^\/m\/[^/?#]+/i.test(url.pathname)) {
-        url.pathname = '/';
-        changed = true;
-      }
-      if (changed) {
-        window.history.replaceState(window.history.state, '', url.toString());
-      }
-    }
-  }, []);
-
-  const canonicalPath = useMemo(
-    () =>
-      getCanonicalPathForState({
-        viewMode,
-        category,
-        showStudio,
-        forgeIntent,
-        extrasDrawerOpen,
-        extrasFocus,
-        bossKeyActive,
-        prankDisguise
-      }),
-    [
-      viewMode,
-      category,
-      showStudio,
-      forgeIntent,
-      extrasDrawerOpen,
-      extrasFocus,
-      bossKeyActive,
-      prankDisguise
-    ]
-  );
-
   const isAnyModalOpen = Boolean(
     showStudio ||
       theaterMeme ||
@@ -3044,224 +2917,7 @@ export default function App() {
       bossKeyActive
   );
 
-  const hasCanonicalSubpath = canonicalPath !== '/';
-
-  const activeNavDepth =
-    (!hasCanonicalSubpath && (viewMode !== 'feed' || searchQuery.trim() !== '') ? 1 : 0) +
-    (theaterMemeId ? 1 : 0) +
-    (showLeaderboard ? 1 : 0) +
-    (showRewardsModal ? 1 : 0) +
-    (roastModalMeme ? 1 : 0) +
-    (profileUsername ? 1 : 0) +
-    (evolutionModalMeme ? 1 : 0) +
-    (showStudio && canonicalPath !== '/meme-generator' ? 1 : 0) +
-    (showAuthModal ? 1 : 0) +
-    (extrasDrawerOpen && canonicalPath !== '/meme-soundboard' ? 1 : 0);
-
-  const handleNavigateBack = useCallback(() => {
-    sfx.playToggle();
-    if (bossKeyActive) {
-      setBossKeyActive(false);
-      setPrankDisguise(null);
-    } else if (extrasDrawerOpen) {
-      setExtrasDrawerOpen(false);
-      setExtrasFocus(null);
-    } else if (showAuthModal) {
-      setShowAuthModal(false);
-    } else if (roastModalMeme) {
-      setRoastModalMeme(null);
-    } else if (liveCelebrationData) {
-      setLiveCelebrationData(null);
-    } else if (battleModalOpen) {
-      setBattleModalOpen(false);
-    } else if (showRewardsModal) {
-      setShowRewardsModal(false);
-    } else if (evolutionModalMeme) {
-      setEvolutionModalMeme(null);
-    } else if (profileUsername) {
-      setProfileUsername(null);
-    } else if (showLeaderboard) {
-      setShowLeaderboard(false);
-    } else if (showStudio) {
-      setShowStudio(false);
-      setForgeIntent(null);
-    } else if (theaterMemeId) {
-      handleCloseTheater();
-    } else if (viewMode !== 'feed') {
-      setViewMode('feed');
-    } else if (category !== 'all' || searchQuery.trim() !== '') {
-      setCategory('all');
-      setSearchQuery('');
-    }
-  }, [
-    bossKeyActive,
-    extrasDrawerOpen,
-    showAuthModal,
-    roastModalMeme,
-    liveCelebrationData,
-    battleModalOpen,
-    showRewardsModal,
-    evolutionModalMeme,
-    profileUsername,
-    showLeaderboard,
-    showStudio,
-    theaterMemeId,
-    handleCloseTheater,
-    viewMode,
-    category,
-    searchQuery
-  ]);
-
-  // Phase 10 & 28.9: Dynamic Google Search SEO, Canonical & JSON-LD Synchronization
-  useEffect(() => {
-    updateDynamicSeo({
-      activeMeme: theaterMeme || roastModalMeme,
-      category,
-      viewMode,
-      showStudio,
-      forgeIntent,
-      extrasDrawerOpen,
-      extrasFocus,
-      bossKeyActive,
-      prankDisguise
-    });
-  }, [
-    theaterMeme,
-    roastModalMeme,
-    category,
-    viewMode,
-    showStudio,
-    forgeIntent,
-    extrasDrawerOpen,
-    extrasFocus,
-    bossKeyActive,
-    prankDisguise
-  ]);
-
-  // Phase 28.10: Track arcade & interactive game launches
-  const prevTrackedGameRef = useRef(null);
-  useEffect(() => {
-    const trackedGames = new Set([
-      'pusher',
-      'pinball',
-      'slots',
-      'blackjack',
-      'roulette',
-      'crush',
-      'stocks',
-      'derby',
-      'guess',
-      'plinko',
-      'hilow',
-      'battle',
-      'swipe'
-    ]);
-    if (trackedGames.has(viewMode)) {
-      recordRecentArcadeGame(viewMode);
-      if (prevTrackedGameRef.current !== viewMode) {
-        prevTrackedGameRef.current = viewMode;
-        trackGameStarted(viewMode, isFixedArcadeGame ? 'arcade_cabinet' : 'interactive_mode');
-      }
-    } else {
-      prevTrackedGameRef.current = null;
-    }
-  }, [viewMode, isFixedArcadeGame]);
-
-  // Synchronize browser history stack so path routes, iPhone edge-swipe-back & Back button navigate cleanly
-  const historyDepthRef = useRef(0);
-  const lastSyncedPathRef = useRef(initialRoute.matchedPath || '/');
-  const hasMountedPathSyncRef = useRef(false);
-  const skipNextPushRef = useRef(false);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.history?.replaceState) return;
-    if (theaterMemeId) return;
-
-    const url = new URL(window.location.href);
-    const currentNorm = normalizeRoutePath(url.pathname);
-    const hadLegacyParams = url.searchParams.has('mode') || url.searchParams.has('category');
-    url.searchParams.delete('mode');
-    url.searchParams.delete('category');
-    if (searchQuery.trim()) {
-      url.searchParams.set('q', searchQuery.trim());
-    } else {
-      url.searchParams.delete('q');
-    }
-
-    if (canonicalPath !== currentNorm) {
-      url.pathname = canonicalPath;
-      const useReplace =
-        !hasMountedPathSyncRef.current || skipNextPushRef.current || hadLegacyParams;
-      if (useReplace) {
-        window.history.replaceState(window.history.state, '', url.toString());
-      } else {
-        window.history.pushState({ tmCanonicalPath: canonicalPath }, '', url.toString());
-      }
-    } else if (hadLegacyParams || url.search !== window.location.search) {
-      window.history.replaceState(window.history.state, '', url.toString());
-    }
-
-    hasMountedPathSyncRef.current = true;
-    skipNextPushRef.current = false;
-    lastSyncedPathRef.current = canonicalPath;
-  }, [canonicalPath, searchQuery, theaterMemeId]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.history?.pushState) return;
-    while (historyDepthRef.current < activeNavDepth) {
-      historyDepthRef.current += 1;
-      const url = new URL(window.location.href);
-      window.history.pushState({ tmArcadeDepth: historyDepthRef.current }, '', url.toString());
-    }
-  }, [activeNavDepth]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const onPopState = () => {
-      const nextNorm = normalizeRoutePath(window.location.pathname);
-      if (nextNorm !== lastSyncedPathRef.current) {
-        skipNextPushRef.current = true;
-        const resolved = resolveRouteFromLocation(
-          window.location.pathname,
-          window.location.search,
-          isTouchDeviceDefault()
-        );
-        lastSyncedPathRef.current = resolved.matchedPath;
-        setCategory(resolved.category);
-        setViewMode(resolved.viewMode);
-        setSearchQuery(resolved.searchQuery);
-        setShowStudio(resolved.showStudio);
-        setForgeIntent(resolved.forgeIntent);
-        setExtrasDrawerOpen(resolved.extrasDrawerOpen);
-        setExtrasFocus(resolved.extrasFocus);
-        setBossKeyActive(resolved.bossKeyActive);
-        setPrankDisguise(resolved.prankDisguise);
-        setSurpriseOpen(resolved.surpriseOpen);
-        setTheaterMemeId(resolved.theaterMemeId);
-        return;
-      }
-      historyDepthRef.current = Math.max(0, historyDepthRef.current - 1);
-      handleNavigateBack();
-    };
-    window.addEventListener('popstate', onPopState);
-    return () => window.removeEventListener('popstate', onPopState);
-  }, [handleNavigateBack]);
-
-  // Lock background page scroll while any modal OR fixed iPad/iPhone arcade game is active
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    if (isAnyModalOpen || isFixedArcadeGame) {
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-    };
-  }, [isAnyModalOpen, isFixedArcadeGame]);
+  useViewModeEffects({ router, theaterMeme, isAnyModalOpen });
 
   const handleShareMeme = useCallback(
     (meme, e) => {

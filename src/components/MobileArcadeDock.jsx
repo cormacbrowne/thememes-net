@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { RadioStationStrip } from './MemesRadio';
 
 export default function MobileArcadeDock({
   viewMode,
@@ -81,6 +82,7 @@ export default function MobileArcadeDock({
               </button>
             </div>
           </div>
+          <RadioStationStrip autoStart compact />
           <div className="tm-dock-games-drawer-grid">
             <button
               type="button"

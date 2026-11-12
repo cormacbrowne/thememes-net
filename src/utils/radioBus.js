@@ -161,11 +161,18 @@ export function toggleRadio() {
   setRadioOn(!state.on);
 }
 
-export function setRadioStation(id) {
+export function setRadioStation(id, { overrideContext = true, startIfOff = false } = {}) {
   if (!STATION_IDS.includes(id)) return;
+  if (overrideContext) {
+    contextStation = null;
+  }
   setState({ station: id });
   persist();
-  if (engine && state.on && !contextStation) {
+  if (startIfOff && !state.on) {
+    setRadioOn(true);
+    return;
+  }
+  if (engine && state.on && (!contextStation || overrideContext)) {
     setState({ activeStation: id });
     engine.setStation(id);
   }

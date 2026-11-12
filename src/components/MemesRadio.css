@@ -315,3 +315,282 @@
 .tm-lite-perf .tm-radio-deck.is-playing .tm-radio-reel {
   animation: none;
 }
+
+/* ---------- Top-bar split button + station popover (Phase 29.4) ---------- */
+.tm-radio-picker-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.tm-radio-split-group {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 2px;
+}
+
+.tm-radio-toggle.tm-fixed-icon-btn {
+  width: auto;
+  min-width: 30px;
+  padding: 0 6px;
+}
+
+.tm-radio-chevron-btn {
+  width: auto;
+  padding: 4px 7px !important;
+  min-width: 24px;
+  font-size: 11px;
+  line-height: 1;
+  touch-action: manipulation;
+}
+
+.tm-radio-chevron-btn.is-open {
+  border-color: #00f3ff;
+  color: #00f3ff;
+}
+
+.tm-radio-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: min(292px, calc(100vw - 16px));
+  z-index: 1250;
+  background: linear-gradient(165deg, rgba(11, 15, 34, 0.98), rgba(24, 11, 44, 0.98));
+  border: 1.5px solid #00f3ff;
+  border-radius: 14px;
+  padding: 10px;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.92), 0 0 24px rgba(0, 243, 255, 0.25);
+  color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tm-radio-pop-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tm-radio-pop-now {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tm-radio-pop-kicker {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #facc15;
+}
+
+.tm-radio-pop-track {
+  font-size: 11.5px;
+  font-weight: 900;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tm-radio-pop-transport {
+  display: inline-flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.tm-radio-pop-icon-btn {
+  min-width: 34px;
+  min-height: 32px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(15, 23, 42, 0.9);
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.tm-radio-pop-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tm-radio-pop-volume {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.tm-radio-pop-volume input {
+  flex: 1;
+  accent-color: #ec4899;
+}
+
+.tm-radio-pop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tm-radio-pop-station {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(15, 23, 42, 0.72);
+  color: #e2e8f0;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.tm-radio-pop-station.active {
+  border-color: #00f3ff;
+  background: rgba(0, 243, 255, 0.16);
+  color: #ffffff;
+}
+
+.tm-radio-pop-live {
+  font-size: 10px;
+  font-weight: 900;
+  color: #4ade80;
+}
+
+/* ---------- Inline station strip (InsertCoinIntro & MobileGamesDrawer) ---------- */
+.tm-radio-strip {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(0, 243, 255, 0.28);
+  border-radius: 12px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.tm-radio-strip-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #a5f3fc;
+  margin-bottom: 6px;
+}
+
+.tm-radio-strip-actions {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.tm-radio-strip-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.tm-radio-strip-pill {
+  padding: 5px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(2, 6, 23, 0.85);
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.tm-radio-strip-pill.active {
+  border-color: #ec4899;
+  background: rgba(236, 72, 153, 0.22);
+  color: #ffffff;
+}
+
+/* ---------- Dismissible Mobile Now-Playing Pill ---------- */
+.tm-mobile-now-playing {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+  z-index: 940;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: calc(100vw - 24px);
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(10, 14, 30, 0.94);
+  border: 1px solid rgba(236, 72, 153, 0.65);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7), 0 0 14px rgba(236, 72, 153, 0.28);
+  color: #f8fafc;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.tm-mobile-now-playing.in-game {
+  top: 52px;
+  bottom: auto;
+}
+
+.tm-now-playing-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  padding: 2px 4px;
+  cursor: pointer;
+  max-width: 200px;
+  touch-action: manipulation;
+}
+
+.tm-now-playing-label span:last-child {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tm-now-playing-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #e2e8f0;
+  border-radius: 999px;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+@media (min-width: 861px) {
+  .tm-mobile-now-playing {
+    display: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .tm-radio-chevron-btn,
+  .tm-radio-pop-icon-btn,
+  .tm-radio-pop-station {
+    min-height: 44px;
+  }
+}

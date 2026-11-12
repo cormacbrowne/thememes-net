@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { setRadioOn } from '../utils/radioBus';
+import { RadioStationStrip } from './MemesRadio';
 import './InsertCoinIntro.css';
 
 export const INTRO_SEEN_KEY = 'tm_intro_seen';
@@ -93,6 +94,8 @@ export default function InsertCoinIntro({ onComplete }) {
           />
           <span>📼 Fade in THE MEMES FM synthwave radio</span>
         </label>
+
+        {optInRadio && <RadioStationStrip autoStart={false} compact />}
 
         <button
           type="button"

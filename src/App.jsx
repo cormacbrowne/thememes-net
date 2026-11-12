@@ -58,7 +58,7 @@ import ParticleOverlay from './components/ParticleOverlay';
 import MemeSkeletonGrid from './components/MemeSkeletonGrid';
 import MobileArcadeDock from './components/MobileArcadeDock';
 import SeoDiscoveryFooter from './components/SeoDiscoveryFooter';
-import { RadioToggleButton } from './components/MemesRadio';
+import { RadioToggleButton, MobileNowPlayingPill } from './components/MemesRadio';
 import {
   setRadioContextStation,
   setRadioMuted,
@@ -4623,6 +4623,9 @@ export default function App() {
           />
         </Suspense>
       )}
+
+      {/* PHASE 29.4: DISMISSIBLE MOBILE NOW-PLAYING PILL */}
+      {!bossKeyActive && <MobileNowPlayingPill isGameLayout={isFixedArcadeGame} />}
 
       {/* PHASE 5 & 28.3: 5-BUTTON THUMB-FRIENDLY MOBILE BOTTOM ARCADE DOCK (Memes / Reels / +Create / Games / Profile) */}
       {!isFixedArcadeGame && (

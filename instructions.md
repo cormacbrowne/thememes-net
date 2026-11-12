@@ -69,10 +69,11 @@
 
 ### P1 — 🎵 THE MEMES FM 2.0 (more music, picker on main screens)
 
-- [ ] **29.4 Station picker everywhere.**
+- [x] **29.4 Station picker everywhere.**
   - **Short tap** on the `📼` top-bar button (`RadioToggleButton` in `MemesRadio.jsx`) still toggles play. A **chevron `▾`** next to it (or a long-press on touch) opens a small **station popover**: station list, ⏭ skip, volume slider, and now-playing track name.
   - Add the same picker to: the **mobile Reels overlay** (top-right, small), the **mobile Games drawer** in `MobileArcadeDock.jsx`, every **game header** (see 29.15 GameShell), and the **Insert Coin intro** (pick a station before entering).
   - While music plays on mobile, show a tiny dismissible **"now playing" pill** (`📼 Doge Highway '86 ⏭`).
+  - **Completion Note:** Upgraded `RadioToggleButton` (`src/components/MemesRadio.jsx` + `.css`) with a split `▾` chevron / long-press popover (station list, `▶/⏸`, `⏭` skip, volume slider, live track name), added `overrideContext` + `startIfOff` options to `setRadioStation` in `src/utils/radioBus.js`, added `RadioStationStrip` to `InsertCoinIntro.jsx` and `MobileArcadeDock.jsx`, placed `RadioToggleButton` in `VerticalReelsView.jsx` top-right nav (plus existing `NavbarHud` & `.tm-fixed-arcade-bar`), and rendered `MobileNowPlayingPill` in `src/App.jsx`.
 - [ ] **29.5 Six new procedural stations** in `src/utils/musicEngine.js` + `RADIO_STATIONS` in `src/utils/radioBus.js` (no audio files, no CSP change, 5–6 tracks each). Make 4 of them free and 2 Arcade Shop cosmetics:
   - `🐸 Meme Phonk` (cowbell, 808 slides)
   - `🥁 Jungle / Drum & Bass` (fast breakbeats)

@@ -4,6 +4,7 @@ import MemeLiveEmotes from './MemeLiveEmotes';
 import { getMemeRarityTier, formatMemeUploadDate } from '../data/starterMemes';
 import { sfx } from '../utils/soundEngine';
 import { trackMemeViewed } from '../utils/analytics';
+import { RadioToggleButton } from './MemesRadio';
 
 const REELS_VIEWED_KEY = 'tm_reels_viewed_ids_v1';
 const REELS_GOLDEN_CLAIMED_KEY = 'tm_reels_golden_claimed_v1';
@@ -188,13 +189,16 @@ export default function VerticalReelsView({
         <span className="tm-reels-counter">
           🎬 {currentIndex + 1} / {len} • Double-tap to 🔥
         </span>
-        <button
-          type="button"
-          className="tm-reels-pill-btn tm-reels-pill-primary tm-hide-mobile"
-          onClick={onOpenBlankStudio}
-        >
-          + Create
-        </button>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <RadioToggleButton className="tm-reels-pill-btn" />
+          <button
+            type="button"
+            className="tm-reels-pill-btn tm-reels-pill-primary tm-hide-mobile"
+            onClick={onOpenBlankStudio}
+          >
+            + Create
+          </button>
+        </div>
       </div>
 
       {/* Full-Height Snap Container */}

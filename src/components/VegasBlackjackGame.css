@@ -5,7 +5,7 @@
   width: 100%;
   max-width: 1080px;
   margin: 0 auto;
-  height: calc(100dvh - 54px);
+  height: 100%;
   max-height: 860px;
   display: flex;
   flex-direction: column;
@@ -136,6 +136,7 @@
   border: 2px solid rgba(236, 72, 153, 0.45);
   box-shadow: inset 0 0 42px rgba(0, 243, 255, 0.18), inset 0 0 16px rgba(236, 72, 153, 0.2);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tm-bj-dealer-zone {
@@ -491,6 +492,7 @@
   font-size: 11.5px;
   font-weight: 900;
   cursor: pointer;
+  touch-action: manipulation;
   transition: all 0.14s ease;
 }
 .tm-bj-chip-btn.active {
@@ -519,9 +521,10 @@
 }
 
 .tm-bj-deal-cta {
-  padding: 9px 18px !important;
-  font-size: 13px !important;
-  font-weight: 900 !important;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 900;
+  touch-action: manipulation;
 }
 
 .tm-bj-action-buttons {
@@ -539,6 +542,7 @@
   font-weight: 900;
   letter-spacing: 0.6px;
   cursor: pointer;
+  touch-action: manipulation;
   border: 2px solid transparent;
   transition: transform 0.1s ease, box-shadow 0.14s ease;
 }
@@ -577,11 +581,11 @@
 
 .tm-bj-stage {
   width: 100%;
-  height: calc(100dvh - 52px);
+  height: calc(100dvh - 46px);
   display: flex;
   align-items: stretch;
   justify-content: center;
-  padding: 6px 10px;
+  padding: 6px 10px calc(6px + env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -626,7 +630,8 @@
 
 .tm-bj-dealer-speech {
   flex: 1;
-  min-width: 180px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .tm-bj-dealer-tag {
@@ -895,14 +900,68 @@
   transform: translateY(-1px) scale(1.02);
 }
 
+/* Local shared header/wallet/back tokens so /games/blackjack styles cleanly on cold load */
+.tm-bj-eyebrow {
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  color: #f472b6;
+  text-transform: uppercase;
+}
+
+.tm-bj-hud-pills {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.tm-pin2-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.tm-bandit-back-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #cbd5e1;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  touch-action: manipulation;
+}
+
+.tm-crush2-wallet {
+  background: rgba(250, 204, 21, 0.14);
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  color: #fde047;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.tm-bj-sidebet-btn,
+.tm-bj-mode-pill,
+.tm-bj-visor-toggle,
+.tm-bj-deal-btn {
+  touch-action: manipulation;
+}
+
 /* 1. 21's Blackjack — Never Obscure Dealer Cards on iPhone (Visor Hint at Bottom) */
 .tm-bj-dealer-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: nowrap !important;
+  flex-wrap: wrap;
   gap: 6px;
-  padding: 2px 6px !important;
+  padding: 4px 8px;
   min-height: 24px;
 }
 
@@ -922,44 +981,80 @@
   box-shadow: 0 0 12px rgba(52, 211, 153, 0.25);
 }
 
+@media (min-width: 861px) {
+  .tm-bj-deal-cta {
+    padding: 9px 18px !important;
+    font-size: 13px !important;
+    font-weight: 900 !important;
+  }
+
+  .tm-bj-dealer-bar {
+    flex-wrap: nowrap !important;
+    padding: 2px 6px !important;
+  }
+}
+
 @media (max-width: 768px) {
   .tm-bj-eyebrow,
   .tm-bj-felt-arc-text {
-    display: none !important;
+    display: none;
   }
 
   .tm-bj-header {
-    padding: 3px 6px !important;
-    gap: 4px !important;
+    padding: 4px 6px;
+    gap: 4px;
   }
 
   .tm-bj-title {
-    font-size: 13.5px !important;
+    font-size: 13.5px;
   }
 
   .tm-bj-felt {
-    padding: 6px 8px !important;
-    gap: 4px !important;
-    justify-content: space-between !important;
+    padding: 6px 8px;
+    gap: 4px;
+    justify-content: space-between;
   }
 
   .tm-bj-dealer-zone {
-    gap: 3px !important;
-    margin-bottom: 2px !important;
+    gap: 3px;
+    margin-bottom: 2px;
   }
 
   .tm-bj-dealer-cards {
-    min-height: 76px !important;
-    padding: 2px 0 !important;
+    min-height: 76px;
+    padding: 2px 0;
   }
 
   .tm-bj-controls {
-    padding: 5px 8px !important;
-    gap: 4px !important;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+    gap: 4px;
   }
 
   .tm-bj-visor-bottom-pill {
     font-size: 9.5px;
     padding: 2px 8px;
+  }
+}
+
+@media (max-width: 640px) {
+  .tm-bj-card {
+    width: 54px;
+    height: 78px;
+    padding: 4px;
+  }
+
+  .tm-bj-card-rank {
+    font-size: 11px;
+  }
+
+  .tm-bj-card-suit {
+    font-size: 16px;
+  }
+
+  .tm-bj-act-btn,
+  .tm-bj-deal-btn,
+  .tm-bj-chip-btn,
+  .tm-bandit-back-btn {
+    min-height: 44px;
   }
 }

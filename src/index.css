@@ -675,48 +675,8 @@ body {
 }
 
 /* ==========================================
-   7. ARENA MODES, MODALS & PHYSICS PARTICLES
+   7. MODALS & PHYSICS PARTICLES
    ========================================== */
-.tm-arena {
-  max-width: 560px;
-  margin: 24px auto;
-  padding: 0 16px;
-  text-align: center;
-}
-.swipe-right {
-  transform: translateX(180px) rotate(12deg);
-  opacity: 0;
-  transition: all 0.22s ease;
-}
-.swipe-left {
-  transform: translateX(-180px) rotate(-12deg);
-  opacity: 0;
-  transition: all 0.22s ease;
-}
-.swipe-up {
-  transform: translateY(-160px) scale(1.08);
-  opacity: 0;
-  transition: all 0.22s ease;
-}
-
-.tm-battle-grid {
-  max-width: 1020px;
-  margin: 20px auto;
-  padding: 0 20px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
-  gap: 24px;
-  align-items: stretch;
-}
-.tm-battle-card {
-  cursor: pointer;
-  position: relative;
-}
-.tm-battle-card.winner {
-  border-color: #22c55e;
-  box-shadow: 0 0 35px rgba(34, 197, 94, 0.5);
-  transform: scale(1.02);
-}
 
 .tm-modal-backdrop {
   position: fixed;
@@ -1218,14 +1178,6 @@ body {
   width: 175px;
 }
 
-.tm-swipe-actions {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  padding: 14px;
-  flex-wrap: wrap;
-}
-
 .tm-evolution-node {
   margin-left: var(--node-indent, 0px);
 }
@@ -1417,27 +1369,6 @@ body {
     gap: 14px;
   }
 
-  /* Fit Hyper-Swipe & Battle Arena cards comfortably on mobile screens */
-  .tm-arena {
-    margin: 10px auto;
-    padding: 0 12px;
-  }
-
-  .tm-swipe-img-wrap img {
-    max-height: 40vh;
-    object-fit: contain;
-  }
-
-  .tm-swipe-actions {
-    padding: 10px;
-    gap: 6px;
-  }
-
-  .tm-battle-img-wrap img {
-    max-height: 230px;
-    object-fit: contain;
-  }
-
   .tm-leaderboard-row {
     flex-wrap: wrap;
     padding: 10px 12px;
@@ -1453,13 +1384,6 @@ body {
     grid-template-columns: 1fr;
     padding: 6px 12px;
     gap: 16px;
-  }
-
-  .tm-battle-grid {
-    grid-template-columns: 1fr;
-    padding: 0 12px;
-    gap: 14px;
-    margin: 12px auto;
   }
 
   .tm-card-actions {
@@ -3101,16 +3025,6 @@ body {
   color: #f8fafc;
 }
 
-@media (max-width: 640px) {
-  .tm-pinball-controls-dock {
-    grid-template-columns: 1fr 1fr;
-  }
-  .tm-crush-grid {
-    gap: 4px;
-    padding: 6px;
-  }
-}
-
 /* ==========================================
    TURBO-CHARGED SUB-GAMES, MAIN SITE STEER SHOWCASE & "DO NOT PRESS" CHAOS BUTTON
    ========================================== */
@@ -4086,41 +4000,6 @@ body {
   box-shadow: 0 18px 42px rgba(0, 0, 0, 0.78), 0 0 32px rgba(250, 204, 21, 0.35);
 }
 
-/* ==========================================================================
-   3. CYBER-ORACLE '86 — INTERACTIVE AI ASSISTANT & PROACTIVE COPILOT (.tm-ai-*)
-   ========================================================================== */
-.tm-ai-nav-btn {
-  border-color: rgba(0, 243, 255, 0.55) !important;
-  color: #00f3ff !important;
-  background: rgba(0, 243, 255, 0.12) !important;
-}
-.tm-ai-nav-btn.active,
-.tm-ai-nav-btn:hover {
-  background: linear-gradient(135deg, rgba(0, 243, 255, 0.28), rgba(236, 72, 153, 0.28)) !important;
-  box-shadow: 0 0 16px rgba(0, 243, 255, 0.45);
-}
-
-
-/* ==========================================================================
-   EXACT COMPONENT SELECTORS FOR NEON 21'S, LIGHTNING ROULETTE & AI COPILOT
-   ========================================================================== */
-
-
-.tm-bj-eyebrow {
-  font-size: 9.5px;
-  font-weight: 900;
-  letter-spacing: 0.8px;
-  color: #f472b6;
-  text-transform: uppercase;
-}
-
-.tm-bj-hud-pills {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  flex-wrap: wrap;
-}
-
 /* ==========================================
    PHASE 27: DEVICE OPTIMIZER BADGES, MEME FORGE 3.0 IPHONE FIX,
    ENLARGED ROULETTE & PINBALL STAGES, STOCK CANDLE VISIBILITY,
@@ -4152,13 +4031,6 @@ body {
 .tm-security-badge-btn {
   border-color: rgba(74, 222, 128, 0.55);
   color: #4ade80;
-}
-
-@media (max-width: 860px) {
-  .tm-pin2-canvas {
-    max-height: calc(100dvh - 180px) !important;
-    max-width: 96vw !important;
-  }
 }
 
 /* 5. AUTOMATIC DEVICE-CLASS EXPERIENCE OPTIMIZATIONS */

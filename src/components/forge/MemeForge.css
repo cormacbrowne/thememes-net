@@ -304,6 +304,7 @@
 }
 
 .tm-forge-title {
+  min-width: 0;
   font-size: 14px;
   font-weight: 900;
   color: #00f3ff;

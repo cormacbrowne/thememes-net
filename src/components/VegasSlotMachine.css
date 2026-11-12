@@ -677,11 +677,12 @@
   min-height: 0;
   height: calc(100dvh - 46px);
   width: 100%;
+  box-sizing: border-box;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6px 10px env(safe-area-inset-bottom, 8px);
+  padding: 6px 10px calc(8px + env(safe-area-inset-bottom, 0px));
 }
 
 .tm-bandit-embedded {
@@ -1139,6 +1140,7 @@
   border-radius: 12px;
   cursor: pointer;
   white-space: nowrap;
+  touch-action: manipulation;
 }
 
 .tm-bandit-spin-btn {
@@ -1152,6 +1154,7 @@
   padding: 10px 14px;
   border-radius: 12px;
   cursor: pointer;
+  touch-action: manipulation;
   box-shadow: 0 4px 16px rgba(245, 158, 11, 0.5);
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
 }
@@ -1236,6 +1239,17 @@
 }
 
 @media (max-width: 520px) {
+  .tm-bandit-cabinet {
+    padding: 8px 10px;
+    gap: 5px;
+  }
+  .tm-bandit-drum-window {
+    height: clamp(112px, 20dvh, 165px);
+  }
+  .tm-bandit-back-btn,
+  .tm-bandit-spin-btn {
+    min-height: 44px;
+  }
   .tm-bandit-arm-housing {
     width: 34px;
   }

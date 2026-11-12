@@ -6,6 +6,7 @@ const ARCADE_GAME_MODES = [
   { id: 'derby', icon: '🏇', label: "Neon Derby '86", badge: 'NEW' },
   { id: 'guess', icon: '🧠', label: 'Guess The Meme', badge: 'Daily' },
   { id: 'plinko', icon: '🎯', label: 'Meme Plinko', badge: '26x' },
+  { id: 'hilow', icon: '⬆️', label: 'Higher or Lower', badge: 'Endless' },
   { id: 'pusher', icon: '🪙', label: "Coin Dozer '86", badge: '3D' },
   { id: 'pinball', icon: '🎱', label: 'Neon Pinball', badge: '5 Tables' },
   { id: 'blackjack', icon: '🃏', label: "Neon 21's", badge: 'Cards' },

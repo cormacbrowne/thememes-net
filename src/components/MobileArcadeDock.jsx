@@ -28,6 +28,7 @@ export default function MobileArcadeDock({
     'derby',
     'guess',
     'plinko',
+    'hilow',
     'battle',
     'arena',
     'swipe'
@@ -126,6 +127,14 @@ export default function MobileArcadeDock({
             >
               <span>🎯</span>
               <strong>Meme Plinko</strong>
+            </button>
+            <button
+              type="button"
+              className={`tm-dock-game-chip ${viewMode === 'hilow' ? 'active' : ''}`}
+              onClick={() => handlePickMode('hilow')}
+            >
+              <span>⬆️</span>
+              <strong>Higher / Lower</strong>
             </button>
             <button
               type="button"

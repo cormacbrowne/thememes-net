@@ -38,7 +38,8 @@ export const GAME_VIEW_MODE_TO_PATH = {
   stocks: '/games/meme-stock-market',
   derby: '/games/horse-racing',
   guess: '/games/guess-the-meme',
-  plinko: '/games/plinko'
+  plinko: '/games/plinko',
+  hilow: '/games/higher-or-lower'
 };
 
 export const PRANK_DISGUISE_TO_PATH = {
@@ -219,6 +220,23 @@ export const SEO_ROUTES = [
       'Drop neon meme balls down a glowing 8-row triangular peg board in Meme Plinko, one of the fastest one-handed casino arcade games on THE MEMES.net. Choose your favorite arcade token stake, pick Low, Medium, or High multiplier rows reaching up to 26x on the corners, and tap anywhere on the board or button bar to launch cascading physics drops with crisp peg sparks.',
       'Built on fair Binomial eight-row bounce odds across nine multiplier buckets, Meme Plinko keeps transparent 3.55% to 4.53% house edge math while delivering satisfying 2D elastic circle collisions, multi-ball Auto x10 bursts, and playful Pepe, Doge, Stonks, and Moai ball sprites that spin and clatter into neon scoring slots.',
       'Play risk-free in unlimited Free Practice mode (enabled automatically whenever your wallet is below 10 tokens) or wager free site Arcade Tokens earned by making and upvoting memes with never any real money, deposits, or cashouts. Switch smoothly between portrait thumb-only phone play and wide desktop layout anytime.'
+    ]
+  },
+  {
+    path: '/games/higher-or-lower',
+    title: 'Higher or Lower: Meme Edition — Free Upvote Streak Game | THE MEMES.net',
+    description:
+      'Play Higher or Lower: Meme Edition free online! Guess which meme has more community upvotes, build an endless streak, share your streak card, and discover new memes.',
+    h1: 'Higher or Lower: Meme Edition — Endless Upvote Game',
+    kicker: 'Live Community Memes // Endless Streak & Share Card',
+    changefreq: 'daily',
+    priority: '0.9',
+    viewMode: 'hilow',
+    category: 'all',
+    introParagraphs: [
+      "Put your meme taste to the test in Higher or Lower: Meme Edition, an endless free-to-play prediction game built right on top of the live THE MEMES.net meme catalog. Two posts appear side by side with the first meme's verified community upvote score revealed, and your job is simply to call whether the next meme has higher or lower upvotes.",
+      'Pulling dynamically from real community uploads alongside classic seed memes across dank, tech, gaming, and relatable categories, every round tests how well you know what makes the internet laugh. Streak along effortlessly on desktop or mobile portrait screens with large one-tap Higher and Lower buttons and zero arcade tokens or login walls required.',
+      'Beat your personal high score saved in local storage, generate a shareable streak card when a run ends, and click any meme title right inside the matchup to open its theater view, upvote it, or remix your own spin-off directly in Meme Forge.'
     ]
   },
   {
@@ -510,6 +528,7 @@ export function resolveRouteFromLocation(pathname = '/', search = '', isTouchDev
     'derby',
     'guess',
     'plinko',
+    'hilow',
     'swipe',
     'battle'
   ];

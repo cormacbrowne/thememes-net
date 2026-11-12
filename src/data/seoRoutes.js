@@ -29,6 +29,7 @@ export const CATEGORY_ID_TO_SLUG = {
 };
 
 export const GAME_VIEW_MODE_TO_PATH = {
+  lobby: '/games',
   pusher: '/games/coin-pusher',
   pinball: '/games/pinball',
   slots: '/games/slots',
@@ -101,6 +102,23 @@ export const SEO_ROUTES = [
       'Mash the 16-pad meme soundboard right in your browser with instant zero-latency Web Audio synthesis. Trigger classics like the Vine Boom 808 Drop, MLG Triple Airhorn, Clown Honk, Cartoon Spring Boing, Whoopee Cushion, Sad Trombone, Anime Impact, Coin Jackpot, Dank Police Siren, Rubber Duck Army, World’s Smallest Violin, Emotional Damage Gong, Falling Metal Pipe Clang, Scooby Run Bongos, UFO Brain-Ray, and Retro OS Crash.',
       'Unlike heavy MP3 soundboards that stall on slow connections, every sound on THE MEMES.net is procedurally synthesized live on your device—meaning instant response, zero broken audio links, and four switchable comedy sound packs (Goofy Cartoon, Vine & Brainrot, MLG Airhorn, and Cyber-Arcade) that restyle sound effects across the entire site.',
       'Designed specifically for mobile as well as desktop, our custom iOS Safari playback unlocker routes sound cleanly even when an iPhone physical mute switch is enabled. Pair the soundboard with screen reality filters, silly stampedes, or THE MEMES FM procedural synthwave radio for maximum Discord calls and IRL comedy timing.'
+    ]
+  },
+  {
+    path: '/games',
+    title: 'Free Cyber-Arcade Lobby — 13 Retro & Meme Games | THE MEMES.net',
+    description:
+      'Explore all 13 free browser arcade games on THE MEMES.net: Neon Coin Dozer, Lightning Roulette, Pinball, Neon Derby, Guess The Meme, Plinko, Higher or Lower & MEMEDAQ.',
+    h1: 'Cyber-Arcade Lobby — Play 13 Free Retro & Meme Games',
+    kicker: 'THE MEMES.net // Casino, Skill, Daily Meme Games & Market Sim',
+    changefreq: 'daily',
+    priority: '0.95',
+    viewMode: 'lobby',
+    category: 'all',
+    introParagraphs: [
+      "Step inside the Cyber-Arcade Lobby on THE MEMES.net—home to 13 free browser-based arcade cabinets, neon casino tables, skill challenges, and daily meme prediction games with zero downloads, accounts, or real-money deposits required. Filter quickly across Casino, Skill, Meme Games, and Market Sim sections, pin your favorite cabinets with star bookmarks, and pick up immediately from your Continue Playing shelf.",
+      "Choose between fast casino tables like Neon Coin Dozer '86, Lightning Roulette, Neon 21's, Vegas 777 Slots, Meme Plinko, and Neon Derby '86 meme horse racing, or dive into skill hits like 5-table Neon Pinball and Meme Crush Saga. Need quick token-free rounds? Try daily pixelated Guess The Meme, endless Higher or Lower upvote streaks, Hyper Swipe, or 1v1 Meme Arena.",
+      'Every wager runs purely on free Arcade Tokens earned by uploading and voting on memes, and practice mode activates automatically so newcomers can play any cabinet risk-free on desktop, iPad, or mobile portrait screens with procedural synthwave radio. Switch smoothly between cabinets or head back to the live meme feed and Meme Forge Studio anytime.'
     ]
   },
   {
@@ -518,6 +536,7 @@ export function resolveRouteFromLocation(pathname = '/', search = '', isTouchDev
   const validModes = [
     'feed',
     'reels',
+    'lobby',
     'blackjack',
     'roulette',
     'pusher',

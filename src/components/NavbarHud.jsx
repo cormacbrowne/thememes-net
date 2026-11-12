@@ -1,22 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
 import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
+import { ARCADE_GAMES_CATALOG } from '../data/arcadeGamesCatalog';
 import { RadioToggleButton } from './MemesRadio';
-
-const ARCADE_GAME_MODES = [
-  { id: 'derby', icon: '🏇', label: "Neon Derby '86", badge: 'NEW' },
-  { id: 'guess', icon: '🧠', label: 'Guess The Meme', badge: 'Daily' },
-  { id: 'plinko', icon: '🎯', label: 'Meme Plinko', badge: '26x' },
-  { id: 'hilow', icon: '⬆️', label: 'Higher or Lower', badge: 'Endless' },
-  { id: 'pusher', icon: '🪙', label: "Coin Dozer '86", badge: '3D' },
-  { id: 'pinball', icon: '🎱', label: 'Neon Pinball', badge: '5 Tables' },
-  { id: 'blackjack', icon: '🃏', label: "Neon 21's", badge: 'Cards' },
-  { id: 'roulette', icon: '🎡', label: 'Lightning Roulette', badge: '150x' },
-  { id: 'slots', icon: '🎰', label: 'Vegas 777 Slots', badge: 'Jackpot' },
-  { id: 'crush', icon: '🍬', label: 'Meme Crush Saga', badge: 'Match-3' },
-  { id: 'stocks', icon: '📈', label: "MEMEDAQ '86", badge: 'Trade' },
-  { id: 'swipe', icon: '⚡', label: 'Speed Swipe', badge: 'Fast' },
-  { id: 'battle', icon: '⚔️', label: '1v1 Meme Arena', badge: 'Versus' }
-];
 
 export default function NavbarHud({
   comboTimer,
@@ -43,22 +27,8 @@ export default function NavbarHud({
   onNavigateBack,
   onOpenExtras
 }) {
-  const [gamesMenuOpen, setGamesMenuOpen] = useState(false);
-  const gamesMenuRef = useRef(null);
-
   const reactorReadyTokens = xpConversionState ? xpConversionState.readyTokens : 0;
-  const activeGame = ARCADE_GAME_MODES.find((g) => g.id === viewMode);
-
-  useEffect(() => {
-    if (!gamesMenuOpen) return undefined;
-    const handleClickOutside = (e) => {
-      if (gamesMenuRef.current && !gamesMenuRef.current.contains(e.target)) {
-        setGamesMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [gamesMenuOpen]);
+  const activeGame = ARCADE_GAMES_CATALOG.find((g) => g.id === viewMode);
 
   return (
     <>
@@ -135,40 +105,14 @@ export default function NavbarHud({
               🎬 Reels
             </button>
 
-            <div className="tm-nav-games-dropdown-wrap" ref={gamesMenuRef}>
-              <button
-                type="button"
-                className={`tm-btn tm-nav-mode-pill ${activeGame ? 'active' : ''}`}
-                onClick={() => setGamesMenuOpen((prev) => !prev)}
-                aria-expanded={gamesMenuOpen}
-                title="Open Arcade Games Menu"
-              >
-                🕹️ {activeGame ? activeGame.label : 'Games'} ▾
-              </button>
-
-              {gamesMenuOpen && (
-                <div className="tm-nav-games-popover" role="menu">
-                  <div className="tm-nav-games-popover-head">🕹️ SELECT ARCADE CABINET</div>
-                  <div className="tm-nav-games-popover-grid">
-                    {ARCADE_GAME_MODES.map((game) => (
-                      <button
-                        key={game.id}
-                        type="button"
-                        className={`tm-nav-game-item ${viewMode === game.id ? 'active' : ''}`}
-                        onClick={() => {
-                          setGamesMenuOpen(false);
-                          onSelectViewMode(game.id);
-                        }}
-                      >
-                        <span className="tm-nav-game-icon">{game.icon}</span>
-                        <span className="tm-nav-game-label">{game.label}</span>
-                        <span className="tm-nav-game-badge">{game.badge}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            <button
+              type="button"
+              className={`tm-btn tm-nav-mode-pill ${viewMode === 'lobby' || activeGame ? 'active' : ''}`}
+              onClick={() => onSelectViewMode('lobby')}
+              title="Open Cyber-Arcade Lobby"
+            >
+              🕹️ {activeGame ? activeGame.label : 'Games'}
+            </button>
           </nav>
         )}
 

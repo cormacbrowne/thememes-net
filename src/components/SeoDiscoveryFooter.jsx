@@ -124,6 +124,13 @@ export default function SeoDiscoveryFooter({
             <h3 className="tm-seo-heading">🕹️ Retro Arcade Games &amp; Prank Screens</h3>
             <div className="tm-seo-links">
               <a
+                href="/games"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('lobby'))}
+              >
+                🕹️ Cyber-Arcade Lobby (All 13 Games)
+              </a>
+              <a
                 href="/games/coin-pusher"
                 className="tm-seo-link"
                 onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('pusher'))}

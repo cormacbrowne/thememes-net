@@ -37,6 +37,7 @@ import {
   normalizeRoutePath,
   PRANK_DISGUISE_TO_PATH
 } from './data/seoRoutes';
+import { recordRecentArcadeGame } from './data/arcadeGamesCatalog';
 import {
   trackMemeViewed,
   trackUpvote,
@@ -97,6 +98,7 @@ const MemeForge = lazy(() => import('./components/forge/MemeForge'));
 const MemeEvolutionModal = lazy(() => import('./components/MemeEvolutionModal'));
 const SwipeDeck = lazy(() => import('./components/SwipeDeck'));
 const BattleArena = lazy(() => import('./components/BattleArena'));
+const ArcadeLobby = lazy(() => import('./components/ArcadeLobby'));
 const MemeCrushGame = lazy(() => import('./components/MemeCrushGame'));
 const VegasPinballGame = lazy(() => import('./components/VegasPinballGame'));
 const VegasSlotMachine = lazy(() => import('./components/VegasSlotMachine'));
@@ -3102,10 +3104,15 @@ export default function App() {
       'roulette',
       'crush',
       'stocks',
+      'derby',
+      'guess',
+      'plinko',
+      'hilow',
       'battle',
       'swipe'
     ]);
     if (trackedGames.has(viewMode)) {
+      recordRecentArcadeGame(viewMode);
       if (prevTrackedGameRef.current !== viewMode) {
         prevTrackedGameRef.current = viewMode;
         trackGameStarted(viewMode, isFixedArcadeGame ? 'arcade_cabinet' : 'interactive_mode');
@@ -3468,6 +3475,17 @@ export default function App() {
       {/* FIXED NON-SCROLLING IPAD/IPHONE ARCADE TOP BAR VS FULL FEED NAVIGATION */}
       {isFixedArcadeGame ? (
         <header className="tm-fixed-arcade-bar" aria-label="Fixed Arcade Cabinet Bar">
+          <button
+            type="button"
+            className="tm-fixed-back-btn"
+            onClick={() => {
+              sfx.playToggle();
+              setViewMode('lobby');
+            }}
+            title="Back to Cyber-Arcade Lobby"
+          >
+            🕹️ Lobby
+          </button>
           <button
             type="button"
             className="tm-fixed-back-btn"
@@ -4700,6 +4718,41 @@ export default function App() {
           onClaimGoldenMeme={handleClaimGoldenMeme}
           litePerfMode={litePerfMode}
         />
+      )}
+
+      {/* MODE 2: CYBER-ARCADE LOBBY (/games) */}
+      {viewMode === 'lobby' && (
+        <Suspense fallback={<MemeSkeletonGrid count={6} />}>
+          <ArcadeLobby
+            tokens={tokens}
+            onSelectGame={(gameId) => {
+              closeAllModals();
+              setViewMode(gameId);
+            }}
+            onOpenRewards={() => {
+              closeAllModals();
+              setShowRewardsModal(true);
+            }}
+            onOpenExtras={() => {
+              closeAllModals();
+              setExtrasFocus(null);
+              setExtrasDrawerOpen(true);
+            }}
+            onOpenLeaderboard={() => {
+              closeAllModals();
+              setShowLeaderboard(true);
+            }}
+            onToggleAiAssistant={() => {
+              closeAllModals();
+              setAiUnlocked(true);
+              setAiAssistantOpen((prev) => !prev);
+            }}
+            onBackToFeed={() => {
+              closeAllModals();
+              setViewMode('feed');
+            }}
+          />
+        </Suspense>
       )}
 
       {/* MODE 3: PHYSICS HYPER-SWIPE DECK */}

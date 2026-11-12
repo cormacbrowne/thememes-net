@@ -37,7 +37,8 @@ export const GAME_VIEW_MODE_TO_PATH = {
   crush: '/games/meme-crush',
   stocks: '/games/meme-stock-market',
   derby: '/games/horse-racing',
-  guess: '/games/guess-the-meme'
+  guess: '/games/guess-the-meme',
+  plinko: '/games/plinko'
 };
 
 export const PRANK_DISGUISE_TO_PATH = {
@@ -201,6 +202,23 @@ export const SEO_ROUTES = [
       'Test your internet lore every day in Guess the Meme Daily, a completely free visual meme trivia challenge on THE MEMES.net with zero tokens, downloads, or login required. Each daily puzzle presents five classic meme formats—spanning reaction panels, galaxy brain tiers, and internet icons—that start heavily pixelated in crunchy retro blocks and sharpen step by step.',
       'Study the silhouette and color layout at Step 1 and pick the matching format name from four choices, or tap Enhance Clarity up to five levels to reveal sharper details. Earlier guesses earn higher point bonuses up to 100 points per round, while everyone around the world plays the exact same date-seeded daily lineup.',
       'Finish all five memes to unlock your Wordle-style emoji score grid, keep your daily solve streak alive in local storage across devices and visits, and copy your shareable results card with a direct link to challenge friends, plus unlock unlimited endless practice sets anytime you want extra rounds.'
+    ]
+  },
+  {
+    path: '/games/plinko',
+    title: 'Meme Plinko Online Free — 26x Peg Drop Arcade Game | THE MEMES.net',
+    description:
+      'Play Meme Plinko free online with real canvas peg physics, Low/Medium/High multiplier rows up to 26x, meme ball faces, Auto x10 drops, and one-handed mobile controls.',
+    h1: "Meme Plinko '86 — Free One-Tap Peg Drop Game",
+    kicker: '8-Row Galton Peg Physics // Low, Med & High Risk up to 26x',
+    changefreq: 'daily',
+    priority: '0.9',
+    viewMode: 'plinko',
+    category: 'all',
+    introParagraphs: [
+      'Drop neon meme balls down a glowing 8-row triangular peg board in Meme Plinko, one of the fastest one-handed casino arcade games on THE MEMES.net. Choose your favorite arcade token stake, pick Low, Medium, or High multiplier rows reaching up to 26x on the corners, and tap anywhere on the board or button bar to launch cascading physics drops with crisp peg sparks.',
+      'Built on fair Binomial eight-row bounce odds across nine multiplier buckets, Meme Plinko keeps transparent 3.55% to 4.53% house edge math while delivering satisfying 2D elastic circle collisions, multi-ball Auto x10 bursts, and playful Pepe, Doge, Stonks, and Moai ball sprites that spin and clatter into neon scoring slots.',
+      'Play risk-free in unlimited Free Practice mode (enabled automatically whenever your wallet is below 10 tokens) or wager free site Arcade Tokens earned by making and upvoting memes with never any real money, deposits, or cashouts. Switch smoothly between portrait thumb-only phone play and wide desktop layout anytime.'
     ]
   },
   {
@@ -491,6 +509,7 @@ export function resolveRouteFromLocation(pathname = '/', search = '', isTouchDev
     'stocks',
     'derby',
     'guess',
+    'plinko',
     'swipe',
     'battle'
   ];

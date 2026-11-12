@@ -106,6 +106,7 @@ const VegasCoinPusherGame = lazy(() => import('./components/VegasCoinPusherGame'
 const MemeStockMarketGame = lazy(() => import('./components/MemeStockMarketGame'));
 const NeonDerbyGame = lazy(() => import('./components/NeonDerbyGame'));
 const GuessTheMemeGame = lazy(() => import('./components/GuessTheMemeGame'));
+const MemePlinkoGame = lazy(() => import('./components/MemePlinkoGame'));
 const ArcadeAiAssistant = lazy(() => import('./components/ArcadeAiAssistant'));
 const AuthModal = lazy(() => import('./components/AuthModal'));
 const MemeTheaterModal = lazy(() => import('./components/MemeTheaterModal'));
@@ -670,7 +671,7 @@ export default function App() {
     () => computeXpConversionState(xp, xpConverted, tokenLedger),
     [xp, xpConverted, tokenLedger]
   );
-  const isFixedArcadeGame = ['blackjack', 'roulette', 'pusher', 'slots', 'crush', 'pinball', 'stocks', 'derby', 'guess'].includes(viewMode);
+  const isFixedArcadeGame = ['blackjack', 'roulette', 'pusher', 'slots', 'crush', 'pinball', 'stocks', 'derby', 'guess', 'plinko'].includes(viewMode);
 
   // Phase 28.11 & 29.6: THE MEMES FM radio hooks (resume on gesture if left ON, mute sync, shortcuts, context station & combo reactivity)
   useEffect(() => {
@@ -708,7 +709,7 @@ export default function App() {
       setRadioContextStation('vaporwave');
     } else if (['pinball', 'crush', 'pusher', 'battle', 'swipe'].includes(viewMode)) {
       setRadioContextStation('chiptune');
-    } else if (['blackjack', 'roulette', 'slots'].includes(viewMode)) {
+    } else if (['blackjack', 'roulette', 'slots', 'plinko'].includes(viewMode)) {
       setRadioContextStation('casinojazz');
     } else if (viewMode === 'derby') {
       setRadioContextStation('western');
@@ -3560,6 +3561,16 @@ export default function App() {
             </button>
             <button
               type="button"
+              className={`tm-fixed-game-pill ${viewMode === 'plinko' ? 'active' : ''}`}
+              onClick={() => {
+                sfx.playToggle();
+                setViewMode('plinko');
+              }}
+            >
+              🎯 Plinko
+            </button>
+            <button
+              type="button"
               className={`tm-fixed-game-pill ${viewMode === 'crush' ? 'active' : ''}`}
               onClick={() => {
                 sfx.playToggle();
@@ -4475,6 +4486,33 @@ export default function App() {
               setSoundOn(nextState);
               if (nextState) sfx.playToggle();
             }}
+            onBackToFeed={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+            }}
+          />
+        </Suspense>
+      )}
+
+      {/* FIXED ARCADE GAME 0A4: MEME PLINKO '86 */}
+      {viewMode === 'plinko' && (
+        <Suspense fallback={<MemeSkeletonGrid count={3} />}>
+          <MemePlinkoGame
+            tokens={tokens}
+            soundOn={soundOn}
+            litePerfMode={litePerfMode}
+            prefersReducedMotion={
+              typeof window !== 'undefined' &&
+              Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)
+            }
+            onToggleSound={() => {
+              const nextState = !soundOn;
+              sfx.enabled = nextState;
+              setSoundOn(nextState);
+              if (nextState) sfx.playToggle();
+            }}
+            onSpendTokens={handleSpendTokens}
+            onPayoutTokens={handlePayoutGameTokens}
             onBackToFeed={() => {
               sfx.playToggle();
               setViewMode('feed');

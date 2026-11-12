@@ -4,6 +4,7 @@ import { setRadioDuck } from '../utils/radioBus';
 import { getEnglishVoices, speakUtteranceChain } from '../utils/aiSpeech';
 import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
 import { getSecurityAuditReport } from '../utils/securityGuard';
+import { updateSettings } from '../utils/settingsStore';
 import './ArcadeAiAssistant.css';
 
 // ==========================================
@@ -244,6 +245,20 @@ export default function ArcadeAiAssistant({
     return () => {
       speechControllerRef.current?.stop();
     };
+  }, []);
+
+  useEffect(() => {
+    const syncFromSettings = (e) => {
+      const next = e?.detail;
+      if (!next) return;
+      setVoiceEnabled(Boolean(next.aiVoiceOn));
+      setVoicePrefs({
+        kitt: next.aiVoiceKitt || 'auto',
+        hal: next.aiVoiceHal || 'auto'
+      });
+    };
+    window.addEventListener('tm-settings-changed', syncFromSettings);
+    return () => window.removeEventListener('tm-settings-changed', syncFromSettings);
   }, []);
 
   useEffect(() => {
@@ -764,6 +779,9 @@ export default function ArcadeAiAssistant({
               const storageKey = persona === 'hal' ? 'tm_ai_voice_hal' : 'tm_ai_voice_kitt';
               localStorage.setItem(storageKey, nextUri);
               setVoicePrefs((prev) => ({ ...prev, [persona]: nextUri }));
+              updateSettings(
+                persona === 'hal' ? { aiVoiceHal: nextUri } : { aiVoiceKitt: nextUri }
+              );
             }}
             title="Choose English voice for this AI persona"
           >
@@ -784,6 +802,7 @@ export default function ArcadeAiAssistant({
               const next = !voiceEnabled;
               setVoiceEnabled(next);
               localStorage.setItem('tm_ai_voice_muted', next ? '0' : '1');
+              updateSettings({ aiVoiceOn: next });
               if (!next) {
                 stopSpeaking();
               } else {

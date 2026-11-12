@@ -54,6 +54,12 @@ import { validateFile, canvasToCompressedBlob } from './utils/mediaPipeline';
 import { recordPublishDailyPerk } from './utils/memeFeedBridge';
 import VerticalReelsView from './components/VerticalReelsView';
 import { useDeviceProfile, DEVICE_PROFILES, getDeviceProfileSnapshot } from './utils/deviceProfile';
+import {
+  getSettings,
+  applySettingsToRuntime,
+  subscribeSettings,
+  updateSettings
+} from './utils/settingsStore';
 import { getSecurityAuditReport } from './utils/securityGuard';
 import ParticleOverlay from './components/ParticleOverlay';
 import MemeSkeletonGrid from './components/MemeSkeletonGrid';
@@ -264,15 +270,14 @@ export default function App() {
   const [tokenLedger, setTokenLedger] = useState(() => loadTokenLedger());
   const [combo, setCombo] = useState(1);
   const [comboTimer, setComboTimer] = useState(0);
-  const [soundOn, setSoundOn] = useState(true);
-  const [soundPack, setSoundPack] = useState(
-    () => localStorage.getItem('tm_sound_pack') || 'goofy'
-  );
-  const [crtOn, setCrtOn] = useState(() => localStorage.getItem('tm_crt') === 'true');
+  const [soundOn, setSoundOn] = useState(() => getSettings().sfxOn);
+  const [soundPack, setSoundPack] = useState(() => getSettings().soundPack || 'goofy');
+  const [crtOn, setCrtOn] = useState(() => Boolean(getSettings().crtOn));
   const [litePerfMode, setLitePerfMode] = useState(() => {
     if (typeof window === 'undefined') return false;
     const saved = localStorage.getItem('tm_lite_perf_v1');
     if (saved !== null) return saved === 'true';
+    if (localStorage.getItem('tm_settings')) return Boolean(getSettings().litePerfMode);
     const isTouchTabletOrPhone =
       window.matchMedia?.('(pointer: coarse)').matches ||
       /iPad|iPhone|iPod|Android/i.test(navigator.userAgent || '');
@@ -490,6 +495,17 @@ export default function App() {
     tokensRef.current = tokens;
     saveTokenBalance(tokens);
   }, [tokens]);
+
+  useEffect(() => {
+    applySettingsToRuntime(getSettings());
+    const unsub = subscribeSettings((next) => {
+      setSoundOn(Boolean(next.sfxOn));
+      setSoundPack(next.soundPack || 'goofy');
+      setCrtOn(Boolean(next.crtOn));
+      setLitePerfMode(Boolean(next.litePerfMode));
+    });
+    return () => unsub();
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('tm_lite_perf_v1', String(litePerfMode));
@@ -2209,6 +2225,7 @@ export default function App() {
   const handleChangeSoundPack = useCallback((packId, e) => {
     setSoundPack(packId);
     sfx.setPack(packId);
+    updateSettings({ soundPack: packId });
     sfx.playVote(true, 2);
     if (e) {
       spawnParticles(e.clientX || window.innerWidth / 2, e.clientY || 120, `🔊 ${packId.toUpperCase()} PACK!`, '🔊');
@@ -2583,6 +2600,7 @@ export default function App() {
       if (!soundOn) {
         sfx.enabled = true;
         setSoundOn(true);
+        updateSettings({ sfxOn: true });
       }
       sfx.playSoundboardPad(pad.id);
       incrementQuest('q-soundboard', 1);
@@ -5179,21 +5197,12 @@ export default function App() {
               setPrankDisguise(null);
               setBossKeyActive(true);
             }}
-            crtMode={crtOn}
-            onToggleCrtMode={() => {
-              sfx.playToggle();
-              setCrtOn((prev) => !prev);
-            }}
-            turboMode={litePerfMode}
-            onToggleTurboMode={() => {
-              sfx.playToggle();
-              setLitePerfMode((prev) => !prev);
-            }}
             soundOn={soundOn}
             onToggleSound={() => {
               const nextState = !soundOn;
               sfx.enabled = nextState;
               setSoundOn(nextState);
+              updateSettings({ sfxOn: nextState });
               if (nextState) sfx.playBoing(2);
             }}
             soundPack={soundPack}

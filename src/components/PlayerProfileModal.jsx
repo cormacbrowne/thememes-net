@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { RANKS, computePlayerBadges, formatMemeUploadDate } from '../data/starterMemes';
 import { loadLocalMemeViews } from '../utils/notifications';
 import { isUsernameCaptionKing } from '../utils/dailyCaptionBattle';
+import SettingsSheet from './SettingsSheet';
 import './PlayerProfileModal.css';
 
 export default function PlayerProfileModal({
@@ -249,6 +250,13 @@ export default function PlayerProfileModal({
                 })}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Unified Arcade Settings (Visible on Own Profile) */}
+        {isMe && (
+          <div style={{ marginTop: '18px' }}>
+            <SettingsSheet compact />
           </div>
         )}
 

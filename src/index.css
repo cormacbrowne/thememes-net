@@ -4604,9 +4604,20 @@ html[data-device="iphone-duo"] button {
   }
 }
 
+/* Phase 29.13: Explicit Reduced Motion Override (Auto / On / Off) */
+:root[data-reduced-motion='on'] *,
+:root[data-reduced-motion='on'] *::before,
+:root[data-reduced-motion='on'] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .tm-app.tm-screen-punch,
-  .tm-live-emote-float {
+  :root:not([data-reduced-motion='off']) .tm-app.tm-screen-punch,
+  :root:not([data-reduced-motion='off']) .tm-live-emote-float,
+  :root:not([data-reduced-motion='off']) .tm-synthwave-grid {
     animation: none !important;
   }
 }

@@ -1,5 +1,6 @@
 import MemeSoundboardBar from './MemeSoundboardBar';
 import MemesRadio from './MemesRadio';
+import SettingsSheet from './SettingsSheet';
 
 export default function ExtrasDrawerModal({
   isOpen,
@@ -8,10 +9,6 @@ export default function ExtrasDrawerModal({
   onLaunchWtfSurprise,
   onOpenPayphone,
   onToggleBossKey,
-  crtMode,
-  onToggleCrtMode,
-  turboMode,
-  onToggleTurboMode,
   soundOn,
   onToggleSound,
   soundPack,
@@ -239,34 +236,10 @@ export default function ExtrasDrawerModal({
           </div>
         </div>
 
-        {/* SECTION 2: DISPLAY, PERFORMANCE & DEVICE TUNING */}
+        {/* SECTION 2: UNIFIED SETTINGS SHEET & HARDWARE STATUS */}
         <div className="tm-extras-section">
-          <div className="tm-extras-section-label">⚙️ DISPLAY, HARDWARE &amp; AUDIO</div>
-          <div className="tm-extras-toggles-row">
-            <button
-              type="button"
-              className={`tm-extras-toggle-pill ${soundOn ? 'active' : ''}`}
-              onClick={onToggleSound}
-            >
-              <span>{soundOn ? '🔊 Sound: ON' : '🔇 Sound: MUTED'}</span>
-            </button>
-
-            <button
-              type="button"
-              className={`tm-extras-toggle-pill ${crtMode ? 'active' : ''}`}
-              onClick={onToggleCrtMode}
-            >
-              <span>📺 CRT Shader: {crtMode ? 'ON' : 'OFF'}</span>
-            </button>
-
-            <button
-              type="button"
-              className={`tm-extras-toggle-pill ${turboMode ? 'active' : ''}`}
-              onClick={onToggleTurboMode}
-            >
-              <span>⚡ 120FPS Turbo: {turboMode ? 'ON' : 'OFF'}</span>
-            </button>
-
+          <SettingsSheet />
+          <div className="tm-extras-toggles-row" style={{ marginTop: '10px' }}>
             <button
               type="button"
               className="tm-extras-toggle-pill"

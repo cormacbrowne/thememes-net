@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
 import { checkDailyPerk, consumeDailyPerk } from '../utils/memeFeedBridge';
+import GameShell from './GameShell';
 import './VegasRouletteGame.css';
 
 // ==========================================
@@ -574,43 +575,32 @@ export default function VegasRouletteGame({
   }, [spinning, winningNum]);
 
   return (
-    <section className="tm-roul-stage" aria-label="80s Neon Lightning Roulette Wheel & Table">
+    <GameShell
+      title="NEON LIGHTNING ROULETTE '86"
+      eyebrow="European single-zero wheel • Lightning up to 150×"
+      ariaLabel="80s Neon Lightning Roulette Wheel and Table"
+      onBack={onBackToFeed}
+      tokens={tokens}
+      hasPractice
+      practiceMode={practiceMode}
+      practiceDisabled={spinning}
+      onTogglePractice={() => {
+        if (spinning) return;
+        setPracticeMode((p) => !p);
+        setBets({});
+      }}
+      extraBadges={
+        <span className="tm-roul-streak-pill">
+          🏆 Best: <strong>{bestWin} 🪙</strong>
+        </span>
+      }
+      howToPlay={[
+        'Tap Red, Black, Outside bets, or individual numbers to stack chips.',
+        'Straight numbers pay 30×; random Lightning strikes pay 50× to 150×.',
+        'Toggle Free Practice anytime to play with zero token risk.'
+      ]}
+    >
       <div className="tm-roul-cabinet">
-        {/* 1. COMPACT TOP MARQUEE & CHIP CONTROLS */}
-        <header className="tm-roul-header">
-          <div className="tm-roul-title-wrap">
-            {onBackToFeed && (
-              <button type="button" className="tm-roul-back-btn" onClick={onBackToFeed}>
-                ← Memes
-              </button>
-            )}
-            <div>
-              <div className="tm-roul-eyebrow">
-                European single-zero wheel • Lightning up to 150×
-              </div>
-              <h2 className="tm-roul-title">NEON LIGHTNING ROULETTE &apos;86</h2>
-            </div>
-          </div>
-
-          <div className="tm-roul-top-right">
-            <span className="tm-roul-wallet-pill">🪙 {tokens}</span>
-            <span className="tm-roul-streak-pill">
-              🏆 Best: <strong>{bestWin} 🪙</strong>
-            </span>
-            <button
-              type="button"
-              className={`tm-roul-mode-pill ${practiceMode ? 'active' : ''}`}
-              onClick={() => {
-                if (spinning) return;
-                sfx.playToggle();
-                setPracticeMode((p) => !p);
-                setBets({});
-              }}
-            >
-              {practiceMode ? '🆓 Practice ON' : '🪙 Token Mode'}
-            </button>
-          </div>
-        </header>
 
         {/* 2. RECENT WINNING NUMBERS HISTORY & LIGHTNING CALLOUT STRIP */}
         <div className="tm-roul-history-bar">
@@ -844,7 +834,7 @@ export default function VegasRouletteGame({
 
         {/* 4. BOTTOM STATUS BAR */}
         <div className="tm-roul-footer">
-          <div className="tm-roul-banner">
+          <div className="tm-roul-banner" role="status" aria-live="polite">
             {statusBanner}
           </div>
           {!practiceMode && tokens < selectedChip && onOpenUpload && (
@@ -908,6 +898,6 @@ export default function VegasRouletteGame({
           </button>
         </div>
       </div>
-    </section>
+    </GameShell>
   );
 }

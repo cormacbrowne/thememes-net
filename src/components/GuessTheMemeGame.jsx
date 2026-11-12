@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { STUDIO_TEMPLATES } from '../data/starterMemes';
 import { sfx } from '../utils/soundEngine';
-import { RadioToggleButton } from './MemesRadio';
+import GameShell from './GameShell';
 import './GuessTheMemeGame.css';
 
 // ==========================================
@@ -129,7 +129,6 @@ export default function GuessTheMemeGame({
   const [results, setResults] = useState(() =>
     !isPracticeRun && savedState.dailyResults ? savedState.dailyResults : []
   );
-  const [showHowToPlay, setShowHowToPlay] = useState(false);
   const [copiedNotice, setCopiedNotice] = useState(false);
   const [imgLoadedTick, setImgLoadedTick] = useState(0);
 
@@ -291,56 +290,28 @@ export default function GuessTheMemeGame({
   };
 
   return (
-    <section className="tm-guess-stage" aria-label="Guess The Meme Daily Game">
-      <header className="tm-guess-header">
-        <div className="tm-guess-header-left">
-          {onBackToFeed && (
-            <button type="button" className="tm-guess-btn" onClick={onBackToFeed}>
-              ← Back
-            </button>
-          )}
-          <h1 className="tm-guess-title">
-            🧠 GUESS THE MEME {!isPracticeRun ? `#${puzzleNumber}` : '· Practice'}
-          </h1>
-        </div>
-
-        <div className="tm-guess-header-right">
-          <span className="tm-guess-badge">🆓 Free · No 🪙 Needed</span>
+    <GameShell
+      title={`🧠 GUESS THE MEME ${!isPracticeRun ? `#${puzzleNumber}` : '· Practice'}`}
+      ariaLabel="Guess The Meme Daily Game"
+      onBack={onBackToFeed}
+      showWallet={false}
+      soundOn={soundOn}
+      onToggleSound={onToggleSound}
+      extraBadges={
+        <>
+          <span className="tm-guess-badge">🆓 Free Play</span>
           <span className="tm-guess-streak" title="Daily streak (3+/5 keeps streak alive)">
             🔥 {savedState.streak}
           </span>
-          <RadioToggleButton className="tm-guess-btn" />
-          {onToggleSound && (
-            <button
-              type="button"
-              className="tm-guess-btn"
-              onClick={onToggleSound}
-              aria-label={soundOn ? 'Mute SFX' : 'Unmute SFX'}
-            >
-              {soundOn ? '🔊' : '🔇'}
-            </button>
-          )}
-          <button
-            type="button"
-            className="tm-guess-btn"
-            onClick={() => setShowHowToPlay((v) => !v)}
-            aria-label="How to play Guess The Meme"
-            aria-expanded={showHowToPlay}
-          >
-            ?
-          </button>
-        </div>
-      </header>
-
-      {showHowToPlay && (
-        <div className="tm-guess-howto" role="dialog" aria-label="How to play Guess The Meme">
-          <ul>
-            <li>Each day features 5 pixelated meme templates (same set for every player worldwide).</li>
-            <li>Guess the format from 4 options — fewer clarity steps gives up to <strong>100 pts</strong> per meme!</li>
-            <li>Solve 3+ in a day to extend your <strong>🔥 streak</strong> and copy your Wordle-style share grid.</li>
-          </ul>
-        </div>
-      )}
+        </>
+      }
+      howToPlay={[
+        'Each day features 5 pixelated meme templates shared worldwide.',
+        'Pick the format from 4 options — fewer clues gives up to 100 pts.',
+        'Solve 3+ in a day to grow your streak and copy your share grid.'
+      ]}
+    >
+      <div className="tm-guess-stage">
 
       {!isFinished ? (
         <div className="tm-guess-card">
@@ -441,6 +412,7 @@ export default function GuessTheMemeGame({
           </div>
         </div>
       )}
-    </section>
+      </div>
+    </GameShell>
   );
 }

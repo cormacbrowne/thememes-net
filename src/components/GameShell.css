@@ -1,0 +1,251 @@
+/* ==========================================
+   SHARED GAME SHELL (Phase 29.15)
+   Consistent 100dvh safe-area header, animated wallet delta,
+   Practice toggle, Radio picker, SFX mute, How-to-Play, and aria-live status.
+   ========================================== */
+
+.tm-gs-shell {
+  width: 100%;
+  min-height: calc(100dvh - 54px);
+  max-height: calc(100dvh - 54px);
+  display: flex;
+  flex-direction: column;
+  padding-top: max(6px, env(safe-area-inset-top));
+  padding-right: max(10px, env(safe-area-inset-right));
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
+  padding-left: max(10px, env(safe-area-inset-left));
+  box-sizing: border-box;
+  overflow: hidden;
+  color: #f8fafc;
+}
+
+.tm-gs-shell.is-embedded {
+  min-height: 0;
+  max-height: none;
+  padding: 6px;
+}
+
+.tm-gs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  background: rgba(15, 23, 42, 0.9);
+  margin-bottom: 6px;
+}
+
+.tm-gs-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.tm-gs-title-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.tm-gs-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tm-gs-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.tm-gs-title {
+  margin: 0;
+  font-size: clamp(0.95rem, 2.2vw, 1.2rem);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tm-gs-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tm-gs-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 36px;
+  min-width: 36px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(30, 41, 59, 0.85);
+  color: #f8fafc;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  white-space: nowrap;
+}
+
+.tm-gs-btn:hover {
+  border-color: #38bdf8;
+}
+
+.tm-gs-btn.is-active {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.22);
+  color: #86efac;
+}
+
+.tm-gs-wallet {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 36px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(250, 204, 21, 0.5);
+  background: rgba(250, 204, 21, 0.14);
+  color: #fde047;
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.tm-gs-delta {
+  position: absolute;
+  top: -16px;
+  right: 4px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  pointer-events: none;
+  animation: tmGsDeltaFloat 1.25s ease forwards;
+}
+
+.tm-gs-delta.is-up {
+  background: rgba(34, 197, 94, 0.92);
+  color: #052e16;
+}
+
+.tm-gs-delta.is-down {
+  background: rgba(239, 68, 68, 0.92);
+  color: #fef2f2;
+}
+
+@keyframes tmGsDeltaFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.85);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(-6px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+
+.tm-gs-howto {
+  flex-shrink: 0;
+  margin-bottom: 6px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  background: rgba(15, 23, 42, 0.96);
+  color: #e2e8f0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.tm-gs-howto-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-weight: 800;
+  color: #38bdf8;
+}
+
+.tm-gs-howto ul {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tm-gs-live {
+  flex-shrink: 0;
+  margin-bottom: 6px;
+  padding: 5px 10px;
+  border-radius: 9px;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  background: rgba(2, 6, 23, 0.85);
+  color: #e2e8f0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tm-gs-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+@media (max-width: 860px) {
+  .tm-gs-shell {
+    padding-top: max(4px, env(safe-area-inset-top));
+    padding-right: max(6px, env(safe-area-inset-right));
+    padding-bottom: max(6px, env(safe-area-inset-bottom));
+    padding-left: max(6px, env(safe-area-inset-left));
+  }
+
+  .tm-gs-header {
+    padding: 6px 8px;
+    gap: 6px;
+  }
+
+  .tm-gs-btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 6px 10px;
+  }
+
+  .tm-gs-wallet {
+    min-height: 44px;
+  }
+}

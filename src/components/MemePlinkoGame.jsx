@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
-import { RadioToggleButton } from './MemesRadio';
+import GameShell from './GameShell';
 import './MemePlinkoGame.css';
 
 // ==========================================
@@ -89,8 +89,7 @@ export default function MemePlinkoGame({
   const [practiceMode, setPracticeMode] = useState(() => tokens < 10);
   const [selectedChip, setSelectedChip] = useState(() => chipSizes[1] || 5);
   const [risk, setRisk] = useState('medium');
-  const [showHowToPlay, setShowHowToPlay] = useState(false);
-  const [statusLine, setStatusLine] = useState('Tap Drop or canvas to launch a Meme Ball!');
+  const [statusLine, setStatusLine] = useState('Tap Drop or board to drop a meme ball.');
   const [lastDrops, setLastDrops] = useState([]); // [{ id, mult, win, face }]
   const [autoRemaining, setAutoRemaining] = useState(0);
 
@@ -383,58 +382,23 @@ export default function MemePlinkoGame({
   const activeRiskMeta = RISK_TABLES[risk];
 
   return (
-    <section className="tm-plinko-stage" aria-label="Meme Plinko 86 Game">
-      <header className="tm-plinko-header">
-        <div className="tm-plinko-header-left">
-          {onBackToFeed && (
-            <button type="button" className="tm-plinko-btn" onClick={onBackToFeed}>
-              ← Back
-            </button>
-          )}
-          <h1 className="tm-plinko-title">🎯 MEME PLINKO</h1>
-        </div>
-        <div className="tm-plinko-header-right">
-          <span className="tm-plinko-wallet">🪙 {tokens}</span>
-          <button
-            type="button"
-            className={`tm-plinko-pill ${practiceMode ? 'is-active' : ''}`}
-            onClick={() => setPracticeMode((p) => !p)}
-            aria-pressed={practiceMode}
-          >
-            {practiceMode ? '🆓 Practice ON' : '🪙 Token Mode'}
-          </button>
-          <RadioToggleButton className="tm-plinko-btn" />
-          {onToggleSound && (
-            <button
-              type="button"
-              className="tm-plinko-btn"
-              onClick={onToggleSound}
-              aria-label={soundOn ? 'Mute SFX' : 'Unmute SFX'}
-            >
-              {soundOn ? '🔊' : '🔇'}
-            </button>
-          )}
-          <button
-            type="button"
-            className="tm-plinko-btn"
-            onClick={() => setShowHowToPlay((v) => !v)}
-            aria-label="How to play Meme Plinko"
-            aria-expanded={showHowToPlay}
-          >
-            ?
-          </button>
-        </div>
-      </header>
-
-      {showHowToPlay && (
-        <div className="tm-plinko-howto" role="dialog" aria-label="How to play Meme Plinko">
-          <ul>
-            <li>Pick your chip size and Risk level (Low 5×, Med 11×, or High 26× corners).</li>
-            <li>Tap <strong>🎯 DROP BALL</strong> (or tap the board!) to send meme balls bouncing down 8 peg rows.</li>
-            <li>Use <strong>⚡ AUTO ×10</strong> for multi-ball cascades (3.55%–4.53% house edge).</li>
-          </ul>
-        </div>
-      )}
+    <GameShell
+      title="🎯 MEME PLINKO"
+      ariaLabel="Meme Plinko 86 Game"
+      onBack={onBackToFeed}
+      tokens={tokens}
+      hasPractice
+      practiceMode={practiceMode}
+      onTogglePractice={() => setPracticeMode((p) => !p)}
+      soundOn={soundOn}
+      onToggleSound={onToggleSound}
+      howToPlay={[
+        'Pick chip size and risk level (Low 5×, Med 11×, or High 26× corners).',
+        'Tap Drop Ball or the board to drop meme balls down 8 peg rows.',
+        'Use Auto ×10 for rapid multi-ball cascades (3.55%–4.53% edge).'
+      ]}
+    >
+      <div className="tm-plinko-stage">
 
       <div className="tm-plinko-main">
         <div className="tm-plinko-board-wrap">
@@ -506,6 +470,7 @@ export default function MemePlinkoGame({
           </div>
         </div>
       </div>
-    </section>
+      </div>
+    </GameShell>
   );
 }

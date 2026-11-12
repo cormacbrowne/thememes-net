@@ -10,7 +10,7 @@ import {
   sampleRaceOrder,
   simulateDerby
 } from '../utils/neonDerbyEngine';
-import { RadioToggleButton } from './MemesRadio';
+import GameShell from './GameShell';
 import './NeonDerbyGame.css';
 
 const RACE_DURATION_MS = 22000; // 22-second race (within 20–25s spec)
@@ -58,7 +58,6 @@ export default function NeonDerbyGame({
   const [phase, setPhase] = useState('betting'); // 'betting' | 'racing' | 'photo' | 'finished'
   const [commentaryText, setCommentaryText] = useState('Pick a horse & place bets, or roll Lucky Dip.');
   const [voiceCommentary, setVoiceCommentary] = useState(false);
-  const [showHowToPlay, setShowHowToPlay] = useState(false);
   const [leaderNames, setLeaderNames] = useState(['Doge', 'Stonks', 'Nyan']);
   const [raceResult, setRaceResult] = useState(null); // { order, totalPayout, totalStaked, net, derbyCup }
 
@@ -574,72 +573,36 @@ export default function NeonDerbyGame({
           : board.getExactaDec(primaryPick, exactaSecondPick);
 
   return (
-    <section className="tm-derby-stage" aria-label="Neon Derby 86 Meme Horse Racing">
-      {/* Compact Game Header */}
-      <header className="tm-derby-header">
-        <div className="tm-derby-header-left">
-          {onBackToFeed && (
-            <button type="button" className="tm-derby-btn" onClick={onBackToFeed}>
-              ← Back
-            </button>
-          )}
-          <h1 className="tm-derby-title">🏇 NEON DERBY &apos;86</h1>
-          {isDerbyCup && <span className="tm-derby-cup-badge">🏆 DERBY CUP 3×</span>}
-        </div>
-
-        <div className="tm-derby-header-right">
-          <span className="tm-derby-wallet">🪙 {tokens}</span>
-          <button
-            type="button"
-            className={`tm-derby-pill ${practiceMode ? 'is-active' : ''}`}
-            onClick={() => setPracticeMode((p) => !p)}
-            aria-pressed={practiceMode}
-            title="Toggle Free Practice (no tokens risked or minted)"
-          >
-            {practiceMode ? '🆓 Practice ON' : '🪙 Token Mode'}
-          </button>
-          <button
-            type="button"
-            className={`tm-derby-pill ${voiceCommentary ? 'is-active' : ''}`}
-            onClick={() => setVoiceCommentary((v) => !v)}
-            aria-pressed={voiceCommentary}
-            aria-label="Toggle spoken race commentary"
-            title="Spoken commentary"
-          >
-            {voiceCommentary ? '🗣️ Voice ON' : '🗣️ Voice'}
-          </button>
-          <RadioToggleButton className="tm-derby-btn" />
-          {onToggleSound && (
-            <button
-              type="button"
-              className="tm-derby-btn"
-              onClick={onToggleSound}
-              aria-label={soundOn ? 'Mute SFX' : 'Unmute SFX'}
-            >
-              {soundOn ? '🔊' : '🔇'}
-            </button>
-          )}
-          <button
-            type="button"
-            className="tm-derby-btn"
-            onClick={() => setShowHowToPlay((v) => !v)}
-            aria-label="How to play Neon Derby"
-            aria-expanded={showHowToPlay}
-          >
-            ?
-          </button>
-        </div>
-      </header>
-
-      {showHowToPlay && (
-        <div className="tm-derby-howto" role="dialog" aria-label="How to play Neon Derby">
-          <ul>
-            <li>Pick a track bet (<strong>Win</strong> 1st, <strong>Place</strong> top 2, <strong>Show</strong> top 3, or <strong>Exacta</strong> 1st→2nd) &amp; chip size.</li>
-            <li>Watch the track condition ({activeCondition.icon} {activeCondition.name}) &amp; form guide — race order is seeded fairly before the gate opens (~7.4% house edge).</li>
-            <li>Race right away or wait for post time! Daily <strong>🏆 8 PM Derby Cup</strong> pays 3× rewards.</li>
-          </ul>
-        </div>
-      )}
+    <GameShell
+      title="🏇 NEON DERBY '86"
+      titleBadge={isDerbyCup ? <span className="tm-derby-cup-badge">🏆 DERBY CUP 3×</span> : null}
+      ariaLabel="Neon Derby 86 Meme Horse Racing"
+      onBack={onBackToFeed}
+      tokens={tokens}
+      hasPractice
+      practiceMode={practiceMode}
+      onTogglePractice={() => setPracticeMode((p) => !p)}
+      soundOn={soundOn}
+      onToggleSound={onToggleSound}
+      extraBadges={
+        <button
+          type="button"
+          className={`tm-derby-pill ${voiceCommentary ? 'is-active' : ''}`}
+          onClick={() => setVoiceCommentary((v) => !v)}
+          aria-pressed={voiceCommentary}
+          aria-label="Toggle spoken race commentary"
+          title="Spoken commentary"
+        >
+          {voiceCommentary ? '🗣️ Voice ON' : '🗣️ Voice'}
+        </button>
+      }
+      howToPlay={[
+        'Pick Win (1st), Place (top 2), Show (top 3), or Exacta (1st->2nd) + chip size.',
+        `Check the track (${activeCondition.icon} ${activeCondition.name}) & form guide before betting.`,
+        'Tap Start Race anytime; daily 8 PM Derby Cup pays 3× rewards.'
+      ]}
+    >
+      <div className="tm-derby-stage">
 
       {/* Meta Strip */}
       <div className="tm-derby-meta-strip">
@@ -810,6 +773,7 @@ export default function NeonDerbyGame({
           </div>
         </div>
       </div>
-    </section>
+      </div>
+    </GameShell>
   );
 }

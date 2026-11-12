@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef } from 'react';
 import { STARTER_MEMES } from '../data/starterMemes';
 import { sfx } from '../utils/soundEngine';
-import { RadioToggleButton } from './MemesRadio';
+import GameShell from './GameShell';
 import './HigherOrLowerGame.css';
 
 // ==========================================
@@ -74,7 +74,6 @@ export default function HigherOrLowerGame({
   });
   const [revealed, setRevealed] = useState(null); // { correct: boolean, guess: 'higher'|'lower' } | null
   const [gameOver, setGameOver] = useState(false);
-  const [showHowToPlay, setShowHowToPlay] = useState(false);
   const [copiedNotice, setCopiedNotice] = useState(false);
   const advanceTimerRef = useRef(null);
 
@@ -152,52 +151,27 @@ export default function HigherOrLowerGame({
   };
 
   return (
-    <section className="tm-hilow-stage" aria-label="Higher or Lower Meme Edition">
-      <header className="tm-hilow-header">
-        <div className="tm-hilow-header-left">
-          {onBackToFeed && (
-            <button type="button" className="tm-hilow-btn" onClick={onBackToFeed}>
-              ← Back
-            </button>
-          )}
-          <h1 className="tm-hilow-title">⬆️⬇️ HIGHER OR LOWER</h1>
-        </div>
-        <div className="tm-hilow-header-right">
+    <GameShell
+      title="⬆️⬇️ HIGHER OR LOWER"
+      ariaLabel="Higher or Lower Meme Edition"
+      onBack={onBackToFeed}
+      showWallet={false}
+      soundOn={soundOn}
+      onToggleSound={onToggleSound}
+      extraBadges={
+        <>
           <span className="tm-hilow-badge">🆓 Free Play</span>
           <span className="tm-hilow-streak">🔥 {streak}</span>
           <span className="tm-hilow-best">🏆 Best {bestStreak}</span>
-          <RadioToggleButton className="tm-hilow-btn" />
-          {onToggleSound && (
-            <button
-              type="button"
-              className="tm-hilow-btn"
-              onClick={onToggleSound}
-              aria-label={soundOn ? 'Mute SFX' : 'Unmute SFX'}
-            >
-              {soundOn ? '🔊' : '🔇'}
-            </button>
-          )}
-          <button
-            type="button"
-            className="tm-hilow-btn"
-            onClick={() => setShowHowToPlay((v) => !v)}
-            aria-label="How to play Higher or Lower"
-            aria-expanded={showHowToPlay}
-          >
-            ?
-          </button>
-        </div>
-      </header>
-
-      {showHowToPlay && (
-        <div className="tm-hilow-howto" role="dialog" aria-label="How to play Higher or Lower">
-          <ul>
-            <li>Compare the known meme upvotes on Card A against Card B.</li>
-            <li>Tap <strong>⬆️ HIGHER</strong> or <strong>⬇️ LOWER</strong> — correct calls extend your endless streak!</li>
-            <li>One miss ends the run and builds a shareable streak card; tap any meme title to inspect it in the feed.</li>
-          </ul>
-        </div>
-      )}
+        </>
+      }
+      howToPlay={[
+        'Compare the revealed meme upvotes on Card A against Card B.',
+        'Tap Higher or Lower — correct calls extend your endless streak.',
+        'One miss ends the run and builds a shareable streak card.'
+      ]}
+    >
+      <div className="tm-hilow-stage">
 
       {!gameOver && leftMeme && rightMeme ? (
         <div className="tm-hilow-arena">
@@ -289,6 +263,7 @@ export default function HigherOrLowerGame({
           </div>
         </div>
       )}
-    </section>
+      </div>
+    </GameShell>
   );
 }

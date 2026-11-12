@@ -35,7 +35,8 @@ export const GAME_VIEW_MODE_TO_PATH = {
   blackjack: '/games/blackjack',
   roulette: '/games/roulette',
   crush: '/games/meme-crush',
-  stocks: '/games/meme-stock-market'
+  stocks: '/games/meme-stock-market',
+  derby: '/games/horse-racing'
 };
 
 export const PRANK_DISGUISE_TO_PATH = {
@@ -165,6 +166,23 @@ export const SEO_ROUTES = [
       "Take a seat at Neon 21's Cyber-Blackjack against Dealer Bot '86—a crisp, fast-paced 21 card game you can play completely free in your browser with no account and zero real-money betting. Place your chip stack using quick arcade denominations or tap Free Practice to deal unlimited hands while learning or warming up.",
       'Every core blackjack decision is built in cleanly: Hit, Stand, Double Down on strong starting totals, and Split matching pairs into two independent active hands with clear active-hand indicators. Landing five cards without busting triggers an automatic 5-Card Charlie 3x bonus payout, and optional Perfect Pair side bets reward matching pocket cards.',
       'Not sure whether to hit or stand against a dealer 10 or Ace? Keep an eye on the built-in Cyber-Visor basic strategy pill at the bottom of the felt for real-time math guidance on both desktop and mobile screens—keeping the dealer cards completely visible and unobstructed on iPhone and Android.'
+    ]
+  },
+  {
+    path: '/games/horse-racing',
+    title: "NEON DERBY '86 — Free Online Meme Horse Racing Game | THE MEMES.net",
+    description:
+      'Bet Win, Place, Show, or Exacta on 8 meme horses in Neon Derby 86 free online. Live odds board, Acid Rain & Glitch Track conditions, photo finishes, and 8pm 3x Derby Cup.',
+    h1: "NEON DERBY '86 — Free Retro Meme Horse Racing",
+    kicker: '8 Meme Runners // Win, Place, Show & Exacta Odds',
+    changefreq: 'daily',
+    priority: '0.9',
+    viewMode: 'derby',
+    category: 'all',
+    introParagraphs: [
+      "Place your free arcade bets at the glowing starting gate in Neon Derby '86, a retro synthwave meme horse racing cabinet built for desktop and mobile browsers with zero real-money wagering. Watch eight iconic internet champions—Doge Dasher, Stonks Stallion, Nyan Neigh, Pepe Pony, Gigachad Galloper, Rickroll Runner, Sad Keanu Sprinter, and Harambe Hooves—line up in bright neon jockey silks.",
+      'Check the live form guide and shifting track conditions across Neon Dry, Acid Rain, and Glitch Track before locking in Win, Place, Show, or Exacta tickets, or roll the Lucky Dip button for an instant random pick. Fractional and decimal odds update cleanly with a transparent 108% overround, while a pre-race seeded draw guarantees fair results untouched by crowd cheers.',
+      'Enjoy 22-second parallax races with galloping trails, live ticker commentary, optional spoken play-by-play voiceover, dramatic slow-motion photo finishes, and confetti podium celebrations. Race right away or catch scheduled posts every two minutes, plus daily 8 PM local Derby Cup events for 3x arcade token rewards or unlimited Free Practice runs.'
     ]
   },
   {
@@ -453,6 +471,7 @@ export function resolveRouteFromLocation(pathname = '/', search = '', isTouchDev
     'crush',
     'pinball',
     'stocks',
+    'derby',
     'swipe',
     'battle'
   ];

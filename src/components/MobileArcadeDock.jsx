@@ -25,6 +25,7 @@ export default function MobileArcadeDock({
     'crush',
     'pinball',
     'stocks',
+    'derby',
     'battle',
     'arena',
     'swipe'
@@ -99,6 +100,14 @@ export default function MobileArcadeDock({
               <strong style={{ color: '#fde047' }}>
                 🔥 Neon Coin Dozer &apos;86 (3D Prize Pusher)
               </strong>
+            </button>
+            <button
+              type="button"
+              className={`tm-dock-game-chip ${viewMode === 'derby' ? 'active' : ''}`}
+              onClick={() => handlePickMode('derby')}
+            >
+              <span>🏇</span>
+              <strong>Neon Derby &apos;86</strong>
             </button>
             <button
               type="button"

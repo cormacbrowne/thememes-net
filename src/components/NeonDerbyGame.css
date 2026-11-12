@@ -1,0 +1,382 @@
+/* NEON DERBY '86 — Mobile-first (390x844) + Desktop Responsive Styles */
+.tm-derby-stage {
+  width: 100%;
+  min-height: calc(100dvh - 54px);
+  padding: 8px 10px calc(18px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #f8fafc;
+  background: radial-gradient(circle at top, rgba(236, 72, 153, 0.14), rgba(2, 6, 23, 0.96) 65%);
+}
+
+.tm-derby-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(0, 243, 255, 0.25);
+}
+
+.tm-derby-header-left,
+.tm-derby-header-right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.tm-derby-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: #fde047;
+}
+
+.tm-derby-cup-badge {
+  font-size: 11px;
+  font-weight: 900;
+  color: #090d16;
+  background: linear-gradient(135deg, #facc15, #f97316);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.tm-derby-wallet {
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  background: rgba(250, 204, 21, 0.14);
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  color: #fef08a;
+}
+
+.tm-derby-btn,
+.tm-derby-pill {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #f8fafc;
+  border-radius: 999px;
+  padding: 6px 11px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+  min-height: 36px;
+}
+
+.tm-derby-pill.is-active {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.2);
+  color: #dcfce7;
+}
+
+.tm-derby-howto {
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  font-size: 13px;
+  line-height: 1.45;
+  color: #e2e8f0;
+}
+
+.tm-derby-howto ul {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tm-derby-meta-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #a5f3fc;
+}
+
+.tm-derby-countdown {
+  color: #fde047;
+}
+
+.tm-derby-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 900px) {
+  .tm-derby-grid {
+    grid-template-columns: 1.15fr 1fr;
+    align-items: start;
+  }
+}
+
+.tm-derby-track-card,
+.tm-derby-board-card {
+  background: rgba(10, 14, 30, 0.9);
+  border: 1px solid rgba(236, 72, 153, 0.3);
+  border-radius: 14px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tm-derby-ticker {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.tm-derby-comment {
+  color: #00f3ff;
+}
+
+.tm-derby-canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 243, 255, 0.35);
+  background: #060913;
+}
+
+.tm-derby-track-actions,
+.tm-derby-ready-row,
+.tm-derby-podium {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tm-derby-primary-btn,
+.tm-derby-lucky-btn,
+.tm-derby-cheer-btn,
+.tm-derby-add-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  touch-action: manipulation;
+  min-height: 44px;
+}
+
+.tm-derby-primary-btn {
+  flex: 1 1 180px;
+  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  color: #ffffff;
+}
+
+.tm-derby-lucky-btn {
+  background: rgba(250, 204, 21, 0.16);
+  border: 1px solid rgba(250, 204, 21, 0.5);
+  color: #fef08a;
+}
+
+.tm-derby-cheer-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  color: #ffffff;
+}
+
+.tm-derby-bet-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.tm-derby-tab {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 4px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+  min-height: 40px;
+}
+
+.tm-derby-tab.active {
+  border-color: #00f3ff;
+  background: rgba(0, 243, 255, 0.18);
+  color: #ffffff;
+}
+
+.tm-derby-horses {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+@media (min-width: 520px) {
+  .tm-derby-horses {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.tm-derby-horse-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  color: #f8fafc;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  min-height: 48px;
+}
+
+.tm-derby-horse-row.is-primary {
+  border-color: #facc15;
+  background: rgba(250, 204, 21, 0.15);
+}
+
+.tm-derby-horse-row.is-second {
+  border-color: #00f3ff;
+  background: rgba(0, 243, 255, 0.15);
+}
+
+.tm-derby-silk {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+  flex: none;
+}
+
+.tm-derby-horse-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.tm-derby-horse-info strong {
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tm-derby-horse-info small {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.tm-derby-odds {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 12px;
+  color: #fde047;
+}
+
+.tm-derby-odds small {
+  font-size: 10px;
+  color: #a5f3fc;
+}
+
+.tm-derby-slip {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 8px;
+}
+
+.tm-derby-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.tm-derby-chip {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #f8fafc;
+  border-radius: 999px;
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+  min-height: 44px;
+}
+
+.tm-derby-chip.active {
+  border-color: #ec4899;
+  background: rgba(236, 72, 153, 0.28);
+}
+
+.tm-derby-add-btn {
+  margin-left: auto;
+  background: linear-gradient(135deg, #06b6d4, #2563eb);
+  color: #ffffff;
+}
+
+.tm-derby-ticket-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tm-derby-ticket-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(0, 243, 255, 0.14);
+  border: 1px solid rgba(0, 243, 255, 0.4);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.tm-derby-ticket-pill button {
+  background: transparent;
+  border: none;
+  color: #fca5a5;
+  font-weight: 900;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0 2px;
+}
+
+@media (max-width: 860px) {
+  .tm-derby-btn,
+  .tm-derby-pill,
+  .tm-derby-tab {
+    min-height: 44px;
+  }
+}

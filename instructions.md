@@ -4,12 +4,143 @@
 
 ---
 
-## 0. 🎯 CURRENT ROUND — Phase 28: "Fun First, Findable" (READ THIS FIRST)
+## 🤖 HOW AGENTS MUST WORK ON THIS REPO (read before touching code)
+
+1. **One task at a time, in the order listed in Section 0.** Pick the first unticked `[ ]` task, finish it fully, verify it, tick it, commit, then move on. Never do several half-tasks.
+2. **Read before editing.** `src/App.jsx` is ~186 KB. Never rewrite or reformat it wholesale. Use targeted edits only. Search for the exact identifier (e.g. `viewMode === 'roulette'`) and edit around it.
+3. **Verify every task:** `npm run build` and `npm run lint` must both exit 0. Then check the UI at **390×844 (iPhone)**, **768×1024 (iPad)**, and **1280×800 (laptop)** with browser dev-tools device mode (`npm run dev`).
+4. **CSS cascade rule (cause of the Phase 29 roulette bug):** since Phase 28.7, each lazy component imports its own CSS file, which loads **after** `src/index.css`. A rule in a component CSS file beats an `index.css` rule with the same specificity, `!important` included. **Put all styles for a component (mobile media queries too) in that component's own CSS file**, and wrap desktop-only `!important` overrides in `@media (min-width: 861px)`.
+5. **Do not break:** the token economy (`src/utils/tokenEconomy.js`, always pass winnings through `validateStakedGamePayout`), security (`src/utils/securityGuard.js`, CSP in **both** `index.html` and `vercel.json`), lazy loading (`React.lazy` + `<Suspense>` for every game/modal), `prefers-reduced-motion`, and `litePerfMode`.
+6. **No audio before a user gesture.** iOS Safari only counts `touchend` / `click` / `pointerup` / `keydown` as a gesture, **not** `touchstart`.
+7. **When a task is done:** tick its box, add a one-line "Completion Note" (what changed + files), and commit with message `Phase 29.X: <short title>`. Do not push or deploy unless the owner asks.
+8. **If stuck or a task is ambiguous:** stop and ask the owner. Never delete features, files, or data without asking.
+
+---
+
+## 0. 🎯 CURRENT ROUND — Phase 29: "Fix, Play, Groove" (READ THIS FIRST)
+
+> **Context (Nov 2026 owner review):** Phase 28 P1–P5 shipped. Owner-reported problems: **(a)** Roulette shows no way to bet on red/black/numbers on iPhone (and on PC); **(b)** K.I.T.T. / HAL 9000 voice is silent on iPhone; **(c)** the music is loved, and the owner wants more stations and a station picker on the main screens; **(d)** the owner wants new fun games, especially **horse racing**; **(e)** a general interface polish pass.
+>
+> **This round overrides Phase 28's "no new games" rule** for the games listed in P2 only. Do the work **in order: P0 → P1 → P2 → P3 → P4.** The Phase 28 P6 growth items (Party Mode etc., further down) stay as backlog for after Phase 29.
+
+### P0 — Critical bug fixes (do first)
+
+- [x] **29.1 🎡 Roulette betting board is invisible / unreachable (iPhone AND PC).**
+  - **Root cause (verified):** `src/components/VegasRouletteGame.css` has three conflicts:
+    1. **L156–164** and **L455–459**: a legacy `.tm-roul-stage { display: grid; grid-template-columns: 300px 1fr; overflow: hidden; }` from an older layout. The JSX uses `.tm-roul-stage` as the **outer `<section>`**, so the whole cabinet is squeezed into a **300 px column** on desktop. The board column is then clipped by `overflow: hidden`.
+    2. **L709–734**: an unconditional `!important` block (`.tm-roul-main-grid { grid-template-columns: minmax(340px, 45%) 1fr !important }`, canvas `min(430px, 56dvh, 41vw) !important`). Because this file loads **after** `index.css`, it beats the mobile fix in `src/index.css` (~L4159–4175, `@media (max-width: 860px) .tm-roul-main-grid { grid-template-columns: 1fr !important }`). Phones therefore get the 2-column desktop layout. The wheel takes ≥ 340 px and the betting board falls off-screen.
+    3. Dead legacy selectors (`.tm-roul-board-box`, `.tm-roul-number-grid`, `.tm-roul-wheel-canvas`, `.tm-roul-history-strip`, etc.) that no longer exist in the JSX.
+  - **Fix:**
+    - Delete the legacy `.tm-roul-stage` grid rules and replace them with `.tm-roul-stage { width: 100%; height: calc(100dvh - 50px); padding: 6px 10px; box-sizing: border-box; }`.
+    - Wrap the L709–734 block in `@media (min-width: 861px)`.
+    - Move the roulette rules out of `index.css` (~L4159–4170) into the end of `VegasRouletteGame.css`.
+    - Remove the dead selectors.
+  - **Phone layout (≤ 860 px), the way real mobile roulette apps do it:**
+    - Compact wheel at the top, `min(220px, 28dvh)`.
+    - The betting area scrolls (`overflow-y: auto; -webkit-overflow-scrolling: touch`).
+    - On phones, show the **number grid rotated to 3 columns × 12 rows** (vertical felt) so each cell is ≥ 40 px tall and ≥ 44 px wide.
+    - Put **RED / BLACK / EVEN / ODD / 1–18 / 19–36** as a big 2×3 grid of buttons **above** the numbers (they are the most-used bets).
+    - Add a **sticky bottom action bar** with `🧹 Clear`, `↺ Rebet`, the chip selector, and `⚡ SPIN`, using `padding-bottom: env(safe-area-inset-bottom)`.
+    - Add `touch-action: manipulation` on all bet buttons (stops iOS double-tap zoom).
+  - **Fairness fix (in the same task):** in `resolveSpinOutcome` (`VegasRouletteGame.jsx` ~L168), a straight-up win on a **non-lightning** number pays `36×`, **plus** 3 random lightning numbers pay 50–150×. That gives the player about a **+10% edge** on straight-up bets (the house loses). Copy real Lightning Roulette: non-lightning straight-ups pay **30×** (29:1 + stake). Update the label text (`STRAIGHT #n (30×)`) and the status-banner copy.
+  - **Acceptance:** At 390×844, 768×1024, 1280×800 and 1920×1080 you can see **and tap** 0–36, the three 2:1 columns, all 9 outside bets, the chip selector and SPIN without horizontal scrolling. Tapping RED then SPIN works in Free Practice and in Token Mode. Tapping the wheel still spins.
+  - **Completion Note:** Removed legacy `.tm-roul-stage` grid & dead selectors, scoped desktop `!important` overrides to `@media (min-width: 861px)`, moved roulette rules from `src/index.css` into `src/components/VegasRouletteGame.css` with self-contained header/pill classes, added mobile 2×3 even-money grid above a 3×12 vertical felt + sticky safe-area action bar (`touch-action: manipulation`), aligned 12×3 `grid-auto-flow: column` to `2:1` rows, and fixed straight-up non-lightning payout to `30×` (29:1 + stake) in `src/components/VegasRouletteGame.jsx`.
+
+- [ ] **29.2 🧹 Audit every other game for the same CSS-split cascade bug.** `src/index.css` still contains game rules that are now beaten by the component CSS: `.tm-bj-*` (Blackjack), `.tm-pin2-*` (Pinball, inside the same ~L4159 media block), `.tm-crush*`, and `.tm-ai-*`. For each one: move the rule into its component CSS file, scope unconditional desktop `!important` blocks to `@media (min-width: 861px)`, and check the game at 390×844 / 768×1024 / 1280×800. Games: Coin Dozer, Pinball, 21's, Roulette, Slots, Meme Crush, MEMEDAQ, Swipe, 1v1 Arena, Forge.
+  - **Acceptance:** On every game at all 3 sizes, every control is visible and tappable, nothing is clipped, and there is no horizontal scroll. List any game that needed fixing in the completion note.
+
+- [ ] **29.3 🗣️ K.I.T.T. / HAL 9000 voice is silent on iPhone.**
+  - **Root causes (verified in code):**
+    1. `src/components/ArcadeAiAssistant.jsx` `speakLine()` (L173–313) calls `synth.speak()` inside `setTimeout(dispatchUtterance, 95)`. That delay breaks iOS Safari's user-activation chain, so WebKit silently ignores the utterance.
+    2. `src/utils/soundEngine.js` `_bindGlobalUnlockListeners()` (L72–93) unlocks on **`touchstart`**, which iOS does **not** treat as user activation. The one-time speech prime (L140–156, `this.speechUnlocked = true`) is used up on that invalid event and never retried.
+    3. Several utterances are queued at once right after `cancel()`. iOS often drops everything queued after a `cancel()`.
+    4. The Web Audio "intro ping" (`playHalBeep` / `playKittScanner`) plays right before speech and can grab the iOS audio session.
+  - **Fix:**
+    - In `speakLine`, call `speechSynthesis.speak()` **synchronously inside the click handler** (no `setTimeout` before the first `speak`). Speak the **first sentence immediately**, then queue later sentences from the previous utterance's `onend`.
+    - On iOS, skip the intro ping (or play it **after** `onstart`).
+    - Only `cancel()` if `synth.speaking`, and never call `speak()` in the same tick as a `cancel()` **except** as the first call in a gesture.
+    - In `soundEngine.js`, remove `touchstart` from the unlock events (use `touchend`, `pointerup`, `click`, `keydown`). Only set `speechUnlocked = true` from the prime utterance's `onstart`/`onend`, so failed primes retry on the next gesture.
+    - Add a **watchdog**: if `onstart` has not fired within 1500 ms, show an inline hint: "🔇 iPhone blocked the voice. Tap 🔊 again, turn off Silent Mode, and check Settings › Accessibility › Spoken Content." Also play the existing `sfx.playAiVocalFormants` fallback so the user hears *something*.
+    - Add a **voice picker dropdown** in the assistant header that lists `speechSynthesis.getVoices()` filtered to English (iPhones have different voice names). Save the choice per persona in `localStorage` (`tm_ai_voice_kitt`, `tm_ai_voice_hal`).
+    - The welcome message (L793) must **not** auto-speak on mount. Speak it only from a tap.
+  - **Acceptance:** On a real iPhone (Safari **and** Chrome, iOS 17+), tapping `🔊 Speak` on a message makes K.I.T.T. and HAL audibly speak on the **first** tap. Switching persona and tapping again also works. Desktop Chrome/Edge/Safari still work.
+
+### P1 — 🎵 THE MEMES FM 2.0 (more music, picker on main screens)
+
+- [ ] **29.4 Station picker everywhere.**
+  - **Short tap** on the `📼` top-bar button (`RadioToggleButton` in `MemesRadio.jsx`) still toggles play. A **chevron `▾`** next to it (or a long-press on touch) opens a small **station popover**: station list, ⏭ skip, volume slider, and now-playing track name.
+  - Add the same picker to: the **mobile Reels overlay** (top-right, small), the **mobile Games drawer** in `MobileArcadeDock.jsx`, every **game header** (see 29.15 GameShell), and the **Insert Coin intro** (pick a station before entering).
+  - While music plays on mobile, show a tiny dismissible **"now playing" pill** (`📼 Doge Highway '86 ⏭`).
+- [ ] **29.5 Six new procedural stations** in `src/utils/musicEngine.js` + `RADIO_STATIONS` in `src/utils/radioBus.js` (no audio files, no CSP change, 5–6 tracks each). Make 4 of them free and 2 Arcade Shop cosmetics:
+  - `🐸 Meme Phonk` (cowbell, 808 slides)
+  - `🥁 Jungle / Drum & Bass` (fast breakbeats)
+  - `🎷 Casino Lounge Jazz` (auto-station for Roulette / 21's / Slots)
+  - `🤠 Spaghetti Western` (auto-station for the new Horse Racing game)
+  - `🏝️ Yacht Rock Sunset`
+  - `🪩 Italo Disco '84`
+  - Seasonal: `🎃 Spooky Synth` (Oct) and `🎄 Jingle Synth` (Dec), auto-added by date, which pairs with 28.23.
+  - Also raise every existing station from 4 to 6 tracks.
+- [ ] **29.6 Radio features:**
+  - **Shuffle All Stations** mode
+  - ♥ favourite tracks, plus a "♥ My Mixtape" station that plays favourites
+  - **sleep timer** (15/30/60 min)
+  - keyboard shortcuts on desktop (`M` play/pause, `N` next track, `Shift+N` next station), ignored while typing in inputs
+  - a settings toggle "🎮 Games pick their own station" (on by default), which respects the existing context-station override
+- [ ] **29.7 iPhone lock-screen & silent-switch robustness (experimental, do last in P1).** Route the music master gain through `ctx.createMediaStreamDestination()` into a hidden `<audio playsinline>` element (`audio.srcObject = dest.stream`). Set `navigator.mediaSession.metadata` (title = track, artist = "THE MEMES FM", artwork = `/logo-512.png`) and the `play` / `pause` / `nexttrack` / `previoustrack` action handlers. This gives lock-screen and Control Center controls and makes iOS treat the music as media playback. Put it behind a feature check, and fall back to the current direct `ctx.destination` path if it fails.
+  - **Acceptance (P1):** Stations can be switched from the main feed, Reels, and inside a game in **≤ 2 taps**. With the radio OFF, no AudioContext is created (the Phase 28 rule still applies).
+
+### P2 — 🕹️ New games (each = new lazy component + own CSS + SEO route + entry in `NavbarHud.jsx` `GAMES` list + `MobileArcadeDock.jsx` + `seoRoutes.js` + `scripts/prerender-seo.mjs` + `public/sitemap.xml`)
+
+> **Rules for every new game:** mobile-first (390×844 first), built on the GameShell from 29.15 if that exists yet, `🆓 Free Practice` mode that is **on by default for players with < 10 tokens**, winnings through `validateStakedGamePayout`, a `game_started` analytics event, its own radio station request, a "How to play" sheet (3 bullet points), and a fixed house edge of 3–8% (document the maths in a comment).
+
+- [ ] **29.8 🏇 NEON DERBY '86: meme horse racing (flagship new game).** `src/components/NeonDerbyGame.jsx` + `.css`, route `/games/horse-racing`, `viewMode === 'derby'`.
+  - **Field:** 8 meme horses, each with hidden stats (speed, stamina, consistency) and a visible **form guide** (last 5 finishes): `Doge Dasher`, `Stonks Stallion`, `Nyan Neigh`, `Pepe Pony`, `Gigachad Galloper`, `Rickroll Runner`, `Sad Keanu Sprinter`, `Harambe Hooves`. Each has neon jockey silks in its own colour.
+  - **Odds board:** fractional and decimal odds generated from the stats with a ~108% overround (≈ 7% house edge). Add a random **track condition** (`🌙 Neon Dry`, `🌧️ Acid Rain`, `👾 Glitch Track`) that shifts the stats.
+  - **Bets:** `Win`, `Place` (top 2), `Show` (top 3), `Exacta` (1st + 2nd in order), and a fun `🎲 Lucky Dip` (random horse). Use the chip sizes from `ARCADE_STAKES`.
+  - **Race:** a 20–25 second canvas race with parallax synthwave grandstand, galloping sprite bob, dust/neon trails, a live position ticker, a **text commentator** ("Stonks Stallion makes his move on the outside!"), an **optional spoken commentary** toggle (reuses the fixed 29.3 speech helper; tap-gated), a final-furlong **slow-mo photo finish**, and a confetti winner's circle.
+  - **Fair outcome:** decide the result with a seeded RNG weighted by the stats **before** the race animates, then animate towards that result. A `📣 Cheer!` button only changes crowd noise and visuals, never the result.
+  - **Extras:** a race every ~2 minutes with an "Next race in 1:42" countdown, a **"Derby Cup" daily final** at 8 pm local time with 3× payouts, and a `Spaghetti Western` / `Synthwave` station. Later (backlog): "Race your own meme": a horse whose jockey silk is your uploaded meme.
+  - **Acceptance:** Full loop (pick horse → bet → watch race → payout) works at 390×844 and 1280×800 in under 40 seconds. Over 10,000 simulated races, the house edge is 5–9% (add a dev-only `simulateDerby(n)` helper and record the result in the completion note).
+- [ ] **29.9 🧠 GUESS THE MEME: daily (the growth-loop game).** Route `/games/guess-the-meme`. Each day shows 5 seed/template memes that start heavily **pixelated** and get clearer over 5 steps. The player picks the format name from 4 options, so fewer steps used = more points. The end screen shows a **Wordle-style share grid** (`🟩🟩🟨⬛🟩 THE MEMES.net #142`) with a link back. Everyone gets the same daily seed (date-based). Track a streak in `localStorage`. **No tokens are needed to play**, so this is the friendliest entry point for new visitors.
+- [ ] **29.10 🎯 MEME PLINKO.** Route `/games/plinko`. One-tap drop with real peg physics on canvas, 3 risk levels (Low / Medium / High multiplier rows), meme faces on the balls, an auto-drop ×10 option, and a 3–5% house edge. It is the easiest casino game to play one-handed on a phone.
+- [ ] **29.11 ⬆️⬇️ HIGHER OR LOWER: Meme Edition.** Route `/games/higher-or-lower`. Two memes are shown and the player guesses which one has more upvotes, using real feed data plus seed scores. It is endless, a streak ends it, and there is a shareable streak card. Free to play, and it feeds the meme catalogue.
+- **Backlog games (only after 29.8–29.11 ship and analytics show demand):** `🔨 Whack-a-Meme` (tap memes, avoid the Rickroll), `🎟️ Daily Scratch Card` (1 free per day, touch-scratch canvas), `🧱 Brick Breaker '86` (meme bricks, paddle), `🦆 Meme Hunt` shooting gallery, `🃏 Video Poker: Jacks or Better`, `🦖 Doge Runner` endless one-thumb runner.
+
+### P3 — 🧭 Interface improvements
+
+- [ ] **29.12 🕹️ Arcade Lobby page.** Replace the long `Games ▾` dropdown (9 games, 13 after P2) with a full **lobby screen** (`viewMode === 'lobby'`, route `/games`). Show cabinet cards (thumbnail, 1-line pitch, badge) grouped as **🎰 Casino** (Dozer, Roulette, 21's, Slots, Plinko, Derby), **🕹️ Skill** (Pinball, Meme Crush), **🧠 Meme Games** (Guess the Meme, Higher or Lower, Swipe, 1v1 Arena), and **📈 Sim** (MEMEDAQ), plus a **"Continue playing"** row (last 3 games, `localStorage`), ★ favourites, and `NEW` badges. The mobile dock `🕹️ Games` button opens this lobby. Prerender `/games` for SEO.
+- [ ] **29.13 ⚙️ One Settings sheet.** Consolidate scattered toggles into one `⚙️ Settings` sheet (in Extras and Profile): SFX volume, Music (station + volume), AI voice (on/off + voice picker from 29.3), Haptics, Reduced motion (overrides the OS setting), CRT, Turbo FPS, Lite mode, and "Reset first-visit hints". Save everything in one `tm_settings` `localStorage` object.
+- [ ] **29.14 ✂️ Copy diet.** Many banners are long ALL-CAPS strings full of emoji (e.g. the roulette status banner, AI assistant intros, game eyebrows). Rules: status banners ≤ 60 characters, single line, sentence case. AI assistant replies ≤ 3 short sentences by default, with a "More" expander. Keep the 80s flavour in titles, not body text.
+- [ ] **29.15 🧱 Shared `<GameShell>` component.** `src/components/GameShell.jsx` + `.css`: one consistent header for every game (`← Back`, title, 🪙 wallet with an animated +/− delta, `🆓 Practice` toggle, `📼` radio picker, `🔊` SFX mute, `?` how-to-play sheet), safe-area padding (`env(safe-area-inset-*)`), a `100dvh` fixed layout, and an `aria-live="polite"` result region. Migrate the games one by one, starting with Roulette and the new P2 games. This prevents per-game header overflow bugs like 29.1.
+- [ ] **29.16 👆 Touch & accessibility pass.**
+  - All tap targets ≥ 44×44 px on phones (Apple HIG).
+  - `touch-action: manipulation` on game buttons.
+  - Visible `:focus-visible` rings.
+  - Red/black also shown by text/icon for colour-blind players.
+  - Contrast ≥ 4.5:1 for body text.
+  - `aria-label` on icon-only buttons.
+  - Pinball shows a "rotate to portrait" hint in phone landscape.
+- [ ] **29.17 🪙 Friendlier economy onboarding.** New players start with 0–few tokens and hit "Need X 🪙" walls in every casino game. Instead: casino games auto-start in Free Practice when tokens < the smallest chip, a one-time **"🎁 Starter Pack: 50 🪙"** is granted after the first meme vote or upload, and a clear footer line reads "Tokens are free, just for fun, can't be bought or cashed out" (good for trust and app-store/ad compliance).
+
+### P4 — 🛠️ Code health (makes future agent work cheaper and safer)
+
+- [ ] **29.18 Split `src/App.jsx` (~186 KB) mechanically.** Move logic only, **no behaviour changes**, one extraction per commit, with build + lint after each:
+  - `src/hooks/useTokenEconomy.js` (tokens, spend/payout handlers)
+  - `src/hooks/useFeed.js` (memes, filters, Supabase sync)
+  - `src/hooks/useViewMode.js` (viewMode + path routing + popstate)
+  - `src/components/GameRouter.jsx` (all `viewMode === '<game>'` lazy blocks)
+  - Target: `App.jsx` under 80 KB.
+- [ ] **29.19 Smoke tests.** Add Playwright (`npm i -D @playwright/test`) with one spec that opens every game route at 390×844 and 1280×800 and checks that key controls are visible: roulette `RED` button, SPIN, pinball canvas, Derby bet buttons, etc. Add `npm run test:smoke`. This would have caught 29.1 automatically.
+- **Acceptance (whole round):** build + lint pass. Every task in P0–P3 has a completion note. The owner has confirmed on a real iPhone that Roulette betting and K.I.T.T./HAL voice work.
+
+---
+
+## 0b. Phase 28: "Fun First, Findable" (P1–P5 DONE, P6 = backlog after Phase 29)
 
 > **Context (Nov 2026 review):** The site has 27 phases of features but **no visitors and no engagement**. The bottleneck is not missing features. A first-time visitor lands on an **empty meme feed** (`STARTER_MEMES = []`, `STUDIO_TEMPLATES = []`) under a wall of buttons, and Google sees an **empty SPA shell** where every URL canonicalizes to `/`.
 >
 > **Ground rules for agents this round:**
-> - ❌ **No new games, toys, assistants, or easter eggs.** Improve, simplify, and expose what already exists.
+> - ❌ **No new games, toys, assistants, or easter eggs.** Improve, simplify, and expose what already exists. *(Superseded by Phase 29: only the P2 games listed in Section 0 may be added.)*
 > - ✅ Work tasks **in priority order**. Each task lists its acceptance criteria, so verify them (`npm run build` + `npm run lint` + manual mobile 390px check) before ticking a box.
 > - ✅ Keep all existing security (`securityGuard.js`, CSP) and the token economy intact. If you add a 3rd-party script/domain, update the CSP in **both** `index.html` and `vercel.json`.
 > - ✅ When done, move the task into a "Phase 28 (Completed)" entry in Section 5 like the earlier phases.

@@ -4106,8 +4106,7 @@ body {
    ========================================================================== */
 
 
-.tm-bj-eyebrow,
-.tm-roul-eyebrow {
+.tm-bj-eyebrow {
   font-size: 9.5px;
   font-weight: 900;
   letter-spacing: 0.8px;
@@ -4115,8 +4114,7 @@ body {
   text-transform: uppercase;
 }
 
-.tm-bj-hud-pills,
-.tm-roul-top-right {
+.tm-bj-hud-pills {
   display: flex;
   align-items: center;
   gap: 7px;
@@ -4157,17 +4155,6 @@ body {
 }
 
 @media (max-width: 860px) {
-  .tm-roul-main-grid {
-    grid-template-columns: 1fr !important;
-    grid-template-rows: auto 1fr !important;
-    overflow-y: auto !important;
-  }
-
-  .tm-roul-canvas {
-    width: min(265px, 34dvh, 74vw) !important;
-    height: min(265px, 34dvh, 74vw) !important;
-  }
-
   .tm-pin2-canvas {
     max-height: calc(100dvh - 180px) !important;
     max-width: 96vw !important;

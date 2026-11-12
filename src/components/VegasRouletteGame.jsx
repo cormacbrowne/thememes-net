@@ -23,17 +23,22 @@ function getNumberColor(num) {
   return RED_NUMBERS.has(num) ? 'red' : 'black';
 }
 
-const OUTSIDE_BETS = [
+const DOZEN_BETS = [
   { id: 'doz1', label: '1st 12 (1–12)', short: '1st 12', mult: 3, match: (n) => n >= 1 && n <= 12 },
   { id: 'doz2', label: '2nd 12 (13–24)', short: '2nd 12', mult: 3, match: (n) => n >= 13 && n <= 24 },
   { id: 'doz3', label: '3rd 12 (25–36)', short: '3rd 12', mult: 3, match: (n) => n >= 25 && n <= 36 },
-  { id: 'low', label: '1–18 LOW', short: '1–18', mult: 2, match: (n) => n >= 1 && n <= 18 },
-  { id: 'even', label: 'EVEN', short: 'EVEN', mult: 2, match: (n) => n > 0 && n % 2 === 0 },
+];
+
+const EVEN_MONEY_BETS = [
   { id: 'red', label: '🔴 NEON RED', short: '🔴 RED', mult: 2, match: (n) => RED_NUMBERS.has(n), isRed: true },
   { id: 'black', label: '⚫ CYBER BLACK', short: '⚫ BLACK', mult: 2, match: (n) => n > 0 && !RED_NUMBERS.has(n), isBlack: true },
+  { id: 'even', label: 'EVEN', short: 'EVEN', mult: 2, match: (n) => n > 0 && n % 2 === 0 },
   { id: 'odd', label: 'ODD', short: 'ODD', mult: 2, match: (n) => n > 0 && n % 2 === 1 },
+  { id: 'low', label: '1–18 LOW', short: '1–18', mult: 2, match: (n) => n >= 1 && n <= 18 },
   { id: 'high', label: '19–36 HIGH', short: '19–36', mult: 2, match: (n) => n >= 19 && n <= 36 }
 ];
+
+const OUTSIDE_BETS = [...DOZEN_BETS, ...EVEN_MONEY_BETS];
 
 export default function VegasRouletteGame({
   tokens = 0,
@@ -57,7 +62,7 @@ export default function VegasRouletteGame({
   const [lightningMap, setLightningMap] = useState({}); // { 17: 100, 0: 150, 23: 50 }
   const [history, setHistory] = useState([17, 0, 32, 7, 24, 19, 8, 36]);
   const [statusBanner, setStatusBanner] = useState(
-    '⚡ TAP NUMBERS OR OUTSIDE ZONES TO PLACE CHIPS — 3 NUMBERS GET UP TO 150× LIGHTNING EVERY SPIN!'
+    '⚡ Tap Red/Black or numbers (Straight 30×, Lightning up to 150×).'
   );
   const [lastWinInfo, setLastWinInfo] = useState(null); // { payout, num, lightningMult }
   const [bestWin, setBestWin] = useState(() =>
@@ -165,13 +170,14 @@ export default function VegasRouletteGame({
       const straightBet = activeBets[`n_${landedNum}`] || 0;
       const struckMult = activeLightning[landedNum] || null;
       if (straightBet > 0) {
-        const mult = struckMult || 36; // 35:1 + original chip = 36x, or Lightning 50x/100x/150x!
+        // Real Lightning Roulette math: 30x (29:1 + stake) keeps ~5% house edge with 3x 50-150x strikes
+        const mult = struckMult || 30;
         const winAmt = straightBet * mult;
         rawPayout += winAmt;
         winningTags.push(
           struckMult
             ? `⚡ LIGHTNING #${landedNum} (${struckMult}× = +${winAmt} 🪙!)`
-            : `🎯 STRAIGHT #${landedNum} (36× = +${winAmt} 🪙)`
+            : `🎯 STRAIGHT #${landedNum} (30× = +${winAmt} 🪙)`
         );
       }
 
@@ -588,28 +594,28 @@ export default function VegasRouletteGame({
       <div className="tm-roul-cabinet">
         {/* 1. COMPACT TOP MARQUEE & CHIP CONTROLS */}
         <header className="tm-roul-header">
-          <div className="tm-pin2-title-wrap">
+          <div className="tm-roul-title-wrap">
             {onBackToFeed && (
-              <button type="button" className="tm-bandit-back-btn" onClick={onBackToFeed}>
+              <button type="button" className="tm-roul-back-btn" onClick={onBackToFeed}>
                 ← Memes
               </button>
             )}
             <div>
               <div className="tm-roul-eyebrow">
-                🎡 37-POCKET EUROPEAN WHEEL • ⚡ 50×–150× LIGHTNING MULTIPLIERS
+                🎡 37-POCKET WHEEL • ⚡ 50×–150× LIGHTNING
               </div>
               <h2 className="tm-roul-title">NEON LIGHTNING ROULETTE &apos;86</h2>
             </div>
           </div>
 
           <div className="tm-roul-top-right">
-            <span className="tm-crush2-wallet">🪙 {tokens}</span>
-            <span className="tm-bj-streak-pill">
-              🏆 Best Win: <strong>{bestWin} 🪙</strong>
+            <span className="tm-roul-wallet-pill">🪙 {tokens}</span>
+            <span className="tm-roul-streak-pill">
+              🏆 Best: <strong>{bestWin} 🪙</strong>
             </span>
             <button
               type="button"
-              className={`tm-bj-mode-pill ${practiceMode ? 'active' : ''}`}
+              className={`tm-roul-mode-pill ${practiceMode ? 'active' : ''}`}
               onClick={() => {
                 if (spinning) return;
                 sfx.playToggle();
@@ -617,7 +623,7 @@ export default function VegasRouletteGame({
                 setBets({});
               }}
             >
-              {practiceMode ? '🆓 Free Practice ON' : '🪙 Token Mode'}
+              {practiceMode ? '🆓 Practice ON' : '🪙 Token Mode'}
             </button>
           </div>
         </header>
@@ -734,6 +740,7 @@ export default function VegasRouletteGame({
                 {lastBets && (
                   <button
                     type="button"
+                    data-rebet="true"
                     className="tm-roul-preset-btn"
                     disabled={spinning}
                     onClick={() => handlePresetBet('rebet')}
@@ -760,7 +767,7 @@ export default function VegasRouletteGame({
                 className={`tm-roul-num-cell zero ${winningNum === 0 ? 'winner' : ''} ${
                   lightningMap[0] ? 'lightning' : ''
                 }`}
-                onClick={() => handlePlaceBet('n_0', 'Green 0 (35:1)')}
+                onClick={() => handlePlaceBet('n_0', 'Green 0 (29:1)')}
               >
                 <span className="tm-roul-num-txt">0</span>
                 {lightningMap[0] && (
@@ -783,7 +790,7 @@ export default function VegasRouletteGame({
                       className={`tm-roul-num-cell ${col} ${isWin ? 'winner' : ''} ${
                         lMult ? 'lightning' : ''
                       }`}
-                      onClick={() => handlePlaceBet(`n_${num}`, `#${num} (35:1)`)}
+                      onClick={() => handlePlaceBet(`n_${num}`, `#${num} (29:1)`)}
                     >
                       <span className="tm-roul-num-txt">{num}</span>
                       {lMult && <span className="tm-roul-cell-bolt">⚡{lMult}×</span>}
@@ -793,7 +800,7 @@ export default function VegasRouletteGame({
                 })}
               </div>
 
-              {/* 3 Column 2:1 Bets on Right Edge */}
+              {/* 3 Column 2:1 Bets */}
               <div className="tm-roul-cols-strip">
                 {[1, 2, 3].map((colIdx) => (
                   <button
@@ -811,9 +818,27 @@ export default function VegasRouletteGame({
               </div>
             </div>
 
-            {/* Outside Bets (Dozens + Even-Money Red/Black/Even/Odd/High/Low) */}
-            <div className="tm-roul-outside-grid">
-              {OUTSIDE_BETS.map((ob) => {
+            {/* Dozens Bets (1st 12 / 2nd 12 / 3rd 12) */}
+            <div className="tm-roul-dozens-grid">
+              {DOZEN_BETS.map((ob) => {
+                const betVal = bets[ob.id] || 0;
+                return (
+                  <button
+                    key={ob.id}
+                    type="button"
+                    className={`tm-roul-outside-cell ${betVal > 0 ? 'has-bet' : ''}`}
+                    onClick={() => handlePlaceBet(ob.id, ob.label)}
+                  >
+                    <span>{ob.short}</span>
+                    {betVal > 0 && <span className="tm-roul-chip-stack">{betVal}</span>}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Even-Money Bets (RED / BLACK / EVEN / ODD / 1-18 / 19-36) — hoisted above numbers on mobile */}
+            <div className="tm-roul-even-grid">
+              {EVEN_MONEY_BETS.map((ob) => {
                 const betVal = bets[ob.id] || 0;
                 return (
                   <button
@@ -835,7 +860,7 @@ export default function VegasRouletteGame({
 
         {/* 4. BOTTOM STATUS BAR */}
         <div className="tm-roul-footer">
-          <div className="tm-pin2-banner" style={{ flex: 1 }}>
+          <div className="tm-roul-banner">
             {statusBanner}
           </div>
           {!practiceMode && tokens < selectedChip && onOpenUpload && (
@@ -848,6 +873,55 @@ export default function VegasRouletteGame({
               📸 Upload Meme (+45 🪙)
             </button>
           )}
+        </div>
+
+        {/* 5. STICKY MOBILE BOTTOM ACTION BAR (<= 860px) */}
+        <div className="tm-roul-mobile-actionbar" aria-label="Roulette mobile action bar">
+          <div className="tm-roul-mobile-chips-row">
+            <div className="tm-roul-chip-selector">
+              {chipSizes.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  className={`tm-roul-chip-pill ${selectedChip === c ? 'active' : ''}`}
+                  onClick={() => {
+                    sfx.playChipStack();
+                    setSelectedChip(c);
+                  }}
+                >
+                  🪙 {c}
+                </button>
+              ))}
+            </div>
+            <div className="tm-roul-mobile-quick">
+              <button
+                type="button"
+                className="tm-roul-preset-btn clear"
+                disabled={spinning || totalBetAmount === 0}
+                onClick={handleClearBets}
+              >
+                🧹 Clear
+              </button>
+              <button
+                type="button"
+                className="tm-roul-preset-btn"
+                disabled={spinning || !lastBets}
+                onClick={() => handlePresetBet('rebet')}
+              >
+                ↺ Rebet
+              </button>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="tm-roul-spin-btn"
+            disabled={spinning || totalBetAmount <= 0}
+            onClick={handleSpinWheel}
+          >
+            {spinning
+              ? '🎡 SPINNING...'
+              : `⚡ SPIN (${totalBetAmount} ${practiceMode ? 'FREE' : '🪙'})`}
+          </button>
         </div>
       </div>
     </section>

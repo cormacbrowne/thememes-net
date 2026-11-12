@@ -1,12 +1,25 @@
 /* ==========================================================================
-   2. NEON LIGHTNING ROULETTE '86 CABINET (.tm-roul-*)
+   NEON LIGHTNING ROULETTE '86 CABINET (.tm-roul-*)
    ========================================================================== */
+
+.tm-roul-stage {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  height: calc(100dvh - 50px);
+  padding: 6px 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .tm-roul-cabinet {
   width: 100%;
-  max-width: 1120px;
+  max-width: 1380px;
   margin: 0 auto;
-  height: calc(100dvh - 54px);
-  max-height: 860px;
+  height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 7px;
@@ -32,75 +45,121 @@
   flex-shrink: 0;
 }
 
-.tm-roul-header-left {
+.tm-roul-title-wrap {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
+  min-width: 0;
 }
 
-.tm-roul-title-badge {
+.tm-roul-back-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #cbd5e1;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 8px 12px;
+  min-height: 36px;
+  border-radius: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  touch-action: manipulation;
+}
+.tm-roul-back-btn:hover {
+  border-color: #00f3ff;
+  color: #ffffff;
+}
+
+.tm-roul-eyebrow {
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  color: #f472b6;
+  text-transform: uppercase;
+}
+
+.tm-roul-title {
+  margin: 0;
   font-family: Impact, "Arial Black", sans-serif;
-  font-size: clamp(14px, 2.1vw, 18px);
-  letter-spacing: 0.9px;
+  font-size: clamp(15px, 2.2vw, 20px);
+  letter-spacing: 1px;
   color: #facc15;
-  text-shadow: 0 0 12px rgba(250, 204, 21, 0.55);
+  text-shadow: 0 0 14px rgba(250, 204, 21, 0.55);
 }
 
-.tm-roul-sub-pills {
+.tm-roul-top-right {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   flex-wrap: wrap;
 }
 
-.tm-roul-stat-pill {
+.tm-roul-wallet-pill {
+  background: rgba(250, 204, 21, 0.14);
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  color: #fde047;
   font-size: 11px;
-  font-weight: 800;
-  padding: 3px 9px;
+  font-weight: 900;
+  padding: 4px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.tm-roul-streak-pill {
+  padding: 4px 10px;
   border-radius: 999px;
   background: rgba(2, 6, 23, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  color: #e2e8f0;
-}
-.tm-roul-stat-pill.gold {
-  border-color: #facc15;
+  border: 1px solid rgba(250, 204, 21, 0.45);
   color: #fde047;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
 }
-.tm-roul-stat-pill.cyan {
-  border-color: #00f3ff;
+
+.tm-roul-mode-pill {
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(0, 243, 255, 0.45);
+  background: rgba(2, 6, 23, 0.9);
   color: #00f3ff;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+  touch-action: manipulation;
+}
+.tm-roul-mode-pill.active {
+  background: linear-gradient(135deg, #00f3ff, #ec4899);
+  color: #020617;
+  border-color: #ffffff;
 }
 
-.tm-roul-header-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-/* History Strip & Lightning Multiplier Badges */
-.tm-roul-history-strip {
+/* History Bar & Lightning Multiplier Badges */
+.tm-roul-history-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 8px;
   padding: 4px 10px;
-  background: rgba(2, 6, 23, 0.82);
-  border: 1px solid rgba(0, 243, 255, 0.25);
   border-radius: 11px;
+  background: rgba(2, 6, 23, 0.86);
+  border: 1px solid rgba(250, 204, 21, 0.28);
   flex-shrink: 0;
 }
 
-.tm-roul-history-balls {
+.tm-roul-history-pills,
+.tm-roul-lightning-strip {
   display: flex;
   align-items: center;
   gap: 5px;
   flex-wrap: wrap;
+  font-size: 10.5px;
+  font-weight: 900;
+  color: #fde047;
 }
 
-.tm-roul-strip-label {
+.tm-roul-hist-label {
   font-size: 10px;
   font-weight: 900;
   color: #94a3b8;
@@ -134,381 +193,6 @@
   transform: scale(1.1);
 }
 
-.tm-roul-lightning-badges {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.tm-roul-lightning-pill {
-  padding: 2px 9px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, rgba(250, 204, 21, 0.24), rgba(234, 88, 12, 0.26));
-  border: 1.5px solid #facc15;
-  color: #fde047;
-  font-size: 11px;
-  font-weight: 900;
-  box-shadow: 0 0 12px rgba(250, 204, 21, 0.35);
-}
-
-/* Split Stage: Left Wheel Canvas + Right Betting Matrix */
-.tm-roul-stage {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 12px;
-  align-items: stretch;
-  overflow: hidden;
-}
-
-.tm-roul-wheel-box {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(circle, rgba(15, 23, 42, 0.94), rgba(2, 6, 23, 0.98));
-  border: 1.5px solid rgba(0, 243, 255, 0.38);
-  border-radius: 16px;
-  padding: 8px;
-}
-
-.tm-roul-wheel-canvas {
-  width: min(260px, 38vh);
-  height: min(260px, 38vh);
-  max-width: 100%;
-  aspect-ratio: 1 / 1;
-  display: block;
-}
-
-.tm-roul-result-pop {
-  margin-top: 6px;
-  padding: 4px 12px;
-  border-radius: 999px;
-  font-size: 11.5px;
-  font-weight: 900;
-  color: #ffffff;
-  border: 1.5px solid #facc15;
-  box-shadow: 0 0 16px rgba(250, 204, 21, 0.45);
-}
-.tm-roul-result-pop.red {
-  background: rgba(220, 38, 38, 0.88);
-}
-.tm-roul-result-pop.black {
-  background: rgba(30, 41, 59, 0.94);
-}
-.tm-roul-result-pop.green {
-  background: rgba(22, 163, 74, 0.9);
-}
-
-/* Interactive Neon Betting Board */
-.tm-roul-board-box {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 6px;
-  padding: 10px 12px;
-  background: rgba(10, 16, 34, 0.92);
-  border: 1.5px solid rgba(236, 72, 153, 0.4);
-  border-radius: 16px;
-  overflow-y: auto;
-}
-
-.tm-roul-status-banner {
-  font-size: 11.5px;
-  font-weight: 800;
-  color: #e2e8f0;
-  background: rgba(2, 6, 23, 0.85);
-  border: 1px dashed rgba(0, 243, 255, 0.38);
-  padding: 5px 10px;
-  border-radius: 9px;
-  text-align: center;
-}
-
-.tm-roul-number-grid {
-  display: grid;
-  grid-template-columns: 42px 1fr 44px;
-  gap: 5px;
-  align-items: stretch;
-}
-
-.tm-roul-zero-cell {
-  position: relative;
-  border-radius: 10px;
-  border: 2px solid #22c55e;
-  background: linear-gradient(160deg, rgba(22, 163, 74, 0.72), rgba(5, 46, 22, 0.92));
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 900;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.tm-roul-numbers-matrix {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.tm-roul-matrix-row {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 4px;
-}
-
-.tm-roul-num-cell {
-  position: relative;
-  height: 36px;
-  border-radius: 7px;
-  border: 1.5px solid rgba(255, 255, 255, 0.24);
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 900;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  transition: transform 0.08s ease, border-color 0.12s ease;
-}
-.tm-roul-num-cell.red {
-  background: linear-gradient(145deg, rgba(220, 38, 38, 0.84), rgba(153, 27, 27, 0.92));
-}
-.tm-roul-num-cell.black {
-  background: linear-gradient(145deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.96));
-}
-.tm-roul-num-cell:hover:not(:disabled),
-.tm-roul-zero-cell:hover:not(:disabled) {
-  border-color: #00f3ff;
-  transform: scale(1.05);
-  z-index: 2;
-}
-
-.tm-roul-num-cell.lightning,
-.tm-roul-zero-cell.lightning {
-  border-color: #facc15;
-  box-shadow: 0 0 14px rgba(250, 204, 21, 0.7), inset 0 0 8px rgba(250, 204, 21, 0.45);
-}
-
-.tm-roul-num-cell.winner,
-.tm-roul-zero-cell.winner {
-  border-color: #00f3ff;
-  box-shadow: 0 0 18px #00f3ff, inset 0 0 10px #00f3ff;
-}
-
-.tm-roul-col-bets {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.tm-roul-col-cell {
-  position: relative;
-  height: 36px;
-  border-radius: 7px;
-  border: 1.5px solid rgba(0, 243, 255, 0.4);
-  background: rgba(15, 23, 42, 0.9);
-  color: #00f3ff;
-  font-size: 11px;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.tm-roul-dozens-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 5px;
-}
-
-.tm-roul-even-row {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 5px;
-}
-
-.tm-roul-outside-cell {
-  position: relative;
-  height: 32px;
-  border-radius: 8px;
-  border: 1.5px solid rgba(148, 163, 184, 0.35);
-  background: rgba(15, 23, 42, 0.88);
-  color: #f8fafc;
-  font-size: 11px;
-  font-weight: 900;
-  cursor: pointer;
-}
-.tm-roul-outside-cell.red-tint {
-  border-color: rgba(239, 68, 68, 0.65);
-  background: rgba(185, 28, 28, 0.35);
-}
-.tm-roul-outside-cell.black-tint {
-  border-color: rgba(148, 163, 184, 0.6);
-  background: rgba(15, 23, 42, 0.95);
-}
-.tm-roul-outside-cell:hover:not(:disabled),
-.tm-roul-col-cell:hover:not(:disabled) {
-  border-color: #facc15;
-}
-
-/* Chip Stack & Lightning Badge inside Board Cells */
-.tm-roul-cell-chip {
-  position: absolute;
-  bottom: 1px;
-  right: 2px;
-  padding: 1px 4px;
-  border-radius: 999px;
-  background: #facc15;
-  color: #020617;
-  font-size: 9px;
-  font-weight: 900;
-  line-height: 1.1;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.85);
-}
-
-.tm-roul-cell-bolt {
-  position: absolute;
-  top: 1px;
-  left: 2px;
-  font-size: 8.5px;
-  font-weight: 900;
-  color: #fde047;
-  background: rgba(2, 6, 23, 0.88);
-  padding: 0 3px;
-  border-radius: 4px;
-}
-
-/* Quick Bet Presets */
-.tm-roul-presets-row {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  flex-wrap: wrap;
-}
-
-.tm-roul-preset-btn {
-  padding: 4px 9px;
-  border-radius: 8px;
-  border: 1px solid rgba(0, 243, 255, 0.38);
-  background: rgba(15, 23, 42, 0.9);
-  color: #e2e8f0;
-  font-size: 10.5px;
-  font-weight: 800;
-  cursor: pointer;
-}
-.tm-roul-preset-btn:hover:not(:disabled) {
-  border-color: #facc15;
-  color: #fde047;
-}
-.tm-roul-preset-btn.clear {
-  border-color: rgba(239, 68, 68, 0.45);
-  color: #fca5a5;
-}
-
-/* Bottom Roulette Controls */
-.tm-roul-controls {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 7px 12px;
-  background: rgba(15, 23, 42, 0.92);
-  border: 1px solid rgba(250, 204, 21, 0.35);
-  border-radius: 14px;
-}
-
-.tm-roul-chips-bar {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.tm-roul-chip-btn {
-  padding: 5px 11px;
-  border-radius: 999px;
-  border: 1.5px solid rgba(0, 243, 255, 0.45);
-  background: rgba(2, 6, 23, 0.9);
-  color: #00f3ff;
-  font-size: 11.5px;
-  font-weight: 900;
-  cursor: pointer;
-}
-.tm-roul-chip-btn.active {
-  background: linear-gradient(135deg, #00f3ff, #ec4899);
-  color: #020617;
-  border-color: #ffffff;
-  box-shadow: 0 0 12px rgba(0, 243, 255, 0.5);
-}
-
-.tm-roul-spin-btn {
-  padding: 8px 18px !important;
-  font-size: 12.5px !important;
-  font-weight: 900 !important;
-}
-
-@media (max-width: 860px) {
-  .tm-roul-stage {
-    grid-template-columns: 1fr;
-    overflow-y: auto;
-  }
-  .tm-roul-wheel-canvas {
-    width: 175px;
-    height: 175px;
-  }
-  .tm-roul-num-cell,
-  .tm-roul-col-cell {
-    height: 29px;
-    font-size: 10.5px;
-  }
-}
-
-.tm-roul-title {
-  margin: 0;
-  font-family: Impact, "Arial Black", sans-serif;
-  font-size: clamp(16px, 2.4vw, 21px);
-  letter-spacing: 1px;
-  color: #facc15;
-  text-shadow: 0 0 14px rgba(250, 204, 21, 0.55);
-}
-
-/* Roulette Specific Layout Selectors */
-.tm-roul-history-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 4px 10px;
-  border-radius: 11px;
-  background: rgba(2, 6, 23, 0.86);
-  border: 1px solid rgba(250, 204, 21, 0.28);
-  flex-shrink: 0;
-}
-
-.tm-roul-history-pills,
-.tm-roul-lightning-strip {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  flex-wrap: wrap;
-  font-size: 10.5px;
-  font-weight: 900;
-  color: #fde047;
-}
-
-.tm-roul-hist-label {
-  font-size: 10px;
-  font-weight: 900;
-  color: #94a3b8;
-  letter-spacing: 0.5px;
-}
-
 .tm-roul-lightning-badge {
   padding: 2px 8px;
   border-radius: 999px;
@@ -518,12 +202,13 @@
   font-size: 10.5px;
 }
 
+/* Main Split Grid: Wheel Column + Betting Board Column */
 .tm-roul-main-grid {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 290px 1fr;
-  gap: 10px;
+  grid-template-columns: minmax(300px, 38%) 1fr;
+  gap: 12px;
   align-items: stretch;
   overflow: hidden;
 }
@@ -532,12 +217,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 8px;
-  padding: 8px;
+  padding: 10px;
   border-radius: 16px;
   background: radial-gradient(circle, rgba(15, 23, 42, 0.95), rgba(2, 6, 23, 0.99));
   border: 1.5px solid rgba(0, 243, 255, 0.38);
+  min-height: 0;
 }
 
 .tm-roul-canvas-box {
@@ -547,14 +233,17 @@
   justify-content: center;
   flex: 1;
   min-height: 0;
+  width: 100%;
 }
 
 .tm-roul-canvas {
-  width: min(255px, 36vh);
-  height: min(255px, 36vh);
+  width: min(360px, 48dvh, 34vw);
+  height: min(360px, 48dvh, 34vw);
   max-width: 100%;
   aspect-ratio: 1 / 1;
   display: block;
+  cursor: pointer;
+  touch-action: manipulation;
 }
 
 .tm-roul-win-overlay-pill {
@@ -572,31 +261,37 @@
 
 .tm-roul-spin-btn {
   width: 100%;
+  min-height: 44px;
   padding: 9px 14px;
   border-radius: 12px;
   border: 2px solid #facc15;
   background: linear-gradient(135deg, #facc15 0%, #f97316 55%, #ec4899 100%);
   color: #020617;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 900;
   cursor: pointer;
   box-shadow: 0 0 18px rgba(250, 204, 21, 0.4);
+  touch-action: manipulation;
+  flex-shrink: 0;
 }
 .tm-roul-spin-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
+/* Interactive Neon Betting Board */
 .tm-roul-board-column {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 6px;
-  padding: 8px 10px;
+  gap: 8px;
+  padding: 10px 12px;
   border-radius: 16px;
   background: rgba(10, 16, 34, 0.92);
   border: 1.5px solid rgba(236, 72, 153, 0.38);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
 }
 
 .tm-roul-chip-toolbar {
@@ -605,6 +300,7 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 6px;
+  flex-shrink: 0;
 }
 
 .tm-roul-chip-selector,
@@ -616,14 +312,16 @@
 }
 
 .tm-roul-chip-pill {
-  padding: 4px 10px;
+  padding: 5px 11px;
+  min-height: 34px;
   border-radius: 999px;
   border: 1.5px solid rgba(250, 204, 21, 0.45);
   background: rgba(2, 6, 23, 0.9);
   color: #fde047;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 900;
   cursor: pointer;
+  touch-action: manipulation;
 }
 .tm-roul-chip-pill.active {
   background: linear-gradient(135deg, #facc15, #f97316);
@@ -631,23 +329,88 @@
   border-color: #ffffff;
 }
 
-.tm-roul-numbers-felt {
-  display: grid;
-  grid-template-columns: 42px 1fr 44px;
-  gap: 5px;
-  align-items: stretch;
+.tm-roul-preset-btn {
+  padding: 5px 10px;
+  min-height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 243, 255, 0.38);
+  background: rgba(15, 23, 42, 0.9);
+  color: #e2e8f0;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.tm-roul-preset-btn:hover:not(:disabled) {
+  border-color: #facc15;
+  color: #fde047;
+}
+.tm-roul-preset-btn.clear {
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #fca5a5;
+}
+.tm-roul-preset-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
-.tm-roul-num-cell.zero {
-  height: auto;
-  border: 2px solid #22c55e;
-  background: linear-gradient(160deg, rgba(22, 163, 74, 0.78), rgba(5, 46, 22, 0.94));
+/* Numbers Felt: 0 + 1..36 + 2:1 Columns */
+.tm-roul-numbers-felt {
+  display: grid;
+  grid-template-columns: 44px 1fr 48px;
+  gap: 5px;
+  align-items: stretch;
+  flex-shrink: 0;
 }
 
 .tm-roul-matrix-grid {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: repeat(3, 1fr);
+  grid-auto-flow: column;
   gap: 4px;
+}
+
+.tm-roul-num-cell {
+  position: relative;
+  min-height: 44px;
+  border-radius: 7px;
+  border: 1.5px solid rgba(255, 255, 255, 0.24);
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  touch-action: manipulation;
+  transition: transform 0.08s ease, border-color 0.12s ease;
+}
+.tm-roul-num-cell.red {
+  background: linear-gradient(145deg, rgba(220, 38, 38, 0.88), rgba(153, 27, 27, 0.94));
+}
+.tm-roul-num-cell.black {
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.94), rgba(15, 23, 42, 0.98));
+}
+.tm-roul-num-cell.zero {
+  height: auto;
+  border: 2px solid #22c55e;
+  background: linear-gradient(160deg, rgba(22, 163, 74, 0.8), rgba(5, 46, 22, 0.95));
+  font-size: 15px;
+}
+.tm-roul-num-cell:hover:not(:disabled) {
+  border-color: #00f3ff;
+  transform: scale(1.04);
+  z-index: 2;
+}
+.tm-roul-num-cell.lightning {
+  border-color: #facc15;
+  box-shadow: 0 0 14px rgba(250, 204, 21, 0.7), inset 0 0 8px rgba(250, 204, 21, 0.45);
+}
+.tm-roul-num-cell.winner {
+  border-color: #00f3ff;
+  box-shadow: 0 0 18px #00f3ff, inset 0 0 10px #00f3ff;
 }
 
 .tm-roul-cols-strip {
@@ -656,38 +419,100 @@
   gap: 4px;
 }
 
-.tm-roul-outside-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 5px;
+.tm-roul-col-cell {
+  position: relative;
+  flex: 1;
+  min-height: 44px;
+  border-radius: 7px;
+  border: 1.5px solid rgba(0, 243, 255, 0.4);
+  background: rgba(15, 23, 42, 0.92);
+  color: #00f3ff;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
 }
 
+/* Dozens & Even-Money Outside Bets */
+.tm-roul-dozens-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.tm-roul-even-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.tm-roul-outside-cell {
+  position: relative;
+  min-height: 40px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(148, 163, 184, 0.38);
+  background: rgba(15, 23, 42, 0.9);
+  color: #f8fafc;
+  font-size: 11.5px;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+}
 .tm-roul-outside-cell.red-zone {
-  border-color: rgba(239, 68, 68, 0.65);
-  background: rgba(185, 28, 28, 0.35);
+  border-color: rgba(239, 68, 68, 0.72);
+  background: rgba(185, 28, 28, 0.42);
 }
 .tm-roul-outside-cell.black-zone {
-  border-color: rgba(148, 163, 184, 0.6);
-  background: rgba(15, 23, 42, 0.95);
+  border-color: rgba(148, 163, 184, 0.65);
+  background: rgba(15, 23, 42, 0.96);
 }
 .tm-roul-outside-cell.has-bet {
   border-color: #facc15;
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.35);
+}
+.tm-roul-outside-cell:hover:not(:disabled),
+.tm-roul-col-cell:hover:not(:disabled) {
+  border-color: #facc15;
+}
+
+.tm-roul-cell-bolt {
+  position: absolute;
+  top: 1px;
+  left: 2px;
+  font-size: 8.5px;
+  font-weight: 900;
+  color: #fde047;
+  background: rgba(2, 6, 23, 0.88);
+  padding: 0 3px;
+  border-radius: 4px;
+  pointer-events: none;
 }
 
 .tm-roul-chip-stack {
   position: absolute;
-  bottom: 1px;
+  bottom: 2px;
   right: 2px;
-  padding: 1px 4px;
+  padding: 1px 5px;
   border-radius: 999px;
   background: #facc15;
   color: #020617;
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: 900;
-  line-height: 1.1;
+  line-height: 1.15;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.85);
+  pointer-events: none;
 }
 
+/* Status Banner Footer */
 .tm-roul-footer {
   display: flex;
   align-items: center;
@@ -695,40 +520,253 @@
   flex-shrink: 0;
 }
 
-@media (max-width: 860px) {
+.tm-roul-banner {
+  flex: 1;
+  min-width: 0;
+  background: #050812;
+  border: 1px solid rgba(0, 243, 255, 0.25);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #67e8f9;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Sticky Mobile Bottom Action Bar (hidden on desktop) */
+.tm-roul-mobile-actionbar {
+  display: none;
+}
+
+/* ==========================================================================
+   DESKTOP >= 861px
+   ========================================================================== */
+@media (min-width: 861px) {
+  .tm-roul-stage {
+    height: calc(100dvh - 50px) !important;
+    padding: 6px 10px !important;
+  }
+
+  .tm-roul-cabinet {
+    max-width: 1380px !important;
+    height: 100% !important;
+  }
+
   .tm-roul-main-grid {
-    grid-template-columns: 1fr;
-    overflow-y: auto;
+    grid-template-columns: minmax(340px, 42%) 1fr !important;
+    gap: 14px !important;
   }
+
+  .tm-roul-wheel-column {
+    justify-content: center !important;
+    padding: 10px !important;
+  }
+
   .tm-roul-canvas {
-    width: 165px;
-    height: 165px;
+    width: min(410px, 52dvh, 38vw) !important;
+    height: min(410px, 52dvh, 38vw) !important;
   }
 }
 
-/* 2. ENLARGED CENTER-STAGE ROULETTE WHEEL & PINBALL PLAYFIELD */
-.tm-roul-stage {
-  height: calc(100dvh - 50px) !important;
-  padding: 6px 10px !important;
-}
+/* ==========================================================================
+   PHONE & NARROW TABLET <= 860px (iPhone 390x844 & iPad 768x1024)
+   ========================================================================== */
+@media (max-width: 860px) {
+  .tm-roul-stage {
+    height: calc(100dvh - 46px);
+    padding: 4px 6px;
+  }
 
-.tm-roul-cabinet {
-  max-width: 1380px !important;
-  height: 100% !important;
-}
+  .tm-roul-cabinet {
+    padding: 6px 8px;
+    gap: 5px;
+    border-radius: 14px;
+  }
 
-.tm-roul-main-grid {
-  grid-template-columns: minmax(340px, 45%) 1fr !important;
-  gap: 14px !important;
-}
+  .tm-roul-header {
+    padding: 4px 8px;
+    gap: 6px;
+  }
 
-.tm-roul-wheel-column {
-  justify-content: center !important;
-  padding: 10px !important;
-}
+  .tm-roul-eyebrow {
+    display: none;
+  }
 
-.tm-roul-canvas {
-  width: min(430px, 56dvh, 41vw) !important;
-  height: min(430px, 56dvh, 41vw) !important;
-  cursor: pointer;
+  .tm-roul-title {
+    font-size: 14px;
+  }
+
+  .tm-roul-back-btn {
+    padding: 6px 10px;
+    min-height: 36px;
+    font-size: 11.5px;
+  }
+
+  .tm-roul-history-bar {
+    padding: 4px 8px;
+    gap: 5px;
+  }
+
+  .tm-roul-hist-ball {
+    width: 21px;
+    height: 21px;
+    font-size: 10px;
+  }
+
+  .tm-roul-main-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow: hidden;
+  }
+
+  .tm-roul-wheel-column {
+    flex-shrink: 0;
+    padding: 4px 8px;
+    gap: 4px;
+  }
+
+  .tm-roul-wheel-column .tm-roul-spin-btn {
+    display: none;
+  }
+
+  .tm-roul-canvas {
+    width: min(220px, 28dvh);
+    height: min(220px, 28dvh);
+  }
+
+  .tm-roul-board-column {
+    flex: 1;
+    min-height: 0;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 8px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Chip selector & clear/rebet live in the sticky bottom bar on mobile */
+  .tm-roul-chip-toolbar {
+    order: 2;
+    justify-content: center;
+  }
+
+  .tm-roul-chip-toolbar .tm-roul-chip-selector,
+  .tm-roul-chip-toolbar .tm-roul-preset-btn.clear,
+  .tm-roul-chip-toolbar .tm-roul-preset-btn[data-rebet="true"] {
+    display: none;
+  }
+
+  /* Put RED / BLACK / EVEN / ODD / 1-18 / 19-36 in a big 2x3 grid ABOVE numbers */
+  .tm-roul-even-grid {
+    order: -2;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .tm-roul-outside-cell {
+    min-height: 46px;
+    font-size: 12.5px;
+  }
+
+  /* Rotated vertical felt: 0 across top, 3 columns x 12 rows, 2:1 across bottom */
+  .tm-roul-numbers-felt {
+    order: -1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .tm-roul-num-cell.zero {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .tm-roul-matrix-grid {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: none;
+    grid-auto-flow: row;
+    gap: 5px;
+  }
+
+  .tm-roul-num-cell {
+    min-height: 44px;
+    min-width: 44px;
+    font-size: 14px;
+  }
+
+  .tm-roul-cols-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+  }
+
+  .tm-roul-col-cell {
+    min-height: 44px;
+    font-size: 12px;
+  }
+
+  .tm-roul-dozens-grid {
+    order: 0;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .tm-roul-banner {
+    font-size: 10.5px;
+    padding: 4px 8px;
+  }
+
+  /* Sticky Bottom Action Bar with Clear, Rebet, Chip Selector & SPIN */
+  .tm-roul-mobile-actionbar {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    flex-shrink: 0;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    background: rgba(6, 10, 24, 0.96);
+    border: 1.5px solid rgba(250, 204, 21, 0.42);
+    border-radius: 12px;
+  }
+
+  .tm-roul-mobile-chips-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .tm-roul-mobile-chips-row .tm-roul-chip-selector {
+    gap: 4px;
+  }
+
+  .tm-roul-mobile-chips-row .tm-roul-chip-pill {
+    min-height: 40px;
+    padding: 5px 10px;
+    font-size: 11.5px;
+  }
+
+  .tm-roul-mobile-quick {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .tm-roul-mobile-quick .tm-roul-preset-btn {
+    min-height: 40px;
+    padding: 6px 10px;
+    font-size: 11.5px;
+  }
+
+  .tm-roul-mobile-actionbar .tm-roul-spin-btn {
+    min-height: 46px;
+    font-size: 13.5px;
+  }
 }

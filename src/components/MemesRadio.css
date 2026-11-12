@@ -594,3 +594,88 @@
     min-height: 44px;
   }
 }
+
+/* ---------- 29.6 Radio Features (Shuffle, ♥ Mixtape, Sleep Timer, Auto-Station Toggle) ---------- */
+.tm-radio-pop-icon-btn.is-faved,
+.tm-radio-btn.is-faved {
+  color: #fb7185;
+  border-color: rgba(251, 113, 133, 0.7);
+  background: rgba(244, 63, 94, 0.16);
+}
+
+.tm-radio-btn.is-active-mode,
+.tm-radio-chip-btn.is-active {
+  border-color: #00f3ff;
+  color: #e0f2fe;
+  background: rgba(0, 243, 255, 0.16);
+}
+
+.tm-radio-pop-features,
+.tm-radio-deck-features {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(2, 6, 23, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.tm-radio-feat-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.tm-radio-feat-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  margin-right: 2px;
+}
+
+.tm-radio-chip-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #cbd5e1;
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.tm-radio-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+
+.tm-radio-toggle-row input {
+  accent-color: #00f3ff;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.tm-radio-mix-count {
+  font-size: 10px;
+  font-weight: 800;
+  color: #fb7185;
+  margin-left: 4px;
+}
+
+@media (max-width: 860px) {
+  .tm-radio-chip-btn {
+    min-height: 36px;
+    padding: 6px 10px;
+  }
+}

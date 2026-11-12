@@ -5,7 +5,12 @@ import {
   toggleRadio,
   setRadioStation,
   setRadioVolume,
-  skipRadioTrack
+  skipRadioTrack,
+  toggleShuffleAll,
+  toggleFavoriteCurrentTrack,
+  isTrackFavorited,
+  setRadioSleepTimer,
+  setRadioAllowContextOverride
 } from '../utils/radioBus';
 import {
   loadUnlockedCosmetics,
@@ -124,9 +129,20 @@ export function RadioToggleButton({ className = 'tm-btn', onOpenShop }) {
                 className="tm-radio-pop-icon-btn"
                 onClick={toggleRadio}
                 aria-label={radio.on ? 'Pause radio' : 'Play radio'}
-                title={radio.on ? 'Pause' : 'Play'}
+                title={radio.on ? 'Pause (M)' : 'Play (M)'}
               >
                 {radio.on ? '⏸' : '▶'}
+              </button>
+              <button
+                type="button"
+                className={`tm-radio-pop-icon-btn ${isTrackFavorited(radio.currentTrack, radio.favorites) ? 'is-faved' : ''}`}
+                onClick={toggleFavoriteCurrentTrack}
+                disabled={!radio.on || !radio.currentTrack || radio.currentTrack.stationId === 'mixtape'}
+                aria-pressed={isTrackFavorited(radio.currentTrack, radio.favorites)}
+                aria-label="Favorite current track for My Mixtape"
+                title={isTrackFavorited(radio.currentTrack, radio.favorites) ? 'Remove from My Mixtape' : 'Save to ♥ My Mixtape'}
+              >
+                ♥
               </button>
               <button
                 type="button"
@@ -134,7 +150,7 @@ export function RadioToggleButton({ className = 'tm-btn', onOpenShop }) {
                 onClick={skipRadioTrack}
                 disabled={!radio.on}
                 aria-label="Skip track"
-                title="Next track"
+                title="Next track (N)"
               >
                 ⏭
               </button>
@@ -153,6 +169,40 @@ export function RadioToggleButton({ className = 'tm-btn', onOpenShop }) {
               aria-label="Radio volume"
             />
           </label>
+
+          <div className="tm-radio-pop-features">
+            <div className="tm-radio-feat-row">
+              <button
+                type="button"
+                className={`tm-radio-chip-btn ${radio.shuffleAll ? 'is-active' : ''}`}
+                onClick={toggleShuffleAll}
+                aria-pressed={radio.shuffleAll}
+                title="Shuffle tracks across all unlocked stations"
+              >
+                🔀 Shuffle All {radio.shuffleAll ? 'ON' : 'OFF'}
+              </button>
+              <span className="tm-radio-feat-label">💤 Sleep:</span>
+              {[0, 15, 30, 60].map((mins) => (
+                <button
+                  key={mins}
+                  type="button"
+                  className={`tm-radio-chip-btn ${radio.sleepMinutes === mins ? 'is-active' : ''}`}
+                  onClick={() => setRadioSleepTimer(mins)}
+                  aria-pressed={radio.sleepMinutes === mins}
+                >
+                  {mins === 0 ? 'Off' : `${mins}m`}
+                </button>
+              ))}
+            </div>
+            <label className="tm-radio-toggle-row">
+              <span>🎮 Games pick their own station</span>
+              <input
+                type="checkbox"
+                checked={radio.allowContextOverride}
+                onChange={(e) => setRadioAllowContextOverride(e.target.checked)}
+              />
+            </label>
+          </div>
 
           <div className="tm-radio-pop-list" role="radiogroup" aria-label="Stations">
             {RADIO_STATIONS.map((s) => {
@@ -176,6 +226,9 @@ export function RadioToggleButton({ className = 'tm-btn', onOpenShop }) {
                 >
                   <span>
                     <span aria-hidden="true">{isLocked ? '🔒' : s.icon}</span> {s.name}
+                    {s.id === 'mixtape' && (
+                      <span className="tm-radio-mix-count">({radio.favorites.length})</span>
+                    )}
                   </span>
                   {isLocked ? (
                     <span className="tm-radio-lock-tag">Shop</span>
@@ -351,6 +404,7 @@ export default function MemesRadio({ onOpenShop }) {
           className="tm-radio-btn tm-radio-play"
           onClick={toggleRadio}
           aria-pressed={playing}
+          title="Play / Pause (M)"
         >
           {playing ? '⏸ Stop' : '▶ Play'}
         </button>
@@ -360,8 +414,20 @@ export default function MemesRadio({ onOpenShop }) {
           onClick={skipRadioTrack}
           disabled={!playing}
           aria-label="Next track"
+          title="Next track (N)"
         >
           ⏭ Skip
+        </button>
+        <button
+          type="button"
+          className={`tm-radio-btn ${isTrackFavorited(radio.currentTrack, radio.favorites) ? 'is-faved' : ''}`}
+          onClick={toggleFavoriteCurrentTrack}
+          disabled={!playing || !radio.currentTrack || radio.currentTrack.stationId === 'mixtape'}
+          aria-pressed={isTrackFavorited(radio.currentTrack, radio.favorites)}
+          aria-label="Favorite track for My Mixtape"
+          title="Save current track to ♥ My Mixtape"
+        >
+          {isTrackFavorited(radio.currentTrack, radio.favorites) ? '♥ Saved' : '♡ Save'}
         </button>
         <label className="tm-radio-volume">
           <span aria-hidden="true">🔉</span>
@@ -373,6 +439,39 @@ export default function MemesRadio({ onOpenShop }) {
             value={radio.volume}
             onChange={(e) => setRadioVolume(e.target.value)}
             aria-label="Radio volume"
+          />
+        </label>
+      </div>
+
+      <div className="tm-radio-deck-features">
+        <div className="tm-radio-feat-row">
+          <button
+            type="button"
+            className={`tm-radio-chip-btn ${radio.shuffleAll ? 'is-active' : ''}`}
+            onClick={toggleShuffleAll}
+            aria-pressed={radio.shuffleAll}
+          >
+            🔀 Shuffle All {radio.shuffleAll ? 'ON' : 'OFF'}
+          </button>
+          <span className="tm-radio-feat-label">💤 Sleep timer:</span>
+          {[0, 15, 30, 60].map((mins) => (
+            <button
+              key={mins}
+              type="button"
+              className={`tm-radio-chip-btn ${radio.sleepMinutes === mins ? 'is-active' : ''}`}
+              onClick={() => setRadioSleepTimer(mins)}
+              aria-pressed={radio.sleepMinutes === mins}
+            >
+              {mins === 0 ? 'Off' : `${mins}m`}
+            </button>
+          ))}
+        </div>
+        <label className="tm-radio-toggle-row">
+          <span>🎮 Games pick their own station</span>
+          <input
+            type="checkbox"
+            checked={radio.allowContextOverride}
+            onChange={(e) => setRadioAllowContextOverride(e.target.checked)}
           />
         </label>
       </div>
@@ -397,6 +496,9 @@ export default function MemesRadio({ onOpenShop }) {
               title={isLocked ? 'Unlock in 🛍️ Arcade Shop!' : s.name}
             >
               <span aria-hidden="true">{isLocked ? '🔒' : s.icon}</span> {s.name}
+              {s.id === 'mixtape' && (
+                <span className="tm-radio-mix-count">({radio.favorites.length})</span>
+              )}
               {isLocked && <span className="tm-radio-lock-tag">Shop</span>}
             </button>
           );

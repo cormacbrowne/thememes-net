@@ -65,7 +65,10 @@ import {
   setRadioStation,
   getRadioState,
   radioEvent,
-  armRadioResumeOnGesture
+  armRadioResumeOnGesture,
+  toggleRadio,
+  skipRadioTrack,
+  cycleRadioStation
 } from './utils/radioBus';
 import { useLivePresence } from './hooks/useLivePresence';
 import {
@@ -667,9 +670,31 @@ export default function App() {
   );
   const isFixedArcadeGame = ['blackjack', 'roulette', 'pusher', 'slots', 'crush', 'pinball', 'stocks'].includes(viewMode);
 
-  // Phase 28.11: THE MEMES FM radio hooks (resume on gesture if left ON, mute sync, context station & combo reactivity)
+  // Phase 28.11 & 29.6: THE MEMES FM radio hooks (resume on gesture if left ON, mute sync, shortcuts, context station & combo reactivity)
   useEffect(() => {
     armRadioResumeOnGesture();
+  }, []);
+
+  useEffect(() => {
+    const onRadioKeyDown = (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+      const target = e.target;
+      const tag = target?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target?.isContentEditable) return;
+      const k = typeof e.key === 'string' ? e.key.toLowerCase() : '';
+      if (k === 'm') {
+        e.preventDefault();
+        toggleRadio();
+      } else if (k === 'n' && e.shiftKey) {
+        e.preventDefault();
+        cycleRadioStation();
+      } else if (k === 'n') {
+        e.preventDefault();
+        skipRadioTrack();
+      }
+    };
+    window.addEventListener('keydown', onRadioKeyDown);
+    return () => window.removeEventListener('keydown', onRadioKeyDown);
   }, []);
 
   useEffect(() => {

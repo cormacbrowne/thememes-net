@@ -84,12 +84,13 @@
   - Seasonal: `🎃 Spooky Synth` (Oct) and `🎄 Jingle Synth` (Dec), auto-added by date, which pairs with 28.23.
   - Also raise every existing station from 4 to 6 tracks.
   - **Completion Note:** Added 6 procedural stations (`phonk`, `jungle`, `casinojazz`, `western` free; `yachtrock`, `italodisco` as Arcade Shop cosmetics in `src/data/cosmetics.js`) plus Oct/Dec date-activated `spookysynth` and `jinglesynth` in `src/utils/radioBus.js` & `src/utils/musicEngine.js`, raised every station to 6 tracks with genre-specific synthesis, and wired `casinojazz` as the auto-station for `blackjack`, `roulette`, and `slots` in `src/App.jsx`.
-- [ ] **29.6 Radio features:**
+- [x] **29.6 Radio features:**
   - **Shuffle All Stations** mode
   - ♥ favourite tracks, plus a "♥ My Mixtape" station that plays favourites
   - **sleep timer** (15/30/60 min)
   - keyboard shortcuts on desktop (`M` play/pause, `N` next track, `Shift+N` next station), ignored while typing in inputs
   - a settings toggle "🎮 Games pick their own station" (on by default), which respects the existing context-station override
+  - **Completion Note:** Added Shuffle All mode (`toggleShuffleAll`), ♥ track favoriting + dynamic `"♥ My Mixtape"` station (`setMixtapeTracks` in `src/utils/musicEngine.js`, `sanitizeFavorites` & mixtape routing in `src/utils/radioBus.js`), 15/30/60 min sleep timer (`setRadioSleepTimer`), `"🎮 Games pick their own station"` toggle (`allowContextOverride`), UI controls in `src/components/MemesRadio.jsx` + `.css`, and desktop keyboard shortcuts (`M`, `N`, `Shift+N`, ignoring text inputs) in `src/App.jsx`.
 - [ ] **29.7 iPhone lock-screen & silent-switch robustness (experimental, do last in P1).** Route the music master gain through `ctx.createMediaStreamDestination()` into a hidden `<audio playsinline>` element (`audio.srcObject = dest.stream`). Set `navigator.mediaSession.metadata` (title = track, artist = "THE MEMES FM", artwork = `/logo-512.png`) and the `play` / `pause` / `nexttrack` / `previoustrack` action handlers. This gives lock-screen and Control Center controls and makes iOS treat the music as media playback. Put it behind a feature check, and fall back to the current direct `ctx.destination` path if it fails.
   - **Acceptance (P1):** Stations can be switched from the main feed, Reels, and inside a game in **≤ 2 taps**. With the radio OFF, no AudioContext is created (the Phase 28 rule still applies).
 

@@ -7,6 +7,8 @@
  * no AudioContext is touched, no timers run and no listeners are attached.
  */
 
+import { loadUnlockedCosmetics } from '../data/cosmetics';
+
 const STORAGE_KEY = 'tm_radio';
 
 const BASE_RADIO_STATIONS = [
@@ -21,7 +23,8 @@ const BASE_RADIO_STATIONS = [
   { id: 'retrowave', icon: '🌅', name: 'Sunset Outrun FM', cosmeticId: 'station-retrowave' },
   { id: 'cyberpunk', icon: '⚡', name: 'Dark Cyberbass FM', cosmeticId: 'station-cyberpunk' },
   { id: 'yachtrock', icon: '🏝️', name: 'Yacht Rock Sunset', cosmeticId: 'station-yachtrock' },
-  { id: 'italodisco', icon: '🪩', name: "Italo Disco '84", cosmeticId: 'station-italodisco' }
+  { id: 'italodisco', icon: '🪩', name: "Italo Disco '84", cosmeticId: 'station-italodisco' },
+  { id: 'mixtape', icon: '♥', name: 'My Mixtape' }
 ];
 
 export function getSeasonalRadioStations(now = new Date()) {
@@ -46,8 +49,39 @@ const STATION_IDS = [
   'jinglesynth'
 ];
 
+function sanitizeFavorites(list) {
+  if (!Array.isArray(list)) return [];
+  const seen = new Set();
+  const out = [];
+  for (const item of list) {
+    if (!item || typeof item !== 'object') continue;
+    const stationId = typeof item.stationId === 'string' && STATION_IDS.includes(item.stationId) && item.stationId !== 'mixtape'
+      ? item.stationId
+      : '';
+    const trackIndex = Number(item.trackIndex);
+    if (!stationId || !Number.isInteger(trackIndex) || trackIndex < 0 || trackIndex > 15) continue;
+    const key = `${stationId}:${trackIndex}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({
+      stationId,
+      trackIndex,
+      name: typeof item.name === 'string' ? item.name.slice(0, 60) : `Track ${trackIndex + 1}`
+    });
+    if (out.length >= 64) break;
+  }
+  return out;
+}
+
 function loadPrefs() {
-  const fallback = { on: false, station: 'synthwave', volume: 0.6 };
+  const fallback = {
+    on: false,
+    station: 'synthwave',
+    volume: 0.6,
+    shuffleAll: false,
+    allowContextOverride: true,
+    favorites: []
+  };
   if (typeof window === 'undefined') return fallback;
   try {
     const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
@@ -55,7 +89,10 @@ function loadPrefs() {
     return {
       on: raw.on === true,
       station: STATION_IDS.includes(raw.station) ? raw.station : 'synthwave',
-      volume: Math.min(1, Math.max(0, Number(raw.volume ?? 0.6) || 0))
+      volume: Math.min(1, Math.max(0, Number(raw.volume ?? 0.6) || 0)),
+      shuffleAll: raw.shuffleAll === true,
+      allowContextOverride: raw.allowContextOverride !== false,
+      favorites: sanitizeFavorites(raw.favorites)
     };
   } catch {
     return fallback;
@@ -71,6 +108,12 @@ let state = {
   activeStation: prefs.station, // station actually playing (may be a context override)
   volume: prefs.volume,
   track: '',
+  currentTrack: null,
+  shuffleAll: prefs.shuffleAll,
+  allowContextOverride: prefs.allowContextOverride,
+  favorites: prefs.favorites,
+  sleepMinutes: 0,
+  sleepEndsAt: null,
   loading: false
 };
 
@@ -82,12 +125,27 @@ let muted = false;
 const ducks = new Set();
 let mediaListenersBound = false;
 let resumeListenerBound = false;
+let sleepTimeoutId = null;
+
+function clearSleepTimer() {
+  if (sleepTimeoutId) {
+    clearTimeout(sleepTimeoutId);
+    sleepTimeoutId = null;
+  }
+}
 
 function persist() {
   try {
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ on: state.wantsOn, station: state.station, volume: state.volume })
+      JSON.stringify({
+        on: state.wantsOn,
+        station: state.station,
+        volume: state.volume,
+        shuffleAll: state.shuffleAll,
+        allowContextOverride: state.allowContextOverride,
+        favorites: state.favorites
+      })
     );
   } catch {
     // ignore storage errors (private mode / quota)
@@ -100,15 +158,16 @@ function setState(patch) {
 }
 
 function effectiveStation() {
-  return contextStation || state.station;
+  return (state.allowContextOverride && contextStation) ? contextStation : state.station;
 }
 
 function loadEngine() {
   if (!enginePromise) {
     enginePromise = import('./musicEngine').then((mod) => {
       engine = mod.createMusicEngine({
-        onTrack: (track) => setState({ track })
+        onTrack: (track, meta) => setState({ track, currentTrack: meta || null })
       });
+      engine.setMixtapeTracks?.(state.favorites);
       return engine;
     });
   }
@@ -158,6 +217,13 @@ export function subscribeRadio(fn) {
   return () => listeners.delete(fn);
 }
 
+function getUnlockedStations({ includeMixtape = false } = {}) {
+  const unlocked = loadUnlockedCosmetics();
+  return RADIO_STATIONS.filter(
+    (st) => (includeMixtape || st.id !== 'mixtape') && (!st.cosmeticId || unlocked.includes(st.cosmeticId))
+  );
+}
+
 /** Must be called from a user gesture (tap/click/key) the first time. */
 export function setRadioOn(on, { fadeInSec = 1.2 } = {}) {
   if (on) {
@@ -167,16 +233,18 @@ export function setRadioOn(on, { fadeInSec = 1.2 } = {}) {
     loadEngine()
       .then((eng) => {
         if (!state.on) return;
-        setState({ loading: false, activeStation: effectiveStation() });
+        const target = effectiveStation();
+        setState({ loading: false, activeStation: target });
         eng.setVolume(state.volume);
         eng.setMuted(muted);
         eng.setDucked(ducks.size > 0);
-        eng.play(effectiveStation(), fadeInSec);
+        eng.play(target, fadeInSec);
         recomputeVideoDuck();
       })
       .catch(() => setState({ on: false, loading: false }));
   } else {
-    setState({ on: false, wantsOn: false, loading: false });
+    clearSleepTimer();
+    setState({ on: false, wantsOn: false, loading: false, sleepMinutes: 0, sleepEndsAt: null });
     persist();
     unbindMediaListeners();
     if (engine) engine.stop();
@@ -198,7 +266,7 @@ export function setRadioStation(id, { overrideContext = true, startIfOff = false
     setRadioOn(true);
     return;
   }
-  if (engine && state.on && (!contextStation || overrideContext)) {
+  if (engine && state.on && (!(contextStation && state.allowContextOverride) || overrideContext)) {
     setState({ activeStation: id });
     engine.setStation(id);
   }
@@ -212,7 +280,84 @@ export function setRadioVolume(v) {
 }
 
 export function skipRadioTrack() {
-  if (engine && state.on) engine.nextTrack();
+  if (!engine || !state.on) return;
+  if (state.shuffleAll && state.activeStation !== 'mixtape') {
+    const pool = getUnlockedStations({ includeMixtape: false });
+    if (pool.length > 0) {
+      const picked = pool[Math.floor(Math.random() * pool.length)];
+      const randTrack = Math.floor(Math.random() * 6);
+      setState({ activeStation: picked.id });
+      engine.setStation(picked.id, randTrack);
+      return;
+    }
+  }
+  engine.nextTrack();
+}
+
+export function prevRadioTrack() {
+  if (engine && state.on) engine.prevTrack?.();
+}
+
+export function cycleRadioStation() {
+  const pool = getUnlockedStations({ includeMixtape: state.favorites.length > 0 });
+  if (pool.length === 0) return;
+  const currentId = state.on ? state.activeStation : state.station;
+  const idx = pool.findIndex((s) => s.id === currentId);
+  const next = pool[(idx + 1) % pool.length];
+  setRadioStation(next.id, { overrideContext: true, startIfOff: false });
+}
+
+export function toggleShuffleAll() {
+  const next = !state.shuffleAll;
+  setState({ shuffleAll: next });
+  persist();
+}
+
+export function setRadioAllowContextOverride(allow) {
+  const next = !!allow;
+  setState({ allowContextOverride: next });
+  persist();
+  if (engine && state.on) {
+    const target = effectiveStation();
+    if (target !== state.activeStation) {
+      setState({ activeStation: target });
+      engine.setStation(target);
+    }
+  }
+}
+
+export function isTrackFavorited(meta = state.currentTrack, favs = state.favorites) {
+  if (!meta) return false;
+  return favs.some((f) => f.stationId === meta.stationId && f.trackIndex === meta.trackIndex);
+}
+
+export function toggleFavoriteCurrentTrack() {
+  const ct = state.currentTrack;
+  if (!ct || !ct.stationId || ct.stationId === 'mixtape') return;
+  const exists = state.favorites.some(
+    (f) => f.stationId === ct.stationId && f.trackIndex === ct.trackIndex
+  );
+  const nextFavs = exists
+    ? state.favorites.filter((f) => !(f.stationId === ct.stationId && f.trackIndex === ct.trackIndex))
+    : sanitizeFavorites([...state.favorites, ct]);
+  setState({ favorites: nextFavs });
+  persist();
+  if (engine?.setMixtapeTracks) engine.setMixtapeTracks(nextFavs);
+}
+
+export function setRadioSleepTimer(minutes) {
+  const mins = [0, 15, 30, 60].includes(Number(minutes)) ? Number(minutes) : 0;
+  clearSleepTimer();
+  if (mins <= 0) {
+    setState({ sleepMinutes: 0, sleepEndsAt: null });
+    return;
+  }
+  const endsAt = Date.now() + mins * 60000;
+  setState({ sleepMinutes: mins, sleepEndsAt: endsAt });
+  sleepTimeoutId = setTimeout(() => {
+    sleepTimeoutId = null;
+    setRadioOn(false);
+  }, mins * 60000);
 }
 
 /** Game / Boss Key contexts may request a station (null = back to the user's pick). */

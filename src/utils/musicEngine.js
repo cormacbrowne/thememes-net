@@ -242,10 +242,48 @@ export function createMusicEngine({ onTrack } = {}) {
   let riserQueued = false;
   let dropQueued = false;
   let stingerQueued = false;
+  let mixtapeItems = [];
   const pendingTimeouts = new Set();
 
-  const station = () => STATIONS[stationId] || STATIONS.synthwave;
-  const track = () => station().tracks[trackIdx % station().tracks.length];
+  const DEFAULT_MIXTAPE = [
+    { stationId: 'synthwave', trackIndex: 0 },
+    { stationId: 'lofi', trackIndex: 0 },
+    { stationId: 'phonk', trackIndex: 0 },
+    { stationId: 'casinojazz', trackIndex: 0 },
+    { stationId: 'western', trackIndex: 0 },
+    { stationId: 'chiptune', trackIndex: 0 }
+  ];
+
+  const getActiveSpec = () => {
+    if (stationId === 'mixtape') {
+      const list = mixtapeItems.length > 0 ? mixtapeItems : DEFAULT_MIXTAPE;
+      const entry = list[trackIdx % list.length];
+      const srcStation = STATIONS[entry.stationId] || STATIONS.synthwave;
+      const tIdx = Math.max(0, Number(entry.trackIndex) || 0) % srcStation.tracks.length;
+      return {
+        synthStationId: entry.stationId in STATIONS ? entry.stationId : 'synthwave',
+        station: srcStation,
+        track: srcStation.tracks[tIdx],
+        trackCount: list.length,
+        sourceStationId: entry.stationId,
+        sourceTrackIndex: tIdx
+      };
+    }
+    const st = STATIONS[stationId] || STATIONS.synthwave;
+    const tIdx = trackIdx % st.tracks.length;
+    return {
+      synthStationId: stationId,
+      station: st,
+      track: st.tracks[tIdx],
+      trackCount: st.tracks.length,
+      sourceStationId: stationId,
+      sourceTrackIndex: tIdx
+    };
+  };
+
+  const station = () => getActiveSpec().station;
+  const track = () => getActiveSpec().track;
+  const synthId = () => getActiveSpec().synthStationId;
 
   function later(fn, ms) {
     const id = setTimeout(() => {
@@ -493,7 +531,8 @@ export function createMusicEngine({ onTrack } = {}) {
       crash(t + 0.38, 0.18);
     }
 
-    if (stationId === 'synthwave' || stationId === 'retrowave' || stationId === 'cyberpunk') {
+    const currentSynthId = synthId();
+    if (currentSynthId === 'synthwave' || currentSynthId === 'retrowave' || currentSynthId === 'cyberpunk') {
       if (s % 4 === 0) kick(t);
       if (s === 4 || s === 12) snare(t, 0.3, 0.22);
       if (isFill) snare(t, 0.18 + (s - 12) * 0.04, 0.1);
@@ -511,7 +550,7 @@ export function createMusicEngine({ onTrack } = {}) {
           tone({ time: t, freq: midiToHz(root + 12 + iv), dur: sixteenth * 15, type: 'sawtooth', gain: 0.022, attack: 0.4, release: 0.6, detune: i % 2 ? 9 : -9 });
         });
       }
-    } else if (stationId === 'lofi') {
+    } else if (currentSynthId === 'lofi') {
       if (s === 0 || s === 7 || s === 10) kick(t, 0.65);
       if (s === 4 || s === 12) snare(t, 0.16, 0.14);
       if (isFill) snare(t, 0.08, 0.06);
@@ -526,7 +565,7 @@ export function createMusicEngine({ onTrack } = {}) {
         });
       }
       if (Math.random() < 0.18) noise({ time: t, dur: 0.012, gain: 0.025, type: 'highpass', freq: 3000 }); // vinyl crackle
-    } else if (stationId === 'chiptune') {
+    } else if (currentSynthId === 'chiptune') {
       if (s === 0 || s === 8 || s === 10) kick(t, 0.75);
       if (s === 4 || s === 12) noise({ time: t, dur: 0.09, gain: 0.22, type: 'highpass', freq: 2500 });
       if (isFill) noise({ time: t, dur: 0.05, gain: 0.16, type: 'highpass', freq: 2500 });
@@ -540,7 +579,7 @@ export function createMusicEngine({ onTrack } = {}) {
       if (pattern.melody[s] >= 0) {
         tone({ time: t, freq: midiToHz(root + 36 + tones[pattern.melody[s] % tones.length]), dur: sixteenth * 1.8, type: 'square', gain: 0.03, release: 0.03 });
       }
-    } else if (stationId === 'phonk') {
+    } else if (currentSynthId === 'phonk') {
       // Meme Phonk: 808 slides + metallic 808 cowbell riff
       if (s === 0 || s === 6 || s === 10) kick(t, 1.0);
       if (s === 4 || s === 12) snare(t, 0.34, 0.14);
@@ -561,7 +600,7 @@ export function createMusicEngine({ onTrack } = {}) {
         tone({ time: t, freq: cowTone, dur: sixteenth * 0.9, type: 'square', gain: 0.055, release: 0.04 });
         tone({ time: t, freq: cowTone * 1.48, dur: sixteenth * 0.7, type: 'square', gain: 0.035, release: 0.03 });
       }
-    } else if (stationId === 'jungle') {
+    } else if (currentSynthId === 'jungle') {
       // Fast 168 BPM Breakbeat Jungle / Drum & Bass
       if (s === 0 || s === 10) kick(t, 0.85);
       if (s === 4 || s === 12) snare(t, 0.3, 0.12);
@@ -592,7 +631,7 @@ export function createMusicEngine({ onTrack } = {}) {
           });
         });
       }
-    } else if (stationId === 'casinojazz') {
+    } else if (currentSynthId === 'casinojazz') {
       // Velvet Casino Lounge Jazz (swing brush hats, walking bass, Rhodes chords)
       if (s === 0 || s === 8) kick(t, 0.52);
       if (s === 4 || s === 12) noise({ time: t, dur: 0.11, gain: 0.09, type: 'bandpass', freq: 2600, q: 1.2 });
@@ -610,7 +649,7 @@ export function createMusicEngine({ onTrack } = {}) {
         const m = tone({ time: t, freq: midiToHz(root + 36 + tones[pattern.melody[s] % tones.length]), dur: sixteenth * 2.5, type: 'triangle', gain: 0.036, attack: 0.02, release: 0.25 });
         m.connect(nodes.echoIn);
       }
-    } else if (stationId === 'western') {
+    } else if (currentSynthId === 'western') {
       // Spaghetti Western (gallop snare/rim, twang guitar, outlaw whistle)
       if (s === 0 || s === 6 || s === 8 || s === 14) kick(t, 0.68);
       if (s === 2 || s === 4 || s === 10 || s === 12) snare(t, 0.18, 0.08);
@@ -627,7 +666,7 @@ export function createMusicEngine({ onTrack } = {}) {
         const wh = tone({ time: t, freq: midiToHz(root + 36 + tones[pattern.melody[s] % tones.length]), dur: sixteenth * 3.2, type: 'sine', gain: 0.05, attack: 0.06, release: 0.22 });
         wh.connect(nodes.echoIn);
       }
-    } else if (stationId === 'yachtrock') {
+    } else if (currentSynthId === 'yachtrock') {
       // Yacht Rock Sunset (smooth electric piano + marina bassline)
       if (s === 0 || s === 8) kick(t, 0.72);
       if (s === 4 || s === 12) snare(t, 0.22, 0.14);
@@ -641,7 +680,7 @@ export function createMusicEngine({ onTrack } = {}) {
           ep.connect(nodes.echoIn);
         });
       }
-    } else if (stationId === 'italodisco') {
+    } else if (currentSynthId === 'italodisco') {
       // Italo Disco '84 (driving octave bass, sparkly arps, laser Simmons fills)
       if (s % 4 === 0) kick(t, 0.92);
       if (s === 4 || s === 12) snare(t, 0.28, 0.2);
@@ -654,7 +693,7 @@ export function createMusicEngine({ onTrack } = {}) {
       if (isFill && s >= 12) {
         tone({ time: t, freq: 520 - (s - 12) * 85, slideTo: 120, dur: sixteenth * 0.9, type: 'sine', gain: 0.14 });
       }
-    } else if (stationId === 'spookysynth') {
+    } else if (currentSynthId === 'spookysynth') {
       // Seasonal Oct: Spooky organ arps & eerie theremin shimmer
       if (s % 4 === 0) kick(t, 0.8);
       if (s === 4 || s === 12) snare(t, 0.24, 0.25);
@@ -664,7 +703,7 @@ export function createMusicEngine({ onTrack } = {}) {
       }
       const org = tone({ time: t, freq: midiToHz(root + 24 + tones[s % tones.length]), dur: sixteenth * 0.9, type: 'square', gain: 0.038, detune: s % 2 ? 12 : -12, release: 0.06 });
       org.connect(nodes.echoIn);
-    } else if (stationId === 'jinglesynth') {
+    } else if (currentSynthId === 'jinglesynth') {
       // Seasonal Dec: Crisp sleigh-bell shaker + bright holiday chimes
       if (s % 4 === 0) kick(t, 0.82);
       if (s === 4 || s === 12) snare(t, 0.22, 0.16);
@@ -718,8 +757,15 @@ export function createMusicEngine({ onTrack } = {}) {
   }
 
   function announceTrack() {
-    const num = String((trackIdx % station().tracks.length) + 1).padStart(2, '0');
-    if (onTrack) onTrack(`Track ${num}: ${track().name}`);
+    const spec = getActiveSpec();
+    const num = String((trackIdx % spec.trackCount) + 1).padStart(2, '0');
+    if (onTrack) {
+      onTrack(`Track ${num}: ${spec.track.name}`, {
+        stationId: spec.sourceStationId,
+        trackIndex: spec.sourceTrackIndex,
+        name: spec.track.name
+      });
+    }
   }
 
   function loadTrack() {
@@ -755,8 +801,11 @@ export function createMusicEngine({ onTrack } = {}) {
 
   /* ---------- Public engine API ---------- */
   return {
-    play(id, fadeInSec = 1.2) {
-      if (STATIONS[id]) stationId = id;
+    play(id, fadeInSec = 1.2, startTrackIdx) {
+      if (STATIONS[id] || id === 'mixtape') stationId = id;
+      if (typeof startTrackIdx === 'number' && Number.isFinite(startTrackIdx)) {
+        trackIdx = Math.max(0, Math.floor(startTrackIdx));
+      }
       if (!ensureGraph()) return;
       clearLater();
       playing = true;
@@ -790,19 +839,36 @@ export function createMusicEngine({ onTrack } = {}) {
       fadeMaster(1, 0.8);
       setHtmlPlaying(true);
     },
-    setStation(id) {
-      if (!STATIONS[id] || id === stationId) return;
+    setStation(id, nextIdx) {
+      if (!(STATIONS[id] || id === 'mixtape') || (id === stationId && nextIdx === undefined)) return;
       crossfadeTo(() => {
         stationId = id;
-        trackIdx = 0;
+        trackIdx = typeof nextIdx === 'number' ? Math.max(0, Math.floor(nextIdx) || 0) : 0;
         keyShift = 0;
       });
     },
     nextTrack() {
       crossfadeTo(() => {
-        trackIdx = (trackIdx + 1) % station().tracks.length;
+        const count = Math.max(1, getActiveSpec().trackCount);
+        trackIdx = (trackIdx + 1) % count;
         keyShift = 0;
       });
+    },
+    prevTrack() {
+      crossfadeTo(() => {
+        const count = Math.max(1, getActiveSpec().trackCount);
+        trackIdx = (trackIdx - 1 + count) % count;
+        keyShift = 0;
+      });
+    },
+    setMixtapeTracks(list) {
+      mixtapeItems = Array.isArray(list)
+        ? list.filter((it) => it && STATIONS[it.stationId] && Number.isFinite(Number(it.trackIndex)))
+        : [];
+      if (playing && stationId === 'mixtape') {
+        trackIdx = 0;
+        loadTrack();
+      }
     },
     setVolume(v) {
       volume = v;

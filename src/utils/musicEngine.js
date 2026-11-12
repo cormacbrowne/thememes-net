@@ -75,6 +75,26 @@ const STATIONS = {
       { name: 'Hold Music Forever', root: 36, prog: [[0, 'maj7'], [4, 'min7'], [5, 'maj7'], [7, 'dom7']], seed: 157 },
       { name: 'Floral Shoppe Doge', root: 38, prog: [[0, 'min7'], [5, 'min7'], [10, 'maj7'], [8, 'maj7']], seed: 163 }
     ]
+  },
+  retrowave: {
+    bpm: 108,
+    swing: 0,
+    filterBase: 5200,
+    tracks: [
+      { name: 'Miami Palms 1986', root: 35, prog: [[0, 'maj'], [7, 'maj'], [9, 'min'], [5, 'maj']], seed: 173 },
+      { name: 'Turbo Testarossa', root: 40, prog: [[0, 'maj'], [5, 'maj'], [9, 'min'], [7, 'maj']], seed: 181 },
+      { name: 'Neon Coastline FM', root: 37, prog: [[0, 'maj7'], [7, 'maj'], [5, 'maj7'], [9, 'min7']], seed: 193 }
+    ]
+  },
+  cyberpunk: {
+    bpm: 118,
+    swing: 0,
+    filterBase: 3600,
+    tracks: [
+      { name: 'Night City Overdrive', root: 31, prog: [[0, 'min'], [1, 'maj'], [3, 'maj'], [0, 'min']], seed: 211 },
+      { name: 'Subgrid Bass Protocol', root: 34, prog: [[0, 'min'], [10, 'maj'], [8, 'maj'], [7, 'maj']], seed: 223 },
+      { name: 'Chrome Runner 2099', root: 33, prog: [[0, 'min'], [5, 'min'], [1, 'maj'], [7, 'maj']], seed: 239 }
+    ]
   }
 };
 

@@ -115,7 +115,12 @@ export default function ExtrasDrawerModal({
         {/* SECTION 0: THE MEMES FM PROCEDURAL SYNTHWAVE RADIO DECK */}
         <div className="tm-extras-section">
           <div className="tm-extras-section-label">📼 THE MEMES FM — PROCEDURAL RADIO DECK</div>
-          <MemesRadio />
+          <MemesRadio
+            onOpenShop={() => {
+              onClose();
+              if (onOpenRewards) onOpenRewards('shop');
+            }}
+          />
         </div>
 
         {/* SECTION 1: TOYS, EASTER EGGS & UTILITIES */}

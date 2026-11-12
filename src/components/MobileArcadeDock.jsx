@@ -5,6 +5,7 @@ export default function MobileArcadeDock({
   showStudio,
   showProfile,
   isAnyModalOpen,
+  unreadNotificationsCount = 0,
   onSelectMode,
   onOpenBlankStudio,
   onOpenLeaderboard,
@@ -254,7 +255,10 @@ export default function MobileArcadeDock({
             if (onOpenProfile) onOpenProfile();
           }}
         >
-          <span className="tm-dock-icon">👤</span>
+          <span className="tm-dock-icon">
+            👤
+            {unreadNotificationsCount > 0 && <span className="tm-dock-notif-dot" />}
+          </span>
           <span>Profile</span>
         </button>
       </nav>

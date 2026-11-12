@@ -1,5 +1,6 @@
 import { useRef, useCallback, useState, memo } from 'react';
 import MemeMedia from './MemeMedia';
+import MemeLiveEmotes from './MemeLiveEmotes';
 import {
   getMemeRarityTier,
   COMIC_ACTION_WORDS,
@@ -28,6 +29,7 @@ const MemeCard = memo(function MemeCard({
   onOpenProfile,
   onReportMeme,
   onOpenAiRoast,
+  cardFrame = 'default',
   litePerfMode = false
 }) {
   const cardRef = useRef(null);
@@ -125,7 +127,7 @@ const MemeCard = memo(function MemeCard({
   return (
     <article
       ref={cardRef}
-      className={`tm-card tm-holo-card ${rarity.className} ${squishCard ? 'tm-card-jelly' : ''}`}
+      className={`tm-card tm-holo-card ${rarity.className} ${cardFrame && cardFrame !== 'default' ? `tm-frame-${cardFrame}` : ''} ${squishCard ? 'tm-card-jelly' : ''}`}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
@@ -242,6 +244,7 @@ const MemeCard = memo(function MemeCard({
           litePerfMode={litePerfMode}
           className={isBlurred ? 'tm-img-blurred' : ''}
         />
+        <MemeLiveEmotes memeId={meme.id} litePerfMode={litePerfMode} />
         <span className="tm-dbl-hint">⚡ Double-tap to Upvote</span>
       </div>
 

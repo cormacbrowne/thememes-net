@@ -11,7 +11,6 @@ import {
   isSeedMeme,
   VIRAL_CAPTIONS,
   RANKS,
-  DAILY_BOUNTIES,
   DAILY_QUESTS,
   CURSOR_TRAILS,
   MEME_FORTUNES,
@@ -63,9 +62,32 @@ import { RadioToggleButton } from './components/MemesRadio';
 import {
   setRadioContextStation,
   setRadioMuted,
+  setRadioStation,
+  getRadioState,
   radioEvent,
   armRadioResumeOnGesture
 } from './utils/radioBus';
+import { useLivePresence } from './hooks/useLivePresence';
+import {
+  getDailyCaptionBattle,
+  getYesterdayCaptionKing,
+  getBattleEntriesForBattle
+} from './utils/dailyCaptionBattle';
+import {
+  loadUnlockedCosmetics,
+  saveUnlockedCosmetics,
+  loadEquippedFrame,
+  saveEquippedFrame,
+  loadEquippedCassetteSkin,
+  saveEquippedCassetteSkin,
+  pickRandomLockedCosmetic
+} from './data/cosmetics';
+import {
+  sendCreatorNotification,
+  fetchCreatorNotifications,
+  markCreatorNotificationsRead,
+  recordLocalMemeView
+} from './utils/notifications';
 
 const InsertCoinIntro = lazy(() => import('./components/InsertCoinIntro'));
 const MemeForge = lazy(() => import('./components/forge/MemeForge'));
@@ -90,6 +112,8 @@ const AiRoastModal = lazy(() => import('./components/AiRoastModal'));
 const BossKeyOverlay = lazy(() => import('./components/BossKeyOverlay'));
 const DankPetWidget = lazy(() => import('./components/DankPetWidget'));
 const UnhandledGooseSurprise = lazy(() => import('./components/UnhandledGooseSurprise'));
+const MemeLiveCelebrationModal = lazy(() => import('./components/MemeLiveCelebrationModal'));
+const DailyCaptionBattleModal = lazy(() => import('./components/DailyCaptionBattleModal'));
 
 const MODAL_SKELETON_FALLBACK = (
   <div className="tm-modal-backdrop" role="status" aria-live="polite">
@@ -182,9 +206,11 @@ export default function App() {
     Boolean(initialRoute.theaterMemeId)
   );
 
-  // Phase 4: Daily Bounties, Hall of Fame Leaderboard & Player Profiles State
-  const [bountyIdx, setBountyIdx] = useState(0);
+  // Phase 4 & 28.15: Daily Caption Battle, Hall of Fame Leaderboard & Player Profiles State
   const [activeBounty, setActiveBounty] = useState(null);
+  const [battleModalOpen, setBattleModalOpen] = useState(false);
+  const [liveCelebrationData, setLiveCelebrationData] = useState(null);
+  const [notifications, setNotifications] = useState([]);
   const [bountiesCompleted, setBountiesCompleted] = useState(() =>
     Number(localStorage.getItem('tm_bounties') || 0)
   );
@@ -245,6 +271,7 @@ export default function App() {
     return Boolean(isTouchTabletOrPhone || lowCores);
   });
   const [screenShake, setScreenShake] = useState(false);
+  const [screenPunch, setScreenPunch] = useState(false);
   const particleOverlayRef = useRef(null);
   const [levelUpBanner, setLevelUpBanner] = useState(null);
   const [userVotes, setUserVotes] = useState(() => {
@@ -284,8 +311,14 @@ export default function App() {
     }
   });
 
-  // Phase 8 & 9: Rewards Vault, Wheel of Chaos, Daily Quests, AI Roast, AI Copilot & Boss Key State
+  // Phase 8, 9 & 28.16: Rewards Vault, Arcade Shop Cosmetics, Wheel of Chaos, Daily Quests, AI Roast, AI Copilot & Boss Key State
   const [showRewardsModal, setShowRewardsModal] = useState(false);
+  const [rewardsInitialTab, setRewardsInitialTab] = useState('vault');
+  const [unlockedCosmetics, setUnlockedCosmetics] = useState(() => loadUnlockedCosmetics());
+  const [equippedFrame, setEquippedFrame] = useState(() => loadEquippedFrame());
+  const [equippedCassetteSkin, setEquippedCassetteSkin] = useState(() =>
+    loadEquippedCassetteSkin()
+  );
   const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
   const [lootSpins, setLootSpins] = useState(() =>
     Math.min(
@@ -397,6 +430,7 @@ export default function App() {
       return null;
     }
   });
+  const { onlineCount, broadcastEmote } = useLivePresence({ username: user?.username });
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('login');
   const [authEmail, setAuthEmail] = useState('');
@@ -532,6 +566,29 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('tm_cursor_trail', cursorTrail);
   }, [cursorTrail]);
+
+  useEffect(() => {
+    saveUnlockedCosmetics(unlockedCosmetics);
+  }, [unlockedCosmetics]);
+
+  useEffect(() => {
+    saveEquippedFrame(equippedFrame);
+  }, [equippedFrame]);
+
+  useEffect(() => {
+    saveEquippedCassetteSkin(equippedCassetteSkin);
+  }, [equippedCassetteSkin]);
+
+  const dailyBattle = useMemo(() => getDailyCaptionBattle(), []);
+  const yesterdayCaptionKing = useMemo(() => getYesterdayCaptionKing(memes), [memes]);
+  const battleEntriesCount = useMemo(
+    () => getBattleEntriesForBattle(memes, dailyBattle).length,
+    [memes, dailyBattle]
+  );
+  const unreadNotificationsCount = useMemo(
+    () => notifications.filter((n) => !n.read).length,
+    [notifications]
+  );
 
   useEffect(() => {
     localStorage.setItem('tm_goblins', String(goblinsCaught));
@@ -785,6 +842,52 @@ export default function App() {
     };
   }, [fetchSupabaseMemes]);
 
+  // Phase 28.13: Real In-App Creator Notifications (Supabase table + Realtime subscription)
+  useEffect(() => {
+    const client = getSupabaseClient();
+    const myName = user?.username;
+    if (!client || !myName || String(myName).toLowerCase() === 'anonmemer') {
+      return undefined;
+    }
+
+    let cancelled = false;
+    fetchCreatorNotifications(client, myName).then((rows) => {
+      if (!cancelled) {
+        setNotifications(rows);
+      }
+    });
+
+    const notifChannel = client.channel
+      ? client
+          .channel(`public:notifications:${myName}`)
+          .on(
+            'postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'notifications' },
+            (payload) => {
+              const row = payload?.new;
+              if (!row) return;
+              if (String(row.recipient_username || '').toLowerCase() !== String(myName).toLowerCase()) {
+                return;
+              }
+              setNotifications((prev) => {
+                if (prev.some((item) => String(item.id) === String(row.id))) return prev;
+                return [row, ...prev].slice(0, 25);
+              });
+              setGoblinFortuneToast(row.message || '🔥 Someone interacted with your meme!');
+              setTimeout(() => setGoblinFortuneToast(''), 4500);
+            }
+          )
+          .subscribe()
+      : null;
+
+    return () => {
+      cancelled = true;
+      if (notifChannel && client) {
+        client.removeChannel(notifChannel);
+      }
+    };
+  }, [user?.username]);
+
   // ==========================================
   // COMBO MULTIPLIER DECAY LOOP
   // ==========================================
@@ -913,6 +1016,75 @@ export default function App() {
     setTokens(tokensRef.current);
     return true;
   }, []);
+
+  /**
+   * Phase 28.16 & 28.17: Arcade Shop Cosmetic Unlock / Equip & Golden Meme Drop Handlers
+   */
+  const handleEquipCosmetic = useCallback((item) => {
+    if (!item) return;
+    if (item.type === 'frame') {
+      setEquippedFrame(item.value);
+    } else if (item.type === 'trail') {
+      setCursorTrail(item.value);
+    } else if (item.type === 'skin') {
+      setEquippedCassetteSkin(item.value);
+    } else if (item.type === 'station') {
+      setRadioStation(item.value);
+    } else if (item.type === 'title') {
+      setUnlockedFlairs((prev) => (prev.includes(item.value) ? prev : [...prev, item.value]));
+      setEquippedFlair(item.value);
+    }
+  }, []);
+
+  const handleBuyOrUnlockCosmetic = useCallback(
+    (item) => {
+      if (!item) return { ok: false };
+      if (unlockedCosmetics.includes(item.id) || item.freeDefault) {
+        handleEquipCosmetic(item);
+        return { ok: true };
+      }
+      const xpEligible = item.unlockXp > 0 && xp >= item.unlockXp;
+      if (!xpEligible) {
+        if (!handleSpendTokens(item.tokenCost)) {
+          return { ok: false };
+        }
+      }
+      setUnlockedCosmetics((prev) => (prev.includes(item.id) ? prev : [...prev, item.id]));
+      handleEquipCosmetic(item);
+      return { ok: true };
+    },
+    [unlockedCosmetics, xp, handleSpendTokens, handleEquipCosmetic]
+  );
+
+  const handleClaimGoldenMeme = useCallback(() => {
+    const lockedPick = pickRandomLockedCosmetic(unlockedCosmetics);
+    if (lockedPick) {
+      setUnlockedCosmetics((prev) =>
+        prev.includes(lockedPick.id) ? prev : [...prev, lockedPick.id]
+      );
+      handleEquipCosmetic(lockedPick);
+      sfx.playJackpot();
+      setGoblinFortuneToast(
+        `✨ GOLDEN MEME DROP! Unlocked & equipped cosmetic: ${lockedPick.icon} ${lockedPick.name}!`
+      );
+      setTimeout(() => setGoblinFortuneToast(''), 5000);
+      return {
+        label: `Unlocked ${lockedPick.icon} ${lockedPick.name}!`,
+        cosmetic: lockedPick
+      };
+    }
+    awardXpOnly(40, null, '✨', '✨ Golden Meme Drop! +40 XP');
+    sfx.playJackpot();
+    return { label: '+40 Bonus XP!', xp: 40 };
+  }, [unlockedCosmetics, handleEquipCosmetic, awardXpOnly]);
+
+  const handleMarkNotificationsRead = useCallback(async () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    const client = getSupabaseClient();
+    if (client && user?.username) {
+      await markCreatorNotificationsRead(client, user.username);
+    }
+  }, [user]);
 
   /**
    * Verified Staked Game Payout Helper (Only pays out when real tokens were staked/invested!)
@@ -1287,9 +1459,35 @@ export default function App() {
 
       // Only reward tokens/XP once per unique meme ID (prevents upvote/downvote toggle farming)
       if (direction > 0) {
+        if (!litePerfMode) {
+          setScreenPunch(true);
+          setTimeout(() => setScreenPunch(false), 140);
+        }
+        try {
+          if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+            navigator.vibrate(10);
+          }
+        } catch {
+          // ignore vibrate unsupported
+        }
+        broadcastEmote(memeId, '🔥');
         if (currentVote <= 0) {
           const votedMeme = memesRef.current.find((m) => String(m.id) === String(memeId));
           trackUpvote(memeId, votedMeme?.category || 'unknown', Math.max(1, safeDelta));
+          if (votedMeme?.author_name) {
+            const clientForNotif = getSupabaseClient();
+            if (clientForNotif) {
+              const actorName = user?.username || 'Someone';
+              sendCreatorNotification({
+                client: clientForNotif,
+                recipientUsername: votedMeme.author_name,
+                actorName,
+                type: 'upvote',
+                memeId,
+                message: `🔥 Someone upvoted your meme "${String(votedMeme.title || 'Meme').slice(0, 36)}"!`
+              });
+            }
+          }
           const nextVotes = votesCastCount + 1;
           setVotesCastCount(nextVotes);
           localStorage.setItem('tm_votes_cast_count', String(nextVotes));
@@ -1339,7 +1537,17 @@ export default function App() {
         }
       }
     },
-    [userVotes, combo, awardFairReward, incrementQuest, votesCastCount, petUnlocked]
+    [
+      userVotes,
+      combo,
+      litePerfMode,
+      broadcastEmote,
+      user?.username,
+      awardFairReward,
+      incrementQuest,
+      votesCastCount,
+      petUnlocked
+    ]
   );
 
   const handleReaction = useCallback(
@@ -1357,6 +1565,7 @@ export default function App() {
       }));
 
       sfx.playReaction(emoji, combo);
+      broadcastEmote(memeId, emoji);
       const res = awardFairReward({
         category: 'engagement',
         requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.REACT_UNIQUE_MEME.tokens,
@@ -1381,7 +1590,18 @@ export default function App() {
         })
       );
 
+      const reactedMeme = memesRef.current.find((m) => String(m.id) === String(memeId));
       const client = getSupabaseClient();
+      if (client && reactedMeme?.author_name) {
+        sendCreatorNotification({
+          client,
+          recipientUsername: reactedMeme.author_name,
+          actorName: user?.username || 'Someone',
+          type: 'upvote',
+          memeId,
+          message: `${emoji} Someone reacted to your meme "${String(reactedMeme.title || 'Meme').slice(0, 36)}"!`
+        });
+      }
       if (
         client &&
         !String(memeId).startsWith('seed-') &&
@@ -1395,7 +1615,7 @@ export default function App() {
         }
       }
     },
-    [userReactionsMap, combo, awardFairReward, incrementQuest]
+    [userReactionsMap, combo, broadcastEmote, user?.username, awardFairReward, incrementQuest]
   );
 
   const handleToggleComments = useCallback((memeId) => {
@@ -1441,6 +1661,17 @@ export default function App() {
       );
 
       const client = getSupabaseClient();
+      const commentedMeme = memesRef.current.find((m) => String(m.id) === String(memeId));
+      if (client && commentedMeme?.author_name) {
+        sendCreatorNotification({
+          client,
+          recipientUsername: commentedMeme.author_name,
+          actorName: author,
+          type: 'comment',
+          memeId,
+          message: `💬 @${author} commented on "${String(commentedMeme.title || 'Meme').slice(0, 36)}"!`
+        });
+      }
       if (client && !String(memeId).startsWith('seed-') && !String(memeId).startsWith('local-')) {
         try {
           await client.from('comments').insert([
@@ -1592,7 +1823,7 @@ export default function App() {
       setGoblinFortuneToast('🕹️ First meme created! Arcade Games & Cyber-AI Co-Pilot unlocked!');
       setTimeout(() => setGoblinFortuneToast(''), 5000);
     }
-    sfx.playLevelUp();
+    sfx.playPublishStinger();
     incrementQuest('q-mutate', 1);
     addCappedWheelSpins(1);
     awardUploadTokensWithPioneerCheck({
@@ -1600,6 +1831,10 @@ export default function App() {
       baseXp: ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.xp,
       event,
       emoji: '🚀'
+    });
+    setLiveCelebrationData({
+      meme: insertedMeme,
+      rewardSummary: `+${ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens} 🪙 & +${ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.xp} XP`
     });
     setSortBy('latest');
   };
@@ -1653,6 +1888,16 @@ export default function App() {
       if (user?.username && parentAuthor.toLowerCase() === user.username.toLowerCase()) {
         setXp((prevXp) => prevXp + 50);
       }
+      if (client) {
+        sendCreatorNotification({
+          client,
+          recipientUsername: parentAuthor,
+          actorName: user?.username || 'Someone',
+          type: 'remix',
+          memeId: insertedMeme.id,
+          message: `🧬 @${user?.username || 'Someone'} remixed your meme "${String(parent.title || 'Meme').slice(0, 32)}"!`
+        });
+      }
     }
 
     recordPublishDailyPerk();
@@ -1662,7 +1907,7 @@ export default function App() {
       setGoblinFortuneToast('🕹️ First meme created! Arcade Games & Cyber-AI Co-Pilot unlocked!');
       setTimeout(() => setGoblinFortuneToast(''), 5000);
     }
-    sfx.playLevelUp();
+    sfx.playPublishStinger();
     incrementQuest('q-mutate', 1);
     addCappedWheelSpins(1);
 
@@ -1691,6 +1936,14 @@ export default function App() {
     setForgeIntent(null);
     setMutatingParentMeme(null);
     setActiveBounty(null);
+    setLiveCelebrationData({
+      meme: insertedMeme,
+      rewardSummary: isBounty
+        ? `⚔️ Caption Battle Entry! +${ARCADE_ECONOMY_RULES.REWARDS.BOUNTY_UPLOAD.tokens} 🪙`
+        : parent
+        ? `🧬 Remix Live! +${ARCADE_ECONOMY_RULES.REWARDS.REMIX_MEME.tokens} 🪙`
+        : `+${ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens} 🪙 & +${ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.xp} XP`
+    });
     setSortBy('latest');
   };
 
@@ -2271,7 +2524,21 @@ export default function App() {
     };
 
     window.addEventListener('pointermove', onPointerMove, { passive: true });
-    return () => window.removeEventListener('pointermove', onPointerMove);
+    const onPointerDown = (e) => {
+      if (e.pointerType !== 'touch') return;
+      if (e.clientX && e.clientY) {
+        particleOverlayRef.current?.spawnParticles(
+          { clientX: e.clientX, clientY: e.clientY },
+          trailObj.emoji,
+          1
+        );
+      }
+    };
+    window.addEventListener('pointerdown', onPointerDown, { passive: true });
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerdown', onPointerDown);
+    };
   }, [cursorTrail, litePerfMode, isFixedArcadeGame]);
 
   const handlePlaySoundboardPad = useCallback(
@@ -2590,6 +2857,7 @@ export default function App() {
     if (!meme) return;
     sfx.playToggle();
     trackMemeViewed(meme, 'theater');
+    recordLocalMemeView(meme.id);
     setTheaterMemeId(meme.id);
     if (typeof window !== 'undefined' && window.history?.replaceState) {
       const url = new URL(window.location.href);
@@ -2627,6 +2895,9 @@ export default function App() {
     setEvolutionModalMeme(null);
     setShowLeaderboard(false);
     setShowRewardsModal(false);
+    setRewardsInitialTab('vault');
+    setBattleModalOpen(false);
+    setLiveCelebrationData(null);
     setRoastModalMeme(null);
     setProfileUsername(null);
     setShowAuthModal(false);
@@ -2682,6 +2953,8 @@ export default function App() {
       evolutionModalMeme ||
       showLeaderboard ||
       showRewardsModal ||
+      battleModalOpen ||
+      liveCelebrationData ||
       roastModalMeme ||
       profileUsername ||
       showAuthModal ||
@@ -2715,6 +2988,10 @@ export default function App() {
       setShowAuthModal(false);
     } else if (roastModalMeme) {
       setRoastModalMeme(null);
+    } else if (liveCelebrationData) {
+      setLiveCelebrationData(null);
+    } else if (battleModalOpen) {
+      setBattleModalOpen(false);
     } else if (showRewardsModal) {
       setShowRewardsModal(false);
     } else if (evolutionModalMeme) {
@@ -2739,6 +3016,8 @@ export default function App() {
     extrasDrawerOpen,
     showAuthModal,
     roastModalMeme,
+    liveCelebrationData,
+    battleModalOpen,
     showRewardsModal,
     evolutionModalMeme,
     profileUsername,
@@ -3011,7 +3290,9 @@ export default function App() {
     <div
       className={`tm-app ${isFixedArcadeGame ? 'tm-app-game-fixed' : ''} ${
         litePerfMode ? 'tm-lite-perf' : ''
-      } ${screenShake ? 'tm-shake' : ''} tm-mutator-${chaosMutator} tm-device-${deviceProfile.id}`}
+      } ${screenShake ? 'tm-shake' : ''} ${
+        screenPunch ? 'tm-screen-punch' : ''
+      } tm-mutator-${chaosMutator} tm-device-${deviceProfile.id}`}
       data-device={deviceProfile.id}
       data-form={deviceProfile.formFactor}
     >
@@ -3270,6 +3551,8 @@ export default function App() {
             comboTimer={comboTimer}
             combo={combo}
             dbStatus={dbStatus}
+            onlineCount={onlineCount}
+            unreadNotificationsCount={unreadNotificationsCount}
             currentRank={currentRank}
             tokens={tokens}
             xpConversionState={xpConversionState}
@@ -3288,6 +3571,7 @@ export default function App() {
             onOpenRewards={() => {
               sfx.playToggle();
               closeAllModals();
+              setRewardsInitialTab('vault');
               setShowRewardsModal(true);
             }}
             unclaimedRewardsCount={unclaimedRewardsCount}
@@ -3301,6 +3585,7 @@ export default function App() {
               const client = getSupabaseClient();
               client?.auth?.signOut?.().catch(() => {});
               setUser(null);
+              setNotifications([]);
               localStorage.removeItem('tm_user');
             }}
             onOpenAuthModal={() => {
@@ -3435,10 +3720,13 @@ export default function App() {
               closeAllModals();
               handleOpenBlankStudio();
             }}
-            activeBounty={DAILY_BOUNTIES[bountyIdx % DAILY_BOUNTIES.length]}
-            onCycleBounty={() => {
+            activeBounty={dailyBattle}
+            yesterdayCaptionKing={yesterdayCaptionKing}
+            battleEntriesCount={battleEntriesCount}
+            onOpenBattleModal={() => {
               sfx.playToggle();
-              setBountyIdx((i) => (i + 1) % DAILY_BOUNTIES.length);
+              closeAllModals();
+              setBattleModalOpen(true);
             }}
             onAcceptBounty={handleAcceptBounty}
             uploadTokensRemainingToday={uploadTokensRemainingToday}
@@ -3577,6 +3865,15 @@ export default function App() {
                     }}
                     onReportMeme={handleReportMeme}
                     onOpenAiRoast={handleOpenAiRoast}
+                    cardFrame={
+                      (user?.username &&
+                        meme.author_name &&
+                        String(meme.author_name).toLowerCase() ===
+                          String(user.username).toLowerCase()) ||
+                      String(meme.id).startsWith('local-')
+                        ? equippedFrame
+                        : 'default'
+                    }
                     litePerfMode={litePerfMode}
                   />
                   {idx === 3 && (
@@ -3684,6 +3981,46 @@ export default function App() {
                 ⚡ Load More Memes ({filteredMemes.length - visibleCount} remaining)
               </button>
             </div>
+          )}
+
+          {!isLoadingFeed && filteredMemes.length > 0 && visibleCount >= filteredMemes.length && (
+            <section className="tm-end-of-internet-wrap" aria-label="End of feed">
+              <div className="tm-end-of-internet-card">
+                <div style={{ fontSize: '42px', marginBottom: '6px' }}>🫠</div>
+                <h3 style={{ margin: '0 0 6px', fontSize: '19px', fontWeight: 900, color: '#f8fafc' }}>
+                  You&apos;ve reached the end of the internet
+                </h3>
+                <p style={{ margin: '0 auto 14px', maxWidth: '460px', fontSize: '13px', color: '#94a3b8' }}>
+                  You scrolled every meme in this sector. Remix a format or drop into the 80s Neon Arcade!
+                </p>
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    className="tm-btn tm-btn-primary"
+                    onClick={handleOpenBlankStudio}
+                  >
+                    🎨 Remix / Create a Meme
+                  </button>
+                  <button
+                    type="button"
+                    className="tm-btn"
+                    onClick={() => {
+                      sfx.playToggle();
+                      setViewMode('pusher');
+                    }}
+                  >
+                    🕹️ Play Arcade Games
+                  </button>
+                  <button
+                    type="button"
+                    className="tm-btn"
+                    onClick={() => window.scrollTo?.({ top: 0, behavior: 'smooth' })}
+                  >
+                    🔝 Back to Top
+                  </button>
+                </div>
+              </div>
+            </section>
           )}
 
           {/* SIDE ENTERTAINMENT LOUNGE: FEATURED 80s NEON ARCADE SUB-GAMES BELOW THE MEME FEED */}
@@ -4185,6 +4522,12 @@ export default function App() {
             sfx.playToggle();
             setViewMode('feed');
           }}
+          onOpenGames={() => {
+            sfx.playToggle();
+            setViewMode('pusher');
+          }}
+          onClaimGoldenMeme={handleClaimGoldenMeme}
+          litePerfMode={litePerfMode}
         />
       )}
 
@@ -4288,6 +4631,7 @@ export default function App() {
           showStudio={showStudio}
           showProfile={Boolean(profileUsername || showAuthModal)}
           isAnyModalOpen={isAnyModalOpen}
+          unreadNotificationsCount={unreadNotificationsCount}
           onSelectMode={(mode) => {
             sfx.playToggle();
             closeAllModals();
@@ -4492,6 +4836,15 @@ export default function App() {
             royaltiesMap={royaltiesMap}
             unlockedFlairs={unlockedFlairs}
             equippedFlair={equippedFlair}
+            equippedFrame={equippedFrame}
+            notifications={notifications}
+            onMarkNotificationsRead={handleMarkNotificationsRead}
+            onOpenShop={() => {
+              sfx.playToggle();
+              setProfileUsername(null);
+              setRewardsInitialTab('shop');
+              setShowRewardsModal(true);
+            }}
             roastsRun={roastsRun}
             goblinsCaught={goblinsCaught}
             konamiUnlocked={konamiUnlocked}
@@ -4506,6 +4859,7 @@ export default function App() {
       {showRewardsModal && (
         <Suspense fallback={MODAL_SKELETON_FALLBACK}>
           <RewardsModal
+            key={`rewards-${rewardsInitialTab}`}
             xp={xp}
             tokens={tokens}
             tokenLedger={tokenLedger}
@@ -4540,6 +4894,13 @@ export default function App() {
               sfx.playToggle();
               setCursorTrail(trailId);
             }}
+            initialTab={rewardsInitialTab}
+            unlockedCosmetics={unlockedCosmetics}
+            equippedFrame={equippedFrame}
+            equippedCassetteSkin={equippedCassetteSkin}
+            activeRadioStation={getRadioState().station}
+            onBuyOrUnlockCosmetic={handleBuyOrUnlockCosmetic}
+            onEquipCosmetic={handleEquipCosmetic}
             konamiUnlocked={konamiUnlocked}
             questProgress={questProgress}
             claimedQuests={claimedQuests}
@@ -4549,7 +4910,10 @@ export default function App() {
               setShowRewardsModal(false);
               setViewMode(mode);
             }}
-            onClose={() => setShowRewardsModal(false)}
+            onClose={() => {
+              setShowRewardsModal(false);
+              setRewardsInitialTab('vault');
+            }}
           />
         </Suspense>
       )}
@@ -4613,8 +4977,9 @@ export default function App() {
               setExtrasFocus(null);
               handleTriggerChaosRoulette(e);
             }}
-            onOpenRewards={() => {
+            onOpenRewards={(tab) => {
               sfx.playToggle();
+              setRewardsInitialTab(tab === 'shop' ? 'shop' : 'vault');
               setShowRewardsModal(true);
             }}
             unclaimedRewardsCount={unclaimedRewardsCount}
@@ -4702,6 +5067,48 @@ export default function App() {
               sfx.playToggle?.();
               setViewMode(mode);
             }}
+          />
+        </Suspense>
+      )}
+
+      {/* MODAL 10 (PHASE 28.13): "YOUR MEME IS LIVE!" FULL-SCREEN CELEBRATION */}
+      {liveCelebrationData && (
+        <Suspense fallback={MODAL_SKELETON_FALLBACK}>
+          <MemeLiveCelebrationModal
+            meme={liveCelebrationData.meme}
+            rewardSummary={liveCelebrationData.rewardSummary}
+            litePerfMode={litePerfMode}
+            onShareMeme={handleShareMeme}
+            onOpenTheater={(meme) => {
+              setLiveCelebrationData(null);
+              handleOpenTheater(meme);
+            }}
+            onClose={() => setLiveCelebrationData(null)}
+          />
+        </Suspense>
+      )}
+
+      {/* MODAL 11 (PHASE 28.15): DAILY CAPTION BATTLE & YESTERDAY'S CAPTION KING */}
+      {battleModalOpen && (
+        <Suspense fallback={MODAL_SKELETON_FALLBACK}>
+          <DailyCaptionBattleModal
+            battle={dailyBattle}
+            memes={memes}
+            userVotes={userVotes}
+            onVote={handleVote}
+            onEnterBattle={(battle) => {
+              setBattleModalOpen(false);
+              handleAcceptBounty(battle);
+            }}
+            onOpenProfile={(username) => {
+              setBattleModalOpen(false);
+              setProfileUsername(username);
+            }}
+            onOpenTheater={(meme) => {
+              setBattleModalOpen(false);
+              handleOpenTheater(meme);
+            }}
+            onClose={() => setBattleModalOpen(false)}
           />
         </Suspense>
       )}

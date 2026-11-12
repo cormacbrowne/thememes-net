@@ -18,6 +18,8 @@ export default function NavbarHud({
   comboTimer,
   combo,
   dbStatus,
+  onlineCount = 0,
+  unreadNotificationsCount = 0,
   currentRank,
   tokens = 50,
   xpConversionState = null,
@@ -95,12 +97,19 @@ export default function NavbarHud({
               />
             </div>
             <div className="tm-logo-badge">THE MEMES.net</div>
-            <div className="tm-status-pill tm-hide-mobile" title="Live Community Feed Connected">
-              <span className={`tm-dot ${dbStatus === 'live' ? 'live' : 'local'}`} />
-              <span className="tm-status-text">
-                {dbStatus === 'live' ? 'LIVE' : 'ARCADE'}
-              </span>
-            </div>
+            {onlineCount >= 2 ? (
+              <div className="tm-status-pill tm-live-presence-pill" title="Real connected memers currently browsing">
+                <span className="tm-dot live" />
+                <span className="tm-status-text">🟢 {onlineCount} memers online</span>
+              </div>
+            ) : (
+              <div className="tm-status-pill tm-hide-mobile" title="Live Community Feed Connected">
+                <span className={`tm-dot ${dbStatus === 'live' ? 'live' : 'local'}`} />
+                <span className="tm-status-text">
+                  {dbStatus === 'live' ? 'LIVE' : 'ARCADE'}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -222,6 +231,11 @@ export default function NavbarHud({
               >
                 {user.verified ? '🛡️' : '👤'}{' '}
                 <span className="tm-username-trunc">@{user.username}</span>
+                {unreadNotificationsCount > 0 && (
+                  <span className="tm-reward-alert-dot" title="New creator alerts">
+                    {unreadNotificationsCount}
+                  </span>
+                )}
               </button>
               <button
                 type="button"

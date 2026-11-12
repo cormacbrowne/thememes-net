@@ -4556,3 +4556,199 @@ html[data-device="iphone-duo"] button {
   }
 }
 
+/* ==========================================
+   PHASE 28.13 - 28.17: RETENTION, PRESENCE, CAPTION BATTLE, COSMETICS & MICRO-JUICE
+   ========================================== */
+
+.tm-dock-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tm-dock-notif-dot {
+  position: absolute;
+  top: -2px;
+  right: -5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.9);
+  border: 1px solid #090d16;
+}
+
+/* 28.14 Real Presence Pill & Twitch-Style Floating Emotes */
+.tm-live-presence-pill {
+  border-color: rgba(74, 222, 128, 0.55) !important;
+  background: rgba(20, 83, 45, 0.4) !important;
+  color: #bbf7d0 !important;
+}
+
+.tm-theater-media {
+  position: relative;
+}
+
+.tm-live-emotes-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 6;
+}
+
+.tm-live-emote-float {
+  position: absolute;
+  bottom: 14%;
+  font-size: 24px;
+  line-height: 1;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.65));
+  animation: tmLiveEmoteRise 1.3s ease-out forwards;
+}
+
+@keyframes tmLiveEmoteRise {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.7);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-92px) scale(0.95);
+  }
+}
+
+/* 28.15 Caption King Pill in Daily Caption Battle Strip */
+.tm-caption-king-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(250, 204, 21, 0.16);
+  border: 1px solid rgba(250, 204, 21, 0.55);
+  color: #fde047;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* 28.16 Arcade Shop Card Frames */
+.tm-frame-neon-pink {
+  border: 2px solid #ec4899 !important;
+  box-shadow: 0 0 20px rgba(236, 72, 153, 0.35), inset 0 0 12px rgba(236, 72, 153, 0.14) !important;
+}
+
+.tm-frame-holo {
+  border: 2px solid #38bdf8 !important;
+  background-image: linear-gradient(
+    135deg,
+    rgba(0, 243, 255, 0.08),
+    rgba(168, 85, 247, 0.08),
+    rgba(250, 204, 21, 0.08)
+  ) !important;
+  box-shadow: 0 0 22px rgba(56, 189, 248, 0.35), 0 0 10px rgba(236, 72, 153, 0.25) !important;
+}
+
+.tm-frame-vhs {
+  border: 2px solid #22d3ee !important;
+  box-shadow: -3px 0 0 rgba(239, 68, 68, 0.55), 3px 0 0 rgba(34, 211, 238, 0.55), 0 8px 24px rgba(0, 0, 0, 0.45) !important;
+}
+
+.tm-frame-gold {
+  border: 2px solid #facc15 !important;
+  box-shadow: 0 0 24px rgba(250, 204, 21, 0.42), inset 0 0 14px rgba(250, 204, 21, 0.14) !important;
+}
+
+/* 28.17 Micro-Delight Screen Punch, Golden Meme Drop & End of Internet */
+.tm-app.tm-screen-punch {
+  animation: tmScreenPunch 0.14s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes tmScreenPunch {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(0.996);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.tm-lite-perf.tm-screen-punch,
+.tm-lite-perf .tm-live-emote-float {
+  animation: none !important;
+}
+
+.tm-reels-golden-slide .tm-reels-media-wrap {
+  box-shadow: 0 0 0 3px #facc15, 0 0 30px rgba(250, 204, 21, 0.45);
+  border-radius: 14px;
+}
+
+.tm-golden-meme-drop-pill {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1.5px solid #fef08a;
+  background: linear-gradient(135deg, #facc15, #f97316);
+  color: #090d16;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+  max-width: calc(100% - 24px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 8px 24px rgba(250, 204, 21, 0.45);
+}
+
+.tm-end-of-internet-wrap {
+  max-width: 780px;
+  margin: 18px auto 8px;
+  padding: 0 14px;
+}
+
+.tm-end-of-internet-card {
+  text-align: center;
+  padding: 22px 18px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.85));
+  border: 1.5px solid rgba(56, 189, 248, 0.4);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+}
+
+.tm-reels-end-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+@media (max-width: 768px) {
+  .tm-live-presence-pill {
+    font-size: 10px !important;
+    padding: 3px 7px !important;
+  }
+
+  .tm-golden-meme-drop-pill {
+    font-size: 11px;
+    padding: 7px 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tm-app.tm-screen-punch,
+  .tm-live-emote-float {
+    animation: none !important;
+  }
+}
+

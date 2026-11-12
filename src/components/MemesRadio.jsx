@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import useRadio from '../hooks/useRadio';
 import {
   RADIO_STATIONS,
@@ -6,6 +7,11 @@ import {
   setRadioVolume,
   skipRadioTrack
 } from '../utils/radioBus';
+import {
+  loadUnlockedCosmetics,
+  loadEquippedCassetteSkin,
+  isCosmeticUnlocked
+} from '../data/cosmetics';
 import './MemesRadio.css';
 
 /** Compact 📼 top-bar toggle for THE MEMES FM (Phase 28.11). */
@@ -32,11 +38,13 @@ export function RadioToggleButton({ className = 'tm-btn' }) {
 }
 
 /** Full cassette deck, shown inside the 🕹️ Extras drawer. */
-export default function MemesRadio() {
+export default function MemesRadio({ onOpenShop }) {
   const radio = useRadio();
   const playing = radio.on;
   const station = RADIO_STATIONS.find((s) => s.id === radio.activeStation) || RADIO_STATIONS[0];
   const overridden = playing && radio.activeStation !== radio.station;
+  const [unlockedIds] = useState(() => loadUnlockedCosmetics());
+  const [cassetteSkin] = useState(() => loadEquippedCassetteSkin());
 
   return (
     <section className={`tm-radio-deck ${playing ? 'is-playing' : ''}`} aria-label="THE MEMES FM Radio">
@@ -45,7 +53,7 @@ export default function MemesRadio() {
         <span className="tm-radio-sub">100% procedural • no ads • no files</span>
       </div>
 
-      <div className="tm-radio-cassette" aria-hidden="true">
+      <div className={`tm-radio-cassette tm-cassette-skin-${cassetteSkin}`} aria-hidden="true">
         <div className="tm-radio-label">
           <span className="tm-radio-label-station">
             {station.icon} {station.name}
@@ -98,18 +106,29 @@ export default function MemesRadio() {
       </div>
 
       <div className="tm-radio-stations" role="radiogroup" aria-label="Radio station">
-        {RADIO_STATIONS.map((s) => (
-          <button
-            key={s.id}
-            type="button"
-            role="radio"
-            aria-checked={radio.station === s.id}
-            className={`tm-radio-station ${radio.station === s.id ? 'active' : ''}`}
-            onClick={() => setRadioStation(s.id)}
-          >
-            <span aria-hidden="true">{s.icon}</span> {s.name}
-          </button>
-        ))}
+        {RADIO_STATIONS.map((s) => {
+          const isLocked = Boolean(s.cosmeticId) && !isCosmeticUnlocked(s.cosmeticId, unlockedIds);
+          return (
+            <button
+              key={s.id}
+              type="button"
+              role="radio"
+              aria-checked={radio.station === s.id}
+              className={`tm-radio-station ${radio.station === s.id ? 'active' : ''} ${isLocked ? 'locked' : ''}`}
+              onClick={() => {
+                if (isLocked) {
+                  if (onOpenShop) onOpenShop();
+                  return;
+                }
+                setRadioStation(s.id);
+              }}
+              title={isLocked ? 'Unlock in 🛍️ Arcade Shop!' : s.name}
+            >
+              <span aria-hidden="true">{isLocked ? '🔒' : s.icon}</span> {s.name}
+              {isLocked && <span className="tm-radio-lock-tag">Shop</span>}
+            </button>
+          );
+        })}
       </div>
     </section>
   );

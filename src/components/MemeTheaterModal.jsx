@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import MemeMedia from './MemeMedia';
+import MemeLiveEmotes from './MemeLiveEmotes';
 import { getMemeRarityTier, formatMemeUploadDate } from '../data/starterMemes';
 import './MemeTheaterModal.css';
 
@@ -239,6 +240,7 @@ export default function MemeTheaterModal({
             >
               {gen > 0 && <div className="tm-gen-pill">🧬 GEN-{gen} REMIX</div>}
               <MemeMedia meme={meme} mode="theater" />
+              <MemeLiveEmotes memeId={meme.id} />
             </div>
             <div style={{ fontSize: '11px', color: '#64748b', marginTop: '6px', textAlign: 'center' }}>
               💡 Tip: Swipe left/right on image for Next/Prev • Double-tap to Upvote

@@ -3,13 +3,16 @@ import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
 import { VIRAL_CAPTIONS } from '../data/starterMemes';
 import { ACCEPT_MEDIA, validateFile } from '../utils/mediaPipeline';
+import BattleCountdown from './BattleCountdown';
 
 export default function QuickUploadBar({
   onQuickPublishFile,
   onOpenStudioWithFile,
   onOpenBlankStudio,
   activeBounty,
-  onCycleBounty,
+  yesterdayCaptionKing = null,
+  battleEntriesCount = 0,
+  onOpenBattleModal,
   onAcceptBounty,
   pioneerBonusAvailable = false,
   uploadTokensRemainingToday = ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.upload
@@ -335,29 +338,39 @@ export default function QuickUploadBar({
         </form>
       )}
 
-      {/* Compact Inline Daily Bounty Strip (replaces bulky separate banner) */}
+      {/* Compact Inline Daily Caption Battle Strip (Phase 28.15) */}
       {activeBounty && !selectedFile && (
         <div className="tm-compact-bounty-strip">
           <div className="tm-compact-bounty-text">
-            <span className="tm-bounty-chip">🎯 DAILY BOUNTY (+60 🪙)</span>
-            <span>“{activeBounty.prompt}”</span>
+            <span className="tm-bounty-chip">⚔️ DAILY CAPTION BATTLE (+60 🪙)</span>
+            <span>
+              <strong>{activeBounty.template?.name || activeBounty.prompt}</strong>
+            </span>
+            <BattleCountdown />
+            {yesterdayCaptionKing && (
+              <span className="tm-caption-king-pill" title="Yesterday's Daily Caption Battle Winner">
+                👑 Caption King: @{yesterdayCaptionKing.author_name}
+              </span>
+            )}
           </div>
-          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-            <button
-              type="button"
-              className="tm-link-btn"
-              onClick={onCycleBounty}
-              title="Next Bounty Prompt"
-            >
-              🔄 Next
-            </button>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+            {onOpenBattleModal && (
+              <button
+                type="button"
+                className="tm-link-btn"
+                onClick={onOpenBattleModal}
+                title="View today's captions & vote for tomorrow's Caption King"
+              >
+                🏆 Entries ({battleEntriesCount})
+              </button>
+            )}
             <button
               type="button"
               className="tm-link-btn"
               style={{ color: '#facc15' }}
               onClick={() => onAcceptBounty && onAcceptBounty(activeBounty)}
             >
-              🎯 Accept Challenge →
+              ✏️ Caption Today&apos;s Template →
             </button>
           </div>
         </div>

@@ -1,8 +1,22 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import MemeMedia from './MemeMedia';
+import MemeLiveEmotes from './MemeLiveEmotes';
 import { getMemeRarityTier, formatMemeUploadDate } from '../data/starterMemes';
 import { sfx } from '../utils/soundEngine';
 import { trackMemeViewed } from '../utils/analytics';
+
+const REELS_VIEWED_KEY = 'tm_reels_viewed_ids_v1';
+const REELS_GOLDEN_CLAIMED_KEY = 'tm_reels_golden_claimed_v1';
+
+function loadStoredIdList(key) {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = JSON.parse(localStorage.getItem(key) || '[]');
+    return Array.isArray(raw) ? raw.map(String) : [];
+  } catch {
+    return [];
+  }
+}
 
 export default function VerticalReelsView({
   filteredMemes,
@@ -17,25 +31,54 @@ export default function VerticalReelsView({
   onOpenProfile,
   onOpenTheater,
   onOpenBlankStudio,
-  onBackToFeed
+  onBackToFeed,
+  onOpenGames,
+  onClaimGoldenMeme,
+  litePerfMode = false
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [visibleReelsCount, setVisibleReelsCount] = useState(8);
   const [burstMemeId, setBurstMemeId] = useState(null);
   const [activeCommentsMemeId, setActiveCommentsMemeId] = useState(null);
   const [localCommentInput, setLocalCommentInput] = useState('');
+  const [goldenMemeIds, setGoldenMemeIds] = useState([]);
+  const [claimedGoldenIds, setClaimedGoldenIds] = useState(() =>
+    loadStoredIdList(REELS_GOLDEN_CLAIMED_KEY)
+  );
+  const viewedSetRef = useRef(new Set(loadStoredIdList(REELS_VIEWED_KEY)));
   const lastTapRef = useRef(0);
   const containerRef = useRef(null);
 
   const len = filteredMemes?.length || 0;
   const effectiveVisibleCount = Math.min(len, Math.max(visibleReelsCount, currentIndex + 4));
 
+  const recordReelView = useCallback((meme) => {
+    if (!meme?.id) return;
+    trackMemeViewed(meme, 'reels');
+    const idStr = String(meme.id);
+    if (!viewedSetRef.current.has(idStr)) {
+      viewedSetRef.current.add(idStr);
+      const count = viewedSetRef.current.size;
+      try {
+        localStorage.setItem(
+          REELS_VIEWED_KEY,
+          JSON.stringify(Array.from(viewedSetRef.current).slice(-250))
+        );
+      } catch {
+        // ignore quota errors
+      }
+      if (count > 0 && count % 10 === 0) {
+        setGoldenMemeIds((prev) => (prev.includes(idStr) ? prev : [...prev, idStr]));
+      }
+    }
+  }, []);
+
   useEffect(() => {
     const activeMeme = filteredMemes?.[currentIndex];
     if (activeMeme) {
-      trackMemeViewed(activeMeme, 'reels');
+      Promise.resolve().then(() => recordReelView(activeMeme));
     }
-  }, [filteredMemes, currentIndex]);
+  }, [filteredMemes, currentIndex, recordReelView]);
 
   const handleContainerScroll = useCallback((e) => {
     const el = e.currentTarget;
@@ -43,14 +86,17 @@ export default function VerticalReelsView({
     const slideH = el.clientHeight || 1;
     const approxIdx = Math.round(el.scrollTop / slideH);
     const clampedIdx = Math.max(0, Math.min(Math.max(0, len - 1), approxIdx));
+    if (approxIdx !== currentIndex && approxIdx < len) {
+      setCurrentIndex(clampedIdx);
+    }
     const scrolledMeme = filteredMemes?.[clampedIdx];
     if (scrolledMeme) {
-      trackMemeViewed(scrolledMeme, 'reels');
+      recordReelView(scrolledMeme);
     }
     if (approxIdx + 4 > visibleReelsCount) {
       setVisibleReelsCount((prev) => Math.min(len, Math.max(prev + 8, approxIdx + 6)));
     }
-  }, [filteredMemes, len, visibleReelsCount]);
+  }, [filteredMemes, len, visibleReelsCount, currentIndex, recordReelView]);
 
   // Handle keyboard Up/Down navigation
   useEffect(() => {
@@ -160,11 +206,13 @@ export default function VerticalReelsView({
           const isSaved = bookmarkedIds?.includes(String(meme.id));
           const isBursting = burstMemeId === meme.id;
           const isCommentsOpen = activeCommentsMemeId === meme.id;
+          const isGoldenDrop =
+            goldenMemeIds.includes(String(meme.id)) && !claimedGoldenIds.includes(String(meme.id));
 
           return (
             <article
               key={meme.id}
-              className={`tm-reels-slide ${idx === currentIndex ? 'active' : ''}`}
+              className={`tm-reels-slide ${idx === currentIndex ? 'active' : ''} ${isGoldenDrop ? 'tm-reels-golden-slide' : ''}`}
             >
               {/* Media Container with Double-Tap Upvote Area */}
               <div
@@ -179,8 +227,31 @@ export default function VerticalReelsView({
                   imgLoading={idx < 2 ? 'eager' : 'lazy'}
                   active={idx === currentIndex}
                   preload={Math.abs(idx - currentIndex) <= 1 ? 'auto' : 'metadata'}
+                  litePerfMode={litePerfMode}
                   className="tm-reels-img"
                 />
+                <MemeLiveEmotes memeId={meme.id} litePerfMode={litePerfMode} />
+
+                {isGoldenDrop && (
+                  <button
+                    type="button"
+                    className="tm-golden-meme-drop-pill"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const idStr = String(meme.id);
+                      const next = [...claimedGoldenIds, idStr];
+                      setClaimedGoldenIds(next);
+                      try {
+                        localStorage.setItem(REELS_GOLDEN_CLAIMED_KEY, JSON.stringify(next.slice(-100)));
+                      } catch {
+                        // ignore
+                      }
+                      if (onClaimGoldenMeme) onClaimGoldenMeme(meme, e);
+                    }}
+                  >
+                    ✨ GOLDEN MEME DROP! Tap to claim surprise reward
+                  </button>
+                )}
 
                 {/* Explosive Heart / Flame Double-Tap Burst */}
                 {isBursting && (
@@ -371,6 +442,42 @@ export default function VerticalReelsView({
             </article>
           );
         })}
+
+        {effectiveVisibleCount >= len && len > 0 && (
+          <article className="tm-reels-slide tm-reels-end-slide">
+            <div className="tm-end-of-internet-card">
+              <div style={{ fontSize: '46px', marginBottom: '6px' }}>🫠</div>
+              <h2 style={{ margin: '0 0 8px', fontSize: '21px', fontWeight: 900 }}>
+                You&apos;ve reached the end of the internet
+              </h2>
+              <p style={{ margin: '0 auto 16px', maxWidth: '380px', fontSize: '13px', color: '#94a3b8' }}>
+                Every meme in this Reels stream has been scrolled. Drop your own banger or hit the Arcade!
+              </p>
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                {onOpenBlankStudio && (
+                  <button type="button" className="tm-btn tm-btn-primary" onClick={onOpenBlankStudio}>
+                    🎨 Remix / Create Meme
+                  </button>
+                )}
+                {onOpenGames && (
+                  <button type="button" className="tm-btn" onClick={onOpenGames}>
+                    🕹️ Play Arcade Games
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="tm-btn"
+                  onClick={() => {
+                    setCurrentIndex(0);
+                    containerRef.current?.scrollTo?.({ top: 0, behavior: 'smooth' });
+                  }}
+                >
+                  🔝 Back to Top
+                </button>
+              </div>
+            </div>
+          </article>
+        )}
       </div>
     </div>
   );

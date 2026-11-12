@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
 import { RANKS, computePlayerBadges, formatMemeUploadDate } from '../data/starterMemes';
+import { loadLocalMemeViews } from '../utils/notifications';
+import { isUsernameCaptionKing } from '../utils/dailyCaptionBattle';
 import './PlayerProfileModal.css';
 
 export default function PlayerProfileModal({
@@ -12,6 +14,10 @@ export default function PlayerProfileModal({
   royaltiesMap,
   unlockedFlairs = [],
   equippedFlair = '',
+  equippedFrame = 'default',
+  notifications = [],
+  onMarkNotificationsRead,
+  onOpenShop,
   roastsRun = 0,
   goblinsCaught = 0,
   konamiUnlocked = false,
@@ -40,6 +46,26 @@ export default function PlayerProfileModal({
     [authoredMemes]
   );
 
+  const creatorStats = useMemo(() => {
+    const localViews = loadLocalMemeViews();
+    let views = 0;
+    let upvotes = 0;
+    authoredMemes.forEach((m) => {
+      views += Number(m.views_count || 0) + Number(localViews[String(m.id)] || 0);
+      upvotes += Math.max(0, Number(m.score || 0));
+    });
+    return {
+      views,
+      upvotes,
+      remixes: totalRemixesSpawned
+    };
+  }, [authoredMemes, totalRemixesSpawned]);
+
+  const isCaptionKing = useMemo(
+    () => isUsernameCaptionKing(memes, username),
+    [memes, username]
+  );
+
   const royaltyBonus = Number(royaltiesMap?.[username] || 0) + totalRemixesSpawned * 50;
 
   const playerXp = isMe
@@ -66,7 +92,8 @@ export default function PlayerProfileModal({
         unlockedFlairs: isMe ? unlockedFlairs : [],
         roastsRun: isMe ? roastsRun : 0,
         goblinsCaught: isMe ? goblinsCaught : 0,
-        konamiUnlocked: isMe ? konamiUnlocked : false
+        konamiUnlocked: isMe ? konamiUnlocked : false,
+        isCaptionKing
       }),
     [
       authoredMemes,
@@ -79,7 +106,8 @@ export default function PlayerProfileModal({
       unlockedFlairs,
       roastsRun,
       goblinsCaught,
-      konamiUnlocked
+      konamiUnlocked,
+      isCaptionKing
     ]
   );
 
@@ -141,6 +169,88 @@ export default function PlayerProfileModal({
             <div className="tm-stat-lbl">XP Royalties</div>
           </div>
         </div>
+
+        {/* Phase 28.13: Creator Stats Card (Views, Upvotes, Remixes) */}
+        <div className={`tm-creator-stats-card ${isMe && equippedFrame !== 'default' ? `tm-frame-${equippedFrame}` : ''}`}>
+          <div className="tm-creator-stats-head">
+            <span>📊 CREATOR IMPACT STATS</span>
+            {isMe && onOpenShop && (
+              <button
+                type="button"
+                className="tm-link-btn"
+                style={{ fontSize: '11px', color: '#facc15' }}
+                onClick={() => {
+                  onClose();
+                  onOpenShop();
+                }}
+              >
+                🛍️ Customize Cosmetics →
+              </button>
+            )}
+          </div>
+          <div className="tm-creator-stats-row">
+            <div className="tm-creator-stat-item">
+              <strong style={{ color: '#00f3ff' }}>{creatorStats.views.toLocaleString()}</strong>
+              <span>👁️ Views</span>
+            </div>
+            <div className="tm-creator-stat-item">
+              <strong style={{ color: '#facc15' }}>{creatorStats.upvotes.toLocaleString()}</strong>
+              <span>🔥 Upvotes</span>
+            </div>
+            <div className="tm-creator-stat-item">
+              <strong style={{ color: '#ec4899' }}>{creatorStats.remixes.toLocaleString()}</strong>
+              <span>🧬 Remixes</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Phase 28.13: Real In-App Creator Notifications Inbox */}
+        {isMe && (
+          <div className="tm-creator-notif-box">
+            <div className="tm-creator-notif-head">
+              <span>🔔 Creator Alerts ({notifications.filter((n) => !n.read).length} unread)</span>
+              {notifications.some((n) => !n.read) && onMarkNotificationsRead && (
+                <button
+                  type="button"
+                  className="tm-link-btn"
+                  style={{ fontSize: '11px' }}
+                  onClick={onMarkNotificationsRead}
+                >
+                  ✓ Mark all read
+                </button>
+              )}
+            </div>
+            {notifications.length === 0 ? (
+              <div style={{ fontSize: '12px', color: '#64748b' }}>
+                No alerts yet — publish a meme and real upvotes, comments &amp; remixes will appear here live!
+              </div>
+            ) : (
+              <div className="tm-creator-notif-list">
+                {notifications.slice(0, 8).map((n) => {
+                  const linkedMeme = memes.find((m) => String(m.id) === String(n.meme_id));
+                  return (
+                    <div
+                      key={n.id}
+                      className={`tm-creator-notif-item ${n.read ? '' : 'unread'}`}
+                      onClick={() => {
+                        if (linkedMeme && onSelectMeme) {
+                          onClose();
+                          onSelectMeme(linkedMeme);
+                        }
+                      }}
+                      style={{ cursor: linkedMeme ? 'pointer' : 'default' }}
+                    >
+                      <span>{n.message}</span>
+                      <span style={{ fontSize: '10px', color: '#94a3b8' }}>
+                        {formatMemeUploadDate(n.created_at).relative}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Achievement Badges */}
         <div style={{ marginTop: '18px' }}>

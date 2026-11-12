@@ -1,0 +1,113 @@
+.tm-live-celebration-backdrop {
+  z-index: 10050;
+}
+
+.tm-live-confetti-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.tm-live-confetti-piece {
+  position: absolute;
+  top: -16px;
+  width: 10px;
+  height: 16px;
+  border-radius: 3px;
+  opacity: 0.9;
+  animation: tm-confetti-fall 2.2s cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
+}
+
+@keyframes tm-confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(95vh) rotate(520deg) scale(0.8);
+    opacity: 0;
+  }
+}
+
+.tm-live-celebration-card {
+  position: relative;
+  z-index: 2;
+  max-width: 520px;
+  width: 94%;
+  text-align: center;
+  border: 2px solid rgba(0, 243, 255, 0.55);
+  box-shadow: 0 0 42px rgba(0, 243, 255, 0.28), 0 0 24px rgba(236, 72, 153, 0.24);
+  padding: 20px;
+}
+
+.tm-live-celebration-kicker {
+  font-size: 10.5px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: #4ade80;
+  margin-bottom: 4px;
+}
+
+.tm-live-celebration-title {
+  margin: 0 0 6px;
+  font-size: 24px;
+  font-weight: 900;
+  background: linear-gradient(90deg, #00f3ff, #facc15, #ec4899);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.tm-live-celebration-sub {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.tm-live-celebration-preview {
+  max-height: 280px;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(2, 6, 23, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tm-live-celebration-preview img,
+.tm-live-celebration-preview video {
+  max-height: 276px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.tm-live-celebration-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 12px 0 16px;
+}
+
+.tm-live-celebration-meme-title {
+  font-size: 14px;
+  color: #f8fafc;
+}
+
+.tm-live-celebration-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tm-live-confetti-layer {
+    display: none;
+  }
+}

@@ -6,6 +6,11 @@ import {
   ARCADE_RATE_LIMITS,
   formatWindowCountdown
 } from '../data/starterMemes';
+import {
+  COSMETIC_CATEGORIES,
+  COSMETIC_CATALOG,
+  isCosmeticUnlocked
+} from '../data/cosmetics';
 import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
 import { sfx } from '../utils/soundEngine';
 import './RewardsModal.css';
@@ -37,12 +42,22 @@ export default function RewardsModal({
   onEquipFlair,
   cursorTrail,
   onSelectCursorTrail,
+  initialTab = 'vault',
+  unlockedCosmetics = [],
+  equippedFrame = 'default',
+  equippedCassetteSkin = 'classic',
+  activeRadioStation = 'synthwave',
+  onBuyOrUnlockCosmetic,
+  onEquipCosmetic,
   konamiUnlocked,
   questProgress,
   claimedQuests,
   onClaimQuestReward,
   onClose
 }) {
+  const [activeTab, setActiveTab] = useState(initialTab === 'shop' ? 'shop' : 'vault');
+  const [shopFilter, setShopFilter] = useState('all');
+  const [shopToast, setShopToast] = useState('');
   const [isSpinning, setIsSpinning] = useState(false);
   const [highlightIdx, setHighlightIdx] = useState(0);
   const [wonPrize, setWonPrize] = useState(null);
@@ -113,6 +128,152 @@ export default function RewardsModal({
             ✕ Close
           </button>
         </div>
+
+        {/* Phase 28.16: Tab Switcher (Vault & Quests vs Arcade Shop) */}
+        <div className="tm-rewards-tabs" role="tablist" aria-label="Vault and Shop Tabs">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'vault'}
+            className={`tm-rewards-tab-btn ${activeTab === 'vault' ? 'active' : ''}`}
+            onClick={() => {
+              sfx.playToggle();
+              setActiveTab('vault');
+            }}
+          >
+            🎰 Vault &amp; Quests
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'shop'}
+            className={`tm-rewards-tab-btn ${activeTab === 'shop' ? 'active' : ''}`}
+            onClick={() => {
+              sfx.playToggle();
+              setActiveTab('shop');
+            }}
+          >
+            🛍️ Arcade Shop (Cosmetics)
+          </button>
+        </div>
+
+        {activeTab === 'shop' ? (
+          <div className="tm-arcade-shop-panel">
+            <div className="tm-fair-ledger-card" style={{ marginBottom: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: 900, color: '#00f3ff' }}>
+                    🛍️ CYBER-ARCADE COSMETICS SHOP
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '2px' }}>
+                    Spend earned <strong>🪙 Tokens</strong> or unlock for free at <strong>⚡ XP milestones</strong>!
+                  </div>
+                </div>
+                <div style={{ fontSize: '15px', fontWeight: 900 }}>
+                  <span style={{ color: '#facc15' }}>🪙 {tokens}</span> •{' '}
+                  <span style={{ color: '#00f3ff' }}>{xp} XP</span>
+                </div>
+              </div>
+              {shopToast && (
+                <div style={{ marginTop: '8px', fontSize: '12px', fontWeight: 800, color: '#4ade80' }}>
+                  {shopToast}
+                </div>
+              )}
+            </div>
+
+            <div className="tm-shop-filter-row">
+              {COSMETIC_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  className={`tm-flair-chip ${shopFilter === cat.id ? 'active' : ''}`}
+                  onClick={() => setShopFilter(cat.id)}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="tm-shop-grid">
+              {COSMETIC_CATALOG.filter((item) => shopFilter === 'all' || item.type === shopFilter).map(
+                (item) => {
+                  const unlocked =
+                    isCosmeticUnlocked(item.id, unlockedCosmetics) ||
+                    (item.type === 'title' && unlockedFlairs.includes(item.value));
+                  const isEquipped =
+                    (item.type === 'frame' && equippedFrame === item.value) ||
+                    (item.type === 'trail' && cursorTrail === item.value) ||
+                    (item.type === 'skin' && equippedCassetteSkin === item.value) ||
+                    (item.type === 'station' && activeRadioStation === item.value) ||
+                    (item.type === 'title' && equippedFlair === item.value);
+                  const xpEligible = item.unlockXp > 0 && xp >= item.unlockXp;
+                  const canAfford = tokens >= item.tokenCost;
+
+                  return (
+                    <div
+                      key={item.id}
+                      className={`tm-shop-card ${unlocked ? 'unlocked' : ''} ${isEquipped ? 'equipped' : ''}`}
+                    >
+                      <div className="tm-shop-card-top">
+                        <div className="tm-shop-icon">{item.icon}</div>
+                        <div>
+                          <div className="tm-shop-name">{item.name}</div>
+                          <div className="tm-shop-desc">{item.desc}</div>
+                        </div>
+                      </div>
+
+                      <div className="tm-shop-actions">
+                        {unlocked ? (
+                          <button
+                            type="button"
+                            className={`tm-btn ${isEquipped ? 'tm-btn-primary' : ''}`}
+                            style={{ width: '100%', fontSize: '12px' }}
+                            disabled={isEquipped}
+                            onClick={() => {
+                              sfx.playToggle();
+                              if (onEquipCosmetic) onEquipCosmetic(item);
+                              setShopToast(`✅ Equipped ${item.name}!`);
+                            }}
+                          >
+                            {isEquipped ? '✅ Equipped' : '✨ Equip'}
+                          </button>
+                        ) : (
+                          <>
+                            <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 700 }}>
+                              {xpEligible
+                                ? `⚡ ${item.unlockXp} XP Ready!`
+                                : `${item.tokenCost} 🪙 or ${item.unlockXp} XP`}
+                            </span>
+                            <button
+                              type="button"
+                              className="tm-btn tm-btn-primary"
+                              style={{ padding: '6px 12px', fontSize: '11.5px' }}
+                              disabled={!xpEligible && !canAfford}
+                              onClick={() => {
+                                if (!onBuyOrUnlockCosmetic) return;
+                                const res = onBuyOrUnlockCosmetic(item);
+                                if (res?.ok) {
+                                  sfx.playJackpot();
+                                  setShopToast(`🎉 Unlocked & equipped ${item.name}!`);
+                                } else {
+                                  sfx.playVote(false, 1);
+                                  setShopToast(`Need ${item.tokenCost} 🪙 or ${item.unlockXp} XP.`);
+                                }
+                              }}
+                            >
+                              {xpEligible ? '⚡ Claim Free' : `🪙 Unlock (${item.tokenCost})`}
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
+              )}
+            </div>
+          </div>
+        ) : (
+          <>
 
         {/* 0. LOGICAL & FAIR DAILY TOKEN COLLECTION METER (ANTI-LOOPHOLE TRANSPARENCY) */}
         <div className="tm-fair-ledger-card">
@@ -500,16 +661,27 @@ export default function RewardsModal({
             ✨ Interactive Touch &amp; Cursor Particle Trail
           </div>
           <div className="tm-flair-list">
-            {CURSOR_TRAILS.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                className={`tm-flair-chip ${cursorTrail === t.id ? 'active' : ''}`}
-                onClick={() => onSelectCursorTrail && onSelectCursorTrail(t.id)}
-              >
-                {t.label} {cursorTrail === t.id ? '✅' : ''}
-              </button>
-            ))}
+            {CURSOR_TRAILS.map((t) => {
+              const cosmeticItem = COSMETIC_CATALOG.find((c) => c.type === 'trail' && c.value === t.id);
+              const unlocked = !cosmeticItem || isCosmeticUnlocked(cosmeticItem.id, unlockedCosmetics);
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  className={`tm-flair-chip ${cursorTrail === t.id ? 'active' : ''}`}
+                  onClick={() => {
+                    if (!unlocked) {
+                      setActiveTab('shop');
+                      setShopFilter('trail');
+                      return;
+                    }
+                    onSelectCursorTrail && onSelectCursorTrail(t.id);
+                  }}
+                >
+                  {unlocked ? t.label : `🔒 ${t.label}`} {cursorTrail === t.id ? '✅' : ''}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -624,6 +796,8 @@ export default function RewardsModal({
             {konamiUnlocked ? '✅ Secret Found!' : '🔒 Hidden'}
           </span>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

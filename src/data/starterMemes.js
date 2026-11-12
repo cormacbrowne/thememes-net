@@ -521,6 +521,7 @@ export const CURSOR_TRAILS = [
   { id: 'star', label: '🌟 Star Sparkle', emoji: '🌟' },
   { id: 'diamond', label: '💎 Diamond Trail', emoji: '💎' },
   { id: 'duck', label: '🦆 Duck Army Trail', emoji: '🦆' },
+  { id: 'glitch', label: '⚡ Matrix Spark', emoji: '⚡' },
   { id: 'crown', label: '👑 Royal Crown Trail', emoji: '👑' }
 ];
 
@@ -819,12 +820,20 @@ export function computePlayerBadges({
   unlockedFlairs = [],
   roastsRun = 0,
   goblinsCaught = 0,
-  konamiUnlocked = false
+  konamiUnlocked = false,
+  isCaptionKing = false
 }) {
   const hasMutation = authoredMemes.some((m) => (m.generation || 0) > 0) || totalRemixesSpawned > 0;
   const hasBountyMeme = authoredMemes.some((m) => m.is_bounty) || bountiesCompleted > 0;
 
   return [
+    {
+      id: 'caption-king',
+      icon: '👑',
+      name: 'Caption King',
+      desc: 'Won a Daily Caption Battle crown',
+      unlocked: Boolean(isCaptionKing)
+    },
     {
       id: 'first-drop',
       icon: '🚀',

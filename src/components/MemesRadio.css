@@ -228,6 +228,53 @@
   background: rgba(0, 243, 255, 0.12);
 }
 
+.tm-radio-station.locked {
+  opacity: 0.72;
+  border-style: dashed;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.tm-radio-lock-tag {
+  font-size: 10px;
+  font-weight: 800;
+  color: #facc15;
+  background: rgba(250, 204, 21, 0.14);
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+
+/* Cassette Skins (Phase 28.16) */
+.tm-cassette-skin-gold-chrome {
+  background: linear-gradient(155deg, #78350f, #ca8a04, #451a03);
+  border-color: #facc15;
+  box-shadow: 0 0 18px rgba(250, 204, 21, 0.35);
+}
+
+.tm-cassette-skin-gold-chrome .tm-radio-label {
+  background: linear-gradient(90deg, #fef08a, #fde047);
+  color: #422006;
+}
+
+.tm-cassette-skin-clear-neon {
+  background: linear-gradient(155deg, rgba(0, 243, 255, 0.2), rgba(236, 72, 153, 0.18));
+  border-color: #00f3ff;
+  box-shadow: inset 0 0 18px rgba(0, 243, 255, 0.22);
+}
+
+.tm-cassette-skin-vhs-static {
+  background: linear-gradient(160deg, #1e1b4b, #090d16);
+  border-color: #a855f7;
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.35);
+}
+
+.tm-cassette-skin-vhs-static .tm-radio-label {
+  background: linear-gradient(90deg, #c084fc, #38bdf8);
+  color: #0f172a;
+}
+
 /* ---------- Beat-synced visuals (only while the radio plays) ----------
    musicEngine.js flips --beat between 1 and 0 on <html> on every kick drum.
    Only opacity/box-shadow on 3 small targets transition. No React re-renders. */

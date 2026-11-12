@@ -13,7 +13,9 @@ export const RADIO_STATIONS = [
   { id: 'synthwave', icon: '📼', name: 'Synthwave Drive' },
   { id: 'lofi', icon: '☕', name: 'Lo-fi Meme Beats' },
   { id: 'chiptune', icon: '👾', name: '8-Bit Chiptune' },
-  { id: 'vaporwave', icon: '🛗', name: 'Vaporwave Elevator' }
+  { id: 'vaporwave', icon: '🛗', name: 'Vaporwave Elevator' },
+  { id: 'retrowave', icon: '🌅', name: 'Sunset Outrun FM', cosmeticId: 'station-retrowave' },
+  { id: 'cyberpunk', icon: '⚡', name: 'Dark Cyberbass FM', cosmeticId: 'station-cyberpunk' }
 ];
 
 const STATION_IDS = RADIO_STATIONS.map((s) => s.id);

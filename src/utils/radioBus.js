@@ -165,7 +165,11 @@ function loadEngine() {
   if (!enginePromise) {
     enginePromise = import('./musicEngine').then((mod) => {
       engine = mod.createMusicEngine({
-        onTrack: (track, meta) => setState({ track, currentTrack: meta || null })
+        onTrack: (track, meta) => setState({ track, currentTrack: meta || null }),
+        onPlay: () => setRadioOn(true),
+        onPause: () => setRadioOn(false),
+        onNext: () => skipRadioTrack(),
+        onPrev: () => prevRadioTrack()
       });
       engine.setMixtapeTracks?.(state.favorites);
       return engine;
@@ -203,8 +207,11 @@ function unbindMediaListeners() {
 
 function handleVisibility() {
   if (!engine || !state.on) return;
-  if (document.hidden) engine.pause();
-  else engine.resume();
+  if (document.hidden) {
+    if (!engine.isMediaStreamActive?.()) engine.pause();
+  } else {
+    engine.resume();
+  }
 }
 
 /* ---------- Public API ---------- */

@@ -219,10 +219,14 @@ const STATIONS = {
 const LOOKAHEAD_SEC = 0.14;
 const TICK_MS = 30;
 
-export function createMusicEngine({ onTrack } = {}) {
+export function createMusicEngine({ onTrack, onPlay, onPause, onNext, onPrev } = {}) {
   let ctx = null;
   let nodes = null;
   let noiseBuffer = null;
+  let streamDest = null;
+  let mediaAudioEl = null;
+  let usingMediaStreamOut = false;
+  let mediaSessionBound = false;
 
   let stationId = 'synthwave';
   let trackIdx = 0;
@@ -298,6 +302,93 @@ export function createMusicEngine({ onTrack } = {}) {
     pendingTimeouts.clear();
   }
 
+  function fallbackToDirectDestination() {
+    if (!nodes || !ctx) return;
+    if (usingMediaStreamOut && streamDest) {
+      try {
+        nodes.master.disconnect(streamDest);
+      } catch {
+        // ignore if already disconnected
+      }
+      try {
+        nodes.master.connect(ctx.destination);
+      } catch {
+        // ignore
+      }
+      usingMediaStreamOut = false;
+    }
+    if (mediaAudioEl) {
+      try {
+        mediaAudioEl.pause();
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  function startMediaStreamElement() {
+    if (!usingMediaStreamOut || !mediaAudioEl) return;
+    try {
+      const playPromise = mediaAudioEl.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => fallbackToDirectDestination());
+      }
+    } catch {
+      fallbackToDirectDestination();
+    }
+  }
+
+  function pauseMediaStreamElement() {
+    if (!mediaAudioEl) return;
+    try {
+      mediaAudioEl.pause();
+    } catch {
+      // ignore
+    }
+  }
+
+  function updateMediaSessionMetadata(trackTitle) {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
+    try {
+      if (typeof MediaMetadata !== 'undefined') {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: trackTitle || 'Synthwave Stream',
+          artist: 'THE MEMES FM',
+          album: stationId === 'mixtape' ? '♥ My Mixtape' : stationId.toUpperCase(),
+          artwork: [{ src: '/logo-512.png', sizes: '512x512', type: 'image/png' }]
+        });
+      }
+    } catch {
+      // ignore unsupported MediaMetadata
+    }
+  }
+
+  function setMediaSessionPlaybackState(nextState) {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
+    try {
+      navigator.mediaSession.playbackState = nextState;
+    } catch {
+      // ignore
+    }
+  }
+
+  function bindMediaSessionHandlers(apiRef) {
+    if (mediaSessionBound || typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
+    mediaSessionBound = true;
+    const ms = navigator.mediaSession;
+    const safeBind = (action, fn) => {
+      try {
+        ms.setActionHandler(action, fn);
+      } catch {
+        // unsupported action on this platform
+      }
+    };
+    safeBind('play', () => (onPlay ? onPlay() : apiRef.resume()));
+    safeBind('pause', () => (onPause ? onPause() : apiRef.pause()));
+    safeBind('nexttrack', () => (onNext ? onNext() : apiRef.nextTrack()));
+    safeBind('previoustrack', () => (onPrev ? onPrev() : apiRef.prevTrack()));
+  }
+
   /* ---------- Audio graph ---------- */
   function ensureGraph() {
     if (!ctx) {
@@ -329,7 +420,34 @@ export function createMusicEngine({ onTrack } = {}) {
     vol.connect(duck);
     duck.connect(mute);
     mute.connect(master);
-    master.connect(ctx.destination);
+
+    // 29.7: Route master output through MediaStreamDestination -> hidden <audio playsinline>
+    // behind a feature check so iOS treats playback as lock-screen media; fall back to ctx.destination on failure.
+    usingMediaStreamOut = false;
+    if (
+      typeof ctx.createMediaStreamDestination === 'function' &&
+      typeof Audio !== 'undefined' &&
+      typeof MediaStream !== 'undefined'
+    ) {
+      try {
+        const dest = ctx.createMediaStreamDestination();
+        const el = new Audio();
+        el.setAttribute('playsinline', '');
+        el.playsInline = true;
+        if ('srcObject' in el && dest?.stream) {
+          el.srcObject = dest.stream;
+          master.connect(dest);
+          streamDest = dest;
+          mediaAudioEl = el;
+          usingMediaStreamOut = true;
+        }
+      } catch {
+        usingMediaStreamOut = false;
+      }
+    }
+    if (!usingMediaStreamOut) {
+      master.connect(ctx.destination);
+    }
 
     // Dotted-8th "80s echo" send for arps & stingers
     const echoIn = ctx.createGain();
@@ -759,8 +877,10 @@ export function createMusicEngine({ onTrack } = {}) {
   function announceTrack() {
     const spec = getActiveSpec();
     const num = String((trackIdx % spec.trackCount) + 1).padStart(2, '0');
+    const label = `Track ${num}: ${spec.track.name}`;
+    updateMediaSessionMetadata(spec.track.name);
     if (onTrack) {
-      onTrack(`Track ${num}: ${spec.track.name}`, {
+      onTrack(label, {
         stationId: spec.sourceStationId,
         trackIndex: spec.sourceTrackIndex,
         name: spec.track.name
@@ -800,7 +920,7 @@ export function createMusicEngine({ onTrack } = {}) {
   }
 
   /* ---------- Public engine API ---------- */
-  return {
+  const api = {
     play(id, fadeInSec = 1.2, startTrackIdx) {
       if (STATIONS[id] || id === 'mixtape') stationId = id;
       if (typeof startTrackIdx === 'number' && Number.isFinite(startTrackIdx)) {
@@ -813,6 +933,9 @@ export function createMusicEngine({ onTrack } = {}) {
       keyShift = 0;
       loadTrack();
       startScheduler();
+      startMediaStreamElement();
+      bindMediaSessionHandlers(api);
+      setMediaSessionPlaybackState('playing');
       fadeMaster(1, fadeInSec);
       setHtmlPlaying(true);
     },
@@ -822,6 +945,8 @@ export function createMusicEngine({ onTrack } = {}) {
       fadeMaster(0, 0.4);
       stopScheduler();
       clearLater();
+      pauseMediaStreamElement();
+      setMediaSessionPlaybackState('none');
       setHtmlPlaying(false);
     },
     pause() {
@@ -829,6 +954,8 @@ export function createMusicEngine({ onTrack } = {}) {
       paused = true;
       fadeMaster(0, 0.15);
       stopScheduler();
+      pauseMediaStreamElement();
+      setMediaSessionPlaybackState('paused');
       setHtmlPlaying(false);
     },
     resume() {
@@ -836,6 +963,8 @@ export function createMusicEngine({ onTrack } = {}) {
       paused = false;
       if (ctx && ctx.state !== 'running') ctx.resume().catch(() => {});
       startScheduler();
+      startMediaStreamElement();
+      setMediaSessionPlaybackState('playing');
       fadeMaster(1, 0.8);
       setHtmlPlaying(true);
     },
@@ -900,6 +1029,10 @@ export function createMusicEngine({ onTrack } = {}) {
         stingerQueued = true;
         buildPattern();
       }
+    },
+    isMediaStreamActive() {
+      return usingMediaStreamOut;
     }
   };
+  return api;
 }

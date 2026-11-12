@@ -523,6 +523,9 @@
 .tm-roul-banner {
   flex: 1;
   min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   background: #050812;
   border: 1px solid rgba(0, 243, 255, 0.25);
   border-radius: 8px;

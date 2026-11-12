@@ -62,7 +62,7 @@ export default function VegasRouletteGame({
   const [lightningMap, setLightningMap] = useState({}); // { 17: 100, 0: 150, 23: 50 }
   const [history, setHistory] = useState([17, 0, 32, 7, 24, 19, 8, 36]);
   const [statusBanner, setStatusBanner] = useState(
-    '⚡ Tap Red/Black or numbers (Straight 30×, Lightning up to 150×).'
+    'Tap Red/Black or a number to bet (30× straight, 150× lightning).'
   );
   const [lastWinInfo, setLastWinInfo] = useState(null); // { payout, num, lightningMult }
   const [bestWin, setBestWin] = useState(() =>
@@ -94,7 +94,7 @@ export default function VegasRouletteGame({
     if (!practiceMode && nextTotal > tokens) {
       sfx.playClownHonk();
       setStatusBanner(
-        `⚠️ Need ${nextTotal} 🪙 to add that chip! Switch to Free Practice or Upload a Meme (+45 🪙)!`
+        `Need ${nextTotal} 🪙 to bet. Try Free Practice mode.`
       );
       return;
     }
@@ -104,7 +104,7 @@ export default function VegasRouletteGame({
       [betKey]: Math.min(200, (prev[betKey] || 0) + addAmt)
     }));
     if (labelText) {
-      setStatusBanner(`🪙 Placed +${addAmt} chip on ${labelText} (Total on table: ${nextTotal} 🪙)`);
+      setStatusBanner(`+${addAmt} chip on ${labelText} (${nextTotal} on table)`);
     }
   };
 
@@ -112,16 +112,13 @@ export default function VegasRouletteGame({
     if (spinning) return;
     const unit = selectedChip;
     let nextBets = {};
-    let desc = '';
 
     if (presetType === 'lucky7s') {
       [0, 7, 17, 27].forEach((n) => {
         nextBets[`n_${n}`] = unit;
       });
-      desc = '🎰 Lucky 7s & Zero (0, 7, 17, 27)';
     } else if (presetType === 'redBlitz') {
       nextBets = { red: unit * 2, odd: unit, doz2: unit };
-      desc = '🔥 Neon Red + Odd + 2nd Dozen Blitz';
     } else if (presetType === 'random5') {
       const picks = new Set();
       while (picks.size < 5) {
@@ -130,23 +127,21 @@ export default function VegasRouletteGame({
       picks.forEach((n) => {
         nextBets[`n_${n}`] = unit;
       });
-      desc = `⚡ 5 Lightning Hunter Picks (${Array.from(picks).join(', ')})`;
     } else if (presetType === 'rebet' && lastBets) {
       nextBets = { ...lastBets };
-      desc = '↺ Repeated Previous Spin Bets';
     }
 
     const cost = Object.values(nextBets).reduce((s, v) => s + v, 0);
     if (cost <= 0) return;
     if (!practiceMode && cost > tokens) {
       sfx.playClownHonk();
-      setStatusBanner(`⚠️ Need ${cost} 🪙 for ${desc}! Try a 1 🪙 chip or Free Practice!`);
+      setStatusBanner(`Need ${cost} 🪙 for preset. Try 1 🪙 or Practice.`);
       return;
     }
 
     sfx.playChipStack();
     setBets(nextBets);
-    setStatusBanner(`✨ Loaded ${desc} (${cost} ${practiceMode ? 'Free' : '🪙'} total)! Tap SPIN WHEEL!`);
+    setStatusBanner(`Preset loaded (${cost} ${practiceMode ? 'free' : '🪙'}). Tap Spin.`);
   };
 
   const handleClearBets = () => {
@@ -154,7 +149,7 @@ export default function VegasRouletteGame({
     sfx.playToggle();
     setBets({});
     setLastWinInfo(null);
-    setStatusBanner('🧹 Table cleared — tap any number, dozen, or color to place your chips!');
+    setStatusBanner('Table cleared. Tap a color or number to bet.');
   };
 
   const resolveSpinOutcome = useCallback(
@@ -164,7 +159,6 @@ export default function VegasRouletteGame({
       setHistory((prev) => [landedNum, ...prev.slice(0, 11)]);
 
       let rawPayout = 0;
-      const winningTags = [];
 
       // 1. Check Straight-Up Number Bets (n_0 .. n_36)
       const straightBet = activeBets[`n_${landedNum}`] || 0;
@@ -172,22 +166,14 @@ export default function VegasRouletteGame({
       if (straightBet > 0) {
         // Real Lightning Roulette math: 30x (29:1 + stake) keeps ~5% house edge with 3x 50-150x strikes
         const mult = struckMult || 30;
-        const winAmt = straightBet * mult;
-        rawPayout += winAmt;
-        winningTags.push(
-          struckMult
-            ? `⚡ LIGHTNING #${landedNum} (${struckMult}× = +${winAmt} 🪙!)`
-            : `🎯 STRAIGHT #${landedNum} (30× = +${winAmt} 🪙)`
-        );
+        rawPayout += straightBet * mult;
       }
 
       // 2. Check Outside Bets
       OUTSIDE_BETS.forEach((ob) => {
         const amt = activeBets[ob.id] || 0;
         if (amt > 0 && ob.match(landedNum)) {
-          const winAmt = amt * ob.mult;
-          rawPayout += winAmt;
-          winningTags.push(`${ob.short} (+${winAmt} 🪙)`);
+          rawPayout += amt * ob.mult;
         }
       });
 
@@ -195,14 +181,12 @@ export default function VegasRouletteGame({
       [1, 2, 3].forEach((colIdx) => {
         const amt = activeBets[`col${colIdx}`] || 0;
         if (amt > 0 && landedNum > 0 && (landedNum - colIdx) % 3 === 0) {
-          const winAmt = amt * 3;
-          rawPayout += winAmt;
-          winningTags.push(`2:1 COL #${colIdx} (+${winAmt} 🪙)`);
+          rawPayout += amt * 3;
         }
       });
 
       const colName =
-        landedNum === 0 ? '🟢 GREEN ZERO' : RED_NUMBERS.has(landedNum) ? '🔴 NEON RED' : '⚫ CYBER BLACK';
+        landedNum === 0 ? 'Green' : RED_NUMBERS.has(landedNum) ? 'Red' : 'Black';
 
       if (rawPayout > 0) {
         const verifiedPayout = isFreePractice
@@ -242,15 +226,15 @@ export default function VegasRouletteGame({
           lightningMult: straightBet > 0 ? struckMult : null
         });
         setStatusBanner(
-          `🎉 BALL LANDED ON #${landedNum} (${colName})! WON +${verifiedPayout} ${
-            isFreePractice ? 'PRACTICE CHIPS' : '🪙 TOKENS'
-          } — ${winningTags.join(' • ')}!`
+          `Landed #${landedNum} (${colName}) — won +${verifiedPayout} ${
+            isFreePractice ? 'chips' : '🪙'
+          }.`
         );
       } else {
         sfx.playSadTrombone();
         setLastWinInfo(null);
         setStatusBanner(
-          `🎡 Ball landed on #${landedNum} (${colName}). Tap ↺ Rebet or Spin Again!`
+          `Landed #${landedNum} (${colName}). Tap Rebet or spin again.`
         );
       }
     },
@@ -261,7 +245,7 @@ export default function VegasRouletteGame({
     if (spinning) return;
     if (totalBetAmount <= 0) {
       sfx.playClownHonk();
-      setStatusBanner('⚠️ Place at least 1 chip on any number, color, or dozen before spinning!');
+      setStatusBanner('Place at least 1 chip before spinning.');
       return;
     }
 
@@ -276,7 +260,7 @@ export default function VegasRouletteGame({
         if (tokens < totalBetAmount) {
           sfx.playClownHonk();
           setStatusBanner(
-            `⚠️ Need ${totalBetAmount} 🪙 for these bets! Clear table or switch to Free Practice!`
+            `Need ${totalBetAmount} 🪙. Clear table or switch to Practice.`
           );
           return;
         }
@@ -312,9 +296,9 @@ export default function VegasRouletteGame({
     const landedNum = WHEEL_ORDER[winPocketIdx];
 
     const lightningSummary = Object.entries(newLightning)
-      .map(([n, m]) => `#${n} (${m}×)`)
-      .join(' • ');
-    setStatusBanner(`⚡ LIGHTNING STRUCK: ${lightningSummary}! BALL IS ORBITING...`);
+      .map(([n, m]) => `#${n} ${m}×`)
+      .join(', ');
+    setStatusBanner(`Lightning hit ${lightningSummary}. Ball spinning.`);
 
     // 3. Configure 60fps Canvas Ball Physics Trajectory
     const st = animStateRef.current;
@@ -602,7 +586,7 @@ export default function VegasRouletteGame({
             )}
             <div>
               <div className="tm-roul-eyebrow">
-                🎡 37-POCKET WHEEL • ⚡ 50×–150× LIGHTNING
+                European single-zero wheel • Lightning up to 150×
               </div>
               <h2 className="tm-roul-title">NEON LIGHTNING ROULETTE &apos;86</h2>
             </div>

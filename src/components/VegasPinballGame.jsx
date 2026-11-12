@@ -452,7 +452,7 @@ export default function VegasPinballGame({
       st.leftDown = false;
       st.rightDown = false;
       sfx.playDamageGong();
-      setHudBanner('🚨 TILT OVERLOAD! FLIPPERS LOCKED FOR 2 SECONDS — EASY ON THE CABINET!');
+      setHudBanner('Tilt overload! Flippers locked for 2s.');
       return;
     }
 
@@ -462,8 +462,8 @@ export default function VegasPinballGame({
     });
     setHudBanner(
       st.nudgeHeat >= 65
-        ? '⚠️ CABINET NUDGED! CAREFUL — ONE MORE NUDGE WILL TILT!'
-        : '💥 CABINET NUDGE! BALL KICKED UPWARD AWAY FROM DRAIN!'
+        ? 'Cabinet nudged! One more nudge triggers tilt.'
+        : 'Cabinet nudged! Ball kicked away from drain.'
     );
   }, [launchPlunger]);
 
@@ -992,7 +992,7 @@ export default function VegasPinballGame({
                     inShooter: false,
                     trail: []
                   });
-                  setHudBanner(`🚨 ${tbl.targetWord.join('-')} MULTIBALL UNLEASHED + SHIELD LIT!`);
+                  setHudBanner(`${tbl.targetWord.join('-')} multiball unleashed + shield lit.`);
                 }
               }
             }
@@ -1028,7 +1028,7 @@ export default function VegasPinballGame({
               spawnNeonImpact(st, ent.x, ent.y, '#c084fc', 42, true);
               spawnNeonImpact(st, tbl.portals.exit.x, tbl.portals.exit.y, '#00f3ff', 42, false);
               addPoints(st, 950, ent.x, ent.y, '🌀 WARP +950!', '#c084fc', true);
-              setHudBanner('🌀 HYPER-WARP TELEPORT! +950 BONUS!');
+              setHudBanner('Hyper-warp teleport! +950 bonus.');
             }
           }
 
@@ -1176,7 +1176,7 @@ export default function VegasPinballGame({
               trail: []
             }
           ];
-          setHudBanner(`🎱 BALL ${4 - st.ballsLeft} READY — PRESS [SPACE] OR CLICK 🚀 LAUNCH!`);
+          setHudBanner(`Ball ${4 - st.ballsLeft} ready — press Space or Launch.`);
         } else {
           st.ballsLeft = 0;
           setHudBallsLeft(0);

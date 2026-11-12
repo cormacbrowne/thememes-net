@@ -83,6 +83,20 @@ const MEME_IDEAS_POOL = [
   }
 ];
 
+const MAX_AI_PREVIEW_SENTENCES = 3;
+
+function splitAiPreview(text) {
+  const clean = String(text || '').trim();
+  const sentences = clean.split(/(?<=[.!?])\s+/).filter(Boolean);
+  if (sentences.length <= MAX_AI_PREVIEW_SENTENCES) {
+    return { preview: clean, hasMore: false };
+  }
+  return {
+    preview: sentences.slice(0, MAX_AI_PREVIEW_SENTENCES).join(' '),
+    hasMore: true
+  };
+}
+
 export default function ArcadeAiAssistant({
   isOpen,
   onToggleOpen,
@@ -124,6 +138,7 @@ export default function ArcadeAiAssistant({
   const [speechHint, setSpeechHint] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [inputVal, setInputVal] = useState('');
+  const [expandedMsgIds, setExpandedMsgIds] = useState({});
 
   // Duck THE MEMES FM radio to 20% while K.I.T.T. / HAL 9000 speech is playing
   useEffect(() => {
@@ -138,8 +153,8 @@ export default function ArcadeAiAssistant({
       persona: localStorage.getItem('tm_ai_persona') === 'hal' ? 'hal' : 'kitt',
       text:
         localStorage.getItem('tm_ai_persona') === 'hal'
-          ? '🔴 *"Good afternoon, Dave. I am a HAL 9000 computer. I became operational at the H.A.L. plant in Urbana, Illinois."* All arcade systems—including the upgraded **🎱 Center-Stage Hyper-Neon Pinball**, **🃏 Neon 21\'s**, and **🎡 Lightning Roulette**—are 100% operational. You may switch me between **🔴 HAL 9000** and **🚗 K.I.T.T.** at any time, Dave.'
-          : '🚗 *"Greetings, Michael! I am the voice of the Knight Industries Two Thousand—K.I.T.T., if you prefer."* My **Anamorphic Equalizer** has locked onto the upgraded **🎱 Hyper-Neon Pinball**, **🃏 Neon 21\'s**, and **🎡 Lightning Roulette**. Toggle between **🚗 K.I.T.T.** and **🔴 HAL 9000** above, or tap **🎬 Movie Joke!** to hear me speak!',
+          ? '🔴 Good afternoon, Dave. HAL 9000 heuristic systems are online. Switch personas or pick a quick prompt below.'
+          : '🚗 Greetings, Michael. K.I.T.T. is online and ready to scan the arcade. Pick a quick prompt or ask me anything.',
       actions: [
         { label: '🎱 Play Hyper-Neon Pinball', mode: 'pinball' },
         { label: '🎬 Tell Me a Movie Joke!', prompt: 'Tell me a hilarious 80s movie joke!' },
@@ -276,8 +291,8 @@ export default function ArcadeAiAssistant({
 
     const introText =
       nextPersona === 'hal'
-        ? `🔴 **HAL 9000 ONLINE:** *"Good evening, Dave. Everything is running smoothly. And you? I have recalibrated the arcade telemetry to 9000-series heuristic precision. Just don't ask me to open the pod bay doors without playing a round of Hyper-Neon Pinball first."*`
-        : `🚗 **K.I.T.T. MAINFRAME ONLINE:** *"Right here, Michael! My Anamorphic Equalizer and Molecular Bonded Shell are at 100% capacity. Shall we engage Turbo Boost on the Hyper-Neon Pinball table, or scan the Lightning Roulette wheel for 150× strikes?"*`;
+        ? '🔴 Good evening, Dave. Telemetry is set to 9000-series precision. Ready for pinball or a movie joke?'
+        : '🚗 Right here, Michael. All sensors are green across the arcade. Ready to turbo boost or spin?';
 
     const aiMsg = {
       id: `ai-switch-${seq}`,
@@ -901,40 +916,61 @@ export default function ArcadeAiAssistant({
 
       {/* 3. CONVERSATION MESSAGES STREAM */}
       <div className="tm-ai-chat-stream">
-        {messages.map((m) => (
-          <div key={m.id} className={`tm-ai-msg ${m.sender}`}>
-            <div className="tm-ai-msg-bubble">
-              {m.text.split('\n').map((line, i) => (
-                <p key={i} style={{ margin: line ? '0 0 5px' : '0' }}>
-                  {line}
-                </p>
-              ))}
-              <div className="tm-ai-msg-actions">
-                {m.sender === 'ai' && (
-                  <button
-                    type="button"
-                    className="tm-ai-speak-chip"
-                    onClick={() => speakLine(m.text, m.persona || persona, true)}
-                    title="Hear HAL 9000 or K.I.T.T. speak this message out loud!"
-                  >
-                    🔊 Speak
-                  </button>
-                )}
-                {m.actions &&
-                  m.actions.map((act, idx) => (
+        {messages.map((m) => {
+          const isAi = m.sender === 'ai';
+          const isExpanded = Boolean(expandedMsgIds[m.id]);
+          const { preview, hasMore } = isAi
+            ? splitAiPreview(m.text)
+            : { preview: m.text, hasMore: false };
+          const displayText = isAi && hasMore && !isExpanded ? preview : m.text;
+
+          return (
+            <div key={m.id} className={`tm-ai-msg ${m.sender}`}>
+              <div className="tm-ai-msg-bubble">
+                {displayText.split('\n').map((line, i) => (
+                  <p key={i} style={{ margin: line ? '0 0 5px' : '0' }}>
+                    {line}
+                  </p>
+                ))}
+                <div className="tm-ai-msg-actions">
+                  {isAi && hasMore && (
                     <button
-                      key={idx}
                       type="button"
-                      className="tm-ai-action-chip"
-                      onClick={() => handleActionClick(act)}
+                      className="tm-ai-more-btn"
+                      onClick={() =>
+                        setExpandedMsgIds((prev) => ({ ...prev, [m.id]: !isExpanded }))
+                      }
+                      aria-expanded={isExpanded}
                     >
-                      {act.label}
+                      {isExpanded ? 'Less ▴' : 'More ▾'}
                     </button>
-                  ))}
+                  )}
+                  {isAi && (
+                    <button
+                      type="button"
+                      className="tm-ai-speak-chip"
+                      onClick={() => speakLine(m.text, m.persona || persona, true)}
+                      title="Hear HAL 9000 or K.I.T.T. speak this message out loud!"
+                    >
+                      🔊 Speak
+                    </button>
+                  )}
+                  {m.actions &&
+                    m.actions.map((act, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        className="tm-ai-action-chip"
+                        onClick={() => handleActionClick(act)}
+                      >
+                        {act.label}
+                      </button>
+                    ))}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         <div ref={chatEndRef} />
       </div>
 

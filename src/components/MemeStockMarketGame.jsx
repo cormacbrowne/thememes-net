@@ -688,7 +688,7 @@ export default function MemeStockMarketGame({
             )}
             <div>
               <div className="tm-stocks-eyebrow" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <span>📟 WALL ST. CYBER-TERMINAL • 10 MEME TICKERS</span>
+                <span>Wall St. trading desk • 10 meme tickers</span>
                 <span
                   style={{
                     color: marketRegime.color,

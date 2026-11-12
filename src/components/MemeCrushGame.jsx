@@ -985,7 +985,7 @@ export default function MemeCrushGame({
               setFeverTurnsLeft(3);
               feverTurnsRef.current = 3;
               setRainbowZapCharges((z) => Math.min(2, z + 1));
-              setComboBanner('🕺 DISCO FEVER OVERDRIVE! 2× SCORE + BONUS SPECIAL CANDY ZAPPED!');
+              setComboBanner('Disco Fever! 2× score & free special tile.');
               setCenterCallout({
                 id: `call-${uidSeq++}`,
                 text: '🕺 DISCO FEVER!',
@@ -1019,9 +1019,9 @@ export default function MemeCrushGame({
           // Award 1 pocket Cyber-Hammer if player hits a 3x+ natural cascade!
           if (cascadeStep === 3) {
             setHammerCharges((h) => Math.min(2, h + 1));
-            setComboBanner('⚡ 3× SYNTH COMBO! +1 CYBER HAMMER EARNED!');
+            setComboBanner('3× synth combo! +1 hammer earned.');
           } else if (cascadeStep >= 2) {
-            setComboBanner(`🔥 ${cascadeStep}× NEON CASCADE! (+${ptsEarned} PTS)`);
+            setComboBanner(`${cascadeStep}× cascade! +${ptsEarned} pts.`);
           }
 
           setBoard(currBoard.map((row) => [...row]));
@@ -1266,7 +1266,7 @@ export default function MemeCrushGame({
 
     if (lockGrid[r][c]) {
       sfx.playClownHonk();
-      setComboBanner('🔒 TILE LOCKED! MATCH NEXT TO IT OR USE A 🔨 HAMMER!');
+      setComboBanner('Tile locked — match beside it or use a hammer.');
       return;
     }
 
@@ -1318,14 +1318,14 @@ export default function MemeCrushGame({
     const cost = ARCADE_ECONOMY_RULES.ARCADE_STAKES.CRUSH_CONTINUE_COST; // 10 tokens
     if (tokens < cost) {
       sfx.playClownHonk();
-      setComboBanner(`⚠️ NEED ${cost} 🪙 FOR +5 EXTRA MOVES!`);
+      setComboBanner(`Need ${cost} 🪙 for +5 extra moves.`);
       return;
     }
     if (onSpendTokens && onSpendTokens(cost, 'Meme Crush +5 Extra Moves')) {
       sfx.playPowerUpCollect();
       setMovesLeft(5);
       setRoundResult(null);
-      setComboBanner('⚡ +5 EXTRA MOVES UNLOCKED — FINISH THE LEVEL!');
+      setComboBanner('+5 extra moves unlocked — finish the level!');
     }
   };
 
@@ -1346,7 +1346,7 @@ export default function MemeCrushGame({
             )}
             <div>
               <div className="tm-crush2-eyebrow">
-                🍬 10-LEVEL 80s NEON CAMPAIGN • {levelDef.badge}
+                10-level campaign • {levelDef.badge}
               </div>
               <h2 className="tm-crush2-title">
                 Lv.{levelDef.id}: {levelDef.name}

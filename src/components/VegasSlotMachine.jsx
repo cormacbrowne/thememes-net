@@ -377,7 +377,7 @@ export default function VegasSlotMachine({
 
   const [lastOutcome, setLastOutcome] = useState(null);
   const [statusBanner, setStatusBanner] = useState(
-    'SELECT YOUR CHIP BET & PULL THE RED CHROME ARM!'
+    'Pick a chip bet and pull the chrome arm.'
   );
   const [bestWinTokens, setBestWinTokens] = useState(() =>
     Number(localStorage.getItem('tm_slots_best_win') || 0)
@@ -426,8 +426,8 @@ export default function VegasSlotMachine({
     setNudgesLeft(0);
     setStatusBanner(
       nextBet === 0
-        ? '🆓 DEMO MODE SELECTED (0 🪙 COST • 0 🪙 PAYOUT)'
-        : `🪙 ${nextBet}-TOKEN CHIP WAGER LOCKED — PULL THE LEVER!`
+        ? 'Demo mode active (0 cost, 0 payout).'
+        : `${nextBet} 🪙 wager set — pull the lever.`
     );
   };
 
@@ -494,8 +494,8 @@ export default function VegasSlotMachine({
       });
       setStatusBanner(
         activeBet > 0
-          ? `${result.headline} → WON +${verifiedPayout} 🪙!`
-          : `${result.headline} (DEMO MODE — WAGER TOKENS TO WIN!)`
+          ? `${result.headline} — won +${verifiedPayout} 🪙!`
+          : `${result.headline} (Demo mode)`
       );
     } else {
       // Losing spin: 0 tokens paid! Occasional lucky Hold or Nudge feature if not already from a nudge
@@ -506,12 +506,12 @@ export default function VegasSlotMachine({
           setHoldAllowed(true);
           setHeldReels([false, false, false]);
           setNudgesLeft(0);
-          setStatusBanner('⚡ LUCKY HOLD LIT! TAP UP TO 2 REELS TO LOCK FOR NEXT PULL!');
+          setStatusBanner('Lucky Hold! Lock up to 2 reels for next spin.');
         } else if (roll < 0.28) {
           setHoldAllowed(false);
           setHeldReels([false, false, false]);
           setNudgesLeft(1);
-          setStatusBanner('⚡ 1 LUCKY NUDGE LIT! TAP A NUDGE BUTTON BELOW ANY REEL!');
+          setStatusBanner('Lucky Nudge! Tap Nudge under any reel.');
         } else {
           setHoldAllowed(false);
           setHeldReels([false, false, false]);
@@ -520,7 +520,7 @@ export default function VegasSlotMachine({
         }
       } else {
         setNudgesLeft(0);
-        setStatusBanner('NUDGE COMPLETE — NO PAYLINE MATCH. PULL AGAIN!');
+        setStatusBanner('Nudge complete — pull again.');
       }
     }
   };
@@ -542,7 +542,7 @@ export default function VegasSlotMachine({
       if (tokens < activeBet) {
         sfx.playClownHonk();
         setStatusBanner(
-          `⚠️ NEED ${activeBet} 🪙 FOR THAT BET! LOWER BET, SWITCH TO DEMO, OR UPLOAD A MEME (+45 🪙)!`
+          `Need ${activeBet} 🪙. Lower bet or switch to Demo.`
         );
         return;
       }
@@ -565,8 +565,8 @@ export default function VegasSlotMachine({
     setNudgesLeft(0);
     setStatusBanner(
       activeBet > 0
-        ? `🎰 ${activeBet} 🪙 INSERTED — MECHANICAL DRUMS SPINNING...`
-        : '🆓 DEMO PULL — DRUMS SPINNING...'
+        ? `${activeBet} 🪙 wagered — reels spinning.`
+        : 'Demo spin — reels rolling.'
     );
 
     // Choose random independent stop index on the 22-stop physical strip for non-held reels

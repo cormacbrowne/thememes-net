@@ -203,7 +203,7 @@ export default function VegasCoinPusherGame({
   const [slotReels, setSlotReels] = useState(['🪙', '💎', '🪙']);
   const [slotSpinning, setSlotSpinning] = useState(false);
   const [statusBanner, setStatusBanner] = useState(
-    '🎯 HIT THE MOVING GREEN SKILL GATE 3 TIMES TO SPIN THE MINI-SLOT! (GOLD 🪙 = 1 TOKEN, SILVER 🥈 = PTS)'
+    'Hit the green Skill Gate 3× to spin the mini-slot.'
   );
 
   // Multiplier grows as you collect unique prizes!
@@ -279,8 +279,8 @@ export default function VegasCoinPusherGame({
     setStatusBanner(
       customBanner ||
         (nextFreePlay
-          ? '🔄 SWITCHED TO FREE PLAY — CABINET RESET WITH FRESH PRACTICE BED!'
-          : '🔒 SWITCHED TO TOKEN MODE — CABINET RESET TO PREVENT FREE-PLAY STACKING!')
+          ? 'Switched to Free Play — fresh practice bed loaded.'
+          : 'Token Mode active — cabinet reset.')
     );
   }, []);
 
@@ -316,7 +316,7 @@ export default function VegasCoinPusherGame({
       let outcome;
       if (roll < 0.16) {
         outcome = ['🪙', '🪙', '🪙']; // 3-Coin Shelf Drop (1 Gold + 2 Silver)
-        setStatusBanner('🎰 MINI-SLOT HIT: 🪙🪙🪙 +3 BONUS COINS DROPPED ONTO THE BACK SHELF!');
+        setStatusBanner('Mini-slot hit: +3 bonus coins dropped on shelf.');
         sfx.playJackpot?.();
         for (let k = 0; k < 3; k++) {
           scheduleTimeout(() => {
@@ -338,13 +338,13 @@ export default function VegasCoinPusherGame({
         outcome = ['⚡', '⚡', '⚡']; // 6s Laser Side-Walls!
         s.feverUntil = Math.max(s.feverUntil, performance.now() + 6000);
         setFeverSecondsLeft(6);
-        setStatusBanner('🎰 MINI-SLOT HIT: ⚡⚡⚡ 6s LASER SIDE-WALLS ACTIVATED!');
+        setStatusBanner('Mini-slot hit: 6s laser side-walls enabled.');
         sfx.playPrizeDrop?.(true);
       } else if (roll < 0.48) {
         outcome = ['💎', '💎', '💎']; // 1 Prize Dropped at the BACK of the shelf!
         const pr = PRIZE_CATALOG[Math.floor(Math.random() * 3)];
         const prizeCountOnBed = s.coins.filter((c) => c.isPrize).length;
-        setStatusBanner(`🎰 MINI-SLOT HIT: 💎💎💎 ${pr.emoji} ${pr.label.toUpperCase()} PLACED AT BACK SHELF!`);
+        setStatusBanner(`Mini-slot hit: ${pr.emoji} ${pr.label} dropped on shelf.`);
         sfx.playPrizeDrop?.(true);
         if (prizeCountOnBed < 2) {
           s.coins.push(
@@ -363,7 +363,7 @@ export default function VegasCoinPusherGame({
         // Score & 1 Silver Medal consolation
         const sym = SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)];
         outcome = [sym, '🥈', sym];
-        setStatusBanner(`🎰 MINI-SLOT BONUS: ${sym}🥈${sym} +300 SCORE & +1 SILVER MEDAL DROPPED!`);
+        setStatusBanner(`Mini-slot bonus: +300 pts & +1 silver medal.`);
         setScore((prev) => prev + 300);
         s.coins.push(
           createCoinEntity(W / 2, BED_TOP_Y - 10, {
@@ -552,12 +552,12 @@ export default function VegasCoinPusherGame({
     if (nextWarnings >= 2) {
       setIsTilted(true);
       setAutoDrop(false);
-      setStatusBanner('🚨 TILT ALARM! CABINET LOCKED FOR 5 SECONDS — NO FREE NUDGE FARMING!');
+      setStatusBanner('Tilt alarm! Cabinet locked for 5 seconds.');
       sfx.playSadTrombone?.();
       scheduleTimeout(() => {
         setIsTilted(false);
         setTiltWarnings(0);
-        setStatusBanner('🪙 TILT RESET! PUSHER BAR ONLINE — DROP COINS TO BUILD PRESSURE!');
+        setStatusBanner('Tilt cleared — pusher bar back online.');
       }, 5000);
       return;
     }
@@ -568,7 +568,7 @@ export default function VegasCoinPusherGame({
         c.x += (Math.random() - 0.5) * 5.5;
       }
     });
-    setStatusBanner(`💥 CABINET JOLTED! CAREFUL — 1 MORE NUDGE TRIGGERS TILT LOCK! (${nextWarnings}/2)`);
+    setStatusBanner(`Cabinet nudged (${nextWarnings}/2 before tilt lock).`);
     scheduleTimeout(() => {
       setTiltWarnings((w) => Math.max(0, w - 1));
     }, 8000);
@@ -577,7 +577,7 @@ export default function VegasCoinPusherGame({
   const handleResetBed = () => {
     switchPlayMode(
       freePlay,
-      `🔄 CABINET RESET (${freePlay ? 'FREE PLAY' : 'TOKEN MODE'}) — FRESH COIN BED LOADED!`
+      `Cabinet reset (${freePlay ? 'Free Play' : 'Token Mode'}) — fresh coin bed.`
     );
     sfx.playCoinDrop?.();
   };

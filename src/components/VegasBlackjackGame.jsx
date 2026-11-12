@@ -837,7 +837,7 @@ export default function VegasBlackjackGame({
               </button>
             )}
             <div>
-              <div className="tm-bj-eyebrow">🃏 80s SYNTHWAVE CASINO • 3:2 BLACKJACK • 3× CHARLIE</div>
+              <div className="tm-bj-eyebrow">3:2 blackjack • 5-Card Charlie pays 3×</div>
               <h2 className="tm-bj-title">NEON 21&apos;s BLACKJACK</h2>
             </div>
           </div>

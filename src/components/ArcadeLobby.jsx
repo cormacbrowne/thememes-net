@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { RadioStationStrip } from './MemesRadio';
+import { DeLoreanDockBanner } from './DeLoreanTimeMachine';
 import {
   ARCADE_GAMES_CATALOG,
   ARCADE_LOBBY_GROUPS,
@@ -17,7 +18,10 @@ export default function ArcadeLobby({
   onOpenExtras,
   onOpenLeaderboard,
   onToggleAiAssistant,
-  onBackToFeed
+  onBackToFeed,
+  deloreanEra = 'present',
+  onOpenTimeCircuits,
+  onTriggerDeLoreanWarp
 }) {
   const [activeFilter, setActiveFilter] = useState('all');
   const [favoriteIds, setFavoriteIds] = useState(() => getFavoriteArcadeGameIds());
@@ -129,6 +133,14 @@ export default function ArcadeLobby({
       <div className="tm-lobby-radio-wrap">
         <RadioStationStrip autoStart compact />
       </div>
+
+      {onOpenTimeCircuits && (
+        <DeLoreanDockBanner
+          activeEra={deloreanEra}
+          onOpenModal={onOpenTimeCircuits}
+          onQuickWarp={onTriggerDeLoreanWarp}
+        />
+      )}
 
       {/* Category Filter Pills */}
       <div className="tm-lobby-filters" role="tablist" aria-label="Filter Arcade Games">

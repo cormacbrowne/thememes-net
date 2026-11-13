@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { getSupabaseClient } from '../supabaseClient';
 import { sfx } from '../utils/soundEngine';
+import { triggerWinCelebration } from '../utils/winCelebration';
 import { loadImageFromFileOrBlob } from '../utils/canvasMutator';
 import {
   makeTextLayer,
@@ -1261,9 +1262,22 @@ export function useFeed({
 
     setCrowdAgreement(pct);
     setBattleWinner(pickedMemeIdx);
-    setBattleStreak((s) => s + 1);
+    const nextStreak = battleStreak + 1;
+    setBattleStreak(nextStreak);
     setChampionWins((prev) => (slotIdx === 0 ? prev + 1 : 1));
     handleVote(pickedMeme.id, 1, e);
+
+    if (nextStreak % 3 === 0 || pct >= 75) {
+      triggerWinCelebration({
+        amount: nextStreak,
+        unit: '🔥 STREAK',
+        game: '1v1 Meme Arena',
+        headline: pct >= 75 ? `👑 CROWD FAVORITE (${pct}%)!` : `⚔️ ${nextStreak}× ARENA STREAK!`,
+        detail: `@${pickedMeme.author_name} holds the throne!`,
+        multiplier: 2,
+        tier: 'win'
+      });
+    }
 
     setTimeout(() => {
       setBattleWinner(null);

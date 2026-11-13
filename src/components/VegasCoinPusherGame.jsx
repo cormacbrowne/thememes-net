@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
+import { triggerWinCelebration } from '../utils/winCelebration';
 import './VegasCoinPusherGame.css';
 
 // ==========================================
@@ -870,6 +871,20 @@ export default function VegasCoinPusherGame({
               );
             }
             cb.onEarnXp?.(c.isPrize ? 40 : 10);
+          }
+
+          if (c.isPrize || tokenAward >= 3) {
+            triggerWinCelebration({
+              amount: tokenAward > 0 ? tokenAward : ptsEarned,
+              unit: tokenAward > 0 ? (cb.freePlay ? 'FREE 🪙' : '🪙') : 'PTS',
+              game: "Neon Coin Dozer '86",
+              headline: c.isPrize
+                ? `${c.emoji} ${c.label.toUpperCase()} WON!`
+                : `🪙 TRAY CASCADE +${tokenAward}!`,
+              detail: `+${ptsEarned} Arcade Pts!`,
+              multiplier: c.isPrize ? 5 : tokenAward,
+              tier: c.isPrize ? 'jackpot' : 'win'
+            });
           }
 
           spawnSparks(c.x, FRONT_LIP_Y + 12, c.color, c.isPrize ? 28 : 12);

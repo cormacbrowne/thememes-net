@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { getCategoryActivity, getRecentMemeHeadlines } from '../utils/memeFeedBridge';
+import { triggerWinCelebration } from '../utils/winCelebration';
 import './MemeStockMarketGame.css';
 
 // ==========================================
@@ -506,6 +507,18 @@ export default function MemeStockMarketGame({
       });
     }
 
+    if (tradeProfit > 0) {
+      triggerWinCelebration({
+        amount: tradeProfit,
+        unit: '🪙 PROFIT',
+        game: "MEMEDAQ '86",
+        headline: `📈 $${activeCompany.ticker} BULL PAYDAY!`,
+        detail: `Sold ${cleanQty} shares for ${proceedsTokens} 🪙`,
+        multiplier: Math.max(2, Math.round(proceedsTokens / Math.max(1, proportionalCostBasis))),
+        tier: tradeProfit >= 15 ? 'big' : 'win'
+      });
+    }
+
     setTradeFeedback(
       `🔔 SOLD ${cleanQty} sh of $${activeCompany.ticker} for ${proceedsTokens} 🪙 (${
         tradeProfit >= 0 ? `+${tradeProfit}` : tradeProfit
@@ -588,6 +601,15 @@ export default function MemeStockMarketGame({
             emoji: '🤖'
           });
         }
+        triggerWinCelebration({
+          amount: profit,
+          unit: '🪙 PROFIT',
+          game: "MEMEDAQ '86",
+          headline: `🤖 AUTO-PROFIT $${c.ticker}!`,
+          detail: `+${Math.round(profitRatio * 100)}% Gain (${proceeds} 🪙 returned)`,
+          multiplier: 3,
+          tier: 'big'
+        });
         setTradeFeedback(
           `🤖 AUTO-TAKE-PROFIT (+${Math.round(profitRatio * 100)}%): Sold ${pos.shares} sh of $${c.ticker} for ${proceeds} 🪙 (+${profit} 🪙 net profit)!`
         );

@@ -179,10 +179,12 @@ test.describe('Phase 30 iPhone UX, Joystick, Roulette & Classic Meme Maker', () 
       const board = document.querySelector('.tm-roul-board-column');
       const spinBtn = document.querySelector('.tm-roul-mobile-actionbar .tm-roul-spin-btn');
       const wallet = document.querySelector('.tm-fixed-wallet-pill');
+      const canvas = document.querySelector('.tm-roul-canvas');
       return {
         boardHeight: board ? board.getBoundingClientRect().height : 0,
         spinRect: spinBtn ? spinBtn.getBoundingClientRect().toJSON() : null,
-        walletRect: wallet ? wallet.getBoundingClientRect().toJSON() : null
+        walletRect: wallet ? wallet.getBoundingClientRect().toJSON() : null,
+        wheelWidth: canvas ? canvas.getBoundingClientRect().width : 0
       };
     });
 
@@ -190,6 +192,7 @@ test.describe('Phase 30 iPhone UX, Joystick, Roulette & Classic Meme Maker', () 
     expect(metrics.boardHeight).toBeGreaterThanOrEqual(350);
     expect(metrics.spinRect?.height).toBeGreaterThanOrEqual(40);
     expect(metrics.walletRect?.width).toBeGreaterThan(20);
+    expect(metrics.wheelWidth).toBeGreaterThanOrEqual(240);
 
     // Place a Red bet and Spin
     const redBtn = page.locator('.tm-roul-outside-cell.red-zone').first();
@@ -203,6 +206,39 @@ test.describe('Phase 30 iPhone UX, Joystick, Roulette & Classic Meme Maker', () 
     await expect(spinAction).toContainText(/SPIN/i);
     await spinAction.click();
     await expect(spinAction).toContainText(/SPINNING/i);
+    await expect(page.locator('.tm-roul-wheel-column.is-spinning')).toBeVisible();
+    await expect(page.locator('.tm-roul-telemetry-pill')).toBeVisible();
+
+    const spinningWidth = await page.evaluate(() => {
+      const c = document.querySelector('.tm-roul-canvas');
+      return c ? c.getBoundingClientRect().width : 0;
+    });
+    expect(spinningWidth).toBeGreaterThanOrEqual(300);
+  });
+
+  test('DeLorean Time Machine banner, Time Circuits modal & 88 MPH warp work cleanly on iPhone', async ({
+    page
+  }) => {
+    const pageErrors = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+
+    await page.goto('/games', { waitUntil: 'domcontentloaded' });
+    const banner = page.locator('.tm-delorean-banner');
+    await expect(banner).toBeVisible();
+
+    await banner.locator('button', { hasText: /Time Circuits/i }).click();
+    const modal = page.locator('.tm-delorean-modal');
+    await expect(modal).toBeVisible();
+
+    await modal.locator('.tm-delorean-era-btn', { hasText: /2015/i }).click();
+    await expect(page.locator('.tm-app.tm-era-2015')).toBeVisible();
+    await expect(page.locator('.tm-delorean-flyby-layer')).toBeVisible();
+
+    const overflowPx = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth
+    );
+    expect(overflowPx).toBeLessThanOrEqual(2);
+    expect(pageErrors).toEqual([]);
   });
 
   test('Simple Meme & GIF Maker has no template clutter and supports upload + Top/Bottom text + PNG export', async ({

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
+import { triggerWinCelebration, wasCelebrationRecentlyTriggered } from '../utils/winCelebration';
 import {
   RANKS,
   DAILY_QUESTS,
@@ -262,6 +263,10 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
     tokenLedger,
     `daily:payphone_coin:${getTodayDateString()}`
   );
+  const fluxBonusClaimedToday = hasActionBeenRewarded(
+    tokenLedger,
+    `daily:delorean_flux:${getTodayDateString()}`
+  );
   const xpConversionState = useMemo(
     () => computeXpConversionState(xp, xpConverted, tokenLedger),
     [xp, xpConverted, tokenLedger]
@@ -452,6 +457,15 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
       if (xpGain > 0) {
         awardXpOnly(xpGain, null, emoji, label || `+${verified} 🪙`);
       }
+      if (verified >= 2 && !wasCelebrationRecentlyTriggered(500)) {
+        triggerWinCelebration({
+          amount: verified,
+          unit: '🪙',
+          headline: label || `+${verified} 🪙 WON!`,
+          multiplier: stakedTokens > 0 ? verified / Math.max(1, stakedTokens) : 2,
+          tier: verified >= 30 ? 'big' : 'win'
+        });
+      }
       return verified;
     },
     [awardXpOnly]
@@ -503,6 +517,21 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
         actionKey: `daily:payphone_coin:${getTodayDateString()}`,
         event: e,
         emoji: '☎️'
+      });
+      return res.awardedTokens || 0;
+    },
+    [awardFairReward]
+  );
+
+  const handleClaimDeLoreanFluxBonus = useCallback(
+    (e) => {
+      const res = awardFairReward({
+        category: 'quests',
+        requestedTokens: 5,
+        xpGain: 50,
+        actionKey: `daily:delorean_flux:${getTodayDateString()}`,
+        event: e,
+        emoji: '🚗'
       });
       return res.awardedTokens || 0;
     },
@@ -873,6 +902,7 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
     pioneerBonusAvailable,
     pinataClaimedToday,
     payphoneClaimedToday,
+    fluxBonusClaimedToday,
     xpConversionState,
     unclaimedRewardsCount,
     addCappedWheelSpins,
@@ -888,6 +918,7 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
     claimStarterPackIfFirst,
     handleWinPinataReward,
     handleClaimPayphoneCoinReturn,
+    handleClaimDeLoreanFluxBonus,
     handleBossSecretXp,
     handleExchangeXpForTokens,
     handleToggleXpAutoConvert,

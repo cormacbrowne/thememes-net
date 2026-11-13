@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
+import { triggerWinCelebration } from '../utils/winCelebration';
 import './VegasSlotMachine.css';
 
 // ==========================================
@@ -457,15 +458,6 @@ export default function VegasSlotMachine({
     });
 
     if (result.mult > 0) {
-      if (result.tier === 'jackpot') {
-        sfx.playJackpot();
-        setTimeout(() => sfx.playAirhorn(), 180);
-      } else if (result.mult >= 4) {
-        sfx.playJackpot();
-      } else {
-        sfx.playCoinInsert();
-      }
-
       if (verifiedPayout > 0 && onPayoutTokens) {
         onPayoutTokens(verifiedPayout, {
           stakedTokens: activeBet,
@@ -477,6 +469,19 @@ export default function VegasSlotMachine({
           onCreditCreator(featuredMeme.author_name);
         }
       }
+
+      triggerWinCelebration({
+        amount: activeBet > 0 ? verifiedPayout : result.mult,
+        unit: activeBet > 0 ? '🪙' : '× DEMO',
+        game: 'Vegas 777 Slots',
+        headline: result.headline || '🎰 REEL WINNER!',
+        detail:
+          activeBet > 0
+            ? `${result.mult}× Payline Payout!`
+            : `Demo hit ${result.mult}× — Set a token bet to win 🪙!`,
+        multiplier: result.mult,
+        tier: result.tier === 'jackpot' ? 'jackpot' : result.mult >= 6 ? 'big' : 'win'
+      });
 
       if (verifiedPayout > bestWinTokens) {
         setBestWinTokens(verifiedPayout);

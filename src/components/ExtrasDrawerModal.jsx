@@ -33,7 +33,8 @@ export default function ExtrasDrawerModal({
   onRandomMeme,
   savedOnly,
   savedIdsCount,
-  onToggleSavedFilter
+  onToggleSavedFilter,
+  onOpenTimeCircuits
 }) {
   if (!isOpen) return null;
 
@@ -149,6 +150,21 @@ export default function ExtrasDrawerModal({
               <span className="tm-extras-tile-name">1-800-MEME</span>
               <span className="tm-extras-tile-desc">Retro Payphone Hotline</span>
             </button>
+
+            {onOpenTimeCircuits && (
+              <button
+                type="button"
+                className="tm-extras-tile"
+                onClick={() => {
+                  onClose();
+                  onOpenTimeCircuits();
+                }}
+              >
+                <span className="tm-extras-tile-icon">🚗⚡</span>
+                <span className="tm-extras-tile-name">DeLorean 88 MPH</span>
+                <span className="tm-extras-tile-desc">Time Circuits &amp; Era Warp</span>
+              </button>
+            )}
 
             <button
               type="button"

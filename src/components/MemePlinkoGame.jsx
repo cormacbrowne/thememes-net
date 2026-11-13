@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
+import { triggerWinCelebration } from '../utils/winCelebration';
 import GameShell from './GameShell';
 import './MemePlinkoGame.css';
 
@@ -336,8 +337,16 @@ export default function MemePlinkoGame({
             }
           }
 
-          if (ball.mult >= 2) {
-            sfx.playJackpot?.();
+          if (ball.mult >= 1.5) {
+            triggerWinCelebration({
+              amount: paid,
+              unit: ball.isPractice ? 'CHIPS' : '🪙',
+              game: 'Meme Plinko',
+              headline: `${ball.face} LANDED ${ball.mult}×!`,
+              detail: ball.isPractice ? 'Practice Bucket Hit!' : 'Direct Peg-Board Payday!',
+              multiplier: ball.mult,
+              tier: ball.mult >= 5 ? 'jackpot' : ball.mult >= 2.5 ? 'big' : 'win'
+            });
           } else if (ball.mult >= 1) {
             sfx.playMemeUpvote?.();
           } else {

@@ -566,7 +566,10 @@ export default function GameRouter({
   championWins,
   crowdAgreement,
   handleBattlePick,
-  handleSkipMatchup
+  handleSkipMatchup,
+  deloreanEra,
+  onOpenTimeCircuits,
+  onTriggerDeLoreanWarp
 }) {
   return (
     <>
@@ -880,6 +883,9 @@ export default function GameRouter({
               closeAllModals();
               setViewMode('feed');
             }}
+            deloreanEra={deloreanEra}
+            onOpenTimeCircuits={onOpenTimeCircuits}
+            onTriggerDeLoreanWarp={onTriggerDeLoreanWarp}
           />
         </Suspense>
       )}

@@ -1,0 +1,525 @@
+/* ==========================================================================
+   DELOREAN DMC-12 TIME MACHINE & TIME CIRCUITS (.tm-delorean-*)
+   ========================================================================== */
+
+.tm-delorean-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 0 12px rgba(0, 243, 255, 0.5));
+}
+
+.tm-delorean-flames {
+  animation: tmFlameFlicker 0.14s ease-in-out infinite alternate;
+  transform-origin: 88px 92px;
+}
+
+@keyframes tmFlameFlicker {
+  from {
+    transform: scaleX(0.92) scaleY(0.95);
+    opacity: 0.85;
+  }
+  to {
+    transform: scaleX(1.12) scaleY(1.06);
+    opacity: 1;
+  }
+}
+
+/* Full-screen 88 MPH Flyby Overlay (non-blocking, zero layout overflow) */
+.tm-delorean-flyby-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.tm-delorean-flux-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 65%, rgba(0, 243, 255, 0.35), rgba(56, 189, 248, 0.12) 45%, transparent 72%);
+  animation: tmFluxFlash 1.5s ease-out forwards;
+}
+
+@keyframes tmFluxFlash {
+  0% {
+    opacity: 0;
+  }
+  28% {
+    opacity: 0.9;
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.tm-delorean-tire-tracks {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: max(76px, 14vh);
+  height: 16px;
+  background:
+    linear-gradient(90deg, transparent 0%, #f97316 15%, #fde047 50%, #00f3ff 88%, transparent 100%) 0 0 / 100% 4px no-repeat,
+    linear-gradient(90deg, transparent 0%, #ef4444 18%, #facc15 55%, #38bdf8 90%, transparent 100%) 0 10px / 100% 4px no-repeat;
+  filter: blur(0.6px) drop-shadow(0 0 10px #f97316);
+  animation: tmTracksBurn 1.7s ease-out forwards;
+}
+
+@keyframes tmTracksBurn {
+  0% {
+    opacity: 0;
+    transform: scaleX(0.15);
+    transform-origin: left center;
+  }
+  30% {
+    opacity: 1;
+    transform: scaleX(1);
+    transform-origin: left center;
+  }
+  75% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.tm-delorean-car-runner {
+  position: absolute;
+  left: -340px;
+  bottom: max(68px, 13vh);
+  width: min(300px, 68vw);
+  animation: tmDeLoreanZoom 1.45s cubic-bezier(0.22, 0.85, 0.35, 1) forwards;
+}
+
+@keyframes tmDeLoreanZoom {
+  0% {
+    transform: translateX(0) scale(0.85);
+    opacity: 0.9;
+  }
+  20% {
+    opacity: 1;
+  }
+  65% {
+    transform: translateX(calc(55vw + 160px)) scale(1.06);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(calc(100vw + 420px)) scale(1.12);
+    opacity: 0;
+  }
+}
+
+.tm-delorean-speed-hud {
+  position: absolute;
+  top: max(66px, 11vh);
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(2, 6, 23, 0.94);
+  border: 2px solid #00f3ff;
+  box-shadow: 0 0 26px rgba(0, 243, 255, 0.65), 0 0 42px rgba(249, 115, 22, 0.35);
+  animation: tmSpeedHudPop 1.65s ease forwards;
+  white-space: nowrap;
+}
+
+.tm-delorean-mph {
+  font-family: Impact, "Arial Black", monospace;
+  font-size: clamp(18px, 4vw, 26px);
+  color: #fde047;
+  text-shadow: 0 0 12px rgba(250, 204, 21, 0.8);
+  letter-spacing: 1px;
+}
+
+.tm-delorean-hud-tag {
+  font-size: clamp(11px, 2.5vw, 13px);
+  font-weight: 900;
+  color: #67e8f9;
+  letter-spacing: 0.6px;
+}
+
+@keyframes tmSpeedHudPop {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.8);
+  }
+  18% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.04);
+  }
+  80% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+}
+
+/* Interactive Banner (Lobby & Feed) */
+.tm-delorean-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(8, 47, 73, 0.82));
+  border: 1.5px solid rgba(0, 243, 255, 0.45);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45), 0 0 20px rgba(0, 243, 255, 0.16);
+  margin: 10px 0;
+  flex-wrap: wrap;
+}
+
+.tm-delorean-banner-car-btn {
+  width: 118px;
+  flex-shrink: 0;
+  background: rgba(2, 6, 23, 0.72);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: 12px;
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease;
+  touch-action: manipulation;
+}
+
+.tm-delorean-banner-car-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  border-color: #facc15;
+}
+
+.tm-delorean-banner-copy {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.tm-delorean-banner-eyebrow {
+  font-size: 10.5px;
+  font-weight: 900;
+  letter-spacing: 0.7px;
+  color: #38bdf8;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.tm-delorean-banner-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #f8fafc;
+  line-height: 1.3;
+}
+
+.tm-delorean-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tm-delorean-pill-btn {
+  min-height: 38px;
+  padding: 7px 13px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.tm-delorean-pill-btn.secondary {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1.5px solid rgba(250, 204, 21, 0.45);
+  color: #fde047;
+}
+
+/* Time Circuits Modal */
+.tm-delorean-modal {
+  max-width: 580px;
+  width: min(580px, 94vw);
+  padding: 18px;
+  border-radius: 20px;
+  background: radial-gradient(circle at 50% 10%, rgba(15, 23, 42, 0.98), rgba(3, 7, 18, 0.99));
+  border: 2px solid #00f3ff;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9), 0 0 36px rgba(0, 243, 255, 0.28);
+  color: #f8fafc;
+}
+
+.tm-delorean-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.tm-delorean-kicker {
+  font-size: 10.5px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  color: #38bdf8;
+}
+
+.tm-delorean-modal-title {
+  margin: 2px 0 0;
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: clamp(18px, 3vw, 23px);
+  color: #fde047;
+  letter-spacing: 0.7px;
+}
+
+.tm-delorean-showcase {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(2, 6, 23, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  margin-bottom: 12px;
+}
+
+.tm-flux-capacitor-box {
+  width: 74px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 6px;
+  border-radius: 10px;
+  background: #0f172a;
+  border: 1.5px solid #64748b;
+}
+
+.tm-flux-y {
+  position: relative;
+  width: 38px;
+  height: 38px;
+}
+
+.tm-flux-arm {
+  position: absolute;
+  width: 4px;
+  height: 20px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #e0f2fe, #38bdf8);
+  box-shadow: 0 0 10px #00f3ff;
+  animation: tmFluxPulse 0.7s ease-in-out infinite alternate;
+}
+
+.tm-flux-arm.a1 {
+  top: 2px;
+  left: 8px;
+  transform: rotate(-38deg);
+}
+
+.tm-flux-arm.a2 {
+  top: 2px;
+  right: 8px;
+  transform: rotate(38deg);
+}
+
+.tm-flux-arm.a3 {
+  bottom: 1px;
+  left: 17px;
+  height: 18px;
+}
+
+.tm-flux-core {
+  position: absolute;
+  top: 15px;
+  left: 14px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fef08a;
+  box-shadow: 0 0 14px #fde047, 0 0 22px #00f3ff;
+}
+
+.tm-flux-label {
+  font-size: 9.5px;
+  font-weight: 900;
+  color: #67e8f9;
+}
+
+@keyframes tmFluxPulse {
+  from {
+    opacity: 0.7;
+    filter: brightness(0.9);
+  }
+  to {
+    opacity: 1;
+    filter: brightness(1.4);
+  }
+}
+
+.tm-delorean-showcase-car {
+  flex: 1;
+  min-width: 0;
+}
+
+.tm-time-circuits-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #090d16;
+  border: 1.5px solid #334155;
+  margin-bottom: 12px;
+}
+
+.tm-tc-row {
+  display: grid;
+  grid-template-columns: 112px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 7px;
+  background: #020617;
+  font-family: "Courier New", monospace;
+}
+
+.tm-tc-tag {
+  font-size: 9.5px;
+  font-weight: 900;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+}
+
+.tm-tc-led {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.tm-tc-row.dest .tm-tc-led {
+  color: #f87171;
+  text-shadow: 0 0 8px rgba(248, 113, 113, 0.7);
+}
+
+.tm-tc-row.present .tm-tc-led {
+  color: #4ade80;
+  text-shadow: 0 0 8px rgba(74, 222, 128, 0.7);
+}
+
+.tm-tc-row.departed .tm-tc-led {
+  color: #facc15;
+  text-shadow: 0 0 8px rgba(250, 204, 21, 0.7);
+}
+
+.tm-delorean-era-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.tm-delorean-era-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(148, 163, 184, 0.3);
+  background: rgba(15, 23, 42, 0.88);
+  color: #e2e8f0;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.14s ease, border-color 0.14s ease;
+  touch-action: manipulation;
+}
+
+.tm-delorean-era-btn:hover,
+.tm-delorean-era-btn.active {
+  border-color: var(--era-accent, #00f3ff);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--era-accent, #00f3ff) 35%, transparent);
+  transform: translateY(-1px);
+}
+
+.tm-era-badge {
+  font-size: 10.5px;
+  font-weight: 900;
+  color: var(--era-accent, #38bdf8);
+}
+
+.tm-era-title {
+  font-size: 12.5px;
+  color: #ffffff;
+}
+
+.tm-era-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.3;
+}
+
+.tm-delorean-modal-foot {
+  display: flex;
+  justify-content: center;
+}
+
+.tm-delorean-warp-cta {
+  width: 100%;
+  min-height: 44px;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+/* Time-Warp Era Themes applied on .tm-app */
+.tm-app.tm-era-1985 .tm-synthwave-glow {
+  filter: hue-rotate(-32deg) saturate(1.35) brightness(1.1);
+}
+
+.tm-app.tm-era-2015 .tm-synthwave-glow,
+.tm-app.tm-era-2015 .tm-synthwave-grid {
+  filter: hue-rotate(48deg) saturate(1.65) brightness(1.15);
+}
+
+.tm-app.tm-era-1955 .tm-synthwave-bg,
+.tm-app.tm-era-1955 .tm-grid {
+  filter: sepia(0.55) contrast(1.08);
+}
+
+@media (max-width: 600px) {
+  .tm-delorean-banner {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .tm-delorean-banner-car-btn {
+    width: 88px;
+    padding: 4px 6px;
+  }
+
+  .tm-delorean-era-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tm-tc-row {
+    grid-template-columns: 88px 1fr auto;
+    gap: 5px;
+  }
+
+  .tm-tc-led {
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tm-delorean-car-runner,
+  .tm-delorean-tire-tracks,
+  .tm-delorean-flux-flash,
+  .tm-delorean-flames,
+  .tm-flux-arm {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

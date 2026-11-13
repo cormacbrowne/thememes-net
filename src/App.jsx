@@ -26,6 +26,12 @@ import {
 } from './utils/settingsStore';
 import { getSecurityAuditReport } from './utils/securityGuard';
 import ParticleOverlay from './components/ParticleOverlay';
+import WinCelebrationOverlay from './components/WinCelebrationOverlay';
+import {
+  DeLoreanTimeWarpStage,
+  DeLoreanDockBanner
+} from './components/DeLoreanTimeMachine';
+import { DELOREAN_ERAS } from './data/deloreanEras';
 import MemeSkeletonGrid from './components/MemeSkeletonGrid';
 import MobileArcadeDock from './components/MobileArcadeDock';
 import SeoDiscoveryFooter from './components/SeoDiscoveryFooter';
@@ -171,6 +177,11 @@ export default function App() {
   const [goblinsCaught, setGoblinsCaught] = useState(() =>
     Number(localStorage.getItem('tm_goblins') || 0)
   );
+  const [deloreanEra, setDeloreanEra] = useState(() =>
+    typeof window !== 'undefined' ? localStorage.getItem('tm_delorean_era_v1') || 'present' : 'present'
+  );
+  const [deloreanModalOpen, setDeloreanModalOpen] = useState(false);
+  const [deloreanFlyby, setDeloreanFlyby] = useState(null);
   const logoTapRef = useRef({ count: 0, lastTap: 0 });
   const lastTrailTimeRef = useRef(0);
 
@@ -219,6 +230,7 @@ export default function App() {
     pioneerBonusAvailable,
     pinataClaimedToday,
     payphoneClaimedToday,
+    fluxBonusClaimedToday,
     xpConversionState,
     unclaimedRewardsCount,
     incrementQuest,
@@ -231,6 +243,7 @@ export default function App() {
     handlePayoutGameTokens,
     handleWinPinataReward,
     handleClaimPayphoneCoinReturn,
+    handleClaimDeLoreanFluxBonus,
     handleBossSecretXp,
     handleExchangeXpForTokens,
     handleToggleXpAutoConvert,
@@ -240,6 +253,33 @@ export default function App() {
     handleTriggerKonamiGodMode,
     recordWildGoblinReward
   } = economy;
+
+  const handleTriggerDeLoreanWarp = useCallback(
+    (targetEra = '1985') => {
+      const eraObj = DELOREAN_ERAS.find((e) => e.id === targetEra) || DELOREAN_ERAS[0];
+      sfx.playDeLoreanWarp?.();
+      setDeloreanEra(eraObj.id);
+      try {
+        localStorage.setItem('tm_delorean_era_v1', eraObj.id);
+      } catch {
+        // ignore
+      }
+      const flyId = `fly-${Date.now()}`;
+      setDeloreanFlyby({ id: flyId, eraLabel: `WARPED TO ${eraObj.dateLabel}` });
+      setTimeout(() => {
+        setDeloreanFlyby((curr) => (curr && curr.id === flyId ? null : curr));
+      }, 1750);
+
+      const awarded = handleClaimDeLoreanFluxBonus?.();
+      setGoblinFortuneToast(
+        awarded > 0
+          ? `🚗⚡ 88 MPH! Warped to ${eraObj.title} & charged Flux Capacitor (+${awarded} 🪙 & +50 XP)!`
+          : `🚗⚡ 88 MPH! Time Circuits locked on ${eraObj.title}!`
+      );
+      setTimeout(() => setGoblinFortuneToast(''), 4500);
+    },
+    [handleClaimDeLoreanFluxBonus, setGoblinFortuneToast]
+  );
 
   const memesRef = useRef([]);
   const auth = useAuth({ setShowAuthModal, awardXpAndCombo, memesRef });
@@ -741,6 +781,7 @@ export default function App() {
       profileUsername ||
       showAuthModal ||
       extrasDrawerOpen ||
+      deloreanModalOpen ||
       bossKeyActive
   );
 
@@ -752,7 +793,7 @@ export default function App() {
         litePerfMode ? 'tm-lite-perf' : ''
       } ${screenShake ? 'tm-shake' : ''} ${
         screenPunch ? 'tm-screen-punch' : ''
-      } tm-mutator-${chaosMutator} tm-device-${deviceProfile.id}`}
+      } tm-mutator-${chaosMutator} tm-era-${deloreanEra} tm-device-${deviceProfile.id}`}
       data-device={deviceProfile.id}
       data-form={deviceProfile.formFactor}
     >
@@ -861,6 +902,19 @@ export default function App() {
 
       {/* ISOLATED FLOATING PHYSICS PARTICLES OVERLAY (ZERO ROOT RE-RENDERS) */}
       <ParticleOverlay ref={particleOverlayRef} litePerfMode={litePerfMode} />
+
+      {/* GLOBAL VARIED WIN CELEBRATION OVERLAY */}
+      <WinCelebrationOverlay litePerfMode={litePerfMode} />
+
+      {/* DELOREAN DMC-12 88 MPH FLYBY & TIME CIRCUITS CONSOLE */}
+      <DeLoreanTimeWarpStage
+        flybyEvent={deloreanFlyby}
+        activeEra={deloreanEra}
+        modalOpen={deloreanModalOpen}
+        onCloseModal={() => setDeloreanModalOpen(false)}
+        onTriggerWarp={handleTriggerDeLoreanWarp}
+        bonusClaimedToday={fluxBonusClaimedToday}
+      />
 
       {/* LEVEL UP BANNER */}
       {levelUpBanner && (
@@ -1344,6 +1398,18 @@ export default function App() {
             </section>
           )}
 
+          {/* DELOREAN DMC-12 TIME MACHINE BANNER */}
+          <div style={{ maxWidth: 1240, margin: '0 auto', padding: '0 14px' }}>
+            <DeLoreanDockBanner
+              activeEra={deloreanEra}
+              onOpenModal={() => {
+                sfx.playToggle?.();
+                setDeloreanModalOpen(true);
+              }}
+              onQuickWarp={handleTriggerDeLoreanWarp}
+            />
+          </div>
+
           {/* SIDE ENTERTAINMENT LOUNGE: FEATURED 80s NEON ARCADE SUB-GAMES BELOW THE MEME FEED */}
           <Suspense fallback={null}>
             <ArcadeLoungePromo setViewMode={setViewMode} />
@@ -1398,6 +1464,12 @@ export default function App() {
         crowdAgreement={crowdAgreement}
         handleBattlePick={handleBattlePick}
         handleSkipMatchup={handleSkipMatchup}
+        deloreanEra={deloreanEra}
+        onOpenTimeCircuits={() => {
+          sfx.playToggle?.();
+          setDeloreanModalOpen(true);
+        }}
+        onTriggerDeLoreanWarp={handleTriggerDeLoreanWarp}
         />
       </Suspense>
 
@@ -1869,6 +1941,10 @@ export default function App() {
             onToggleSavedFilter={() => {
               setViewMode('feed');
               setShowSavedOnly((prev) => !prev);
+            }}
+            onOpenTimeCircuits={() => {
+              sfx.playToggle?.();
+              setDeloreanModalOpen(true);
             }}
           />
         </Suspense>

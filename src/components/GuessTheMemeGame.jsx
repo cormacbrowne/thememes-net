@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { STUDIO_TEMPLATES } from '../data/starterMemes';
 import { sfx } from '../utils/soundEngine';
+import { triggerWinCelebration } from '../utils/winCelebration';
 import GameShell from './GameShell';
 import './GuessTheMemeGame.css';
 
@@ -225,7 +226,15 @@ export default function GuessTheMemeGame({
     if (tpl.id === activeRound.answer.id) {
       const pts = Math.max(20, (6 - clarityStep) * 20);
       const emoji = clarityStep <= 2 ? '🟩' : '🟨';
-      sfx.playMemeUpvote?.();
+      triggerWinCelebration({
+        amount: pts,
+        unit: 'PTS',
+        game: 'Guess The Meme',
+        headline: clarityStep <= 2 ? '🧠 EAGLE EYE! NAILED IT!' : '✅ CORRECT MEME!',
+        detail: `${activeRound.answer.title || activeRound.answer.name || 'Meme'} • Step ${clarityStep}/5`,
+        multiplier: clarityStep <= 2 ? 4 : 2,
+        tier: clarityStep <= 2 ? 'big' : 'win'
+      });
       recordRoundComplete({ won: true, stepUsed: clarityStep, points: pts, emoji });
       return;
     }

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
 import { getLevelBackdropMeme } from '../utils/memeFeedBridge';
+import { triggerWinCelebration } from '../utils/winCelebration';
 import './MemeCrushGame.css';
 
 const GRID_SIZE = 8;
@@ -648,7 +649,6 @@ export default function MemeCrushGame({
           maxMultiplier: 4
         });
 
-        sfx.playCrushComboFanfare();
         if (verifiedPayout > 0 && onPayoutTokens) {
           onPayoutTokens(verifiedPayout, {
             stakedTokens: activeStakeTokens,
@@ -657,6 +657,16 @@ export default function MemeCrushGame({
             emoji: '🍬'
           });
         }
+
+        triggerWinCelebration({
+          amount: verifiedPayout > 0 ? verifiedPayout : finalScore,
+          unit: verifiedPayout > 0 ? '🪙' : 'PTS',
+          game: 'Meme Crush Saga',
+          headline: `🍬 LEVEL ${levelDef.id} CLEARED! (${'⭐'.repeat(stars)})`,
+          detail: `${levelDef.name} • Score: ${finalScore.toLocaleString()}`,
+          multiplier: stars + 1,
+          tier: stars >= 3 ? 'jackpot' : 'big'
+        });
 
         setRoundResult({
           won: true,

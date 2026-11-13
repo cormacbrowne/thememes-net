@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
 import { checkDailyPerk, consumeDailyPerk } from '../utils/memeFeedBridge';
+import { triggerWinCelebration } from '../utils/winCelebration';
 import './VegasBlackjackGame.css';
 
 // ==========================================
@@ -392,7 +393,6 @@ export default function VegasBlackjackGame({
             rawPayout: totalPayout,
             maxMultiplier: 15
           });
-          sfx.playJackpot();
           onPayoutTokens(verified, {
             stakedTokens: totalStaked,
             xp: anyBj || anyCharlie ? 55 : 35,
@@ -403,8 +403,35 @@ export default function VegasBlackjackGame({
               : `🃏 Neon 21's Win! +${verified} 🪙`,
             emoji: '🃏'
           });
+          triggerWinCelebration({
+            amount: verified,
+            unit: '🪙',
+            game: "Neon 21's Blackjack",
+            headline: anyCharlie
+              ? '⚡ 5-CARD CHARLIE!'
+              : anyBj
+              ? '🃏 BLACKJACK 21!'
+              : dEval.isBust
+              ? '🤯 DEALER BUSTED!'
+              : '🃏 YOU BEAT THE DEALER!',
+            detail: `${nextStreak}× Hot Streak!`,
+            multiplier: anyCharlie || anyBj ? 4 : 2,
+            tier: anyCharlie || anyBj ? 'jackpot' : 'win'
+          });
         } else {
-          sfx.playLevelUp();
+          triggerWinCelebration({
+            amount: totalPayout,
+            unit: 'CHIPS',
+            game: "Neon 21's Blackjack",
+            headline: anyCharlie
+              ? '⚡ 5-CARD CHARLIE!'
+              : anyBj
+              ? '🃏 BLACKJACK 21!'
+              : '🃏 PRACTICE HAND WON!',
+            detail: `${nextStreak}× Win Streak — Switch to Token Mode for real 🪙!`,
+            multiplier: anyCharlie || anyBj ? 4 : 2,
+            tier: anyCharlie || anyBj ? 'big' : 'win'
+          });
         }
 
         setDealerMood({

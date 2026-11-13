@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef } from 'react';
 import { STARTER_MEMES } from '../data/starterMemes';
 import { sfx } from '../utils/soundEngine';
+import { triggerWinCelebration } from '../utils/winCelebration';
 import GameShell from './GameShell';
 import './HigherOrLowerGame.css';
 
@@ -91,8 +92,9 @@ export default function HigherOrLowerGame({
 
     if (isCorrect) {
       const nextStreak = streak + 1;
+      const isNewBest = nextStreak > bestStreak;
       setStreak(nextStreak);
-      if (nextStreak > bestStreak) {
+      if (isNewBest) {
         setBestStreak(nextStreak);
         try {
           localStorage.setItem(BEST_STREAK_KEY, String(nextStreak));
@@ -100,7 +102,19 @@ export default function HigherOrLowerGame({
           // ignore storage quota
         }
       }
-      sfx.playMemeUpvote?.();
+      triggerWinCelebration({
+        amount: nextStreak,
+        unit: '🔥 STREAK',
+        game: 'Higher or Lower',
+        headline: isNewBest
+          ? `👑 NEW BEST STREAK: ${nextStreak}×!`
+          : nextStreak >= 3
+          ? `🔥 ${nextStreak}× HOT STREAK!`
+          : '⬆️⬇️ CORRECT CALL!',
+        detail: `${rightMeme.title || 'Meme'} had ${rightMeme.votes} votes`,
+        multiplier: nextStreak >= 5 ? 5 : nextStreak >= 3 ? 3 : 2,
+        tier: nextStreak >= 5 || isNewBest ? 'big' : 'win'
+      });
 
       clearTimeout(advanceTimerRef.current);
       advanceTimerRef.current = setTimeout(() => {

@@ -2209,6 +2209,174 @@ export class SoundEngine {
       // Ignore audio errors
     }
   }
+
+  /**
+   * 🏆 VARIED WIN REWARD FANFARE ENGINE
+   * Picks a fresh synthesized reward sound each win (never repeating the last one)
+   * so players never know which celebratory soundscape they'll get!
+   */
+  playRandomWinFanfare({ tier = 'win', multiplier = 1 } = {}) {
+    if (!this.enabled) return 'silent';
+    const isMega = tier === 'jackpot' || tier === 'mega' || multiplier >= 5;
+    const pool = isMega
+      ? ['mega-jackpot', 'laser-fanfare', 'stadium-hype', 'flux-hyperwarp', 'coin-cascade']
+      : ['laser-fanfare', 'coin-cascade', 'arcade-powerup', 'vegas-bell', 'stadium-hype', 'flux-hyperwarp'];
+
+    const candidates = pool.filter((p) => p !== this._lastWinVariant);
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)] || pool[0];
+    this._lastWinVariant = chosen;
+
+    try {
+      this.init();
+      if (!this.ctx) return chosen;
+      this.triggerHaptic(isMega ? [35, 35, 70, 35, 90] : [25, 30, 50]);
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+
+      const playTone = (freq, startOffset, dur, type = 'triangle', vol = 0.14, slideTo = null) => {
+        const t = now + startOffset;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, t);
+        if (slideTo) {
+          osc.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+        }
+        gain.gain.setValueAtTime(0.001, t);
+        gain.gain.linearRampToValueAtTime(vol, t + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        osc.connect(gain);
+        gain.connect(out);
+        osc.start(t);
+        osc.stop(t + dur + 0.02);
+      };
+
+      if (chosen === 'laser-fanfare') {
+        // Synthwave sawtooth brass arpeggio + cosmic octave shimmer
+        [523.25, 659.25, 783.99, 1046.5, 1318.51, 1567.98].forEach((f, i) => {
+          playTone(f, i * 0.065, 0.24, 'sawtooth', 0.095);
+          playTone(f * 0.5, i * 0.065, 0.22, 'triangle', 0.08);
+        });
+        [1046.5, 1318.51, 1567.98, 2093.0].forEach((f) => {
+          playTone(f, 0.42, 0.48, 'sine', 0.08);
+        });
+      } else if (chosen === 'coin-cascade') {
+        // Rapid sparkling metallic coin shower + warm major-9th chord
+        [1318.5, 1760, 2093, 2637, 1975.5, 2349.3, 3135.96].forEach((f, i) => {
+          playTone(f, i * 0.048, 0.14, 'sine', 0.12, f * 1.04);
+        });
+        [523.25, 659.25, 783.99, 1174.66].forEach((f) => {
+          playTone(f, 0.34, 0.44, 'triangle', 0.09);
+        });
+      } else if (chosen === 'arcade-powerup') {
+        // Retro 16-bit SNES/Genesis bouncy victory riff
+        const seq = [
+          [440, 0, 0.09],
+          [554.37, 0.08, 0.09],
+          [659.25, 0.16, 0.09],
+          [880, 0.24, 0.18],
+          [783.99, 0.38, 0.09],
+          [880, 0.46, 0.38]
+        ];
+        seq.forEach(([f, off, dur]) => {
+          playTone(f, off, dur, 'square', 0.065);
+          playTone(f * 0.5, off, dur, 'triangle', 0.09);
+        });
+      } else if (chosen === 'vegas-bell') {
+        // Classic casino bell trill + rising synth glissando
+        for (let i = 0; i < 6; i += 1) {
+          playTone(i % 2 === 0 ? 1567.98 : 2093.0, i * 0.055, 0.12, 'sine', 0.13);
+        }
+        playTone(440, 0.28, 0.34, 'triangle', 0.12, 1760);
+        playTone(1046.5, 0.42, 0.42, 'sine', 0.12);
+      } else if (chosen === 'stadium-hype') {
+        // Hype double synth-horn blast + sub drop + high sparkle
+        [293.66, 440, 587.33].forEach((f) => {
+          playTone(f, 0, 0.15, 'sawtooth', 0.075);
+          playTone(f * 1.12, 0.18, 0.32, 'sawtooth', 0.08);
+        });
+        playTone(130.81, 0.18, 0.38, 'sine', 0.18, 65.4);
+        playTone(1760, 0.36, 0.28, 'sine', 0.11);
+      } else if (chosen === 'flux-hyperwarp') {
+        // 80s DeLorean / synthwave chord swell + stardust arpeggio
+        playTone(220, 0, 0.36, 'sawtooth', 0.08, 880);
+        [659.25, 880, 1108.73, 1318.51, 1760, 2217.46].forEach((f, i) => {
+          playTone(f, 0.14 + i * 0.052, 0.24, 'triangle', 0.11);
+        });
+      } else {
+        // mega-jackpot: multi-bar brass + coin fountain + booming sub
+        [523.25, 659.25, 783.99, 1046.5, 1318.51, 1567.98, 2093.0].forEach((f, i) => {
+          playTone(f, i * 0.052, 0.28, 'sawtooth', 0.085);
+        });
+        [1567.98, 2093.0, 2637.02, 3135.96].forEach((f, i) => {
+          playTone(f, 0.36 + i * 0.05, 0.22, 'sine', 0.11);
+        });
+        playTone(130.81, 0.36, 0.5, 'sine', 0.18, 82.4);
+      }
+    } catch {
+      // Ignore audio errors
+    }
+    return chosen;
+  }
+
+  /**
+   * 🚗⚡ DELOREAN DMC-12 — 88 MPH FLUX CAPACITOR TIME-WARP SFX
+   */
+  playDeLoreanWarp() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic([25, 25, 60, 25, 95]);
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+
+      // 1. Rising turbine & flux capacitor charge sweep
+      const sweep = this.ctx.createOscillator();
+      const sweepGain = this.ctx.createGain();
+      sweep.type = 'sawtooth';
+      sweep.frequency.setValueAtTime(110, now);
+      sweep.frequency.exponentialRampToValueAtTime(1760, now + 0.55);
+      sweepGain.gain.setValueAtTime(0.02, now);
+      sweepGain.gain.linearRampToValueAtTime(0.16, now + 0.48);
+      sweepGain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+      sweep.connect(sweepGain);
+      sweepGain.connect(out);
+      sweep.start(now);
+      sweep.stop(now + 0.72);
+
+      // 2. Time-barrier sonic boom at 88 MPH
+      const boom = this.ctx.createOscillator();
+      const boomGain = this.ctx.createGain();
+      boom.type = 'sine';
+      boom.frequency.setValueAtTime(220, now + 0.5);
+      boom.frequency.exponentialRampToValueAtTime(42, now + 0.95);
+      boomGain.gain.setValueAtTime(0.001, now + 0.49);
+      boomGain.gain.linearRampToValueAtTime(0.28, now + 0.52);
+      boomGain.gain.exponentialRampToValueAtTime(0.001, now + 0.98);
+      boom.connect(boomGain);
+      boomGain.connect(out);
+      boom.start(now + 0.49);
+      boom.stop(now + 1.0);
+
+      // 3. Shimmering 1985 synth brass resolve
+      [523.25, 783.99, 1046.5, 1318.51].forEach((f, idx) => {
+        const t = now + 0.54 + idx * 0.04;
+        const osc = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(f, t);
+        g.gain.setValueAtTime(0.11, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+        osc.connect(g);
+        g.connect(out);
+        osc.start(t);
+        osc.stop(t + 0.48);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
 }
 
 export const sfx = new SoundEngine();

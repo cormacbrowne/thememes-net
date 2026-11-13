@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
 import { checkDailyPerk, consumeDailyPerk } from '../utils/memeFeedBridge';
+import { triggerWinCelebration } from '../utils/winCelebration';
 import './VegasPinballGame.css';
 
 // ==========================================
@@ -597,7 +598,15 @@ export default function VegasPinballGame({
           st.drainShield = true;
           setHudScore(st.score);
           setHudShield(true);
-          sfx.playJackpot();
+          triggerWinCelebration({
+            amount: missionBonus,
+            unit: 'PTS',
+            game: 'Neon Pinball',
+            headline: `🏆 MISSION CLEARED!`,
+            detail: `${st.table.name} • Drain Shield Activated!`,
+            multiplier: 4,
+            tier: 'big'
+          });
           st.floatTexts.push({
             x: PLAY_CENTER_X,
             y: 225,
@@ -636,12 +645,30 @@ export default function VegasPinballGame({
       const activeStake = stakedRef.current;
       const payout = computePinballTokenPayout(finalScore, activeStake);
       if (payout > 0 && onPayoutTokens) {
-        sfx.playJackpot();
         onPayoutTokens(payout, {
           stakedTokens: activeStake,
           xp: 50,
           label: `🎱 Pinball ${st.table.name}: ${finalScore.toLocaleString()} pts!`,
           emoji: '🎱'
+        });
+        triggerWinCelebration({
+          amount: payout,
+          unit: '🪙',
+          game: 'Neon Pinball',
+          headline: `🎱 PINBALL PAYOUT!`,
+          detail: `${st.table.name} • ${finalScore.toLocaleString()} pts`,
+          multiplier: activeStake > 0 ? payout / Math.max(1, activeStake) : 2,
+          tier: payout >= activeStake * 3 ? 'jackpot' : 'big'
+        });
+      } else if (finalScore > prevBest && finalScore >= 5000) {
+        triggerWinCelebration({
+          amount: finalScore,
+          unit: 'PTS',
+          game: 'Neon Pinball',
+          headline: `🏆 NEW PINBALL HIGH SCORE!`,
+          detail: `${st.table.name}`,
+          multiplier: 3,
+          tier: 'big'
         });
       } else {
         sfx.playSadTrombone();

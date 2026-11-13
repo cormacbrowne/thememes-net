@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
 import { checkDailyPerk, consumeDailyPerk } from '../utils/memeFeedBridge';
+import { triggerWinCelebration } from '../utils/winCelebration';
 import GameShell from './GameShell';
 import './VegasRouletteGame.css';
 
@@ -62,6 +63,8 @@ export default function VegasRouletteGame({
   const [lastBets, setLastBets] = useState(null);
 
   const [spinning, setSpinning] = useState(false);
+  const [spinPhase, setSpinPhase] = useState('idle'); // 'idle' | 'lightning' | 'spinning' | 'dropping' | 'landed'
+  const [landingFlash, setLandingFlash] = useState(false);
   const [winningNum, setWinningNum] = useState(null);
   const [lightningMap, setLightningMap] = useState({}); // { 17: 100, 0: 150, 23: 50 }
   const [history, setHistory] = useState([17, 0, 32, 7, 24, 19, 8, 36]);
@@ -76,6 +79,7 @@ export default function VegasRouletteGame({
   );
 
   const canvasRef = useRef(null);
+  const wheelColRef = useRef(null);
   const animStateRef = useRef({
     wheelAngle: 0,
     wheelSpeed: 0.008,
@@ -83,12 +87,17 @@ export default function VegasRouletteGame({
     ballAngle: 0,
     ballSpeed: 0,
     ballRadius: 118,
+    ballTrail: [],
     targetPocketIdx: 0,
     lockedInPocket: false,
+    spinStartMs: 0,
+    spinDurationMs: 3250,
+    lightningFlashUntil: 0,
     sparks: [],
     shockwaves: [],
     lastPocketTick: -1,
-    lightningNums: {}
+    lightningNums: {},
+    ledTick: 0
   });
 
   const totalBetAmount = Object.values(bets).reduce((sum, v) => sum + v, 0);
@@ -214,7 +223,6 @@ export default function VegasRouletteGame({
         }
 
         if (!isFreePractice && verifiedPayout > 0 && onPayoutTokens) {
-          sfx.playJackpot();
           onPayoutTokens(verifiedPayout, {
             stakedTokens: stakedTotal,
             xp: struckMult && straightBet > 0 ? 75 : 40,
@@ -222,9 +230,23 @@ export default function VegasRouletteGame({
             label: `🎡 Roulette #${landedNum}: +${verifiedPayout} 🪙!`,
             emoji: '🎡'
           });
-        } else {
-          sfx.playLevelUp();
         }
+
+        const hitLightning = Boolean(straightBet > 0 && struckMult);
+        const multEst = stakedTotal > 0 ? verifiedPayout / Math.max(1, stakedTotal) : 2;
+        triggerWinCelebration({
+          amount: verifiedPayout,
+          unit: isFreePractice ? 'CHIPS' : '🪙',
+          game: "Lightning Roulette '86",
+          headline: hitLightning
+            ? `⚡ ${struckMult}× LIGHTNING HIT #${landedNum}!`
+            : `🎡 #${landedNum} ${colName.toUpperCase()} WINNER!`,
+          detail: isFreePractice
+            ? `Practice Win! Switch to Token Mode to keep real 🪙!`
+            : `Ball dropped into #${landedNum} (${colName})!`,
+          multiplier: hitLightning ? struckMult : multEst,
+          tier: hitLightning ? 'jackpot' : multEst >= 5 ? 'big' : 'win'
+        });
 
         setLastWinInfo({
           payout: verifiedPayout,
@@ -243,6 +265,10 @@ export default function VegasRouletteGame({
           `Landed #${landedNum} (${colName}). Tap Rebet or spin again.`
         );
       }
+      setSpinPhase('landed');
+      setLandingFlash(true);
+      setTimeout(() => setLandingFlash(false), 900);
+      setTimeout(() => setSpinPhase((p) => (p === 'landed' ? 'idle' : p)), 1500);
     },
     [bestWin, onPayoutTokens, onRecordHighScore]
   );
@@ -280,7 +306,18 @@ export default function VegasRouletteGame({
     setLastBets({ ...bets });
     setLastWinInfo(null);
     setWinningNum(null);
+    setLandingFlash(false);
     setSpinning(true);
+    setSpinPhase('lightning');
+
+    // Focus the giant spinning wheel smoothly on iPhone / mobile
+    if (typeof window !== 'undefined' && window.innerWidth <= 860) {
+      try {
+        wheelColRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch {
+        // ignore smooth scroll error on older browsers
+      }
+    }
 
     // 1. Strike 3 Random Numbers with 80s Neon Lightning (50x, 100x, 150x)!
     const multPool = [50, 75, 100, 150];
@@ -304,47 +341,57 @@ export default function VegasRouletteGame({
     const lightningSummary = Object.entries(newLightning)
       .map(([n, m]) => `#${n} ${m}×`)
       .join(', ');
-    setStatusBanner(`Lightning hit ${lightningSummary}. Ball spinning.`);
+    setStatusBanner(`⚡ Lightning struck ${lightningSummary}! Ball flying at 88 MPH!`);
 
     // 3. Configure 60fps Canvas Ball Physics Trajectory
     const st = animStateRef.current;
-    st.wheelSpeed = 0.036;
+    const nowMs = performance.now();
+    st.wheelSpeed = 0.052;
     st.ballActive = true;
     st.lockedInPocket = false;
-    st.ballRadius = 118;
+    st.ballRadius = 117;
+    st.ballTrail = [];
     st.ballAngle = st.wheelAngle + Math.PI * 0.7;
-    st.ballSpeed = -0.17; // Opposite to wheel rotation
+    st.ballSpeed = -0.22; // Fast dramatic orbit opposite to wheel rotation
     st.targetPocketIdx = winPocketIdx;
     st.lightningNums = newLightning;
     st.lastPocketTick = -1;
+    st.spinStartMs = nowMs;
+    st.spinDurationMs = 3250;
+    st.lightningFlashUntil = nowMs + 750;
+
+    setTimeout(() => setSpinPhase((p) => (p === 'lightning' ? 'spinning' : p)), 550);
+    setTimeout(() => setSpinPhase((p) => (p === 'spinning' ? 'dropping' : p)), 2050);
 
     const activeBetsSnapshot = { ...bets };
     const isFreeSnapshot = practiceMode;
 
-    // Settle after ball spirals into pocket (~3.1 seconds)
+    // Settle cleanly in winning pocket (~3.25 seconds)
     setTimeout(() => {
       const pocketSlice = (Math.PI * 2) / WHEEL_ORDER.length;
       st.lockedInPocket = true;
       st.ballRadius = 77;
-      st.wheelSpeed = 0.008;
-      // Spawn neon celebration shockwave at winning pocket
-      const winAng = st.wheelAngle + winPocketIdx * pocketSlice;
+      st.wheelSpeed = 0.009;
+      st.ballTrail = [];
+      // Spawn twin neon celebration shockwaves & sparks at winning pocket
+      const winAng = st.wheelAngle + (winPocketIdx + 0.5) * pocketSlice;
       const wx = 140 + Math.cos(winAng) * 77;
       const wy = 140 + Math.sin(winAng) * 77;
-      st.shockwaves.push({ x: wx, y: wy, r: 8, maxR: 54, life: 24, maxLife: 24 });
-      for (let i = 0; i < 14; i++) {
-        const a = (Math.PI * 2 * i) / 14;
+      st.shockwaves.push({ x: wx, y: wy, r: 8, maxR: 64, life: 28, maxLife: 28 });
+      st.shockwaves.push({ x: 140, y: 140, r: 24, maxR: 132, life: 26, maxLife: 26 });
+      for (let i = 0; i < 22; i++) {
+        const a = (Math.PI * 2 * i) / 22;
         st.sparks.push({
           x: wx,
           y: wy,
-          vx: Math.cos(a) * (2.2 + Math.random() * 2.5),
-          vy: Math.sin(a) * (2.2 + Math.random() * 2.5),
-          col: i % 2 === 0 ? '#facc15' : '#00f3ff',
-          life: 20
+          vx: Math.cos(a) * (2.4 + Math.random() * 3.1),
+          vy: Math.sin(a) * (2.4 + Math.random() * 3.1),
+          col: i % 3 === 0 ? '#facc15' : i % 3 === 1 ? '#00f3ff' : '#ec4899',
+          life: 24
         });
       }
       resolveSpinOutcome(landedNum, activeBetsSnapshot, newLightning, isFreeSnapshot, stakedTotal);
-    }, 3100);
+    }, 3250);
   };
 
   // 60fps Canvas Renderer for the 80s Neon Cyber-Roulette Wheel
@@ -359,34 +406,61 @@ export default function VegasRouletteGame({
     const renderLoop = () => {
       const canvas = canvasRef.current;
       const st = animStateRef.current;
+      const now = performance.now();
+      st.ledTick = (st.ledTick + (spinning ? 0.35 : 0.08)) % 24;
+
       if (canvas) {
         const ctx = canvas.getContext('2d');
         if (ctx) {
-          // 1. Advance wheel & ball physics
+          // 1. Advance wheel & smooth ball physics
           st.wheelAngle = (st.wheelAngle + st.wheelSpeed) % (Math.PI * 2);
+          if (spinning && st.wheelSpeed > 0.016) {
+            st.wheelSpeed *= 0.994;
+          }
 
+          let displayBallRadius = st.ballRadius;
           if (st.ballActive) {
             if (!st.lockedInPocket) {
+              const elapsed = Math.max(0, now - st.spinStartMs);
+              const progress = Math.min(1, elapsed / (st.spinDurationMs || 3250));
+
               st.ballAngle += st.ballSpeed;
-              st.ballSpeed *= 0.985;
-              // Spiral ball inward as angular velocity decays
-              if (Math.abs(st.ballSpeed) < 0.095) {
-                st.ballRadius = Math.max(77, st.ballRadius - 0.85);
+              st.ballSpeed *= 0.986;
+
+              // Track comet trail while moving fast
+              st.ballTrail.push({ angle: st.ballAngle, radius: st.ballRadius });
+              if (st.ballTrail.length > 9) st.ballTrail.shift();
+
+              if (progress > 0.56) {
+                // Smooth spiral drop + magnetic steer toward winning pocket
+                const dropT = Math.min(1, (progress - 0.56) / 0.44);
+                const easeDrop = 1 - Math.pow(1 - dropT, 2.2);
+                const bounce = Math.sin(dropT * Math.PI * 5) * (1 - dropT) * 6;
+                st.ballRadius = 117 - easeDrop * 40;
+                displayBallRadius = Math.max(74, st.ballRadius + bounce);
+
+                const targetAng = st.wheelAngle + (st.targetPocketIdx + 0.5) * slice;
+                let diff = targetAng - st.ballAngle;
+                while (diff > Math.PI) diff -= Math.PI * 2;
+                while (diff < -Math.PI) diff += Math.PI * 2;
+                st.ballAngle += diff * (0.04 + dropT * 0.22);
               }
+
               // Play pocket fret tick when ball crosses pocket dividers in inner zone
-              if (st.ballRadius < 102) {
+              if (st.ballRadius < 106) {
                 const relAngle =
                   (((st.ballAngle - st.wheelAngle) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
                 const curPocket = Math.floor(relAngle / slice);
                 if (curPocket !== st.lastPocketTick) {
                   st.lastPocketTick = curPocket;
-                  sfx.playRouletteBallTick(Math.min(1, Math.abs(st.ballSpeed) * 8));
+                  sfx.playRouletteBallTick(Math.min(1, Math.abs(st.ballSpeed) * 7));
                 }
               }
             } else {
               // Locked inside winning pocket rotating with the wheel!
               st.ballAngle = st.wheelAngle + (st.targetPocketIdx + 0.5) * slice;
               st.ballRadius = 77;
+              displayBallRadius = 77;
             }
           }
 
@@ -395,22 +469,50 @@ export default function VegasRouletteGame({
           ctx.save();
           ctx.scale(canvas.width / W, canvas.height / H);
 
-          // Outer Ambient Halo
-          ctx.globalAlpha = 0.2;
-          ctx.fillStyle = '#00f3ff';
+          // Outer Ambient Halo (pulses brighter while spinning!)
+          ctx.globalAlpha = spinning ? 0.34 : 0.2;
+          ctx.fillStyle = spinning ? '#ec4899' : '#00f3ff';
           ctx.beginPath();
-          ctx.arc(CX, CY, 134, 0, Math.PI * 2);
+          ctx.arc(CX, CY, 136, 0, Math.PI * 2);
           ctx.fill();
           ctx.globalAlpha = 1;
 
           // Dark Metallic Bowl Track
           ctx.fillStyle = '#070916';
-          ctx.strokeStyle = '#00f3ff';
-          ctx.lineWidth = 3.5;
+          ctx.strokeStyle = spinning ? '#facc15' : '#00f3ff';
+          ctx.lineWidth = spinning ? 4 : 3.5;
           ctx.beginPath();
-          ctx.arc(CX, CY, 128, 0, Math.PI * 2);
+          ctx.arc(CX, CY, 129, 0, Math.PI * 2);
           ctx.fill();
           ctx.stroke();
+
+          // 24 Chasing Neon Marquee Rim Bulbs
+          for (let b = 0; b < 24; b++) {
+            const ba = (Math.PI * 2 * b) / 24;
+            const bx = CX + Math.cos(ba) * 123.5;
+            const by = CY + Math.sin(ba) * 123.5;
+            const activeBulb = Math.floor(st.ledTick) % 3 === b % 3;
+            ctx.fillStyle = activeBulb
+              ? b % 2 === 0
+                ? '#facc15'
+                : '#00f3ff'
+              : 'rgba(148, 163, 184, 0.25)';
+            ctx.beginPath();
+            ctx.arc(bx, by, activeBulb ? 2.4 : 1.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          // Radial Speed Blur Arcs while spinning fast
+          if (spinning && !st.lockedInPocket) {
+            for (let arc = 0; arc < 4; arc++) {
+              const aStart = -st.wheelAngle * 2.2 + (Math.PI * arc) / 2;
+              ctx.strokeStyle = arc % 2 === 0 ? 'rgba(0, 243, 255, 0.36)' : 'rgba(236, 72, 153, 0.32)';
+              ctx.lineWidth = 2.4;
+              ctx.beginPath();
+              ctx.arc(CX, CY, 110 + (arc % 2) * 5, aStart, aStart + 0.55);
+              ctx.stroke();
+            }
+          }
 
           // 8 Diamond Ball Deflectors on Outer Bowl Track
           for (let d = 0; d < 8; d++) {
@@ -419,7 +521,7 @@ export default function VegasRouletteGame({
             const dy = CY + Math.sin(da) * 114;
             ctx.fillStyle = d % 2 === 0 ? '#facc15' : '#ec4899';
             ctx.beginPath();
-            ctx.arc(dx, dy, 3.2, 0, Math.PI * 2);
+            ctx.arc(dx, dy, 3.4, 0, Math.PI * 2);
             ctx.fill();
           }
 
@@ -452,8 +554,22 @@ export default function VegasRouletteGame({
               : isLightning
               ? '#facc15'
               : 'rgba(0, 243, 255, 0.42)';
-            ctx.lineWidth = isWinPocket ? 2.2 : 1;
+            ctx.lineWidth = isWinPocket ? 2.5 : 1;
             ctx.stroke();
+
+            // Electric Lightning Arc from center to struck pockets!
+            if (isLightning && now < st.lightningFlashUntil) {
+              const midA = a0 + slice * 0.5;
+              const j1 = (Math.random() - 0.5) * 12;
+              const j2 = (Math.random() - 0.5) * 12;
+              ctx.strokeStyle = '#fde047';
+              ctx.lineWidth = 2.2;
+              ctx.beginPath();
+              ctx.moveTo(CX, CY);
+              ctx.lineTo(CX + Math.cos(midA) * 52 + j1, CY + Math.sin(midA) * 52 + j2);
+              ctx.lineTo(CX + Math.cos(midA) * 96, CY + Math.sin(midA) * 96);
+              ctx.stroke();
+            }
 
             // Draw Pocket Number along outer ring
             const midA = a0 + slice * 0.5;
@@ -481,8 +597,8 @@ export default function VegasRouletteGame({
           // Rotating Gold Turret Spokes
           for (let s = 0; s < 4; s++) {
             const sa = st.wheelAngle * 1.5 + (Math.PI * s) / 2;
-            ctx.strokeStyle = 'rgba(250, 204, 21, 0.5)';
-            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'rgba(250, 204, 21, 0.55)';
+            ctx.lineWidth = 2.2;
             ctx.beginPath();
             ctx.moveTo(CX + Math.cos(sa) * 24, CY + Math.sin(sa) * 24);
             ctx.lineTo(CX + Math.cos(sa) * 56, CY + Math.sin(sa) * 56);
@@ -491,8 +607,8 @@ export default function VegasRouletteGame({
 
           // Center Digital VFD Hub Readout
           ctx.fillStyle = '#040711';
-          ctx.strokeStyle = '#00f3ff';
-          ctx.lineWidth = 2;
+          ctx.strokeStyle = spinning ? '#ec4899' : '#00f3ff';
+          ctx.lineWidth = 2.4;
           ctx.beginPath();
           ctx.arc(CX, CY, 30, 0, Math.PI * 2);
           ctx.fill();
@@ -506,29 +622,43 @@ export default function VegasRouletteGame({
                 : RED_NUMBERS.has(winningNum)
                 ? '#fb7185'
                 : '#38bdf8';
-            ctx.font = '900 18px Impact, Arial Black, sans-serif';
+            ctx.font = '900 19px Impact, Arial Black, sans-serif';
             ctx.fillText(String(winningNum), CX, CY + 6);
           } else {
-            ctx.fillStyle = '#facc15';
+            ctx.fillStyle = spinning ? '#00f3ff' : '#facc15';
             ctx.font = '900 11px sans-serif';
             ctx.fillText(spinning ? 'SPIN!' : "80s '86", CX, CY + 4);
           }
 
-          // 5. Draw Glowing Chrome Roulette Ball
+          // 5. Draw Glowing Chrome Roulette Ball + Motion Comet Trail
           if (st.ballActive) {
-            const bx = CX + Math.cos(st.ballAngle) * st.ballRadius;
-            const by = CY + Math.sin(st.ballAngle) * st.ballRadius;
+            if (!st.lockedInPocket && st.ballTrail.length > 1) {
+              st.ballTrail.forEach((pt, tIdx) => {
+                const alpha = ((tIdx + 1) / st.ballTrail.length) * 0.35;
+                const tx = CX + Math.cos(pt.angle) * pt.radius;
+                const ty = CY + Math.sin(pt.angle) * pt.radius;
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = '#00f3ff';
+                ctx.beginPath();
+                ctx.arc(tx, ty, 2.5 + (tIdx / st.ballTrail.length) * 3, 0, Math.PI * 2);
+                ctx.fill();
+              });
+              ctx.globalAlpha = 1;
+            }
 
-            ctx.globalAlpha = 0.4;
+            const bx = CX + Math.cos(st.ballAngle) * displayBallRadius;
+            const by = CY + Math.sin(st.ballAngle) * displayBallRadius;
+
+            ctx.globalAlpha = 0.48;
             ctx.fillStyle = '#00f3ff';
             ctx.beginPath();
-            ctx.arc(bx, by, 9.5, 0, Math.PI * 2);
+            ctx.arc(bx, by, 10.5, 0, Math.PI * 2);
             ctx.fill();
 
             ctx.globalAlpha = 1;
             ctx.fillStyle = '#ffffff';
             ctx.beginPath();
-            ctx.arc(bx, by, 5.5, 0, Math.PI * 2);
+            ctx.arc(bx, by, 5.8, 0, Math.PI * 2);
             ctx.fill();
           }
 
@@ -544,7 +674,7 @@ export default function VegasRouletteGame({
           st.shockwaves.forEach((sw) => {
             ctx.globalAlpha = sw.life / sw.maxLife;
             ctx.strokeStyle = '#facc15';
-            ctx.lineWidth = 2.5;
+            ctx.lineWidth = 2.8;
             ctx.beginPath();
             ctx.arc(sw.x, sw.y, sw.r, 0, Math.PI * 2);
             ctx.stroke();
@@ -560,10 +690,10 @@ export default function VegasRouletteGame({
             .filter((sp) => sp.life > 0);
 
           st.sparks.forEach((sp) => {
-            ctx.globalAlpha = sp.life / 20;
+            ctx.globalAlpha = sp.life / 24;
             ctx.fillStyle = sp.col;
             ctx.beginPath();
-            ctx.arc(sp.x, sp.y, 2.2, 0, Math.PI * 2);
+            ctx.arc(sp.x, sp.y, 2.4, 0, Math.PI * 2);
             ctx.fill();
           });
           ctx.globalAlpha = 1;
@@ -645,12 +775,27 @@ export default function VegasRouletteGame({
         {/* 3. MAIN SPLIT STAGE: 60FPS NEON WHEEL (LEFT) + INTERACTIVE BETTING FELT (RIGHT) */}
         <div className="tm-roul-main-grid">
           {/* LEFT: 60FPS ROTATING NEON WHEEL & SPIN BUTTON */}
-          <div className="tm-roul-wheel-column">
+          <div
+            ref={wheelColRef}
+            className={`tm-roul-wheel-column ${spinning ? 'is-spinning' : ''} ${
+              landingFlash ? 'is-landing' : ''
+            }`}
+          >
+            {(spinning || spinPhase === 'landed') && (
+              <div className="tm-roul-telemetry-pill" aria-live="polite">
+                {spinPhase === 'lightning' && '⚡ LIGHTNING STRIKING 150×!'}
+                {spinPhase === 'spinning' && '🔥 88 MPH WHEEL SPIN!'}
+                {spinPhase === 'dropping' && '🎱 BALL DROPPING INTO POCKET...'}
+                {spinPhase === 'landed' &&
+                  winningNum !== null &&
+                  `🎯 LANDED #${winningNum} (${getNumberColor(winningNum).toUpperCase()})`}
+              </div>
+            )}
             <div className="tm-roul-canvas-box">
               <canvas
                 ref={canvasRef}
-                width={480}
-                height={480}
+                width={520}
+                height={520}
                 className="tm-roul-canvas"
                 onClick={() => {
                   if (!spinning && totalBetAmount > 0) {

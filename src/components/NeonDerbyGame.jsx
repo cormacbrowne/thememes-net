@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
+import { triggerWinCelebration } from '../utils/winCelebration';
 import { speakUtteranceChain, getEnglishVoices, pickPreferredVoice } from '../utils/aiSpeech';
 import {
   TRACK_CONDITIONS,
@@ -228,13 +229,25 @@ export default function NeonDerbyGame({
         });
       }
 
+      const winner = board.horses[first];
       if (verifiedWin > 0 || (practiceMode && rawWin > 0)) {
-        sfx.playJackpot();
+        const wonAmt = practiceMode ? rawWin : verifiedWin;
+        triggerWinCelebration({
+          amount: wonAmt,
+          unit: practiceMode ? 'CHIPS' : '🪙',
+          game: "Neon Derby '86",
+          headline: `🏆 ${winner.name} WINS!`,
+          detail: practiceMode
+            ? 'Winning Practice Ticket!'
+            : cupMultiplier > 1
+            ? '3× Derby Cup Payout!'
+            : 'Photo-Finish Ticket Cashed!',
+          multiplier: stakeSum > 0 ? wonAmt / Math.max(1, stakeSum) : 3,
+          tier: wonAmt >= stakeSum * 5 ? 'jackpot' : 'big'
+        });
       } else {
         sfx.playPop();
       }
-
-      const winner = board.horses[first];
       const msg = practiceMode
         ? rawWin > 0
           ? `📸 ${winner.name} wins! Practice win +${rawWin}.`

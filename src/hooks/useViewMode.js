@@ -95,15 +95,9 @@ export function useViewMode() {
   const [evolutionModalMeme, setEvolutionModalMeme] = useState(null);
   const [payphoneModalOpen, setPayphoneModalOpen] = useState(false);
   const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
-  const [showIntro, setShowIntro] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    if (initialRoute.isDedicatedLanding) return false;
-    try {
-      return !localStorage.getItem('tm_intro_seen');
-    } catch {
-      return false;
-    }
-  });
+  // Phase 30: Do not gate first-time visitors behind a blocking boot dialog — land straight on memes!
+  // Kept stateful so Extras / Settings can optionally replay the retro intro.
+  const [showIntro, setShowIntro] = useState(false);
 
   const isFixedArcadeGame = FIXED_ARCADE_GAMES.includes(viewMode);
 
@@ -498,6 +492,28 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
     setTheaterMemeId,
     setViewMode
   ]);
+
+  const prevViewModeRef = useRef(viewMode);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (prevViewModeRef.current !== viewMode) {
+      prevViewModeRef.current = viewMode;
+      // Clear stale overflow lock if entering a scrollable view, and always reset scroll to top
+      // so pressing 🕹️ Games/Lobby (or switching modes) never lands off-screen over dark void.
+      if (!isAnyModalOpen && !isFixedArcadeGame && typeof document !== 'undefined') {
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+      }
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      if (typeof document !== 'undefined') {
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      }
+      window.requestAnimationFrame?.(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      });
+    }
+  }, [viewMode, isAnyModalOpen, isFixedArcadeGame]);
 
   useEffect(() => {
     if (typeof document === 'undefined') return undefined;

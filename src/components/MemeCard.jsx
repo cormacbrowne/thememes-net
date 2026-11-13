@@ -397,9 +397,9 @@ const MemeCard = memo(function MemeCard({
               type="button"
               className="tm-caption-this-btn"
               onClick={(e) => onCaptionThis(meme, e)}
-              title="Caption this clean format / base image"
+              title="Add top & bottom text to this template"
             >
-              ✏️ Caption This
+              ✏️ Caption
             </button>
           )}
           <button
@@ -407,7 +407,7 @@ const MemeCard = memo(function MemeCard({
             className="tm-mutate-btn"
             onClick={(e) => onTriggerStudioMutate(meme, e)}
           >
-            🧬 REMIX (+35 🪙)
+            🎨 Remix
           </button>
         </div>
       </div>

@@ -9,7 +9,7 @@ import {
   DEFAULT_OG_IMAGE,
   getSeoRouteForState,
   getCanonicalPathForState
-} from '../data/seoRoutes';
+} from '../data/seoRoutes.js';
 
 const NON_PATH_VIEW_MODES = {
   reels: {
@@ -87,7 +87,7 @@ export function updateDynamicSeo({
   let pageTitle = routeMeta.title;
   let pageDesc = routeMeta.description;
   let canonicalUrl = `${SITE_ORIGIN}${canonicalPath === '/' ? '/' : canonicalPath}`;
-  let ogImageUrl = DEFAULT_OG_IMAGE;
+  let ogImageUrl = routeMeta.ogImage || DEFAULT_OG_IMAGE;
 
   if (!showStudio && !extrasDrawerOpen && !(bossKeyActive && prankDisguise) && NON_PATH_VIEW_MODES[viewMode]) {
     pageTitle = NON_PATH_VIEW_MODES[viewMode].title;
@@ -130,15 +130,15 @@ export function updateDynamicSeo({
     document.querySelector('meta[property="og:video"]')?.remove();
   }
 
-  // Inject dynamic Schema.org JSON-LD when inspecting a meme
+  // Inject dynamic Schema.org JSON-LD (meme-level or route-level SoftwareApplication / ImageGallery)
   let ldScript = document.getElementById('tm-dynamic-jsonld');
+  if (!ldScript) {
+    ldScript = document.createElement('script');
+    ldScript.id = 'tm-dynamic-jsonld';
+    ldScript.type = 'application/ld+json';
+    document.head.appendChild(ldScript);
+  }
   if (activeMeme) {
-    if (!ldScript) {
-      ldScript = document.createElement('script');
-      ldScript.id = 'tm-dynamic-jsonld';
-      ldScript.type = 'application/ld+json';
-      document.head.appendChild(ldScript);
-    }
     const isVid = activeMeme.media_type === 'video';
     const schema = {
       '@context': 'https://schema.org',
@@ -175,7 +175,36 @@ export function updateDynamicSeo({
         : {})
     };
     ldScript.textContent = JSON.stringify(schema);
-  } else if (ldScript) {
-    ldScript.remove();
+  } else {
+    ldScript.textContent = JSON.stringify(buildRouteJsonLd(routeMeta, canonicalUrl, ogImageUrl));
   }
+}
+
+export function buildRouteJsonLd(routeMeta = {}, canonicalUrl = SITE_ORIGIN, ogImageUrl = DEFAULT_OG_IMAGE) {
+  const schemaType = routeMeta.schemaType || (routeMeta.openStudio ? 'SoftwareApplication' : routeMeta.prerenderCategory ? 'ImageGallery' : 'WebApplication');
+  if (schemaType === 'SoftwareApplication' || schemaType === 'WebApplication') {
+    return {
+      '@context': 'https://schema.org',
+      '@type': schemaType,
+      name: routeMeta.h1 || routeMeta.title || 'THE MEMES.net Meme & GIF Maker',
+      description: routeMeta.description || '',
+      url: canonicalUrl,
+      applicationCategory: 'MultimediaApplication',
+      operatingSystem: 'Any (Web, iOS Safari, Android Chrome, Desktop)',
+      image: ogImageUrl,
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'USD'
+      }
+    };
+  }
+  return {
+    '@context': 'https://schema.org',
+    '@type': schemaType,
+    name: routeMeta.h1 || routeMeta.title || 'THE MEMES.net',
+    description: routeMeta.description || '',
+    url: canonicalUrl,
+    image: ogImageUrl
+  };
 }

@@ -5,6 +5,8 @@ import { trackShareClicked } from '../utils/analytics';
 export default function SeoDiscoveryFooter({
   onSelectCategory,
   onOpenBlankStudio,
+  onOpenGifStudio,
+  onOpenTemplateStudio,
   onOpenSoundboard,
   onOpenPrankDisguise,
   onSelectViewMode,
@@ -108,7 +110,42 @@ export default function SeoDiscoveryFooter({
                 className="tm-seo-link"
                 onClick={(e) => handleSpaLinkClick(e, onOpenBlankStudio)}
               >
-                🎨 Free Online Meme Generator (20+ Templates)
+                🎨 Free Online Meme Generator (Top &amp; Bottom Text)
+              </a>
+              <a
+                href="/gif-meme-maker"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, onOpenGifStudio || onOpenBlankStudio)}
+              >
+                🎞️ Free Animated GIF Meme Maker
+              </a>
+              <a
+                href="/templates"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, onOpenBlankStudio)}
+              >
+                🖼️ All 20 Classic Blank Meme Templates
+              </a>
+              <a
+                href="/templates/drake-meme-generator"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onOpenTemplateStudio?.('tpl-drake-compare'))}
+              >
+                🙅 Drake 2-Panel Meme Generator
+              </a>
+              <a
+                href="/templates/expanding-brain-meme-generator"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onOpenTemplateStudio?.('tpl-expanding-brain'))}
+              >
+                🧠 Expanding Brain Meme Generator
+              </a>
+              <a
+                href="/templates/this-is-fine-meme-generator"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onOpenTemplateStudio?.('tpl-this-is-fine'))}
+              >
+                🔥 This Is Fine Meme Generator
               </a>
               <a
                 href="/meme-soundboard"

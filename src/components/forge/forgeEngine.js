@@ -410,3 +410,112 @@ export async function burnInVideo(videoUrl, layers, images, onProgress) {
   await stopped;
   return new Blob(chunks, { type: 'video/webm' });
 }
+
+/**
+ * Phase 30.6: Client-side animated GIF text/sticker burn-in using gifuct-js + gifenc.
+ * Preserves multi-frame timing and frame disposal so Top/Bottom Impact text is embedded
+ * into the downloaded GIF for instant WhatsApp, iMessage, Discord & Reddit sharing.
+ */
+export async function burnInAnimatedGif(source, doc, images, { maxWidth = 520, watermark = null, onProgress } = {}) {
+  const [gifuctMod, gifencMod] = await Promise.all([import('gifuct-js'), import('gifenc')]);
+  const { parseGIF, decompressFrames } = gifuctMod.parseGIF ? gifuctMod : gifuctMod.default || gifuctMod;
+  const { GIFEncoder, quantize, applyPalette } = gifencMod.GIFEncoder
+    ? gifencMod
+    : gifencMod.default || gifencMod;
+
+  let buffer;
+  if (source instanceof Blob) {
+    buffer = await source.arrayBuffer();
+  } else if (typeof source === 'string' && source) {
+    const res = await fetch(source, { mode: 'cors' });
+    if (!res.ok) throw new Error('gif-fetch-failed');
+    buffer = await res.arrayBuffer();
+  } else {
+    return null;
+  }
+
+  const gif = parseGIF(buffer);
+  const frames = decompressFrames(gif, true);
+  if (!frames || !frames.length) return null;
+
+  await ensureFontsLoaded(doc?.layers || []);
+
+  const srcW = Math.max(1, gif.lsd?.width || frames[0].dims.width);
+  const srcH = Math.max(1, gif.lsd?.height || frames[0].dims.height);
+  const scale = Math.min(1, maxWidth / srcW);
+  const outW = Math.max(2, Math.round(srcW * scale));
+  const outH = Math.max(2, Math.round(srcH * scale));
+
+  const compCanvas = document.createElement('canvas');
+  compCanvas.width = srcW;
+  compCanvas.height = srcH;
+  const compCtx = compCanvas.getContext('2d', { willReadFrequently: true });
+
+  const patchCanvas = document.createElement('canvas');
+  const patchCtx = patchCanvas.getContext('2d');
+
+  const outCanvas = document.createElement('canvas');
+  outCanvas.width = outW;
+  outCanvas.height = outH;
+  const outCtx = outCanvas.getContext('2d', { willReadFrequently: true });
+
+  const encoder = GIFEncoder();
+  let prevDisposal = 0;
+  let prevDims = null;
+  let prevRestoreData = null;
+
+  for (let i = 0; i < frames.length; i += 1) {
+    const frame = frames[i];
+    const dims = frame.dims;
+
+    if (prevDisposal === 2 && prevDims) {
+      compCtx.clearRect(prevDims.left, prevDims.top, prevDims.width, prevDims.height);
+    } else if (prevDisposal === 3 && prevRestoreData) {
+      compCtx.putImageData(prevRestoreData, 0, 0);
+    }
+
+    if (frame.disposalType === 3) {
+      prevRestoreData = compCtx.getImageData(0, 0, srcW, srcH);
+    } else {
+      prevRestoreData = null;
+    }
+
+    if (frame.patch && dims.width > 0 && dims.height > 0) {
+      patchCanvas.width = dims.width;
+      patchCanvas.height = dims.height;
+      const imgData = new ImageData(new Uint8ClampedArray(frame.patch), dims.width, dims.height);
+      patchCtx.putImageData(imgData, 0, 0);
+      compCtx.drawImage(patchCanvas, dims.left, dims.top);
+    }
+
+    outCtx.clearRect(0, 0, outW, outH);
+    outCtx.fillStyle = '#090a0f';
+    outCtx.fillRect(0, 0, outW, outH);
+    renderArtworkWithFilter(outCtx, outW, 0, outH, doc?.filter || 'none', (bctx) => {
+      bctx.drawImage(compCanvas, 0, 0, outW, outH);
+    });
+    if (doc?.layers?.length) {
+      drawLayers(outCtx, outW, outH, doc.layers, images);
+    }
+    if (watermark) {
+      stampArcadeCartridgeFooter(outCtx, outW, outH, watermark);
+    }
+
+    const rgba = outCtx.getImageData(0, 0, outW, outH).data;
+    const palette = quantize(rgba, 256);
+    const index = applyPalette(rgba, palette);
+    const delayMs = Math.max(20, Number(frame.delay) || 100);
+    encoder.writeFrame(index, outW, outH, { palette, delay: delayMs });
+
+    prevDisposal = frame.disposalType || 0;
+    prevDims = dims;
+
+    if (onProgress) onProgress((i + 1) / frames.length);
+    if (i % 4 === 3) {
+      await new Promise((r) => setTimeout(r, 0));
+    }
+  }
+
+  encoder.finish();
+  return new Blob([encoder.bytesView()], { type: 'image/gif' });
+}

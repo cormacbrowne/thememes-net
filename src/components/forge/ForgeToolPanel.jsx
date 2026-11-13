@@ -1,27 +1,67 @@
-import { FONT_PACK, LAYOUTS, ASPECTS, makeTextLayer, makeSticker } from './forgeEngine';
+import { useState } from 'react';
+import { FONT_PACK, makeTextLayer, makeSticker } from './forgeEngine';
 import { STUDIO_FILTERS } from '../../utils/canvasMutator';
 import { STUDIO_TEMPLATES } from '../../data/starterMemes';
 
-const COLOR_SWATCHES = ['#ffffff', '#facc15', '#00f3ff', '#ff0055', '#22c55e', '#000000'];
-const EMOJI_PALETTE = ['🔥', '💀', '😂', '🗿', '🚀', '⚡', '👑', '🦆', '💎', '🤡', '🍕', '🐸', '💯', '🕶️', '🍿', '⚠️'];
+const COLOR_SWATCHES = ['#ffffff', '#facc15', '#00f3ff', '#ff0055', '#22c55e'];
+const EMOJI_PALETTE = ['🔥', '💀', '😂', '🗿', '🚀', '⚡', '👑', '🦆', '💎', '🤡', '💯', '🍿'];
 
+/**
+ * Simplified Classic Meme & GIF Editor Panel (Phase 30):
+ * Focused around what 99% of meme makers need:
+ * 1) Pick an Image, GIF, or Classic Template
+ * 2) Type Top Text & Bottom Text in classic Impact meme style
+ * Optional Stickers/Filters stay tucked inside a collapsed More accordion.
+ */
 export default function ForgeToolPanel({
   editor,
   tab,
   setTab,
   selected,
-  activePanel = 0,
-  setActivePanel,
   tools
 }) {
   const { doc, set, updateLayer, setSelectedId } = editor;
+  const [showExtras, setShowExtras] = useState(false);
 
-  const handleAddText = () => {
-    const l = makeTextLayer({ y: 0.3 + (doc.layers.length % 5) * 0.1 });
-    set((d) => ({ ...d, layers: [...d.layers, l] }));
-    setSelectedId(l.id);
-    setTab('text');
+  const textLayers = doc.layers.filter((l) => l.type === 'text');
+  const sortedByY = [...textLayers].sort((a, b) => (a.y ?? 0.5) - (b.y ?? 0.5));
+  const topLayer = textLayers.find((l) => l.slot === 'top') || sortedByY[0] || null;
+  const bottomLayer =
+    textLayers.find((l) => l.slot === 'bottom') ||
+    (sortedByY.length > 1 ? sortedByY[sortedByY.length - 1] : null);
+
+  const upsertMemeSlot = (slot, value) => {
+    const target = slot === 'top' ? topLayer : bottomLayer;
+    if (target) {
+      updateLayer(target.id, { text: value });
+      setSelectedId(target.id);
+      return;
+    }
+    const y = slot === 'top' ? 0.1 : 0.89;
+    const layer = makeTextLayer({
+      slot,
+      text: value,
+      y,
+      h: 0.18,
+      font: 'Anton',
+      fill: '#ffffff',
+      stroke: '#000000',
+      strokeW: 6,
+      caps: true
+    });
+    set((d) => ({ ...d, layers: [...d.layers, layer] }));
+    setSelectedId(layer.id);
   };
+
+  const applyClassicStyleToAll = (patch) => {
+    if (textLayers.length === 0) return;
+    set((d) => ({
+      ...d,
+      layers: d.layers.map((l) => (l.type === 'text' ? { ...l, ...patch } : l))
+    }));
+  };
+
+  const primaryText = selected?.type === 'text' ? selected : topLayer || bottomLayer;
 
   const handleAddEmoji = (emoji) => {
     const s = makeSticker({ emoji });
@@ -29,55 +69,33 @@ export default function ForgeToolPanel({
     setSelectedId(s.id);
   };
 
-  const handleApplyLayout = (lay) => {
-    set((d) => ({
-      ...d,
-      layoutId: lay.id,
-      layers: lay.layers ? lay.layers() : d.layers,
-      panels: lay.panels.map((_, i) => d.panels[i] || { src: '', zoom: 1, panX: 0, panY: 0, rot: 0, flipX: false })
-    }));
-  };
-
-  const activeP = doc.panels[activePanel] || null;
-
-  const updateActivePanel = (patch) => {
-    set((d) => ({
-      ...d,
-      panels: d.panels.map((p, i) => (i === activePanel ? { ...p, ...patch } : p))
-    }));
-  };
-
   return (
     <div className="tm-forge-tools">
-      {/* Tab Navigation */}
+      {/* Simple 2-Mode Switcher: Top & Bottom Text vs Blank Templates */}
       <div className="tm-forge-tabs">
-        {[
-          ['templates', '🎨 Templates'],
-          ['text', '🔤 Text'],
-          ['layout', '📐 Layout'],
-          ['image', '🖼️ Image'],
-          ['stickers', '✨ Stickers'],
-          ['fx', '🌪️ Filters']
-        ].map(([id, label]) => (
-          <button
-            key={id}
-            type="button"
-            className={`tm-forge-tab ${tab === id ? 'active' : ''}`}
-            onClick={() => setTab(id)}
-          >
-            {label}
-          </button>
-        ))}
+        <button
+          type="button"
+          className={`tm-forge-tab ${tab !== 'templates' ? 'active' : ''}`}
+          onClick={() => setTab('text')}
+        >
+          ✍️ Top &amp; Bottom Text
+        </button>
+        <button
+          type="button"
+          className={`tm-forge-tab ${tab === 'templates' ? 'active' : ''}`}
+          onClick={() => setTab('templates')}
+        >
+          🖼️ Blank Templates ({STUDIO_TEMPLATES.length})
+        </button>
       </div>
 
       <div className="tm-forge-tool-body">
-        {/* TAB 0: STUDIO BLANK TEMPLATES */}
-        {tab === 'templates' && (
+        {tab === 'templates' ? (
           <div className="tm-forge-pane">
             <div className="tm-tool-row" style={{ justifyContent: 'space-between' }}>
-              <span className="tm-label">20 Classic Formats (Tap to Caption):</span>
-              <button type="button" className="tm-btn" onClick={tools.openFile}>
-                📸 Upload Own
+              <span className="tm-label">Tap a Template or Upload Own:</span>
+              <button type="button" className="tm-btn tm-btn-primary" onClick={tools.openFile}>
+                📸 Upload Image / GIF
               </button>
             </div>
             <div className="tm-forge-panel-template-grid">
@@ -98,259 +116,172 @@ export default function ForgeToolPanel({
               })}
             </div>
           </div>
-        )}
-
-        {/* TAB 1: TEXT */}
-        {tab === 'text' && (
+        ) : (
           <div className="tm-forge-pane">
+            {/* Step 1 Quick Swap Media */}
             <div className="tm-grid-2col">
-              <button type="button" className="tm-btn tm-btn-primary" onClick={handleAddText}>
-                + Add Text Box
+              <button type="button" className="tm-btn" onClick={tools.openFile}>
+                📸 Swap Image / GIF
               </button>
               <button
                 type="button"
                 className="tm-btn"
                 onClick={() => tools.handleRandomizeCaption?.()}
-                title="Fill with a random funny viral caption"
+                title="Fill Top & Bottom text with a random joke"
               >
-                🎲 Random Caption
+                🎲 Random Meme Text
               </button>
             </div>
 
-            {selected && selected.type === 'text' ? (
-              <div className="tm-tool-section">
-                <textarea
-                  className="tm-input tm-w-full"
-                  rows={2}
-                  value={selected.text || ''}
-                  onChange={(e) => updateLayer(selected.id, { text: e.target.value })}
-                  placeholder="Enter text..."
-                />
+            {/* Step 2: Direct Top & Bottom Meme Inputs */}
+            <div className="tm-tool-section">
+              <label className="tm-label" htmlFor="tm-forge-top-text">
+                TOP TEXT
+              </label>
+              <input
+                id="tm-forge-top-text"
+                type="text"
+                className="tm-input tm-w-full"
+                value={topLayer?.text || ''}
+                onChange={(e) => upsertMemeSlot('top', e.target.value)}
+                onFocus={() => topLayer && setSelectedId(topLayer.id)}
+                placeholder="WHEN YOU PUSH TO PROD..."
+              />
 
-                <div className="tm-tool-row">
-                  <select
-                    className="tm-input"
-                    value={selected.font || 'Anton'}
-                    onChange={(e) => updateLayer(selected.id, { font: e.target.value })}
-                  >
-                    {FONT_PACK.map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {f.label}
-                      </option>
-                    ))}
-                  </select>
+              <label className="tm-label" htmlFor="tm-forge-bottom-text" style={{ marginTop: 4 }}>
+                BOTTOM TEXT
+              </label>
+              <input
+                id="tm-forge-bottom-text"
+                type="text"
+                className="tm-input tm-w-full"
+                value={bottomLayer?.text || ''}
+                onChange={(e) => upsertMemeSlot('bottom', e.target.value)}
+                onFocus={() => bottomLayer && setSelectedId(bottomLayer.id)}
+                placeholder="ON FRIDAY AT 4:59 PM"
+              />
+            </div>
 
-                  <button
-                    type="button"
-                    className={`tm-btn ${selected.caps ? 'active' : ''}`}
-                    onClick={() => updateLayer(selected.id, { caps: !selected.caps })}
-                    title="Toggle ALL CAPS"
-                  >
-                    AA
-                  </button>
+            {/* Classic Meme Styling Row */}
+            <div className="tm-tool-section">
+              <div className="tm-tool-row">
+                <span className="tm-label">Style:</span>
+                <button
+                  type="button"
+                  className={`tm-btn ${primaryText?.font !== 'Inter' ? 'active' : ''}`}
+                  onClick={() =>
+                    applyClassicStyleToAll({ font: 'Anton', stroke: '#000000', strokeW: 6, caps: true })
+                  }
+                >
+                  Impact
+                </button>
+                <button
+                  type="button"
+                  className={`tm-btn ${primaryText?.font === 'Inter' ? 'active' : ''}`}
+                  onClick={() =>
+                    applyClassicStyleToAll({ font: 'Inter', stroke: '#000000', strokeW: 4, caps: false })
+                  }
+                >
+                  Clean
+                </button>
+                <button
+                  type="button"
+                  className={`tm-btn ${primaryText?.caps !== false ? 'active' : ''}`}
+                  onClick={() => applyClassicStyleToAll({ caps: !(primaryText?.caps !== false) })}
+                  title="Toggle ALL CAPS"
+                >
+                  CAPS
+                </button>
+              </div>
+
+              <div className="tm-tool-row">
+                <span className="tm-label">Color:</span>
+                <div className="tm-swatch-row">
+                  {COLOR_SWATCHES.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      className={`tm-swatch ${primaryText?.fill === c ? 'active' : ''}`}
+                      style={{ background: c }}
+                      onClick={() =>
+                        applyClassicStyleToAll({
+                          fill: c,
+                          stroke: c === '#000000' ? '#ffffff' : '#000000'
+                        })
+                      }
+                      aria-label={`Text color ${c}`}
+                    />
+                  ))}
                 </div>
+              </div>
 
-                <div className="tm-tool-row">
-                  <span className="tm-label">Color:</span>
-                  <div className="tm-swatch-row">
-                    {COLOR_SWATCHES.map((c) => (
+              <label className="tm-slider">
+                <span>Size ({primaryText?.fontSize || 52})</span>
+                <input
+                  type="range"
+                  min="28"
+                  max="92"
+                  value={primaryText?.fontSize || 52}
+                  onChange={(e) => applyClassicStyleToAll({ fontSize: Number(e.target.value) })}
+                />
+              </label>
+            </div>
+
+            {/* Optional Collapsed Extra Tools (Stickers & Filters — out of the way by default!) */}
+            <div className="tm-tool-section">
+              <button
+                type="button"
+                className="tm-btn tm-w-full"
+                onClick={() => setShowExtras((prev) => !prev)}
+                aria-expanded={showExtras}
+              >
+                {showExtras ? '▴ Hide Extra Stickers & Filters' : '⚙️ Optional: Stickers, Font & Filters'}
+              </button>
+
+              {showExtras && (
+                <div className="tm-forge-pane" style={{ marginTop: 8 }}>
+                  <div className="tm-tool-row">
+                    <span className="tm-label">Font:</span>
+                    <select
+                      className="tm-input"
+                      value={primaryText?.font || 'Anton'}
+                      onChange={(e) => applyClassicStyleToAll({ font: e.target.value })}
+                    >
+                      {FONT_PACK.map((f) => (
+                        <option key={f.id} value={f.id}>
+                          {f.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="tm-emoji-grid">
+                    {EMOJI_PALETTE.map((em) => (
                       <button
-                        key={c}
+                        key={em}
                         type="button"
-                        className={`tm-swatch ${selected.fill === c ? 'active' : ''}`}
-                        style={{ background: c }}
-                        onClick={() => updateLayer(selected.id, { fill: c })}
-                      />
+                        className="tm-emoji-btn"
+                        onClick={() => handleAddEmoji(em)}
+                      >
+                        {em}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="tm-grid-2col">
+                    {STUDIO_FILTERS.map((fx) => (
+                      <button
+                        key={fx.id}
+                        type="button"
+                        className={`tm-btn ${doc.filter === fx.id ? 'tm-btn-primary' : ''}`}
+                        onClick={() => set((d) => ({ ...d, filter: fx.id }))}
+                      >
+                        {fx.label}
+                      </button>
                     ))}
                   </div>
                 </div>
-
-                <div className="tm-tool-row">
-                  <span className="tm-label">Outline:</span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="0.25"
-                    step="0.01"
-                    value={selected.stroke || 0}
-                    onChange={(e) => updateLayer(selected.id, { stroke: parseFloat(e.target.value) })}
-                  />
-                  <button
-                    type="button"
-                    className="tm-swatch"
-                    style={{ background: selected.strokeColor || '#000000' }}
-                    onClick={() =>
-                      updateLayer(selected.id, {
-                        strokeColor: selected.strokeColor === '#000000' ? '#ffffff' : '#000000'
-                      })
-                    }
-                  />
-                </div>
-
-                <div className="tm-tool-row">
-                  <button
-                    type="button"
-                    className="tm-btn"
-                    onClick={() => {
-                      const clone = { ...selected, id: `txt-${Date.now()}`, y: selected.y + 0.08 };
-                      set((d) => ({ ...d, layers: [...d.layers, clone] }));
-                      setSelectedId(clone.id);
-                    }}
-                  >
-                    📋 Duplicate
-                  </button>
-                  <button type="button" className="tm-btn tm-btn-danger" onClick={tools.removeSelected}>
-                    🗑️ Delete Layer
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="tm-empty-hint">Tap any text box on the canvas or press "+ Add Text Box"</div>
-            )}
-          </div>
-        )}
-
-        {/* TAB 2: LAYOUT */}
-        {tab === 'layout' && (
-          <div className="tm-forge-pane">
-            <span className="tm-label">Templates:</span>
-            <div className="tm-grid-2col">
-              {LAYOUTS.map((lay) => (
-                <button
-                  key={lay.id}
-                  type="button"
-                  className={`tm-btn ${doc.layoutId === lay.id ? 'active' : ''}`}
-                  onClick={() => handleApplyLayout(lay)}
-                >
-                  {lay.label}
-                </button>
-              ))}
-            </div>
-
-            <span className="tm-label" style={{ marginTop: '12px' }}>
-              Aspect Ratio:
-            </span>
-            <div className="tm-aspect-row">
-              {ASPECTS.map((asp) => (
-                <button
-                  key={asp.id}
-                  type="button"
-                  className={`tm-btn ${doc.aspect === asp.id ? 'active' : ''}`}
-                  onClick={() => set((d) => ({ ...d, aspect: asp.id }))}
-                >
-                  {asp.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: IMAGE */}
-        {tab === 'image' && (
-          <div className="tm-forge-pane">
-            <div className="tm-tool-row">
-              <button type="button" className="tm-btn tm-btn-primary tm-w-full" onClick={tools.openFile}>
-                📸 Change Image / Video
-              </button>
-            </div>
-
-            {doc.panels.length > 1 && (
-              <div className="tm-tool-row">
-                <span className="tm-label">Select Panel:</span>
-                {doc.panels.map((_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    className={`tm-btn ${activePanel === i ? 'active' : ''}`}
-                    onClick={() => setActivePanel(i)}
-                  >
-                    Panel {i + 1}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {activeP && activeP.src && (
-              <>
-                <div className="tm-tool-row">
-                  <span className="tm-label">Zoom:</span>
-                  <input
-                    type="range"
-                    min="1"
-                    max="3"
-                    step="0.05"
-                    value={activeP.zoom || 1}
-                    onChange={(e) => updateActivePanel({ zoom: parseFloat(e.target.value) })}
-                  />
-                  <span>{(activeP.zoom || 1).toFixed(1)}x</span>
-                </div>
-
-                <div className="tm-tool-row">
-                  <button
-                    type="button"
-                    className="tm-btn"
-                    onClick={() => updateActivePanel({ rot: ((activeP.rot || 0) + 90) % 360 })}
-                  >
-                    🔄 Rotate 90°
-                  </button>
-                  <button
-                    type="button"
-                    className="tm-btn"
-                    onClick={() => updateActivePanel({ flipX: !activeP.flipX })}
-                  >
-                    ↔ Flip
-                  </button>
-                  <button
-                    type="button"
-                    className="tm-btn"
-                    onClick={() => updateActivePanel({ zoom: 1, panX: 0, panY: 0, rot: 0, flipX: false })}
-                  >
-                    Reset
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* TAB 4: STICKERS */}
-        {tab === 'stickers' && (
-          <div className="tm-forge-pane">
-            <div className="tm-emoji-grid">
-              {EMOJI_PALETTE.map((em) => (
-                <button
-                  key={em}
-                  type="button"
-                  className="tm-emoji-tile"
-                  onClick={() => handleAddEmoji(em)}
-                >
-                  {em}
-                </button>
-              ))}
-            </div>
-
-            <div style={{ marginTop: '12px' }}>
-              <button type="button" className="tm-btn tm-w-full" onClick={tools.openSticker}>
-                🖼️ Upload Custom PNG Sticker
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 5: FILTERS */}
-        {tab === 'fx' && (
-          <div className="tm-forge-pane">
-            <div className="tm-grid-2col">
-              {STUDIO_FILTERS.map((fx) => (
-                <button
-                  key={fx.id}
-                  type="button"
-                  className={`tm-btn ${doc.filter === fx.id ? 'active' : ''}`}
-                  onClick={() => set((d) => ({ ...d, filter: fx.id }))}
-                >
-                  {fx.name}
-                </button>
-              ))}
+              )}
             </div>
           </div>
         )}

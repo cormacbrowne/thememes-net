@@ -1090,7 +1090,7 @@ export function useFeed({
   const handleShareMeme = useCallback(
     (meme, e) => {
       if (!meme) return;
-      const shareUrl = `${window.location.origin}/?m=${encodeURIComponent(String(meme.id))}`;
+      const shareUrl = `${window.location.origin}/m/${encodeURIComponent(String(meme.id))}?ref=share`;
       navigator.clipboard?.writeText(shareUrl).catch(() => {});
       if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
         navigator
@@ -1124,7 +1124,11 @@ export function useFeed({
         if (reportedMemeIds.includes(String(m.id))) return false;
         if (showSavedOnly && !bookmarkedIds.includes(String(m.id))) return false;
         if (sortBy === 'new24h' && !formatMemeUploadDate(m.created_at).isNewToday) return false;
-        if (category !== 'all' && m.category !== category) return false;
+        if (category === 'remixes') {
+          if ((Number(m.mutation_count) || 0) <= 0 && !m.parent_id) return false;
+        } else if (category !== 'all' && m.category !== category) {
+          return false;
+        }
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase();
           return (

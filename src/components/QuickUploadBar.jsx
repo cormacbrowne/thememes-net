@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react';
 import { sfx } from '../utils/soundEngine';
-import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
 import { VIRAL_CAPTIONS } from '../data/starterMemes';
 import { ACCEPT_MEDIA, validateFile } from '../utils/mediaPipeline';
 import BattleCountdown from './BattleCountdown';
@@ -13,9 +12,7 @@ export default function QuickUploadBar({
   yesterdayCaptionKing = null,
   battleEntriesCount = 0,
   onOpenBattleModal,
-  onAcceptBounty,
-  pioneerBonusAvailable = false,
-  uploadTokensRemainingToday = ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.upload
+  onAcceptBounty
 }) {
   const [previewUrl, setPreviewUrl] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
@@ -159,21 +156,13 @@ export default function QuickUploadBar({
               if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click();
             }}
           >
-            <span className="tm-quick-upload-icon">📸</span>
+            <span className="tm-quick-upload-icon">🖼️</span>
             <div className="tm-quick-upload-copy">
               <div className="tm-quick-upload-headline">
-                Got a funny meme or photo? <span>Drop, Paste, or Tap to Upload in 1 Click!</span>
+                Make a Meme in 5 Seconds: <span>Drop an Image or GIF &amp; add Top/Bottom Text!</span>
               </div>
               <div className="tm-quick-upload-sub">
-                {pioneerBonusAvailable ? (
-                  <>
-                    🌟 <strong>FIRST UPLOAD BONUS: Earn +75 🪙 Tokens</strong> (+45 🪙 Upload + 30 🪙 Pioneer Bonus) to gamble in Slots &amp; Meme Stocks!
-                  </>
-                ) : (
-                  <>
-                    Memes = #1 Token Generator! Earn <strong>+45 🪙 Tokens &amp; +120 XP</strong> per upload ({uploadTokensRemainingToday} upload tokens left today)
-                  </>
-                )}
+                Upload a photo or GIF, type classic Top &amp; Bottom text, or pick a blank template — instant download &amp; share.
               </div>
             </div>
           </div>
@@ -184,7 +173,17 @@ export default function QuickUploadBar({
               className="tm-btn tm-btn-primary"
               onClick={() => fileInputRef.current?.click()}
             >
-              📥 Pick Photo / Meme
+              📸 Image / GIF
+            </button>
+
+            <button
+              type="button"
+              className="tm-btn"
+              style={{ borderColor: 'rgba(0, 243, 255, 0.45)', color: '#00f3ff' }}
+              onClick={onOpenBlankStudio}
+              title="Pick a blank meme template and add top & bottom text"
+            >
+              🎨 Pick Template
             </button>
 
             <button
@@ -198,21 +197,11 @@ export default function QuickUploadBar({
 
             <button
               type="button"
-              className="tm-btn"
+              className="tm-btn tm-hide-mobile"
               onClick={() => cameraInputRef.current?.click()}
               title="Take a photo with your camera"
             >
               📷 Camera
-            </button>
-
-            <button
-              type="button"
-              className="tm-btn"
-              style={{ borderColor: 'rgba(0, 243, 255, 0.4)', color: '#00f3ff' }}
-              onClick={onOpenBlankStudio}
-              title="Open the full Meme Forge Studio with filters, text layouts & stickers"
-            >
-              🎨 Full Studio
             </button>
           </div>
         </div>
@@ -230,6 +219,12 @@ export default function QuickUploadBar({
               />
             ) : (
               <img src={previewUrl} alt="Upload preview" className="tm-quick-preview-img" />
+            )}
+            {quickTopCaption.trim() && (
+              <div className="tm-quick-live-meme-text is-top">{quickTopCaption}</div>
+            )}
+            {quickBottomCaption.trim() && (
+              <div className="tm-quick-live-meme-text is-bottom">{quickBottomCaption}</div>
             )}
             <button
               type="button"
@@ -269,7 +264,7 @@ export default function QuickUploadBar({
               <input
                 type="text"
                 className="tm-input"
-                placeholder="Optional TOP TEXT overlay..."
+                placeholder="TOP TEXT (classic meme style)..."
                 value={quickTopCaption}
                 onChange={(e) => setQuickTopCaption(e.target.value)}
                 style={{ flex: 1 }}
@@ -277,7 +272,7 @@ export default function QuickUploadBar({
               <input
                 type="text"
                 className="tm-input"
-                placeholder="Optional BOTTOM TEXT overlay..."
+                placeholder="BOTTOM TEXT (punchline)..."
                 value={quickBottomCaption}
                 onChange={(e) => setQuickBottomCaption(e.target.value)}
                 style={{ flex: 1 }}
@@ -291,11 +286,7 @@ export default function QuickUploadBar({
                 disabled={isSubmitting}
                 style={{ padding: '10px 18px', fontSize: '14px' }}
               >
-                {isSubmitting
-                  ? '🚀 Uploading...'
-                  : pioneerBonusAvailable
-                  ? '🌟 Post First Meme (+75 🪙 Pioneer Bonus!)'
-                  : '🚀 Post Meme Now (+45 🪙 & +120 XP)'}
+                {isSubmitting ? '🚀 Posting...' : '🚀 Post Meme'}
               </button>
 
               <button
@@ -312,9 +303,9 @@ export default function QuickUploadBar({
                     setQuickTitle(`${pair[0]} ${pair[1]}`);
                   }
                 }}
-                title="Auto-fill a hilarious 2-line meme caption in 1 tap!"
+                title="Fill with a random funny Top & Bottom caption"
               >
-                🎲 Random Funny Caption
+                🎲 Random Meme Text
               </button>
 
               <button
@@ -328,7 +319,7 @@ export default function QuickUploadBar({
                   }
                 }}
               >
-                🎨 Add Filters &amp; Stickers in Studio
+                🎨 Open Full Editor
               </button>
 
               <button type="button" className="tm-btn" onClick={handleClearPreview}>

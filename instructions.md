@@ -17,7 +17,44 @@
 
 ---
 
-## 0. 🎯 CURRENT ROUND — Phase 29: "Fix, Play, Groove" (READ THIS FIRST)
+## 0A. 🔥 CURRENT ROUND — Phase 30: "Ruthless Traffic, Simplicity & iPhone Overhaul" (Nov 2026)
+
+> **Context & Brutal Honest Review (Zero Traffic + iPhone UX + Too Complicated):**
+> 1. **Why traffic is flat:** Shared `/m/<id>` meme links currently all showed the same generic logo preview card on WhatsApp, iMessage, Discord, Reddit & X (because client-side SEO meta doesn't execute for link scrapers). Meanwhile homepage meta/copy pushed *"777 Slots & 16-pad soundboards"* instead of high-intent searches (**"free meme & GIF generator with top/bottom text"**, **"funny memes"**). On top of that, first-time visitors were blocked by a fullscreen `"INSERT COIN — TAP ANYWHERE"` gate and mobile visitors were forced straight into a Reels trap!
+> 2. **Why creating memes felt like homework:** `MemeForge` opened with a 6-tab cockpit (`Templates / Text / Layout / Image / Stickers / Filters`), dragging gizmos, and required a title + multiple steps just to put funny top & bottom text onto an image or GIF.
+> 3. **Why iPhone felt broken:** Pressing `🕹️` after scrolling left the scroll offset below `Lobby` (`scrollY > 1800px` -> blank dark screen!), `FixedArcadeTopBar` clipped/covered pills under the right HUD, `MemeStockMarketGame` overlapped stock rows, Reels ducked behind the mobile dock, `GameShell` headers ate 168px vertically, and `VegasRouletteGame` crushed an 895px table inside a **112px** `overflow: hidden` slit!
+
+### ✅ Phase 30A — Shipped Right Now (Verified via Lint, Build & Playwright)
+
+- [x] **30.1 Simplify Meme & GIF Maker to "Image/GIF + Top & Bottom Text".**
+  - *Done:* Simplified `src/components/forge/ForgeToolPanel.jsx`, `src/components/forge/MemeForge.jsx`, and `src/components/QuickUploadBar.jsx` around 2 core modes: **Image/GIF/Template + Impact TOP TEXT & BOTTOM TEXT** (with `🎲 Random Meme Text`, style/size/color strip, optional title, and Stickers/Filters tucked inside a collapsed `⚙️ Optional` toggle). Added live Top/Bottom Impact preview overlay inside `QuickUploadBar.jsx` (`src/index.css`). Streamlined card remix/caption buttons in `src/components/MemeCard.jsx`.
+- [x] **30.2 Fix iPhone "Joystick = Black Screen" & Navigation Clutter.**
+  - *Done:* `src/hooks/useViewMode.js` now resets `window.scrollTo(0, 0)` and clears stale `overflow: hidden` locks on every `viewMode` change (also wired in `src/App.jsx` and `src/components/GameRouter.jsx`). Disabled blocking `InsertCoinIntro` on first load and defaulted `/` to scrollable `feed` across mobile & desktop (`src/data/seoRoutes.js`). Changed Extras drawer button from duplicate `🕹️` to `🎛️` so `🕹️` unambiguously means Games Lobby.
+- [x] **30.3 Fix iPhone Roulette & Mobile Overlaps ("Info hidden under other info").**
+  - *Done:* Fixed `src/components/GameShell.css` (header shrank from 168px to ~95px on mobile, `calc(100dvh - 46px)`), `src/components/VegasRouletteGame.css` (removed nested `112px` `overflow: hidden` trap so full betting table scrolls smoothly inside `.tm-gs-body` with sticky bottom chip/spin bar), `src/components/MemeStockMarketGame.css` (horizontal swipeable mobile ticker strip), `src/index.css` (`.tm-fixed-game-pills` `flex: 1; min-width: 0;`, hidden `<640px` so pills never slide behind wallet/controls; fixed Reels container height for `.tm-mobile-dock`), `src/components/MemesRadio.css`, `src/components/DankPetWidget.css`, `src/components/ArcadeAiAssistant.css`, and `src/components/forge/MemeForge.css` mobile height constraints.
+- [x] **30.4 Dynamic Per-Meme Social Preview Cards & Expanded SEO Sitemap.**
+  - *Done:* Created `api/meme-og.js` + `vercel.json` rewrite (`/m/:id` -> `/api/meme-og?id=:id`) so every shared `/m/<id>` meme URL injects that meme's actual title, description, image (`og:image` / `twitter:image`), and canonical URL into `dist/index.html` for Discord, iMessage, WhatsApp, X, Reddit, and Googlebot. Updated homepage & `/meme-generator` SEO metadata (`index.html`, `src/data/seoRoutes.js`) and expanded `scripts/prerender-seo.mjs` so `sitemap.xml` indexes all `/m/<seed-id>` pages alongside main routes.
+
+### ✅ Phase 30B — Implemented & Verified (SEO Traffic Engine, GIF Burn-In, Viral Share & Declutter)
+
+- [x] **30.5 High-Intent Classic Template & GIF Landing Pages.**
+  - *Done:* Added `/gif-meme-maker`, `/templates`, and all 20 individual classic template landing routes (`/templates/drake-meme-generator`, `/templates/expanding-brain-meme-generator`, `/templates/two-buttons-meme-generator`, etc.) in `src/data/seoRoutes.js` + `scripts/prerender-seo.mjs` (44 pre-rendered static SEO HTML routes total), pre-loading that exact template into `src/components/forge/MemeForge.jsx` with editable Top/Bottom captions, template `og:image`, Schema.org `SoftwareApplication` / `ImageGallery` JSON-LD (`src/utils/seoEngine.js`), and crawlable links in `src/components/SeoDiscoveryFooter.jsx`.
+- [x] **30.6 Animated GIF Text Burn-In Export (`gifuct-js` + `gifenc`).**
+  - *Done:* Added `burnInAnimatedGif` in `src/components/forge/forgeEngine.js` (dynamically imported so zero cold-start bloat) with full multi-frame GIF disposal handling, frame-delay preservation, and Top/Bottom caption + sticker compositing. Wired `🎞️ Download GIF` in `src/components/forge/MemeForge.jsx` so edited GIFs download as real animated `.gif` files with text burned in.
+- [x] **30.7 Viral Share Links & Remixes Feed Filter.**
+  - *Done:* Updated `handleShareMeme` (`src/hooks/useFeed.js`) and `src/components/MemeLiveCelebrationModal.jsx` to share `${origin}/m/<id>?ref=share` (triggering per-meme dynamic `/api/meme-og` social cards on WhatsApp, iMessage, Discord, X, and Reddit), and added the `😜 Remixes` challenge filter tab in `src/App.jsx` & `useFeed.js`.
+- [x] **30.8 Brutal Declutter Pass #2 & Bundle Trim.**
+  - *Done:* Converted static `GameRouter` / `FixedArcadeTopBar` / `ArcadeLoungePromo` imports in `src/App.jsx` to lazy `React.lazy` chunks (trimmed cold-start `index.js` by ~20 KB), removed unrequested automatic 95-second `Loot Goblin` popups, and kept `DankPetWidget` opt-in (`payphoneModalOpen`). Also fixed `SettingsSheet.jsx` (`unlockedCosmetics.has` crash when opening Extras Drawer) and `VegasPinballGame.jsx` (`← Memes` exit label).
+- [x] **30.9 Dynamic Supabase Sitemap & JSON-LD Validation.**
+  - *Done:* Created `api/sitemap.js` + `/sitemap.xml -> /api/sitemap` rewrite in `vercel.json` combining all 44 static `SEO_ROUTES`, 64 starter memes, and top 500 live Supabase memes (`score desc`). Added Phase 30B Playwright tests covering template route preloading + JSON-LD + `og:image`, animated GIF text burn-in download (`GIF89a`), and `😜 Remixes` + `/m/:id?ref=share` copy links in `tests/smoke.spec.js`.
+
+### 📣 Owner Checklist (External Growth Levers Code Alone Can't Do)
+1. Deploy to Vercel so `/api/meme-og` & `/api/sitemap` are live, then submit `https://thememes.net/sitemap.xml` inside **Google Search Console** & **Bing Webmaster Tools**.
+2. Share direct `/templates/drake-meme-generator`, `/gif-meme-maker`, and `/m/<id>?ref=share` links on Reddit, Discord, X, and TikTok with real humorous memes (now every link renders a crisp image preview card!).
+
+---
+
+## 0. 🎯 PREVIOUS ROUND — Phase 29: "Fix, Play, Groove" (READ THIS FIRST)
 
 > **Context (Nov 2026 owner review):** Phase 28 P1–P5 shipped. Owner-reported problems: **(a)** Roulette shows no way to bet on red/black/numbers on iPhone (and on PC); **(b)** K.I.T.T. / HAL 9000 voice is silent on iPhone; **(c)** the music is loved, and the owner wants more stations and a station picker on the main screens; **(d)** the owner wants new fun games, especially **horse racing**; **(e)** a general interface polish pass.
 >

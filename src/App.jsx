@@ -17,7 +17,6 @@ import { useViewMode, useViewModeEffects } from './hooks/useViewMode';
 import NavbarHud from './components/NavbarHud';
 import QuickUploadBar from './components/QuickUploadBar';
 import MemeCard from './components/MemeCard';
-import GameRouter, { FixedArcadeTopBar, ArcadeLoungePromo } from './components/GameRouter';
 import { useDeviceProfile, DEVICE_PROFILES } from './utils/deviceProfile';
 import {
   getSettings,
@@ -43,6 +42,13 @@ import {
 import { useLivePresence } from './hooks/useLivePresence';
 
 const InsertCoinIntro = lazy(() => import('./components/InsertCoinIntro'));
+const GameRouter = lazy(() => import('./components/GameRouter'));
+const FixedArcadeTopBar = lazy(() =>
+  import('./components/GameRouter').then((m) => ({ default: m.FixedArcadeTopBar }))
+);
+const ArcadeLoungePromo = lazy(() =>
+  import('./components/GameRouter').then((m) => ({ default: m.ArcadeLoungePromo }))
+);
 const MemeForge = lazy(() => import('./components/forge/MemeForge'));
 const MemeEvolutionModal = lazy(() => import('./components/MemeEvolutionModal'));
 const ArcadeAiAssistant = lazy(() => import('./components/ArcadeAiAssistant'));
@@ -471,28 +477,7 @@ export default function App() {
     });
   }, [rateWindows]);
 
-  // Periodic Golden Loot Goblin Spawner every 95 seconds (progressively unlocked; paused while playing fixed arcade games)
-  useEffect(() => {
-    if (isFixedArcadeGame || (!petUnlocked && !aiUnlocked)) return undefined;
-    const timer = setInterval(() => {
-      if (
-        !bossKeyActive &&
-        !activeGoblin &&
-        (typeof document === 'undefined' || !document.hidden) &&
-        rateWindows.goblinUsed < ARCADE_RATE_LIMITS.GOBLINS_PER_WINDOW
-      ) {
-        const topPct = 20 + Math.floor(Math.random() * 52);
-        const dir = Math.random() > 0.5 ? 'left-to-right' : 'right-to-left';
-        setActiveGoblin({
-          id: `gob-${Date.now()}`,
-          topPct,
-          dir,
-          manualSummon: false
-        });
-      }
-    }, 95000);
-    return () => clearInterval(timer);
-  }, [bossKeyActive, activeGoblin, rateWindows.goblinUsed, isFixedArcadeGame, petUnlocked, aiUnlocked]);
+  // Phase 30.8: Loot Goblins only spawn when manually summoned from Extras (🎛️), keeping initial meme browsing clutter-free.
 
   const handleCatchGoblin = useCallback(
     (e) => {
@@ -911,14 +896,16 @@ export default function App() {
 
       {/* FIXED NON-SCROLLING IPAD/IPHONE ARCADE TOP BAR VS FULL FEED NAVIGATION */}
       {isFixedArcadeGame ? (
-        <FixedArcadeTopBar
-          viewMode={viewMode}
-          setViewMode={setViewMode}
-          tokens={tokens}
-          setShowRewardsModal={setShowRewardsModal}
-          setExtrasFocus={setExtrasFocus}
-          setExtrasDrawerOpen={setExtrasDrawerOpen}
-        />
+        <Suspense fallback={null}>
+          <FixedArcadeTopBar
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+            tokens={tokens}
+            setShowRewardsModal={setShowRewardsModal}
+            setExtrasFocus={setExtrasFocus}
+            setExtrasDrawerOpen={setExtrasDrawerOpen}
+          />
+        </Suspense>
       ) : (
         <>
           {/* PHASE 28.3: DECLUTTERED TOP NAVIGATION & FAIR TOKEN WALLET HUD (<= 6 Primary Controls) */}
@@ -938,6 +925,7 @@ export default function App() {
               sfx.playToggle();
               closeAllModals();
               setViewMode(mode);
+              window.scrollTo?.({ top: 0, left: 0, behavior: 'auto' });
             }}
             onOpenBlankStudio={() => {
               closeAllModals();
@@ -1035,6 +1023,17 @@ export default function App() {
                     #{cat.toUpperCase()}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  className={`tm-tab ${category === 'remixes' && !showSavedOnly ? 'active' : ''}`}
+                  onClick={() => {
+                    setShowSavedOnly(false);
+                    setCategory('remixes');
+                  }}
+                  title="Browse viral caption remixes & multi-generation chains"
+                >
+                  😜 Remixes
+                </button>
                 {showSavedOnly && (
                   <button
                     type="button"
@@ -1399,13 +1398,16 @@ export default function App() {
           )}
 
           {/* SIDE ENTERTAINMENT LOUNGE: FEATURED 80s NEON ARCADE SUB-GAMES BELOW THE MEME FEED */}
-          <ArcadeLoungePromo setViewMode={setViewMode} />
+          <Suspense fallback={null}>
+            <ArcadeLoungePromo setViewMode={setViewMode} />
+          </Suspense>
         </>
       )}
 
       {/* ARCADE GAMES & INTERACTIVE MODES ROUTER */}
-      <GameRouter
-        viewMode={viewMode}
+      <Suspense fallback={null}>
+        <GameRouter
+          viewMode={viewMode}
         setViewMode={setViewMode}
         tokens={tokens}
         handleSpendTokens={handleSpendTokens}
@@ -1448,7 +1450,8 @@ export default function App() {
         crowdAgreement={crowdAgreement}
         handleBattlePick={handleBattlePick}
         handleSkipMatchup={handleSkipMatchup}
-      />
+        />
+      </Suspense>
 
       {/* COMMUNITY MODERATION TOAST */}
       {moderationToast && (
@@ -1465,8 +1468,8 @@ export default function App() {
         </div>
       )}
 
-      {/* PHASE 20 & 28.4: PROGRESSIVELY UNLOCKED "DO NOT PRESS" CHAOS DOCK & 1986 NEON PAYPHONE */}
-      {!bossKeyActive && (petUnlocked || payphoneModalOpen) && (
+      {/* PHASE 20 & 30.8: OPT-IN "DO NOT PRESS" CHAOS DOCK & 1986 NEON PAYPHONE (Opened via Extras / Payphone) */}
+      {!bossKeyActive && payphoneModalOpen && (
         <Suspense fallback={null}>
           <DankPetWidget
             viewMode={viewMode}
@@ -1510,6 +1513,7 @@ export default function App() {
             sfx.playToggle();
             closeAllModals();
             setViewMode(mode);
+            window.scrollTo?.({ top: 0, left: 0, behavior: 'auto' });
           }}
           onOpenBlankStudio={() => {
             sfx.playToggle();
@@ -1582,6 +1586,7 @@ export default function App() {
               sfx.playToggle();
               closeAllModals();
               setViewMode(mode);
+              window.scrollTo?.({ top: 0, left: 0, behavior: 'auto' });
             }}
             onOpenUpload={() => {
               sfx.playToggle();
@@ -1991,6 +1996,18 @@ export default function App() {
           onOpenBlankStudio={() => {
             closeAllModals();
             handleOpenBlankStudio();
+          }}
+          onOpenGifStudio={() => {
+            sfx.playToggle();
+            closeAllModals();
+            setForgeIntent({ mode: 'gif' });
+            setShowStudio(true);
+          }}
+          onOpenTemplateStudio={(templateId) => {
+            sfx.playToggle();
+            closeAllModals();
+            setForgeIntent({ mode: 'template', templateId });
+            setShowStudio(true);
           }}
           onOpenSoundboard={() => {
             sfx.playToggle();

@@ -8,7 +8,7 @@ import {
   setRadioStation,
   setRadioVolume
 } from '../utils/radioBus';
-import { loadUnlockedCosmetics } from '../data/cosmetics';
+import { isCosmeticUnlocked, loadUnlockedCosmetics } from '../data/cosmetics';
 import { getEnglishVoices } from '../utils/aiSpeech';
 import {
   getSettings,
@@ -44,7 +44,7 @@ export default function SettingsSheet({ compact = false, onResetHints }) {
 
   const unlockedCosmetics = loadUnlockedCosmetics();
   const availableStations = RADIO_STATIONS.filter(
-    (st) => !st.cosmeticId || unlockedCosmetics.has(st.cosmeticId)
+    (st) => !st.cosmeticId || isCosmeticUnlocked(st.cosmeticId, unlockedCosmetics)
   );
 
   const handleToggleSfx = () => {

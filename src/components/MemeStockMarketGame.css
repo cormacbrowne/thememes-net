@@ -503,7 +503,33 @@
   }
 
   .tm-stocks-grid {
-    grid-template-rows: minmax(96px, 24%) 1fr;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 7px;
+    overflow: hidden;
+  }
+
+  .tm-stocks-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 6px;
+    padding: 2px 2px 4px;
+    flex-shrink: 0;
+  }
+
+  .tm-stocks-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tm-stock-row {
+    flex: 0 0 auto;
+    min-width: 132px;
+    padding: 6px 8px;
   }
 
   .tm-stocks-chart-card {

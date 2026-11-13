@@ -37,7 +37,9 @@ export function FixedArcadeTopBar({
         className="tm-fixed-back-btn"
         onClick={() => {
           sfx.playToggle();
+          setExtrasDrawerOpen?.(false);
           setViewMode('lobby');
+          window.scrollTo?.({ top: 0, left: 0, behavior: 'auto' });
         }}
         title="Back to Cyber-Arcade Lobby"
       >
@@ -48,7 +50,9 @@ export function FixedArcadeTopBar({
         className="tm-fixed-back-btn"
         onClick={() => {
           sfx.playToggle();
+          setExtrasDrawerOpen?.(false);
           setViewMode('feed');
+          window.scrollTo?.({ top: 0, left: 0, behavior: 'auto' });
         }}
       >
         ← Memes
@@ -191,7 +195,7 @@ export function FixedArcadeTopBar({
           aria-label="Open Extras drawer"
           title="Open Extras Drawer: Soundboard, WTF?!, Payphone, Boss Key, CRT, Turbo & AI"
         >
-          🕹️
+          🎛️
         </button>
       </div>
     </header>

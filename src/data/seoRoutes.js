@@ -4,8 +4,44 @@
 // and the post-build static HTML prerenderer (scripts/prerender-seo.mjs).
 // ==========================================
 
+import { STUDIO_TEMPLATES } from './starterMemes.js';
+
 export const SITE_ORIGIN = 'https://thememes.net';
 export const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/og-card.png`;
+
+export const TEMPLATE_SEO_SLUGS = {
+  'tpl-drake-compare': 'drake-meme-generator',
+  'tpl-expanding-brain': 'expanding-brain-meme-generator',
+  'tpl-two-buttons': 'two-buttons-meme-generator',
+  'tpl-distracted-choice': 'distracted-boyfriend-meme-generator',
+  'tpl-this-is-fine': 'this-is-fine-meme-generator',
+  'tpl-change-my-mind': 'change-my-mind-meme-generator',
+  'tpl-buff-vs-smol': 'buff-doge-vs-cheems-meme-generator',
+  'tpl-stonks-up': 'stonks-meme-generator',
+  'tpl-not-stonks': 'not-stonks-meme-generator',
+  'tpl-woman-yelling-cat': 'woman-yelling-at-cat-meme-generator',
+  'tpl-gigachad-verdict': 'gigachad-meme-generator',
+  'tpl-clown-makeup': 'clown-makeup-meme-generator',
+  'tpl-always-has-been': 'always-has-been-meme-generator',
+  'tpl-brain-at-3am': 'sleeping-brain-3am-meme-generator',
+  'tpl-surprised-shock': 'surprised-pikachu-shock-meme-generator',
+  'tpl-trade-offer': 'trade-offer-meme-generator',
+  'tpl-bell-curve-iq': 'iq-bell-curve-meme-generator',
+  'tpl-highway-exit': 'left-exit-off-ramp-meme-generator',
+  'tpl-spiderman-point': 'spiderman-pointing-meme-generator',
+  'tpl-trophy-celebration': '3rd-place-trophy-meme-generator'
+};
+
+export function getTemplateRoutePath(tplOrId) {
+  const id = typeof tplOrId === 'string' ? tplOrId : tplOrId?.id;
+  if (!id) return '/templates';
+  const slug = TEMPLATE_SEO_SLUGS[id] || `${id.replace(/^tpl-/, '')}-meme-generator`;
+  return `/templates/${slug}`;
+}
+
+export const TEMPLATE_ID_TO_PATH = Object.fromEntries(
+  STUDIO_TEMPLATES.map((tpl) => [tpl.id, getTemplateRoutePath(tpl)])
+);
 
 export const MODE_ALIASES = {
   dozer: 'pusher',
@@ -52,11 +88,11 @@ export const PRANK_DISGUISE_TO_PATH = {
 export const SEO_ROUTES = [
   {
     path: '/',
-    title: 'Free Meme Generator, Soundboard & Retro Arcade Games | THE MEMES.net',
+    title: 'Free Meme & GIF Maker (Top/Bottom Text) & Funny Memes | THE MEMES.net',
     description:
-      'Browse community dank, programming, gaming, and relatable memes, make your own in the free Meme Forge Studio with 20+ templates, mash the 16-pad soundboard, and play retro arcade games.',
-    h1: 'Free Meme Generator, Soundboard & Retro Arcade Games',
-    kicker: 'THE MEMES.net // Community Memes & Cyber-Arcade',
+      'Make memes and GIFs in 5 seconds: upload any image or GIF, add classic top & bottom meme text, browse funny dank, programming, and gaming memes, and share instant preview links.',
+    h1: 'Free Meme & GIF Maker + Funny Community Memes',
+    kicker: 'THE MEMES.net // Instant Memes, GIFs & Classic Captions',
     changefreq: 'hourly',
     priority: '1.0',
     viewMode: 'feed',
@@ -69,11 +105,11 @@ export const SEO_ROUTES = [
   },
   {
     path: '/meme-generator',
-    title: 'Free Online Meme Generator & 20+ Blank Templates | THE MEMES.net',
+    title: 'Free Meme & GIF Generator — Add Top & Bottom Text Online | THE MEMES.net',
     description:
-      'Create memes online for free with 20 classic blank templates, custom Impact & modern fonts, stickers, Deep Fry & VHS filters, and animated GIF or MP4 captioning with no watermarks.',
-    h1: 'Free Online Meme Generator & Blank Template Grid',
-    kicker: 'Meme Forge 3.0 // Instant HTML5 Studio',
+      'Add classic Impact top and bottom text to any image, GIF, or 20 blank templates free online with no signup required to create or download.',
+    h1: 'Free Meme & GIF Generator — Top & Bottom Text Maker',
+    kicker: 'THE MEMES.net // Instant Image & GIF Meme Maker',
     changefreq: 'daily',
     priority: '0.95',
     viewMode: 'feed',
@@ -433,7 +469,71 @@ export const SEO_ROUTES = [
       'Every card lets you double-tap to upvote, react with emojis, bookmark posts to your personal Saved favorites collection, or tap Share for a direct Theater permalink you can drop straight into group chats on WhatsApp, iMessage, and Discord. Spot a blank format you want to personalize? Tap Caption This to launch it straight inside Meme Forge 3.0.',
       'Browse all 16 featured relatable memes below, switch cleanly between desktop masonry grid and mobile fullscreen vertical Reels views, explore trending daily caption bounties, or upload your own slice-of-life joke in seconds with zero watermarks or sign-up hurdles.'
     ]
-  }
+  },
+  {
+    path: '/gif-meme-maker',
+    title: 'Free GIF Meme Maker — Add Top & Bottom Text to Animated GIFs Online | THE MEMES.net',
+    description:
+      'Add classic Impact top and bottom text to any animated GIF free online in 5 seconds. Download animated captioned GIFs directly on iPhone, Android, or desktop with zero signup.',
+    h1: 'Free Animated GIF Meme Maker (Top & Bottom Text)',
+    kicker: 'THE MEMES.net // Client-Side GIF Text Burn-In',
+    changefreq: 'daily',
+    priority: '0.95',
+    viewMode: 'feed',
+    category: 'all',
+    openStudio: true,
+    studioPreset: 'gif',
+    schemaType: 'SoftwareApplication',
+    introParagraphs: [
+      'Make animated GIF memes with classic white-and-black outline Impact top and bottom text directly inside your browser using THE MEMES.net free GIF Meme Maker. Drop any animated GIF from your camera roll, downloads folder, or clipboard, type your setup line at the top and punchline at the bottom, and watch your live captioned animation loop smoothly right on screen without waiting for slow cloud queues.',
+      'Unlike static screenshot editors that freeze animation into a flat image, THE MEMES.net composites your custom Top Text, Bottom Text, color accents, and optional emoji stickers into every frame of the animated GIF right on your device, preserving frame timing and transparent disposal behavior for crisp sharing on iMessage, WhatsApp, Discord, Slack, and Reddit.',
+      'Need inspiration fast? Hit Random Meme Text for instant comedic pairings, switch font size or yellow vs white caption fills with one tap, or publish your captioned meme directly to the community feed with its own shareable preview card link. Works seamlessly on iPhone Safari, Android Chrome, iPad, and desktop browsers.'
+    ]
+  },
+  {
+    path: '/templates',
+    title: 'Free Meme Templates — 20 Classic Blank Meme Maker Formats | THE MEMES.net',
+    description:
+      'Browse 20 free classic blank meme templates including Drake, Expanding Brain, Two Red Buttons, This Is Fine, Distracted Choice, and Stonks. Add Top & Bottom text in seconds.',
+    h1: '20 Classic Blank Meme Templates — Instant Caption Studio',
+    kicker: 'THE MEMES.net // Browse & Caption Ready Formats',
+    changefreq: 'daily',
+    priority: '0.92',
+    viewMode: 'feed',
+    category: 'all',
+    openStudio: true,
+    prerenderTemplates: true,
+    schemaType: 'ImageGallery',
+    introParagraphs: [
+      'Pick from 20 timeless blank meme formats on THE MEMES.net and start typing your Top Text and Bottom Text in under three seconds—no hunting for clean images, no cropping out blurry watermarks, and no account wall blocking your export button. Every classic format loads at crisp resolution inside our streamlined Meme & GIF Maker with pre-positioned Impact captions ready to edit.',
+      'Explore internet legends across every comedy style: 2-Panel Approve/Reject Drake comparison, 4-Tier Expanding Galaxy Brain, Two Red Buttons panic sweat, Distracted By Shiny New Thing, This Is Fine room on fire, Change My Mind booth, Buff Champion vs Smol Doge, Stonks and Not Stonks, Yelling vs Unbothered Dinner Cat, GigaChad verdict, 4-Step Clown Protocol, and IQ Bell Curve.',
+      'Click any template card below to launch its dedicated maker page pre-filled with editable Top & Bottom text layers, random joke ideas, and one-tap PNG download or instant feed publishing. Whether you are roasting Friday deployments in Slack or cheering up the group chat, your next meme is seconds away.'
+    ]
+  },
+  ...STUDIO_TEMPLATES.map((tpl) => {
+    const cleanName = tpl.name.replace(/^[^\w\s]+\s*/u, '').trim();
+    const path = getTemplateRoutePath(tpl);
+    return {
+      path,
+      title: `${cleanName} Meme Generator — Add Top & Bottom Text Free | THE MEMES.net`,
+      description: `Make a ${cleanName} meme free online in seconds. Edit "${tpl.defaultTop}" top & bottom Impact text, download crisp PNG or share directly.`,
+      h1: `${cleanName} Meme Generator`,
+      kicker: `Template Hub // Instant #${(tpl.category || 'meme').toUpperCase()} Format`,
+      changefreq: 'weekly',
+      priority: '0.85',
+      viewMode: 'feed',
+      category: tpl.category || 'dank',
+      openStudio: true,
+      studioTemplateId: tpl.id,
+      ogImage: `${SITE_ORIGIN}${tpl.src}`,
+      schemaType: 'SoftwareApplication',
+      introParagraphs: [
+        `Create your own custom ${cleanName} meme in seconds using the free HTML5 editor on THE MEMES.net. Instead of struggling with cluttered photo suites or paying to remove corner watermarks, this page opens straight into our streamlined Top & Bottom Text studio with the clean ${cleanName} template already loaded and sharp white-with-black-stroke Impact captions positioned cleanly.`,
+        `Kick off right from the built-in starter prompt ("${tpl.defaultTop}" paired with "${tpl.defaultBottom}"), hit Random Meme Text to cycle hilarious variations, or type your own inside joke into the Top Text and Bottom Text fields. You can quickly flip between bold white, yellow, or red text, dial the caption size for punchy mobile readability, or expand optional stickers and VHS filters whenever you want extra flair.`,
+        `Once your ${cleanName} meme is locked in, download a crisp high-resolution PNG straight to iPhone, Android, or desktop, or tap Publish to share a dedicated permalink URL complete with a live rich preview card for WhatsApp, iMessage, Discord, and Reddit.`
+      ]
+    };
+  })
 ];
 
 const ROUTE_BY_PATH = new Map(SEO_ROUTES.map((r) => [r.path, r]));
@@ -452,7 +552,7 @@ export function getSeoRouteByPath(pathname) {
   return ROUTE_BY_PATH.get(normalizeRoutePath(pathname)) || null;
 }
 
-export function resolveRouteFromLocation(pathname = '/', search = '', isTouchDevice = false) {
+export function resolveRouteFromLocation(pathname = '/', search = '') {
   const normPath = normalizeRoutePath(pathname);
   const params = new URLSearchParams(search || '');
 
@@ -471,6 +571,15 @@ export function resolveRouteFromLocation(pathname = '/', search = '', isTouchDev
 
   const matchedRoute = getSeoRouteByPath(normPath);
   if (matchedRoute && matchedRoute.path !== '/') {
+    const forgeIntent = matchedRoute.studioTemplateId
+      ? { mode: 'template', templateId: matchedRoute.studioTemplateId }
+      : matchedRoute.studioPreset === 'gif'
+      ? { mode: 'gif' }
+      : matchedRoute.path === '/templates'
+      ? { mode: 'templates' }
+      : matchedRoute.openStudio
+      ? { mode: 'blank' }
+      : null;
     return {
       matchedPath: matchedRoute.path,
       isDedicatedLanding: true,
@@ -478,7 +587,7 @@ export function resolveRouteFromLocation(pathname = '/', search = '', isTouchDev
       category: matchedRoute.category || 'all',
       searchQuery: params.get('q') || '',
       showStudio: Boolean(matchedRoute.openStudio),
-      forgeIntent: matchedRoute.openStudio ? { mode: 'blank' } : null,
+      forgeIntent,
       extrasDrawerOpen: Boolean(matchedRoute.openSoundboard),
       extrasFocus: matchedRoute.openSoundboard ? 'soundboard' : null,
       bossKeyActive: Boolean(matchedRoute.bossDisguise),
@@ -558,7 +667,9 @@ export function resolveRouteFromLocation(pathname = '/', search = '', isTouchDev
   } else if (mappedCat !== 'all' || searchQuery || theaterMemeId) {
     viewMode = 'feed';
   } else {
-    viewMode = isTouchDevice ? 'reels' : 'feed';
+    // Phase 30: Land mobile & desktop visitors straight into scannable meme feed + 1-tap meme maker;
+    // Fullscreen Reels stays 1 tap away in the Mobile Dock / top nav.
+    viewMode = 'feed';
   }
 
   const isDedicatedLanding = Boolean(
@@ -599,8 +710,19 @@ export function getCanonicalPathForState({
   if (bossKeyActive && prankDisguise && PRANK_DISGUISE_TO_PATH[prankDisguise]) {
     return PRANK_DISGUISE_TO_PATH[prankDisguise];
   }
-  if (showStudio && (!forgeIntent || forgeIntent.mode === 'blank')) {
-    return '/meme-generator';
+  if (showStudio) {
+    if (forgeIntent?.mode === 'template' && forgeIntent.templateId && TEMPLATE_ID_TO_PATH[forgeIntent.templateId]) {
+      return TEMPLATE_ID_TO_PATH[forgeIntent.templateId];
+    }
+    if (forgeIntent?.mode === 'gif') {
+      return '/gif-meme-maker';
+    }
+    if (forgeIntent?.mode === 'templates') {
+      return '/templates';
+    }
+    if (!forgeIntent || forgeIntent.mode === 'blank') {
+      return '/meme-generator';
+    }
   }
   if (extrasDrawerOpen && extrasFocus === 'soundboard') {
     return '/meme-soundboard';

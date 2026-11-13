@@ -1,8 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SEO_ROUTES, SITE_ORIGIN, DEFAULT_OG_IMAGE } from '../src/data/seoRoutes.js';
+import { SEO_ROUTES, SITE_ORIGIN, DEFAULT_OG_IMAGE, getTemplateRoutePath } from '../src/data/seoRoutes.js';
 import { STARTER_MEMES, STUDIO_TEMPLATES } from '../src/data/starterMemes.js';
+import { buildRouteJsonLd } from '../src/utils/seoEngine.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -72,11 +73,13 @@ function buildPrerenderMainHtml(route) {
     const templatesHtml = STUDIO_TEMPLATES.map(
       (tpl, idx) => `
         <figure style="margin:0;background:#11131c;border:1px solid #26293d;border-radius:12px;overflow:hidden;">
-          <img src="${escapeHtml(tpl.src)}" alt="${escapeHtml(tpl.name)} blank meme template" width="540" height="480" loading="${idx < 4 ? 'eager' : 'lazy'}" style="display:block;width:100%;height:auto;background:#0b0c14;" />
-          <figcaption style="padding:10px 12px;font-size:13px;line-height:1.4;color:#e2e8f0;">
-            <strong>${escapeHtml(tpl.name)}</strong>
-            <span style="display:block;font-size:12px;color:#94a3b8;margin-top:4px;">${escapeHtml(tpl.defaultTop || '')} / ${escapeHtml(tpl.defaultBottom || '')}</span>
-          </figcaption>
+          <a href="${escapeHtml(getTemplateRoutePath(tpl))}" style="text-decoration:none;color:inherit;display:block;">
+            <img src="${escapeHtml(tpl.src)}" alt="${escapeHtml(tpl.name)} blank meme template" width="540" height="480" loading="${idx < 4 ? 'eager' : 'lazy'}" style="display:block;width:100%;height:auto;background:#0b0c14;" />
+            <figcaption style="padding:10px 12px;font-size:13px;line-height:1.4;color:#e2e8f0;">
+              <strong>${escapeHtml(tpl.name)}</strong>
+              <span style="display:block;font-size:12px;color:#94a3b8;margin-top:4px;">${escapeHtml(tpl.defaultTop || '')} / ${escapeHtml(tpl.defaultBottom || '')}</span>
+            </figcaption>
+          </a>
         </figure>`
     ).join('');
 
@@ -87,6 +90,20 @@ function buildPrerenderMainHtml(route) {
           ${templatesHtml}
         </div>
       </section>`;
+  } else if (route.studioTemplateId) {
+    const tpl = STUDIO_TEMPLATES.find((t) => t.id === route.studioTemplateId);
+    if (tpl) {
+      showcaseHtml = `
+        <section aria-label="${escapeHtml(tpl.name)} Preview" style="margin-top:24px;max-width:520px;">
+          <figure style="margin:0;background:#11131c;border:1px solid #26293d;border-radius:12px;overflow:hidden;">
+            <img src="${escapeHtml(tpl.src)}" alt="${escapeHtml(tpl.name)} blank meme template" width="540" height="480" loading="eager" style="display:block;width:100%;height:auto;background:#0b0c14;" />
+            <figcaption style="padding:12px;font-size:14px;color:#e2e8f0;">
+              <strong>Example Top Text:</strong> ${escapeHtml(tpl.defaultTop || '')}<br />
+              <strong>Example Bottom Text:</strong> ${escapeHtml(tpl.defaultBottom || '')}
+            </figcaption>
+          </figure>
+        </section>`;
+    }
   } else if (route.path === '/') {
     const topPreviewMemes = STARTER_MEMES.slice(0, 4);
     const previewHtml = topPreviewMemes
@@ -133,6 +150,7 @@ function renderRouteHtml(baseHtml, route) {
   const canonicalUrl = `${SITE_ORIGIN}${route.path === '/' ? '/' : route.path}`;
   const safeTitle = escapeHtml(route.title);
   const safeDesc = escapeHtml(route.description);
+  const ogImageUrl = route.ogImage || DEFAULT_OG_IMAGE;
 
   let html = baseHtml;
 
@@ -141,6 +159,9 @@ function renderRouteHtml(baseHtml, route) {
   if (route.prerenderCategory) {
     const firstCatMeme = STARTER_MEMES.find((m) => m.category === route.prerenderCategory);
     preloadHref = firstCatMeme?.image_url || null;
+  } else if (route.studioTemplateId) {
+    const tpl = STUDIO_TEMPLATES.find((t) => t.id === route.studioTemplateId);
+    preloadHref = tpl?.src || null;
   } else if (route.path === '/') {
     preloadHref = STARTER_MEMES[0]?.image_url || '/seed/seed-tech-01.webp';
   }
@@ -202,7 +223,7 @@ function renderRouteHtml(baseHtml, route) {
   html = replaceOrThrow(
     html,
     /<meta\s+property="og:image"\s+content="[^"]*"\s*\/?>/i,
-    `<meta property="og:image" content="${escapeHtml(DEFAULT_OG_IMAGE)}" />`,
+    `<meta property="og:image" content="${escapeHtml(ogImageUrl)}" />`,
     `og:image on ${route.path}`
   );
 
@@ -223,8 +244,17 @@ function renderRouteHtml(baseHtml, route) {
   html = replaceOrThrow(
     html,
     /<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/?>/i,
-    `<meta name="twitter:image" content="${escapeHtml(DEFAULT_OG_IMAGE)}" />`,
+    `<meta name="twitter:image" content="${escapeHtml(ogImageUrl)}" />`,
     `twitter:image on ${route.path}`
+  );
+
+  const routeJsonLd = JSON.stringify(buildRouteJsonLd(route, canonicalUrl, ogImageUrl)).replaceAll('<', '\\u003c');
+  html = html.replace(/\s*<script[^>]*id="tm-dynamic-jsonld"[^>]*>[\s\S]*?<\/script>/i, '');
+  html = replaceOrThrow(
+    html,
+    /<\/head>/i,
+    `  <script id="tm-dynamic-jsonld" type="application/ld+json">${routeJsonLd}</script>\n  </head>`,
+    `json-ld on ${route.path}`
   );
 
   const prerenderMain = buildPrerenderMainHtml(route);
@@ -239,7 +269,7 @@ function renderRouteHtml(baseHtml, route) {
 }
 
 function generateSitemapXml(lastmod) {
-  const urlsXml = SEO_ROUTES.map((route) => {
+  const routeUrlsXml = SEO_ROUTES.map((route) => {
     const loc = `${SITE_ORIGIN}${route.path === '/' ? '/' : route.path}`;
     return `  <url>
     <loc>${escapeHtml(loc)}</loc>
@@ -247,7 +277,19 @@ function generateSitemapXml(lastmod) {
     <changefreq>${escapeHtml(route.changefreq || 'daily')}</changefreq>
     <priority>${escapeHtml(route.priority || '0.8')}</priority>
   </url>`;
-  }).join('\n');
+  });
+
+  const seedMemeUrlsXml = STARTER_MEMES.map((meme) => {
+    const loc = `${SITE_ORIGIN}/m/${encodeURIComponent(String(meme.id))}`;
+    return `  <url>
+    <loc>${escapeHtml(loc)}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>`;
+  });
+
+  const urlsXml = [...routeUrlsXml, ...seedMemeUrlsXml].join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

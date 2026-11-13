@@ -12,7 +12,8 @@ import {
   ensureFontsLoaded,
   loadImg,
   docRatio,
-  burnInVideo
+  burnInVideo,
+  burnInAnimatedGif
 } from './forgeEngine';
 import {
   ACCEPT_MEDIA,
@@ -161,6 +162,29 @@ async function buildFromIntent(intent = {}) {
     }
     return out;
   }
+  if (intent.mode === 'template') {
+    const tpl =
+      STUDIO_TEMPLATES.find((t) => t.id === intent.templateId) ||
+      STUDIO_TEMPLATES[0];
+    if (tpl) {
+      out.title = `${tpl.defaultTop} — ${tpl.defaultBottom}`;
+      out.category = tpl.category || 'dank';
+      out.tip = `✨ Loaded "${tpl.name}" — customize Top & Bottom text below!`;
+      out.doc = makeDoc({
+        panels: [{ src: tpl.src }],
+        layers: [
+          makeTextLayer({ slot: 'top', text: tpl.defaultTop || 'TOP TEXT', y: 0.1, h: 0.18 }),
+          makeTextLayer({ slot: 'bottom', text: tpl.defaultBottom || 'BOTTOM TEXT', y: 0.89, h: 0.18, fill: '#ffffff' })
+        ]
+      });
+      return out;
+    }
+  }
+  if (intent.mode === 'gif') {
+    out.tip = '🎞️ Drop or pick any GIF to add Top & Bottom Impact captions!';
+    out.doc = makeDoc();
+    return out;
+  }
   out.doc = makeDoc();
   return out;
 }
@@ -173,7 +197,7 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
   const editor = useMemeEditor(makeDoc());
   const { doc, set, live, undo, redo, reset, selectedId, setSelectedId } = editor;
   const [tab, setTab] = useState(() =>
-    !intent?.mode || intent?.mode === 'blank' ? 'templates' : 'text'
+    !intent?.mode || intent?.mode === 'blank' || intent?.mode === 'templates' ? 'templates' : 'text'
   );
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('dank');
@@ -203,7 +227,7 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
       setCategory(res.category);
       setError(res.error);
       setStatus(res.tip);
-      setTab(!intent?.mode || intent?.mode === 'blank' ? 'templates' : 'text');
+      setTab(!intent?.mode || intent?.mode === 'blank' || intent?.mode === 'templates' ? 'templates' : 'text');
       const firstText = res.doc?.layers?.find((l) => l.type === 'text');
       if (firstText) setSelectedId(firstText.id);
       const saved = await loadDraft();
@@ -301,11 +325,31 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
         base: null,
         panels: d.panels.map((p, i) =>
           i === panelIdx ? { ...p, src, blob: file, zoom: 1, panX: 0, panY: 0, rot: 0, flipX: false, natW: 0, natH: 0 } : p
-        )
+        ),
+        layers: d.layers.length > 0
+          ? d.layers
+          : [
+              makeTextLayer({ slot: 'top', text: '', y: 0.1, h: 0.18 }),
+              makeTextLayer({ slot: 'bottom', text: '', y: 0.89, h: 0.18 })
+            ]
       }));
+      setTab('text');
     } else {
       const base = { kind: v.kind, file, url: URL.createObjectURL(file), width: v.probe.width, height: v.probe.height, duration: v.probe.duration };
-      set((d) => ({ ...makeDoc({ base, layers: d.layers }), filter: 'none' }));
+      set((d) => ({
+        ...makeDoc({
+          base,
+          layers:
+            d.layers.length > 0
+              ? d.layers
+              : [
+                  makeTextLayer({ slot: 'top', text: '', y: 0.1, h: 0.18 }),
+                  makeTextLayer({ slot: 'bottom', text: '', y: 0.89, h: 0.18 })
+                ]
+        }),
+        filter: 'none'
+      }));
+      setTab('text');
     }
   };
 
@@ -344,6 +388,36 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
 
   const handleDownload = async () => {
     if (!hasMedia) return;
+    if (doc.base?.kind === 'gif') {
+      const hasVisibleLayers = (doc.layers || []).some((l) => (l.type === 'text' ? String(l.text || '').trim() : true));
+      if (hasVisibleLayers) {
+        setBusy(true);
+        setStatus('🎞️ Encoding animated GIF with Top & Bottom text… 0%');
+        try {
+          const gifBlob = await burnInAnimatedGif(doc.base.file || doc.base.url, doc, images, {
+            watermark: { generation, author },
+            onProgress: (p) => setStatus(`🎞️ Encoding animated GIF… ${Math.round(p * 100)}%`)
+          });
+          if (gifBlob) {
+            downloadBlob(gifBlob, `thememes-net-${Date.now()}.gif`);
+            setStatus('✅ Animated GIF downloaded with your text burned in!');
+            sfx.playPop(2);
+            return;
+          }
+        } catch {
+          setStatus('⚠️ Could not re-encode GIF; saving raw GIF instead.');
+        } finally {
+          setBusy(false);
+        }
+      }
+      if (doc.base.file) {
+        downloadBlob(doc.base.file, `thememes-net-${Date.now()}.gif`);
+      } else {
+        window.open(doc.base.url, '_blank', 'noopener');
+      }
+      sfx.playPop(2);
+      return;
+    }
     if (doc.base) {
       if (doc.base.file) {
         const ct = guessContentType(doc.base.file, doc.base.kind);
@@ -386,12 +460,13 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
       setStatus(`✨ Loaded "${tpl.name}" — customize caption below or hit 🚀 Publish!`);
       setCategory(tpl.category || 'dank');
       setTitle(`${tpl.defaultTop} — ${tpl.defaultBottom}`);
-      const topLayer = makeTextLayer({ text: tpl.defaultTop || 'TOP TEXT', y: 0.1, h: 0.18 });
+      const topLayer = makeTextLayer({ slot: 'top', text: tpl.defaultTop || 'TOP TEXT', y: 0.1, h: 0.18 });
       const botLayer = makeTextLayer({
+        slot: 'bottom',
         text: tpl.defaultBottom || 'BOTTOM TEXT',
-        y: 0.9,
+        y: 0.89,
         h: 0.18,
-        fill: '#facc15'
+        fill: '#ffffff'
       });
       set((d) => ({
         ...d,
@@ -415,8 +490,8 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
       'WHEN THE CODE COMPILES',
       'ZERO ERRORS ON FIRST TRY'
     ];
-    const topLayer = makeTextLayer({ text: pair[0], y: 0.1, h: 0.18 });
-    const botLayer = makeTextLayer({ text: pair[1], y: 0.9, h: 0.18, fill: '#facc15' });
+    const topLayer = makeTextLayer({ slot: 'top', text: pair[0], y: 0.1, h: 0.18, fill: '#ffffff' });
+    const botLayer = makeTextLayer({ slot: 'bottom', text: pair[1], y: 0.89, h: 0.18, fill: '#ffffff' });
     set((d) => {
       const nonText = d.layers.filter((l) => l.type !== 'text');
       return {
@@ -505,7 +580,7 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
 
   return (
     <div className="tm-modal-backdrop tm-forge-backdrop" onClick={onClose}>
-      <div className="tm-forge" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Meme Forge 3.0">
+      <div className="tm-forge" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Meme & GIF Maker">
         <input
           ref={fileRef}
           type="file"
@@ -529,7 +604,7 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
 
         <header className="tm-forge-head">
           <strong>
-            ⚒️ MEME FORGE 3.0
+            🎨 MEME &amp; GIF MAKER
             {intent?.mode === 'remix' && <span className="tm-forge-chip">🧬 GEN-{generation} REMIX</span>}
             {intent?.mode === 'caption' && <span className="tm-forge-chip">✏️ CAPTION THIS</span>}
             {intent?.mode === 'bounty' && <span className="tm-forge-chip">🎯 CAPTION BATTLE</span>}
@@ -640,8 +715,8 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
           <label className="tm-forge-check">
             <input type="checkbox" checked={isSpoiler} onChange={(e) => setIsSpoiler(e.target.checked)} /> 🌶️ Spoiler
           </label>
-          <button type="button" className="tm-btn" onClick={handleDownload} disabled={!hasMedia}>
-            ⬇ Download
+          <button type="button" className="tm-btn" onClick={handleDownload} disabled={!hasMedia || busy}>
+            {doc.base?.kind === 'gif' ? '🎞️ Download GIF' : '⬇ Download'}
           </button>
           {doc.base?.kind === 'video' && (
             <button type="button" className="tm-btn" onClick={handleBurnIn} disabled={busy}>

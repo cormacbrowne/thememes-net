@@ -106,13 +106,22 @@
       "statusCode": 301
     }
   ],
+  "functions": {
+    "api/meme-og.js": {
+      "includeFiles": "dist/index.html"
+    }
+  },
   "rewrites": [
     {
-      "source": "/m/:id",
-      "destination": "/index.html"
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
     },
     {
-      "source": "/((?!_vercel/|assets/|seed/).*)",
+      "source": "/m/:id",
+      "destination": "/api/meme-og?id=:id"
+    },
+    {
+      "source": "/((?!_vercel/|api/|assets/|seed/).*)",
       "destination": "/index.html"
     }
   ],

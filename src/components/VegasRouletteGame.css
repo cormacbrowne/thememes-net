@@ -593,13 +593,16 @@
    ========================================================================== */
 @media (max-width: 860px) {
   .tm-roul-stage {
-    height: calc(100dvh - 46px);
+    height: auto;
     padding: 4px 6px;
   }
 
   .tm-roul-cabinet {
-    padding: 6px 8px;
-    gap: 5px;
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+    padding: 6px 8px 0;
+    gap: 6px;
     border-radius: 14px;
   }
 
@@ -625,6 +628,7 @@
   .tm-roul-history-bar {
     padding: 4px 8px;
     gap: 5px;
+    flex-shrink: 0;
   }
 
   .tm-roul-hist-ball {
@@ -636,14 +640,20 @@
   .tm-roul-main-grid {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    overflow: hidden;
+    flex: none;
+    gap: 8px;
+    overflow: visible;
   }
 
   .tm-roul-wheel-column {
     flex-shrink: 0;
-    padding: 4px 8px;
-    gap: 4px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 8px;
+    gap: 10px;
   }
 
   .tm-roul-wheel-column .tm-roul-spin-btn {
@@ -651,18 +661,18 @@
   }
 
   .tm-roul-canvas {
-    width: min(220px, 28dvh);
-    height: min(220px, 28dvh);
+    width: 138px;
+    height: 138px;
+    flex-shrink: 0;
   }
 
   .tm-roul-board-column {
-    flex: 1;
-    min-height: 0;
+    flex: none;
+    min-height: auto;
     justify-content: flex-start;
     gap: 8px;
-    padding: 8px;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    padding: 8px 8px 14px;
+    overflow: visible;
   }
 
   /* Chip selector & clear/rebet live in the sticky bottom bar on mobile */
@@ -744,12 +754,14 @@
     gap: 6px;
     position: sticky;
     bottom: 0;
-    z-index: 5;
+    z-index: 25;
     flex-shrink: 0;
-    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
-    background: rgba(6, 10, 24, 0.96);
-    border: 1.5px solid rgba(250, 204, 21, 0.42);
-    border-radius: 12px;
+    margin-top: auto;
+    padding: 6px 8px calc(8px + env(safe-area-inset-bottom));
+    background: rgba(6, 10, 24, 0.98);
+    border: 1.5px solid rgba(250, 204, 21, 0.48);
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -8px 22px rgba(0, 0, 0, 0.85);
   }
 
   .tm-roul-mobile-chips-row {

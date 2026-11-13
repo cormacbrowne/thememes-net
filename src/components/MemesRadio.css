@@ -526,7 +526,8 @@
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+  top: calc(62px + env(safe-area-inset-top, 0px));
+  bottom: auto;
   z-index: 940;
   display: inline-flex;
   align-items: center;
@@ -543,7 +544,7 @@
 }
 
 .tm-mobile-now-playing.in-game {
-  top: 52px;
+  top: 50px;
   bottom: auto;
 }
 

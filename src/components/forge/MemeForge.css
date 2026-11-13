@@ -493,12 +493,18 @@
     overflow: hidden;
   }
 
+  .tm-forge-main,
   .tm-forge-stage-wrap {
     flex: 0 0 auto;
-    height: 33dvh;
-    max-height: 245px;
+    max-height: 38dvh;
+    overflow-y: auto;
     padding: 8px;
     border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  }
+
+  .tm-forge-stage-canvas,
+  .tm-forge-stage-box {
+    max-height: 34dvh;
   }
 
   .tm-forge-stage {

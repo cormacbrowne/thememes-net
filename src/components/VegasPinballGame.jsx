@@ -1907,10 +1907,10 @@ export default function VegasPinballGame({
               <button
                 type="button"
                 className="tm-bandit-back-btn"
-                aria-label="Back to arcade"
+                aria-label="Back to Memes Feed"
                 onClick={onBackToFeed}
               >
-                ←
+                ← Memes
               </button>
             )}
             <div className="tm-pin2-table-strip" role="tablist" aria-label="Select Pinball Table">

@@ -63,12 +63,35 @@ function FlyingSaucerSvg() {
 
 export default function WinCelebrationOverlay({ litePerfMode = false }) {
   const [activeWin, setActiveWin] = useState(null);
+  const [displayAmount, setDisplayAmount] = useState(0);
   const timerRef = useRef(null);
+  const countRafRef = useRef(0);
 
   useEffect(() => {
     const unsub = subscribeWinCelebration((payload) => {
       if (timerRef.current) clearTimeout(timerRef.current);
+      if (countRafRef.current) cancelAnimationFrame(countRafRef.current);
       setActiveWin(payload);
+
+      const targetAmt = Number(payload.amount) || 0;
+      const rank = payload.rewardRank || 2;
+      if (targetAmt <= 1 || rank <= 1) {
+        setDisplayAmount(targetAmt);
+      } else {
+        const countMs = Math.min(1150, 320 + rank * 190);
+        const t0 = performance.now();
+        const stepCount = (now) => {
+          const p = Math.min(1, (now - t0) / countMs);
+          const eased = 1 - Math.pow(1 - p, 3);
+          setDisplayAmount(Math.round(targetAmt * eased));
+          if (p < 1) {
+            countRafRef.current = requestAnimationFrame(stepCount);
+          }
+        };
+        setDisplayAmount(0);
+        countRafRef.current = requestAnimationFrame(stepCount);
+      }
+
       timerRef.current = setTimeout(() => {
         setActiveWin((curr) => (curr && curr.id === payload.id ? null : curr));
       }, payload.durationMs || 2200);
@@ -76,51 +99,106 @@ export default function WinCelebrationOverlay({ litePerfMode = false }) {
     return () => {
       unsub();
       if (timerRef.current) clearTimeout(timerRef.current);
+      if (countRafRef.current) cancelAnimationFrame(countRafRef.current);
     };
   }, []);
 
   if (!activeWin) return null;
 
   const isRare = Boolean(activeWin.isRare);
-  const particleCount = litePerfMode ? (isRare ? 12 : 8) : isRare ? 26 : 16;
+  const rank = activeWin.rewardRank || (isRare ? 5 : activeWin.isBig ? 3 : 2);
+  const tierClass = `tier-${activeWin.rewardTier || 'nice'}`;
+  const baseParticlesByRank = { 1: 8, 2: 14, 3: 24, 4: 32, 5: 40 };
+  const rawCount = baseParticlesByRank[rank] || 16;
+  const particleCount = litePerfMode ? Math.max(6, Math.round(rawCount * 0.45)) : rawCount;
   const emojis = THEME_EMOJIS[activeWin.theme] || THEME_EMOJIS['gold-fountain'];
 
   return (
     <div
       key={activeWin.id}
-      className={`tm-win-overlay theme-${activeWin.theme} ${activeWin.isBig ? 'is-big' : ''} ${
-        isRare ? 'is-rare' : ''
-      }`}
+      className={`tm-win-overlay ${tierClass} theme-${activeWin.theme} ${
+        activeWin.isBig ? 'is-big' : ''
+      } ${activeWin.isMega ? 'is-mega' : ''} ${isRare ? 'is-rare' : ''}`}
+      data-reward-tier={activeWin.rewardTier || 'nice'}
       aria-live="polite"
       aria-atomic="true"
     >
-      {/* Background FX Layer per Theme */}
+      {/* Background FX Layer per Theme & Escalating Rank */}
       <div className="tm-win-fx-layer" aria-hidden="true">
-        {activeWin.theme === 'lightning-surge' && (
+        {rank >= 3 && <div className="tm-win-edge-aura" />}
+        {rank >= 4 && <div className="tm-win-sunburst" />}
+
+        {rank >= 2 && activeWin.theme === 'lightning-surge' && (
           <>
             <div className="tm-win-flash-veil" />
             <div className="tm-win-shockwave" />
-            <div className="tm-win-shockwave delayed" />
+            {rank >= 3 && <div className="tm-win-shockwave delayed" />}
           </>
         )}
 
-        {activeWin.theme === 'synth-lasers' && (
+        {rank >= 2 && activeWin.theme === 'synth-lasers' && (
           <div className="tm-win-lasers">
             <span className="tm-win-laser l1" />
             <span className="tm-win-laser l2" />
-            <span className="tm-win-laser l3" />
-            <span className="tm-win-laser l4" />
+            {rank >= 3 && <span className="tm-win-laser l3" />}
+            {rank >= 3 && <span className="tm-win-laser l4" />}
           </div>
         )}
 
-        {activeWin.theme === 'delorean-88mph' && (
+        {rank >= 2 && activeWin.theme === 'delorean-88mph' && (
           <div className="tm-win-delorean-pass">
             <DeLoreanSvg showFlames fluxActive />
           </div>
         )}
 
-        {activeWin.theme === 'disco-strobe' && (
+        {rank >= 2 && activeWin.theme === 'disco-strobe' && (
           <div className="tm-win-disco-orb">🪩</div>
+        )}
+
+        {/* Coin rain waterfall for Mega & Legendary rewards even on normal themes */}
+        {rank >= 4 && activeWin.theme !== 'meteor-vault' && (
+          <>
+            {Array.from({ length: litePerfMode ? 6 : rank >= 5 ? 16 : 10 }).map((_, idx) => (
+              <span
+                key={`tier-rain-${idx}`}
+                className="tm-rare-coin-rain"
+                style={{
+                  left: `${5 + ((idx * 13.7) % 90)}%`,
+                  animationDelay: `${(idx % 5) * 180}ms`,
+                  '--rrot': `${idx % 2 === 0 ? 300 : -300}deg`
+                }}
+              >
+                {emojis[idx % emojis.length]}
+              </span>
+            ))}
+          </>
+        )}
+
+        {/* Extra side fireworks on Legendary */}
+        {rank >= 5 && activeWin.theme !== 'arcade-fireworks' && !litePerfMode && (
+          <>
+            {FIREWORK_BURSTS.slice(0, 2).map((fw, fIdx) => (
+              <div
+                key={`legend-fw-${fIdx}`}
+                className="tm-rare-fw-cluster"
+                style={{
+                  left: fw.x,
+                  top: fw.y,
+                  '--fw-color': fw.color,
+                  '--fw-delay': fw.delay
+                }}
+              >
+                <span className="tm-rare-fw-core" />
+                {Array.from({ length: 8 }).map((_, pIdx) => (
+                  <span
+                    key={`lpetal-${pIdx}`}
+                    className="tm-rare-fw-petal"
+                    style={{ '--pangle': `${pIdx * 45}deg` }}
+                  />
+                ))}
+              </div>
+            ))}
+          </>
         )}
 
         {/* RARE THEME 1: UFO MOTHERSHIP ABDUCTION */}
@@ -279,9 +357,9 @@ export default function WinCelebrationOverlay({ litePerfMode = false }) {
         </div>
       </div>
 
-      {/* Unmistakable Center-Top Reward Banner */}
+      {/* Unmistakable Center-Top Reward Banner (escalates with win size) */}
       <div className="tm-win-card">
-        {isRare && activeWin.rareBadge && (
+        {(isRare || activeWin.rareBadge) && activeWin.rareBadge && (
           <div className="tm-win-rare-ribbon">{activeWin.rareBadge}</div>
         )}
         <div className="tm-win-kicker-row">
@@ -291,7 +369,12 @@ export default function WinCelebrationOverlay({ litePerfMode = false }) {
         <div className="tm-win-headline">{activeWin.headline}</div>
         {activeWin.amount > 0 && (
           <div className="tm-win-amount-pill">
-            +{activeWin.amount.toLocaleString()} {activeWin.unit}
+            +{displayAmount.toLocaleString()} {activeWin.unit}
+            {activeWin.multiplier >= 3 && rank >= 3 && (
+              <span className="tm-win-mult-badge">
+                {Number(activeWin.multiplier.toFixed(1))}×
+              </span>
+            )}
           </div>
         )}
         {activeWin.detail && <div className="tm-win-detail">{activeWin.detail}</div>}

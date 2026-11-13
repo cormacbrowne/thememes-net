@@ -340,8 +340,8 @@ export default function VegasBlackjackGame({
           anyBj = true;
         } else if (pEval.isFiveCardCharlie) {
           outcome = 'charlie';
-          payout = st * 3;
-          badge = `⚡ 5-CARD CHARLIE 3×! (+${payout} 🪙)`;
+          payout = st * 2;
+          badge = `⚡ 5-CARD CHARLIE 2×! (+${payout} 🪙)`;
           anyWin = true;
           anyCharlie = true;
         } else if (dEval.isBust) {
@@ -676,7 +676,7 @@ export default function VegasBlackjackGame({
         tag: `HAND TOTAL: ${ev.label}`,
         line:
           nextCards.length === 4 && ev.total <= 17
-            ? '⚡ 4 CARDS! Survive 1 more card without busting for an automatic 3× 5-CARD CHARLIE!'
+            ? '⚡ 4 CARDS! Survive 1 more card without busting for an automatic 2× 5-CARD CHARLIE!'
             : `Drew ${newCard.rank}${newCard.suit} — Total is ${ev.label}.`
       });
     }
@@ -1148,7 +1148,7 @@ export default function VegasBlackjackGame({
                     className="tm-btn tm-btn-primary"
                     onClick={onOpenUpload}
                   >
-                    📸 Upload Meme (+45 🪙)
+                    📸 Upload Meme (+12 🪙)
                   </button>
                 )}
               </div>

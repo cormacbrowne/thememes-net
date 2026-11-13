@@ -22,7 +22,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
 }
 
 function getDerbyCupActive() {
-  return new Date().getHours() === 20; // Daily 8pm–9pm local time = 3x Derby Cup payouts!
+  return new Date().getHours() === 20; // Daily 8pm–9pm local time = +15% Derby Cup Happy Hour!
 }
 
 function formatCountdown(sec) {
@@ -92,13 +92,16 @@ export default function NeonDerbyGame({
       if (!voiceCommentary || !soundOn || typeof window === 'undefined') return;
       const voices = getEnglishVoices();
       const voice = pickPreferredVoice(voices, 'kitt');
-      speakUtteranceChain(line, {
+      speakUtteranceChain({
+        text: line,
+        mode: 'kitt',
         voice,
         rate: 1.06,
         pitch: 1.02,
         volume: 0.9,
         soundOn: true,
-        maxSentences: 1
+        maxSentences: 1,
+        fromGesture: false
       });
     },
     [soundOn, voiceCommentary]
@@ -188,7 +191,7 @@ export default function NeonDerbyGame({
       setTicketBets(currentTickets);
     }
 
-    const cupMultiplier = isDerbyCup ? 3 : 1;
+    const cupMultiplier = isDerbyCup ? 1.15 : 1;
     const raceSeed = Date.now() ^ (raceCardIdx * 4099) ^ (stakeSum * 31);
     const finalOrder = sampleRaceOrder(board.weights, raceSeed);
 
@@ -240,7 +243,7 @@ export default function NeonDerbyGame({
           detail: practiceMode
             ? 'Winning Practice Ticket!'
             : cupMultiplier > 1
-            ? '3× Derby Cup Payout!'
+            ? '+15% Derby Cup Bonus!'
             : 'Photo-Finish Ticket Cashed!',
           multiplier: stakeSum > 0 ? wonAmt / Math.max(1, stakeSum) : 3,
           tier: wonAmt >= stakeSum * 5 ? 'jackpot' : 'big'
@@ -588,7 +591,7 @@ export default function NeonDerbyGame({
   return (
     <GameShell
       title="🏇 NEON DERBY '86"
-      titleBadge={isDerbyCup ? <span className="tm-derby-cup-badge">🏆 DERBY CUP 3×</span> : null}
+      titleBadge={isDerbyCup ? <span className="tm-derby-cup-badge">🏆 DERBY CUP +15%</span> : null}
       ariaLabel="Neon Derby 86 Meme Horse Racing"
       onBack={onBackToFeed}
       tokens={tokens}
@@ -612,7 +615,7 @@ export default function NeonDerbyGame({
       howToPlay={[
         'Pick Win (1st), Place (top 2), Show (top 3), or Exacta (1st->2nd) + chip size.',
         `Check the track (${activeCondition.icon} ${activeCondition.name}) & form guide before betting.`,
-        'Tap Start Race anytime; daily 8 PM Derby Cup pays 3× rewards.'
+        'Tap Start Race anytime; daily 8 PM Derby Cup pays +15% bonus rewards.'
       ]}
     >
       <div className="tm-derby-stage">

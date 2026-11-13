@@ -2,6 +2,8 @@
 // CRAZY FUNNY WEB AUDIO SYNTHESIZER & iOS SAFARI UNLOCK ENGINE
 // ==========================================
 
+import { speakWithWebAudioFormants } from './phonemeSpeech';
+
 export const SOUND_PACKS = [
   { id: 'goofy', label: '🤡 Goofy Cartoon', short: '🤡 Goofy' },
   { id: 'brainrot', label: '💀 Vine & Brainrot', short: '💀 Brainrot' },
@@ -1893,6 +1895,28 @@ export class SoundEngine {
     }
   }
 
+  playClick() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.connect(gain);
+      gain.connect(this._getOutputNode());
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(980, now);
+      osc.frequency.exponentialRampToValueAtTime(520, now + 0.028);
+      gain.gain.setValueAtTime(0.085, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.032);
+      osc.start(now);
+      osc.stop(now + 0.035);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
   /**
    * 🪙 COIN-OP METALLIC CHINK (Inserting arcade token / placing slot bet)
    */
@@ -2296,89 +2320,30 @@ export class SoundEngine {
   }
 
   /**
-   * 🗣️ K.I.T.T. & HAL 9000 PROCEDURAL WEB-AUDIO FORMANT VOICE MODULATOR
-   * Guarantees audible sci-fi vocal formant synthesis on iPhone/iPad even when
-   * the iOS physical mute switch is ON or iOS Safari SpeechSynthesis is throttled.
+   * 🗣️ K.I.T.T. & HAL 9000 CLEAR WEB-AUDIO FORMANT SPEECH SYNTHESIZER
+   * Real English phoneme-to-formant synthesis for iPhone / Safari fallback & WebAudio Synth mode.
    */
+  stopAiVocalFormants() {
+    try {
+      this._activeFormantSpeech?.stop?.();
+      this._activeFormantSpeech = null;
+    } catch {
+      // Ignore stop errors
+    }
+  }
+
   playAiVocalFormants(text = '', personaId = 'kitt') {
-    if (!this.enabled) return;
+    if (!this.enabled) return null;
     try {
       this.init();
-      if (!this.ctx) return;
-      const clean = String(text || '').replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
-      const words = clean ? clean.split(/\s+/).slice(0, 26) : ['affirmative'];
-      const isKitt = personaId === 'kitt';
-      const now = this.ctx.currentTime + 0.04;
-
-      // Vowel formant frequency pairs [F1, F2]
-      const formants = [
-        [720, 1150], // 'ah'
-        [520, 1850], // 'eh'
-        [310, 2200], // 'ee'
-        [460, 920],  // 'oh'
-        [340, 880]   // 'oo'
-      ];
-
-      let cursor = now;
-      words.forEach((word, wIdx) => {
-        const syllables = Math.max(1, Math.min(3, Math.ceil(word.length / 3)));
-        for (let s = 0; s < syllables; s++) {
-          const sylDur = isKitt ? 0.068 : 0.088;
-          const gap = isKitt ? 0.018 : 0.028;
-          const charCode = word.charCodeAt(Math.min(word.length - 1, s * 2)) || 65;
-          const [f1, f2] = formants[(charCode + wIdx + s) % formants.length];
-
-          // Fundamental vocal cord pitch: K.I.T.T. is crisp transatlantic baritone (~132Hz with inflection),
-          // HAL 9000 is calm, low, flat discovery computer (~104Hz with subtle downward drift)
-          const basePitch = isKitt
-            ? 128 + ((charCode % 7) - 3) * 6 + (s === syllables - 1 ? 8 : 0)
-            : 102 + ((charCode % 5) - 2) * 2.5 - (wIdx % 3) * 1.5;
-
-          const carrier = this.ctx.createOscillator();
-          const sub = this.ctx.createOscillator();
-          const filter1 = this.ctx.createBiquadFilter();
-          const filter2 = this.ctx.createBiquadFilter();
-          const env = this.ctx.createGain();
-
-          carrier.type = isKitt ? 'sawtooth' : 'triangle';
-          sub.type = 'sine';
-          carrier.frequency.setValueAtTime(basePitch, cursor);
-          carrier.frequency.linearRampToValueAtTime(
-            isKitt ? basePitch * 1.04 : basePitch * 0.98,
-            cursor + sylDur
-          );
-          sub.frequency.setValueAtTime(basePitch * 0.5, cursor);
-
-          filter1.type = 'bandpass';
-          filter1.frequency.setValueAtTime(f1, cursor);
-          filter1.Q.setValueAtTime(isKitt ? 5.5 : 4.2, cursor);
-
-          filter2.type = 'bandpass';
-          filter2.frequency.setValueAtTime(f2, cursor);
-          filter2.Q.setValueAtTime(isKitt ? 6.5 : 4.8, cursor);
-
-          env.gain.setValueAtTime(0.001, cursor);
-          env.gain.linearRampToValueAtTime(isKitt ? 0.075 : 0.065, cursor + 0.014);
-          env.gain.exponentialRampToValueAtTime(0.001, cursor + sylDur);
-
-          carrier.connect(filter1);
-          carrier.connect(filter2);
-          sub.connect(filter1);
-          filter1.connect(env);
-          filter2.connect(env);
-          env.connect(this._getOutputNode());
-
-          carrier.start(cursor);
-          sub.start(cursor);
-          carrier.stop(cursor + sylDur + 0.01);
-          sub.stop(cursor + sylDur + 0.01);
-
-          cursor += sylDur + gap;
-        }
-        cursor += isKitt ? 0.025 : 0.042;
-      });
+      if (!this.ctx) return null;
+      this.stopAiVocalFormants();
+      const handle = speakWithWebAudioFormants(this.ctx, this._getOutputNode(), text, personaId);
+      this._activeFormantSpeech = handle;
+      return handle;
     } catch {
       // Ignore audio errors
+      return null;
     }
   }
 

@@ -74,6 +74,28 @@ function sanitizeFavorites(list) {
   return out;
 }
 
+export const EQ_BANDS = [
+  { id: 0, freq: 60, label: '60Hz', name: 'Sub Bass' },
+  { id: 1, freq: 230, label: '230Hz', name: 'Punch' },
+  { id: 2, freq: 910, label: '910Hz', name: 'Mids' },
+  { id: 3, freq: 3600, label: '3.6kHz', name: 'Presence' },
+  { id: 4, freq: 12000, label: '12kHz', name: 'Sparkle' }
+];
+
+export const EQ_PRESETS = [
+  { id: 'flat', label: 'Flat', gains: [0, 0, 0, 0, 0] },
+  { id: 'synth', label: 'Synth V', gains: [5, 3, -1, 3, 5] },
+  { id: 'bass', label: 'Bass+', gains: [8, 5, 0, -1, 1] },
+  { id: 'club', label: 'Club', gains: [6, 2, -2, 4, 6] },
+  { id: 'lofi', label: 'Lo-Fi', gains: [3, 4, 2, -3, -6] },
+  { id: 'vocal', label: 'Voice', gains: [-3, -1, 4, 5, 2] }
+];
+
+function sanitizeEqGains(raw) {
+  if (!Array.isArray(raw) || raw.length !== 5) return [3, 2, 0, 2, 3]; // Mild musical default
+  return raw.map((v) => Math.max(-12, Math.min(12, Math.round(Number(v) || 0))));
+}
+
 function loadPrefs() {
   const fallback = {
     on: false,
@@ -81,7 +103,9 @@ function loadPrefs() {
     volume: 0.6,
     shuffleAll: false,
     allowContextOverride: true,
-    favorites: []
+    favorites: [],
+    eqGains: [3, 2, 0, 2, 3],
+    eqPreset: 'custom'
   };
   if (typeof window === 'undefined') return fallback;
   try {
@@ -93,7 +117,9 @@ function loadPrefs() {
       volume: Math.min(1, Math.max(0, Number(raw.volume ?? 0.6) || 0)),
       shuffleAll: raw.shuffleAll === true,
       allowContextOverride: raw.allowContextOverride !== false,
-      favorites: sanitizeFavorites(raw.favorites)
+      favorites: sanitizeFavorites(raw.favorites),
+      eqGains: sanitizeEqGains(raw.eqGains),
+      eqPreset: typeof raw.eqPreset === 'string' ? raw.eqPreset : 'custom'
     };
   } catch {
     return fallback;
@@ -113,6 +139,9 @@ let state = {
   shuffleAll: prefs.shuffleAll,
   allowContextOverride: prefs.allowContextOverride,
   favorites: prefs.favorites,
+  eqGains: prefs.eqGains,
+  eqPreset: prefs.eqPreset,
+  fullscreenEqOpen: false,
   sleepMinutes: 0,
   sleepEndsAt: null,
   loading: false
@@ -146,7 +175,9 @@ function persist() {
         volume: state.volume,
         shuffleAll: state.shuffleAll,
         allowContextOverride: state.allowContextOverride,
-        favorites: state.favorites
+        favorites: state.favorites,
+        eqGains: state.eqGains,
+        eqPreset: state.eqPreset
       })
     );
   } catch {
@@ -174,6 +205,7 @@ function loadEngine() {
         onPrev: () => prevRadioTrack()
       });
       engine.setMixtapeTracks?.(state.favorites);
+      engine.setEqBands?.(state.eqGains);
       return engine;
     });
   }
@@ -244,7 +276,7 @@ export function subscribeRadio(fn) {
   return () => listeners.delete(fn);
 }
 
-function getUnlockedStations({ includeMixtape = false } = {}) {
+export function getUnlockedStations({ includeMixtape = false } = {}) {
   const unlocked = loadUnlockedCosmetics();
   return RADIO_STATIONS.filter(
     (st) => (includeMixtape || st.id !== 'mixtape') && (!st.cosmeticId || unlocked.includes(st.cosmeticId))
@@ -416,6 +448,49 @@ export function setRadioDuck(reason, active) {
 export function setRadioMuted(nextMuted) {
   muted = !!nextMuted;
   if (engine) engine.setMuted(muted);
+}
+
+export function setRadioEqBand(bandIdx, dbGain) {
+  const idx = Math.floor(Number(bandIdx));
+  if (idx < 0 || idx >= 5) return;
+  const clamped = Math.max(-12, Math.min(12, Math.round(Number(dbGain) || 0)));
+  const next = state.eqGains.map((v, i) => (i === idx ? clamped : v));
+  const matchedPreset = EQ_PRESETS.find((p) => p.gains.every((g, i) => g === next[i]));
+  setState({ eqGains: next, eqPreset: matchedPreset ? matchedPreset.id : 'custom' });
+  persist();
+  engine?.setEqBand?.(idx, clamped);
+}
+
+export function applyRadioEqPreset(presetId) {
+  const preset = EQ_PRESETS.find((p) => p.id === presetId) || EQ_PRESETS[0];
+  const next = [...preset.gains];
+  setState({ eqGains: next, eqPreset: preset.id });
+  persist();
+  engine?.setEqBands?.(next);
+}
+
+export function openFullscreenEq({ autoStart = true } = {}) {
+  setState({ fullscreenEqOpen: true });
+  if (autoStart && !state.on) {
+    setRadioOn(true, { fadeInSec: 1.5 });
+  }
+}
+
+export function closeFullscreenEq() {
+  setState({ fullscreenEqOpen: false });
+}
+
+export function toggleFullscreenEq() {
+  if (state.fullscreenEqOpen) {
+    closeFullscreenEq();
+  } else {
+    openFullscreenEq({ autoStart: true });
+  }
+}
+
+export function getRadioAnalyserData(freqOut, timeOut) {
+  if (!engine || typeof engine.getAnalyserData !== 'function') return false;
+  return engine.getAnalyserData(freqOut, timeOut);
 }
 
 /** Reactive music hooks: 'combo' (payload = multiplier) and 'publish'. No-ops while OFF. */

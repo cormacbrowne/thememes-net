@@ -70,6 +70,9 @@ const DankPetWidget = lazy(() => import('./components/DankPetWidget'));
 const UnhandledGooseSurprise = lazy(() => import('./components/UnhandledGooseSurprise'));
 const MemeLiveCelebrationModal = lazy(() => import('./components/MemeLiveCelebrationModal'));
 const DailyCaptionBattleModal = lazy(() => import('./components/DailyCaptionBattleModal'));
+const FullscreenMusicEqualizer = lazy(() =>
+  import('./components/MusicEqualizer').then((m) => ({ default: m.FullscreenMusicEqualizer }))
+);
 
 const MODAL_SKELETON_FALLBACK = (
   <div className="tm-modal-backdrop" role="status" aria-live="polite">
@@ -2058,6 +2061,11 @@ export default function App() {
           }}
         />
       )}
+
+      {/* FULL-SCREEN MUSIC EQUALIZER STUDIO */}
+      <Suspense fallback={null}>
+        <FullscreenMusicEqualizer />
+      </Suspense>
     </div>
   );
 }

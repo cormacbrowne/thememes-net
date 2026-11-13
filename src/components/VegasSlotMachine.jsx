@@ -98,34 +98,34 @@ export default function VegasSlotMachine({
 
   // Silver Mustang (Dougie Jones) Options, Accumulators & Powerups
   const [mustangLines, setMustangLines] = useState(25); // 5 | 15 | 25
-  const [coffeePot, setCoffeePot] = useState(1); // 0..5 -> 5 Free Spins
-  const [mustangCharge, setMustangCharge] = useState(40); // 0..100 ⚡
+  const [coffeePot, setCoffeePot] = useState(1); // 0..10 -> 4 Free Spins
+  const [mustangCharge, setMustangCharge] = useState(15); // 0..100 ⚡
   const [mustangFreeSpins, setMustangFreeSpins] = useState(0);
   const [freeSpinStake, setFreeSpinStake] = useState(0);
-  const [mustangPot, setMustangPot] = useState(125); // Progressive pot display
+  const [mustangPot, setMustangPot] = useState(60); // Progressive pot display
   const [dougieBanner, setDougieBanner] = useState(() => pickDougieQuote('idle'));
   const [armedPowerups, setArmedPowerups] = useState({
-    coffeeRush: false, // 2x next spin
+    coffeeRush: false, // 1.5x next spin
     pieWild: false, // Full Wild Reel 3
     owlLock: false // Lock Dougie/Orb columns
   });
 
   // Lightning Vault 5000 Options, Accumulators & Hold-and-Spin
   const [anteBetOn, setAnteBetOn] = useState(false);
-  const [voltageMeter, setVoltageMeter] = useState(35); // 0..100
+  const [voltageMeter, setVoltageMeter] = useState(15); // 0..100
   const [surgeArmed, setSurgeArmed] = useState(false);
   const [progressives, setProgressives] = useState({
-    mini: 15,
-    minor: 30,
-    major: 60,
-    grand: 110
+    mini: 10,
+    minor: 20,
+    major: 45,
+    grand: 85
   });
   const [lockItState, setLockItState] = useState(null);
   // lockItState = { active, respinsLeft, lockedMap: { "c,r": { label, mult, color } }, stake }
 
   // Cyber Buffalo Stampede '86 State
-  const [stampedeMeter, setStampedeMeter] = useState(25); // 0..100
-  const [buffaloCharge, setBuffaloCharge] = useState(45); // 0..100
+  const [stampedeMeter, setStampedeMeter] = useState(10); // 0..100
+  const [buffaloCharge, setBuffaloCharge] = useState(15); // 0..100
   const [goldStampedeArmed, setGoldStampedeArmed] = useState(false);
   const [secondChanceArmed, setSecondChanceArmed] = useState(false);
   const [bonusWheelState, setBonusWheelState] = useState(null);
@@ -377,12 +377,12 @@ export default function VegasSlotMachine({
         setLastOutcome({ ...result, payout: 0, bet: activeBet });
         if (!fromNudge) {
           const roll = Math.random();
-          if (roll < 0.16) {
+          if (roll < 0.11) {
             setHoldAllowed(true);
             setHeldReels([false, false, false]);
             setNudgesLeft(0);
             setStatusBanner('Lucky Hold! Lock up to 2 reels for next spin.');
-          } else if (roll < 0.28) {
+          } else if (roll < 0.20) {
             setHoldAllowed(false);
             setHeldReels([false, false, false]);
             setNudgesLeft(1);
@@ -447,7 +447,7 @@ export default function VegasSlotMachine({
 
     const targetStops = banditStops.map((currStop, idx) => {
       if (heldReels[idx]) return currStop;
-      if (useFever && idx === 0) return Math.random() < 0.5 ? 0 : 7; // 777 or Diamond stop
+      if (useFever && idx === 0) return Math.random() < 0.35 ? 0 : 7; // Weighted Fever Reel 1
       return Math.floor(Math.random() * BANDIT_REEL_STRIP.length);
     });
 
@@ -509,7 +509,7 @@ export default function VegasSlotMachine({
       usedSecondChance
     }) => {
       if (machineId === 'silver_mustang') {
-        const spinMult = coffeeRushUsed ? 2 : isFreeSpinRound ? 2 : 1;
+        const spinMult = coffeeRushUsed ? 1.5 : isFreeSpinRound ? 1.25 : 1;
         const evalRes = evaluate5x3Paylines('silver_mustang', finalGrid, mustangLines, spinMult);
         setWinningCells(evalRes.winningCells);
 
@@ -525,17 +525,17 @@ export default function VegasSlotMachine({
           })
         );
 
-        setMustangCharge((c) => Math.min(100, c + 12 + coffeeHits * 6 + orbHits * 10 + dougieHits * 4));
-        setMustangPot((p) => Math.min(500, p + (activeBet > 0 ? 2 : 1)));
+        setMustangCharge((c) => Math.min(100, c + 4 + (coffeeHits > 0 ? 2 : 0) + orbHits * 3 + dougieHits));
+        setMustangPot((p) => Math.min(250, Number((p + (activeBet > 0 ? 0.5 : 0.25)).toFixed(1))));
 
-        // Check Coffee Pot Free Spins trigger (5/5)
+        // Check Coffee Pot Free Spins trigger (10/10, max +1 per spin)
         let triggeredBonus = false;
         if (!isFreeSpinRound && coffeeHits > 0) {
-          const nextCoffee = coffeePot + coffeeHits;
-          if (nextCoffee >= 5) {
+          const nextCoffee = coffeePot + 1;
+          if (nextCoffee >= 10) {
             triggeredBonus = true;
             setCoffeePot(0);
-            setMustangFreeSpins(5);
+            setMustangFreeSpins(4);
             setFreeSpinStake(activeBet);
             setDougieBanner(pickDougieQuote('bonus'));
             fireBigWinSiren(false, 'HELLOOOOO-O-O! FREE SPINS!');
@@ -544,13 +544,13 @@ export default function VegasSlotMachine({
           }
         }
 
-        // Progressive Pot Jackpot check (4+ Orbs or 5 Dougie on line)
+        // Progressive Pot Jackpot check (5 Orbs or 5 Dougie on line)
         let totalMult = evalRes.totalBetMult;
         let bonusHeadline = '';
-        if (orbHits >= 4 || (evalRes.bestSym === 'dougie' && evalRes.bestCount === 5)) {
-          const potBonusMult = Math.min(80, Math.round(mustangPot / 5));
+        if (orbHits >= 5 || (evalRes.bestSym === 'dougie' && evalRes.bestCount === 5)) {
+          const potBonusMult = Math.min(45, Math.round(mustangPot / 8));
           totalMult += potBonusMult;
-          setMustangPot(125);
+          setMustangPot(60);
           bonusHeadline = '🚨 MR. JACKPOTS PROGRESSIVE POT! HELLOOOOO-O-O!!';
         }
 
@@ -585,7 +585,7 @@ export default function VegasSlotMachine({
       }
 
       if (machineId === 'lightning_vault') {
-        const spinMult = wasSurge ? 2 : 1;
+        const spinMult = wasSurge ? 1.5 : 1;
         const evalRes = evaluate5x3Paylines('lightning_vault', finalGrid, 20, spinMult);
         setWinningCells(evalRes.winningCells);
 
@@ -601,12 +601,12 @@ export default function VegasSlotMachine({
           })
         );
 
-        setVoltageMeter((v) => Math.min(100, v + 14 + orbCount * 9));
+        setVoltageMeter((v) => Math.min(100, v + 5 + orbCount * 4));
         setProgressives((p) => ({
-          mini: Number((p.mini + 0.25).toFixed(1)),
-          minor: Number((p.minor + 0.5).toFixed(1)),
-          major: Number((p.major + 1).toFixed(1)),
-          grand: Number((p.grand + 1.5).toFixed(1))
+          mini: Math.min(25, Number((p.mini + 0.05).toFixed(2))),
+          minor: Math.min(50, Number((p.minor + 0.1).toFixed(2))),
+          major: Math.min(100, Number((p.major + 0.2).toFixed(2))),
+          grand: Math.min(200, Number((p.grand + 0.3).toFixed(2)))
         }));
 
         if (orbCount >= 3) {
@@ -655,8 +655,8 @@ export default function VegasSlotMachine({
           })
         );
 
-        setBuffaloCharge((c) => Math.min(100, c + 12 + buffaloCount * 4));
-        const nextStampede = Math.min(100, stampedeMeter + 10 + buffaloCount * 4);
+        setBuffaloCharge((c) => Math.min(100, c + 5 + Math.min(3, buffaloCount)));
+        const nextStampede = Math.min(100, stampedeMeter + 2 + (buffaloCount >= 3 ? 1 : 0));
         setStampedeMeter(nextStampede);
 
         const triggeredWheel = wheelCount >= 3 || nextStampede >= 100;
@@ -801,7 +801,7 @@ export default function VegasSlotMachine({
       generated.forEach((col) => col.forEach((s) => { if (s === 'wheel') wheels += 1; }));
       if (wheels === 2 && !generated[4].includes('wheel')) {
         nudged = true;
-        if (Math.random() < 0.48) {
+        if (Math.random() < 0.28) {
           generated[4][1] = 'wheel';
         }
       }
@@ -813,7 +813,7 @@ export default function VegasSlotMachine({
       generated.forEach((col, c) =>
         col.forEach((sym, r) => {
           if (sym === 'wild2x') {
-            nextWildMults[`${c},${r}`] = Math.random() < 0.35 ? 3 : 2;
+            nextWildMults[`${c},${r}`] = Math.random() < 0.15 ? 3 : 2;
           }
         })
       );
@@ -940,7 +940,7 @@ export default function VegasSlotMachine({
 
     const nextLocked = { ...lockItState.lockedMap };
     let newOrbFound = false;
-    const orbChance = anteBetOn ? 0.24 : 0.17;
+    const orbChance = anteBetOn ? 0.037 : 0.036;
 
     for (let c = 0; c < 5; c += 1) {
       for (let r = 0; r < 3; r += 1) {
@@ -1225,28 +1225,28 @@ export default function VegasSlotMachine({
                 <div className="tm-slot-paytable-grid">
                   {machineId === 'bandit85' && (
                     <>
-                      <span>777×3 = <strong>50×</strong></span>
-                      <span>💎×3 = <strong>25×</strong></span>
-                      <span>BAR×3 = <strong>15×</strong></span>
-                      <span>🔔×3 = <strong>10×</strong></span>
-                      <span>🍒×3 = <strong>6×</strong></span>
+                      <span>777×3 = <strong>75×</strong></span>
+                      <span>💎×3 = <strong>36×</strong></span>
+                      <span>BAR×3 = <strong>22×</strong></span>
+                      <span>🔔×3 = <strong>15×</strong></span>
+                      <span>🍒×3 = <strong>9×</strong></span>
                       <span>2×🍒/Pair = <strong>2×</strong></span>
                     </>
                   )}
                   {machineId === 'silver_mustang' && (
                     <>
-                      <span>🕶️ Dougie×5 = <strong>350× Line</strong></span>
+                      <span>🕶️ Dougie×5 = <strong>220× Line</strong></span>
                       <span>🟡 Orb Wild = <strong>1.5× Line Boost</strong></span>
-                      <span>☕ 5 Coffees = <strong>5 Free Spins</strong></span>
-                      <span>4+ Orbs = <strong>Progressive Pot</strong></span>
+                      <span>☕ 10 Coffees = <strong>4 Free Spins</strong></span>
+                      <span>5 Orbs = <strong>Progressive Pot</strong></span>
                     </>
                   )}
                   {machineId === 'lightning_vault' && (
                     <>
                       <span>⚡ 3+ Orbs = <strong>Hold &amp; Spin</strong></span>
-                      <span>15/15 Orbs = <strong>GRAND 110×+</strong></span>
-                      <span>🔋 100% Surge = <strong>Reel 3 Wild ×2</strong></span>
-                      <span>Ante +25% = <strong>2× Orb Odds</strong></span>
+                      <span>15/15 Orbs = <strong>GRAND 85×+</strong></span>
+                      <span>🔋 100% Surge = <strong>Reel 3 Wild ×1.5</strong></span>
+                      <span>Ante +25% = <strong>Boosted Orb Odds</strong></span>
                     </>
                   )}
                   {machineId === 'buffalo_stampede' && (
@@ -1264,11 +1264,11 @@ export default function VegasSlotMachine({
             {/* MACHINE-SPECIFIC TOP METERS / JACKPOT LEDS */}
             {machineId === 'bandit85' && (
               <div className="tm-bandit-payglass" aria-label="Slot Machine Payout Multipliers">
-                <div className="tm-bandit-paychip hot"><span>777×3</span> <strong>50×</strong></div>
-                <div className="tm-bandit-paychip"><span>💎×3</span> <strong>25×</strong></div>
-                <div className="tm-bandit-paychip"><span>BAR×3</span> <strong>15×</strong></div>
-                <div className="tm-bandit-paychip"><span>🔔×3</span> <strong>10×</strong></div>
-                <div className="tm-bandit-paychip"><span>🍒×3</span> <strong>6×</strong></div>
+                <div className="tm-bandit-paychip hot"><span>777×3</span> <strong>75×</strong></div>
+                <div className="tm-bandit-paychip"><span>💎×3</span> <strong>36×</strong></div>
+                <div className="tm-bandit-paychip"><span>BAR×3</span> <strong>22×</strong></div>
+                <div className="tm-bandit-paychip"><span>🔔×3</span> <strong>15×</strong></div>
+                <div className="tm-bandit-paychip"><span>🍒×3</span> <strong>9×</strong></div>
                 <div className="tm-bandit-paychip"><span>2×🍒/Pair</span> <strong>2×</strong></div>
               </div>
             )}
@@ -1279,7 +1279,7 @@ export default function VegasSlotMachine({
                 <div className="tm-slot-meters-row">
                   <div className="tm-slot-meter-pill">
                     <span>☕ COFFEE POT</span>
-                    <strong>{coffeePot}/5 {mustangFreeSpins > 0 ? `• 🆓 ${mustangFreeSpins} SPINS!` : ''}</strong>
+                    <strong>{coffeePot}/10 {mustangFreeSpins > 0 ? `• 🆓 ${mustangFreeSpins} SPINS!` : ''}</strong>
                   </div>
                   <div className="tm-slot-meter-pill gold">
                     <span>🏆 MUSTANG POT</span>
@@ -1542,10 +1542,10 @@ export default function VegasSlotMachine({
                       armedPowerups.coffeeRush ? 'armed' : ''
                     }`}
                     disabled={isAnySpinning || mustangCharge < 40 || armedPowerups.coffeeRush}
-                    onClick={() => activateSilverPowerup('coffeeRush', 40, '☕ 2× Coffee Rush')}
-                    title="Costs 40 ⚡ Charge — Doubles wins on next spin"
+                    onClick={() => activateSilverPowerup('coffeeRush', 40, '☕ 1.5× Coffee Rush')}
+                    title="Costs 40 ⚡ Charge — 1.5× wins on next spin"
                   >
-                    ☕ 2× RUSH (40⚡)
+                    ☕ 1.5× RUSH (40⚡)
                   </button>
                   <button
                     type="button"
@@ -1582,7 +1582,7 @@ export default function VegasSlotMachine({
                       sfx.playToggle();
                       setAnteBetOn((v) => !v);
                     }}
-                    title="Increases wager by +25% for 2× Lightning Orb drop odds"
+                    title="Increases wager by +25% for +45% Lightning Orb drop odds"
                   >
                     ⚡ ANTE +25% {anteBetOn ? 'ON' : 'OFF'}
                   </button>
@@ -1753,10 +1753,10 @@ export default function VegasSlotMachine({
 
               {tokens < 5 && (
                 <div className="tm-bandit-reload-cta">
-                  <span>📸 Out of chips? Memes are the #1 Token Generator (+45 to +75 🪙)!</span>
+                  <span>📸 Out of chips? Upload memes or claim daily rewards (+12 to +20 🪙)!</span>
                   {onOpenUpload && (
                     <button type="button" className="tm-btn tm-btn-primary" onClick={onOpenUpload}>
-                      📸 Upload Meme (+45 🪙)
+                      📸 Upload Meme (+12 🪙)
                     </button>
                   )}
                 </div>

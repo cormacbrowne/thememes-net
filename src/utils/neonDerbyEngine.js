@@ -1,18 +1,18 @@
 // ==========================================
 // NEON DERBY '86 — Pure Fair-Odds & Seeded Race Simulation Engine (Phase 29.8)
 //
-// HOUSE EDGE & FAIRNESS MATH (Target 5–9%, ~7.4% theoretical):
+// HOUSE EDGE & FAIRNESS MATH (~13% house edge, ~87% theoretical RTP):
 //   - Each horse i receives a positive strength score derived from hidden base
 //     stats (speed, stamina, consistency) weighted by track condition.
 //   - Strength weights: w_i = exp((composite_i - 76) / 8.5).
 //   - Finish order [h1..h8] is drawn sequentially without replacement (Plackett-Luce)
 //     using a seeded Mulberry32 PRNG decided BEFORE animation starts.
-//   - Every market applies an ~108% overround (RTP = 1 / 1.08 = 0.9259), so:
-//       decimalOdds = max(1.15, round((1 / (p_true * 1.08)) * 20) / 20)
-//       Expected Return = p_true * decimalOdds ≈ 0.926 -> House Edge ≈ 7.4%.
+//   - Every market applies an ~115% overround (RTP = 1 / 1.15 ≈ 0.870), so:
+//       decimalOdds = max(1.15, floor((1 / (p_true * 1.15)) * 20) / 20)
+//       Expected Return = p_true * decimalOdds ≈ 0.87 -> House Edge ≈ 13%.
 // ==========================================
 
-export const HOUSE_OVERROUND = 1.10;
+export const HOUSE_OVERROUND = 1.15;
 
 export const TRACK_CONDITIONS = [
   {

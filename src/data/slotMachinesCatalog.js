@@ -32,7 +32,7 @@ export const SLOT_MACHINES = [
     accent: '#ef4444',
     marqueeSub: '★ SILVER MUSTANG CASINO • HELLOOOOO-O-O! ★',
     description:
-      'Twin Peaks S3 Dougie Jones tribute! Follow the Black Lodge Golden Orb, brew 5 Coffees for Free Spins, & trigger Pie Wilds!',
+      'Twin Peaks S3 Dougie Jones tribute! Follow the Black Lodge Golden Orb, brew 10 Coffees for Free Spins, & trigger Pie Wilds!',
     maxMult: 120,
     volatility: 'Med-High'
   },
@@ -73,13 +73,13 @@ export const SLOT_MACHINE_BY_ID = Object.fromEntries(SLOT_MACHINES.map((m) => [m
 // ==========================================
 export const SLOT_SYMBOLS = {
   // Classic Bandit '85
-  '777': { id: '777', label: 'FLAMING 777', short: '777', color: '#ef4444', mult3: 50 },
-  diamond: { id: 'diamond', label: 'NEON DIAMOND', short: 'DIAMOND', color: '#00f3ff', mult3: 25 },
-  bar: { id: 'bar', label: 'TRIPLE BAR', short: 'BAR', color: '#facc15', mult3: 15 },
-  bell: { id: 'bell', label: 'LIBERTY BELL', short: 'BELL', color: '#f59e0b', mult3: 10 },
-  cherry: { id: 'cherry', label: 'TWIN CHERRY', short: 'CHERRY', color: '#e11d48', mult3: 6 },
-  watermelon: { id: 'watermelon', label: 'MELON SLICE', short: 'MELON', color: '#16a34a', mult3: 4 },
-  lemon: { id: 'lemon', label: 'VEGAS LEMON', short: 'LEMON', color: '#eab308', mult3: 4 },
+  '777': { id: '777', label: 'FLAMING 777', short: '777', color: '#ef4444', mult3: 75 },
+  diamond: { id: 'diamond', label: 'NEON DIAMOND', short: 'DIAMOND', color: '#00f3ff', mult3: 36 },
+  bar: { id: 'bar', label: 'TRIPLE BAR', short: 'BAR', color: '#facc15', mult3: 22 },
+  bell: { id: 'bell', label: 'LIBERTY BELL', short: 'BELL', color: '#f59e0b', mult3: 15 },
+  cherry: { id: 'cherry', label: 'TWIN CHERRY', short: 'CHERRY', color: '#e11d48', mult3: 9 },
+  watermelon: { id: 'watermelon', label: 'MELON SLICE', short: 'MELON', color: '#16a34a', mult3: 6 },
+  lemon: { id: 'lemon', label: 'VEGAS LEMON', short: 'LEMON', color: '#eab308', mult3: 5 },
 
   // Silver Mustang (Dougie Jones / Twin Peaks Series 3)
   dougie: { id: 'dougie', label: 'MR. JACKPOTS', short: 'DOUGIE', color: '#facc15' },
@@ -147,7 +147,7 @@ export function evaluateBanditPayline(symIds) {
       mult: info.mult3,
       headline:
         s0 === '777'
-          ? '🚨 TRIPLE FLAMING 777 VEGAS JACKPOT! (50× BET!)'
+          ? `🚨 TRIPLE FLAMING 777 VEGAS JACKPOT! (${info.mult3}× BET!)`
           : `🎰 TRIPLE ${info.label}! (${info.mult3}× BET!)`
     };
   }
@@ -221,7 +221,7 @@ export const DOUGIE_QUOTES = {
     '☕ "...Case files." — Spin again to brew Coffee!'
   ],
   bonus: [
-    '☕🔥 5/5 BLACK COFFEE! "HELLOOOOO-O-O! FREE SPINS!"',
+    '☕🔥 15/15 BLACK COFFEE! "HELLOOOOO-O-O! FREE SPINS!"',
     '🟡⚡ GOLDEN ORB GUIDES THE SILVER MUSTANG!'
   ]
 };
@@ -263,71 +263,71 @@ export const PAYLINES_25 = [
   [2, 1, 0, 0, 1]  // 25
 ];
 
-// Weighted symbol tables per 5x3 machine (calibrated for exciting hits + fair ~92% RTP)
+// Weighted symbol tables per 5x3 machine (calibrated for ~88% Vegas RTP — house edge ~12%)
 const SILVER_MUSTANG_WEIGHTS = [
-  { id: 'cherry', w: 22 },
-  { id: 'redshoes', w: 19 },
-  { id: 'owlring', w: 16 },
+  { id: 'cherry', w: 24 },
+  { id: 'redshoes', w: 21 },
+  { id: 'owlring', w: 18 },
   { id: 'pie', w: 15 },
-  { id: 'coffee', w: 13 },
-  { id: '777', w: 8 },
-  { id: 'dougie', w: 5 },
-  { id: 'orb', w: 4 } // Wild
+  { id: 'coffee', w: 12 },
+  { id: '777', w: 7 },
+  { id: 'dougie', w: 4 },
+  { id: 'orb', w: 3.2 } // Wild
 ];
 
 // Multipliers expressed in *line-bet* units (lineBet = totalBet / activeLines)
 const SILVER_MUSTANG_PAYS = {
-  dougie: { 3: 18, 4: 75, 5: 350 },
-  orb: { 3: 22, 4: 90, 5: 420 },
-  '777': { 3: 14, 4: 45, 5: 180 },
-  coffee: { 3: 10, 4: 30, 5: 110 },
-  pie: { 3: 8, 4: 22, 5: 75 },
-  owlring: { 3: 6, 4: 16, 5: 55 },
-  redshoes: { 3: 5, 4: 12, 5: 40 },
-  cherry: { 3: 4, 4: 10, 5: 30 }
+  dougie: { 3: 14, 4: 50, 5: 220 },
+  orb: { 3: 18, 4: 65, 5: 260 },
+  '777': { 3: 10, 4: 34, 5: 130 },
+  coffee: { 3: 8, 4: 22, 5: 75 },
+  pie: { 3: 6, 4: 17, 5: 55 },
+  owlring: { 3: 5, 4: 13, 5: 40 },
+  redshoes: { 3: 4, 4: 9, 5: 28 },
+  cherry: { 3: 3, 4: 7, 5: 20 }
 };
 
 const LIGHTNING_VAULT_WEIGHTS = [
-  { id: 'lemon', w: 21 },
-  { id: 'cherry', w: 19 },
-  { id: 'bell', w: 15 },
-  { id: 'bar', w: 13 },
-  { id: 'diamond', w: 10 },
+  { id: 'lemon', w: 23 },
+  { id: 'cherry', w: 21 },
+  { id: 'bell', w: 16 },
+  { id: 'bar', w: 14 },
+  { id: 'diamond', w: 11 },
   { id: 'vault', w: 8 },
   { id: 'volt7', w: 6 },
-  { id: 'wildchip', w: 4 },
-  { id: 'bolt', w: 7 } // Trigger Hold & Spin with 3+
+  { id: 'wildchip', w: 3.4 },
+  { id: 'bolt', w: 4.8 } // Trigger Hold & Spin with 3+
 ];
 
 const LIGHTNING_VAULT_PAYS = {
-  volt7: { 3: 16, 4: 65, 5: 300 },
-  wildchip: { 3: 20, 4: 80, 5: 360 },
-  vault: { 3: 12, 4: 40, 5: 150 },
-  diamond: { 3: 9, 4: 28, 5: 95 },
-  bar: { 3: 7, 4: 20, 5: 65 },
-  bell: { 3: 5, 4: 14, 5: 45 },
-  cherry: { 3: 4, 4: 10, 5: 30 },
-  lemon: { 3: 3, 4: 9, 5: 25 }
+  volt7: { 3: 22, 4: 80, 5: 280 },
+  wildchip: { 3: 26, 4: 95, 5: 340 },
+  vault: { 3: 15, 4: 48, 5: 160 },
+  diamond: { 3: 11, 4: 34, 5: 110 },
+  bar: { 3: 8, 4: 24, 5: 75 },
+  bell: { 3: 6, 4: 16, 5: 50 },
+  cherry: { 3: 4.5, 4: 12, 5: 34 },
+  lemon: { 3: 3.5, 4: 9, 5: 26 }
 };
 
 const BUFFALO_WEIGHTS = [
-  { id: 'lemon', w: 20 },
-  { id: 'cherry', w: 19 },
-  { id: 'wolf', w: 15 },
-  { id: 'eagle', w: 13 },
+  { id: 'lemon', w: 24 },
+  { id: 'cherry', w: 22 },
+  { id: 'wolf', w: 16 },
+  { id: 'eagle', w: 14 },
   { id: 'goldcoin', w: 11 },
-  { id: 'buffalo', w: 9 },
-  { id: 'wild2x', w: 4 },
-  { id: 'wheel', w: 5 }
+  { id: 'buffalo', w: 8 },
+  { id: 'wild2x', w: 2.8 },
+  { id: 'wheel', w: 3.2 }
 ];
 
 const BUFFALO_PAYS = {
-  buffalo: { 3: 1.4, 4: 4.5, 5: 18 },
-  goldcoin: { 3: 1.0, 4: 3.2, 5: 12 },
-  eagle: { 3: 0.75, 4: 2.2, 5: 8 },
-  wolf: { 3: 0.6, 4: 1.8, 5: 6 },
-  cherry: { 3: 0.35, 4: 1.0, 5: 3.2 },
-  lemon: { 3: 0.3, 4: 0.85, 5: 2.6 }
+  buffalo: { 3: 0.038, 4: 0.135, 5: 0.55 },
+  goldcoin: { 3: 0.028, 4: 0.095, 5: 0.38 },
+  eagle: { 3: 0.020, 4: 0.068, 5: 0.25 },
+  wolf: { 3: 0.015, 4: 0.05, 5: 0.19 },
+  cherry: { 3: 0.008, 4: 0.026, 5: 0.09 },
+  lemon: { 3: 0.006, 4: 0.020, 5: 0.07 }
 };
 
 function pickWeighted(weights) {
@@ -345,13 +345,13 @@ export function generateVideoGrid(machineId, { cols = 5, rows = 3, anteOrbBoost 
   let weights = SILVER_MUSTANG_WEIGHTS;
   if (machineId === 'lightning_vault') {
     weights = LIGHTNING_VAULT_WEIGHTS.map((entry) =>
-      entry.id === 'bolt' && anteOrbBoost ? { ...entry, w: entry.w * 2.1 } : entry
+      entry.id === 'bolt' && anteOrbBoost ? { ...entry, w: entry.w * 1.22 } : entry
     );
   } else if (machineId === 'buffalo_stampede') {
     weights = BUFFALO_WEIGHTS.map((entry) => {
       if (!goldUpgrade) return entry;
-      if (entry.id === 'lemon' || entry.id === 'cherry') return { ...entry, w: 6 };
-      if (entry.id === 'buffalo' || entry.id === 'goldcoin') return { ...entry, w: entry.w + 8 };
+      if (entry.id === 'lemon' || entry.id === 'cherry') return { ...entry, w: 10 };
+      if (entry.id === 'buffalo' || entry.id === 'goldcoin') return { ...entry, w: entry.w + 4 };
       return entry;
     });
   }
@@ -486,7 +486,7 @@ export function evaluateBuffalo1024Ways(grid, wildMultipliers = {}, spinMult = 1
         wildProd *= cm.colWildBoost;
         cm.rows.forEach((r) => winningCells.add(`${cm.c},${r}`));
       });
-      const cappedWild = Math.min(9, wildProd);
+      const cappedWild = Math.min(4, wildProd);
       const symMult = basePay * ways * cappedWild;
       totalMult += symMult;
       matchedWays.push({ sym, matchLen, ways, wildProd: cappedWild, symMult });
@@ -505,11 +505,11 @@ export function evaluateBuffalo1024Ways(grid, wildMultipliers = {}, spinMult = 1
 // ==========================================
 export function rollLightningOrbValue() {
   const r = Math.random();
-  if (r < 0.03) return { type: 'minor', label: 'MINOR', mult: 30, color: '#a855f7' };
-  if (r < 0.11) return { type: 'mini', label: 'MINI', mult: 15, color: '#38bdf8' };
-  if (r < 0.25) return { type: 'cash', label: '5×', mult: 5, color: '#facc15' };
-  if (r < 0.50) return { type: 'cash', label: '3×', mult: 3, color: '#22d3ee' };
-  if (r < 0.78) return { type: 'cash', label: '2×', mult: 2, color: '#4ade80' };
+  if (r < 0.025) return { type: 'minor', label: 'MINOR', mult: 20, color: '#a855f7' };
+  if (r < 0.09) return { type: 'mini', label: 'MINI', mult: 10, color: '#38bdf8' };
+  if (r < 0.22) return { type: 'cash', label: '4×', mult: 4, color: '#facc15' };
+  if (r < 0.44) return { type: 'cash', label: '3×', mult: 3, color: '#22d3ee' };
+  if (r < 0.72) return { type: 'cash', label: '2×', mult: 2, color: '#4ade80' };
   return { type: 'cash', label: '1×', mult: 1, color: '#93c5fd' };
 }
 
@@ -517,14 +517,14 @@ export function rollLightningOrbValue() {
 // 5. CYBER BUFFALO 8-WEDGE BONUS WHEEL
 // ==========================================
 export const BUFFALO_WHEEL_SEGMENTS = [
-  { label: '5×', mult: 5, color: '#0284c7', weight: 25 },
-  { label: '8×', mult: 8, color: '#16a34a', weight: 22 },
-  { label: '12×', mult: 12, color: '#7c3aed', weight: 18 },
-  { label: '20×', mult: 20, color: '#db2777', weight: 14 },
-  { label: '35×', mult: 35, color: '#ea580c', weight: 10 },
-  { label: '50×', mult: 50, color: '#eab308', weight: 6 },
-  { label: '75×', mult: 75, color: '#dc2626', weight: 3 },
-  { label: '100× 🚨', mult: 100, color: '#facc15', weight: 2 }
+  { label: '2×', mult: 2, color: '#0284c7', weight: 30 },
+  { label: '3×', mult: 3, color: '#16a34a', weight: 24 },
+  { label: '5×', mult: 5, color: '#7c3aed', weight: 18 },
+  { label: '8×', mult: 8, color: '#db2777', weight: 13 },
+  { label: '12×', mult: 12, color: '#ea580c', weight: 8 },
+  { label: '20×', mult: 20, color: '#eab308', weight: 4 },
+  { label: '35×', mult: 35, color: '#dc2626', weight: 2 },
+  { label: '60× 🚨', mult: 60, color: '#facc15', weight: 1 }
 ];
 
 export function spinBuffaloWheelSegment() {

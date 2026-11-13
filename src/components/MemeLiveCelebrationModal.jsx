@@ -18,7 +18,7 @@ const CONFETTI_PIECES = [
 
 export default function MemeLiveCelebrationModal({
   meme,
-  rewardSummary = '+45 🪙 & +120 XP',
+  rewardSummary = '+12 🪙 & +120 XP',
   litePerfMode = false,
   onShareMeme,
   onOpenTheater,

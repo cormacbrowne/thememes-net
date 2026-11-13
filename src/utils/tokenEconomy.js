@@ -8,32 +8,33 @@
 // ==========================================
 
 export const ARCADE_ECONOMY_RULES = {
-  STARTER_WELCOME_TOKENS: 25,
-  MAX_DAILY_EARNED_TOKENS: 280, // Exact sum of category caps: 180 upload + 25 engagement + 25 quests + 50 xpConversion
+  STARTER_WELCOME_TOKENS: 20,
+  STARTER_FIRST_PLAY_BONUS: 10,
+  MAX_DAILY_EARNED_TOKENS: 65, // Exact sum of category caps: 35 upload + 10 engagement + 10 quests + 10 xpConversion
   CATEGORY_DAILY_CAPS: {
-    upload: 180,       // Primary token engine: up to ~3-4 rewarded meme uploads/remixes per day
-    engagement: 25,    // Modest daily cap for genuine upvotes, meaningful comments & reactions (1x per unique meme)
-    quests: 25,        // Daily visit streak, daily quests & 1x/day skill mini-events (Piñata / Goblin / Konami / Payphone)
-    xpConversion: 50   // XP-to-Token Reactor: up to +50 Tokens/day minted from converting earned XP (100 XP -> +5 Tokens)
+    upload: 35,        // Primary token engine: ~2-3 rewarded meme uploads/remixes per day
+    engagement: 10,    // Modest daily cap for genuine upvotes, meaningful comments & reactions (1x per unique meme)
+    quests: 10,        // Daily visit streak, daily quests & 1x/day skill mini-events (Piñata / Goblin / Konami / Payphone)
+    xpConversion: 10   // XP-to-Token Reactor: up to +10 Tokens/day minted from converting earned XP (100 XP -> +2 Tokens)
   },
   XP_CONVERSION: {
     XP_THRESHOLD: 100,       // Every 100 XP converts into Tokens
-    TOKENS_MINTED: 5,        // +5 Arcade Tokens per 100 XP milestone
-    MAX_DAILY_TOKENS: 50     // Max 10 reactor conversions per day (+50 Tokens)
+    TOKENS_MINTED: 2,        // +2 Arcade Tokens per 100 XP milestone
+    MAX_DAILY_TOKENS: 10     // Max 5 reactor conversions per day (+10 Tokens)
   },
   REWARDS: {
     // Primary Token Generators (Creating & Sharing Memes!)
-    FIRST_UPLOAD_BONUS: { tokens: 30, xp: 150 },
-    UPLOAD_MEME: { tokens: 45, xp: 120 },
-    BOUNTY_UPLOAD: { tokens: 60, xp: 200 },
-    REMIX_MEME: { tokens: 35, xp: 110 },
-    REMIX_ROYALTY: { tokens: 5, xp: 25 },
+    FIRST_UPLOAD_BONUS: { tokens: 8, xp: 150 },
+    UPLOAD_MEME: { tokens: 12, xp: 120 },
+    BOUNTY_UPLOAD: { tokens: 18, xp: 200 },
+    REMIX_MEME: { tokens: 10, xp: 110 },
+    REMIX_ROYALTY: { tokens: 2, xp: 25 },
 
-    // Genuine Meme Engagement (Strictly 1x per unique meme ID forever; low anti-farm values)
-    VOTE_UNIQUE_MEME: { tokens: 2, xp: 15 },
-    VOTE_MEME: { tokens: 2, xp: 15 },
-    COMMENT_UNIQUE_MEME: { tokens: 3, xp: 25 },
-    COMMENT_MEME: { tokens: 3, xp: 25 },
+    // Genuine Meme Engagement (Strictly 1x per unique meme ID forever; modest anti-farm values)
+    VOTE_UNIQUE_MEME: { tokens: 1, xp: 15 },
+    VOTE_MEME: { tokens: 1, xp: 15 },
+    COMMENT_UNIQUE_MEME: { tokens: 2, xp: 25 },
+    COMMENT_MEME: { tokens: 2, xp: 25 },
     REACT_UNIQUE_MEME: { tokens: 1, xp: 10 },
     REACT_MEME: { tokens: 1, xp: 10 },
 
@@ -45,27 +46,27 @@ export const ARCADE_ECONOMY_RULES = {
     ROAST_UNIQUE_MEME: { tokens: 0, xp: 20 },
     ROAST_MEME: { tokens: 0, xp: 20 },
 
-    // Daily Visits, Quests & Skill Events (Strictly 1x/day & capped at 25/day total)
-    DAILY_STREAK: { tokens: 10, xp: 100 },
-    DAILY_QUEST: { tokens: 5, xp: 120 },
-    QUEST_CLAIM: { tokens: 5, xp: 120 },
-    PINATA_WHACK_WIN: { tokens: 5, xp: 50 },
-    PAYPHONE_COIN_RETURN: { tokens: 5, xp: 50 },
-    GOBLIN_CATCH: { tokens: 5, xp: 60 },
-    KONAMI_DAILY: { tokens: 5, xp: 100 },
-    WHEEL_RARE_JACKPOT: { tokens: 8, xp: 100 }
+    // Daily Visits, Quests & Skill Events (Strictly 1x/day & capped at 10/day total)
+    DAILY_STREAK: { tokens: 4, xp: 100 },
+    DAILY_QUEST: { tokens: 2, xp: 120 },
+    QUEST_CLAIM: { tokens: 2, xp: 120 },
+    PINATA_WHACK_WIN: { tokens: 2, xp: 50 },
+    PAYPHONE_COIN_RETURN: { tokens: 2, xp: 50 },
+    GOBLIN_CATCH: { tokens: 2, xp: 60 },
+    KONAMI_DAILY: { tokens: 2, xp: 100 },
+    WHEEL_RARE_JACKPOT: { tokens: 4, xp: 100 }
   },
   ARCADE_STAKES: {
     SLOT_BETS: [5, 10, 25, 50],
     BLACKJACK_BETS: [5, 10, 25, 50],
     ROULETTE_CHIPS: [1, 5, 10, 25],
     CRUSH_ENTRY_COST: 10,
-    CRUSH_STAR_PAYOUTS: { 1: 12, 2: 18, 3: 26 },
+    CRUSH_STAR_PAYOUTS: { 1: 8, 2: 12, 3: 18 },
     CRUSH_CONTINUE_COST: 10,
     PINBALL_ENTRY_COST: 10,
     PINBALL_EXTRA_BALL_COST: 10,
-    PINBALL_PAYOUT_TIERS: { 8000: 10, 15000: 16, 25000: 24, 40000: 35 },
-    STOCK_FEE_RATE: 0.01 // 1% brokerage spread prevents rapid buy/sell arbitrage
+    PINBALL_PAYOUT_TIERS: { 8000: 8, 15000: 12, 25000: 18, 40000: 28 },
+    STOCK_FEE_RATE: 0.015 // 1.5% brokerage spread prevents rapid buy/sell arbitrage & gives house edge
   }
 };
 

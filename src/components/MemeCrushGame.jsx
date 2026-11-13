@@ -1741,7 +1741,7 @@ export default function MemeCrushGame({
                 className="tm-crush2-tool-btn upload"
                 onClick={onOpenUpload}
               >
-                📸 +45 🪙
+                📸 +12 🪙
               </button>
             )}
           </div>

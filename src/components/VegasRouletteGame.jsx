@@ -1014,7 +1014,7 @@ export default function VegasRouletteGame({
               style={{ padding: '4px 10px', fontSize: '11px' }}
               onClick={onOpenUpload}
             >
-              📸 Upload Meme (+45 🪙)
+              📸 Upload Meme (+12 🪙)
             </button>
           )}
         </div>

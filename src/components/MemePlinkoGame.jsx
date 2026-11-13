@@ -8,13 +8,13 @@ import './MemePlinkoGame.css';
 // ==========================================
 // MEME PLINKO '86 — CANVAS PEG PHYSICS (Phase 29.10)
 //
-// HOUSE EDGE & FAIRNESS MATH (Target 3–5%):
+// HOUSE EDGE & FAIRNESS MATH (~9–13% house edge):
 //   - 8-row triangular Galton peg board -> 9 buckets (k = 0..8).
 //   - With fair p = 0.5 left/right peg deflections per row, bucket weights follow
 //     exact Binomial(8, 0.5): C(8, k) / 256 = [1, 8, 28, 56, 70, 56, 28, 8, 1] / 256.
-//   - Low Risk    [5.0, 1.9, 1.2, 0.9, 0.55, 0.9, 1.2, 1.9, 5.0]:  EV = 246.9 / 256 = 96.45% RTP (3.55% house edge)
-//   - Medium Risk [11.0, 2.8, 1.3, 0.7, 0.4, 0.7, 1.3, 2.8, 11.0]: EV = 246.0 / 256 = 96.09% RTP (3.91% house edge)
-//   - High Risk   [26.0, 3.8, 1.4, 0.35, 0.2, 0.35, 1.4, 3.8, 26.0]: EV = 244.4 / 256 = 95.47% RTP (4.53% house edge)
+//   - Low Risk    [4.5, 1.8, 1.15, 0.85, 0.5, 0.85, 1.15, 1.8, 4.5]:   EV = 232.4 / 256 = 90.78% RTP (9.22% edge)
+//   - Medium Risk [10.0, 2.6, 1.25, 0.65, 0.35, 0.65, 1.25, 2.6, 10.0]: EV = 228.9 / 256 = 89.41% RTP (10.59% edge)
+//   - High Risk   [24.0, 3.6, 1.3, 0.3, 0.15, 0.3, 1.3, 3.6, 24.0]:    EV = 222.5 / 256 = 86.91% RTP (13.09% edge)
 // ==========================================
 
 const ROWS = 8;
@@ -26,20 +26,20 @@ const RISK_TABLES = {
   low: {
     id: 'low',
     label: '🟢 Low',
-    mults: [5.0, 1.9, 1.2, 0.9, 0.55, 0.9, 1.2, 1.9, 5.0],
-    edgeText: '3.55% edge • max 5×'
+    mults: [4.5, 1.8, 1.15, 0.85, 0.5, 0.85, 1.15, 1.8, 4.5],
+    edgeText: '9.22% edge • max 4.5×'
   },
   medium: {
     id: 'medium',
     label: '🟡 Med',
-    mults: [11.0, 2.8, 1.3, 0.7, 0.4, 0.7, 1.3, 2.8, 11.0],
-    edgeText: '3.91% edge • max 11×'
+    mults: [10.0, 2.6, 1.25, 0.65, 0.35, 0.65, 1.25, 2.6, 10.0],
+    edgeText: '10.59% edge • max 10×'
   },
   high: {
     id: 'high',
     label: '🔴 High',
-    mults: [26.0, 3.8, 1.4, 0.35, 0.2, 0.35, 1.4, 3.8, 26.0],
-    edgeText: '4.53% edge • max 26×'
+    mults: [24.0, 3.6, 1.3, 0.3, 0.15, 0.3, 1.3, 3.6, 24.0],
+    edgeText: '13.09% edge • max 24×'
   }
 };
 
@@ -318,7 +318,11 @@ export default function MemePlinkoGame({
         if (ball.y >= bucketY + 6 && !ball.resolved) {
           ball.resolved = true;
           bucketFlashRef.current[ball.bucketIdx] = 1;
-          const rawPayout = Math.round(ball.stake * ball.mult);
+          const exactPayout = ball.stake * ball.mult;
+          // Prevent fractional round-up exploit on 1-token bets (probabilistic floor rounding preserves exact EV)
+          const rawPayout =
+            Math.floor(exactPayout) +
+            (Math.random() < exactPayout - Math.floor(exactPayout) ? 1 : 0);
 
           let paid = rawPayout;
           if (!ball.isPractice) {

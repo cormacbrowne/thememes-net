@@ -251,6 +251,14 @@ export function createMusicEngine({ onTrack, onPlay, onPause, onNext, onPrev } =
   let dropQueued = false;
   let stingerQueued = false;
   let mixtapeItems = [];
+  let eqGains = [0, 0, 0, 0, 0]; // 5-band dB gains (-12..+12) for 60Hz, 230Hz, 910Hz, 3.6kHz, 12kHz
+  const EQ_BAND_SPECS = [
+    { freq: 60, type: 'lowshelf', q: 0.7 },
+    { freq: 230, type: 'peaking', q: 1.05 },
+    { freq: 910, type: 'peaking', q: 1.05 },
+    { freq: 3600, type: 'peaking', q: 1.05 },
+    { freq: 12000, type: 'highshelf', q: 0.7 }
+  ];
   const pendingTimeouts = new Set();
 
   const DEFAULT_MIXTAPE = [
@@ -449,11 +457,33 @@ export function createMusicEngine({ onTrack, onPlay, onPause, onNext, onPrev } =
     comp.threshold.value = -14;
     comp.ratio.value = 3;
 
+    // 5-Band Real Graphic Equalizer Filters + Real-Time AnalyserNode
+    const eqFilters = EQ_BAND_SPECS.map((spec, idx) => {
+      const f = ctx.createBiquadFilter();
+      f.type = spec.type;
+      f.frequency.value = spec.freq;
+      f.Q.value = spec.q;
+      f.gain.value = Number(eqGains[idx]) || 0;
+      return f;
+    });
+
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 128;
+    analyser.smoothingTimeConstant = 0.76;
+    analyser.minDecibels = -88;
+    analyser.maxDecibels = -12;
+
     bus.connect(filter);
     filter.connect(comp);
-    comp.connect(vol);
+    let eqTail = comp;
+    eqFilters.forEach((f) => {
+      eqTail.connect(f);
+      eqTail = f;
+    });
+    eqTail.connect(vol);
     vol.connect(duck);
     duck.connect(mute);
+    mute.connect(analyser);
     mute.connect(master);
 
     // 29.7: Route master output through MediaStreamDestination -> hidden <audio playsinline>
@@ -515,7 +545,7 @@ export function createMusicEngine({ onTrack, onPlay, onPause, onNext, onPrev } =
     feedback.connect(delay);
     echoTone.connect(bus);
 
-    nodes = { bus, filter, vol, duck, mute, master, echoIn, delay };
+    nodes = { bus, filter, vol, duck, mute, master, echoIn, delay, eqFilters, analyser };
 
     const len = ctx.sampleRate;
     noiseBuffer = ctx.createBuffer(1, len, ctx.sampleRate);
@@ -1118,6 +1148,39 @@ export function createMusicEngine({ onTrack, onPlay, onPause, onNext, onPrev } =
         stingerQueued = true;
         buildPattern();
       }
+    },
+    setEqBands(gains) {
+      if (!Array.isArray(gains)) return;
+      eqGains = EQ_BAND_SPECS.map((_, idx) =>
+        Math.max(-12, Math.min(12, Number(gains[idx] ?? eqGains[idx]) || 0))
+      );
+      if (nodes?.eqFilters && ctx) {
+        const now = ctx.currentTime;
+        nodes.eqFilters.forEach((f, idx) => {
+          f.gain.setTargetAtTime(eqGains[idx], now, 0.04);
+        });
+      }
+    },
+    setEqBand(bandIdx, dbGain) {
+      const idx = Math.floor(Number(bandIdx));
+      if (idx < 0 || idx >= EQ_BAND_SPECS.length) return;
+      const clamped = Math.max(-12, Math.min(12, Number(dbGain) || 0));
+      eqGains = eqGains.map((v, i) => (i === idx ? clamped : v));
+      if (nodes?.eqFilters?.[idx] && ctx) {
+        nodes.eqFilters[idx].gain.setTargetAtTime(clamped, ctx.currentTime, 0.04);
+      }
+    },
+    getEqBands() {
+      return [...eqGains];
+    },
+    getAnalyserData(freqOut, timeOut) {
+      if (!nodes?.analyser) return false;
+      if (freqOut && freqOut.length) nodes.analyser.getByteFrequencyData(freqOut);
+      if (timeOut && timeOut.length) nodes.analyser.getByteTimeDomainData(timeOut);
+      return true;
+    },
+    getEqFrequencyBinCount() {
+      return nodes?.analyser?.frequencyBinCount || 64;
     },
     isMediaStreamActive() {
       return usingMediaStreamOut;

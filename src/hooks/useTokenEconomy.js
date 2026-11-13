@@ -462,8 +462,7 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
           amount: verified,
           unit: '🪙',
           headline: label || `+${verified} 🪙 WON!`,
-          multiplier: stakedTokens > 0 ? verified / Math.max(1, stakedTokens) : 2,
-          tier: verified >= 30 ? 'big' : 'win'
+          multiplier: stakedTokens > 0 ? verified / Math.max(1, stakedTokens) : 2
         });
       }
       return verified;
@@ -479,14 +478,14 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
       } catch {
         return 0;
       }
-      const bonus = 50;
+      const bonus = ARCADE_ECONOMY_RULES.STARTER_FIRST_PLAY_BONUS || 10;
       tokensRef.current += bonus;
       setTokens(tokensRef.current);
       sfx.playJackpot?.();
       const x = event?.clientX || (typeof window !== 'undefined' ? window.innerWidth / 2 : 300);
       const y = event?.clientY || 120;
-      spawnParticles(x, y, '🎁 Starter Pack: +50 🪙!', '🎁');
-      setGoblinFortuneToast('🎁 Starter Pack: +50 🪙! Play any arcade cabinet or bet in the casino.');
+      spawnParticles(x, y, `🎁 Starter Pack: +${bonus} 🪙!`, '🎁');
+      setGoblinFortuneToast(`🎁 Starter Pack: +${bonus} 🪙! Play any arcade cabinet or bet in the casino.`);
       setTimeout(() => setGoblinFortuneToast(''), 5500);
       return bonus;
     },

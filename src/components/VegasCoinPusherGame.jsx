@@ -834,7 +834,7 @@ export default function VegasCoinPusherGame({
           if (cb.freePlay) {
             tokenAward = Math.max(1, c.tokens);
           } else if (c.modeTag === 'token' && c.tokens > 0) {
-            const maxAllowedSessionPaid = s.sessionTokensSpent + 6;
+            const maxAllowedSessionPaid = Math.floor(s.sessionTokensSpent * 0.92);
             const remainingRoom = Math.max(0, maxAllowedSessionPaid - s.sessionTokensPaid);
             tokenAward = Math.min(c.tokens, remainingRoom);
             s.sessionTokensPaid += tokenAward;
@@ -1599,7 +1599,7 @@ export default function VegasCoinPusherGame({
             <div className="tm-pusher-footer-links">
               {onOpenBlankStudio && (
                 <button type="button" className="tm-pusher-link-btn" onClick={onOpenBlankStudio}>
-                  📸 Upload Meme (+45 🪙)
+                  📸 Upload Meme (+12 🪙)
                 </button>
               )}
               {onSelectViewMode && (

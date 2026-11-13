@@ -298,7 +298,7 @@ export default function RewardsModal({
 
           <div className="tm-ledger-caps-grid">
             <div className="tm-ledger-cap-pill">
-              📸 Meme Uploads: <strong>{tokenLedger?.byCategory?.upload || 0}</strong>/{ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.upload} (+45–75 🪙)
+              📸 Meme Uploads: <strong>{tokenLedger?.byCategory?.upload || 0}</strong>/{ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.upload} (+{ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens}–{ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens + ARCADE_ECONOMY_RULES.REWARDS.FIRST_UPLOAD_BONUS.tokens} 🪙)
             </div>
             <div className="tm-ledger-cap-pill">
               🔥 Feed Votes/Comments: <strong>{tokenLedger?.byCategory?.engagement || 0}</strong>/{ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.engagement}

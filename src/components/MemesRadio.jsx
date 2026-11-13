@@ -10,13 +10,15 @@ import {
   toggleFavoriteCurrentTrack,
   isTrackFavorited,
   setRadioSleepTimer,
-  setRadioAllowContextOverride
+  setRadioAllowContextOverride,
+  openFullscreenEq
 } from '../utils/radioBus';
 import {
   loadUnlockedCosmetics,
   loadEquippedCassetteSkin,
   isCosmeticUnlocked
 } from '../data/cosmetics';
+import { GraphicEqPanel } from './MusicEqualizer';
 import './MemesRadio.css';
 
 /**
@@ -153,6 +155,18 @@ export function RadioToggleButton({ className = 'tm-btn', onOpenShop }) {
                 title="Next track (N)"
               >
                 ⏭
+              </button>
+              <button
+                type="button"
+                className="tm-radio-pop-icon-btn"
+                onClick={() => {
+                  setOpen(false);
+                  openFullscreenEq({ autoStart: true });
+                }}
+                aria-label="Open Fullscreen Music Equalizer"
+                title="Open Fullscreen Equalizer"
+              >
+                🎛️
               </button>
             </div>
           </div>
@@ -336,6 +350,15 @@ function MobileNowPlayingInner({ radio, isGameLayout }) {
       <button
         type="button"
         className="tm-now-playing-btn"
+        onClick={() => openFullscreenEq({ autoStart: true })}
+        aria-label="Open Fullscreen Music Equalizer"
+        title="Fullscreen Equalizer"
+      >
+        🎛️
+      </button>
+      <button
+        type="button"
+        className="tm-now-playing-btn"
         onClick={skipRadioTrack}
         aria-label="Next track"
         title="Skip track"
@@ -504,6 +527,9 @@ export default function MemesRadio({ onOpenShop }) {
           );
         })}
       </div>
+
+      {/* Live 5-Band Graphic Equaliser & Full-Screen Music Equalizer Launcher */}
+      <GraphicEqPanel />
     </section>
   );
 }

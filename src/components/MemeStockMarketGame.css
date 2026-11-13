@@ -547,3 +547,19 @@
     touch-action: manipulation;
   }
 }
+
+/* Macro Crash & Bull Run CRT Border Flash */
+.tm-stocks-stage.macro-crash .tm-stocks-terminal {
+  border-color: #ef4444;
+  box-shadow: 0 0 40px rgba(239, 68, 68, 0.45), inset 0 0 28px rgba(239, 68, 68, 0.16);
+}
+
+.tm-stocks-stage.macro-bull .tm-stocks-terminal {
+  border-color: #4ade80;
+  box-shadow: 0 0 38px rgba(74, 222, 128, 0.4), inset 0 0 24px rgba(74, 222, 128, 0.14);
+}
+
+.tm-stocks-stage.macro-bear .tm-stocks-terminal {
+  border-color: #fb7185;
+  box-shadow: 0 0 32px rgba(251, 113, 133, 0.35);
+}

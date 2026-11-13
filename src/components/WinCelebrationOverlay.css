@@ -954,7 +954,158 @@
   .tm-win-overlay.is-rare .tm-win-card,
   .tm-win-overlay.is-rare .tm-win-card::after,
   .tm-win-rare-ribbon,
-  .tm-win-overlay.is-rare .tm-win-amount-pill {
+  .tm-win-overlay.is-rare .tm-win-amount-pill,
+  .tm-win-sunburst,
+  .tm-win-edge-aura {
     animation: none !important;
   }
+}
+
+/* ==========================================================================
+   5-TIER ESCALATING GRAPHICAL REWARD SCALING (.tier-micro .. .tier-legendary)
+   ========================================================================== */
+
+/* Tier 1 (Micro: < 15 tokens): crisp, compact badge */
+.tm-win-overlay.tier-micro .tm-win-card {
+  max-width: min(330px, 86vw);
+  padding: 9px 16px;
+  border-radius: 14px;
+  border-width: 2px;
+  animation-duration: 1.65s;
+}
+
+.tm-win-overlay.tier-micro .tm-win-headline {
+  font-size: 0.96rem;
+}
+
+.tm-win-overlay.tier-micro .tm-win-amount-pill {
+  font-size: 1.15rem;
+  padding: 4px 12px;
+}
+
+/* Tier 3 (Big: 35–99 tokens or 5x+) */
+.tm-win-overlay.tier-big .tm-win-card {
+  padding: 16px 26px;
+  border-width: 3px;
+  box-shadow:
+    0 20px 54px rgba(0, 0, 0, 0.9),
+    0 0 44px rgba(250, 204, 21, 0.72),
+    inset 0 0 24px rgba(250, 204, 21, 0.22);
+  animation-duration: 2.75s;
+}
+
+/* Tier 4 (Mega: 100–319 tokens or 12x+) */
+.tm-win-overlay.tier-mega .tm-win-card {
+  max-width: min(465px, 92vw);
+  padding: 18px 28px;
+  border-width: 3px;
+  border-color: #f97316;
+  background: radial-gradient(circle at 50% 0%, rgba(88, 28, 135, 0.95), rgba(2, 6, 23, 0.98));
+  box-shadow:
+    0 24px 62px rgba(0, 0, 0, 0.94),
+    0 0 58px rgba(249, 115, 22, 0.78),
+    0 0 90px rgba(236, 72, 153, 0.48),
+    inset 0 0 28px rgba(250, 204, 21, 0.28);
+  animation-duration: 3.5s;
+}
+
+.tm-win-overlay.tier-mega .tm-win-amount-pill {
+  font-size: 1.65rem;
+  transform: scale(1.04);
+}
+
+/* Tier 5 (Legendary: 320+ tokens or 30x+ Jackpot) */
+.tm-win-overlay.tier-legendary .tm-win-card {
+  max-width: min(500px, 94vw);
+  padding: 20px 30px;
+  border-width: 4px;
+  border-color: #facc15;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(250, 204, 21, 0.25), transparent 62%),
+    linear-gradient(155deg, rgba(15, 23, 42, 0.98), rgba(76, 29, 149, 0.95));
+  box-shadow:
+    0 26px 70px rgba(0, 0, 0, 0.96),
+    0 0 65px rgba(250, 204, 21, 0.88),
+    0 0 110px rgba(0, 243, 255, 0.55),
+    inset 0 0 34px rgba(250, 204, 21, 0.35);
+  animation-duration: 4.3s;
+}
+
+.tm-win-overlay.tier-legendary .tm-win-headline {
+  font-size: 1.32rem;
+  text-shadow: 0 0 16px rgba(250, 204, 21, 0.85);
+}
+
+.tm-win-overlay.tier-legendary .tm-win-amount-pill {
+  font-size: 1.88rem;
+  padding: 8px 20px;
+  box-shadow: 0 0 26px rgba(250, 204, 21, 0.72);
+}
+
+.tm-win-mult-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #ec4899, #f97316);
+  color: #fff;
+  vertical-align: middle;
+  box-shadow: 0 0 12px rgba(236, 72, 153, 0.7);
+}
+
+.tm-win-edge-aura {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 70px rgba(250, 204, 21, 0.32), inset 0 0 140px rgba(236, 72, 153, 0.22);
+  animation: tmWinEdgePulse 1.1s ease-in-out infinite alternate;
+}
+
+.tm-win-overlay.tier-legendary .tm-win-edge-aura {
+  box-shadow:
+    inset 0 0 95px rgba(250, 204, 21, 0.5),
+    inset 0 0 170px rgba(0, 243, 255, 0.35);
+}
+
+@keyframes tmWinEdgePulse {
+  from { opacity: 0.55; }
+  to { opacity: 1; }
+}
+
+.tm-win-sunburst {
+  position: absolute;
+  top: max(120px, 19vh);
+  left: 50%;
+  width: 560px;
+  height: 560px;
+  margin: -280px 0 0 -280px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(250, 204, 21, 0.22) 0deg 10deg,
+    transparent 10deg 22deg
+  );
+  -webkit-mask-image: radial-gradient(circle, rgba(0, 0, 0, 0.95) 0%, transparent 66%);
+  mask-image: radial-gradient(circle, rgba(0, 0, 0, 0.95) 0%, transparent 66%);
+  animation: tmWinSunburstSpin 9s linear infinite;
+  pointer-events: none;
+}
+
+.tm-win-overlay.tier-legendary .tm-win-sunburst {
+  width: 720px;
+  height: 720px;
+  margin: -360px 0 0 -360px;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(250, 204, 21, 0.32) 0deg 9deg,
+    rgba(0, 243, 255, 0.14) 9deg 14deg,
+    transparent 14deg 24deg
+  );
+}
+
+@keyframes tmWinSunburstSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

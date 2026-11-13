@@ -2135,7 +2135,7 @@ export default function VegasPinballGame({
                         className="tm-btn"
                         onClick={onOpenUpload}
                       >
-                        📸 Upload Meme (+45 🪙)
+                        📸 Upload Meme (+12 🪙)
                       </button>
                     )}
                   </div>

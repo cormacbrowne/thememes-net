@@ -107,7 +107,7 @@ export default function DailyCaptionBattleModal({
             </h3>
             <p style={{ margin: '0 0 12px', fontSize: '12.5px', color: '#cbd5e1' }}>
               Everyone captions the exact same blank format today. Highest-voted community entry wins{' '}
-              <strong>👑 Caption King</strong> tomorrow + <strong>+60 🪙 &amp; +200 XP</strong> on submit!
+              <strong>👑 Caption King</strong> tomorrow + <strong>+18 🪙 &amp; +200 XP</strong> on submit!
             </p>
             <button
               type="button"
@@ -117,7 +117,7 @@ export default function DailyCaptionBattleModal({
                 if (onEnterBattle) onEnterBattle(battle);
               }}
             >
-              ✏️ Caption This Template (+60 🪙)
+              ✏️ Caption This Template (+18 🪙)
             </button>
           </div>
         </div>

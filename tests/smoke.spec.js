@@ -539,4 +539,98 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
 
     expect(pageErrors).toEqual([]);
   });
+
+  test('Graphic Equalizer & Fullscreen Music Equalizer Mode work across viewports without overflow', async ({
+    page
+  }) => {
+    const pageErrors = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+    // Open station/EQ picker popover via the top chevron button
+    await page.locator('.tm-radio-chevron-btn').first().click();
+    await expect(page.locator('.tm-radio-popover')).toBeVisible();
+
+    // Launch Full-Screen Music Equalizer Mode
+    await page.getByRole('button', { name: /Open Fullscreen Music Equalizer/i }).first().click();
+    const overlay = page.locator('.tm-eq-fs-overlay');
+    await expect(overlay).toBeVisible();
+    await expect(overlay.locator('canvas.tm-eq-fs-canvas')).toBeVisible();
+    await expect(overlay.locator('.tm-eq-panel')).toBeVisible();
+
+    // Switch visualizer modes & apply Bass Boost preset + adjust a band slider
+    await overlay.getByRole('button', { name: /Mirror/i }).click();
+    await overlay.getByRole('button', { name: /Cyber Ring/i }).click();
+    await overlay.getByRole('button', { name: /CRT Scope/i }).click();
+    await overlay.locator('.tm-eq-preset-btn', { hasText: 'Bass+' }).click();
+    const firstBand = overlay.locator('.tm-eq-vertical-range').first();
+    await firstBand.fill('6');
+
+    let overflowPx = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth
+    );
+    expect(overflowPx).toBeLessThanOrEqual(2);
+
+    // Verify desktop layout of Full-Screen Equalizer
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await overlay.getByRole('button', { name: /Spectrum/i }).click();
+    overflowPx = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth
+    );
+    expect(overflowPx).toBeLessThanOrEqual(2);
+
+    // Exit Full-Screen Equalizer cleanly
+    await overlay.getByRole('button', { name: /Exit Full-Screen Music Equalizer/i }).click();
+    await expect(overlay).toBeHidden();
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('MEMEDAQ Stock Market displays macro regime, Sentiment gauge, and trading without overflow', async ({
+    page
+  }) => {
+    const pageErrors = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/games/meme-stock-market', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.tm-stocks-regime-pill')).toBeVisible();
+    await expect(page.getByText(/Sentiment \d+\/100/i)).toBeVisible();
+
+    const buyBtn = page.locator('.tm-stock-trade-btn.buy').first();
+    await expect(buyBtn).toBeVisible();
+    await buyBtn.click();
+
+    const overflowPx = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth
+    );
+    expect(overflowPx).toBeLessThanOrEqual(2);
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('AI Assistant exposes clear iPhone Speech Engine modes and Test Voice without errors', async ({
+    page
+  }) => {
+    const pageErrors = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/games', { waitUntil: 'domcontentloaded' });
+
+    await page.getByRole('button', { name: /🤖 AI/i }).click();
+    const panel = page.locator('.tm-ai-copilot-panel');
+    await expect(panel).toBeVisible();
+
+    const engineSelect = panel.locator('select[aria-label="Speech engine mode"]');
+    await expect(engineSelect).toBeVisible();
+    await engineSelect.selectOption('synth');
+    await panel.getByRole('button', { name: /🔊 Test/i }).click();
+
+    const overflowPx = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth
+    );
+    expect(overflowPx).toBeLessThanOrEqual(2);
+    expect(pageErrors).toEqual([]);
+  });
 });

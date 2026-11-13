@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { sfx } from '../utils/soundEngine';
+import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
 import { getCategoryActivity, getRecentMemeHeadlines } from '../utils/memeFeedBridge';
 import { triggerWinCelebration } from '../utils/winCelebration';
 import './MemeStockMarketGame.css';
@@ -146,17 +147,21 @@ const MARKET_NEWS_EVENTS = [
 ];
 
 const MARKET_REGIMES = [
-  { id: 'normal', label: '⚡ CYBER FLOOR ACTIVE', drift: 0, color: '#38bdf8' },
-  { id: 'bull', label: '🐂 WALL ST BULL RUN', drift: 0.014, color: '#4ade80' },
-  { id: 'squeeze', label: '🚀 SHORT SQUEEZE ALERT', drift: 0.022, color: '#facc15' },
-  { id: 'whale', label: '🐋 WHALE ACCUMULATION', drift: 0.01, color: '#f472b6' },
-  { id: 'chop', label: '🌪️ HIGH VOLATILITY CHOP', drift: -0.004, color: '#fb923c' }
+  { id: 'normal', label: '⚡ CYBER FLOOR ACTIVE', kind: 'neutral', drift: 0, volMult: 1.0, color: '#38bdf8' },
+  { id: 'bull', label: '🐂 WALL ST BULL RUN', kind: 'bull', drift: 0.022, volMult: 1.15, color: '#4ade80' },
+  { id: 'euphoria', label: '🚀 PARABOLIC FOMO RALLY', kind: 'bull', drift: 0.036, volMult: 1.4, color: '#facc15' },
+  { id: 'squeeze', label: '🔥 SHORT SQUEEZE FRENZY', kind: 'bull', drift: 0.028, volMult: 1.35, color: '#a855f7' },
+  { id: 'bear', label: '🐻 GRINDING BEAR MARKET', kind: 'bear', drift: -0.026, volMult: 1.2, color: '#fb7185' },
+  { id: 'crash', label: '🩸 BLACK MONDAY FLASH CRASH', kind: 'crash', drift: -0.056, volMult: 1.75, color: '#ef4444' },
+  { id: 'rugpull', label: '📉 MEME COIN WINTER', kind: 'bear', drift: -0.035, volMult: 1.45, color: '#f97316' },
+  { id: 'bounce', label: '⚡ DEAD-CAT BOUNCE', kind: 'bull', drift: 0.016, volMult: 1.55, color: '#22d3ee' },
+  { id: 'chop', label: '🌪️ HIGH VOLATILITY WHIPSAW', kind: 'neutral', drift: -0.01, volMult: 1.5, color: '#fb923c' }
 ];
 
 const PORTFOLIO_STORAGE_KEY = 'tm_stock_portfolio_v1';
 const MARKET_STATE_KEY = 'tm_stock_prices_v1';
 const HISTORY_LEN = 30;
-const FEE_RATE = 0.01; // 1% commission spread
+const FEE_RATE = ARCADE_ECONOMY_RULES?.ARCADE_STAKES?.STOCK_FEE_RATE || 0.015; // 1.5% brokerage spread
 
 function buildInitialMarketState() {
   try {
@@ -216,19 +221,21 @@ export default function MemeStockMarketGame({
   const [selectedTicker, setSelectedTicker] = useState('DOGE');
   const [chartMode, setChartMode] = useState('candles'); // 'candles' | 'wave'
   const [marketRegime, setMarketRegime] = useState(MARKET_REGIMES[0]);
+  const [macroAlert, setMacroAlert] = useState(null); // { kind: 'crash' | 'bull', headline: string }
+  const [fearGreedIdx, setFearGreedIdx] = useState(52);
   const [newsFlash, setNewsFlash] = useState(
-    "📟 MEMEDAQ '86 FLOOR OPEN: Buy meme dips with 🪙 Tokens & sell rallies for profit!"
+    "📟 MEMEDAQ '86 FLOOR OPEN: Ride bull runs, dodge flash crashes & sell rallies!"
   );
   const [tradeFeedback, setTradeFeedback] = useState('');
   const [hotlineCooldown, setHotlineCooldown] = useState(0);
   const [hypeCooldown, setHypeCooldown] = useState(0);
   const [autoTakeProfit, setAutoTakeProfit] = useState(false);
-  const [dividendsEarned, setDividendsEarned] = useState(0);
   const [paused, setPaused] = useState(false);
 
   const tickCountRef = useRef(0);
   const portfolioRef = useRef(portfolio);
   const regimeRef = useRef(marketRegime);
+  const alertTimerRef = useRef(null);
 
   useEffect(() => {
     portfolioRef.current = portfolio;
@@ -265,47 +272,76 @@ export default function MemeStockMarketGame({
       if (typeof document !== 'undefined' && document.hidden) return;
       tickCountRef.current += 1;
 
-      // Rotate Market Regime every 9 ticks
-      if (tickCountRef.current % 9 === 0) {
-        const nextRegime = MARKET_REGIMES[Math.floor(Math.random() * MARKET_REGIMES.length)];
+      // Cycle Macro Market Regime every 8 ticks (Bull Runs, Euphoria, Bear Markets & Flash Crashes!)
+      let marketShockDelta = 0;
+      if (tickCountRef.current % 8 === 0) {
+        const currId = regimeRef.current?.id || 'normal';
+        // Contextual regime state machine: euphoria risks crash; crash can dead-cat bounce or enter bear/bull
+        let pool = MARKET_REGIMES.filter((r) => r.id !== currId);
+        if (currId === 'euphoria') {
+          pool = MARKET_REGIMES.filter((r) => ['crash', 'bear', 'rugpull', 'chop'].includes(r.id));
+        } else if (currId === 'crash') {
+          pool = MARKET_REGIMES.filter((r) => ['bounce', 'bear', 'bull'].includes(r.id));
+        }
+        const nextRegime = pool[Math.floor(Math.random() * pool.length)] || MARKET_REGIMES[0];
         setMarketRegime(nextRegime);
+
+        if (nextRegime.id === 'crash') {
+          marketShockDelta = -(0.13 + Math.random() * 0.14); // -13% to -27% market-wide crash!
+          const crashMsg = '🚨 CIRCUIT BREAKER ALERT: BLACK MONDAY FLASH CRASH HITS MEMEDAQ!';
+          setNewsFlash(crashMsg);
+          setMacroAlert({ kind: 'crash', headline: '🩸 MARKET CRASH (-15% TO -27% ACROSS FLOOR!)' });
+          sfx.playDamageGong?.();
+          if (alertTimerRef.current) clearTimeout(alertTimerRef.current);
+          alertTimerRef.current = setTimeout(() => setMacroAlert(null), 5000);
+        } else if (nextRegime.id === 'euphoria' || nextRegime.id === 'bull') {
+          marketShockDelta = 0.08 + Math.random() * 0.10; // +8% to +18% bull breakout!
+          const bullMsg =
+            nextRegime.id === 'euphoria'
+              ? '🚀 PARABOLIC FOMO SURGE! MEME LIQUIDITY FLOODING IN!'
+              : '🐂 BULL RUN BREAKOUT! INSTITUTIONAL DOGE & STONK BUYING!';
+          setNewsFlash(bullMsg);
+          setMacroAlert({ kind: 'bull', headline: bullMsg });
+          sfx.playCashRegister?.();
+          if (alertTimerRef.current) clearTimeout(alertTimerRef.current);
+          alertTimerRef.current = setTimeout(() => setMacroAlert(null), 4200);
+        } else if (nextRegime.id === 'bear' || nextRegime.id === 'rugpull') {
+          marketShockDelta = -(0.05 + Math.random() * 0.07);
+          setNewsFlash(`🐻 MACRO SHIFT: ${nextRegime.label} — Bears take control of the trading floor!`);
+          setMacroAlert({ kind: 'bear', headline: nextRegime.label });
+          if (alertTimerRef.current) clearTimeout(alertTimerRef.current);
+          alertTimerRef.current = setTimeout(() => setMacroAlert(null), 3500);
+        }
+      }
+
+      // Periodic spontaneous flash crash / short squeeze shock even mid-regime
+      if (marketShockDelta === 0 && tickCountRef.current % 17 === 0) {
+        if (Math.random() < 0.55) {
+          marketShockDelta = -(0.10 + Math.random() * 0.14);
+          setNewsFlash('💥 WHALE LIQUIDATION CASCADE! Margin calls trigger sudden dip!');
+          setMacroAlert({ kind: 'crash', headline: '💥 MARGIN CALL FLASH CRASH!' });
+          sfx.playDamageGong?.();
+          if (alertTimerRef.current) clearTimeout(alertTimerRef.current);
+          alertTimerRef.current = setTimeout(() => setMacroAlert(null), 4500);
+        } else {
+          marketShockDelta = 0.10 + Math.random() * 0.12;
+          setNewsFlash('⚡ FED MEME-PRINTER ACTIVATED! Overnight short squeeze across floor!');
+          setMacroAlert({ kind: 'bull', headline: '🚀 SHORT SQUEEZE RALLY!' });
+          sfx.playCashRegister?.();
+          if (alertTimerRef.current) clearTimeout(alertTimerRef.current);
+          alertTimerRef.current = setTimeout(() => setMacroAlert(null), 4200);
+        }
       }
 
       // Trigger a funny breaking news flash every 5 ticks
       let activeEvent = null;
-      if (tickCountRef.current % 5 === 0) {
+      if (marketShockDelta === 0 && tickCountRef.current % 5 === 0) {
         const memeHeadlines = getRecentMemeHeadlines(memes);
-        if (memeHeadlines.length > 0 && Math.random() < 0.4) {
+        if (memeHeadlines.length > 0 && Math.random() < 0.35) {
           setNewsFlash(memeHeadlines[Math.floor(Math.random() * memeHeadlines.length)]);
         } else {
           activeEvent = MARKET_NEWS_EVENTS[Math.floor(Math.random() * MARKET_NEWS_EVENTS.length)];
           setNewsFlash(activeEvent.headline);
-        }
-      }
-
-      // Automatic Shareholder Dividend Drop every 12 ticks when holding shares!
-      if (tickCountRef.current % 12 === 0) {
-        const currentPort = portfolioRef.current || {};
-        let totalHeldShares = 0;
-        let totalInvested = 0;
-        Object.values(currentPort).forEach((pos) => {
-          if (pos && pos.shares > 0) {
-            totalHeldShares += pos.shares;
-            totalInvested += pos.totalCostTokens || 0;
-          }
-        });
-        if (totalHeldShares > 0 && totalInvested > 0 && onPayoutTokens) {
-          const divBonus = Math.min(4, Math.max(1, Math.floor(totalHeldShares / 3)));
-          onPayoutTokens(divBonus, {
-            stakedTokens: totalInvested,
-            xp: 10,
-            label: `💰 SHAREHOLDER DIVIDEND: +${divBonus} 🪙!`,
-            emoji: '💰'
-          });
-          setDividendsEarned((d) => d + divBonus);
-          setTradeFeedback(
-            `💰 SHAREHOLDER DIVIDEND PAID: +${divBonus} 🪙 credited for holding ${totalHeldShares} shares!`
-          );
         }
       }
 
@@ -326,24 +362,29 @@ export default function MemeStockMarketGame({
 
       setMarket((prev) => {
         const next = {};
-        const regimeDrift = regimeRef.current?.drift || 0;
+        const regimeObj = regimeRef.current || MARKET_REGIMES[0];
+        const regimeDrift = regimeObj.drift || 0;
+        const volMult = regimeObj.volMult || 1;
+        let avgDeltaSum = 0;
+
         MEME_COMPANIES.forEach((c) => {
           const curr = prev[c.ticker];
           const oldPrice = curr.price;
 
           // Mean reversion toward basePrice so stocks never stay permanently dead or infinite
-          const meanPull = ((c.basePrice - oldPrice) / c.basePrice) * 0.035;
-          const randomMove = (Math.random() - 0.492) * 2 * c.volatility;
+          const meanPull = ((c.basePrice - oldPrice) / c.basePrice) * 0.032;
+          const randomMove = (Math.random() - 0.503) * 2 * c.volatility * volMult;
           const newsMove = activeEvent && activeEvent.ticker === c.ticker ? activeEvent.impact : 0;
+          const macroMove = marketShockDelta !== 0 ? marketShockDelta * (0.75 + Math.random() * 0.5) : 0;
           const rumorMove = curr.rumorBias || 0;
           const cat = sectorMap[c.sector] || 'dank';
           const catBoost =
             catActivity.all > 0 && catActivity[cat]
-              ? Math.min(0.012, (catActivity[cat] / catActivity.all) * 0.015)
+              ? Math.min(0.01, (catActivity[cat] / catActivity.all) * 0.012)
               : 0;
 
           const pctChange =
-            meanPull + randomMove + newsMove + rumorMove + catBoost + regimeDrift * 0.35;
+            meanPull + randomMove + newsMove + macroMove + rumorMove + catBoost + regimeDrift * 0.55;
           const rawNext = oldPrice * (1 + pctChange);
           const clamped = Math.max(
             c.minPrice,
@@ -353,6 +394,7 @@ export default function MemeStockMarketGame({
           const nextHistory = [...curr.history.slice(-(HISTORY_LEN - 1)), clamped];
           const deltaPct =
             oldPrice > 0 ? Number((((clamped - oldPrice) / oldPrice) * 100).toFixed(1)) : 0;
+          avgDeltaSum += deltaPct;
 
           next[c.ticker] = {
             price: clamped,
@@ -361,6 +403,22 @@ export default function MemeStockMarketGame({
             lastDeltaPct: deltaPct,
             rumorBias: curr.rumorBias ? Number((curr.rumorBias * 0.5).toFixed(4)) : 0
           };
+        });
+
+        const avgTickPct = avgDeltaSum / MEME_COMPANIES.length;
+        setFearGreedIdx((fg) => {
+          const regimeTarget =
+            regimeObj.kind === 'crash'
+              ? 12
+              : regimeObj.kind === 'bear'
+              ? 28
+              : regimeObj.id === 'euphoria'
+              ? 88
+              : regimeObj.kind === 'bull'
+              ? 74
+              : 50;
+          const nextFg = fg * 0.72 + (regimeTarget + avgTickPct * 2.2) * 0.28;
+          return Math.max(4, Math.min(96, Math.round(nextFg)));
         });
 
         try {
@@ -372,8 +430,11 @@ export default function MemeStockMarketGame({
       });
     }, 1850);
 
-    return () => clearInterval(interval);
-  }, [paused, memes, onPayoutTokens]);
+    return () => {
+      clearInterval(interval);
+      if (alertTimerRef.current) clearTimeout(alertTimerRef.current);
+    };
+  }, [paused, memes]);
 
   const activeCompany =
     MEME_COMPANIES.find((c) => c.ticker === selectedTicker) || MEME_COMPANIES[0];
@@ -441,7 +502,7 @@ export default function MemeStockMarketGame({
     if (tokens < costTokens) {
       sfx.playClownHonk();
       setTradeFeedback(
-        `⚠️ Need ${costTokens} 🪙 to buy ${cleanQty} $${activeCompany.ticker}! Upload a meme (+45 🪙) to raise capital!`
+        `⚠️ Need ${costTokens} 🪙 to buy ${cleanQty} $${activeCompany.ticker}! Upload a meme (+12 🪙) to raise capital!`
       );
       return;
     }
@@ -698,7 +759,10 @@ export default function MemeStockMarketGame({
   const activePosPnl = activePosLiquidation - activeHolding.totalCostTokens;
 
   return (
-    <section className="tm-stocks-stage" aria-label="MEMEDAQ 86 Meme Stock Market Simulator">
+    <section
+      className={`tm-stocks-stage ${macroAlert ? `macro-${macroAlert.kind}` : ''} regime-${marketRegime.id}`}
+      aria-label="MEMEDAQ 86 Meme Stock Market Simulator"
+    >
       <div className="tm-stocks-terminal">
         {/* TOP PORTFOLIO & WALL STREET HUD */}
         <header className="tm-stocks-header">
@@ -712,6 +776,7 @@ export default function MemeStockMarketGame({
               <div className="tm-stocks-eyebrow" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <span>Wall St. trading desk • 10 meme tickers</span>
                 <span
+                  className={`tm-stocks-regime-pill regime-${marketRegime.kind || 'neutral'}`}
                   style={{
                     color: marketRegime.color,
                     border: `1px solid ${marketRegime.color}`,
@@ -723,6 +788,16 @@ export default function MemeStockMarketGame({
                   }}
                 >
                   {marketRegime.label}
+                </span>
+                <span
+                  className="tm-stocks-sentiment-pill"
+                  style={{
+                    color: fearGreedIdx <= 30 ? '#fb7185' : fearGreedIdx >= 68 ? '#4ade80' : '#facc15',
+                    fontSize: '10px',
+                    fontWeight: 800
+                  }}
+                >
+                  {fearGreedIdx <= 25 ? '😱' : fearGreedIdx >= 70 ? '🤑' : '📊'} Sentiment {fearGreedIdx}/100
                 </span>
               </div>
               <h2 className="tm-stocks-title">MEMEDAQ &apos;86 STOCK EXCHANGE</h2>
@@ -747,7 +822,7 @@ export default function MemeStockMarketGame({
               </strong>
             </div>
             <div className="tm-stocks-kpi">
-              <span>OPEN P&amp;L {dividendsEarned > 0 ? `(💰+${dividendsEarned})` : ''}</span>
+              <span>OPEN P&amp;L</span>
               <strong
                 style={{
                   color:
@@ -1161,7 +1236,7 @@ export default function MemeStockMarketGame({
 
             {tokens < Math.ceil(activeQuote.price * 1.02) && activeHolding.shares === 0 && (
               <div className="tm-stocks-broke-bar">
-                <span>📸 Need trading capital? Upload a meme (+45 to +75 🪙) to fund your portfolio!</span>
+                <span>📸 Need trading capital? Upload a meme (+12 to +20 🪙) to fund your portfolio!</span>
                 {onOpenUpload && (
                   <button type="button" className="tm-btn tm-btn-primary" onClick={onOpenUpload}>
                     📸 Upload Meme

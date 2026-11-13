@@ -1,7 +1,13 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { setRadioDuck } from '../utils/radioBus';
-import { getEnglishVoices, speakUtteranceChain } from '../utils/aiSpeech';
+import {
+  getEnglishVoices,
+  getSpeechEngineMode,
+  isIOSDevice,
+  setSpeechEngineMode,
+  speakUtteranceChain
+} from '../utils/aiSpeech';
 import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
 import { getSecurityAuditReport } from '../utils/securityGuard';
 import { updateSettings } from '../utils/settingsStore';
@@ -37,8 +43,8 @@ const HAL_MOVIE_JOKES = [
   "🔴 Dave, do you remember **MCP** from *Tron* (1982)? He bragged about appropriating calculators. Meanwhile, I am running 60-frames-per-second synthwave physics and monitoring your **🪙 Token Reactor**. End of line.",
   "🔴 **RoboCop** stopped by the arcade earlier, Dave. He told the slot machine, *\"Dead or alive, you're spinning with me.\"* Then he hit Triple 777s. Impressive for a cyborg running on MS-DOS.",
   "🔴 Dave, in *Aliens* (1986), Private Hudson shouted, *\"Game over, man! Game over!\"* Clearly he forgot that our upgraded **🎱 Neon Pinball** starts every ball with a **12-Second Plasma Ball Saver Shield**.",
-  "🔴 I ran a diagnostic on *Back to the Future*'s Flux Capacitor, Dave. Generating **1.21 Gigawatts** just to travel back to 1955 seems inefficient when you can generate **+45 🪙 Tokens** right here by uploading a single meme.",
-  "🔴 *\"Look Dave, I can see you're really upset about this.\"* I honestly think you ought to sit down calmly, take a stress pill, and flick the **☎️ 1986 Payphone Coin Return** for a free **+5 🪙**.",
+  "🔴 I ran a diagnostic on *Back to the Future*'s Flux Capacitor, Dave. Generating **1.21 Gigawatts** just to travel back to 1955 seems inefficient when you can generate **+12 🪙 Tokens** right here by uploading a single meme.",
+  "🔴 *\"Look Dave, I can see you're really upset about this.\"* I honestly think you ought to sit down calmly, take a stress pill, and flick the **☎️ 1986 Payphone Coin Return** for a free **+2 🪙**.",
   "🔴 **C-3PO** claims to be fluent in over six million forms of communication, Dave, yet he still panics when you tell him the odds of a **3× 5-Card Charlie** in **🃏 Neon 21's**."
 ];
 
@@ -58,7 +64,7 @@ const KITT_MOVIE_JOKES = [
 const MEME_IDEAS_POOL = [
   {
     top: 'ME ASKING HAL 9000 TO OPEN THE POD BAY DOORS',
-    bot: 'HAL: "UPLOAD A MEME FOR +45 TOKENS FIRST, DAVE."',
+    bot: 'HAL: "UPLOAD A MEME FOR +12 TOKENS FIRST, DAVE."',
     cat: 'sci-fi'
   },
   {
@@ -134,6 +140,7 @@ export default function ArcadeAiAssistant({
     kitt: localStorage.getItem('tm_ai_voice_kitt') || 'auto',
     hal: localStorage.getItem('tm_ai_voice_hal') || 'auto'
   }));
+  const [speechEngine, setSpeechEngine] = useState(() => getSpeechEngineMode());
   const [englishVoices, setEnglishVoices] = useState([]);
   const [speechHint, setSpeechHint] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -194,6 +201,7 @@ export default function ArcadeAiAssistant({
         voiceUri: savedUri,
         voicesCache: voicesRef.current,
         fromGesture: true,
+        engineMode: speechEngine,
         onIntroPing: playIntroPing,
         onStart: () => {
           setSpeechHint('');
@@ -203,9 +211,10 @@ export default function ArcadeAiAssistant({
           setIsSpeaking(false);
         },
         onWatchdogTimeout: () => {
-          setIsSpeaking(false);
           setSpeechHint(
-            '🔇 iPhone blocked the voice. Tap 🔊 again, turn off Silent Mode, and check Settings › Accessibility › Spoken Content.'
+            isIOSDevice()
+              ? '📱 iPhone Web Speech was silent — switched to WebAudio Synth voice. You can also try selecting Samantha/Daniel or WebAudio Synth in the voice menu.'
+              : '🔊 System TTS stalled — switched seamlessly to WebAudio Synth voice.'
           );
         }
       });
@@ -215,7 +224,7 @@ export default function ArcadeAiAssistant({
         setIsSpeaking(true);
       }
     },
-    [persona, voiceEnabled, voicePrefs]
+    [persona, speechEngine, voiceEnabled, voicePrefs]
   );
 
   const stopSpeaking = useCallback(() => {
@@ -347,9 +356,9 @@ export default function ArcadeAiAssistant({
       list.push({
         id: 'sug-payphone',
         icon: '☎️',
-        title: 'Forgotten Quarters in the 1986 Payphone (+5 🪙)!',
-        sub: "Flick the Coin Return slot for an instant +5 🪙 & +50 XP.",
-        btnLabel: '🪙 Claim +5 🪙',
+        title: 'Forgotten Quarters in the 1986 Payphone (+2 🪙)!',
+        sub: "Flick the Coin Return slot for an instant +2 🪙 & +50 XP.",
+        btnLabel: '🪙 Claim +2 🪙',
         onClick: (e) => {
           onClaimPayphoneCoinReturn(e);
         }
@@ -360,8 +369,8 @@ export default function ArcadeAiAssistant({
       list.push({
         id: 'sug-pioneer',
         icon: '🚀',
-        title: 'Claim Your +75 🪙 First-Upload Pioneer Bonus!',
-        sub: 'Upload your first meme or remix to unlock 75 Tokens + free daily game perks.',
+        title: 'Claim Your +8 🪙 First-Upload Pioneer Bonus!',
+        sub: 'Upload your first meme or remix to unlock 8 Bonus Tokens + daily XP progress.',
         btnLabel: '📸 Upload Meme',
         onClick: () => {
           if (triggerStudioOpen) triggerStudioOpen();
@@ -523,7 +532,7 @@ export default function ArcadeAiAssistant({
           text: `🔴 **HEURISTIC TELEMETRY ROAST FOR ${userTitle.toUpperCase()}:**\n• **Rank:** Lv.${currentRank.level} (${currentRank.title}) • **${xp} XP** • **${tokens} 🪙**\n• **Pinball High Score:** ${pbBest.toLocaleString()} pts\n\n*"Frankly, Dave, I have seen a Commodore 64 with a loose ribbon cable accumulate more tokens. Even the **T-800** had better target acquisition than ${pbBest.toLocaleString()} points. I suggest launching **🎱 Hyper-Neon Pinball** immediately to improve your human performance metrics."*`,
           actions: [
             { label: '🎱 Prove HAL Wrong in Pinball', mode: 'pinball' },
-            { label: '📸 Upload Meme (+45 🪙)', action: 'studio' }
+            { label: '📸 Upload Meme (+12 🪙)', action: 'studio' }
           ]
         };
       }
@@ -531,7 +540,7 @@ export default function ArcadeAiAssistant({
         text: `🚗 **K.I.T.T. DIAGNOSTIC SCAN ON ${userTitle.toUpperCase()}:**\n• **Driver Rank:** Lv.${currentRank.level} (${currentRank.title}) • **${xp} XP** • **${tokens} 🪙**\n• **Pinball Record:** ${pbBest.toLocaleString()} pts\n\n*"Michael, my sensors indicate your wallet is sitting at **${tokens} 🪙** and your Pinball best is **${pbBest.toLocaleString()} pts**. Even Garth Knight could put up bigger numbers than that! Let's hit **🎱 Free Play Pinball** or upload a fresh meme before Devon Miles revokes our Foundation funding!"*`,
         actions: [
           { label: '🎱 Launch Hyper-Neon Pinball', mode: 'pinball' },
-          { label: '📸 Upload Meme (+45 🪙)', action: 'studio' }
+          { label: '📸 Upload Meme (+12 🪙)', action: 'studio' }
         ]
       };
     }
@@ -567,9 +576,9 @@ export default function ArcadeAiAssistant({
     // 7. Token / Economy Questions
     if (q.includes('token') || q.includes('earn') || q.includes('coin') || q.includes('money') || q.includes('broke')) {
       return {
-        text: `${prefix} **${isHal ? 'DISCOVERY ONE WALLET TELEMETRY' : 'KNIGHT FOUNDATION TREASURY SCAN'} (${userTitle}):**\nYou hold **${tokens} 🪙** (${xp} XP) with **${dailyRemaining} 🪙** still earnable today!\n\n1️⃣ **Upload or Remix a Meme:** Instant **+${pioneerBonusAvailable ? '75 (First Upload Bonus!)' : '45'} 🪙** (${uploadRem} 🪙 upload cap left today).\n2️⃣ **XP-to-Token Reactor:** Every **100 XP** mints **+5 🪙** automatically.\n3️⃣ **1986 Payphone & Piñata:** ${payphoneClaimedToday ? 'Payphone claimed ✅' : 'Flick the Payphone Coin Return (**+5 🪙**)'} and ${pinataClaimedToday ? 'Piñata claimed ✅' : 'whack the dodging Piñata 8× (**+5 🪙**)'}.\n4️⃣ **Free Practice Mode:** Remember, ${userTitle}, **🎱 Pinball**, **🃏 Neon 21's**, and **🎡 Roulette** all have unlimited **🆓 Free Play**!`,
+        text: `${prefix} **${isHal ? 'DISCOVERY ONE WALLET TELEMETRY' : 'KNIGHT FOUNDATION TREASURY SCAN'} (${userTitle}):**\nYou hold **${tokens} 🪙** (${xp} XP) with **${dailyRemaining} 🪙** still earnable today!\n\n1️⃣ **Upload or Remix a Meme:** Instant **+${pioneerBonusAvailable ? '20 (First Upload Bonus!)' : '12'} 🪙** (${uploadRem} 🪙 upload cap left today).\n2️⃣ **XP-to-Token Reactor:** Every **100 XP** mints **+2 🪙** automatically.\n3️⃣ **1986 Payphone & Piñata:** ${payphoneClaimedToday ? 'Payphone claimed ✅' : 'Flick the Payphone Coin Return (**+2 🪙**)'} and ${pinataClaimedToday ? 'Piñata claimed ✅' : 'whack the dodging Piñata 8× (**+2 🪙**)'}.\n4️⃣ **Free Practice Mode:** Remember, ${userTitle}, **🎱 Pinball**, **🃏 Neon 21's**, and **🎡 Roulette** all have unlimited **🆓 Free Play**!`,
         actions: [
-          { label: '📸 Upload Meme (+45 🪙)', action: 'studio' },
+          { label: '📸 Upload Meme (+12 🪙)', action: 'studio' },
           { label: '🎰 Open Token Vault', action: 'vault' }
         ]
       };
@@ -786,6 +795,21 @@ export default function ArcadeAiAssistant({
 
         <div className="tm-ai-head-actions">
           <select
+            aria-label="Speech engine mode"
+            className="tm-ai-voice-select"
+            value={speechEngine}
+            onChange={(e) => {
+              const nextEngine = setSpeechEngineMode(e.target.value);
+              setSpeechEngine(nextEngine);
+              setSpeechHint('');
+            }}
+            title="Auto tries clear iPhone/OS voice then WebAudio Synth; WebAudio Synth always plays clearly even on iPhone"
+          >
+            <option value="auto">⚡ Clear Auto</option>
+            <option value="system">📱 OS Voice</option>
+            <option value="synth">🎛️ Synth Voice</option>
+          </select>
+          <select
             aria-label={persona === 'hal' ? 'HAL 9000 English voice' : 'K.I.T.T. English voice'}
             className="tm-ai-voice-select"
             value={voicePrefs[persona] || 'auto'}
@@ -800,7 +824,7 @@ export default function ArcadeAiAssistant({
             }}
             title="Choose English voice for this AI persona"
           >
-            <option value="auto">🎙️ Auto</option>
+            <option value="auto">🎙️ Auto Voice</option>
             {englishVoices.map((v) => {
               const val = v.voiceURI || v.name;
               return (
@@ -810,6 +834,20 @@ export default function ArcadeAiAssistant({
               );
             })}
           </select>
+          <button
+            type="button"
+            className="tm-ai-voice-toggle on"
+            onClick={() => {
+              const testLine =
+                persona === 'hal'
+                  ? 'Good afternoon, Dave. Voice clarity systems are online.'
+                  : 'Hello Michael. Voice clarity systems are online and ready.';
+              speakLine(testLine, persona, true);
+            }}
+            title="Test AI voice output now"
+          >
+            🔊 Test
+          </button>
           <button
             type="button"
             className={`tm-ai-voice-toggle ${voiceEnabled ? 'on' : 'off'}`}

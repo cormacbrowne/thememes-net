@@ -686,7 +686,7 @@ export default function DankPetWidget({
         >
           <span>
             🚨🚔 <strong>WEE-WOO! MEME POLICE AUDIT:</strong> Verdict:{' '}
-            <strong style={{ color: '#4ade80' }}>80s NEON CERTIFIED!</strong> (Upload memes to earn +45 🪙!)
+            <strong style={{ color: '#4ade80' }}>80s NEON CERTIFIED!</strong> (Upload memes to earn +12 🪙!)
           </span>
         </div>
       )}

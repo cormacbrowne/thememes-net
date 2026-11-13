@@ -216,8 +216,8 @@ const STATIONS = {
   }
 };
 
-const LOOKAHEAD_SEC = 0.14;
-const TICK_MS = 30;
+const LOOKAHEAD_SEC = 0.45;
+const TICK_MS = 35;
 
 export function createMusicEngine({ onTrack, onPlay, onPause, onNext, onPrev } = {}) {
   let ctx = null;
@@ -227,6 +227,10 @@ export function createMusicEngine({ onTrack, onPlay, onPause, onNext, onPrev } =
   let mediaAudioEl = null;
   let usingMediaStreamOut = false;
   let mediaSessionBound = false;
+  let ctxStateBound = false;
+  let intentionalMediaPause = false;
+  let lastResumeTryTs = 0;
+  let isCrossfading = false;
 
   let stationId = 'synthwave';
   let trackIdx = 0;
@@ -318,6 +322,7 @@ export function createMusicEngine({ onTrack, onPlay, onPause, onNext, onPrev } =
       usingMediaStreamOut = false;
     }
     if (mediaAudioEl) {
+      intentionalMediaPause = true;
       try {
         mediaAudioEl.pause();
       } catch {
@@ -328,6 +333,7 @@ export function createMusicEngine({ onTrack, onPlay, onPause, onNext, onPrev } =
 
   function startMediaStreamElement() {
     if (!usingMediaStreamOut || !mediaAudioEl) return;
+    intentionalMediaPause = false;
     try {
       const playPromise = mediaAudioEl.play();
       if (playPromise && typeof playPromise.catch === 'function') {
@@ -340,6 +346,7 @@ export function createMusicEngine({ onTrack, onPlay, onPause, onNext, onPrev } =
 
   function pauseMediaStreamElement() {
     if (!mediaAudioEl) return;
+    intentionalMediaPause = true;
     try {
       mediaAudioEl.pause();
     } catch {
@@ -389,6 +396,33 @@ export function createMusicEngine({ onTrack, onPlay, onPause, onNext, onPrev } =
     safeBind('previoustrack', () => (onPrev ? onPrev() : apiRef.prevTrack()));
   }
 
+  function bindCtxRecovery() {
+    if (!ctx || ctxStateBound) return;
+    ctxStateBound = true;
+    try {
+      ctx.addEventListener('statechange', () => {
+        if (!ctx || !playing) return;
+        if (ctx.state === 'running' && !paused) {
+          nextStepTime = ctx.currentTime + 0.05;
+          if (!isCrossfading && nodes) fadeMaster(1, 0.25);
+          if (usingMediaStreamOut && mediaAudioEl && mediaAudioEl.paused) {
+            startMediaStreamElement();
+          }
+          if (!timer) startScheduler();
+          else tick();
+        } else if (
+          (ctx.state === 'interrupted' || ctx.state === 'suspended') &&
+          !paused &&
+          (typeof document === 'undefined' || !document.hidden)
+        ) {
+          ctx.resume().catch(() => {});
+        }
+      });
+    } catch {
+      // Ignore if statechange listener is unsupported
+    }
+  }
+
   /* ---------- Audio graph ---------- */
   function ensureGraph() {
     if (!ctx) {
@@ -396,6 +430,7 @@ export function createMusicEngine({ onTrack, onPlay, onPause, onNext, onPrev } =
       ctx = sfx.ctx;
     }
     if (!ctx) return false;
+    bindCtxRecovery();
     if (ctx.state !== 'running') ctx.resume().catch(() => {});
     if (nodes) return true;
 
@@ -436,6 +471,23 @@ export function createMusicEngine({ onTrack, onPlay, onPause, onNext, onPrev } =
         el.playsInline = true;
         if ('srcObject' in el && dest?.stream) {
           el.srcObject = dest.stream;
+          const recoverMediaEl = () => {
+            if (!usingMediaStreamOut || !playing || paused || intentionalMediaPause) return;
+            if (typeof document !== 'undefined' && document.hidden) return;
+            // If iOS/Android paused or stalled the MediaStream <audio> carrier, try resuming or fall back to direct ctx.destination
+            try {
+              const p = el.play();
+              if (p && typeof p.catch === 'function') {
+                p.catch(() => fallbackToDirectDestination());
+              }
+            } catch {
+              fallbackToDirectDestination();
+            }
+          };
+          el.addEventListener('pause', recoverMediaEl);
+          el.addEventListener('stalled', recoverMediaEl);
+          el.addEventListener('ended', recoverMediaEl);
+          el.addEventListener('error', () => fallbackToDirectDestination());
           master.connect(dest);
           streamDest = dest;
           mediaAudioEl = el;
@@ -852,9 +904,17 @@ export function createMusicEngine({ onTrack, onPlay, onPause, onNext, onPrev } =
 
   function tick() {
     if (!ctx || !playing || paused) return;
+    if (ctx.state !== 'running') {
+      const nowMs = Date.now();
+      if (nowMs - lastResumeTryTs > 600) {
+        lastResumeTryTs = nowMs;
+        ctx.resume().catch(() => {});
+      }
+      return;
+    }
     const sixteenth = 60 / station().bpm / 4;
     // If the tab stalled, jump forward instead of bursting a backlog of notes
-    if (nextStepTime < ctx.currentTime - 0.25) nextStepTime = ctx.currentTime + 0.05;
+    if (nextStepTime < ctx.currentTime - 0.5) nextStepTime = ctx.currentTime + 0.05;
     while (nextStepTime < ctx.currentTime + LOOKAHEAD_SEC) {
       scheduleStep(step, nextStepTime);
       nextStepTime += sixteenth;
@@ -902,8 +962,11 @@ export function createMusicEngine({ onTrack, onPlay, onPause, onNext, onPrev } =
       loadTrack();
       return;
     }
+    clearLater();
+    isCrossfading = true;
     fadeMaster(0, 0.3);
     later(() => {
+      isCrossfading = false;
       applyChange();
       loadTrack();
       if (!paused) {
@@ -928,6 +991,7 @@ export function createMusicEngine({ onTrack, onPlay, onPause, onNext, onPrev } =
       }
       if (!ensureGraph()) return;
       clearLater();
+      isCrossfading = false;
       playing = true;
       paused = false;
       keyShift = 0;
@@ -942,6 +1006,7 @@ export function createMusicEngine({ onTrack, onPlay, onPause, onNext, onPrev } =
     stop() {
       playing = false;
       paused = false;
+      isCrossfading = false;
       fadeMaster(0, 0.4);
       stopScheduler();
       clearLater();
@@ -952,6 +1017,7 @@ export function createMusicEngine({ onTrack, onPlay, onPause, onNext, onPrev } =
     pause() {
       if (!playing || paused) return;
       paused = true;
+      isCrossfading = false;
       fadeMaster(0, 0.15);
       stopScheduler();
       pauseMediaStreamElement();
@@ -961,11 +1027,34 @@ export function createMusicEngine({ onTrack, onPlay, onPause, onNext, onPrev } =
     resume() {
       if (!playing || !paused) return;
       paused = false;
+      isCrossfading = false;
       if (ctx && ctx.state !== 'running') ctx.resume().catch(() => {});
       startScheduler();
       startMediaStreamElement();
       setMediaSessionPlaybackState('playing');
       fadeMaster(1, 0.8);
+      setHtmlPlaying(true);
+    },
+    ensureRunning() {
+      if (!playing) return;
+      if (paused) {
+        api.resume();
+        return;
+      }
+      if (!ensureGraph()) return;
+      if (ctx && ctx.state !== 'running') {
+        ctx.resume().catch(() => {});
+      }
+      if (usingMediaStreamOut && mediaAudioEl && mediaAudioEl.paused) {
+        startMediaStreamElement();
+      }
+      if (!timer) {
+        startScheduler();
+      }
+      if (!isCrossfading && nodes) {
+        fadeMaster(1, 0.25);
+      }
+      setMediaSessionPlaybackState('playing');
       setHtmlPlaying(true);
     },
     setStation(id, nextIdx) {

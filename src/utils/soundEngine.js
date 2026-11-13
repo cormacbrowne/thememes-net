@@ -49,9 +49,50 @@ export class SoundEngine {
     this.pack =
       (typeof window !== 'undefined' && localStorage.getItem('tm_sound_pack')) || 'goofy';
     this.noiseBuffer = null;
+    this._unlockCallbacks = new Set();
+    this._ctxStateBoundFor = null;
 
     if (typeof window !== 'undefined') {
       this._bindGlobalUnlockListeners();
+    }
+  }
+
+  onAudioUnlock(cb) {
+    if (typeof cb !== 'function') return () => {};
+    this._unlockCallbacks.add(cb);
+    return () => this._unlockCallbacks.delete(cb);
+  }
+
+  _notifyUnlockCallbacks() {
+    this._unlockCallbacks.forEach((cb) => {
+      try {
+        cb();
+      } catch {
+        // Ignore subscriber errors
+      }
+    });
+  }
+
+  _bindCtxStateListener() {
+    if (!this.ctx || this._ctxStateBoundFor === this.ctx) return;
+    this._ctxStateBoundFor = this.ctx;
+    try {
+      this.ctx.addEventListener('statechange', () => {
+        if (!this.ctx) return;
+        if (this.ctx.state === 'running') {
+          this._notifyUnlockCallbacks();
+        } else if (
+          (this.ctx.state === 'interrupted' || this.ctx.state === 'suspended') &&
+          this.hasUserGesture &&
+          typeof document !== 'undefined' &&
+          !document.hidden
+        ) {
+          this._configureIosAudioSession();
+          this.ctx.resume().catch(() => {});
+        }
+      });
+    } catch {
+      // Ignore if addEventListener is unavailable on AudioContext
     }
   }
 
@@ -110,16 +151,23 @@ export class SoundEngine {
       window.addEventListener(evt, unlockHandler, { passive: true, capture: true });
     });
 
-    if (typeof document !== 'undefined') {
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible' && this.hasUserGesture && this.ctx) {
-          this._configureIosAudioSession();
-          if (this.ctx.state !== 'running') {
-            this.ctx.resume().catch(() => {});
-          }
+    const resumeIfVisible = () => {
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+      if (this.hasUserGesture && this.ctx) {
+        this._configureIosAudioSession();
+        if (this.ctx.state !== 'running') {
+          this.ctx.resume().then(() => this._notifyUnlockCallbacks()).catch(() => {});
+        } else {
+          this._notifyUnlockCallbacks();
         }
-      });
+      }
+    };
+
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', resumeIfVisible);
     }
+    window.addEventListener('pageshow', resumeIfVisible);
+    window.addEventListener('focus', resumeIfVisible);
   }
 
   unlockIosAudio(options = {}) {
@@ -134,8 +182,9 @@ export class SoundEngine {
       }
 
       if (this.ctx) {
+        this._bindCtxStateListener();
         if (this.ctx.state !== 'running') {
-          this.ctx.resume().catch(() => {});
+          this.ctx.resume().then(() => this._notifyUnlockCallbacks()).catch(() => {});
         }
 
         // Play a 1-sample silent buffer to unlock iOS WebKit AudioContext inside the user gesture
@@ -153,6 +202,7 @@ export class SoundEngine {
             this.unlocked = true;
           }
         }
+        this._notifyUnlockCallbacks();
       }
 
       // Play tiny HTML5 <audio> WAV carrier once to force iOS out of ringer-switch mute mode
@@ -1289,6 +1339,216 @@ export class SoundEngine {
     } catch {
       // Ignore audio errors
     }
+  }
+
+  /**
+   * 🔔 LAS VEGAS SLOT BELL "DING-DING-DING!" STRIKES
+   */
+  playSlotDingDing(count = 3, intervalSec = 0.125) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(count >= 4 ? [25, 30, 35, 30, 50] : [20, 25, 30]);
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+      const strikes = Math.max(1, Math.min(12, count));
+      const baseFreqs = [1975.53, 2093.0, 2349.32, 2637.02];
+
+      for (let i = 0; i < strikes; i += 1) {
+        const t = now + i * intervalSec;
+        const root = baseFreqs[i % baseFreqs.length];
+        // Bell fundamental + inharmonic metallic clapper overtones
+        [
+          { freq: root, gain: 0.16, dur: 0.24 },
+          { freq: root * 1.505, gain: 0.09, dur: 0.16 },
+          { freq: root * 2.02, gain: 0.06, dur: 0.11 }
+        ].forEach((part) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(part.freq, t);
+          gain.gain.setValueAtTime(0.001, t);
+          gain.gain.linearRampToValueAtTime(part.gain, t + 0.004);
+          gain.gain.exponentialRampToValueAtTime(0.0008, t + part.dur);
+          osc.connect(gain);
+          gain.connect(out);
+          osc.start(t);
+          osc.stop(t + part.dur + 0.02);
+        });
+      }
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🚨 LAS VEGAS BIG WIN CASINO SIREN + DING-DING-DING + COIN CASCADE
+   */
+  playSlotBigWinSiren({ mega = false } = {}) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(mega ? [45, 35, 85, 35, 110, 35, 140] : [35, 30, 75, 30, 95]);
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+
+      // 1. Rotating Vegas Jackpot Beacon Siren (alternating sweeping alarm)
+      const cycles = mega ? 5 : 3;
+      const cycleDur = 0.42;
+      const totalDur = cycles * cycleDur;
+
+      const sirenOscA = this.ctx.createOscillator();
+      const sirenOscB = this.ctx.createOscillator();
+      const sirenFilter = this.ctx.createBiquadFilter();
+      const sirenGain = this.ctx.createGain();
+
+      sirenOscA.type = 'sawtooth';
+      sirenOscB.type = 'triangle';
+      sirenFilter.type = 'bandpass';
+      sirenFilter.frequency.setValueAtTime(1150, now);
+      sirenFilter.Q.setValueAtTime(1.8, now);
+
+      for (let c = 0; c < cycles; c += 1) {
+        const cStart = now + c * cycleDur;
+        const cMid = cStart + cycleDur * 0.5;
+        const cEnd = cStart + cycleDur;
+        sirenOscA.frequency.setValueAtTime(540, cStart);
+        sirenOscA.frequency.linearRampToValueAtTime(1080, cMid);
+        sirenOscA.frequency.linearRampToValueAtTime(540, cEnd);
+
+        sirenOscB.frequency.setValueAtTime(544, cStart);
+        sirenOscB.frequency.linearRampToValueAtTime(1086, cMid);
+        sirenOscB.frequency.linearRampToValueAtTime(544, cEnd);
+      }
+
+      sirenGain.gain.setValueAtTime(0.001, now);
+      sirenGain.gain.linearRampToValueAtTime(mega ? 0.13 : 0.1, now + 0.04);
+      sirenGain.gain.setValueAtTime(mega ? 0.12 : 0.095, now + totalDur - 0.18);
+      sirenGain.gain.exponentialRampToValueAtTime(0.0008, now + totalDur);
+
+      sirenOscA.connect(sirenFilter);
+      sirenOscB.connect(sirenFilter);
+      sirenFilter.connect(sirenGain);
+      sirenGain.connect(out);
+      sirenOscA.start(now);
+      sirenOscB.start(now);
+      sirenOscA.stop(now + totalDur + 0.04);
+      sirenOscB.stop(now + totalDur + 0.04);
+
+      // 2. Rapid mechanical "DING-DING-DING-DING!" Casino Bell Alarm
+      const bellCount = mega ? 10 : 6;
+      const bellStep = mega ? 0.16 : 0.18;
+      for (let i = 0; i < bellCount; i += 1) {
+        const bt = now + 0.03 + i * bellStep;
+        const pitch = i % 2 === 0 ? 2093.0 : 2637.02;
+        [
+          { f: pitch, g: 0.15, d: 0.2 },
+          { f: pitch * 1.504, g: 0.08, d: 0.13 },
+          { f: pitch * 2.01, g: 0.055, d: 0.09 }
+        ].forEach((p) => {
+          const bOsc = this.ctx.createOscillator();
+          const bGain = this.ctx.createGain();
+          bOsc.type = 'sine';
+          bOsc.frequency.setValueAtTime(p.f, bt);
+          bGain.gain.setValueAtTime(0.001, bt);
+          bGain.gain.linearRampToValueAtTime(p.g, bt + 0.004);
+          bGain.gain.exponentialRampToValueAtTime(0.0008, bt + p.d);
+          bOsc.connect(bGain);
+          bGain.connect(out);
+          bOsc.start(bt);
+          bOsc.stop(bt + p.d + 0.02);
+        });
+      }
+
+      // 3. Coin Hopper Spill Clatter behind the bells
+      const coinCount = mega ? 12 : 7;
+      for (let i = 0; i < coinCount; i += 1) {
+        const ct = now + 0.22 + i * 0.11;
+        const cf = 1396.91 + ((i * 317) % 1400);
+        const cOsc = this.ctx.createOscillator();
+        const cGain = this.ctx.createGain();
+        cOsc.type = 'sine';
+        cOsc.frequency.setValueAtTime(cf, ct);
+        cOsc.frequency.exponentialRampToValueAtTime(cf * 1.08, ct + 0.07);
+        cGain.gain.setValueAtTime(0.001, ct);
+        cGain.gain.linearRampToValueAtTime(0.08, ct + 0.005);
+        cGain.gain.exponentialRampToValueAtTime(0.0008, ct + 0.09);
+        cOsc.connect(cGain);
+        cGain.connect(out);
+        cOsc.start(ct);
+        cOsc.stop(ct + 0.1);
+      }
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * ⚡ VEGAS SLOT POWERUP ACTIVATION CHIME
+   */
+  playSlotPowerup(kind = 'boost') {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic([20, 20, 45]);
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+      const notes =
+        kind === 'coffee'
+          ? [440, 554.37, 659.25, 880, 1108.73]
+          : kind === 'voltage'
+          ? [329.63, 493.88, 659.25, 987.77, 1318.51]
+          : [523.25, 659.25, 783.99, 1046.5];
+
+      notes.forEach((f, idx) => {
+        const t = now + idx * 0.045;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = kind === 'voltage' ? 'sawtooth' : 'triangle';
+        osc.frequency.setValueAtTime(f, t);
+        gain.gain.setValueAtTime(0.001, t);
+        gain.gain.linearRampToValueAtTime(kind === 'voltage' ? 0.09 : 0.13, t + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+        osc.connect(gain);
+        gain.connect(out);
+        osc.start(t);
+        osc.stop(t + 0.24);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🎡 VEGAS BONUS WHEEL PEG TICK & LANDING WIN
+   */
+  playSlotBonusWheelTick() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(920, now);
+      osc.frequency.exponentialRampToValueAtTime(280, now + 0.025);
+      gain.gain.setValueAtTime(0.14, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+      osc.connect(gain);
+      gain.connect(this._getOutputNode());
+      osc.start(now);
+      osc.stop(now + 0.035);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  playSlotBonusWheelWin() {
+    this.playSlotBigWinSiren({ mega: true });
   }
 
   /**

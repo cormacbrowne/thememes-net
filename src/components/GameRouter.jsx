@@ -345,7 +345,7 @@ export function ArcadeLoungePromo({ setViewMode }) {
           </div>
         </div>
 
-        {/* Cabinet 1: Authentic Las Vegas One-Arm Bandit 777 Slot Machine */}
+        {/* Cabinet 1: Las Vegas Slot Arcade (4 Machines) */}
         <div
           className="tm-arcade-steer-card tm-steer-slots"
           onClick={() => {
@@ -354,25 +354,26 @@ export function ArcadeLoungePromo({ setViewMode }) {
           }}
         >
           <div className="tm-arcade-steer-top">
-            <span className="tm-arcade-steer-pill">🎰 ONE-ARM BANDIT • 777 / BAR / BELL / CHERRY</span>
+            <span className="tm-arcade-steer-pill">🎰 VEGAS SLOT ARCADE • 4 MACHINES</span>
             <span className="tm-arcade-steer-best">
               🏆 Best: {Number(localStorage.getItem('tm_slots_best_win') || 0).toLocaleString()} 🪙
             </span>
           </div>
           <div className="tm-arcade-steer-body">
-            <div className="tm-arcade-steer-icons">🎰💎🔔🍒</div>
+            <div className="tm-arcade-steer-icons">🎰☕⚡🦬</div>
             <div>
-              <h3 className="tm-arcade-steer-title">LAS VEGAS ONE-ARM BANDIT</h3>
+              <h3 className="tm-arcade-steer-title">LAS VEGAS SLOT ARCADE (4 MACHINES)</h3>
               <p className="tm-arcade-steer-desc">
-                Authentic curved mechanical drums with <strong>Flaming 777s</strong>,{' '}
-                <strong>Triple Gold BARs</strong>, <strong>Liberty Bells</strong>,{' '}
-                <strong>Twin Cherries</strong> &amp; 3D chrome pull-lever!
+                Choose from <strong>One-Arm Bandit &apos;85</strong>,{' '}
+                <strong>Mr. Jackpots: Silver Mustang</strong> (Dougie Jones!),{' '}
+                <strong>Lightning Vault 5000</strong> &amp; <strong>Cyber Buffalo &apos;86</strong> with{' '}
+                <strong>Powerups, Accumulators &amp; Siren Jackpots</strong>!
               </p>
             </div>
           </div>
           <div className="tm-arcade-steer-footer">
             <span className="tm-arcade-steer-payout">
-              🪙 Wager 5–50 Tokens • Up to 50× Jackpot
+              🪙 Wager 5–50 Tokens • Up to 150× Jackpot &amp; Bonus Wheels
             </span>
             <button
               type="button"
@@ -383,7 +384,7 @@ export function ArcadeLoungePromo({ setViewMode }) {
                 setViewMode('slots');
               }}
             >
-              ▶ Pull Bandit Lever
+              ▶ Enter Slot Arcade
             </button>
           </div>
         </div>

@@ -8,6 +8,7 @@
  */
 
 import { loadUnlockedCosmetics } from '../data/cosmetics';
+import { sfx } from './soundEngine';
 
 const STORAGE_KEY = 'tm_radio';
 
@@ -126,6 +127,7 @@ const ducks = new Set();
 let mediaListenersBound = false;
 let resumeListenerBound = false;
 let sleepTimeoutId = null;
+let unsubAudioUnlock = null;
 
 function clearSleepTimer() {
   if (sleepTimeoutId) {
@@ -185,6 +187,9 @@ function recomputeVideoDuck() {
     (v) => !v.paused && !v.ended && !v.muted && v.volume > 0.02
   );
   setRadioDuck('video', playingWithSound);
+  if (!playingWithSound && state.on && engine && !document.hidden) {
+    engine.ensureRunning?.();
+  }
 }
 
 function bindMediaListeners() {
@@ -194,6 +199,15 @@ function bindMediaListeners() {
     document.addEventListener(evt, recomputeVideoDuck, true)
   );
   document.addEventListener('visibilitychange', handleVisibility);
+  window.addEventListener('pageshow', handleVisibility);
+  window.addEventListener('focus', handleVisibility);
+  if (!unsubAudioUnlock && typeof sfx.onAudioUnlock === 'function') {
+    unsubAudioUnlock = sfx.onAudioUnlock(() => {
+      if (state.on && engine && !document.hidden) {
+        engine.ensureRunning?.();
+      }
+    });
+  }
 }
 
 function unbindMediaListeners() {
@@ -203,6 +217,12 @@ function unbindMediaListeners() {
     document.removeEventListener(evt, recomputeVideoDuck, true)
   );
   document.removeEventListener('visibilitychange', handleVisibility);
+  window.removeEventListener('pageshow', handleVisibility);
+  window.removeEventListener('focus', handleVisibility);
+  if (unsubAudioUnlock) {
+    unsubAudioUnlock();
+    unsubAudioUnlock = null;
+  }
 }
 
 function handleVisibility() {
@@ -210,7 +230,7 @@ function handleVisibility() {
   if (document.hidden) {
     if (!engine.isMediaStreamActive?.()) engine.pause();
   } else {
-    engine.resume();
+    engine.ensureRunning?.();
   }
 }
 
@@ -234,6 +254,9 @@ function getUnlockedStations({ includeMixtape = false } = {}) {
 /** Must be called from a user gesture (tap/click/key) the first time. */
 export function setRadioOn(on, { fadeInSec = 1.2 } = {}) {
   if (on) {
+    // Unlock iOS/mobile AudioContext synchronously inside the tap gesture before async import()
+    sfx.hasUserGesture = true;
+    sfx.unlockIosAudio({ primeSpeech: false });
     setState({ on: true, wantsOn: true, loading: !engine });
     persist();
     bindMediaListeners();

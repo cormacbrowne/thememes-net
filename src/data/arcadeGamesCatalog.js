@@ -49,10 +49,10 @@ export const ARCADE_GAMES_CATALOG = [
     id: 'slots',
     group: 'casino',
     icon: '🎰',
-    label: 'Vegas 777 Slots',
-    pitch: 'Hold reels and chase neon jackpots.',
-    badge: 'Jackpot',
-    isNew: false,
+    label: 'Vegas Slot Arcade',
+    pitch: '4 Vegas machines: Bandit \'85, Mr. Jackpots, Lightning & Buffalo.',
+    badge: '4 Slots',
+    isNew: true,
     accent: '#f472b6'
   },
   {

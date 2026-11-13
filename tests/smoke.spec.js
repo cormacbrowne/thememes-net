@@ -433,3 +433,110 @@ test.describe('Phase 30B Simple Quick Upload, GIF Burn-In, Viral Share & JSON-LD
     expect(copied).toMatch(/\/m\/.+\?ref=share$/);
   });
 });
+
+test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
+  test('Slot Arcade switches across all 4 machines cleanly on desktop & iPhone with zero overflow', async ({
+    page
+  }) => {
+    const pageErrors = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/games/slots', { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('.tm-slot-switcher-bar');
+
+    // Open Slot Floor directory and verify all 4 cabinets appear
+    await page.getByRole('button', { name: /Slot Floor/i }).click();
+    const floorGrid = page.locator('.tm-slot-floor-grid');
+    await expect(floorGrid).toBeVisible();
+    await expect(floorGrid).toContainText(/One-Arm Bandit '85/i);
+    await expect(floorGrid).toContainText(/Mr\. Jackpots: Silver Mustang/i);
+    await expect(floorGrid).toContainText(/Neon Lightning Vault 5000/i);
+    await expect(floorGrid).toContainText(/Cyber Buffalo Stampede '86/i);
+
+    // Step up to Silver Mustang (Dougie Jones tribute)
+    const mustangCard = floorGrid.locator('.tm-slot-floor-card', { hasText: /Mr\. Jackpots/i });
+    await mustangCard.getByRole('button', { name: /Step Up/i }).click();
+    await expect(page.locator('.tm-bandit-marquee-title')).toContainText(/MR\. JACKPOTS: SILVER MUSTANG/i);
+    await expect(page.locator('.tm-slot-dougie-quote')).toBeVisible();
+    await expect(page.locator('.tm-video-cell')).toHaveCount(15);
+
+    // Verify 390px iPhone layout fits without horizontal overflow
+    let overflowPx = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth
+    );
+    expect(overflowPx).toBeLessThanOrEqual(2);
+
+    // Toggle Lines, Turbo, select DEMO bet, spin cleanly, verify wallet stays unchanged on DEMO
+    await page.getByRole('button', { name: /25 LINES/i }).click();
+    await expect(page.getByRole('button', { name: /5 LINES/i })).toBeVisible();
+    await page.getByRole('button', { name: /TURBO/i }).click();
+    await page.getByRole('button', { name: /DEMO/i }).click();
+    const walletBeforeDemo = await page.locator('.tm-bandit-stat-box strong').first().textContent();
+    await page.locator('.tm-bandit-spin-btn').click();
+    await expect(page.locator('.tm-bandit-spin-btn')).toBeEnabled({ timeout: 5000 });
+    const walletAfterDemo = await page.locator('.tm-bandit-stat-box strong').first().textContent();
+    expect(walletAfterDemo).toBe(walletBeforeDemo);
+
+    // Switch to Lightning Vault 5000 via top tab bar and test Ante +25%
+    await page.getByRole('tab', { name: /Lightning 5000/i }).click();
+    await expect(page.locator('.tm-bandit-marquee-title')).toContainText(/NEON LIGHTNING VAULT 5000/i);
+    await expect(page.locator('.tm-slot-jackpot-leds')).toContainText(/GRAND/i);
+    await page.getByRole('button', { name: /ANTE \+25%/i }).click();
+    await expect(page.getByRole('button', { name: /ANTE \+25% ON/i })).toBeVisible();
+
+    overflowPx = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth
+    );
+    expect(overflowPx).toBeLessThanOrEqual(2);
+
+    // Switch to Cyber Buffalo '86 (5x4 grid = 20 cells, 1,024 Ways) and test Staked Spin
+    await page.getByRole('tab', { name: /Buffalo '86/i }).click();
+    await expect(page.locator('.tm-bandit-marquee-title')).toContainText(/CYBER BUFFALO STAMPEDE '86/i);
+    await expect(page.locator('.tm-video-cell')).toHaveCount(20);
+    await page.getByRole('button', { name: /🪙 5\b/ }).first().click();
+    await page.locator('.tm-bandit-spin-btn').click();
+    await expect(page.locator('.tm-bandit-spin-btn')).toBeEnabled({ timeout: 5000 });
+
+    overflowPx = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth
+    );
+    expect(overflowPx).toBeLessThanOrEqual(2);
+
+    // Switch back to classic One-Arm Bandit '85 and check desktop layout + Rules drawer
+    await page.getByRole('tab', { name: /Bandit '85/i }).click();
+    await expect(page.locator('.tm-bandit-drum-window')).toHaveCount(3);
+    await expect(page.locator('.tm-bandit-arm-ball')).toBeVisible();
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.getByRole('button', { name: /ℹ Rules/i }).click();
+    await expect(page.locator('.tm-slot-paytable-drawer')).toBeVisible();
+    overflowPx = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth
+    );
+    expect(overflowPx).toBeLessThanOrEqual(2);
+
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('Radio button toggles and survives visibility interruption without errors', async ({ page }) => {
+    const pageErrors = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const radioBtn = page.locator('button.tm-radio-toggle').first();
+    await expect(radioBtn).toBeVisible();
+    await radioBtn.click();
+    await expect(radioBtn).toHaveAttribute('aria-pressed', 'true');
+    await page.waitForTimeout(250);
+    await page.evaluate(() => {
+      window.dispatchEvent(new Event('pageshow'));
+      document.dispatchEvent(new Event('visibilitychange'));
+      window.dispatchEvent(new Event('focus'));
+    });
+    await page.waitForTimeout(150);
+    await expect(radioBtn).toHaveAttribute('aria-pressed', 'true');
+
+    expect(pageErrors).toEqual([]);
+  });
+});

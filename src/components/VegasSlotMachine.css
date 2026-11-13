@@ -674,15 +674,15 @@
    ========================================================================== */
 .tm-bandit-standalone {
   flex: 1;
-  min-height: 0;
-  height: calc(100dvh - 46px);
+  min-height: calc(100dvh - 46px);
   width: 100%;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 6px 10px calc(8px + env(safe-area-inset-bottom, 0px));
+  padding: 8px 10px calc(16px + env(safe-area-inset-bottom, 0px));
 }
 
 .tm-bandit-embedded {
@@ -1053,8 +1053,8 @@
 
 .tm-bandit-wallet-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
 }
 
 .tm-bandit-stat-box {
@@ -1207,7 +1207,7 @@
   padding: 0;
   cursor: pointer;
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   align-items: center;
   justify-content: flex-start;
   transform-origin: bottom center;
@@ -1227,6 +1227,16 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.75), 0 0 14px rgba(239, 68, 68, 0.65);
   z-index: 2;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: #fff;
+  font-size: 7.5px;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  touch-action: manipulation;
 }
 
 .tm-bandit-arm-shaft {
@@ -1238,9 +1248,592 @@
   box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.65);
 }
 
+/* ==========================================================================
+   4. SLOT ARCADE SHELL, FLOOR SWITCHER, 5-REEL MACHINES, SIRENS & WHEEL
+   ========================================================================== */
+.tm-slot-arcade-shell {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.tm-slot-switcher-bar {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+}
+
+.tm-slot-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
+  color: #cbd5e1;
+  border-radius: 10px;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  touch-action: manipulation;
+}
+
+.tm-slot-tab-btn.active {
+  background: rgba(30, 41, 59, 0.98);
+  border-color: var(--tab-accent, #facc15);
+  color: #ffffff;
+  box-shadow: 0 0 14px color-mix(in srgb, var(--tab-accent, #facc15) 45%, transparent);
+}
+
+.tm-slot-tab-badge {
+  font-size: 8.5px;
+  font-weight: 900;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fde047;
+  letter-spacing: 0.4px;
+}
+
+.tm-slot-floor-toggle {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(0, 243, 255, 0.18));
+  border: 1.5px solid #a855f7;
+  color: #f3e8ff;
+  border-radius: 10px;
+  padding: 5px 9px;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.tm-slot-floor-toggle.active {
+  background: #a855f7;
+  color: #fff;
+}
+
+/* Slot Floor Cabinet Directory */
+.tm-slot-floor-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 8px;
+  background: rgba(8, 11, 24, 0.94);
+  border: 1.5px solid rgba(168, 85, 247, 0.5);
+  border-radius: 16px;
+  padding: 10px;
+}
+
+.tm-slot-floor-card {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tm-slot-floor-card.current {
+  border-color: var(--card-accent, #facc15);
+  box-shadow: 0 0 16px rgba(250, 204, 21, 0.25);
+}
+
+.tm-slot-floor-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.tm-slot-floor-emoji {
+  font-size: 22px;
+}
+
+.tm-slot-floor-title {
+  font-size: 12px;
+  font-weight: 900;
+  color: #f8fafc;
+}
+
+.tm-slot-floor-tag {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.tm-slot-floor-pill {
+  margin-left: auto;
+  font-size: 8.5px;
+  font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(250, 204, 21, 0.16);
+  color: #fde047;
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  white-space: nowrap;
+}
+
+.tm-slot-floor-desc {
+  margin: 0;
+  font-size: 10.5px;
+  line-height: 1.35;
+  color: #cbd5e1;
+}
+
+.tm-slot-floor-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: #94a3b8;
+}
+
+.tm-slot-floor-play-btn {
+  background: linear-gradient(135deg, #facc15, #f97316);
+  border: none;
+  color: #090a0f;
+  font-size: 10.5px;
+  font-weight: 900;
+  padding: 5px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Machine Themes */
+.tm-cabinet-silver_mustang {
+  background: linear-gradient(180deg, #3b0712 0%, #14070e 52%, #240814 100%);
+  border-color: #ef4444;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.88),
+    0 0 32px rgba(239, 68, 68, 0.4),
+    inset 0 0 22px rgba(250, 204, 21, 0.16);
+}
+
+.tm-bandit-marquee.red-room-trim {
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.08) 0px,
+      rgba(255, 255, 255, 0.08) 8px,
+      rgba(0, 0, 0, 0.32) 8px,
+      rgba(0, 0, 0, 0.32) 16px
+    ),
+    radial-gradient(circle at 50% 25%, #991b1b 0%, #450a0a 75%, #110408 100%);
+  border-color: #fde047;
+}
+
+.tm-cabinet-lightning_vault {
+  background: linear-gradient(180deg, #08203e 0%, #070d1f 52%, #0c1736 100%);
+  border-color: #00f3ff;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.88),
+    0 0 30px rgba(0, 243, 255, 0.35),
+    inset 0 0 20px rgba(56, 189, 248, 0.18);
+}
+
+.tm-cabinet-buffalo_stampede {
+  background: linear-gradient(180deg, #3a1405 0%, #140905 52%, #2b1006 100%);
+  border-color: #f97316;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.88),
+    0 0 30px rgba(249, 115, 22, 0.38),
+    inset 0 0 20px rgba(250, 204, 21, 0.2);
+}
+
+/* Flashing Vegas Jackpot Sirens */
+@keyframes tmSlotSirenPulse {
+  0%, 100% {
+    background: linear-gradient(90deg, rgba(220, 38, 38, 0.92), rgba(245, 158, 11, 0.88), rgba(220, 38, 38, 0.92));
+    box-shadow: 0 0 18px rgba(239, 68, 68, 0.85);
+  }
+  50% {
+    background: linear-gradient(90deg, rgba(250, 204, 21, 0.95), rgba(239, 68, 68, 0.95), rgba(250, 204, 21, 0.95));
+    box-shadow: 0 0 26px rgba(250, 204, 21, 0.95);
+  }
+}
+
+@keyframes tmBeaconSpin {
+  0% { transform: scale(1) rotate(-12deg); }
+  50% { transform: scale(1.25) rotate(12deg); }
+  100% { transform: scale(1) rotate(-12deg); }
+}
+
+.tm-slot-siren-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 10px;
+  border-radius: 10px;
+  border: 2px solid #fef08a;
+  color: #fff;
+  font-weight: 900;
+  font-size: 11.5px;
+  letter-spacing: 0.7px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  animation: tmSlotSirenPulse 0.35s linear infinite;
+}
+
+.tm-slot-beacon {
+  font-size: 16px;
+  animation: tmBeaconSpin 0.28s ease-in-out infinite;
+}
+
+.tm-slot-marquee-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+}
+
+.tm-slot-paytable-btn {
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(250, 204, 21, 0.55);
+  color: #fde047;
+  font-size: 9.5px;
+  font-weight: 900;
+  padding: 3px 7px;
+  border-radius: 7px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tm-slot-paytable-drawer {
+  background: rgba(5, 8, 18, 0.94);
+  border: 1.5px solid rgba(0, 243, 255, 0.45);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 10.5px;
+  color: #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tm-slot-paytable-drawer p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+.tm-slot-paytable-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.tm-slot-paytable-grid strong {
+  color: #fde047;
+}
+
+/* Feature Strips & Accumulator Meters */
+.tm-slot-feature-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.tm-slot-dougie-quote {
+  background: rgba(10, 4, 8, 0.84);
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #fef08a;
+  text-align: center;
+}
+
+.tm-slot-meters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+}
+
+.tm-slot-meter-pill {
+  flex: 1;
+  min-width: 96px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  padding: 3px 7px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #cbd5e1;
+}
+
+.tm-slot-meter-pill strong {
+  color: #fde047;
+  font-weight: 900;
+}
+
+.tm-slot-meter-pill.gold {
+  border-color: rgba(250, 204, 21, 0.55);
+}
+
+.tm-slot-meter-pill.cyan {
+  border-color: rgba(0, 243, 255, 0.5);
+}
+
+.tm-slot-meter-pill.cyan strong {
+  color: #67e8f9;
+}
+
+/* 4 Progressive Jackpot LEDs (Lightning Vault) */
+.tm-slot-jackpot-leds {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.tm-jp-led {
+  background: #040712;
+  border: 1.5px solid #38bdf8;
+  border-radius: 8px;
+  padding: 3px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+}
+
+.tm-jp-led span {
+  font-size: 8px;
+  font-weight: 900;
+  color: #94a3b8;
+  letter-spacing: 0.6px;
+}
+
+.tm-jp-led strong {
+  font-size: 11px;
+  font-weight: 900;
+  color: #67e8f9;
+}
+
+.tm-jp-led.minor { border-color: #a855f7; }
+.tm-jp-led.minor strong { color: #e9d5ff; }
+.tm-jp-led.major { border-color: #f97316; }
+.tm-jp-led.major strong { color: #fdba74; }
+.tm-jp-led.grand { border-color: #facc15; background: rgba(120, 53, 15, 0.35); }
+.tm-jp-led.grand strong { color: #fde047; }
+
+/* 5-Reel Video Slot Grid (5x3 and 5x4) */
+.tm-video-reel-bezel {
+  position: relative;
+  background: linear-gradient(180deg, #1e293b 0%, #090d1a 16%, #050812 84%, #334155 100%);
+  border: 2.5px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 6px;
+  box-shadow: inset 0 6px 18px rgba(0, 0, 0, 0.9);
+}
+
+.tm-video-reels-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.tm-video-reel-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: linear-gradient(180deg, #0f172a 0%, #f8fafc 16%, #ffffff 50%, #f8fafc 84%, #0f172a 100%);
+  border-radius: 9px;
+  padding: 3px;
+  border: 1px solid #475569;
+  overflow: hidden;
+}
+
+.tm-video-reel-col.spinning .tm-video-cell {
+  animation: tmDrumSpinTick 0.09s linear infinite;
+}
+
+.tm-video-cell {
+  height: 48px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.tm-video-reel-bezel.rows-4 .tm-video-cell {
+  height: 41px;
+}
+
+.tm-video-cell.win {
+  background: rgba(250, 204, 21, 0.35);
+  box-shadow: inset 0 0 0 2px #facc15, 0 0 10px rgba(250, 204, 21, 0.85);
+}
+
+.tm-video-cell.orb-locked {
+  background: radial-gradient(circle, #0c4a6e, #082f49);
+  box-shadow: inset 0 0 0 2px #00f3ff;
+}
+
+.tm-locked-orb-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #00f3ff;
+  border-radius: 999px;
+  padding: 2px 5px;
+  background: rgba(2, 6, 23, 0.88);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.tm-slot-cell-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -3px;
+  background: #16a34a;
+  color: #fff;
+  border: 1px solid #fef08a;
+  border-radius: 5px;
+  font-size: 8px;
+  font-weight: 900;
+  padding: 0 3px;
+}
+
+/* Bonus Wheel Overlay (Cyber Buffalo) */
+.tm-wheel-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: rgba(5, 8, 20, 0.92);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+}
+
+.tm-wheel-pointer {
+  color: #fde047;
+  font-size: 16px;
+  line-height: 1;
+  text-shadow: 0 0 10px #ef4444;
+  margin-bottom: -6px;
+  z-index: 2;
+}
+
+.tm-wheel-disc {
+  width: 146px;
+  height: 146px;
+  border-radius: 50%;
+  border: 4px solid #fde047;
+  background: conic-gradient(
+    #0284c7 0deg 45deg,
+    #16a34a 45deg 90deg,
+    #7c3aed 90deg 135deg,
+    #db2777 135deg 180deg,
+    #ea580c 180deg 225deg,
+    #eab308 225deg 270deg,
+    #dc2626 270deg 315deg,
+    #facc15 315deg 360deg
+  );
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 24px rgba(250, 204, 21, 0.65);
+}
+
+.tm-wheel-wedge-label {
+  position: absolute;
+  font-size: 9px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+  white-space: nowrap;
+}
+
+.tm-wheel-spin-cta {
+  background: linear-gradient(135deg, #fde047, #f97316);
+  border: 2px solid #fff;
+  color: #090a0f;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+/* Powerup & Option Button Deck */
+.tm-slot-powerup-deck {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+}
+
+.tm-slot-power-btn {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1.5px solid rgba(148, 163, 184, 0.35);
+  color: #cbd5e1;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 5px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all 0.14s ease;
+}
+
+.tm-slot-power-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.tm-slot-power-btn.ready {
+  border-color: #facc15;
+  color: #fde047;
+  background: rgba(250, 204, 21, 0.14);
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.3);
+}
+
+.tm-slot-power-btn.armed {
+  background: linear-gradient(135deg, #22c55e, #0284c7);
+  border-color: #fef08a;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.55);
+}
+
+.tm-bandit-chip-btn.max {
+  background: radial-gradient(circle at 30% 30%, #7c3aed, #4c1d95);
+  border: 1.5px solid #e9d5ff;
+}
+
+.tm-bandit-spin-btn.lockit {
+  background: linear-gradient(180deg, #67e8f9 0%, #0284c7 50%, #1d4ed8 100%);
+  border-color: #ecfeff;
+  color: #fff;
+}
+
 @media (max-width: 520px) {
   .tm-bandit-cabinet {
-    padding: 8px 10px;
+    padding: 8px 8px;
     gap: 5px;
   }
   .tm-bandit-drum-window {
@@ -1249,18 +1842,20 @@
   .tm-bandit-back-btn,
   .tm-bandit-spin-btn {
     min-height: 44px;
+    font-size: 12.5px;
   }
   .tm-bandit-arm-housing {
-    width: 34px;
+    width: 30px;
   }
   .tm-bandit-arm-track {
-    width: 28px;
-    height: 126px;
-    left: 4px;
+    width: 26px;
+    height: 122px;
+    left: 2px;
   }
   .tm-bandit-arm-ball {
-    width: 27px;
-    height: 27px;
+    width: 26px;
+    height: 26px;
+    font-size: 6.5px;
   }
   .tm-bandit-payglass {
     gap: 3px;
@@ -1268,5 +1863,24 @@
   .tm-bandit-paychip {
     font-size: 9.5px;
     padding: 2px 4px;
+  }
+  .tm-slot-tab-btn {
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+  .tm-slot-tab-badge {
+    display: none;
+  }
+  .tm-video-cell {
+    height: 42px;
+  }
+  .tm-video-reel-bezel.rows-4 .tm-video-cell {
+    height: 35px;
+  }
+  .tm-bandit-stat-box {
+    padding: 3px 4px;
+  }
+  .tm-bandit-stat-box strong {
+    font-size: 11px;
   }
 }

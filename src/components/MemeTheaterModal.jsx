@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import MemeMedia from './MemeMedia';
 import MemeLiveEmotes from './MemeLiveEmotes';
 import { getMemeRarityTier, formatMemeUploadDate } from '../data/starterMemes';
+import { exportMemeWithWatermark, triggerBlobDownload } from './forge/forgeEngine';
 import './MemeTheaterModal.css';
 
 export default function MemeTheaterModal({
@@ -82,6 +83,22 @@ export default function MemeTheaterModal({
     onShareMeme(meme, e);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2200);
+  };
+
+  const handleDownloadWatermarked = async () => {
+    if (!meme?.image_url) return;
+    const safeName = (meme.title || 'thememes-net').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 32);
+    try {
+      const res = await exportMemeWithWatermark(meme, { watermark: true });
+      if (res?.blob) {
+        const ext = res.mime === 'image/gif' ? 'gif' : res.mime === 'video/webm' ? 'webm' : 'png';
+        triggerBlobDownload(res.blob, `${safeName}-thememes-net.${ext}`);
+        return;
+      }
+    } catch {
+      // fallback
+    }
+    window.open(meme.image_url, '_blank', 'noopener');
   };
 
   const handleStageTouchStart = (e) => {
@@ -170,6 +187,9 @@ export default function MemeTheaterModal({
                 Next →
               </button>
             )}
+            <button type="button" className="tm-btn" onClick={handleDownloadWatermarked} title="Download with www.thememes.net watermark">
+              ⬇ Download
+            </button>
             <button type="button" className="tm-btn" onClick={handleCopyPermalink}>
               {copiedLink ? '✅ Link Copied!' : '🔗 Share'}
             </button>

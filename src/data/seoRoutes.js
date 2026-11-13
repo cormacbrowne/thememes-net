@@ -98,28 +98,28 @@ export const SEO_ROUTES = [
     viewMode: 'feed',
     category: 'all',
     introParagraphs: [
-      'THE MEMES.net is a fast, watermark-free meme community and retro cyber-arcade built for instant laughs on desktop, tablet, and phone. Start scrolling right away through curated dank memes, software engineering jokes, gaming moments, and relatable 3AM thoughts—or switch to fullscreen vertical Reels on mobile to double-tap, upvote, and remix any post in seconds.',
-      'Want to make your own meme without downloading an app or creating an account? Open Meme Forge 3.0 to pick from 20 classic blank meme templates, drop in your own photos, animated GIFs, or short MP4 clips, stack draggable Impact or modern captions, add Deep Fry or VHS glitch filters, and export crisp PNGs or publish straight to the community feed.',
-      'Between uploads, explore the 16-pad meme soundboard (featuring Vine Boom, MLG Airhorn, Clown Honk, and iOS silent-switch audio unlock), tune into live procedural synthwave radio, or unwind in seven free-to-play arcade games including Neon Coin Dozer 86, 5-table Retro Pinball, Vegas 777 Slots, Blackjack, Lightning Roulette, Meme Crush Saga, and the MEMEDAQ 86 Stock Market Simulator.'
+      'THE MEMES.net is a fast, simple meme maker, GIF caption tool, and community feed built for instant laughs on desktop, tablet, and phone. Start scrolling right away through curated dank memes, software engineering jokes, gaming moments, and relatable 3AM thoughts—or switch to fullscreen vertical Reels on mobile to double-tap, upvote, and share any post in seconds.',
+      'Want to make your own meme without downloading an app or creating an account? Upload, drop, or paste any photo or animated GIF right on the homepage or inside the Meme & GIF Maker, type classic white Impact Top Text and Bottom Text, and hit Download or Share to get a crisp PNG or animated GIF stamped cleanly with the www.thememes.net watermark.',
+      'Between uploads, explore the 16-pad meme soundboard (featuring Vine Boom, MLG Airhorn, Clown Honk, and iOS silent-switch audio unlock), tune into live procedural synthwave radio, or unwind in free-to-play retro arcade cabinets including Neon Coin Dozer 86, 5-table Pinball, Vegas 777 Slots, Blackjack, Lightning Roulette, Meme Crush Saga, and the MEMEDAQ 86 Stock Market Simulator.'
     ]
   },
   {
     path: '/meme-generator',
     title: 'Free Meme & GIF Generator — Add Top & Bottom Text Online | THE MEMES.net',
     description:
-      'Add classic Impact top and bottom text to any image, GIF, or 20 blank templates free online with no signup required to create or download.',
+      'Upload any image or GIF, add classic Top & Bottom meme text free online, and download or share instantly with a clean www.thememes.net watermark.',
     h1: 'Free Meme & GIF Generator — Top & Bottom Text Maker',
-    kicker: 'THE MEMES.net // Instant Image & GIF Meme Maker',
+    kicker: 'THE MEMES.net // Simple Image & GIF Meme Maker',
     changefreq: 'daily',
     priority: '0.95',
     viewMode: 'feed',
     category: 'all',
     openStudio: true,
-    prerenderTemplates: true,
+    schemaType: 'SoftwareApplication',
     introParagraphs: [
-      'Make a funny meme in under 20 seconds using the free HTML5 Meme Forge 3.0 studio on THE MEMES.net. Choose immediately from 20 ready-to-caption blank meme formats—including 2-Panel Reject/Approve, Expanding Galaxy Brain, Two Red Buttons, Distracted Choice, This Is Fine, Change My Mind, Stonks, Clown Protocol, Always Has Been, and Buff Champion vs Smol Doge—with zero file upload required.',
-      'Every template opens with editable multi-layer captions and a one-tap Random Caption generator if you want instant inspiration. Prefer your own media? Drag and drop any image, paste straight from your clipboard with Ctrl+V, snap a camera photo, or load an animated GIF or MP4 video with non-destructive caption overlays that keep smooth motion intact.',
-      'Customize typography across Impact, Bebas Neue, Comic Neue, Permanent Marker, and pixel fonts, add emoji or custom PNG stickers, apply Deep Fry, VHS RGB Glitch, or 16-bit pixel filters, and undo or redo up to 60 steps. When your creation is ready, download a clean high-resolution file or publish directly to the community feed to earn creator XP and remix royalties.'
+      'Make a classic meme in seconds using the streamlined Image & GIF Maker on THE MEMES.net. Instead of digging through cluttered template galleries, simply drag and drop any image, pick a GIF from your phone or computer, or paste straight from your clipboard with Ctrl+V to jump right into captioning with zero account required.',
+      'Type your Top Text setup and Bottom Text punchline directly in crisp white Impact style with dark outlines, or tap Random Text when you want fast comedy inspiration. Need quick tweaks? Flip between Impact and Clean styles, toggle ALL CAPS, adjust caption size for desktop or mobile legibility, or expand optional emoji stickers and retro color filters only when you want them.',
+      'Unlike static screenshot tools that freeze animated GIFs, THE MEMES.net burns your Top and Bottom captions and subtle www.thememes.net watermark right into every frame of animated GIFs and high-resolution PNGs cleanly in your browser—ready for WhatsApp, iMessage, Discord, Reddit, or one-tap community posting.'
     ]
   },
   {
@@ -431,7 +431,7 @@ export const SEO_ROUTES = [
     introParagraphs: [
       'Take a well-earned break from production incidents, pull requests, and endless code reviews with our curated #TECH and programming meme feed. From Friday 4:59 PM production deploys and git blame plot twists to CSS centering struggles, 63 open StackOverflow tabs, light-mode IDE flashbangs, and npm install dependency trees, every post captures real software engineering life.',
       'Double-tap to upvote your favorite developer jokes, scan and roast any post with our interactive AI Vibe Inspector, or click Caption This to drop your engineering team’s latest inside joke onto classic Expanding Brain, This Is Fine, IQ Bell Curve, and Spiderman Pointing formats inside Meme Forge 3.0 with zero file uploads needed.',
-      'Browse all 16 featured programming and developer memes right below, download crisp watermark-free PNGs, check the community evolution lineage, or share direct Theater links straight into your engineering Slack, Microsoft Teams, and Discord channels with one quick tap on desktop or phone.'
+      'Browse all 16 featured programming and developer memes right below, download crisp PNGs stamped with www.thememes.net, check the community evolution lineage, or share direct Theater links straight into your engineering Slack, Microsoft Teams, and Discord channels with one quick tap on desktop or phone.'
     ]
   },
   {
@@ -467,14 +467,14 @@ export const SEO_ROUTES = [
     introParagraphs: [
       'Scroll the #RELATABLE meme feed for instant "why is this literally me?" comedy—covering 3:47 AM sleep-schedule math, six consecutive morning alarms, checking the fridge for the sixth time hoping new snacks spawned, turning down the car radio to see street signs better, quick 5-minute work meetings that last an hour, and the pure bliss of cancelled weekend plans.',
       'Every card lets you double-tap to upvote, react with emojis, bookmark posts to your personal Saved favorites collection, or tap Share for a direct Theater permalink you can drop straight into group chats on WhatsApp, iMessage, and Discord. Spot a blank format you want to personalize? Tap Caption This to launch it straight inside Meme Forge 3.0.',
-      'Browse all 16 featured relatable memes below, switch cleanly between desktop masonry grid and mobile fullscreen vertical Reels views, explore trending daily caption bounties, or upload your own slice-of-life joke in seconds with zero watermarks or sign-up hurdles.'
+      'Browse all 16 featured relatable memes below, switch cleanly between desktop masonry grid and mobile fullscreen vertical Reels views, explore trending daily caption bounties, or upload your own slice-of-life joke in seconds with zero sign-up hurdles.'
     ]
   },
   {
     path: '/gif-meme-maker',
     title: 'Free GIF Meme Maker — Add Top & Bottom Text to Animated GIFs Online | THE MEMES.net',
     description:
-      'Add classic Impact top and bottom text to any animated GIF free online in 5 seconds. Download animated captioned GIFs directly on iPhone, Android, or desktop with zero signup.',
+      'Add classic Impact top and bottom text to any animated GIF free online in 5 seconds. Download or share animated captioned GIFs stamped cleanly with www.thememes.net.',
     h1: 'Free Animated GIF Meme Maker (Top & Bottom Text)',
     kicker: 'THE MEMES.net // Client-Side GIF Text Burn-In',
     changefreq: 'daily',
@@ -487,53 +487,9 @@ export const SEO_ROUTES = [
     introParagraphs: [
       'Make animated GIF memes with classic white-and-black outline Impact top and bottom text directly inside your browser using THE MEMES.net free GIF Meme Maker. Drop any animated GIF from your camera roll, downloads folder, or clipboard, type your setup line at the top and punchline at the bottom, and watch your live captioned animation loop smoothly right on screen without waiting for slow cloud queues.',
       'Unlike static screenshot editors that freeze animation into a flat image, THE MEMES.net composites your custom Top Text, Bottom Text, color accents, and optional emoji stickers into every frame of the animated GIF right on your device, preserving frame timing and transparent disposal behavior for crisp sharing on iMessage, WhatsApp, Discord, Slack, and Reddit.',
-      'Need inspiration fast? Hit Random Meme Text for instant comedic pairings, switch font size or yellow vs white caption fills with one tap, or publish your captioned meme directly to the community feed with its own shareable preview card link. Works seamlessly on iPhone Safari, Android Chrome, iPad, and desktop browsers.'
+      'Need inspiration fast? Hit Random Meme Text for instant comedic pairings, adjust text size or color fills with one tap, and download or share a crisp GIF stamped cleanly with www.thememes.net—or publish directly to the community feed with its own shareable preview card link. Works seamlessly on iPhone Safari, Android Chrome, iPad, and desktop browsers.'
     ]
-  },
-  {
-    path: '/templates',
-    title: 'Free Meme Templates — 20 Classic Blank Meme Maker Formats | THE MEMES.net',
-    description:
-      'Browse 20 free classic blank meme templates including Drake, Expanding Brain, Two Red Buttons, This Is Fine, Distracted Choice, and Stonks. Add Top & Bottom text in seconds.',
-    h1: '20 Classic Blank Meme Templates — Instant Caption Studio',
-    kicker: 'THE MEMES.net // Browse & Caption Ready Formats',
-    changefreq: 'daily',
-    priority: '0.92',
-    viewMode: 'feed',
-    category: 'all',
-    openStudio: true,
-    prerenderTemplates: true,
-    schemaType: 'ImageGallery',
-    introParagraphs: [
-      'Pick from 20 timeless blank meme formats on THE MEMES.net and start typing your Top Text and Bottom Text in under three seconds—no hunting for clean images, no cropping out blurry watermarks, and no account wall blocking your export button. Every classic format loads at crisp resolution inside our streamlined Meme & GIF Maker with pre-positioned Impact captions ready to edit.',
-      'Explore internet legends across every comedy style: 2-Panel Approve/Reject Drake comparison, 4-Tier Expanding Galaxy Brain, Two Red Buttons panic sweat, Distracted By Shiny New Thing, This Is Fine room on fire, Change My Mind booth, Buff Champion vs Smol Doge, Stonks and Not Stonks, Yelling vs Unbothered Dinner Cat, GigaChad verdict, 4-Step Clown Protocol, and IQ Bell Curve.',
-      'Click any template card below to launch its dedicated maker page pre-filled with editable Top & Bottom text layers, random joke ideas, and one-tap PNG download or instant feed publishing. Whether you are roasting Friday deployments in Slack or cheering up the group chat, your next meme is seconds away.'
-    ]
-  },
-  ...STUDIO_TEMPLATES.map((tpl) => {
-    const cleanName = tpl.name.replace(/^[^\w\s]+\s*/u, '').trim();
-    const path = getTemplateRoutePath(tpl);
-    return {
-      path,
-      title: `${cleanName} Meme Generator — Add Top & Bottom Text Free | THE MEMES.net`,
-      description: `Make a ${cleanName} meme free online in seconds. Edit "${tpl.defaultTop}" top & bottom Impact text, download crisp PNG or share directly.`,
-      h1: `${cleanName} Meme Generator`,
-      kicker: `Template Hub // Instant #${(tpl.category || 'meme').toUpperCase()} Format`,
-      changefreq: 'weekly',
-      priority: '0.85',
-      viewMode: 'feed',
-      category: tpl.category || 'dank',
-      openStudio: true,
-      studioTemplateId: tpl.id,
-      ogImage: `${SITE_ORIGIN}${tpl.src}`,
-      schemaType: 'SoftwareApplication',
-      introParagraphs: [
-        `Create your own custom ${cleanName} meme in seconds using the free HTML5 editor on THE MEMES.net. Instead of struggling with cluttered photo suites or paying to remove corner watermarks, this page opens straight into our streamlined Top & Bottom Text studio with the clean ${cleanName} template already loaded and sharp white-with-black-stroke Impact captions positioned cleanly.`,
-        `Kick off right from the built-in starter prompt ("${tpl.defaultTop}" paired with "${tpl.defaultBottom}"), hit Random Meme Text to cycle hilarious variations, or type your own inside joke into the Top Text and Bottom Text fields. You can quickly flip between bold white, yellow, or red text, dial the caption size for punchy mobile readability, or expand optional stickers and VHS filters whenever you want extra flair.`,
-        `Once your ${cleanName} meme is locked in, download a crisp high-resolution PNG straight to iPhone, Android, or desktop, or tap Publish to share a dedicated permalink URL complete with a live rich preview card for WhatsApp, iMessage, Discord, and Reddit.`
-      ]
-    };
-  })
+  }
 ];
 
 const ROUTE_BY_PATH = new Map(SEO_ROUTES.map((r) => [r.path, r]));
@@ -545,6 +501,7 @@ export function normalizeRoutePath(pathname = '/') {
   if (!cleaned.startsWith('/')) cleaned = `/${cleaned}`;
   cleaned = cleaned.toLowerCase();
   if (cleaned === '/memes/tech') return '/memes/programming';
+  if (cleaned === '/templates' || cleaned.startsWith('/templates/')) return '/meme-generator';
   return cleaned || '/';
 }
 
@@ -711,16 +668,10 @@ export function getCanonicalPathForState({
     return PRANK_DISGUISE_TO_PATH[prankDisguise];
   }
   if (showStudio) {
-    if (forgeIntent?.mode === 'template' && forgeIntent.templateId && TEMPLATE_ID_TO_PATH[forgeIntent.templateId]) {
-      return TEMPLATE_ID_TO_PATH[forgeIntent.templateId];
-    }
     if (forgeIntent?.mode === 'gif') {
       return '/gif-meme-maker';
     }
-    if (forgeIntent?.mode === 'templates') {
-      return '/templates';
-    }
-    if (!forgeIntent || forgeIntent.mode === 'blank') {
+    if (!forgeIntent || forgeIntent.mode === 'blank' || forgeIntent.mode === 'templates' || forgeIntent.mode === 'template') {
       return '/meme-generator';
     }
   }

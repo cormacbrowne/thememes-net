@@ -13,16 +13,16 @@ import {
   loadImg,
   docRatio,
   burnInVideo,
-  burnInAnimatedGif
+  exportMemeWithWatermark,
+  triggerBlobDownload,
+  shareExportedMeme
 } from './forgeEngine';
 import {
   ACCEPT_MEDIA,
   validateFile,
-  canvasToCompressedBlob,
-  extFor,
-  guessContentType
+  canvasToCompressedBlob
 } from '../../utils/mediaPipeline';
-import { STUDIO_TEMPLATES, VIRAL_CAPTIONS } from '../../data/starterMemes';
+import { VIRAL_CAPTIONS } from '../../data/starterMemes';
 import { sfx } from '../../utils/soundEngine';
 
 const CATEGORIES = [
@@ -52,7 +52,7 @@ function probeRemote(url, kind) {
 const motionFromMeme = async (m) => {
   const base = {
     kind: m.media_type,
-    url: m.image_url,
+    url: m.base_image_url || m.image_url,
     posterUrl: m.poster_url || null,
     width: m.width || 0,
     height: m.height || 0,
@@ -72,7 +72,13 @@ async function buildFromIntent(intent = {}) {
     if (!v.ok) return { ...out, error: v.error, doc: makeDoc() };
     out.tip = v.tip;
     if (v.kind === 'image') {
-      out.doc = makeDoc({ panels: [{ src: URL.createObjectURL(intent.file), blob: intent.file }] });
+      out.doc = makeDoc({
+        panels: [{ src: URL.createObjectURL(intent.file), blob: intent.file }],
+        layers: [
+          makeTextLayer({ slot: 'top', text: '', y: 0.1, h: 0.18 }),
+          makeTextLayer({ slot: 'bottom', text: '', y: 0.89, h: 0.18 })
+        ]
+      });
     } else {
       out.doc = makeDoc({
         base: {
@@ -82,14 +88,17 @@ async function buildFromIntent(intent = {}) {
           width: v.probe.width,
           height: v.probe.height,
           duration: v.probe.duration
-        }
+        },
+        layers: [
+          makeTextLayer({ slot: 'top', text: '', y: 0.1, h: 0.18 }),
+          makeTextLayer({ slot: 'bottom', text: '', y: 0.89, h: 0.18 })
+        ]
       });
     }
     return out;
   }
   if ((intent.mode === 'remix' || intent.mode === 'caption') && parent) {
-    const src = intent.mode === 'caption' ? parent.base_image_url || parent.image_url : parent.image_url;
-    const matchingTpl = STUDIO_TEMPLATES.find((t) => t.src === src);
+    const src = parent.base_image_url || parent.image_url;
     const randPair = VIRAL_CAPTIONS[Math.floor(Math.random() * VIRAL_CAPTIONS.length)] || [
       'WAIT A SECOND...',
       'PLOT TWIST UNLOCKED 💀'
@@ -97,24 +106,17 @@ async function buildFromIntent(intent = {}) {
     const fresh =
       intent.mode === 'remix'
         ? [
-            makeTextLayer({ text: 'WAIT A SECOND...', y: 0.1, h: 0.18 }),
-            makeTextLayer({ text: 'PLOT TWIST UNLOCKED 💀', y: 0.9, h: 0.18, fill: '#facc15' })
+            makeTextLayer({ slot: 'top', text: 'WAIT A SECOND...', y: 0.1, h: 0.18 }),
+            makeTextLayer({ slot: 'bottom', text: 'PLOT TWIST UNLOCKED 💀', y: 0.89, h: 0.18, fill: '#facc15' })
           ]
         : [
-            makeTextLayer({ text: matchingTpl?.defaultTop || randPair[0], y: 0.1, h: 0.18 }),
-            makeTextLayer({
-              text: matchingTpl?.defaultBottom || randPair[1],
-              y: 0.9,
-              h: 0.18,
-              fill: '#facc15'
-            })
+            makeTextLayer({ slot: 'top', text: randPair[0], y: 0.1, h: 0.18 }),
+            makeTextLayer({ slot: 'bottom', text: randPair[1], y: 0.89, h: 0.18, fill: '#facc15' })
           ];
     out.title =
       intent.mode === 'remix'
         ? `REMIX: ${parent.title || 'Untitled'}`
-        : matchingTpl
-          ? `${matchingTpl.defaultTop} — ${matchingTpl.defaultBottom}`
-          : `Caption This: ${parent.title || ''}`.trim();
+        : `Caption: ${parent.title || ''}`.trim();
     if (isMotionParent) {
       out.doc = makeDoc({ base: await motionFromMeme(parent), layers: fresh });
     } else {
@@ -128,8 +130,8 @@ async function buildFromIntent(intent = {}) {
     out.category = b.category || 'dank';
     const baseMeme = b.baseMeme;
     const layers = [
-      makeTextLayer({ text: b.defaultTop || 'WHEN THE BOUNTY DROPS', y: 0.1, h: 0.18 }),
-      makeTextLayer({ text: b.defaultBottom || '+200 XP INCOMING', y: 0.9, h: 0.18, fill: '#facc15' })
+      makeTextLayer({ slot: 'top', text: b.defaultTop || 'WHEN THE BOUNTY DROPS', y: 0.1, h: 0.18 }),
+      makeTextLayer({ slot: 'bottom', text: b.defaultBottom || '+200 XP INCOMING', y: 0.89, h: 0.18, fill: '#facc15' })
     ];
     if (baseMeme && (baseMeme.media_type === 'video' || baseMeme.media_type === 'gif')) {
       out.doc = makeDoc({ base: await motionFromMeme(baseMeme), layers });
@@ -142,8 +144,8 @@ async function buildFromIntent(intent = {}) {
     const c = intent.chaos;
     out.title = `REMIX: ${c.top}`;
     const layers = [
-      makeTextLayer({ text: c.top, y: 0.1, h: 0.18 }),
-      makeTextLayer({ text: c.bottom, y: 0.9, h: 0.18, fill: '#facc15' }),
+      makeTextLayer({ slot: 'top', text: c.top, y: 0.1, h: 0.18 }),
+      makeTextLayer({ slot: 'bottom', text: c.bottom, y: 0.89, h: 0.18, fill: '#facc15' }),
       ...(c.stickers || []).map((st, i) =>
         makeSticker({
           emoji: typeof st === 'string' ? st : st?.emoji || '🔥',
@@ -156,49 +158,29 @@ async function buildFromIntent(intent = {}) {
     if (isMotionParent) {
       out.doc = makeDoc({ base: await motionFromMeme(parent), layers });
     } else {
-      const chaosSrc = intent.imageUrl || parent?.base_image_url || parent?.image_url || STUDIO_TEMPLATES[0]?.src || '';
+      const chaosSrc = intent.imageUrl || parent?.base_image_url || parent?.image_url || '';
       out.doc = makeDoc({ panels: chaosSrc ? [{ src: chaosSrc }] : [], layers });
       out.doc.filter = typeof c.filter === 'string' ? c.filter : 'none';
     }
     return out;
   }
-  if (intent.mode === 'template') {
-    const tpl =
-      STUDIO_TEMPLATES.find((t) => t.id === intent.templateId) ||
-      STUDIO_TEMPLATES[0];
-    if (tpl) {
-      out.title = `${tpl.defaultTop} — ${tpl.defaultBottom}`;
-      out.category = tpl.category || 'dank';
-      out.tip = `✨ Loaded "${tpl.name}" — customize Top & Bottom text below!`;
-      out.doc = makeDoc({
-        panels: [{ src: tpl.src }],
-        layers: [
-          makeTextLayer({ slot: 'top', text: tpl.defaultTop || 'TOP TEXT', y: 0.1, h: 0.18 }),
-          makeTextLayer({ slot: 'bottom', text: tpl.defaultBottom || 'BOTTOM TEXT', y: 0.89, h: 0.18, fill: '#ffffff' })
-        ]
-      });
-      return out;
-    }
-  }
   if (intent.mode === 'gif') {
-    out.tip = '🎞️ Drop or pick any GIF to add Top & Bottom Impact captions!';
+    out.tip = '🎞️ Upload or drop any GIF to add Top & Bottom meme text!';
     out.doc = makeDoc();
     return out;
   }
+  out.tip = '📸 Upload or paste (Ctrl+V) any image or GIF, then type Top & Bottom text!';
   out.doc = makeDoc();
   return out;
 }
 
 /**
- * PHASE 26: MEME FORGE 3.0 — unlimited layers, font pack, layouts, image tools, stickers,
- * undo/redo, IndexedDB drafts, mobile bottom sheet, video/GIF captions (non-destructive).
+ * Simplified Classic Meme & GIF Maker:
+ * Upload or drop an image/GIF, add Top & Bottom text, download or share with www.thememes.net watermark.
  */
 export default function MemeForge({ intent, user, onClose, onPublish }) {
   const editor = useMemeEditor(makeDoc());
   const { doc, set, live, undo, redo, reset, selectedId, setSelectedId } = editor;
-  const [tab, setTab] = useState(() =>
-    !intent?.mode || intent?.mode === 'blank' || intent?.mode === 'templates' ? 'templates' : 'text'
-  );
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('dank');
   const [isSpoiler, setIsSpoiler] = useState(false);
@@ -227,7 +209,6 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
       setCategory(res.category);
       setError(res.error);
       setStatus(res.tip);
-      setTab(!intent?.mode || intent?.mode === 'blank' || intent?.mode === 'templates' ? 'templates' : 'text');
       const firstText = res.doc?.layers?.find((l) => l.type === 'text');
       if (firstText) setSelectedId(firstText.id);
       const saved = await loadDraft();
@@ -275,7 +256,63 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
     setSelectedId(null);
   }, [selectedId, set, setSelectedId]);
 
-  // Keyboard: undo/redo, delete, arrow nudge
+  const handleMediaFile = useCallback(
+    async (file, panelIdx = activePanel) => {
+      if (!file) return;
+      const v = await validateFile(file);
+      if (!v.ok) {
+        setError(v.error);
+        return;
+      }
+      setError('');
+      setStatus(v.tip || '');
+      sfx.playMutate();
+      if (v.kind === 'image') {
+        const src = URL.createObjectURL(file);
+        set((d) => ({
+          ...d,
+          base: null,
+          panels: d.panels.map((p, i) =>
+            i === panelIdx
+              ? { ...p, src, blob: file, zoom: 1, panX: 0, panY: 0, rot: 0, flipX: false, natW: 0, natH: 0 }
+              : p
+          ),
+          layers:
+            d.layers.length > 0
+              ? d.layers
+              : [
+                  makeTextLayer({ slot: 'top', text: '', y: 0.1, h: 0.18 }),
+                  makeTextLayer({ slot: 'bottom', text: '', y: 0.89, h: 0.18 })
+                ]
+        }));
+      } else {
+        const base = {
+          kind: v.kind,
+          file,
+          url: URL.createObjectURL(file),
+          width: v.probe.width,
+          height: v.probe.height,
+          duration: v.probe.duration
+        };
+        set((d) => ({
+          ...makeDoc({
+            base,
+            layers:
+              d.layers.length > 0
+                ? d.layers
+                : [
+                    makeTextLayer({ slot: 'top', text: '', y: 0.1, h: 0.18 }),
+                    makeTextLayer({ slot: 'bottom', text: '', y: 0.89, h: 0.18 })
+                  ]
+          }),
+          filter: 'none'
+        }));
+      }
+    },
+    [activePanel, set]
+  );
+
+  // Keyboard: undo/redo, delete, arrow nudge, paste
   useEffect(() => {
     const onKey = (e) => {
       const typing = /input|textarea|select/i.test(e.target?.tagName || '');
@@ -304,54 +341,26 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
         onClose();
       }
     };
+    const onPaste = (e) => {
+      const items = e.clipboardData?.items || [];
+      for (const item of items) {
+        if (item.type?.startsWith('image/') || item.type?.startsWith('video/')) {
+          const f = item.getAsFile?.();
+          if (f) {
+            e.preventDefault();
+            handleMediaFile(f);
+            break;
+          }
+        }
+      }
+    };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [undo, redo, selectedId, removeSelected, set, onClose]);
-
-  const handleMediaFile = async (file, panelIdx = activePanel) => {
-    if (!file) return;
-    const v = await validateFile(file);
-    if (!v.ok) {
-      setError(v.error);
-      return;
-    }
-    setError('');
-    setStatus(v.tip || '');
-    sfx.playMutate();
-    if (v.kind === 'image') {
-      const src = URL.createObjectURL(file);
-      set((d) => ({
-        ...d,
-        base: null,
-        panels: d.panels.map((p, i) =>
-          i === panelIdx ? { ...p, src, blob: file, zoom: 1, panX: 0, panY: 0, rot: 0, flipX: false, natW: 0, natH: 0 } : p
-        ),
-        layers: d.layers.length > 0
-          ? d.layers
-          : [
-              makeTextLayer({ slot: 'top', text: '', y: 0.1, h: 0.18 }),
-              makeTextLayer({ slot: 'bottom', text: '', y: 0.89, h: 0.18 })
-            ]
-      }));
-      setTab('text');
-    } else {
-      const base = { kind: v.kind, file, url: URL.createObjectURL(file), width: v.probe.width, height: v.probe.height, duration: v.probe.duration };
-      set((d) => ({
-        ...makeDoc({
-          base,
-          layers:
-            d.layers.length > 0
-              ? d.layers
-              : [
-                  makeTextLayer({ slot: 'top', text: '', y: 0.1, h: 0.18 }),
-                  makeTextLayer({ slot: 'bottom', text: '', y: 0.89, h: 0.18 })
-                ]
-        }),
-        filter: 'none'
-      }));
-      setTab('text');
-    }
-  };
+    window.addEventListener('paste', onPaste);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('paste', onPaste);
+    };
+  }, [undo, redo, selectedId, removeSelected, set, onClose, handleMediaFile]);
 
   const handleStickerFile = async (file) => {
     if (!file || !file.type.startsWith('image/')) return;
@@ -375,61 +384,93 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
 
   const exportStill = async (withWatermark = true) => {
     await ensureFontsLoaded(doc.layers);
-    return renderDocToCanvas(doc, images, { width: 1080, watermark: withWatermark ? { generation, author } : null });
+    return renderDocToCanvas(doc, images, { width: 1080, watermark: withWatermark });
   };
 
-  const downloadBlob = (blob, name) => {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = name;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  const buildWatermarkedExport = async (progressLabel) => {
+    const isGif = doc.base?.kind === 'gif';
+    if (isGif) {
+      setStatus(`🎞️ ${progressLabel} GIF with www.thememes.net watermark… 0%`);
+    }
+    return exportMemeWithWatermark(
+      doc.base
+        ? {
+            kind: doc.base.kind,
+            file: doc.base.file || null,
+            url: doc.base.url,
+            doc,
+            images,
+            layers: doc.layers,
+            filter: doc.filter
+          }
+        : { kind: 'image', doc, images },
+      {
+        watermark: true,
+        onProgress: (p) => {
+          if (isGif) setStatus(`🎞️ ${progressLabel} GIF… ${Math.round(p * 100)}%`);
+        }
+      }
+    );
   };
 
   const handleDownload = async () => {
     if (!hasMedia) return;
-    if (doc.base?.kind === 'gif') {
-      const hasVisibleLayers = (doc.layers || []).some((l) => (l.type === 'text' ? String(l.text || '').trim() : true));
-      if (hasVisibleLayers) {
-        setBusy(true);
-        setStatus('🎞️ Encoding animated GIF with Top & Bottom text… 0%');
-        try {
-          const gifBlob = await burnInAnimatedGif(doc.base.file || doc.base.url, doc, images, {
-            watermark: { generation, author },
-            onProgress: (p) => setStatus(`🎞️ Encoding animated GIF… ${Math.round(p * 100)}%`)
-          });
-          if (gifBlob) {
-            downloadBlob(gifBlob, `thememes-net-${Date.now()}.gif`);
-            setStatus('✅ Animated GIF downloaded with your text burned in!');
-            sfx.playPop(2);
-            return;
-          }
-        } catch {
-          setStatus('⚠️ Could not re-encode GIF; saving raw GIF instead.');
-        } finally {
-          setBusy(false);
-        }
-      }
-      if (doc.base.file) {
-        downloadBlob(doc.base.file, `thememes-net-${Date.now()}.gif`);
-      } else {
+    setBusy(true);
+    setError('');
+    try {
+      const res = await buildWatermarkedExport('Encoding');
+      if (res?.blob) {
+        triggerBlobDownload(res.blob, res.filename);
+        setStatus(
+          doc.base?.kind === 'gif'
+            ? '✅ Animated GIF downloaded with captions & www.thememes.net watermark!'
+            : '✅ Meme downloaded with www.thememes.net watermark!'
+        );
+        sfx.playPop(2);
+      } else if (doc.base?.url) {
         window.open(doc.base.url, '_blank', 'noopener');
       }
-      sfx.playPop(2);
-      return;
-    }
-    if (doc.base) {
-      if (doc.base.file) {
-        const ct = guessContentType(doc.base.file, doc.base.kind);
-        downloadBlob(doc.base.file, `thememes-net-${Date.now()}.${extFor(ct)}`);
+    } catch {
+      if (doc.base?.file) {
+        triggerBlobDownload(doc.base.file, `thememes-net-${Date.now()}.${doc.base.kind === 'gif' ? 'gif' : 'mp4'}`);
+        setStatus('⚠️ Saved original file (browser could not re-encode remote media).');
       } else {
-        window.open(doc.base.url, '_blank', 'noopener');
+        setError('⚠️ Could not export that media right now.');
       }
-      return;
+    } finally {
+      setBusy(false);
     }
-    const c = await exportStill(true);
-    c.toBlob((b) => b && downloadBlob(b, `thememes-net-${Date.now()}.png`), 'image/png');
-    sfx.playPop(2);
+  };
+
+  const handleShare = async () => {
+    if (!hasMedia) return;
+    setBusy(true);
+    setError('');
+    try {
+      const res = await buildWatermarkedExport('Preparing');
+      const fallbackText = (doc.layers || [])
+        .filter((l) => l.type === 'text' && l.text?.trim())
+        .map((l) => l.text.trim())
+        .join(' — ');
+      const outcome = await shareExportedMeme({
+        blob: res?.blob || null,
+        filename: res?.filename || `thememes-net-${Date.now()}.png`,
+        title: title.trim() || fallbackText || 'Meme made on www.thememes.net',
+        text: 'Made on www.thememes.net',
+        url: typeof window !== 'undefined' ? window.location.origin : 'https://www.thememes.net'
+      });
+      if (outcome.method === 'files' || outcome.method === 'url') {
+        setStatus('✅ Shared with www.thememes.net watermark!');
+        sfx.playPop(2);
+      } else if (outcome.method === 'download') {
+        setStatus('💾 Downloaded watermarked file & copied www.thememes.net link to share anywhere!');
+        sfx.playPop(2);
+      }
+    } catch {
+      setError('⚠️ Share failed — try Download instead.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   const handleBurnIn = async () => {
@@ -442,8 +483,8 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
       );
       if (!blob) setStatus('⚠️ Burn-in not supported in this browser. Captions stay as an overlay.');
       else {
-        downloadBlob(blob, `thememes-net-${Date.now()}.webm`);
-        setStatus('✅ Burned-in WebM downloaded!');
+        triggerBlobDownload(blob, `thememes-net-${Date.now()}.webm`);
+        setStatus('✅ Burned-in WebM downloaded with www.thememes.net watermark!');
       }
     } catch {
       setStatus('⚠️ Burn-in failed (video may block cross-origin capture).');
@@ -451,38 +492,6 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
       setBusy(false);
     }
   };
-
-  const handleSelectTemplate = useCallback(
-    (tpl) => {
-      if (!tpl) return;
-      sfx.playPop(1);
-      setError('');
-      setStatus(`✨ Loaded "${tpl.name}" — customize caption below or hit 🚀 Publish!`);
-      setCategory(tpl.category || 'dank');
-      setTitle(`${tpl.defaultTop} — ${tpl.defaultBottom}`);
-      const topLayer = makeTextLayer({ slot: 'top', text: tpl.defaultTop || 'TOP TEXT', y: 0.1, h: 0.18 });
-      const botLayer = makeTextLayer({
-        slot: 'bottom',
-        text: tpl.defaultBottom || 'BOTTOM TEXT',
-        y: 0.89,
-        h: 0.18,
-        fill: '#ffffff'
-      });
-      set((d) => ({
-        ...d,
-        base: null,
-        panels: d.panels.map((p, i) =>
-          i === activePanel
-            ? { ...p, src: tpl.src, blob: null, zoom: 1, panX: 0, panY: 0, rot: 0, flipX: false, natW: 0, natH: 0 }
-            : p
-        ),
-        layers: [topLayer, botLayer]
-      }));
-      setSelectedId(topLayer.id);
-      setTab('text');
-    },
-    [activePanel, set, setSelectedId]
-  );
 
   const handleRandomizeCaption = useCallback(() => {
     sfx.playBoing(2);
@@ -501,13 +510,13 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
     });
     setSelectedId(topLayer.id);
     setTitle(`${pair[0]} — ${pair[1]}`);
-    setStatus('🎲 Loaded a random viral caption!');
+    setStatus('🎲 Loaded a random meme caption!');
   }, [set, setSelectedId]);
 
   const handlePublish = async (e) => {
     e?.preventDefault?.();
     if (!hasMedia) {
-      setError('📸 Pick a Studio Template below or upload/paste (Ctrl+V) a photo, GIF or video first!');
+      setError('📸 Upload, drop, or paste (Ctrl+V) an image or GIF first!');
       return;
     }
     setBusy(true);
@@ -532,7 +541,7 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
         };
         overlay = { v: 1, layers: cleanLayers };
       } else {
-        const full = await exportStill(true);
+        const full = await exportStill(false);
         const blob = await canvasToCompressedBlob(full);
         const clean = renderDocToCanvas({ ...doc, layers: [] }, images, { width: 1080, withLayers: false });
         const baseBlob = await canvasToCompressedBlob(clean);
@@ -568,19 +577,31 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
   const tools = useMemo(
     () => ({
       handleMediaFile,
-      handleSelectTemplate,
       handleRandomizeCaption,
       removeSelected,
       openFile: () => fileRef.current?.click(),
       openSticker: () => stickerRef.current?.click()
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activePanel, removeSelected, handleSelectTemplate, handleRandomizeCaption]
+    [activePanel, removeSelected, handleRandomizeCaption]
   );
+
+  const handleDropFile = (e) => {
+    e.preventDefault();
+    const f = e.dataTransfer?.files?.[0];
+    if (f) handleMediaFile(f);
+  };
 
   return (
     <div className="tm-modal-backdrop tm-forge-backdrop" onClick={onClose}>
-      <div className="tm-forge" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Meme & GIF Maker">
+      <div
+        className="tm-forge"
+        onClick={(e) => e.stopPropagation()}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={handleDropFile}
+        role="dialog"
+        aria-label="Meme & GIF Maker"
+      >
         <input
           ref={fileRef}
           type="file"
@@ -650,52 +671,46 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
 
         <div className="tm-forge-body">
           <div className="tm-forge-main">
-            {!hasMedia && (
-              <div className="tm-forge-starter-hub">
-                <div className="tm-forge-starter-top">
-                  <div>
-                    <strong className="tm-forge-starter-title">🎨 Pick a Blank Meme Format (No Upload Needed)</strong>
-                    <span className="tm-forge-starter-sub">
-                      Tap any classic template to load it with a funny caption in 1 click — or upload your own media:
-                    </span>
-                  </div>
-                  <button type="button" className="tm-btn tm-btn-primary" onClick={() => fileRef.current?.click()}>
-                    📸 Upload Photo / GIF / MP4
-                  </button>
-                </div>
-                <div className="tm-forge-template-grid" role="list" aria-label="Studio Blank Meme Templates">
-                  {STUDIO_TEMPLATES.map((tpl) => (
-                    <button
-                      key={tpl.id}
-                      type="button"
-                      className="tm-forge-template-card"
-                      onClick={() => handleSelectTemplate(tpl)}
-                      title={`Use "${tpl.name}" template`}
-                    >
-                      <img src={tpl.src} alt={tpl.name} loading="lazy" />
-                      <span className="tm-forge-template-name">{tpl.name}</span>
-                    </button>
-                  ))}
-                </div>
+            {!hasMedia ? (
+              <div
+                className="tm-forge-upload-hub"
+                role="button"
+                tabIndex={0}
+                onClick={() => fileRef.current?.click()}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    fileRef.current?.click();
+                  }
+                }}
+              >
+                <span style={{ fontSize: 34 }}>📸</span>
+                <strong className="tm-forge-upload-title">Upload, Drop, or Paste an Image or GIF</strong>
+                <span className="tm-forge-upload-sub">
+                  Add classic Top &amp; Bottom meme text in seconds — shares &amp; downloads stamp a clean{' '}
+                  <code>www.thememes.net</code> watermark.
+                </span>
+                <button type="button" className="tm-btn tm-btn-primary">
+                  Choose Image / GIF
+                </button>
               </div>
+            ) : (
+              <ForgeStage
+                editor={editor}
+                images={images}
+                imageVersion={imageVersion}
+                onPanelTap={(idx) => {
+                  setActivePanel(idx);
+                  fileRef.current?.click();
+                }}
+              />
             )}
-            <ForgeStage
-              editor={editor}
-              images={images}
-              imageVersion={imageVersion}
-              tab={tab}
-              onPanelTap={(idx) => {
-                setActivePanel(idx);
-                fileRef.current?.click();
-              }}
-            />
             {(error || status) && <div className={`tm-forge-msg ${error ? 'err' : ''}`}>{error || status}</div>}
           </div>
 
           <ForgeToolPanel
             editor={editor}
-            tab={tab}
-            setTab={setTab}
+            hasMedia={hasMedia}
             selected={selected}
             activePanel={activePanel}
             setActivePanel={setActivePanel}
@@ -704,7 +719,7 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
         </div>
 
         <form className="tm-forge-publish" onSubmit={handlePublish}>
-          <input className="tm-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Post title (optional)" />
+          <input className="tm-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title (optional)" />
           <select className="tm-input" value={category} onChange={(e) => setCategory(e.target.value)}>
             {CATEGORIES.map(([v, l]) => (
               <option key={v} value={v}>
@@ -718,12 +733,15 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
           <button type="button" className="tm-btn" onClick={handleDownload} disabled={!hasMedia || busy}>
             {doc.base?.kind === 'gif' ? '🎞️ Download GIF' : '⬇ Download'}
           </button>
+          <button type="button" className="tm-btn" onClick={handleShare} disabled={!hasMedia || busy}>
+            📤 Share
+          </button>
           {doc.base?.kind === 'video' && (
             <button type="button" className="tm-btn" onClick={handleBurnIn} disabled={busy}>
-              🔥 Burn-in &amp; Download
+              🔥 Burn-in
             </button>
           )}
-          <button type="submit" className="tm-btn tm-btn-primary" disabled={busy}>
+          <button type="submit" className="tm-btn tm-btn-primary" disabled={!hasMedia || busy}>
             {busy ? '⏳ Publishing…' : '🚀 Publish'}
           </button>
         </form>

@@ -519,3 +519,159 @@ export async function burnInAnimatedGif(source, doc, images, { maxWidth = 520, w
   encoder.finish();
   return new Blob([encoder.bytesView()], { type: 'image/gif' });
 }
+
+export function triggerBlobDownload(blob, filename) {
+  if (!blob) return;
+  const a = document.createElement('a');
+  const objectUrl = URL.createObjectURL(blob);
+  a.href = objectUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 4000);
+}
+
+/**
+ * Renders a still image (File/Blob/URL) + optional text/sticker layers + www.thememes.net
+ * watermark onto a natural-aspect canvas and returns a PNG Blob.
+ */
+export async function renderStillImageBlob(source, layers = [], { maxWidth = 1200, filter = 'none', watermark = true } = {}) {
+  const isBlob = source instanceof Blob;
+  const srcUrl = isBlob ? URL.createObjectURL(source) : source;
+  try {
+    const img = await loadImg(srcUrl);
+    const natW = img.naturalWidth || img.width || 800;
+    const natH = img.naturalHeight || img.height || 600;
+    const W = Math.min(maxWidth, Math.max(480, natW));
+    const H = Math.max(2, Math.round((W * natH) / natW));
+    const cleanLayers = (layers || []).filter((l) => (l.type === 'text' ? String(l.text || '').trim() : true));
+    await ensureFontsLoaded(cleanLayers);
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    renderArtworkWithFilter(ctx, W, 0, H, filter, (bctx) => {
+      bctx.drawImage(img, 0, 0, W, H);
+    });
+    if (cleanLayers.length) {
+      drawLayers(ctx, W, H, cleanLayers, new Map());
+    }
+    if (watermark) {
+      stampArcadeCartridgeFooter(ctx, W, H);
+    }
+    return await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+  } finally {
+    if (isBlob) URL.revokeObjectURL(srcUrl);
+  }
+}
+
+/**
+ * Shared export helper for QuickUpload, MemeForge, and Feed/Theater cards.
+ * Always embeds top/bottom captions and the subtle `www.thememes.net` watermark
+ * on still images and animated GIFs when downloaded or shared.
+ */
+export async function exportMemeWithWatermark(input, { onProgress, watermark = true } = {}) {
+  if (!input) return null;
+  const isFeedMeme = typeof input.image_url === 'string' || typeof input.media_type === 'string';
+  const rawUrl = isFeedMeme ? input.base_image_url || input.image_url : input.url || '';
+  const sourceFile = isFeedMeme ? null : input.file || null;
+  const source = sourceFile || rawUrl;
+  const kind = isFeedMeme
+    ? input.media_type === 'gif' || /\.gif(?:$|\?)/i.test(String(input.image_url || rawUrl))
+      ? 'gif'
+      : input.media_type === 'video' || /\.(?:mp4|webm|mov)(?:$|\?)/i.test(String(input.image_url || rawUrl))
+        ? 'video'
+        : 'image'
+    : input.kind || 'image';
+
+  // Avoid double-drawing text when falling back to an already-burned still image without a clean base_image_url
+  const overlayLayers = isFeedMeme
+    ? input.base_image_url || !input.overlay?.burned
+      ? input.overlay?.layers || []
+      : []
+    : input.layers || [];
+
+  const stamp = Date.now();
+  if (kind === 'gif') {
+    const gifDoc = input.doc || {
+      id: 'gif-export',
+      aspect: '1:1',
+      filter: input.filter || 'none',
+      layers: overlayLayers
+    };
+    const gifBlob = await burnInAnimatedGif(source, gifDoc, input.images || new Map(), {
+      watermark,
+      onProgress
+    });
+    if (gifBlob) {
+      return { blob: gifBlob, mime: 'image/gif', filename: `thememes-net-${stamp}.gif` };
+    }
+    if (sourceFile) {
+      return { blob: sourceFile, mime: sourceFile.type || 'image/gif', filename: `thememes-net-${stamp}.gif` };
+    }
+    return null;
+  }
+
+  if (kind === 'video') {
+    if (sourceFile && !overlayLayers.length) {
+      const ext = sourceFile.type?.includes('webm') ? 'webm' : 'mp4';
+      return { blob: sourceFile, mime: sourceFile.type || 'video/mp4', filename: `thememes-net-${stamp}.${ext}` };
+    }
+    const videoUrl = sourceFile ? URL.createObjectURL(sourceFile) : rawUrl;
+    try {
+      const blob = await burnInVideo(videoUrl, overlayLayers, input.images || new Map(), onProgress);
+      if (blob) return { blob, mime: 'video/webm', filename: `thememes-net-${stamp}.webm` };
+    } finally {
+      if (sourceFile) URL.revokeObjectURL(videoUrl);
+    }
+    return sourceFile ? { blob: sourceFile, mime: sourceFile.type || 'video/mp4', filename: `thememes-net-${stamp}.mp4` } : null;
+  }
+
+  if (input.doc && input.images) {
+    await ensureFontsLoaded(input.doc.layers || []);
+    const canvas = renderDocToCanvas(input.doc, input.images, { width: 1080, watermark });
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+    return blob ? { blob, mime: 'image/png', filename: `thememes-net-${stamp}.png` } : null;
+  }
+
+  const blob = await renderStillImageBlob(source, overlayLayers, {
+    filter: input.filter || 'none',
+    watermark
+  });
+  return blob ? { blob, mime: 'image/png', filename: `thememes-net-${stamp}.png` } : null;
+}
+
+/**
+ * Shares an exported watermarked File via Web Share API Level 2 when supported,
+ * or falls back cleanly to URL share / clipboard copy + download.
+ */
+export async function shareExportedMeme({ blob, filename, title, text, url }) {
+  if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+    if (blob && typeof File !== 'undefined') {
+      const file = new File([blob], filename || 'meme-thememes-net.png', { type: blob.type || 'image/png' });
+      try {
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], title, text, url });
+          return { method: 'files' };
+        }
+      } catch (err) {
+        if (err?.name === 'AbortError') return { method: 'cancelled' };
+      }
+    }
+    try {
+      await navigator.share({ title, text, url });
+      return { method: 'url' };
+    } catch (err) {
+      if (err?.name === 'AbortError') return { method: 'cancelled' };
+    }
+  }
+  if (url && navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(url).catch(() => {});
+  }
+  if (blob) {
+    triggerBlobDownload(blob, filename || 'meme-thememes-net.png');
+    return { method: 'download' };
+  }
+  return { method: 'clipboard' };
+}

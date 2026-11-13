@@ -1,10 +1,14 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { getSupabaseClient } from '../supabaseClient';
 import { sfx } from '../utils/soundEngine';
+import { loadImageFromFileOrBlob } from '../utils/canvasMutator';
 import {
-  loadImageFromFileOrBlob,
-  stampArcadeCartridgeFooter
-} from '../utils/canvasMutator';
+  makeTextLayer,
+  drawLayers,
+  ensureFontsLoaded,
+  exportMemeWithWatermark,
+  shareExportedMeme
+} from '../components/forge/forgeEngine';
 import {
   STARTER_MEMES,
   isSeedMeme,
@@ -711,9 +715,9 @@ export function useFeed({
   }, []);
 
   const handleAddComment = useCallback(
-    async (memeId, e) => {
+    async (memeId, e, overrideText = null) => {
       e.preventDefault();
-      const text = (commentInputs[memeId] || '').trim();
+      const text = String(overrideText ?? commentInputs[memeId] ?? '').trim();
       if (!text) return;
 
       const author = user?.username || 'AnonMemer';
@@ -816,36 +820,28 @@ export function useFeed({
 
     const cleanLayers = [];
     if (topText) {
-      cleanLayers.push({
-        id: 'top',
-        type: 'text',
-        text: topText.toUpperCase(),
-        font: 'Anton',
-        align: 'center',
-        fill: '#ffffff',
-        stroke: 0.08,
-        strokeColor: '#000000',
-        x: 0.5,
-        y: 0.1,
-        w: 0.9,
-        h: 0.18
-      });
+      cleanLayers.push(
+        makeTextLayer({
+          id: 'top',
+          slot: 'top',
+          text: topText,
+          fill: '#ffffff',
+          y: 0.1,
+          h: 0.18
+        })
+      );
     }
     if (bottomText) {
-      cleanLayers.push({
-        id: 'bot',
-        type: 'text',
-        text: bottomText.toUpperCase(),
-        font: 'Anton',
-        align: 'center',
-        fill: '#facc15',
-        stroke: 0.08,
-        strokeColor: '#000000',
-        x: 0.5,
-        y: 0.9,
-        w: 0.9,
-        h: 0.18
-      });
+      cleanLayers.push(
+        makeTextLayer({
+          id: 'bot',
+          slot: 'bottom',
+          text: bottomText,
+          fill: '#ffffff',
+          y: 0.89,
+          h: 0.18
+        })
+      );
     }
 
     let media;
@@ -871,20 +867,10 @@ export function useFeed({
       const ctx = fullCanvas.getContext('2d');
       ctx.drawImage(img, 0, 0, W, H);
       if (cleanLayers.length) {
-        cleanLayers.forEach((l) => {
-          ctx.save();
-          ctx.font = `900 ${Math.round(H * 0.08)}px Impact, sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.strokeStyle = '#000';
-          ctx.lineWidth = Math.round(H * 0.015);
-          ctx.fillStyle = l.fill;
-          ctx.strokeText(l.text, W * l.x, H * l.y, W * l.w);
-          ctx.fillText(l.text, W * l.x, H * l.y, W * l.w);
-          ctx.restore();
-        });
+        await ensureFontsLoaded(cleanLayers);
+        drawLayers(ctx, W, H, cleanLayers, new Map());
+        overlay = { v: 1, burned: true, layers: cleanLayers };
       }
-      stampArcadeCartridgeFooter(ctx, W, H, { generation: 0, authorName: user?.username || 'AnonMemer' });
       const blob = await canvasToCompressedBlob(fullCanvas);
 
       const baseCanvas = document.createElement('canvas');
@@ -1093,17 +1079,43 @@ export function useFeed({
       const shareUrl = `${window.location.origin}/m/${encodeURIComponent(String(meme.id))}?ref=share`;
       navigator.clipboard?.writeText(shareUrl).catch(() => {});
       if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-        navigator
-          .share({
-            title: `${meme.title} — THE MEMES.net`,
-            text: `Check out "${meme.title}" on THE MEMES.net — tap to view or make your own!`,
-            url: shareUrl
-          })
-          .catch(() => {});
+        const canShareFile =
+          typeof File !== 'undefined' &&
+          typeof navigator.canShare === 'function' &&
+          navigator.canShare({ files: [new File([new Blob(['x'])], 'meme.png', { type: 'image/png' })] });
+        if (canShareFile) {
+          exportMemeWithWatermark(meme, { watermark: true })
+            .then((res) =>
+              shareExportedMeme({
+                blob: res?.blob || null,
+                filename: res?.filename || `thememes-net-${meme.id}.png`,
+                title: `${meme.title} — www.thememes.net`,
+                text: `Check out "${meme.title}" on www.thememes.net`,
+                url: shareUrl
+              })
+            )
+            .catch(() => {
+              navigator
+                .share({
+                  title: `${meme.title} — www.thememes.net`,
+                  text: `Check out "${meme.title}" on www.thememes.net`,
+                  url: shareUrl
+                })
+                .catch(() => {});
+            });
+        } else {
+          navigator
+            .share({
+              title: `${meme.title} — www.thememes.net`,
+              text: `Check out "${meme.title}" on www.thememes.net`,
+              url: shareUrl
+            })
+            .catch(() => {});
+        }
       }
       trackShareClicked(meme, 'card');
       sfx.playPop(1);
-      setGoblinFortuneToast('🔗 Direct meme link copied! Opens this exact meme in Theater view.');
+      setGoblinFortuneToast('🔗 Share link copied (with www.thememes.net watermark on file share & download)!');
       setTimeout(() => setGoblinFortuneToast(''), 4000);
       awardFairReward({
         category: 'engagement',
@@ -1125,7 +1137,7 @@ export function useFeed({
         if (showSavedOnly && !bookmarkedIds.includes(String(m.id))) return false;
         if (sortBy === 'new24h' && !formatMemeUploadDate(m.created_at).isNewToday) return false;
         if (category === 'remixes') {
-          if ((Number(m.mutation_count) || 0) <= 0 && !m.parent_id) return false;
+          if ((Number(m.mutation_count) || 0) <= 0 && !m.parent_meme_id && !m.parent_id) return false;
         } else if (category !== 'all' && m.category !== category) {
           return false;
         }

@@ -6,7 +6,6 @@ export default function SeoDiscoveryFooter({
   onSelectCategory,
   onOpenBlankStudio,
   onOpenGifStudio,
-  onOpenTemplateStudio,
   onOpenSoundboard,
   onOpenPrankDisguise,
   onSelectViewMode,
@@ -68,9 +67,9 @@ export default function SeoDiscoveryFooter({
               THE MEMES.net
             </div>
             <p style={{ fontSize: '13px', color: '#94a3b8', lineHeight: 1.55, margin: 0 }}>
-              <strong>THE MEMES.net</strong> is a community meme feed, free HTML5 Meme Generator with
-              20+ blank templates, 16-pad Vine Boom Soundboard, and retro Cyber-Arcade featuring Neon
-              Coin Dozer &apos;86, Retro Pinball, Vegas 777 Slots, Meme Crush Saga, and MEMEDAQ &apos;86.
+              <strong>THE MEMES.net</strong> is a simple Image &amp; GIF meme maker (upload media, add
+              classic Top &amp; Bottom text, export &amp; share with <code>www.thememes.net</code>),
+              community meme feed, 16-pad Vine Boom Soundboard, and retro Cyber-Arcade.
             </p>
           </div>
 
@@ -118,34 +117,6 @@ export default function SeoDiscoveryFooter({
                 onClick={(e) => handleSpaLinkClick(e, onOpenGifStudio || onOpenBlankStudio)}
               >
                 🎞️ Free Animated GIF Meme Maker
-              </a>
-              <a
-                href="/templates"
-                className="tm-seo-link"
-                onClick={(e) => handleSpaLinkClick(e, onOpenBlankStudio)}
-              >
-                🖼️ All 20 Classic Blank Meme Templates
-              </a>
-              <a
-                href="/templates/drake-meme-generator"
-                className="tm-seo-link"
-                onClick={(e) => handleSpaLinkClick(e, () => onOpenTemplateStudio?.('tpl-drake-compare'))}
-              >
-                🙅 Drake 2-Panel Meme Generator
-              </a>
-              <a
-                href="/templates/expanding-brain-meme-generator"
-                className="tm-seo-link"
-                onClick={(e) => handleSpaLinkClick(e, () => onOpenTemplateStudio?.('tpl-expanding-brain'))}
-              >
-                🧠 Expanding Brain Meme Generator
-              </a>
-              <a
-                href="/templates/this-is-fine-meme-generator"
-                className="tm-seo-link"
-                onClick={(e) => handleSpaLinkClick(e, () => onOpenTemplateStudio?.('tpl-this-is-fine'))}
-              >
-                🔥 This Is Fine Meme Generator
               </a>
               <a
                 href="/meme-soundboard"

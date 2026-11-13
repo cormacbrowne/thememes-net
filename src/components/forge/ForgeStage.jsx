@@ -200,7 +200,6 @@ export default function ForgeStage({ editor, images, tab, onPanelTap, imageVersi
               )}
             </LayerView>
           ))}
-        <span className="tm-forge-watermark">⚡ THEMEMES.NET</span>
       </div>
     </div>
   );

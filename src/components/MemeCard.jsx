@@ -7,6 +7,7 @@ import {
   QUICK_REACTION_COMMENTS,
   formatMemeUploadDate
 } from '../data/starterMemes';
+import { exportMemeWithWatermark, triggerBlobDownload } from './forge/forgeEngine';
 
 const MemeCard = memo(function MemeCard({
   meme,
@@ -110,14 +111,25 @@ const MemeCard = memo(function MemeCard({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleDownloadMemeImage = (e) => {
+  const handleDownloadMemeImage = async (e) => {
     e.stopPropagation();
     if (!meme?.image_url) return;
-    triggerComicPop('DOWNLOADED! ⬇');
+    triggerComicPop('WATERMARKED! ⬇');
+    const safeName = (meme.title || 'thememes-net').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 32);
+    try {
+      const res = await exportMemeWithWatermark(meme, { watermark: true });
+      if (res?.blob) {
+        const ext = res.mime === 'image/gif' ? 'gif' : res.mime === 'video/webm' ? 'webm' : 'png';
+        triggerBlobDownload(res.blob, `${safeName}-thememes-net.${ext}`);
+        return;
+      }
+    } catch {
+      // Fall back to direct file link when cross-origin video/GIF prevents canvas capture
+    }
     const link = document.createElement('a');
     link.href = meme.image_url;
     const ext = meme.media_type === 'video' ? 'mp4' : meme.media_type === 'gif' ? 'gif' : 'webp';
-    link.download = `${(meme.title || 'thememes-net').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 32)}.${ext}`;
+    link.download = `${safeName}.${ext}`;
     link.target = '_blank';
     document.body.appendChild(link);
     link.click();

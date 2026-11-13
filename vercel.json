@@ -104,6 +104,16 @@
       "has": [{ "type": "query", "key": "category", "value": "relatable" }],
       "destination": "/memes/relatable",
       "statusCode": 301
+    },
+    {
+      "source": "/templates",
+      "destination": "/meme-generator",
+      "statusCode": 301
+    },
+    {
+      "source": "/templates/:slug",
+      "destination": "/meme-generator",
+      "statusCode": 301
     }
   ],
   "functions": {

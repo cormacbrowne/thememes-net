@@ -205,16 +205,22 @@ test.describe('Phase 30 iPhone UX, Joystick, Roulette & Classic Meme Maker', () 
     await expect(spinAction).toContainText(/SPINNING/i);
   });
 
-  test('Classic Meme & GIF Maker renders Top & Bottom text inputs and templates cleanly', async ({
+  test('Simple Meme & GIF Maker has no template clutter and supports upload + Top/Bottom text + PNG export', async ({
     page
   }) => {
     await page.goto('/meme-generator', { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('.tm-forge');
 
-    // Pick a template from the hub or open Top & Bottom Text tab
-    const firstTpl = page.locator('.tm-forge-template-card').first();
-    await expect(firstTpl).toBeVisible();
-    await firstTpl.click();
+    // Verify templates UI is removed
+    expect(await page.locator('.tm-forge-template-card').count()).toBe(0);
+    await expect(page.locator('.tm-forge-upload-hub')).toBeVisible();
+
+    const fileInput = page.locator('.tm-forge input[type="file"]').first();
+    await fileInput.setInputFiles({
+      name: 'sample.png',
+      mimeType: 'image/png',
+      buffer: buildTinyPngBuffer()
+    });
 
     const topInput = page.locator('#tm-forge-top-text');
     const bottomInput = page.locator('#tm-forge-bottom-text');
@@ -225,8 +231,28 @@ test.describe('Phase 30 iPhone UX, Joystick, Roulette & Classic Meme Maker', () 
     await bottomInput.fill('BOTTOM TEXT WORKS');
     await expect(topInput).toHaveValue('TOP MEME TEST');
     await expect(bottomInput).toHaveValue('BOTTOM TEXT WORKS');
+
+    // Size slider updates percentage label smoothly
+    const sizeRange = page.locator('.tm-forge-tools input[type="range"]').first();
+    await sizeRange.fill('0.12');
+    await expect(page.locator('.tm-forge-tools')).toContainText('133%');
+
+    const dlBtn = page.locator('.tm-forge button', { hasText: /Download/i }).first();
+    await expect(dlBtn).toBeEnabled();
+    const downloadPromise = page.waitForEvent('download', { timeout: 15000 });
+    await dlBtn.click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toMatch(/\.png$/i);
   });
 });
+
+// Tiny valid PNG buffer for image upload & watermarked PNG export tests
+function buildTinyPngBuffer() {
+  return Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAADklEQVQI12P4z8DAwMAAAwAB/wL+qSAAAAAASUVORK5CYII=',
+    'base64'
+  );
+}
 
 // Valid 4x4 2-frame animated GIF89a binary helper for client-side GIF burn-in test
 function buildTinyAnimatedGifBuffer() {
@@ -258,26 +284,50 @@ function buildTinyAnimatedGifBuffer() {
   return Buffer.from(bytes);
 }
 
-test.describe('Phase 30B Template Routes, GIF Burn-In, Viral Share & JSON-LD', () => {
-  test('/templates/drake-meme-generator preloads Drake template + SoftwareApplication JSON-LD', async ({
+test.describe('Phase 30B Simple Quick Upload, GIF Burn-In, Viral Share & JSON-LD', () => {
+  test('QuickUploadBar lets users upload an image, add Top/Bottom text, and Download without templates', async ({
+    page
+  }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('.tm-quick-upload-shell');
+
+    // No template button on QuickUploadBar and no Trending Formats clutter above feed
+    await expect(page.locator('button', { hasText: /Pick Template/i })).toHaveCount(0);
+    await expect(page.locator('.tm-trending-formats-wrap')).toHaveCount(0);
+
+    const fileInput = page.locator('.tm-quick-upload-shell input[type="file"]').first();
+    await fileInput.setInputFiles({
+      name: 'quick.png',
+      mimeType: 'image/png',
+      buffer: buildTinyPngBuffer()
+    });
+
+    const topField = page.locator('.tm-quick-upload-composer input[aria-label="Top meme text"]');
+    const botField = page.locator('.tm-quick-upload-composer input[aria-label="Bottom meme text"]');
+    await expect(topField).toBeVisible();
+    await topField.fill('WHEN UPLOAD IS INSTANT');
+    await botField.fill('AND WATERMARKED ON SHARE');
+
+    const dlBtn = page.locator('.tm-quick-upload-composer button', { hasText: /Download/i });
+    const downloadPromise = page.waitForEvent('download', { timeout: 15000 });
+    await dlBtn.click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toMatch(/\.png$/i);
+  });
+
+  test('/templates/drake-meme-generator routes cleanly to /meme-generator with SoftwareApplication JSON-LD', async ({
     page
   }) => {
     await page.goto('/templates/drake-meme-generator', { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('.tm-forge');
 
-    const topInput = page.locator('#tm-forge-top-text');
-    const bottomInput = page.locator('#tm-forge-bottom-text');
-    await expect(topInput).toBeVisible();
-    await expect(topInput).not.toHaveValue('');
-    await expect(bottomInput).not.toHaveValue('');
+    expect(await page.locator('.tm-forge-template-card').count()).toBe(0);
+    await expect(page.locator('.tm-forge-upload-hub')).toBeVisible();
 
     const ldJsonRaw = await page.locator('#tm-dynamic-jsonld').textContent();
     const ldJson = JSON.parse(ldJsonRaw || '{}');
     expect(ldJson['@type']).toBe('SoftwareApplication');
-    expect(ldJson.url).toContain('/templates/drake-meme-generator');
-
-    const ogImg = await page.locator('meta[property="og:image"]').getAttribute('content');
-    expect(ogImg).toContain('tpl-drake-compare');
+    expect(ldJson.url).toContain('/meme-generator');
   });
 
   test('/gif-meme-maker burns Top & Bottom text into downloaded animated GIF', async ({ page }) => {

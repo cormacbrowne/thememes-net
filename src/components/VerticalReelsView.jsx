@@ -25,6 +25,7 @@ export default function VerticalReelsView({
   bookmarkedIds,
   onVote,
   onReaction,
+  onAddComment,
   onToggleBookmark,
   onTriggerStudioMutate,
   onCaptionThis,
@@ -422,10 +423,13 @@ export default function VerticalReelsView({
                       className="tm-comment-form"
                       onSubmit={(e) => {
                         e.preventDefault();
-                        if (!localCommentInput.trim()) return;
-                        // Trigger comment addition
-                        const fakeEvt = { preventDefault: () => {} };
-                        onReaction(meme.id, '💬', fakeEvt);
+                        const text = localCommentInput.trim();
+                        if (!text) return;
+                        if (onAddComment) {
+                          onAddComment(meme.id, e, text);
+                        } else {
+                          onReaction?.(meme.id, '💬', e);
+                        }
                         setLocalCommentInput('');
                       }}
                     >

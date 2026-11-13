@@ -2,17 +2,16 @@ import { useState, useRef } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { VIRAL_CAPTIONS } from '../data/starterMemes';
 import { ACCEPT_MEDIA, validateFile } from '../utils/mediaPipeline';
-import BattleCountdown from './BattleCountdown';
+import {
+  makeTextLayer,
+  exportMemeWithWatermark,
+  triggerBlobDownload,
+  shareExportedMeme
+} from './forge/forgeEngine';
 
 export default function QuickUploadBar({
   onQuickPublishFile,
-  onOpenStudioWithFile,
-  onOpenBlankStudio,
-  activeBounty,
-  yesterdayCaptionKing = null,
-  battleEntriesCount = 0,
-  onOpenBattleModal,
-  onAcceptBounty
+  onOpenStudioWithFile
 }) {
   const [previewUrl, setPreviewUrl] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
@@ -21,12 +20,24 @@ export default function QuickUploadBar({
   const [quickTopCaption, setQuickTopCaption] = useState('');
   const [quickBottomCaption, setQuickBottomCaption] = useState('');
   const [quickCategory, setQuickCategory] = useState('dank');
+  const [showPostOptions, setShowPostOptions] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
 
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
+
+  const buildQuickLayers = () => {
+    const layers = [];
+    if (quickTopCaption.trim()) {
+      layers.push(makeTextLayer({ slot: 'top', text: quickTopCaption.trim(), y: 0.1, h: 0.18, fill: '#ffffff' }));
+    }
+    if (quickBottomCaption.trim()) {
+      layers.push(makeTextLayer({ slot: 'bottom', text: quickBottomCaption.trim(), y: 0.89, h: 0.18, fill: '#ffffff' }));
+    }
+    return layers;
+  };
 
   const handleSelectBlob = async (fileOrBlob) => {
     if (!fileOrBlob) return;
@@ -82,7 +93,88 @@ export default function QuickUploadBar({
     setQuickTitle('');
     setQuickTopCaption('');
     setQuickBottomCaption('');
+    setShowPostOptions(false);
     setStatusMsg('');
+  };
+
+  const handleQuickDownload = async () => {
+    if (!selectedFile || isSubmitting) return;
+    setIsSubmitting(true);
+    setStatusMsg(
+      selectedKind === 'gif'
+        ? '🎞️ Encoding GIF with captions & www.thememes.net watermark… 0%'
+        : '🖼️ Rendering meme with www.thememes.net watermark…'
+    );
+    try {
+      const res = await exportMemeWithWatermark(
+        {
+          kind: selectedKind,
+          file: selectedFile,
+          url: previewUrl,
+          layers: buildQuickLayers()
+        },
+        {
+          watermark: true,
+          onProgress: (p) => {
+            if (selectedKind === 'gif') {
+              setStatusMsg(`🎞️ Encoding GIF… ${Math.round(p * 100)}%`);
+            }
+          }
+        }
+      );
+      if (res?.blob) {
+        triggerBlobDownload(res.blob, res.filename);
+        setStatusMsg('✅ Downloaded with www.thememes.net watermark!');
+        sfx.playPop(2);
+      }
+    } catch {
+      setStatusMsg('⚠️ Could not export right now — try opening Full Editor.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleQuickShare = async () => {
+    if (!selectedFile || isSubmitting) return;
+    setIsSubmitting(true);
+    setStatusMsg('📤 Preparing meme with www.thememes.net watermark…');
+    try {
+      const res = await exportMemeWithWatermark(
+        {
+          kind: selectedKind,
+          file: selectedFile,
+          url: previewUrl,
+          layers: buildQuickLayers()
+        },
+        {
+          watermark: true,
+          onProgress: (p) => {
+            if (selectedKind === 'gif') {
+              setStatusMsg(`🎞️ Preparing GIF… ${Math.round(p * 100)}%`);
+            }
+          }
+        }
+      );
+      const caption = [quickTopCaption.trim(), quickBottomCaption.trim()].filter(Boolean).join(' — ');
+      const outcome = await shareExportedMeme({
+        blob: res?.blob || null,
+        filename: res?.filename || `thememes-net-${Date.now()}.png`,
+        title: quickTitle.trim() || caption || 'Meme made on www.thememes.net',
+        text: 'Made on www.thememes.net',
+        url: typeof window !== 'undefined' ? window.location.origin : 'https://www.thememes.net'
+      });
+      if (outcome.method === 'files' || outcome.method === 'url') {
+        setStatusMsg('✅ Shared with www.thememes.net watermark!');
+        sfx.playPop(2);
+      } else if (outcome.method === 'download') {
+        setStatusMsg('💾 Saved watermarked file & copied www.thememes.net link to share anywhere!');
+        sfx.playPop(2);
+      }
+    } catch {
+      setStatusMsg('⚠️ Share failed — try Download instead.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleQuickSubmit = async (e) => {
@@ -100,7 +192,7 @@ export default function QuickUploadBar({
         event: e
       });
       handleClearPreview();
-      setStatusMsg('✅ Meme uploaded to the live feed!');
+      setStatusMsg('✅ Meme posted to the live feed!');
       setTimeout(() => setStatusMsg(''), 3500);
     } catch {
       setStatusMsg('⚠️ Upload failed. Please try again.');
@@ -111,8 +203,8 @@ export default function QuickUploadBar({
 
   return (
     <section
-      className={`tm-quick-upload-shell ${isDragOver ? 'drag-over' : ''}`}
-      aria-label="1-Click Instant Meme Upload"
+      className="tm-quick-upload-shell"
+      aria-label="Simple Image & GIF Meme Maker"
       onDragOver={(e) => {
         if (e.dataTransfer?.types?.includes('Files')) {
           e.preventDefault();
@@ -146,9 +238,9 @@ export default function QuickUploadBar({
       />
 
       {!selectedFile ? (
-        <div className="tm-quick-upload-bar">
+        <div className={`tm-quick-upload-bar ${isDragOver ? 'dragging' : ''}`}>
           <div
-            className="tm-quick-upload-drop-trigger"
+            className="tm-quick-upload-prompt"
             onClick={() => fileInputRef.current?.click()}
             role="button"
             tabIndex={0}
@@ -157,12 +249,13 @@ export default function QuickUploadBar({
             }}
           >
             <span className="tm-quick-upload-icon">🖼️</span>
-            <div className="tm-quick-upload-copy">
-              <div className="tm-quick-upload-headline">
-                Make a Meme in 5 Seconds: <span>Drop an Image or GIF &amp; add Top/Bottom Text!</span>
+            <div>
+              <div className="tm-quick-upload-title">
+                Upload an Image or GIF → Add Top &amp; Bottom Meme Text
               </div>
               <div className="tm-quick-upload-sub">
-                Upload a photo or GIF, type classic Top &amp; Bottom text, or pick a blank template — instant download &amp; share.
+                Drop, pick, or paste (Ctrl+V) any photo or GIF — instant download &amp; share with{' '}
+                <code>www.thememes.net</code> watermark.
               </div>
             </div>
           </div>
@@ -173,17 +266,7 @@ export default function QuickUploadBar({
               className="tm-btn tm-btn-primary"
               onClick={() => fileInputRef.current?.click()}
             >
-              📸 Image / GIF
-            </button>
-
-            <button
-              type="button"
-              className="tm-btn"
-              style={{ borderColor: 'rgba(0, 243, 255, 0.45)', color: '#00f3ff' }}
-              onClick={onOpenBlankStudio}
-              title="Pick a blank meme template and add top & bottom text"
-            >
-              🎨 Pick Template
+              📸 Upload Image / GIF
             </button>
 
             <button
@@ -206,7 +289,7 @@ export default function QuickUploadBar({
           </div>
         </div>
       ) : (
-        <form className="tm-quick-upload-composer" onSubmit={handleQuickSubmit}>
+        <form className="tm-quick-upload-bar tm-quick-upload-composer" onSubmit={handleQuickSubmit}>
           <div className="tm-quick-preview-box">
             {selectedKind === 'video' ? (
               <video
@@ -228,7 +311,7 @@ export default function QuickUploadBar({
             )}
             <button
               type="button"
-              className="tm-quick-remove-btn"
+              className="tm-quick-preview-clear"
               onClick={handleClearPreview}
               aria-label="Remove media"
               title="Remove media"
@@ -237,75 +320,94 @@ export default function QuickUploadBar({
             </button>
           </div>
 
-          <div className="tm-quick-fields">
+          <div className="tm-quick-composer-fields">
             <div className="tm-quick-fields-row">
               <input
                 type="text"
                 className="tm-input"
-                placeholder="Give your meme a title (or leave blank for instant post)..."
-                value={quickTitle}
-                onChange={(e) => setQuickTitle(e.target.value)}
-                style={{ flex: 2, minWidth: '180px' }}
-              />
-              <select
-                className="tm-input"
-                value={quickCategory}
-                onChange={(e) => setQuickCategory(e.target.value)}
-                style={{ flex: 1, minWidth: '130px', background: '#1e293b' }}
-              >
-                <option value="dank">#DANK / FUNNY</option>
-                <option value="relatable">#RELATABLE</option>
-                <option value="gaming">#GAMING</option>
-                <option value="tech">#TECH</option>
-              </select>
-            </div>
-
-            <div className="tm-quick-fields-row">
-              <input
-                type="text"
-                className="tm-input"
+                aria-label="Top meme text"
                 placeholder="TOP TEXT (classic meme style)..."
                 value={quickTopCaption}
                 onChange={(e) => setQuickTopCaption(e.target.value)}
-                style={{ flex: 1 }}
+                style={{ flex: 1, minWidth: '180px' }}
               />
               <input
                 type="text"
                 className="tm-input"
+                aria-label="Bottom meme text"
                 placeholder="BOTTOM TEXT (punchline)..."
                 value={quickBottomCaption}
                 onChange={(e) => setQuickBottomCaption(e.target.value)}
-                style={{ flex: 1 }}
+                style={{ flex: 1, minWidth: '180px' }}
               />
             </div>
 
-            <div className="tm-quick-submit-row">
+            {showPostOptions && (
+              <div className="tm-quick-fields-row">
+                <input
+                  type="text"
+                  className="tm-input"
+                  placeholder="Optional title (auto-filled from captions if blank)..."
+                  value={quickTitle}
+                  onChange={(e) => setQuickTitle(e.target.value)}
+                  style={{ flex: 2, minWidth: '180px' }}
+                />
+                <select
+                  className="tm-input"
+                  value={quickCategory}
+                  onChange={(e) => setQuickCategory(e.target.value)}
+                  style={{ flex: 1, minWidth: '130px', background: '#1e293b' }}
+                >
+                  <option value="dank">#DANK / FUNNY</option>
+                  <option value="relatable">#RELATABLE</option>
+                  <option value="gaming">#GAMING</option>
+                  <option value="tech">#TECH</option>
+                </select>
+              </div>
+            )}
+
+            <div className="tm-quick-composer-btns">
               <button
-                type="submit"
+                type="button"
                 className="tm-btn tm-btn-primary"
                 disabled={isSubmitting}
-                style={{ padding: '10px 18px', fontSize: '14px' }}
+                onClick={handleQuickDownload}
+                title="Download with www.thememes.net watermark"
               >
-                {isSubmitting ? '🚀 Posting...' : '🚀 Post Meme'}
+                {selectedKind === 'gif' ? '🎞️ Download GIF' : '⬇ Download'}
               </button>
 
               <button
                 type="button"
                 className="tm-btn"
-                style={{ borderColor: 'rgba(250, 204, 21, 0.5)', color: '#fde047' }}
+                disabled={isSubmitting}
+                onClick={handleQuickShare}
+                title="Share watermarked meme"
+              >
+                📤 Share
+              </button>
+
+              <button
+                type="submit"
+                className="tm-btn"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? '🚀 Posting...' : '🚀 Post to Feed'}
+              </button>
+
+              <button
+                type="button"
+                className="tm-btn"
                 onClick={() => {
                   sfx.playToggle();
                   const pair =
                     VIRAL_CAPTIONS[Math.floor(Math.random() * VIRAL_CAPTIONS.length)];
                   setQuickTopCaption(pair[0]);
                   setQuickBottomCaption(pair[1]);
-                  if (!quickTitle.trim()) {
-                    setQuickTitle(`${pair[0]} ${pair[1]}`);
-                  }
                 }}
-                title="Fill with a random funny Top & Bottom caption"
+                title="Fill with random meme text"
               >
-                🎲 Random Meme Text
+                🎲 Random Text
               </button>
 
               <button
@@ -319,7 +421,16 @@ export default function QuickUploadBar({
                   }
                 }}
               >
-                🎨 Open Full Editor
+                🎨 More Options
+              </button>
+
+              <button
+                type="button"
+                className="tm-btn"
+                onClick={() => setShowPostOptions((prev) => !prev)}
+                aria-expanded={showPostOptions}
+              >
+                {showPostOptions ? '▴ Less' : '⚙️ Title/Tag'}
               </button>
 
               <button type="button" className="tm-btn" onClick={handleClearPreview}>
@@ -328,44 +439,6 @@ export default function QuickUploadBar({
             </div>
           </div>
         </form>
-      )}
-
-      {/* Compact Inline Daily Caption Battle Strip (Phase 28.15) */}
-      {activeBounty && !selectedFile && (
-        <div className="tm-compact-bounty-strip">
-          <div className="tm-compact-bounty-text">
-            <span className="tm-bounty-chip">⚔️ DAILY CAPTION BATTLE (+60 🪙)</span>
-            <span>
-              <strong>{activeBounty.template?.name || activeBounty.prompt}</strong>
-            </span>
-            <BattleCountdown />
-            {yesterdayCaptionKing && (
-              <span className="tm-caption-king-pill" title="Yesterday's Daily Caption Battle Winner">
-                👑 Caption King: @{yesterdayCaptionKing.author_name}
-              </span>
-            )}
-          </div>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-            {onOpenBattleModal && (
-              <button
-                type="button"
-                className="tm-link-btn"
-                onClick={onOpenBattleModal}
-                title="View today's captions & vote for tomorrow's Caption King"
-              >
-                🏆 Entries ({battleEntriesCount})
-              </button>
-            )}
-            <button
-              type="button"
-              className="tm-link-btn"
-              style={{ color: '#facc15' }}
-              onClick={() => onAcceptBounty && onAcceptBounty(activeBounty)}
-            >
-              ✏️ Caption Today&apos;s Template →
-            </button>
-          </div>
-        </div>
       )}
 
       {statusMsg && <div className="tm-quick-status-msg">{statusMsg}</div>}

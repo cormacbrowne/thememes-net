@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import MemeMedia from './MemeMedia';
+import { exportMemeWithWatermark, shareExportedMeme } from './forge/forgeEngine';
 import './MemeLiveCelebrationModal.css';
 
 const CONFETTI_PIECES = [
@@ -53,19 +54,22 @@ export default function MemeLiveCelebrationModal({
   };
 
   const handleNativeShare = async (e) => {
-    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-      try {
-        await navigator.share({
-          title: meme.title || 'Check out my meme on THE MEMES.net!',
-          text: `🚀 I just dropped a meme on THE MEMES.net: "${meme.title || 'Fresh Meme'}"`,
-          url: shareUrl
-        });
+    try {
+      const exported = await exportMemeWithWatermark(meme, { watermark: true });
+      const outcome = await shareExportedMeme({
+        blob: exported?.blob || null,
+        filename: exported?.filename || `thememes-net-${meme.id || Date.now()}.png`,
+        title: meme.title || 'Check out my meme on www.thememes.net!',
+        text: `🚀 "${meme.title || 'Fresh Meme'}" — made on www.thememes.net`,
+        url: shareUrl
+      });
+      if (outcome.method === 'files' || outcome.method === 'url') {
         setNativeShared(true);
         setTimeout(() => setNativeShared(false), 2200);
         return;
-      } catch {
-        // user cancelled or unsupported; fallback to copy
       }
+    } catch {
+      // fall through to copy
     }
     handleCopy(e);
   };

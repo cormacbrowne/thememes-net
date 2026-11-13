@@ -216,7 +216,6 @@ export default function App() {
     questProgress,
     claimedQuests,
     konamiUnlocked,
-    uploadTokensRemainingToday,
     pioneerBonusAvailable,
     pinataClaimedToday,
     payphoneClaimedToday,
@@ -305,13 +304,10 @@ export default function App() {
     championWins,
     crowdAgreement,
     dailyBattle,
-    yesterdayCaptionKing,
-    battleEntriesCount,
     filteredMemes,
     visibleMemes,
     visibleCount,
     setVisibleCount,
-    trendingFormats,
     theaterMeme,
     handleMarkNotificationsRead,
     handleOpenBlankStudio,
@@ -1090,21 +1086,6 @@ export default function App() {
               closeAllModals();
               loadFileIntoStudio(file);
             }}
-            onOpenBlankStudio={() => {
-              closeAllModals();
-              handleOpenBlankStudio();
-            }}
-            activeBounty={dailyBattle}
-            yesterdayCaptionKing={yesterdayCaptionKing}
-            battleEntriesCount={battleEntriesCount}
-            onOpenBattleModal={() => {
-              sfx.playToggle();
-              closeAllModals();
-              setBattleModalOpen(true);
-            }}
-            onAcceptBounty={handleAcceptBounty}
-            uploadTokensRemainingToday={uploadTokensRemainingToday}
-            pioneerBonusAvailable={pioneerBonusAvailable}
           />
 
           {reportedMemeIds.length > 0 && (
@@ -1178,40 +1159,6 @@ export default function App() {
             </section>
           ) : (
             <>
-              {trendingFormats.length > 0 && (
-                <section className="tm-trending-formats-wrap" aria-label="Trending Community Formats">
-                  <div className="tm-trending-formats-header">
-                    <span>🔥 TRENDING COMMUNITY FORMATS</span>
-                    <span className="tm-trending-formats-sub">Tap any base to add your own spin!</span>
-                  </div>
-                  <div className="tm-trending-formats-scroller">
-                    {trendingFormats.map((tf) => (
-                      <div
-                        key={tf.id}
-                        className="tm-format-card"
-                        onClick={(e) => handleCaptionThis(tf, e)}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') handleCaptionThis(tf, e);
-                        }}
-                      >
-                        <div className="tm-format-thumb-box">
-                          <img
-                            src={tf.base_image_url || tf.poster_url || tf.image_url}
-                            alt={tf.title}
-                            loading="lazy"
-                          />
-                        </div>
-                        <div className="tm-format-info">
-                          <span className="tm-format-title">{tf.title.slice(0, 24)}</span>
-                          <span className="tm-format-badge">✏️ Caption ({tf.formatCount}x)</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
               <main className="tm-grid">
               {visibleMemes.map((meme, idx) => (
                 <div key={meme.id} style={{ display: 'contents' }}>
@@ -1426,6 +1373,7 @@ export default function App() {
         bookmarkedIds={bookmarkedIds}
         handleVote={handleVote}
         handleReaction={handleReaction}
+        handleAddComment={handleAddComment}
         handleToggleBookmark={handleToggleBookmark}
         handleTriggerStudioMutate={handleTriggerStudioMutate}
         handleCaptionThis={handleCaptionThis}

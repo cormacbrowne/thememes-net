@@ -189,25 +189,30 @@ export function renderArtworkWithFilter(ctx, W, areaY, areaH, filterMode, drawAr
 }
 
 /**
- * Phase 26: subtle ~18px corner cartridge watermark (bottom-right) stamped on exports.
+ * Subtle corner watermark stamped on exported/shared images and GIFs.
  */
-export function stampArcadeCartridgeFooter(ctx, W, H, meta = {}) {
-  const gen = Number(meta.generation || 0);
-  const author = meta.author || meta.authorName || 'AnonMemer';
-  const label = `⚡ THEMEMES.NET • GEN-${gen} • @${author}`;
-  const fs = Math.max(9, Math.round(Math.min(W, H) * 0.018));
-  const pillH = Math.max(18, Math.round(fs * 1.8));
+export function stampArcadeCartridgeFooter(ctx, W, H) {
+  const label = 'www.thememes.net';
+  const fs = Math.max(10, Math.round(Math.min(W, H) * 0.022));
+  const pillH = Math.max(18, Math.round(fs * 1.65));
   ctx.save();
-  ctx.font = `800 ${fs}px "Courier New", monospace`;
+  ctx.font = `700 ${fs}px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
   const tw = ctx.measureText(label).width;
-  const pad = Math.round(fs * 0.6);
-  const x = W - tw - pad * 2 - 6;
-  const y = H - pillH - 6;
-  ctx.globalAlpha = 0.55;
+  const pad = Math.round(fs * 0.55);
+  const margin = Math.max(6, Math.round(fs * 0.5));
+  const x = W - tw - pad * 2 - margin;
+  const y = H - pillH - margin;
+  ctx.globalAlpha = 0.68;
   ctx.fillStyle = '#070810';
-  ctx.fillRect(x, y, tw + pad * 2, pillH);
-  ctx.globalAlpha = 0.85;
-  ctx.fillStyle = '#00f3ff';
+  if (typeof ctx.roundRect === 'function') {
+    ctx.beginPath();
+    ctx.roundRect(x, y, tw + pad * 2, pillH, Math.round(pillH * 0.28));
+    ctx.fill();
+  } else {
+    ctx.fillRect(x, y, tw + pad * 2, pillH);
+  }
+  ctx.globalAlpha = 0.94;
+  ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
   ctx.fillText(label, x + pad, y + pillH / 2);

@@ -542,6 +542,7 @@ export default function GameRouter({
   bookmarkedIds,
   handleVote,
   handleReaction,
+  handleAddComment,
   handleToggleBookmark,
   handleTriggerStudioMutate,
   handleCaptionThis,
@@ -822,6 +823,7 @@ export default function GameRouter({
           bookmarkedIds={bookmarkedIds}
           onVote={handleVote}
           onReaction={handleReaction}
+          onAddComment={handleAddComment}
           onToggleBookmark={handleToggleBookmark}
           onTriggerStudioMutate={handleTriggerStudioMutate}
           onCaptionThis={handleCaptionThis}

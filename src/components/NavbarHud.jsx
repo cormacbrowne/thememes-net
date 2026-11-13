@@ -164,7 +164,7 @@ export default function NavbarHud({
               onClick={onOpenExtras}
               title="Open Extras Drawer: 16-Pad Soundboard, WTF?! Goose, 1-800-MEME Payphone, Boss Key, CRT, Turbo & Device Badge"
             >
-              🕹️ <span className="tm-extras-btn-label">Extras</span>
+              🎛️ <span className="tm-extras-btn-label">Extras</span>
             </button>
           )}
 

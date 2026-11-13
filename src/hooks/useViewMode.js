@@ -13,6 +13,7 @@ import { recordLocalMemeView } from '../utils/notifications';
 
 const FIXED_ARCADE_GAMES = [
   'blackjack',
+  'poker',
   'roulette',
   'pusher',
   'slots',
@@ -495,40 +496,47 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
 
   const prevViewModeRef = useRef(viewMode);
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (prevViewModeRef.current !== viewMode) {
-      prevViewModeRef.current = viewMode;
-      // Clear stale overflow lock if entering a scrollable view, and always reset scroll to top
-      // so pressing 🕹️ Games/Lobby (or switching modes) never lands off-screen over dark void.
-      if (!isAnyModalOpen && !isFixedArcadeGame && typeof document !== 'undefined') {
-        document.body.style.overflow = '';
-        document.documentElement.style.overflow = '';
-      }
-      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-      if (typeof document !== 'undefined') {
-        document.documentElement.scrollTop = 0;
-        document.body.scrollTop = 0;
-      }
-      window.requestAnimationFrame?.(() => {
-        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-      });
-    }
-  }, [viewMode, isAnyModalOpen, isFixedArcadeGame]);
+    if (typeof window === 'undefined' || typeof document === 'undefined') return undefined;
+    const modeChanged = prevViewModeRef.current !== viewMode;
+    let lockRafId = null;
 
-  useEffect(() => {
-    if (typeof document === 'undefined') return undefined;
+    const resetScrollTop = () => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    };
+
+    if (modeChanged) {
+      prevViewModeRef.current = viewMode;
+      // Always release overflow lock BEFORE resetting scroll so iOS Safari cannot freeze
+      // a fixed arcade cabinet off-screen at the feed's previous scroll offset.
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      resetScrollTop();
+    }
+
     if (isAnyModalOpen || isFixedArcadeGame) {
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
+      if (modeChanged || window.scrollY > 0 || document.documentElement.scrollTop > 0) {
+        resetScrollTop();
+      }
+      lockRafId = window.requestAnimationFrame?.(() => {
+        if (modeChanged) resetScrollTop();
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+      });
     } else {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
     }
+
     return () => {
+      if (lockRafId != null && window.cancelAnimationFrame) {
+        window.cancelAnimationFrame(lockRafId);
+      }
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
     };
-  }, [isAnyModalOpen, isFixedArcadeGame]);
+  }, [viewMode, isAnyModalOpen, isFixedArcadeGame]);
 
   useEffect(() => {
     const onKeyDown = (e) => {

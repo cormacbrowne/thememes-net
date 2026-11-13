@@ -128,14 +128,21 @@
 }
 
 .tm-ai-copilot-close {
-  background: rgba(2, 6, 23, 0.8);
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  color: #e2e8f0;
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(255, 42, 133, 0.34), rgba(15, 23, 42, 0.92));
+  border: 2px solid rgba(255, 77, 166, 0.9);
+  color: #ffffff;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+  border-radius: 10px;
   cursor: pointer;
+  font-size: 14px;
   font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  box-shadow: 0 0 12px rgba(255, 42, 133, 0.35);
 }
 
 .tm-ai-copilot-telemetry {

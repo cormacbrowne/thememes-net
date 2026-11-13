@@ -46,6 +46,16 @@ export const ARCADE_GAMES_CATALOG = [
     accent: '#38bdf8'
   },
   {
+    id: 'poker',
+    group: 'casino',
+    icon: '🟡',
+    label: "Neon Hold'em '86 Poker",
+    pitch: 'Texas Hold’em with casino chips & token buy-ins.',
+    badge: 'Hold’em',
+    isNew: true,
+    accent: '#ff2a85'
+  },
+  {
     id: 'slots',
     group: 'casino',
     icon: '🎰',

@@ -61,7 +61,7 @@ export default function ArcadeLobby({
         <div className="tm-lobby-hero-copy">
           <h1 className="tm-lobby-title">🕹️ Cyber-Arcade Lobby</h1>
           <p className="tm-lobby-sub">
-            13 retro cabinets, free token tables &amp; daily meme games.
+            14 retro cabinets, free token tables &amp; daily meme games.
           </p>
         </div>
 

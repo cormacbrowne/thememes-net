@@ -152,10 +152,19 @@
 .tm-derby-canvas {
   width: 100%;
   height: auto;
+  min-height: 220px;
+  aspect-ratio: 760 / 360;
   display: block;
   border-radius: 10px;
-  border: 1px solid rgba(0, 243, 255, 0.35);
+  border: 1.5px solid rgba(0, 243, 255, 0.45);
   background: #060913;
+  box-shadow: 0 0 20px rgba(0, 243, 255, 0.14);
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.tm-derby-canvas.is-live-race {
+  border-color: #ff2a85;
+  box-shadow: 0 0 28px rgba(255, 42, 133, 0.35), 0 0 22px rgba(0, 243, 255, 0.25);
 }
 
 .tm-derby-track-actions,

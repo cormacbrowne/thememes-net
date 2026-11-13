@@ -61,7 +61,10 @@ function FlyingSaucerSvg() {
   );
 }
 
-export default function WinCelebrationOverlay({ litePerfMode = false }) {
+export default function WinCelebrationOverlay({
+  litePerfMode = false,
+  compactPlayfieldMode = false
+}) {
   const [activeWin, setActiveWin] = useState(null);
   const [displayAmount, setDisplayAmount] = useState(0);
   const timerRef = useRef(null);
@@ -104,6 +107,31 @@ export default function WinCelebrationOverlay({ litePerfMode = false }) {
   }, []);
 
   if (!activeWin) return null;
+
+  if (compactPlayfieldMode) {
+    return (
+      <div
+        key={activeWin.id}
+        className={`tm-win-overlay is-playfield-compact theme-${activeWin.theme}`}
+        data-reward-tier={activeWin.rewardTier || 'nice'}
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <div className="tm-win-edge-aura" aria-hidden="true" />
+        <div className="tm-win-playfield-ticker">
+          <span className="tm-win-playfield-badge">{activeWin.headline}</span>
+          {activeWin.amount > 0 && (
+            <strong className="tm-win-playfield-amt">
+              +{displayAmount.toLocaleString()} {activeWin.unit}
+            </strong>
+          )}
+          {activeWin.detail && (
+            <span className="tm-win-playfield-detail">{activeWin.detail}</span>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   const isRare = Boolean(activeWin.isRare);
   const rank = activeWin.rewardRank || (isRare ? 5 : activeWin.isBig ? 3 : 2);

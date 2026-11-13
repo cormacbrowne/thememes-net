@@ -104,7 +104,7 @@ export default function ExtrasDrawerModal({
             onClick={onClose}
             aria-label="Close Extras Drawer"
           >
-            ✕
+            ✕ Close
           </button>
         </div>
 

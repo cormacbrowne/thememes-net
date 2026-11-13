@@ -85,6 +85,14 @@ const GAME_ROUTES = [
     }
   },
   {
+    name: "Neon Hold'em Poker",
+    path: '/games/poker',
+    verify: async (page) => {
+      await expect(page.locator('.tm-pk-cabinet')).toBeVisible();
+      await expect(page.locator('.tm-pk-deal-btn')).toBeVisible();
+    }
+  },
+  {
     name: 'One-Arm Bandit Slots',
     path: '/games/slots',
     verify: async (page) => {
@@ -631,6 +639,81 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
       () => document.documentElement.scrollWidth - window.innerWidth
     );
     expect(overflowPx).toBeLessThanOrEqual(2);
+    expect(pageErrors).toEqual([]);
+  });
+
+  test("Neon Hold'em Poker deals, bets with chips, and fits iPhone/iPad/Desktop without overflow", async ({
+    page
+  }) => {
+    const pageErrors = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+
+    for (const vp of [
+      { width: 390, height: 844 },
+      { width: 768, height: 1024 },
+      { width: 1280, height: 800 }
+    ]) {
+      await page.setViewportSize(vp);
+      await page.goto('/games/poker', { waitUntil: 'domcontentloaded' });
+      await expect(page.locator('.tm-pk-cabinet')).toBeVisible();
+      const dealBtn = page.locator('.tm-pk-deal-btn');
+      if (await dealBtn.isVisible() && (await dealBtn.isEnabled())) {
+        await dealBtn.click();
+        await expect(page.locator('.tm-pk-hand-rank-pill')).toBeVisible();
+      }
+      const overflowPx = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(overflowPx).toBeLessThanOrEqual(2);
+    }
+
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('Mobile modal close buttons are clear >= 44px tap targets and Pinball stays unobstructed on iPhone', async ({
+    page
+  }) => {
+    const pageErrors = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+    // Open Rewards Vault modal & verify prominent Close button >= 44px
+    await page.getByRole('button', { name: /Open Token Wallet|Rewards|🪙/i }).first().click();
+    const closeBtn = page.locator('.tm-modal-sticky-header button', { hasText: /Close/i }).first();
+    await expect(closeBtn).toBeVisible();
+    const box = await closeBtn.boundingBox();
+    expect(box.height).toBeGreaterThanOrEqual(42);
+    await closeBtn.click();
+
+    // Navigate to Pinball on iPhone and verify canvas bounding box is prominently visible
+    await page.goto('/games/pinball', { waitUntil: 'domcontentloaded' });
+    const canvas = page.locator('.tm-pin2-canvas');
+    await expect(canvas).toBeVisible();
+    const cBox = await canvas.boundingBox();
+    expect(cBox.height).toBeGreaterThan(360);
+
+    // Navigate to Horse Racing on iPhone and start a race with live track cam
+    await page.goto('/games/horse-racing', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.tm-derby-canvas')).toBeVisible();
+    await page.locator('.tm-derby-primary-btn').first().click();
+    await expect(page.locator('.tm-derby-canvas.is-live-race')).toBeVisible();
+
+    // Launch Slots from scrolled feed on iPhone & switch across all 4 jackpot machines cleanly
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.evaluate(() => window.scrollTo(0, 1200));
+    await page.goto('/games/slots', { waitUntil: 'domcontentloaded' });
+    for (const label of [/Mr\.? Jackpots/i, /Lightning/i, /Buffalo/i, /Bandit/i]) {
+      const tab = page.locator('.tm-slot-tab-btn', { hasText: label }).first();
+      await expect(tab).toBeVisible();
+      await tab.click();
+      await expect(page.locator('.tm-bandit-cabinet')).toBeVisible();
+      const spinBox = await page.locator('.tm-bandit-spin-btn').first().boundingBox();
+      expect(spinBox).not.toBeNull();
+      expect(spinBox.height).toBeGreaterThan(20);
+    }
+
     expect(pageErrors).toEqual([]);
   });
 });

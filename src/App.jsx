@@ -27,6 +27,7 @@ import {
 import { getSecurityAuditReport } from './utils/securityGuard';
 import ParticleOverlay from './components/ParticleOverlay';
 import WinCelebrationOverlay from './components/WinCelebrationOverlay';
+import ArcadeErrorBoundary from './components/ArcadeErrorBoundary';
 import {
   DeLoreanTimeWarpStage,
   DeLoreanDockBanner
@@ -440,7 +441,7 @@ export default function App() {
       setRadioContextStation('vaporwave');
     } else if (['pinball', 'crush', 'pusher', 'battle', 'swipe'].includes(viewMode)) {
       setRadioContextStation('chiptune');
-    } else if (['blackjack', 'roulette', 'slots', 'plinko'].includes(viewMode)) {
+    } else if (['blackjack', 'poker', 'roulette', 'slots', 'plinko'].includes(viewMode)) {
       setRadioContextStation('casinojazz');
     } else if (viewMode === 'derby') {
       setRadioContextStation('western');
@@ -907,7 +908,10 @@ export default function App() {
       <ParticleOverlay ref={particleOverlayRef} litePerfMode={litePerfMode} />
 
       {/* GLOBAL VARIED WIN CELEBRATION OVERLAY */}
-      <WinCelebrationOverlay litePerfMode={litePerfMode} />
+      <WinCelebrationOverlay
+        litePerfMode={litePerfMode}
+        compactPlayfieldMode={viewMode === 'pinball'}
+      />
 
       {/* DELOREAN DMC-12 88 MPH FLYBY & TIME CIRCUITS CONSOLE */}
       <DeLoreanTimeWarpStage
@@ -1291,6 +1295,16 @@ export default function App() {
                           type="button"
                           className="tm-btn tm-btn-primary"
                           onClick={() => {
+                            sfx.playPokerChip?.(2);
+                            setViewMode('poker');
+                          }}
+                        >
+                          🟡 Texas Poker
+                        </button>
+                        <button
+                          type="button"
+                          className="tm-btn tm-btn-primary"
+                          onClick={() => {
                             sfx.playRouletteSpin();
                             setViewMode('roulette');
                           }}
@@ -1421,8 +1435,12 @@ export default function App() {
       )}
 
       {/* ARCADE GAMES & INTERACTIVE MODES ROUTER */}
-      <Suspense fallback={null}>
-        <GameRouter
+      <ArcadeErrorBoundary
+        title="ARCADE CABINET SIGNAL LOST"
+        onReturnHome={() => setViewMode('feed')}
+      >
+        <Suspense fallback={<div style={{ padding: '18px' }}><MemeSkeletonGrid count={3} /></div>}>
+          <GameRouter
           viewMode={viewMode}
         setViewMode={setViewMode}
         tokens={tokens}
@@ -1473,8 +1491,9 @@ export default function App() {
           setDeloreanModalOpen(true);
         }}
         onTriggerDeLoreanWarp={handleTriggerDeLoreanWarp}
-        />
-      </Suspense>
+          />
+        </Suspense>
+      </ArcadeErrorBoundary>
 
       {/* COMMUNITY MODERATION TOAST */}
       {moderationToast && (
@@ -1759,65 +1778,73 @@ export default function App() {
 
       {/* MODAL 6: ARCADE VAULT (FAIR TOKEN LEDGER, XP REACTOR, ONE-ARM BANDIT, WHEEL OF CHAOS, TRAILS, DAILY STREAK & QUESTS) */}
       {showRewardsModal && (
-        <Suspense fallback={MODAL_SKELETON_FALLBACK}>
-          <RewardsModal
-            key={`rewards-${rewardsInitialTab}`}
-            xp={xp}
-            tokens={tokens}
-            tokenLedger={tokenLedger}
-            xpConversionState={xpConversionState}
-            xpAutoConvert={xpAutoConvert}
-            onToggleXpAutoConvert={handleToggleXpAutoConvert}
-            onExchangeXpForTokens={handleExchangeXpForTokens}
-            reactorFlash={reactorFlash}
-            lootSpins={lootSpins}
-            wheelSpinsLeftInWindow={wheelSpinsLeftInWindow}
-            wheelResetMs={wheelResetMs}
-            streakDays={streakDays}
-            streakClaimedToday={streakClaimedToday}
-            onClaimDailyStreak={handleClaimDailyStreak}
-            onCompleteWheelSpin={handleCompleteWheelSpin}
-            onSpendTokens={handleSpendTokens}
-            onPayoutTokens={handlePayoutGameTokens}
-            onOpenUpload={() => {
-              sfx.playToggle();
-              setShowRewardsModal(false);
-              setViewMode('feed');
-              handleOpenBlankStudio();
-            }}
-            unlockedFlairs={unlockedFlairs}
-            equippedFlair={equippedFlair}
-            onEquipFlair={(flair) => {
-              sfx.playToggle();
-              setEquippedFlair(flair);
-            }}
-            cursorTrail={cursorTrail}
-            onSelectCursorTrail={(trailId) => {
-              sfx.playToggle();
-              setCursorTrail(trailId);
-            }}
-            initialTab={rewardsInitialTab}
-            unlockedCosmetics={unlockedCosmetics}
-            equippedFrame={equippedFrame}
-            equippedCassetteSkin={equippedCassetteSkin}
-            activeRadioStation={getRadioState().station}
-            onBuyOrUnlockCosmetic={handleBuyOrUnlockCosmetic}
-            onEquipCosmetic={handleEquipCosmetic}
-            konamiUnlocked={konamiUnlocked}
-            questProgress={questProgress}
-            claimedQuests={claimedQuests}
-            onClaimQuestReward={handleClaimQuestReward}
-            onLaunchSubGame={(mode) => {
-              sfx.playToggle();
-              setShowRewardsModal(false);
-              setViewMode(mode);
-            }}
-            onClose={() => {
-              setShowRewardsModal(false);
-              setRewardsInitialTab('vault');
-            }}
-          />
-        </Suspense>
+        <ArcadeErrorBoundary
+          title="TOKEN VAULT SIGNAL LOST"
+          onReturnHome={() => {
+            setShowRewardsModal(false);
+            setRewardsInitialTab('vault');
+          }}
+        >
+          <Suspense fallback={MODAL_SKELETON_FALLBACK}>
+            <RewardsModal
+              key={`rewards-${rewardsInitialTab}`}
+              xp={xp}
+              tokens={tokens}
+              tokenLedger={tokenLedger}
+              xpConversionState={xpConversionState}
+              xpAutoConvert={xpAutoConvert}
+              onToggleXpAutoConvert={handleToggleXpAutoConvert}
+              onExchangeXpForTokens={handleExchangeXpForTokens}
+              reactorFlash={reactorFlash}
+              lootSpins={lootSpins}
+              wheelSpinsLeftInWindow={wheelSpinsLeftInWindow}
+              wheelResetMs={wheelResetMs}
+              streakDays={streakDays}
+              streakClaimedToday={streakClaimedToday}
+              onClaimDailyStreak={handleClaimDailyStreak}
+              onCompleteWheelSpin={handleCompleteWheelSpin}
+              onSpendTokens={handleSpendTokens}
+              onPayoutTokens={handlePayoutGameTokens}
+              onOpenUpload={() => {
+                sfx.playToggle();
+                setShowRewardsModal(false);
+                setViewMode('feed');
+                handleOpenBlankStudio();
+              }}
+              unlockedFlairs={unlockedFlairs}
+              equippedFlair={equippedFlair}
+              onEquipFlair={(flair) => {
+                sfx.playToggle();
+                setEquippedFlair(flair);
+              }}
+              cursorTrail={cursorTrail}
+              onSelectCursorTrail={(trailId) => {
+                sfx.playToggle();
+                setCursorTrail(trailId);
+              }}
+              initialTab={rewardsInitialTab}
+              unlockedCosmetics={unlockedCosmetics}
+              equippedFrame={equippedFrame}
+              equippedCassetteSkin={equippedCassetteSkin}
+              activeRadioStation={getRadioState().station}
+              onBuyOrUnlockCosmetic={handleBuyOrUnlockCosmetic}
+              onEquipCosmetic={handleEquipCosmetic}
+              konamiUnlocked={konamiUnlocked}
+              questProgress={questProgress}
+              claimedQuests={claimedQuests}
+              onClaimQuestReward={handleClaimQuestReward}
+              onLaunchSubGame={(mode) => {
+                sfx.playToggle();
+                setShowRewardsModal(false);
+                setViewMode(mode);
+              }}
+              onClose={() => {
+                setShowRewardsModal(false);
+                setRewardsInitialTab('vault');
+              }}
+            />
+          </Suspense>
+        </ArcadeErrorBoundary>
       )}
 
       {/* MODAL 7: AI DANK-O-METER & SAVAGE ROAST SCANNER */}

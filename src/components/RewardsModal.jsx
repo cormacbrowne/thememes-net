@@ -478,6 +478,16 @@ export default function RewardsModal({
                 className="tm-btn tm-btn-primary"
                 onClick={() => {
                   onClose();
+                  onLaunchSubGame('poker');
+                }}
+              >
+                🟡 Neon Hold&apos;em Poker
+              </button>
+              <button
+                type="button"
+                className="tm-btn tm-btn-primary"
+                onClick={() => {
+                  onClose();
                   onLaunchSubGame('roulette');
                 }}
               >

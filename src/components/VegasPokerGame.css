@@ -1,0 +1,504 @@
+/* ==========================================================================
+   NEON HOLD'EM '86 TEXAS POKER (.tm-pk-*)
+   ========================================================================== */
+.tm-pk-cabinet {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px 14px;
+  background: radial-gradient(circle at 50% 18%, rgba(28, 12, 54, 0.96), rgba(4, 7, 18, 0.99));
+  border: 2px solid rgba(255, 42, 133, 0.58);
+  border-radius: 18px;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.85), 0 0 32px rgba(255, 42, 133, 0.2);
+  box-sizing: border-box;
+}
+
+.tm-pk-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tm-pk-stat-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tm-pk-pill {
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(0, 243, 255, 0.35);
+  color: #e2e8f0;
+}
+
+.tm-pk-cashout-btn {
+  min-height: 38px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1.5px solid #4ade80;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.25), rgba(16, 185, 129, 0.32));
+  color: #bbf7d0;
+  font-weight: 900;
+  font-size: 12.5px;
+  cursor: pointer;
+  touch-action: manipulation;
+  box-shadow: 0 0 14px rgba(34, 197, 94, 0.35);
+}
+
+.tm-pk-opponents {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tm-pk-seat,
+.tm-pk-player-seat {
+  background: rgba(10, 14, 30, 0.86);
+  border: 1.5px solid rgba(148, 163, 184, 0.26);
+  border-radius: 14px;
+  padding: 8px 10px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tm-pk-seat.is-turn,
+.tm-pk-player-seat.is-turn {
+  border-color: #00f3ff;
+  box-shadow: 0 0 18px rgba(0, 243, 255, 0.38);
+}
+
+.tm-pk-seat.is-winner,
+.tm-pk-player-seat.is-winner {
+  border-color: #facc15;
+  box-shadow: 0 0 24px rgba(250, 204, 21, 0.55);
+}
+
+.tm-pk-seat.is-folded,
+.tm-pk-player-seat.is-folded {
+  opacity: 0.55;
+}
+
+.tm-pk-seat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 12px;
+  color: #f8fafc;
+  margin-bottom: 6px;
+}
+
+.tm-pk-dealer-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 5px;
+  border-radius: 50%;
+  background: #facc15;
+  color: #090a0f;
+  font-weight: 900;
+  font-size: 10px;
+}
+
+.tm-pk-seat-chips {
+  font-size: 12px;
+  font-weight: 900;
+  color: #fde047;
+}
+
+.tm-pk-seat-cards-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.tm-pk-cards-pair {
+  display: flex;
+  gap: 5px;
+}
+
+.tm-pk-seat-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.tm-pk-action-tag {
+  font-size: 10px;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(255, 42, 133, 0.22);
+  border: 1px solid rgba(255, 42, 133, 0.55);
+  color: #fbcfe8;
+}
+
+.tm-pk-felt {
+  position: relative;
+  background: radial-gradient(circle at 50% 45%, #064e3b 0%, #022c22 65%, #031512 100%);
+  border: 2.5px solid rgba(250, 204, 21, 0.55);
+  border-radius: 28px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  box-shadow: inset 0 0 36px rgba(0, 0, 0, 0.68), 0 0 22px rgba(16, 185, 129, 0.25);
+}
+
+.tm-pk-felt-pot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tm-pk-pot-label {
+  font-size: 10.5px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #a7f3d0;
+}
+
+.tm-pk-pot-empty {
+  font-size: 11px;
+  font-weight: 800;
+  color: #fde047;
+}
+
+.tm-pk-board {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.tm-pk-card,
+.tm-pk-card-slot {
+  width: 54px;
+  height: 76px;
+  border-radius: 9px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4px 5px;
+  flex-shrink: 0;
+}
+
+.tm-pk-seat.bot .tm-pk-card,
+.tm-pk-seat.bot .tm-pk-card-slot {
+  width: 40px;
+  height: 56px;
+  padding: 3px 4px;
+  border-radius: 7px;
+}
+
+.tm-pk-card {
+  background: linear-gradient(155deg, #ffffff, #e2e8f0);
+  border: 2px solid #cbd5e1;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.55);
+  font-weight: 900;
+}
+
+.tm-pk-card.is-red {
+  color: #dc2626;
+}
+
+.tm-pk-card.is-black {
+  color: #0f172a;
+}
+
+.tm-pk-card.is-highlight {
+  border-color: #facc15;
+  box-shadow: 0 0 18px rgba(250, 204, 21, 0.78);
+}
+
+.tm-pk-card.is-back {
+  background: repeating-linear-gradient(
+    45deg,
+    #1e1b4b,
+    #1e1b4b 5px,
+    #4c1d95 5px,
+    #4c1d95 10px
+  );
+  border: 2px solid #00f3ff;
+  align-items: center;
+  justify-content: center;
+}
+
+.tm-pk-card-back-emblem {
+  font-size: 11px;
+  font-weight: 900;
+  color: #facc15;
+  text-shadow: 0 0 8px rgba(250, 204, 21, 0.75);
+}
+
+.tm-pk-card-corner {
+  font-size: 12px;
+  line-height: 1;
+  text-align: left;
+}
+
+.tm-pk-card-corner.bottom {
+  text-align: right;
+  transform: rotate(180deg);
+}
+
+.tm-pk-card-suit {
+  font-size: 20px;
+  line-height: 1;
+  text-align: center;
+}
+
+.tm-pk-seat.bot .tm-pk-card-suit {
+  font-size: 15px;
+}
+
+.tm-pk-card-slot {
+  border: 1.5px dashed rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.22);
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.tm-pk-showdown-banner {
+  background: rgba(9, 13, 28, 0.9);
+  border: 1.5px solid #facc15;
+  color: #fde047;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 5px 12px;
+  border-radius: 999px;
+  text-align: center;
+}
+
+.tm-pk-player-seat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tm-pk-player-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tm-pk-hand-rank-pill {
+  display: inline-flex;
+  align-self: flex-start;
+  font-size: 11.5px;
+  font-weight: 900;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(0, 243, 255, 0.16);
+  border: 1px solid rgba(0, 243, 255, 0.5);
+  color: #67e8f9;
+}
+
+.tm-pk-player-chips-area {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.tm-pk-stack-label {
+  font-size: 10px;
+  font-weight: 900;
+  color: #94a3b8;
+  letter-spacing: 0.06em;
+}
+
+.tm-pk-current-bet-badge {
+  font-size: 10.5px;
+  font-weight: 900;
+  color: #86efac;
+}
+
+.tm-pk-chip-stack {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tm-pk-chips-col {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+}
+
+.tm-pk-chip-disc {
+  width: 24px;
+  height: 11px;
+  margin-top: -5px;
+  border-radius: 999px;
+  border: 2px dashed #ffffff;
+  color: #090a0f;
+  font-size: 8px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.55);
+}
+
+.tm-pk-chip-stack.is-compact .tm-pk-chip-disc {
+  width: 20px;
+  height: 9px;
+}
+
+.tm-pk-chip-val {
+  font-size: 13px;
+  font-weight: 900;
+  color: #fde047;
+}
+
+.tm-pk-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tm-pk-idle-controls,
+.tm-pk-turn-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tm-pk-buyin-row,
+.tm-pk-raise-sizes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.tm-pk-buyin-lbl {
+  font-size: 12px;
+  font-weight: 900;
+  color: #fde047;
+}
+
+.tm-pk-chip-btn,
+.tm-pk-size-pill {
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(250, 204, 21, 0.65);
+  background: rgba(250, 204, 21, 0.14);
+  color: #fde047;
+  font-size: 12.5px;
+  font-weight: 900;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.tm-pk-chip-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tm-pk-size-pill.active,
+.tm-pk-chip-btn.active {
+  background: linear-gradient(135deg, #00f3ff, #a855f7);
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+.tm-pk-deal-btn {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 14px;
+  border: 2px solid #fef08a;
+  background: linear-gradient(135deg, #facc15 0%, #ff2a85 65%, #7c3aed 100%);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  touch-action: manipulation;
+  box-shadow: 0 6px 24px rgba(255, 42, 133, 0.48);
+}
+
+.tm-pk-deal-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.tm-pk-action-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.tm-pk-act-btn {
+  min-height: 46px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 900;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.tm-pk-act-btn.fold {
+  background: rgba(239, 68, 68, 0.24);
+  border-color: rgba(248, 113, 113, 0.7);
+}
+
+.tm-pk-act-btn.check {
+  background: rgba(0, 243, 255, 0.24);
+  border-color: #00f3ff;
+}
+
+.tm-pk-act-btn.raise {
+  background: rgba(250, 204, 21, 0.26);
+  border-color: #facc15;
+  color: #fef08a;
+}
+
+.tm-pk-act-btn.allin {
+  background: linear-gradient(135deg, #ff2a85, #f97316);
+  border-color: #fde047;
+}
+
+.tm-pk-waiting-bar {
+  text-align: center;
+  padding: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #67e8f9;
+}
+
+@media (max-width: 520px) {
+  .tm-pk-card,
+  .tm-pk-card-slot {
+    width: 46px;
+    height: 66px;
+    padding: 3px 4px;
+  }
+
+  .tm-pk-action-buttons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -212,7 +212,7 @@ export function DeLoreanTimeWarpStage({
                 }}
                 aria-label="Close Time Circuits"
               >
-                ✕
+                ✕ Close
               </button>
             </div>
 

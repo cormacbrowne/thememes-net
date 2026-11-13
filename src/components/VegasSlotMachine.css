@@ -674,15 +674,17 @@
    ========================================================================== */
 .tm-bandit-standalone {
   flex: 1;
-  min-height: calc(100dvh - 46px);
+  min-height: 0;
+  height: calc(100dvh - 46px);
   width: 100%;
   box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 8px 10px calc(16px + env(safe-area-inset-bottom, 0px));
+  padding: 8px 10px calc(22px + env(safe-area-inset-bottom, 0px));
 }
 
 .tm-bandit-embedded {
@@ -699,13 +701,11 @@
   justify-content: center;
   width: 100%;
   max-width: 630px;
-  max-height: 100%;
 }
 
 .tm-bandit-cabinet {
   flex: 1;
   min-width: 0;
-  max-height: 100%;
   background: linear-gradient(180deg, #240b36 0%, #10091e 48%, #1a0b28 100%);
   border: 3px solid #facc15;
   border-radius: 26px 26px 18px 18px;
@@ -718,7 +718,8 @@
   flex-direction: column;
   justify-content: space-between;
   gap: 7px;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 .tm-bandit-jackpot-glow .tm-bandit-cabinet {

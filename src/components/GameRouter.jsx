@@ -11,6 +11,7 @@ const MemeCrushGame = lazy(() => import('./MemeCrushGame'));
 const VegasPinballGame = lazy(() => import('./VegasPinballGame'));
 const VegasSlotMachine = lazy(() => import('./VegasSlotMachine'));
 const VegasBlackjackGame = lazy(() => import('./VegasBlackjackGame'));
+const VegasPokerGame = lazy(() => import('./VegasPokerGame'));
 const VegasRouletteGame = lazy(() => import('./VegasRouletteGame'));
 const VegasCoinPusherGame = lazy(() => import('./VegasCoinPusherGame'));
 const MemeStockMarketGame = lazy(() => import('./MemeStockMarketGame'));
@@ -88,6 +89,16 @@ export function FixedArcadeTopBar({
           }}
         >
           🃏 21&apos;s
+        </button>
+        <button
+          type="button"
+          className={`tm-fixed-game-pill ${viewMode === 'poker' ? 'active' : ''}`}
+          onClick={() => {
+            sfx.playPokerChip?.(2);
+            setViewMode('poker');
+          }}
+        >
+          🟡 Poker
         </button>
         <button
           type="button"
@@ -298,6 +309,49 @@ export function ArcadeLoungePromo({ setViewMode }) {
               }}
             >
               ▶ Deal Neon 21&apos;s
+            </button>
+          </div>
+        </div>
+
+        {/* Cabinet 0A-2: Neon Hold'em '86 Poker */}
+        <div
+          className="tm-arcade-steer-card tm-steer-blackjack"
+          onClick={() => {
+            sfx.playPokerChip?.(2);
+            setViewMode('poker');
+          }}
+        >
+          <div className="tm-arcade-steer-top">
+            <span className="tm-arcade-steer-pill">🟡 NEON HOLD&apos;EM &apos;86 • CHIPS &amp; TOKEN BUY-INS</span>
+            <span className="tm-arcade-steer-best">
+              🏆 Best Pot: {Number(localStorage.getItem('tm_poker_best_pot_v1') || 0).toLocaleString()}
+            </span>
+          </div>
+          <div className="tm-arcade-steer-body">
+            <div className="tm-arcade-steer-icons">🟡🃏🐍🕶️</div>
+            <div>
+              <h3 className="tm-arcade-steer-title">NEON HOLD&apos;EM &apos;86 — TEXAS POKER</h3>
+              <p className="tm-arcade-steer-desc">
+                Stack your site <strong>🪙 Tokens</strong> into glowing casino chips and play full{' '}
+                <strong>No-Limit Texas Hold&apos;em</strong> against AI sharks! Bet Flop, Turn &amp; River, shove{' '}
+                <strong>ALL IN</strong>, and <strong>💰 Cash Out</strong> your stack back into your wallet!
+              </p>
+            </div>
+          </div>
+          <div className="tm-arcade-steer-footer">
+            <span className="tm-arcade-steer-payout">
+              🟡 Buy In 10–100 🪙 or Practice Free • Real-Time 7-Card Hand Evaluator
+            </span>
+            <button
+              type="button"
+              className="tm-btn tm-btn-primary tm-arcade-steer-cta"
+              onClick={(e) => {
+                e.stopPropagation();
+                sfx.playPokerChip?.(2);
+                setViewMode('poker');
+              }}
+            >
+              ▶ Play Texas Poker
             </button>
           </div>
         </div>
@@ -612,6 +666,27 @@ export default function GameRouter({
               setViewMode('feed');
               handleOpenBlankStudio();
             }}
+            onBackToFeed={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+            }}
+          />
+        </Suspense>
+      )}
+
+      {viewMode === 'poker' && (
+        <Suspense fallback={<MemeSkeletonGrid count={3} />}>
+          <VegasPokerGame
+            tokens={tokens}
+            soundOn={soundOn}
+            onToggleSound={() => {
+              const nextState = !soundOn;
+              sfx.enabled = nextState;
+              setSoundOn(nextState);
+              if (nextState) sfx.playToggle();
+            }}
+            onSpendTokens={handleSpendTokens}
+            onPayoutTokens={handlePayoutGameTokens}
             onBackToFeed={() => {
               sfx.playToggle();
               setViewMode('feed');

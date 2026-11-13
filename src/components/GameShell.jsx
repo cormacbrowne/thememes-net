@@ -167,10 +167,18 @@ export default function GameShell({
             <button
               type="button"
               className="tm-gs-btn"
+              style={{
+                borderColor: 'rgba(255, 77, 166, 0.9)',
+                background: 'rgba(255, 42, 133, 0.28)',
+                color: '#fff',
+                minHeight: '38px',
+                padding: '6px 12px',
+                fontWeight: 900
+              }}
               onClick={() => setHowToOpen(false)}
               aria-label="Close instructions"
             >
-              ✕
+              ✕ Close
             </button>
           </div>
           <ul>

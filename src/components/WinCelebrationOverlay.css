@@ -1109,3 +1109,56 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+/* Compact non-blocking celebration ticker for Pinball / canvas-first games on iPhone */
+.tm-win-overlay.is-playfield-compact {
+  align-items: flex-start;
+  justify-content: center;
+  padding: calc(48px + env(safe-area-inset-top, 0px)) 8px 0;
+}
+
+.tm-win-playfield-ticker {
+  position: relative;
+  z-index: 4;
+  max-width: min(94vw, 460px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(6, 10, 26, 0.92);
+  border: 2px solid #00f3ff;
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.8),
+    0 0 22px rgba(0, 243, 255, 0.55),
+    0 0 18px rgba(255, 42, 133, 0.35);
+  color: #f8fafc;
+  font-size: 12px;
+  line-height: 1.15;
+  animation: tmWinPlayfieldPop 2.1s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+
+.tm-win-playfield-badge {
+  font-weight: 900;
+  color: #fde047;
+}
+
+.tm-win-playfield-amt {
+  color: #4ade80;
+  font-weight: 900;
+}
+
+.tm-win-playfield-detail {
+  color: #a5f3fc;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+@keyframes tmWinPlayfieldPop {
+  0% { opacity: 0; transform: translateY(-10px) scale(0.92); }
+  12% { opacity: 1; transform: translateY(0) scale(1); }
+  85% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-6px) scale(0.97); }
+}

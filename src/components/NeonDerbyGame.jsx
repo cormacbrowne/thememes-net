@@ -58,7 +58,7 @@ export default function NeonDerbyGame({
 
   const [phase, setPhase] = useState('betting'); // 'betting' | 'racing' | 'photo' | 'finished'
   const [commentaryText, setCommentaryText] = useState('Pick a horse & place bets, or roll Lucky Dip.');
-  const [voiceCommentary, setVoiceCommentary] = useState(false);
+  const [voiceCommentary, setVoiceCommentary] = useState(true);
   const [leaderNames, setLeaderNames] = useState(['Doge', 'Stonks', 'Nyan']);
   const [raceResult, setRaceResult] = useState(null); // { order, totalPayout, totalStaked, net, derbyCup }
 
@@ -72,6 +72,10 @@ export default function NeonDerbyGame({
     curves: [],
     sparks: [],
     lastCallMark: -1,
+    lastGallopAt: 0,
+    camX: 380,
+    camY: 180,
+    camZoom: 1,
     photoFlash: 0,
     cheers: 0
   });
@@ -197,8 +201,9 @@ export default function NeonDerbyGame({
 
     setRaceResult(null);
     setPhase('racing');
-    setCommentaryText("🔔 And they're off under the neon lights!");
-    sfx.playRouletteSpin?.();
+    setCommentaryText("🔔 AND THEY'RE OFF under the neon floodlights!");
+    sfx.playDerbyBugle?.();
+    sfx.playDerbyCommentatorPulse?.(0.75);
     if (voiceCommentary) {
       speakCommentaryLine("And they're off at Neon Derby 86!");
     }
@@ -293,10 +298,16 @@ export default function NeonDerbyGame({
       ctx2d.clearRect(0, 0, w, h);
 
       // Update race physics when active
+      let targetZoom = 1;
+      let targetCamX = w * 0.5;
+      let targetCamY = h * 0.5;
+      let leadIdx = st.order[0] || 0;
+      let elapsedRatio = 0;
+
       if (st.running) {
         const rawElapsed = now - st.startTime;
         const duration = prefersReducedMotion ? 7000 : RACE_DURATION_MS;
-        const elapsedRatio = Math.min(1, rawElapsed / duration);
+        elapsedRatio = Math.min(1, rawElapsed / duration);
         // Final-furlong slight slow-mo photo finish (88% -> 100%)
         const shapedT =
           elapsedRatio < 0.88 || prefersReducedMotion
@@ -305,7 +316,9 @@ export default function NeonDerbyGame({
         if (elapsedRatio >= 0.88 && phase === 'racing' && st.lastCallMark < 4) {
           st.lastCallMark = 4;
           setPhase('photo');
-          setCommentaryText('📸 Slow-mo photo finish down the wire!');
+          setCommentaryText('📸 DOWN TO THE WIRE — PHOTO FINISH!');
+          sfx.playDerbyPhotoFinish?.();
+          if (voiceCommentary) speakCommentaryLine('Down to the wire, photo finish!');
           st.photoFlash = 1;
         } else if (elapsedRatio >= 0.65 && st.lastCallMark < 3) {
           st.lastCallMark = 3;
@@ -313,12 +326,21 @@ export default function NeonDerbyGame({
           const chaserName = DERBY_HORSES[st.order[1]].short;
           const line = `🔥 ${leadName} surges clear, ${chaserName} chasing hard!`;
           setCommentaryText(line);
+          sfx.playDerbyCommentatorPulse?.(0.95);
           if (voiceCommentary) speakCommentaryLine(`${leadName} surges clear into the final turn!`);
         } else if (elapsedRatio >= 0.35 && st.lastCallMark < 2) {
           st.lastCallMark = 2;
           const midHorse = DERBY_HORSES[st.order[1]].name;
           const line = `⚡ ${midHorse} makes a bold move on the outside!`;
           setCommentaryText(line);
+          sfx.playDerbyCommentatorPulse?.(0.7);
+          if (voiceCommentary) speakCommentaryLine(`${midHorse} charging hard on the outside!`);
+        }
+
+        // Periodic hoofbeats synced with race pace
+        if (now - (st.lastGallopAt || 0) > (elapsedRatio > 0.6 ? 310 : 410)) {
+          st.lastGallopAt = now;
+          sfx.playDerbyGallop?.(0.45 + elapsedRatio * 0.5);
         }
 
         const rankedNow = [];
@@ -332,6 +354,7 @@ export default function NeonDerbyGame({
           rankedNow.push({ i, p: st.progress[i] });
         }
         rankedNow.sort((a, b) => b.p - a.p);
+        leadIdx = rankedNow[0].i;
         if (Math.floor(rawElapsed / 350) !== st.lastTickerTick) {
           st.lastTickerTick = Math.floor(rawElapsed / 350);
           setLeaderNames([
@@ -341,62 +364,105 @@ export default function NeonDerbyGame({
           ]);
         }
 
+        // Dynamic Follow Camera zooms onto the lead pack and follows across the oval
+        const trackTop = h * 0.25;
+        const trackH = h - trackTop;
+        const laneH = trackH / 8;
+        const startX = 40;
+        const finishX = w - 46;
+        const leadProg = st.progress[rankedNow[0].i] || 0;
+        const secondProg = st.progress[rankedNow[1].i] || leadProg;
+        const packX = startX + ((leadProg * 0.65 + secondProg * 0.35) * (finishX - startX));
+        const packY =
+          trackTop +
+          ((rankedNow[0].i * 0.55 + rankedNow[1].i * 0.3 + rankedNow[2].i * 0.15) + 0.5) * laneH;
+
+        targetZoom = prefersReducedMotion ? 1.35 : elapsedRatio > 0.62 ? 2.1 : 1.85;
+        if (elapsedRatio > 0.88) targetZoom = 1.95;
+        const halfViewW = w / (2 * targetZoom);
+        const halfViewH = h / (2 * targetZoom);
+        targetCamX = Math.max(halfViewW, Math.min(w - halfViewW, packX));
+        targetCamY = Math.max(halfViewH, Math.min(h - halfViewH, packY));
+
         if (elapsedRatio >= 1) {
           st.running = false;
           st.photoFlash = 1;
+          sfx.playDerbyPhotoFinish?.();
           const done = st.onFinish;
           st.onFinish = null;
           if (done) done();
         }
       }
 
+      // Smooth camera interpolation (lerp)
+      const lerpFactor = st.running ? 0.08 : 0.06;
+      st.camZoom = (st.camZoom || 1) + (targetZoom - (st.camZoom || 1)) * lerpFactor;
+      st.camX = (st.camX || w * 0.5) + (targetCamX - (st.camX || w * 0.5)) * lerpFactor;
+      st.camY = (st.camY || h * 0.5) + (targetCamY - (st.camY || h * 0.5)) * lerpFactor;
+
+      ctx2d.save();
+      ctx2d.translate(w / 2, h / 2);
+      ctx2d.scale(st.camZoom, st.camZoom);
+      ctx2d.translate(-st.camX, -st.camY);
+
       // Draw synthwave sky & parallax grandstand backdrop
-      const skyGrad = ctx2d.createLinearGradient(0, 0, 0, h * 0.28);
+      const skyGrad = ctx2d.createLinearGradient(0, 0, 0, h * 0.27);
       skyGrad.addColorStop(0, '#090218');
-      skyGrad.addColorStop(1, '#2d1154');
+      skyGrad.addColorStop(1, '#3b0764');
       ctx2d.fillStyle = skyGrad;
-      ctx2d.fillRect(0, 0, w, h * 0.28);
+      ctx2d.fillRect(0, 0, w, h * 0.27);
 
       // Synthwave sun + parallax grandstand silhouettes
-      const camScroll = st.running ? (st.progress[st.order[0]] || 0) * 140 : 0;
-      ctx2d.fillStyle = 'rgba(236, 72, 153, 0.35)';
+      const camScroll = st.running ? (st.progress[leadIdx] || 0) * 180 : 0;
+      ctx2d.fillStyle = 'rgba(236, 72, 153, 0.44)';
       ctx2d.beginPath();
-      ctx2d.arc(w * 0.78 - camScroll * 0.15, h * 0.16, 26, 0, Math.PI * 2);
+      ctx2d.arc(w * 0.78 - camScroll * 0.14, h * 0.15, 28, 0, Math.PI * 2);
       ctx2d.fill();
 
       ctx2d.fillStyle = '#1e1b4b';
       for (let gx = -1; gx < 6; gx += 1) {
-        const bx = ((gx * 170 - camScroll * 0.4) % (w + 170) + (w + 170)) % (w + 170) - 85;
-        ctx2d.fillRect(bx, h * 0.11, 130, h * 0.17);
-        ctx2d.fillStyle = '#ec4899';
-        ctx2d.fillRect(bx, h * 0.11, 130, 3);
+        const bx = ((gx * 170 - camScroll * 0.42) % (w + 170) + (w + 170)) % (w + 170) - 85;
+        ctx2d.fillRect(bx, h * 0.1, 130, h * 0.17);
+        ctx2d.fillStyle = '#ff2a85';
+        ctx2d.fillRect(bx, h * 0.1, 130, 3);
         ctx2d.fillStyle = '#1e1b4b';
       }
 
       // Track turf / synth surface
-      const trackTop = h * 0.27;
+      const trackTop = h * 0.25;
       const trackH = h - trackTop;
       ctx2d.fillStyle =
         activeCondition.id === 'rain' ? '#071722' : activeCondition.id === 'glitch' ? '#130b24' : '#0b1020';
       ctx2d.fillRect(0, trackTop, w, trackH);
 
+      // Furlong marker lines for high-speed sense
+      ctx2d.strokeStyle = 'rgba(236, 72, 153, 0.18)';
+      ctx2d.lineWidth = 1;
+      for (let f = 1; f < 6; f += 1) {
+        const fx = 40 + ((w - 86) * f) / 6;
+        ctx2d.beginPath();
+        ctx2d.moveTo(fx, trackTop);
+        ctx2d.lineTo(fx, h);
+        ctx2d.stroke();
+      }
+
       // Finish wire at x = finishX
-      const startX = 36;
-      const finishX = w - 42;
+      const startX = 40;
+      const finishX = w - 46;
       ctx2d.strokeStyle = '#ffffff';
       ctx2d.lineWidth = 2;
       for (let cy = trackTop; cy < h; cy += 10) {
         ctx2d.fillStyle = Math.floor(cy / 10) % 2 === 0 ? '#ffffff' : '#ec4899';
-        ctx2d.fillRect(finishX, cy, 6, 10);
+        ctx2d.fillRect(finishX, cy, 7, 10);
       }
 
-      // 8 Lanes + galloping sprites
+      // 8 Lanes + larger galloping sprites & jockey silks
       const laneH = trackH / 8;
       for (let i = 0; i < 8; i += 1) {
         const yTop = trackTop + i * laneH;
         const yMid = yTop + laneH * 0.56;
-        ctx2d.strokeStyle = 'rgba(0, 243, 255, 0.14)';
-        ctx2d.lineWidth = 1;
+        ctx2d.strokeStyle = i === primaryPick ? 'rgba(250, 204, 21, 0.32)' : 'rgba(0, 243, 255, 0.14)';
+        ctx2d.lineWidth = i === primaryPick ? 1.5 : 1;
         ctx2d.beginPath();
         ctx2d.moveTo(0, yTop);
         ctx2d.lineTo(w, yTop);
@@ -407,32 +473,49 @@ export default function NeonDerbyGame({
         const x = startX + prog * (finishX - startX);
         const bob =
           st.running && !prefersReducedMotion
-            ? Math.sin(now * 0.02 + i * 1.1) * 2.6
+            ? Math.sin(now * 0.024 + i * 1.1) * 3.1
             : 0;
+        const isPicked = i === primaryPick;
 
-        // Neon dust trail
-        if (st.running && !litePerfMode && prog > 0.02) {
-          const trailGrad = ctx2d.createLinearGradient(x - 36, yMid, x, yMid);
+        // Bright neon dust & speedline plume
+        if (st.running && !litePerfMode && prog > 0.015) {
+          const trailGrad = ctx2d.createLinearGradient(x - 48, yMid, x, yMid);
           trailGrad.addColorStop(0, 'rgba(0,0,0,0)');
           trailGrad.addColorStop(1, horse.silk);
           ctx2d.fillStyle = trailGrad;
-          ctx2d.fillRect(Math.max(8, x - 36), yMid - 2, 34, 4);
+          ctx2d.fillRect(Math.max(8, x - 48), yMid - 3, 44, 6);
         }
 
-        // Jockey silk badge + galloping emoji
+        // Player pick ring highlight
+        if (isPicked) {
+          ctx2d.strokeStyle = '#facc15';
+          ctx2d.lineWidth = 2;
+          ctx2d.beginPath();
+          ctx2d.arc(x + 2, yMid + bob, 16, 0, Math.PI * 2);
+          ctx2d.stroke();
+        }
+
+        // Jockey silk saddle badge + large horse graphic
         ctx2d.fillStyle = horse.silk;
         ctx2d.beginPath();
-        ctx2d.arc(x - 8, yMid + bob, 9, 0, Math.PI * 2);
+        ctx2d.arc(x - 10, yMid + bob, 11, 0, Math.PI * 2);
         ctx2d.fill();
 
         ctx2d.fillStyle = '#090d16';
-        ctx2d.font = 'bold 10px system-ui, sans-serif';
+        ctx2d.font = 'bold 11px system-ui, sans-serif';
         ctx2d.textAlign = 'center';
         ctx2d.textBaseline = 'middle';
-        ctx2d.fillText(String(horse.lane), x - 8, yMid + bob + 0.5);
+        ctx2d.fillText(String(horse.lane), x - 10, yMid + bob + 0.5);
 
-        ctx2d.font = '18px system-ui, sans-serif';
-        ctx2d.fillText(horse.emoji, x + 8, yMid + bob);
+        ctx2d.font = '23px system-ui, sans-serif';
+        ctx2d.fillText(horse.emoji, x + 10, yMid + bob);
+
+        // Show compact name tag when zoomed in or selected
+        if (st.camZoom > 1.25 || isPicked) {
+          ctx2d.fillStyle = isPicked ? '#fde047' : '#e0f2fe';
+          ctx2d.font = 'bold 9.5px system-ui, sans-serif';
+          ctx2d.fillText(horse.short, x + 30, yMid + bob - 6);
+        }
       }
 
       // Cheer / win confetti sparks
@@ -453,6 +536,23 @@ export default function NeonDerbyGame({
         }
       }
 
+      ctx2d.restore();
+
+      // Screen-space Broadcast Track Cam HUD badge during zoomed chase
+      if (st.running || st.camZoom > 1.08) {
+        ctx2d.fillStyle = 'rgba(4, 7, 18, 0.78)';
+        ctx2d.fillRect(10, 8, 224, 22);
+        ctx2d.strokeStyle = 'rgba(0, 243, 255, 0.6)';
+        ctx2d.lineWidth = 1;
+        ctx2d.strokeRect(10, 8, 224, 22);
+        ctx2d.fillStyle = elapsedRatio >= 0.88 ? '#facc15' : '#ff2a85';
+        ctx2d.font = 'bold 11px system-ui, sans-serif';
+        ctx2d.textAlign = 'left';
+        ctx2d.textBaseline = 'middle';
+        const camStage = elapsedRatio >= 0.88 ? 'WIRE CAM' : elapsedRatio >= 0.62 ? 'STRETCH RUN' : 'PACK CAM';
+        ctx2d.fillText(`● TRACK CAM ${st.camZoom.toFixed(1)}× • ${camStage}`, 18, 19);
+      }
+
       // Photo finish strobe
       if (st.photoFlash > 0.02) {
         ctx2d.fillStyle = `rgba(255, 255, 255, ${st.photoFlash * 0.45})`;
@@ -465,7 +565,7 @@ export default function NeonDerbyGame({
 
     rafId = requestAnimationFrame(renderFrame);
     return () => cancelAnimationFrame(rafId);
-  }, [activeCondition, litePerfMode, phase, prefersReducedMotion, speakCommentaryLine, voiceCommentary]);
+  }, [activeCondition, litePerfMode, phase, prefersReducedMotion, primaryPick, speakCommentaryLine, voiceCommentary]);
 
   const handleAddBet = () => {
     if (phase === 'racing' || phase === 'photo') return;
@@ -642,9 +742,9 @@ export default function NeonDerbyGame({
 
           <canvas
             ref={canvasRef}
-            width={680}
-            height={280}
-            className="tm-derby-canvas"
+            width={760}
+            height={360}
+            className={`tm-derby-canvas ${phase === 'racing' || phase === 'photo' ? 'is-live-race' : ''}`}
           />
 
           <div className="tm-derby-track-actions">

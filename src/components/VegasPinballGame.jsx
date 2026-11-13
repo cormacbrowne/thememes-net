@@ -17,8 +17,8 @@ const LANE_WALL_X = 388; // Divider between main playfield (20..388) and shooter
 const SHOOTER_X = 406;
 const PLAY_CENTER_X = 204; // Center of main playfield (between x=20 and x=388)
 const BALL_R = 9;
-const GRAVITY = 0.20;
-const MAX_SPEED = 20.5;
+const GRAVITY = 0.255;
+const MAX_SPEED = 22.0;
 
 const PINBALL_TABLES = [
   {
@@ -228,8 +228,8 @@ function buildInitialEngineState(tbl) {
     score: 0,
     ballsLeft: 3,
     multiplier: 1,
-    drainShield: true, // Start every game with Ball Save Shield lit so Free Mode feels awesome!
-    ballSaveTicks: 720, // 12 seconds of automatic Ball Save on launch
+    drainShield: false, // Must earn Drain Shield via Rollover Lanes / Targets / Missions!
+    ballSaveTicks: 240, // 4 seconds of initial Ball Save on launch
     gameOver: false,
     tick: 0,
     leftDown: false,
@@ -257,7 +257,7 @@ function buildInitialEngineState(tbl) {
     comboTimer: 0,
     feverTicks: 0,
     missionProgress: 0,
-    missionGoal: tbl.id === 5 ? 10 : 8,
+    missionGoal: tbl.id === 5 ? 14 : 12,
     missionsCleared: 0,
     nudgeHeat: 0,
     tiltTicks: 0,
@@ -408,9 +408,8 @@ export default function VegasPinballGame({
 
     if (launched) {
       setBallWaitingInShooter(false);
-      st.ballSaveTicks = Math.max(st.ballSaveTicks, 720); // 12s Ball Save on launch
-      st.drainShield = true;
-      setHudShield(true);
+      st.ballSaveTicks = Math.max(st.ballSaveTicks, 240); // 4s Ball Save on launch
+      setHudShield(Boolean(st.drainShield));
       sfx.playPlungerLaunch();
 
       if (isGoldSkillShot) {
@@ -715,7 +714,7 @@ export default function VegasPinballGame({
 
     const leftPivot = { x: 122, y: 540 };
     const rightPivot = { x: 286, y: 540 };
-    const FLIPPER_LEN = 68; // Generous arcade flippers!
+    const FLIPPER_LEN = 62; // Sharper pro arcade gap — reward accurate flipper timing!
 
     const stepPhysics = (st) => {
       if (st.gameOver) return;
@@ -752,7 +751,7 @@ export default function VegasPinballGame({
 
       // Update moving patrol bumper
       if (tbl.movingBumper) {
-        st.movingX += tbl.movingBumper.speed * st.movingDir;
+        st.movingX += tbl.movingBumper.speed * 1.35 * st.movingDir;
         if (st.movingX >= tbl.movingBumper.maxX) {
           st.movingX = tbl.movingBumper.maxX;
           st.movingDir = -1;
@@ -1185,11 +1184,11 @@ export default function VegasPinballGame({
         if (st.ballsLeft > 1) {
           st.ballsLeft -= 1;
           st.multiplier = 1;
-          st.drainShield = true;
-          st.ballSaveTicks = 600; // 10s Ball Save on new ball
+          st.drainShield = false;
+          st.ballSaveTicks = 180; // 3s Ball Save on new ball
           setHudBallsLeft(st.ballsLeft);
           setHudMultiplier(1);
-          setHudShield(true);
+          setHudShield(false);
           setBallWaitingInShooter(true);
           sfx.playDamageGong();
           st.balls = [

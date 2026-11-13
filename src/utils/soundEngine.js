@@ -2705,6 +2705,324 @@ export class SoundEngine {
       // Ignore audio errors
     }
   }
+
+  /**
+   * 🏇 NEON DERBY — CALL TO POST BUGLE + STARTING GATE BELL
+   */
+  playDerbyBugle() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic([20, 40, 35]);
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+
+      // Classic First Call brass arpeggio: G4 C5 E5 G5 E5 G5
+      const notes = [
+        { f: 392.0, t: 0, d: 0.13 },
+        { f: 523.25, t: 0.14, d: 0.13 },
+        { f: 659.25, t: 0.28, d: 0.13 },
+        { f: 783.99, t: 0.42, d: 0.22 },
+        { f: 659.25, t: 0.66, d: 0.12 },
+        { f: 783.99, t: 0.8, d: 0.34 }
+      ];
+      notes.forEach(({ f, t, d }) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(f, now + t);
+        gain.gain.setValueAtTime(0.001, now + t);
+        gain.gain.linearRampToValueAtTime(0.12, now + t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + t + d);
+        osc.connect(gain);
+        gain.connect(out);
+        osc.start(now + t);
+        osc.stop(now + t + d + 0.03);
+      });
+
+      // Metallic starting gate bell clang right after bugle
+      [1180, 1740, 2420].forEach((freq) => {
+        const bell = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        bell.type = 'triangle';
+        bell.frequency.setValueAtTime(freq, now + 1.02);
+        g.gain.setValueAtTime(0.09, now + 1.02);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 1.55);
+        bell.connect(g);
+        g.connect(out);
+        bell.start(now + 1.02);
+        bell.stop(now + 1.58);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🐎 HOOFBEAT GALLOP RHYTHM BURST
+   */
+  playDerbyGallop(intensity = 0.6) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+      const vol = 0.06 + Math.min(1, Math.max(0, intensity)) * 0.08;
+
+      [0, 0.085, 0.175].forEach((offset, idx) => {
+        const osc = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        osc.type = 'triangle';
+        const base = idx === 2 ? 125 : 95 + idx * 14;
+        osc.frequency.setValueAtTime(base, now + offset);
+        osc.frequency.exponentialRampToValueAtTime(42, now + offset + 0.055);
+        g.gain.setValueAtTime(vol, now + offset);
+        g.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.06);
+        osc.connect(g);
+        g.connect(out);
+        osc.start(now + offset);
+        osc.stop(now + offset + 0.065);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🎙️ EXCITED TRACK COMMENTATOR CADENCE + GRANDSTAND ROAR
+   */
+  playDerbyCommentatorPulse(excitement = 0.65) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+      const level = Math.min(1, Math.max(0.2, excitement));
+
+      // Rapid 4-syllable broadcast caller formant cadence ("DOWN-THE-STRETCH-NOW!")
+      const syllables = [210, 265, 315, 290, 360].map((f) => f * (0.95 + level * 0.25));
+      syllables.forEach((pitch, idx) => {
+        const t = now + idx * 0.082;
+        const osc = this.ctx.createOscillator();
+        const filter = this.ctx.createBiquadFilter();
+        const g = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(pitch, t);
+        osc.frequency.linearRampToValueAtTime(pitch * 1.12, t + 0.055);
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(920 + idx * 160, t);
+        filter.Q.setValueAtTime(3.6, t);
+        g.gain.setValueAtTime(0.001, t);
+        g.gain.linearRampToValueAtTime(0.095 * level, t + 0.014);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.072);
+        osc.connect(filter);
+        filter.connect(g);
+        g.connect(out);
+        osc.start(t);
+        osc.stop(t + 0.076);
+      });
+
+      // Stadium crowd murmur/roar swell
+      const len = Math.floor(this.ctx.sampleRate * 0.45);
+      const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < len; i += 1) {
+        data[i] = (Math.random() * 2 - 1) * 0.7;
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buf;
+      const crowdFilter = this.ctx.createBiquadFilter();
+      crowdFilter.type = 'bandpass';
+      crowdFilter.frequency.setValueAtTime(750 + level * 550, now);
+      crowdFilter.Q.setValueAtTime(0.75, now);
+      const crowdGain = this.ctx.createGain();
+      crowdGain.gain.setValueAtTime(0.001, now);
+      crowdGain.gain.linearRampToValueAtTime(0.075 * level, now + 0.14);
+      crowdGain.gain.exponentialRampToValueAtTime(0.001, now + 0.44);
+      noise.connect(crowdFilter);
+      crowdFilter.connect(crowdGain);
+      crowdGain.connect(out);
+      noise.start(now);
+      noise.stop(now + 0.45);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 📸 PHOTO FINISH STROBE SHUTTER + CROWD WIRE ROAR
+   */
+  playDerbyPhotoFinish() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic([30, 20, 40]);
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+      [0, 0.11, 0.22].forEach((offset) => {
+        const osc = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(1950, now + offset);
+        osc.frequency.exponentialRampToValueAtTime(640, now + offset + 0.032);
+        g.gain.setValueAtTime(0.09, now + offset);
+        g.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.038);
+        osc.connect(g);
+        g.connect(out);
+        osc.start(now + offset);
+        osc.stop(now + offset + 0.042);
+      });
+      this.playDerbyCommentatorPulse(1);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🟡 POKER — CASINO CHIP STACK CLINK
+   */
+  playPokerChip(count = 2) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(12);
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+      const hits = Math.min(4, Math.max(1, count));
+      for (let i = 0; i < hits; i += 1) {
+        const t = now + i * 0.042;
+        const osc = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(2480 + i * 260, t);
+        osc.frequency.exponentialRampToValueAtTime(1420, t + 0.045);
+        g.gain.setValueAtTime(0.11, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.055);
+        osc.connect(g);
+        g.connect(out);
+        osc.start(t);
+        osc.stop(t + 0.06);
+      }
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * ✋ POKER — FELT TABLE CHECK KNOCK
+   */
+  playPokerCheck() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic(14);
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+      [0, 0.09].forEach((off) => {
+        const osc = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(165, now + off);
+        osc.frequency.exponentialRampToValueAtTime(58, now + off + 0.06);
+        g.gain.setValueAtTime(0.16, now + off);
+        g.gain.exponentialRampToValueAtTime(0.001, now + off + 0.07);
+        osc.connect(g);
+        g.connect(out);
+        osc.start(now + off);
+        osc.stop(now + off + 0.075);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🔥 POKER — ALL-IN LASER STING + CHIP SLAM
+   */
+  playPokerAllIn() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic([30, 30, 60]);
+      this.playPokerChip(4);
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+      [261.63, 392.0, 523.25, 783.99].forEach((freq, idx) => {
+        const t = now + idx * 0.05;
+        const osc = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, t);
+        g.gain.setValueAtTime(0.1, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+        osc.connect(g);
+        g.connect(out);
+        osc.start(t);
+        osc.stop(t + 0.3);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🃏 POKER — FOLD SLIDE / SHOWDOWN CHORD
+   */
+  playPokerFold() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+      const osc = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(340, now);
+      osc.frequency.exponentialRampToValueAtTime(110, now + 0.16);
+      g.gain.setValueAtTime(0.1, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+      osc.connect(g);
+      g.connect(out);
+      osc.start(now);
+      osc.stop(now + 0.2);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  playPokerShowdown(won = true) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const notes = won ? [523.25, 659.25, 783.99, 1046.5] : [392.0, 349.23, 293.66];
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+      notes.forEach((f, idx) => {
+        const t = now + idx * 0.065;
+        const osc = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(f, t);
+        g.gain.setValueAtTime(0.12, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.34);
+        osc.connect(g);
+        g.connect(out);
+        osc.start(t);
+        osc.stop(t + 0.36);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
 }
 
 export const sfx = new SoundEngine();

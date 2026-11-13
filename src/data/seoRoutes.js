@@ -70,6 +70,7 @@ export const GAME_VIEW_MODE_TO_PATH = {
   pinball: '/games/pinball',
   slots: '/games/slots',
   blackjack: '/games/blackjack',
+  poker: '/games/poker',
   roulette: '/games/roulette',
   crush: '/games/meme-crush',
   stocks: '/games/meme-stock-market',
@@ -291,6 +292,23 @@ export const SEO_ROUTES = [
       "Put your meme taste to the test in Higher or Lower: Meme Edition, an endless free-to-play prediction game built right on top of the live THE MEMES.net meme catalog. Two posts appear side by side with the first meme's verified community upvote score revealed, and your job is simply to call whether the next meme has higher or lower upvotes.",
       'Pulling dynamically from real community uploads alongside classic seed memes across dank, tech, gaming, and relatable categories, every round tests how well you know what makes the internet laugh. Streak along effortlessly on desktop or mobile portrait screens with large one-tap Higher and Lower buttons and zero arcade tokens or login walls required.',
       'Beat your personal high score saved in local storage, generate a shareable streak card when a run ends, and click any meme title right inside the matchup to open its theater view, upvote it, or remix your own spin-off directly in Meme Forge.'
+    ]
+  },
+  {
+    path: '/games/poker',
+    title: "Neon Hold'em '86 Poker — Free Online Texas Hold'em With Chips | THE MEMES.net",
+    description:
+      "Play Neon Hold'em '86 Texas Poker free online! Buy in with free site tokens for stacked casino chips, bet Pre-Flop through River vs AI sharks, and cash out winnings back to your wallet.",
+    h1: "Neon Hold'em '86 — Free Texas Hold'em Poker With Chips",
+    kicker: 'No-Limit Texas Hold’em // Stacked Chips & Token Buy-Ins',
+    changefreq: 'daily',
+    priority: '0.9',
+    viewMode: 'poker',
+    category: 'all',
+    introParagraphs: [
+      "Pull up a chair at Neon Hold'em '86, our fast-paced No-Limit Texas Hold'em poker table right inside THE MEMES.net Cyber-Arcade. Stack real site Arcade Tokens into glowing neon casino chips, rotate the Dealer button automatically against two distinct AI card sharks, and compete across full Pre-Flop, Flop, Turn, River, and Showdown streets without downloads, deposits, or sign-ups.",
+      'Built with a crisp 52-card deck shuffler and complete 7-card best-five hand evaluator spanning High Card through Royal Flush, every hand gives you instant best-hand hints alongside authentic Check, Call, Bet, Raise, Fold, and ALL IN controls. Choose stacked chip buy-ins starting at 10 tokens, track live pot sizes visually in stacked casino chips, and hear crisp felt knocks and chip clinks.',
+      "Cash out your table chip stack back into your Arcade Wallet at any break between hands, or flip effortlessly into risk-free Free Practice mode whenever you want unlimited demo chips to sharpen your Texas Hold'em bluffing, pot-odds sizing, and aggressive showdown strategy on iPhone, iPad, or desktop screens."
     ]
   },
   {
@@ -604,6 +622,7 @@ export function resolveRouteFromLocation(pathname = '/', search = '') {
     'reels',
     'lobby',
     'blackjack',
+    'poker',
     'roulette',
     'pusher',
     'slots',

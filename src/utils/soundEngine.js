@@ -2320,6 +2320,109 @@ export class SoundEngine {
   }
 
   /**
+   * 🌟 EXTRA-SPECIAL RARE BIG-WIN SOUNDSCAPES
+   * Plays bespoke multi-stage audio spectacles for rare big-win animations.
+   */
+  playRareWinFanfare({ rareTheme = 'ufo-abduction' } = {}) {
+    if (!this.enabled) return 'silent';
+    try {
+      this.init();
+      if (!this.ctx) return `rare-${rareTheme}`;
+      this.triggerHaptic([40, 30, 80, 30, 110, 35, 130]);
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+
+      const playTone = (freq, startOffset, dur, type = 'triangle', vol = 0.12, slideTo = null) => {
+        const t = now + startOffset;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, t);
+        if (slideTo) {
+          osc.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+        }
+        gain.gain.setValueAtTime(0.001, t);
+        gain.gain.linearRampToValueAtTime(vol, t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        osc.connect(gain);
+        gain.connect(out);
+        osc.start(t);
+        osc.stop(t + dur + 0.03);
+      };
+
+      const playNoiseBurst = (startOffset, dur, filterFreq, q = 1.5, vol = 0.12) => {
+        const buf = this._getNoiseBuffer();
+        if (!buf) return;
+        const t = now + startOffset;
+        const src = this.ctx.createBufferSource();
+        src.buffer = buf;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(filterFreq, t);
+        filter.Q.setValueAtTime(q, t);
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.001, t);
+        gain.gain.linearRampToValueAtTime(vol, t + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        src.connect(filter);
+        filter.connect(gain);
+        gain.connect(out);
+        src.start(t);
+        src.stop(t + dur + 0.02);
+      };
+
+      if (rareTheme === 'ufo-abduction') {
+        // Tractor beam harmonic hum + space theremin sweep + cosmic chime arpeggio
+        playTone(110, 0, 0.95, 'sine', 0.15, 220);
+        playTone(113.5, 0, 0.95, 'triangle', 0.08, 224);
+        playTone(440, 0.08, 0.45, 'sine', 0.1, 1318.51);
+        [659.25, 830.61, 987.77, 1318.51, 1661.22, 1975.53, 2637.02].forEach((f, i) => {
+          playTone(f, 0.24 + i * 0.065, 0.34, 'sine', 0.11);
+        });
+        [523.25, 783.99, 1046.5, 1567.98].forEach((f) => {
+          playTone(f, 0.72, 0.75, 'triangle', 0.075);
+        });
+      } else if (rareTheme === 'meteor-vault') {
+        // Meteor streak whoosh + molten vault slam + cascading 24k coin waterfall
+        playNoiseBurst(0, 0.28, 1600, 1.2, 0.14);
+        playTone(980, 0, 0.24, 'sawtooth', 0.08, 160);
+        playTone(150, 0.22, 0.55, 'sine', 0.24, 38);
+        [261.63, 329.63, 392.0, 523.25, 659.25, 783.99].forEach((f, i) => {
+          playTone(f, 0.26 + i * 0.04, 0.42, 'sawtooth', 0.075);
+        });
+        [1567.98, 2093.0, 2637.02, 2349.32, 2793.83, 3135.96, 3520.0, 4186.01].forEach((f, i) => {
+          playTone(f, 0.48 + i * 0.055, 0.22, 'sine', 0.1, f * 1.03);
+        });
+      } else if (rareTheme === 'hyperdrive-aurora') {
+        // 88-MPH turbine charge + sonic boom + soaring 80s synthwave chord cascade
+        playTone(92.5, 0, 0.44, 'sawtooth', 0.09, 1480);
+        playTone(185, 0.42, 0.52, 'sine', 0.24, 44);
+        [440, 554.37, 659.25, 880, 1108.73, 1318.51, 1760].forEach((f, i) => {
+          playTone(f, 0.44 + i * 0.055, 0.36, 'sawtooth', 0.07);
+          playTone(f * 0.5, 0.44 + i * 0.055, 0.34, 'triangle', 0.085);
+        });
+        [880, 1108.73, 1318.51, 1760, 2217.46].forEach((f) => {
+          playTone(f, 0.85, 0.85, 'sine', 0.075);
+        });
+      } else {
+        // arcade-fireworks: staggered whistles -> booming bursts -> championship fanfare
+        [0, 0.38, 0.76].forEach((off, idx) => {
+          const base = 520 + idx * 140;
+          playTone(base, off, 0.2, 'sine', 0.08, base * 2.3);
+          playTone(135, off + 0.2, 0.32, 'sine', 0.2, 42);
+          playNoiseBurst(off + 0.2, 0.24, 2400 + idx * 450, 0.9, 0.14);
+        });
+        [523.25, 659.25, 783.99, 1046.5, 1318.51, 1567.98, 2093.0].forEach((f, i) => {
+          playTone(f, 0.98 + i * 0.048, 0.52, 'triangle', 0.11);
+        });
+      }
+    } catch {
+      // Ignore audio errors
+    }
+    return `rare-${rareTheme}`;
+  }
+
+  /**
    * 🚗⚡ DELOREAN DMC-12 — 88 MPH FLUX CAPACITOR TIME-WARP SFX
    */
   playDeLoreanWarp() {

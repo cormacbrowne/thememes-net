@@ -74,6 +74,143 @@
   box-shadow: 0 18px 46px rgba(0, 0, 0, 0.88), 0 0 38px rgba(192, 132, 252, 0.68);
 }
 
+/* ==========================================================================
+   EXTRA-SPECIAL RARE BIG-WIN CARD UPGRADES & FX LAYERS
+   ========================================================================== */
+
+.tm-win-overlay.is-rare .tm-win-card {
+  position: relative;
+  overflow: hidden;
+  max-width: min(470px, 92vw);
+  padding: 18px 26px 16px;
+  border-width: 3px;
+  animation: tmWinRareCardPop 3.9s cubic-bezier(0.18, 0.92, 0.28, 1) forwards;
+}
+
+.tm-win-overlay.is-rare .tm-win-card::after {
+  content: '';
+  position: absolute;
+  inset: -40% -60%;
+  background: linear-gradient(
+    115deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.24) 48%,
+    rgba(250, 204, 21, 0.2) 52%,
+    transparent 62%
+  );
+  transform: translateX(-80%);
+  animation: tmRareCardSheen 1.9s ease-in-out 0.25s 2;
+  pointer-events: none;
+}
+
+@keyframes tmRareCardSheen {
+  0% {
+    transform: translateX(-85%);
+  }
+  100% {
+    transform: translateX(85%);
+  }
+}
+
+.tm-win-rare-ribbon {
+  display: inline-block;
+  margin-bottom: 7px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1.15px;
+  text-transform: uppercase;
+  color: #020617;
+  background: linear-gradient(90deg, #fde047, #00f3ff, #f472b6, #fde047);
+  background-size: 220% 100%;
+  box-shadow: 0 0 18px rgba(250, 204, 21, 0.7);
+  animation: tmRareRibbonShimmer 2.4s linear infinite;
+}
+
+@keyframes tmRareRibbonShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 220% 50%;
+  }
+}
+
+.tm-win-overlay.is-rare .tm-win-amount-pill {
+  animation: tmRareAmountPulse 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes tmRareAmountPulse {
+  from {
+    transform: scale(1);
+    box-shadow: 0 0 22px rgba(250, 204, 21, 0.65);
+  }
+  to {
+    transform: scale(1.06);
+    box-shadow: 0 0 36px rgba(250, 204, 21, 0.95), 0 0 14px rgba(0, 243, 255, 0.65);
+  }
+}
+
+.tm-win-overlay.theme-ufo-abduction .tm-win-card {
+  margin-top: 52px;
+  border-color: #34d399;
+  background: radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.28), rgba(2, 6, 23, 0.97) 68%);
+  box-shadow:
+    0 22px 54px rgba(0, 0, 0, 0.9),
+    0 0 42px rgba(52, 211, 153, 0.72),
+    0 0 70px rgba(34, 211, 238, 0.45);
+}
+
+.tm-win-overlay.theme-meteor-vault .tm-win-card {
+  border-color: #facc15;
+  background: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.34), rgba(15, 23, 42, 0.97) 68%);
+  box-shadow:
+    0 22px 54px rgba(0, 0, 0, 0.9),
+    0 0 46px rgba(250, 204, 21, 0.8),
+    0 0 80px rgba(249, 115, 22, 0.55);
+}
+
+.tm-win-overlay.theme-hyperdrive-aurora .tm-win-card {
+  border-color: #00f3ff;
+  background: radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.32), rgba(2, 6, 23, 0.97) 68%);
+  box-shadow:
+    0 22px 54px rgba(0, 0, 0, 0.9),
+    0 0 42px rgba(0, 243, 255, 0.78),
+    0 0 76px rgba(236, 72, 153, 0.62);
+}
+
+.tm-win-overlay.theme-arcade-fireworks .tm-win-card {
+  border-color: #f472b6;
+  background: radial-gradient(circle at 50% 0%, rgba(236, 72, 153, 0.3), rgba(2, 6, 23, 0.97) 68%);
+  box-shadow:
+    0 22px 54px rgba(0, 0, 0, 0.9),
+    0 0 44px rgba(244, 114, 182, 0.75),
+    0 0 76px rgba(250, 204, 21, 0.55);
+}
+
+@keyframes tmWinRareCardPop {
+  0% {
+    opacity: 0;
+    transform: translateY(-28px) scale(0.7);
+  }
+  9% {
+    opacity: 1;
+    transform: translateY(6px) scale(1.08);
+  }
+  15% {
+    transform: translateY(0) scale(1);
+  }
+  87% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-18px) scale(0.94);
+  }
+}
+
 @keyframes tmWinCardPop {
   0% {
     opacity: 0;
@@ -317,18 +454,507 @@
   }
 }
 
+/* --------------------------------------------------------------------------
+   RARE THEME 1: UFO MOTHERSHIP ABDUCTION
+   -------------------------------------------------------------------------- */
+.tm-rare-aurora-veil {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 75% 48% at 50% 20%,
+    rgba(52, 211, 153, 0.28),
+    rgba(34, 211, 238, 0.16) 45%,
+    transparent 76%
+  );
+  animation: tmRareVeilPulse 3.8s ease-out forwards;
+}
+
+@keyframes tmRareVeilPulse {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.tm-rare-ufo-craft {
+  position: absolute;
+  top: max(10px, 2.5vh);
+  left: 50%;
+  width: min(176px, 44vw);
+  transform: translateX(-50%);
+  filter: drop-shadow(0 0 20px rgba(52, 211, 153, 0.85));
+  animation: tmRareUfoHover 3.8s cubic-bezier(0.22, 0.9, 0.35, 1) forwards;
+}
+
+.tm-rare-ufo-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+@keyframes tmRareUfoHover {
+  0% {
+    opacity: 0;
+    transform: translate(-180%, -30px) scale(0.5) rotate(-10deg);
+  }
+  16% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1.06) rotate(2deg);
+  }
+  50% {
+    transform: translate(-50%, -6px) scale(1.02) rotate(-2deg);
+  }
+  84% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1) rotate(1deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(120%, -44px) scale(0.45) rotate(12deg);
+  }
+}
+
+.tm-rare-tractor-beam {
+  position: absolute;
+  top: max(62px, 9.5vh);
+  left: 50%;
+  width: min(340px, 84vw);
+  height: 54vh;
+  transform: translateX(-50%);
+  clip-path: polygon(39% 0%, 61% 0%, 100% 100%, 0% 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(52, 211, 153, 0.56) 0%,
+    rgba(34, 211, 238, 0.25) 48%,
+    transparent 100%
+  );
+  animation: tmRareBeamShimmer 3.6s ease-out forwards;
+}
+
+@keyframes tmRareBeamShimmer {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scaleY(0.15);
+    transform-origin: top center;
+  }
+  14% {
+    opacity: 0.95;
+    transform: translateX(-50%) scaleY(1);
+    transform-origin: top center;
+  }
+  82% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) scaleY(0.2);
+  }
+}
+
+.tm-rare-star {
+  position: absolute;
+  font-size: 16px;
+  color: #a5f3fc;
+  text-shadow: 0 0 10px #22d3ee;
+  animation: tmRareStarTwinkle 1.1s ease-in-out infinite alternate;
+}
+
+@keyframes tmRareStarTwinkle {
+  from {
+    opacity: 0.25;
+    transform: scale(0.75);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+}
+
+.tm-rare-abduct-item {
+  position: absolute;
+  top: 56vh;
+  left: 50%;
+  font-size: 26px;
+  opacity: 0;
+  animation: tmRareAbductFloat 1.55s ease-in forwards;
+}
+
+@keyframes tmRareAbductFloat {
+  0% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--ax, 0px)), 40px) scale(0.7) rotate(0deg);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -44vh) scale(0.35) rotate(220deg);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   RARE THEME 2: GOLDEN METEOR VAULT SHOWER
+   -------------------------------------------------------------------------- */
+.tm-rare-vault-flare {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 26%,
+    rgba(250, 204, 21, 0.42),
+    rgba(249, 115, 22, 0.16) 44%,
+    transparent 74%
+  );
+  animation: tmRareVeilPulse 3.8s ease-out forwards;
+}
+
+.tm-rare-vault-ring {
+  position: absolute;
+  top: 130px;
+  left: 50%;
+  width: 110px;
+  height: 110px;
+  margin-left: -55px;
+  border-radius: 50%;
+  border: 4px solid #facc15;
+  box-shadow: 0 0 32px rgba(250, 204, 21, 0.9), inset 0 0 22px rgba(249, 115, 22, 0.55);
+  animation: tmRareVaultShock 1.35s ease-out forwards;
+}
+
+.tm-rare-vault-ring.delayed {
+  border-color: #fb923c;
+  animation-delay: 0.25s;
+}
+
+@keyframes tmRareVaultShock {
+  0% {
+    opacity: 0.95;
+    transform: scale(0.35);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(5.4);
+  }
+}
+
+.tm-rare-meteor {
+  position: absolute;
+  width: 180px;
+  height: 5px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, #f97316 45%, #fde047 85%, #ffffff);
+  box-shadow: 0 0 18px #facc15;
+  opacity: 0;
+  transform: rotate(-32deg) scale(var(--mscale, 1));
+  animation: tmRareMeteorStreak 1.05s cubic-bezier(0.2, 0.75, 0.35, 1) forwards;
+}
+
+.tm-rare-meteor::after {
+  content: '☄️';
+  position: absolute;
+  right: -14px;
+  top: -13px;
+  font-size: 22px;
+  transform: rotate(32deg);
+}
+
+@keyframes tmRareMeteorStreak {
+  0% {
+    opacity: 0;
+    transform: translate(160px, -120px) rotate(-32deg) scale(var(--mscale, 1));
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-380px, 280px) rotate(-32deg) scale(var(--mscale, 1));
+  }
+}
+
+.tm-rare-coin-rain {
+  position: absolute;
+  top: -36px;
+  font-size: 25px;
+  opacity: 0;
+  animation: tmRareCoinRain 2.1s cubic-bezier(0.25, 0.5, 0.45, 0.95) forwards;
+}
+
+@keyframes tmRareCoinRain {
+  0% {
+    opacity: 0;
+    transform: translateY(0) rotate(0deg) scale(0.8);
+  }
+  14% {
+    opacity: 1;
+  }
+  82% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(78vh) rotate(var(--rrot, 320deg)) scale(1.05);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   RARE THEME 3: 88-MPH QUANTUM HYPERDRIVE
+   -------------------------------------------------------------------------- */
+.tm-rare-synth-horizon {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 24%, rgba(0, 243, 255, 0.34), transparent 55%),
+    linear-gradient(180deg, rgba(168, 85, 247, 0.24) 0%, rgba(236, 72, 153, 0.16) 45%, transparent 80%);
+  animation: tmRareVeilPulse 3.8s ease-out forwards;
+}
+
+.tm-rare-prism-ring {
+  position: absolute;
+  top: 135px;
+  left: 50%;
+  width: 110px;
+  height: 110px;
+  margin-left: -55px;
+  border-radius: 50%;
+  border: 4px solid #00f3ff;
+  box-shadow: 0 0 28px #00f3ff, 0 0 46px #ec4899;
+  animation: tmRareVaultShock 1.25s ease-out forwards;
+}
+
+.tm-rare-prism-ring.delayed {
+  border-color: #ec4899;
+  animation-delay: 0.3s;
+}
+
+.tm-rare-warp-hub {
+  position: absolute;
+  top: 175px;
+  left: 50%;
+  width: 0;
+  height: 0;
+}
+
+.tm-rare-warp-streak {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 140px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, transparent, #00f3ff 55%, #ffffff);
+  transform-origin: center top;
+  opacity: 0;
+  animation: tmRareWarpShoot 1.35s ease-out infinite;
+}
+
+@keyframes tmRareWarpShoot {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--wangle, 0deg)) translateY(24px) scaleY(0.35);
+  }
+  25% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--wangle, 0deg)) translateY(290px) scaleY(1.35);
+  }
+}
+
+.tm-rare-tire-tracks {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: max(295px, 44vh);
+  height: 16px;
+  background:
+    linear-gradient(90deg, transparent 0%, #f97316 15%, #fde047 50%, #00f3ff 88%, transparent 100%) 0 0 / 100% 4px no-repeat,
+    linear-gradient(90deg, transparent 0%, #ef4444 18%, #facc15 55%, #ec4899 90%, transparent 100%) 0 10px / 100% 4px no-repeat;
+  animation: tmRareTracksBurn 2.2s ease-out 0.15s forwards;
+  opacity: 0;
+}
+
+@keyframes tmRareTracksBurn {
+  0% {
+    opacity: 0;
+    transform: scaleX(0.1);
+    transform-origin: left center;
+  }
+  25% {
+    opacity: 1;
+    transform: scaleX(1);
+    transform-origin: left center;
+  }
+  80% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.tm-rare-delorean-hyper {
+  position: absolute;
+  top: max(220px, 34vh);
+  left: -320px;
+  width: min(290px, 66vw);
+  animation: tmDeLoreanZoom 1.55s cubic-bezier(0.22, 0.85, 0.35, 1) 0.15s forwards;
+}
+
+/* --------------------------------------------------------------------------
+   RARE THEME 4: NEON CHAMPIONSHIP FIREWORKS
+   -------------------------------------------------------------------------- */
+.tm-rare-spotlight {
+  position: absolute;
+  bottom: -40px;
+  width: 140px;
+  height: 92vh;
+  clip-path: polygon(44% 100%, 56% 100%, 100% 0%, 0% 0%);
+  background: linear-gradient(0deg, rgba(250, 204, 21, 0.32), rgba(236, 72, 153, 0.14) 55%, transparent);
+  transform-origin: bottom center;
+  pointer-events: none;
+}
+
+.tm-rare-spotlight.left {
+  left: 6%;
+  animation: tmRareSpotSweepL 1.8s ease-in-out infinite alternate;
+}
+
+.tm-rare-spotlight.right {
+  right: 6%;
+  animation: tmRareSpotSweepR 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes tmRareSpotSweepL {
+  from {
+    transform: rotate(12deg);
+    opacity: 0.5;
+  }
+  to {
+    transform: rotate(34deg);
+    opacity: 0.9;
+  }
+}
+
+@keyframes tmRareSpotSweepR {
+  from {
+    transform: rotate(-12deg);
+    opacity: 0.5;
+  }
+  to {
+    transform: rotate(-34deg);
+    opacity: 0.9;
+  }
+}
+
+.tm-rare-fw-cluster {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.tm-rare-fw-core {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff, var(--fw-color, #00f3ff) 55%, transparent 72%);
+  opacity: 0;
+  animation: tmRareFwCore 1.55s ease-out var(--fw-delay, 0ms) infinite;
+}
+
+@keyframes tmRareFwCore {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  16% {
+    opacity: 1;
+    transform: scale(1.65);
+  }
+  65% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.tm-rare-fw-petal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 24px;
+  margin-left: -3px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffffff, var(--fw-color, #00f3ff));
+  box-shadow: 0 0 12px var(--fw-color, #00f3ff);
+  transform-origin: center top;
+  opacity: 0;
+  animation: tmRareFwPetal 1.55s cubic-bezier(0.15, 0.85, 0.3, 1) var(--fw-delay, 0ms) infinite;
+}
+
+@keyframes tmRareFwPetal {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--pangle, 0deg)) translateY(6px) scaleY(0.3);
+  }
+  18% {
+    opacity: 1;
+    transform: rotate(var(--pangle, 0deg)) translateY(28px) scaleY(1.1);
+  }
+  80% {
+    opacity: 0.9;
+    transform: rotate(var(--pangle, 0deg)) translateY(82px) scaleY(0.55);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--pangle, 0deg)) translateY(96px) scaleY(0.2);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tm-win-spark-emoji,
   .tm-win-ribbon,
   .tm-win-shockwave,
   .tm-win-laser,
   .tm-win-delorean-pass,
-  .tm-win-disco-orb {
+  .tm-win-disco-orb,
+  .tm-rare-ufo-craft,
+  .tm-rare-tractor-beam,
+  .tm-rare-star,
+  .tm-rare-abduct-item,
+  .tm-rare-vault-ring,
+  .tm-rare-meteor,
+  .tm-rare-coin-rain,
+  .tm-rare-prism-ring,
+  .tm-rare-warp-streak,
+  .tm-rare-tire-tracks,
+  .tm-rare-delorean-hyper,
+  .tm-rare-spotlight,
+  .tm-rare-fw-core,
+  .tm-rare-fw-petal {
     animation: none !important;
     display: none;
   }
 
-  .tm-win-card {
+  .tm-win-card,
+  .tm-win-overlay.is-rare .tm-win-card,
+  .tm-win-overlay.is-rare .tm-win-card::after,
+  .tm-win-rare-ribbon,
+  .tm-win-overlay.is-rare .tm-win-amount-pill {
     animation: none !important;
   }
 }

@@ -146,6 +146,12 @@ export default function VegasPokerGame({
 
   const deckRef = useRef([]);
   const aiTimerRef = useRef(null);
+  const streetTimerRef = useRef(null);
+  const turnIdxRef = useRef(null);
+
+  useEffect(() => {
+    turnIdxRef.current = turnIdx;
+  }, [turnIdx]);
 
   const playerChips = practiceMode ? practiceChips : savedRealStack;
 
@@ -166,6 +172,7 @@ export default function VegasPokerGame({
   useEffect(() => {
     return () => {
       if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
+      if (streetTimerRef.current) clearTimeout(streetTimerRef.current);
     };
   }, []);
 
@@ -307,6 +314,7 @@ export default function VegasPokerGame({
       setWinnerIds(winners.map((w) => w.id));
       setShowdownSummary(summaryText);
       setPhase('showdown');
+      turnIdxRef.current = null;
       setTurnIdx(null);
       setStatusBanner(`🏆 ${summaryText}`);
       sfx.playPokerShowdown?.(playerWon);
@@ -370,9 +378,11 @@ export default function VegasPokerGame({
         setPhase(nextPhase);
 
         if (ableToBet.length <= 1) {
+          turnIdxRef.current = null;
           setTurnIdx(null);
           setStatusBanner(`⚡ ALL-IN RUNOUT — Dealing ${nextPhase.toUpperCase()}!`);
-          aiTimerRef.current = setTimeout(() => {
+          if (streetTimerRef.current) clearTimeout(streetTimerRef.current);
+          streetTimerRef.current = setTimeout(() => {
             stepStreet(resetSeats, nextBoard, sPot, nextPhase);
           }, 700);
           return;
@@ -381,11 +391,12 @@ export default function VegasPokerGame({
         let nextActor = (dealerIdx + 1) % 3;
         for (let step = 0; step < 3; step += 1) {
           const candidate = (dealerIdx + 1 + step) % 3;
-          if (!resetSeats[candidate].folded && !resetSeats[candidate].allIn) {
+          if (!resetSeats[candidate].folded && !resetSeats[candidate].allIn && resetSeats[candidate].chips > 0) {
             nextActor = candidate;
             break;
           }
         }
+        turnIdxRef.current = nextActor;
         setTurnIdx(nextActor);
         setStatusBanner(`🃏 ${nextPhase.toUpperCase()} dealt — ${resetSeats[nextActor].name}'s turn!`);
       };
@@ -397,6 +408,7 @@ export default function VegasPokerGame({
 
   const applySeatAction = useCallback(
     (seatId, action, snapshot) => {
+      if (turnIdxRef.current !== seatId) return;
       const { curSeats, curCommunity, curPot, curBet, curPhase } = snapshot;
       const actor = curSeats[seatId];
       if (!actor || actor.folded || actor.allIn) return;
@@ -495,12 +507,15 @@ export default function VegasPokerGame({
       setCurrentBet(nextHighestBet);
 
       if (nextActor === null) {
+        turnIdxRef.current = null;
         setTurnIdx(null);
         setStatusBanner(`✨ Betting round complete (${nextPot} ${practiceMode ? 'chips' : '🪙'} in pot)`);
-        aiTimerRef.current = setTimeout(() => {
+        if (streetTimerRef.current) clearTimeout(streetTimerRef.current);
+        streetTimerRef.current = setTimeout(() => {
           advanceStreetOrShowdown(updatedSeats, curCommunity, nextPot, curPhase);
         }, 460);
       } else {
+        turnIdxRef.current = nextActor;
         setTurnIdx(nextActor);
         setStatusBanner(`${actor.name}: ${label} • Waiting for ${updatedSeats[nextActor].name}`);
       }
@@ -553,13 +568,13 @@ export default function VegasPokerGame({
     }
 
     if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
+    if (streetTimerRef.current) clearTimeout(streetTimerRef.current);
     const deck = createShuffledDeck();
     deckRef.current = deck;
 
     const nextDealer = phase === 'idle' ? 0 : (dealerIdx + 1) % 3;
     const sbSeat = (nextDealer + 1) % 3;
     const bbSeat = (nextDealer + 2) % 3;
-    const firstToAct = (bbSeat + 1) % 3;
 
     const baseStack = Math.max(100, (practiceMode ? Math.max(250, practiceChips) : savedRealStack) * 1.4);
     const dealtSeats = seats.map((s, idx) => {
@@ -596,6 +611,15 @@ export default function VegasPokerGame({
       setPracticeChips(dealtSeats[0].chips);
     }
 
+    let firstToAct = null;
+    for (let step = 1; step <= 3; step += 1) {
+      const candIdx = (bbSeat + step) % 3;
+      if (!dealtSeats[candIdx].folded && !dealtSeats[candIdx].allIn && dealtSeats[candIdx].chips > 0) {
+        firstToAct = candIdx;
+        break;
+      }
+    }
+
     sfx.playCardDeal?.();
     setDealerIdx(nextDealer);
     setSeats(dealtSeats);
@@ -606,8 +630,16 @@ export default function VegasPokerGame({
     setWinnerIds([]);
     setShowdownSummary('');
     setPhase('preflop');
+    turnIdxRef.current = firstToAct;
     setTurnIdx(firstToAct);
-    setStatusBanner(`🃏 Hole cards dealt! Blinds ${blindSmall}/${blindBig} — ${dealtSeats[firstToAct].name} to act.`);
+    if (firstToAct === null) {
+      setStatusBanner(`⚡ ALL-IN BLINDS — Dealing Flop!`);
+      streetTimerRef.current = setTimeout(() => {
+        advanceStreetOrShowdown(dealtSeats, [], initialPot, 'preflop');
+      }, 460);
+    } else {
+      setStatusBanner(`🃏 Hole cards dealt! Blinds ${blindSmall}/${blindBig} — ${dealtSeats[firstToAct].name} to act.`);
+    }
   };
 
   const mySeat = seats[0];
@@ -620,14 +652,19 @@ export default function VegasPokerGame({
       title="NEON HOLD'EM '86 POKER"
       eyebrow="TEXAS HOLD'EM • CHIPS & TOKEN STAKES"
       tokens={tokens}
+      hasPractice
       practiceMode={practiceMode}
-      onTogglePractice={(next) => {
+      practiceDisabled={phase !== 'idle' && phase !== 'showdown'}
+      onTogglePractice={() => {
         if (phase !== 'idle' && phase !== 'showdown') return;
+        const next = !practiceMode;
         sfx.playToggle?.();
         setPracticeMode(next);
         setWinnerIds([]);
         setShowdownSummary('');
         setPhase('idle');
+        turnIdxRef.current = null;
+        setTurnIdx(null);
         setSeats((prev) =>
           prev.map((s) => (s.id === 0 ? { ...s, chips: next ? practiceChips : savedRealStack } : s))
         );

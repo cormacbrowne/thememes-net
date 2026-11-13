@@ -660,6 +660,15 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
       if (await dealBtn.isVisible() && (await dealBtn.isEnabled())) {
         await dealBtn.click();
         await expect(page.locator('.tm-pk-hand-rank-pill')).toBeVisible();
+        if (vp.width === 1280) {
+          const callOrCheckBtn = page.locator('.tm-pk-act-btn.check');
+          await expect(callOrCheckBtn).toBeVisible({ timeout: 5000 });
+          await callOrCheckBtn.click();
+          // AI turns complete and deal the flop (or showdown if all bots fold) without freezing on Dealing cards...
+          await expect(
+            page.locator('.tm-pk-board .tm-pk-card, .tm-pk-showdown-banner').first()
+          ).toBeVisible({ timeout: 8000 });
+        }
       }
       const overflowPx = await page.evaluate(
         () => document.documentElement.scrollWidth - window.innerWidth
@@ -696,7 +705,10 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
 
     // Navigate to Horse Racing on iPhone and start a race with live track cam
     await page.goto('/games/horse-racing', { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('.tm-derby-canvas')).toBeVisible();
+    const derbyCanvas = page.locator('.tm-derby-canvas');
+    await expect(derbyCanvas).toBeVisible();
+    const derbyBox = await derbyCanvas.boundingBox();
+    expect(derbyBox.height).toBeGreaterThanOrEqual(280);
     await page.locator('.tm-derby-primary-btn').first().click();
     await expect(page.locator('.tm-derby-canvas.is-live-race')).toBeVisible();
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import {
   WHEEL_REWARDS,
   DAILY_QUESTS,
@@ -11,11 +11,12 @@ import {
   COSMETIC_CATALOG,
   isCosmeticUnlocked
 } from '../data/cosmetics';
-import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
+import { ARCADE_ECONOMY_RULES, formatEightiesPrice } from '../utils/tokenEconomy';
 import { sfx } from '../utils/soundEngine';
+import lazyWithRetry from '../utils/lazyWithRetry';
 import './RewardsModal.css';
 
-const VegasSlotMachine = lazy(() => import('./VegasSlotMachine'));
+const VegasSlotMachine = lazyWithRetry(() => import('./VegasSlotMachine'));
 
 export default function RewardsModal({
   xp,
@@ -163,14 +164,14 @@ export default function RewardsModal({
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                 <div>
                   <div style={{ fontSize: '12px', fontWeight: 900, color: '#00f3ff' }}>
-                    🛍️ CYBER-ARCADE COSMETICS SHOP
+                    🛍️ 1985 MALL ARCADE COSMETICS SHOP (1🪙 = 25¢ QUARTER)
                   </div>
                   <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '2px' }}>
-                    Spend earned <strong>🪙 MemeDollarz (M$)</strong> or unlock for free at <strong>⚡ XP milestones</strong>!
+                    Authentic 1980s prices! Buy with earned <strong>🪙 Tokens</strong> or unlock free at <strong>⚡ XP milestones</strong>.
                   </div>
                 </div>
                 <div style={{ fontSize: '15px', fontWeight: 900 }}>
-                  <span style={{ color: '#facc15' }}>🪙 M${tokens}</span> •{' '}
+                  <span style={{ color: '#facc15' }}>🪙 {tokens} ({formatEightiesPrice(tokens)})</span> •{' '}
                   <span style={{ color: '#00f3ff' }}>{xp} XP</span>
                 </div>
               </div>
@@ -218,7 +219,10 @@ export default function RewardsModal({
                         <div className="tm-shop-icon">{item.icon}</div>
                         <div>
                           <div className="tm-shop-name">{item.name}</div>
-                          <div className="tm-shop-desc">{item.desc}</div>
+                          <div className="tm-shop-desc">
+                            {item.desc}
+                            {item.item80sRef ? ` • 🏷️ ${item.item80sRef}` : ''}
+                          </div>
                         </div>
                       </div>
 
@@ -242,7 +246,7 @@ export default function RewardsModal({
                             <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 700 }}>
                               {xpEligible
                                 ? `⚡ ${item.unlockXp} XP Ready!`
-                                : `${item.tokenCost} 🪙 or ${item.unlockXp} XP`}
+                                : `${formatEightiesPrice(item.tokenCost)} (${item.tokenCost} 🪙) or ${item.unlockXp} XP`}
                             </span>
                             <button
                               type="button"
@@ -257,11 +261,13 @@ export default function RewardsModal({
                                   setShopToast(`🎉 Unlocked & equipped ${item.name}!`);
                                 } else {
                                   sfx.playVote(false, 1);
-                                  setShopToast(`Need ${item.tokenCost} 🪙 or ${item.unlockXp} XP.`);
+                                  setShopToast(`Need ${formatEightiesPrice(item.tokenCost)} (${item.tokenCost} 🪙) or ${item.unlockXp} XP.`);
                                 }
                               }}
                             >
-                              {xpEligible ? '⚡ Claim Free' : `🪙 Unlock (${item.tokenCost})`}
+                              {xpEligible
+                                ? '⚡ Claim Free'
+                                : `🪙 ${formatEightiesPrice(item.tokenCost)} (${item.tokenCost})`}
                             </button>
                           </>
                         )}
@@ -283,7 +289,7 @@ export default function RewardsModal({
                 🛡️ FAIR ARCADE TOKEN ECONOMY (ANTI-EXPLOIT PROTECTED)
               </div>
               <div style={{ fontSize: '17px', fontWeight: 900, marginTop: '2px' }}>
-                Wallet: <span style={{ color: '#facc15' }}>🪙 {tokens} Tokens</span> •{' '}
+                Wallet: <span style={{ color: '#facc15' }}>🪙 {tokens} Tokens ({formatEightiesPrice(tokens)})</span> •{' '}
                 <span style={{ color: '#00f3ff' }}>{xp} XP</span>
               </div>
             </div>

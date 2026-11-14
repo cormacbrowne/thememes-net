@@ -1,24 +1,33 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { sfx } from '../utils/soundEngine';
+import lazyWithRetry from '../utils/lazyWithRetry';
 import MemeSkeletonGrid from './MemeSkeletonGrid';
 import VerticalReelsView from './VerticalReelsView';
 import { RadioToggleButton } from './MemesRadio';
 
-const SwipeDeck = lazy(() => import('./SwipeDeck'));
-const BattleArena = lazy(() => import('./BattleArena'));
-const ArcadeLobby = lazy(() => import('./ArcadeLobby'));
-const MemeCrushGame = lazy(() => import('./MemeCrushGame'));
-const VegasPinballGame = lazy(() => import('./VegasPinballGame'));
-const VegasSlotMachine = lazy(() => import('./VegasSlotMachine'));
-const VegasBlackjackGame = lazy(() => import('./VegasBlackjackGame'));
-const VegasPokerGame = lazy(() => import('./VegasPokerGame'));
-const VegasRouletteGame = lazy(() => import('./VegasRouletteGame'));
-const VegasCoinPusherGame = lazy(() => import('./VegasCoinPusherGame'));
-const MemeStockMarketGame = lazy(() => import('./MemeStockMarketGame'));
-const NeonDerbyGame = lazy(() => import('./NeonDerbyGame'));
-const GuessTheMemeGame = lazy(() => import('./GuessTheMemeGame'));
-const Magic8BallOracle = lazy(() => import('./Magic8BallOracle'));
-const HigherOrLowerGame = lazy(() => import('./HigherOrLowerGame'));
+const SwipeDeck = lazyWithRetry(() => import('./SwipeDeck'));
+const BattleArena = lazyWithRetry(() => import('./BattleArena'));
+const ArcadeLobby = lazyWithRetry(() => import('./ArcadeLobby'));
+const MemeCrushGame = lazyWithRetry(() => import('./MemeCrushGame'));
+const VegasPinballGame = lazyWithRetry(() => import('./VegasPinballGame'));
+const VegasSlotMachine = lazyWithRetry(() => import('./VegasSlotMachine'));
+const VegasBlackjackGame = lazyWithRetry(() => import('./VegasBlackjackGame'));
+const VegasPokerGame = lazyWithRetry(() => import('./VegasPokerGame'));
+const VegasRouletteGame = lazyWithRetry(() => import('./VegasRouletteGame'));
+const VegasCoinPusherGame = lazyWithRetry(() => import('./VegasCoinPusherGame'));
+const MemeStockMarketGame = lazyWithRetry(() => import('./MemeStockMarketGame'));
+const NeonDerbyGame = lazyWithRetry(() => import('./NeonDerbyGame'));
+const GuessTheMemeGame = lazyWithRetry(() => import('./GuessTheMemeGame'));
+const Magic8BallOracle = lazyWithRetry(() => import('./Magic8BallOracle'));
+const HigherOrLowerGame = lazyWithRetry(() => import('./HigherOrLowerGame'));
+
+function readSafeNumber(key, fallback = 0) {
+  try {
+    return Number(localStorage.getItem(key) || fallback) || fallback;
+  } catch {
+    return fallback;
+  }
+}
 
 /**
  * Fixed top cabinet bar rendered when inside a fixed arcade game view.
@@ -237,9 +246,9 @@ export function ArcadeLoungePromo({ setViewMode }) {
           }}
         >
           <div className="tm-arcade-steer-top">
-            <span className="tm-arcade-steer-pill">🪙 NEON COIN DOZER &apos;86 • PENNY-FALLS PRIZE PUSHER</span>
+            <span className="tm-arcade-steer-pill">🪙 NEON COIN DOZER &apos;86 • 25¢ PER COIN DROP</span>
             <span className="tm-arcade-steer-best">
-              🏆 Best: {Number(localStorage.getItem('tm_pusher_highscore') || 0).toLocaleString()} pts
+              🏆 Best: {readSafeNumber('tm_pusher_highscore').toLocaleString()} pts
             </span>
           </div>
           <div className="tm-arcade-steer-body">
@@ -282,7 +291,7 @@ export function ArcadeLoungePromo({ setViewMode }) {
           <div className="tm-arcade-steer-top">
             <span className="tm-arcade-steer-pill">🃏 NEON 21&apos;S • SPLIT / DOUBLE / 5-CARD CHARLIE</span>
             <span className="tm-arcade-steer-best">
-              🏆 Best: {Number(localStorage.getItem('tm_blackjack_highscore') || 0).toLocaleString()} pts
+              🏆 Best: {readSafeNumber('tm_blackjack_highscore').toLocaleString()} pts
             </span>
           </div>
           <div className="tm-arcade-steer-body">
@@ -324,9 +333,9 @@ export function ArcadeLoungePromo({ setViewMode }) {
           }}
         >
           <div className="tm-arcade-steer-top">
-            <span className="tm-arcade-steer-pill">🟡 NEON HOLD&apos;EM &apos;86 • CHIPS &amp; TOKEN BUY-INS</span>
+            <span className="tm-arcade-steer-pill">🟡 NEON HOLD&apos;EM &apos;86 • $2.50–$25 BUY-INS</span>
             <span className="tm-arcade-steer-best">
-              🏆 Best Pot: {Number(localStorage.getItem('tm_poker_best_pot_v1') || 0).toLocaleString()}
+              🏆 Best Pot: {readSafeNumber('tm_poker_best_pot_v1').toLocaleString()}
             </span>
           </div>
           <div className="tm-arcade-steer-body">
@@ -369,7 +378,7 @@ export function ArcadeLoungePromo({ setViewMode }) {
           <div className="tm-arcade-steer-top">
             <span className="tm-arcade-steer-pill">🎡 LIGHTNING ROULETTE &apos;86 • 50× TO 150× STRIKES</span>
             <span className="tm-arcade-steer-best">
-              🏆 Best: {Number(localStorage.getItem('tm_roulette_highscore') || 0).toLocaleString()} pts
+              🏆 Best: {readSafeNumber('tm_roulette_highscore').toLocaleString()} pts
             </span>
           </div>
           <div className="tm-arcade-steer-body">
@@ -401,7 +410,7 @@ export function ArcadeLoungePromo({ setViewMode }) {
           </div>
         </div>
 
-        {/* Cabinet 1: Las Vegas Slot Arcade (4 Machines) */}
+        {/* Cabinet 1: Las Vegas Slot Arcade (5 Machines incl. Neon Supernova Special) */}
         <div
           className="tm-arcade-steer-card tm-steer-slots"
           onClick={() => {
@@ -410,26 +419,26 @@ export function ArcadeLoungePromo({ setViewMode }) {
           }}
         >
           <div className="tm-arcade-steer-top">
-            <span className="tm-arcade-steer-pill">🎰 VEGAS SLOT ARCADE • 4 MACHINES</span>
+            <span className="tm-arcade-steer-pill">🎰 VEGAS SLOT ARCADE • 5 MACHINES (25¢ PLAY)</span>
             <span className="tm-arcade-steer-best">
-              🏆 Best: {Number(localStorage.getItem('tm_slots_best_win') || 0).toLocaleString()} 🪙
+              🏆 Best: {readSafeNumber('tm_slots_best_win').toLocaleString()} 🪙
             </span>
           </div>
           <div className="tm-arcade-steer-body">
-            <div className="tm-arcade-steer-icons">🎰☕⚡🦬</div>
+            <div className="tm-arcade-steer-icons">🎰⚡☕🚁</div>
             <div>
-              <h3 className="tm-arcade-steer-title">LAS VEGAS SLOT ARCADE (4 MACHINES)</h3>
+              <h3 className="tm-arcade-steer-title">LAS VEGAS SLOT ARCADE (5 MACHINES)</h3>
               <p className="tm-arcade-steer-desc">
-                Choose from <strong>One-Arm Bandit &apos;85</strong>,{' '}
-                <strong>Mr. Jackpots: Silver Mustang</strong> (Dougie Jones!),{' '}
-                <strong>Lightning Vault 5000</strong> &amp; <strong>Cyber Buffalo &apos;86</strong> with{' '}
-                <strong>Powerups, Accumulators &amp; Siren Jackpots</strong>!
+                Authentic 1985 <strong>One-Arm Bandit</strong>, NEW flashing{' '}
+                <strong>Neon Supernova Special &apos;86 (6 Powerups!)</strong>,{' '}
+                <strong>Mr. Jackpots: Silver Mustang</strong>,{' '}
+                <strong>Lightning Vault 5000</strong> &amp; <strong>Cyber Buffalo &apos;86</strong>!
               </p>
             </div>
           </div>
           <div className="tm-arcade-steer-footer">
             <span className="tm-arcade-steer-payout">
-              🪙 Wager 5–50 Tokens • Up to 150× Jackpot &amp; Bonus Wheels
+              🪙 1980s Vegas Quarter Stakes ($1.25–$12.50 / 5–50 🪙) • House Always Wins Odds
             </span>
             <button
               type="button"
@@ -456,7 +465,7 @@ export function ArcadeLoungePromo({ setViewMode }) {
           <div className="tm-arcade-steer-top">
             <span className="tm-arcade-steer-pill">📈 MEMEDAQ &apos;86 • LIVE WALL ST TERMINAL</span>
             <span className="tm-arcade-steer-best">
-              🏆 Peak: {Number(localStorage.getItem('tm_stocks_highscore') || 0).toLocaleString()} 🪙
+              🏆 Peak: {readSafeNumber('tm_stocks_highscore').toLocaleString()} 🪙
             </span>
           </div>
           <div className="tm-arcade-steer-body">
@@ -496,9 +505,9 @@ export function ArcadeLoungePromo({ setViewMode }) {
           }}
         >
           <div className="tm-arcade-steer-top">
-            <span className="tm-arcade-steer-pill">🍬 10 NEON LEVELS • MIXTAPE &amp; ICE LOCKS</span>
+            <span className="tm-arcade-steer-pill">🍬 10 NEON LEVELS • $2.50 COIN-OP ENTRY</span>
             <span className="tm-arcade-steer-best">
-              🏆 Best: {Number(localStorage.getItem('tm_crush_highscore') || 0).toLocaleString()} pts
+              🏆 Best: {readSafeNumber('tm_crush_highscore').toLocaleString()} pts
             </span>
           </div>
           <div className="tm-arcade-steer-body">
@@ -538,9 +547,9 @@ export function ArcadeLoungePromo({ setViewMode }) {
           }}
         >
           <div className="tm-arcade-steer-top">
-            <span className="tm-arcade-steer-pill">🎱 5 PINBALL TABLES • SKILL SHOT, NUDGE &amp; FEVER</span>
+            <span className="tm-arcade-steer-pill">🎱 5 PINBALL TABLES • $2.50 ARCADE RUN</span>
             <span className="tm-arcade-steer-best">
-              🏆 Best: {Number(localStorage.getItem('tm_pinball_highscore') || 0).toLocaleString()} pts
+              🏆 Best: {readSafeNumber('tm_pinball_highscore').toLocaleString()} pts
             </span>
           </div>
           <div className="tm-arcade-steer-body">

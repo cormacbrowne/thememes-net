@@ -110,7 +110,8 @@ export function triggerWinCelebration({
   tier = 'win',
   theme = null,
   forceRare = false,
-  skipSound = false
+  skipSound = false,
+  chopperFlyby = null
 } = {}) {
   const now = Date.now();
   lastCelebrationTs = now;
@@ -166,6 +167,10 @@ export function triggerWinCelebration({
   const kicker = taglines[Math.floor(Math.random() * taglines.length)];
   const rareBadge = isRare ? RARE_BADGES[chosenTheme] || '✨ ULTRA RARE REWARD' : tierBanner;
 
+  const effectiveChopper =
+    chopperFlyby ||
+    (isMegaWin ? 'both' : isBig && Math.random() < 0.72 ? (Math.random() < 0.55 ? 'airwolf' : 'bluethunder') : null);
+
   let soundVariant = 'silent';
   if (!skipSound) {
     soundVariant = isRare
@@ -173,6 +178,9 @@ export function triggerWinCelebration({
         sfx.playRandomWinFanfare?.({ tier, multiplier }) ||
         'fanfare'
       : sfx.playRandomWinFanfare?.({ tier, multiplier }) || 'fanfare';
+    if (effectiveChopper) {
+      sfx.playHelicopterFlyby?.(effectiveChopper === 'both' ? 'airwolf' : effectiveChopper);
+    }
   }
 
   const durationByRank = {
@@ -201,6 +209,7 @@ export function triggerWinCelebration({
     isBig,
     isMega: isMegaWin,
     isRare,
+    chopperFlyby: effectiveChopper,
     soundVariant,
     durationMs: isRare ? Math.max(3600, durationByRank[rank] || 3900) : durationByRank[rank] || 2150
   };
@@ -214,4 +223,41 @@ export function triggerWinCelebration({
   });
 
   return payload;
+}
+
+/**
+ * Summon an Airwolf or Blue Thunder supersonic flyby on demand (e.g. from the 80s Icons strip).
+ */
+export function triggerHelicopterFlyby(chopper = 'airwolf', label = '') {
+  const mode = chopper === 'bluethunder' || chopper === 'both' ? chopper : 'airwolf';
+  const headline =
+    label ||
+    (mode === 'both'
+      ? 'AIRWOLF & BLUE THUNDER SCRAMBLE!'
+      : mode === 'bluethunder'
+        ? 'BLUE THUNDER WHISPER PASS!'
+        : 'AIRWOLF SUPERSONIC FLYBY!');
+  const detail =
+    mode === 'bluethunder'
+      ? 'Officer Frank Murphy • LAPD Astro Division • 1983'
+      : mode === 'both'
+        ? 'Stringfellow Hawke & Frank Murphy • 80s Air Superiority'
+        : 'Stringfellow Hawke • Mach 1+ Turbo Boost • 1984';
+
+  const res = triggerWinCelebration({
+    amount: 0,
+    unit: '',
+    game: mode === 'bluethunder' ? 'BLUE THUNDER' : mode === 'both' ? '80S CHOPPER PATROL' : 'AIRWOLF',
+    headline,
+    detail,
+    multiplier: 1,
+    tier: 'big',
+    theme: 'synth-lasers',
+    forceRare: false,
+    skipSound: true,
+    chopperFlyby: mode
+  });
+
+  sfx.playHelicopterFlyby?.(mode === 'both' ? 'airwolf' : mode);
+  return res;
 }

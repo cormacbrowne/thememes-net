@@ -273,6 +273,27 @@ export const COSMETIC_CATALOG = [
   }
 ];
 
+import { formatEightiesPrice } from '../utils/tokenEconomy';
+
+const EIGHTIES_COST_REFS = {
+  0: '1985 Freeware Promo',
+  8: '1985 Double Play Coin',
+  10: '1985 Mall Food Court Combo',
+  12: '1986 Matinee Cinema Ticket',
+  15: '1985 Cassette EP & Poster',
+  18: '1985 Arcade Token Roll',
+  20: '1985 Full Cassette Album',
+  25: '1986 Neon Concert Tee',
+  30: '1985 Blockbuster VHS Night',
+  35: '1986 Walkman Headphones',
+  40: '1986 Member’s Only Jacket'
+};
+
+COSMETIC_CATALOG.forEach((item) => {
+  item.price80s = formatEightiesPrice(item.tokenCost);
+  item.item80sRef = EIGHTIES_COST_REFS[item.tokenCost] || `1985 ${item.price80s} Value`;
+});
+
 const UNLOCKED_COSMETICS_KEY = 'tm_unlocked_cosmetics_v1';
 const EQUIPPED_FRAME_KEY = 'tm_equipped_frame_v1';
 const EQUIPPED_SKIN_KEY = 'tm_cassette_skin_v1';

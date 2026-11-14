@@ -1554,6 +1554,101 @@ export class SoundEngine {
   }
 
   /**
+   * 🚁 AIRWOLF / BLUE THUNDER SUPERSONIC HELICOPTER FLYBY SFX (1984 TV-AUDIO)
+   */
+  playHelicopterFlyby(chopper = 'airwolf') {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+      const isBlueThunder = chopper === 'bluethunder';
+      const duration = isBlueThunder ? 2.5 : 2.8;
+
+      // Stereo pan sweep across screen (Airwolf L->R, Blue Thunder R->L)
+      const panner = this.ctx.createStereoPanner ? this.ctx.createStereoPanner() : null;
+      if (panner) {
+        panner.pan.setValueAtTime(isBlueThunder ? 0.9 : -0.9, now);
+        panner.pan.linearRampToValueAtTime(isBlueThunder ? -0.9 : 0.9, now + duration);
+        panner.connect(out);
+      }
+      const dest = panner || out;
+
+      // Master envelope for Doppler swell
+      const master = this.ctx.createGain();
+      master.gain.setValueAtTime(0.001, now);
+      master.gain.exponentialRampToValueAtTime(isBlueThunder ? 0.24 : 0.3, now + duration * 0.45);
+      master.gain.exponentialRampToValueAtTime(0.001, now + duration);
+      master.connect(dest);
+
+      // Filtered white-noise turbine & rotor wash
+      const bufferSize = Math.floor(this.ctx.sampleRate * duration);
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i += 1) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+
+      const bandpass = this.ctx.createBiquadFilter();
+      bandpass.type = 'bandpass';
+      bandpass.frequency.setValueAtTime(isBlueThunder ? 260 : 340, now);
+      bandpass.frequency.exponentialRampToValueAtTime(isBlueThunder ? 640 : 980, now + duration * 0.42);
+      bandpass.frequency.exponentialRampToValueAtTime(190, now + duration);
+      bandpass.Q.value = isBlueThunder ? 2.4 : 1.7;
+
+      const noiseGain = this.ctx.createGain();
+      noiseGain.gain.setValueAtTime(isBlueThunder ? 0.48 : 0.65, now);
+
+      noise.connect(bandpass);
+      bandpass.connect(noiseGain);
+      noiseGain.connect(master);
+      noise.start(now);
+      noise.stop(now + duration);
+
+      // Chop-chop rotor blade thumps
+      const thumpInterval = isBlueThunder ? 0.068 : 0.082;
+      for (let t = 0.04; t < duration - 0.12; t += thumpInterval) {
+        const osc = this.ctx.createOscillator();
+        const thumpGain = this.ctx.createGain();
+        const progress = t / duration;
+        const swell = Math.sin(progress * Math.PI);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(isBlueThunder ? 105 : 88, now + t);
+        osc.frequency.exponentialRampToValueAtTime(34, now + t + 0.048);
+        thumpGain.gain.setValueAtTime(0.001, now + t);
+        thumpGain.gain.exponentialRampToValueAtTime(0.45 * swell + 0.05, now + t + 0.01);
+        thumpGain.gain.exponentialRampToValueAtTime(0.001, now + t + 0.052);
+        osc.connect(thumpGain);
+        thumpGain.connect(master);
+        osc.start(now + t);
+        osc.stop(now + t + 0.058);
+      }
+
+      // 80s synth hero sting (Airwolf twin-turbine synth / Blue Thunder scanner beep)
+      const heroNotes = isBlueThunder ? [659.25, 783.99, 987.77] : [220, 329.63, 440, 659.25];
+      heroNotes.forEach((freq, idx) => {
+        const st = now + 0.16 + idx * 0.14;
+        const synth = this.ctx.createOscillator();
+        const sg = this.ctx.createGain();
+        synth.type = isBlueThunder ? 'square' : 'sawtooth';
+        synth.frequency.setValueAtTime(freq, st);
+        sg.gain.setValueAtTime(0.001, st);
+        sg.gain.exponentialRampToValueAtTime(0.075, st + 0.03);
+        sg.gain.exponentialRampToValueAtTime(0.001, st + 0.34);
+        synth.connect(sg);
+        sg.connect(dest);
+        synth.start(st);
+        synth.stop(st + 0.36);
+      });
+    } catch {
+      // ignore Web Audio failure
+    }
+  }
+
+  /**
    * 🧊 CANDY CRUSH FROSTED JELLY CRYSTAL SHATTER CHIME
    */
   playJellyShatter() {

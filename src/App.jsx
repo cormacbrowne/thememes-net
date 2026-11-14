@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { getSupabaseClient } from './supabaseClient';
 import { sfx } from './utils/soundEngine';
+import lazyWithRetry from './utils/lazyWithRetry';
 import {
   STUDIO_TEMPLATES,
   VIRAL_CAPTIONS,
@@ -34,6 +35,7 @@ import {
 } from './components/DeLoreanTimeMachine';
 import { DELOREAN_ERAS, EIGHTIES_CARS } from './data/deloreanEras';
 import DualDirectionHero from './components/DualDirectionHero';
+import EightiesIconsStrip from './components/EightiesIconsStrip';
 import MemeSkeletonGrid from './components/MemeSkeletonGrid';
 import MobileArcadeDock from './components/MobileArcadeDock';
 import SeoDiscoveryFooter from './components/SeoDiscoveryFooter';
@@ -42,6 +44,7 @@ import {
   setRadioContextStation,
   setRadioMuted,
   getRadioState,
+  subscribeRadio,
   armRadioResumeOnGesture,
   toggleRadio,
   skipRadioTrack,
@@ -49,33 +52,36 @@ import {
 } from './utils/radioBus';
 import { useLivePresence } from './hooks/useLivePresence';
 
-const InsertCoinIntro = lazy(() => import('./components/InsertCoinIntro'));
-const GameRouter = lazy(() => import('./components/GameRouter'));
-const FixedArcadeTopBar = lazy(() =>
-  import('./components/GameRouter').then((m) => ({ default: m.FixedArcadeTopBar }))
+const InsertCoinIntro = lazyWithRetry(() => import('./components/InsertCoinIntro'));
+const GameRouter = lazyWithRetry(() => import('./components/GameRouter'));
+const FixedArcadeTopBar = lazyWithRetry(
+  () => import('./components/GameRouter'),
+  (m) => ({ default: m.FixedArcadeTopBar })
 );
-const ArcadeLoungePromo = lazy(() =>
-  import('./components/GameRouter').then((m) => ({ default: m.ArcadeLoungePromo }))
+const ArcadeLoungePromo = lazyWithRetry(
+  () => import('./components/GameRouter'),
+  (m) => ({ default: m.ArcadeLoungePromo })
 );
-const MemeForge = lazy(() => import('./components/forge/MemeForge'));
-const MemeEvolutionModal = lazy(() => import('./components/MemeEvolutionModal'));
-const ArcadeAiAssistant = lazy(() => import('./components/ArcadeAiAssistant'));
-const AuthModal = lazy(() => import('./components/AuthModal'));
-const MemeTheaterModal = lazy(() => import('./components/MemeTheaterModal'));
-const LeaderboardModal = lazy(() => import('./components/LeaderboardModal'));
-const PlayerProfileModal = lazy(() => import('./components/PlayerProfileModal'));
-const ExtrasDrawerModal = lazy(() => import('./components/ExtrasDrawerModal'));
-const RewardsModal = lazy(() => import('./components/RewardsModal'));
-const AiRoastModal = lazy(() => import('./components/AiRoastModal'));
-const BossKeyOverlay = lazy(() => import('./components/BossKeyOverlay'));
-const DankPetWidget = lazy(() => import('./components/DankPetWidget'));
-const UnhandledGooseSurprise = lazy(() => import('./components/UnhandledGooseSurprise'));
-const MemeLiveCelebrationModal = lazy(() => import('./components/MemeLiveCelebrationModal'));
-const DailyCaptionBattleModal = lazy(() => import('./components/DailyCaptionBattleModal'));
-const FullscreenMusicEqualizer = lazy(() =>
-  import('./components/MusicEqualizer').then((m) => ({ default: m.FullscreenMusicEqualizer }))
+const MemeForge = lazyWithRetry(() => import('./components/forge/MemeForge'));
+const MemeEvolutionModal = lazyWithRetry(() => import('./components/MemeEvolutionModal'));
+const ArcadeAiAssistant = lazyWithRetry(() => import('./components/ArcadeAiAssistant'));
+const AuthModal = lazyWithRetry(() => import('./components/AuthModal'));
+const MemeTheaterModal = lazyWithRetry(() => import('./components/MemeTheaterModal'));
+const LeaderboardModal = lazyWithRetry(() => import('./components/LeaderboardModal'));
+const PlayerProfileModal = lazyWithRetry(() => import('./components/PlayerProfileModal'));
+const ExtrasDrawerModal = lazyWithRetry(() => import('./components/ExtrasDrawerModal'));
+const RewardsModal = lazyWithRetry(() => import('./components/RewardsModal'));
+const AiRoastModal = lazyWithRetry(() => import('./components/AiRoastModal'));
+const BossKeyOverlay = lazyWithRetry(() => import('./components/BossKeyOverlay'));
+const DankPetWidget = lazyWithRetry(() => import('./components/DankPetWidget'));
+const UnhandledGooseSurprise = lazyWithRetry(() => import('./components/UnhandledGooseSurprise'));
+const MemeLiveCelebrationModal = lazyWithRetry(() => import('./components/MemeLiveCelebrationModal'));
+const DailyCaptionBattleModal = lazyWithRetry(() => import('./components/DailyCaptionBattleModal'));
+const FullscreenMusicEqualizer = lazyWithRetry(
+  () => import('./components/MusicEqualizer'),
+  (m) => ({ default: m.FullscreenMusicEqualizer })
 );
-const IphoneAppModal = lazy(() => import('./components/IphoneAppModal'));
+const IphoneAppModal = lazyWithRetry(() => import('./components/IphoneAppModal'));
 
 const MODAL_SKELETON_FALLBACK = (
   <div className="tm-modal-backdrop" role="status" aria-live="polite">
@@ -443,6 +449,23 @@ export default function App() {
   useEffect(() => {
     armRadioResumeOnGesture();
   }, []);
+
+  // Automatically close overlapping drawers/modals when Fullscreen Equalizer is opened on mobile/app
+  const prevFsEqRef = useRef(Boolean(getRadioState().fullscreenEqOpen));
+  useEffect(() => {
+    return subscribeRadio(() => {
+      const nextOpen = Boolean(getRadioState().fullscreenEqOpen);
+      if (nextOpen && !prevFsEqRef.current) {
+        setExtrasDrawerOpen(false);
+        setExtrasFocus(null);
+        setShowRewardsModal(false);
+        setShowLeaderboard(false);
+        setProfileUsername(null);
+        setDeloreanModalOpen(false);
+      }
+      prevFsEqRef.current = nextOpen;
+    });
+  }, [setExtrasDrawerOpen, setExtrasFocus, setShowRewardsModal, setShowLeaderboard, setProfileUsername]);
 
   useEffect(() => {
     const onRadioKeyDown = (e) => {
@@ -1120,6 +1143,8 @@ export default function App() {
             />
           )}
 
+          {viewMode === 'feed' && <EightiesIconsStrip />}
+
           {/* PHASE 28.3: STREAMLINED FEED FILTER BAR (Visible only on grid feed; button count halved) */}
           {viewMode === 'feed' && (
             <section id="tm-memes-feed-start" className="tm-controls">
@@ -1515,6 +1540,7 @@ export default function App() {
 
       {/* ARCADE GAMES & INTERACTIVE MODES ROUTER */}
       <ArcadeErrorBoundary
+        resetKey={viewMode}
         title="ARCADE CABINET SIGNAL LOST"
         onReturnHome={() => setViewMode('feed')}
       >

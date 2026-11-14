@@ -1,7 +1,9 @@
 import { useState, useMemo } from 'react';
 import { sfx } from '../utils/soundEngine';
+import { formatEightiesPrice } from '../utils/tokenEconomy';
 import { RadioStationStrip } from './MemesRadio';
 import { DeLoreanDockBanner } from './DeLoreanTimeMachine';
+import EightiesIconsStrip from './EightiesIconsStrip';
 import {
   ARCADE_GAMES_CATALOG,
   ARCADE_LOBBY_GROUPS,
@@ -76,9 +78,9 @@ export default function ArcadeLobby({
                 sfx.playToggle();
                 onOpenRewards();
               }}
-              aria-label={`Wallet balance M$${tokens} MemeDollarz`}
+              aria-label={`Wallet balance ${tokens} tokens (${formatEightiesPrice(tokens)})`}
             >
-              🪙 <span>M${tokens}</span>
+              🪙 <span>{tokens} ({formatEightiesPrice(tokens)})</span>
             </button>
           )}
           {onOpenLeaderboard && (
@@ -145,6 +147,8 @@ export default function ArcadeLobby({
           onQuickWarp={onTriggerDeLoreanWarp}
         />
       )}
+
+      <EightiesIconsStrip compact />
 
       {/* Category Filter Pills */}
       <div className="tm-lobby-filters" role="tablist" aria-label="Filter Arcade Games">

@@ -1,36 +1,121 @@
 // ==========================================
 // LAS VEGAS SLOT ARCADE CATALOG & ENGINE MATH
-// 4 Distinct Machines:
-//   1. bandit85       — Classic 1985 3-Reel One-Arm Bandit (Hold/Nudge + Fever Accumulator)
-//   2. silver_mustang — Mr. Jackpots: Silver Mustang (5x3, 5/15/25 Lines, Twin Peaks S3 Dougie Jones)
-//   3. lightning_vault — Neon Lightning Vault 5000 (5x3, 4 Progressives, Hold & Spin Lock-It)
-//   4. buffalo_stampede — Cyber Buffalo Stampede '86 (5x4, 1024 Ways, Bonus Wheel & Cascade Wilds)
+// 5 Distinct Machines (House Always Wins ~88-90% RTP):
+//   1. bandit85         — Classic 1985 3-Reel One-Arm Bandit (Authentic Stepper, Hold/Nudge + Fever Accumulator)
+//   2. neon_special     — Neon Supernova Special '86 (5x3, 6 Interactive Powerups, Laser Chase Lights)
+//   3. silver_mustang   — Mr. Jackpots: Silver Mustang (5x3, 5/15/25 Lines, Twin Peaks S3 Dougie Jones)
+//   4. lightning_vault  — Neon Lightning Vault 5000 (5x3, 4 Progressives, Hold & Spin Lock-It)
+//   5. buffalo_stampede — Cyber Buffalo Stampede '86 (5x4, 1024 Ways, Bonus Wheel & Cascade Wilds)
 // ==========================================
+
+export const NEON_SPECIAL_POWERUPS = [
+  {
+    id: 'laser_wild',
+    icon: '⚡',
+    name: 'Laser Wild Reel',
+    short: 'WILD REEL',
+    desc: 'Fires a vertical laser locking an entire center reel into stacked ⚡ Neon Cyber-Wilds!',
+    color: '#00f3ff',
+    chargeCost: 2
+  },
+  {
+    id: 'synth_3x',
+    icon: '🔥',
+    name: '3× Synth Overdrive',
+    short: '3× MULT',
+    desc: 'Boosts all payline wins on the spin by 3× Turbo Neon Multiplier!',
+    color: '#ff2a85',
+    chargeCost: 2
+  },
+  {
+    id: 'twin_sync',
+    icon: '🎯',
+    name: 'Twin-Reel Sync',
+    short: 'REEL SYNC',
+    desc: 'Locks Reels 2 & 3 in synchronized synth harmony so they land matching symbols!',
+    color: '#facc15',
+    chargeCost: 2
+  },
+  {
+    id: 'low_zapper',
+    icon: '💥',
+    name: 'Low-Symbol Zapper',
+    short: 'UPGRADE',
+    desc: 'Vaporizes Quarters & Cassettes on center reels, upgrading them to Keytars, Polybius & Airwolf!',
+    color: '#a855f7',
+    chargeCost: 2
+  },
+  {
+    id: 'hyper_wilds',
+    icon: '🌈',
+    name: '25-Line Hyper Wilds',
+    short: '+2 WILDS',
+    desc: 'Drops +2 bonus ⚡ Neon Wilds across the 25 laser paylines!',
+    color: '#22c55e',
+    chargeCost: 2
+  },
+  {
+    id: 'chopper_siren',
+    icon: '🚁',
+    name: 'Airwolf Siren Raid',
+    short: 'CHOPPER',
+    desc: 'Summons Airwolf & Blue Thunder searchlights — boosts 🚁 high symbols + triggers flyby on wins!',
+    color: '#38bdf8',
+    chargeCost: 3
+  }
+];
 
 export const SLOT_MACHINES = [
   {
     id: 'bandit85',
     name: "One-Arm Bandit '85",
     shortName: "Bandit '85",
-    badge: 'CLASSIC',
-    tag: '3-Reel Stepper • Hold & Nudge',
+    badge: '1985 STEPPER',
+    tag: '3-Reel Mechanical • 25¢ Quarter Slot • Hold & Nudge',
     icon: '🎰',
     accent: '#facc15',
-    marqueeSub: '★ FABULOUS 1985 NEON CASINO ★',
+    marqueeSub: '★ BALLY-STYLE 1985 VEGAS 25¢ STEPPER ★',
+    eraYear: '1985',
+    coinDenom: '25¢',
+    payGlassTitle: 'LAS VEGAS BLVD • 25¢ QUARTER MECHANICAL 3-REEL STEPPER (CIRCA 1985)',
+    houseEdgeLabel: '~11.5% House Edge • Authentic 1985 Vegas Odds',
     description:
-      'Your beloved 3-reel chrome-lever stepper! Features Hold/Nudge, Streak Fever Accumulator & Siren Jackpots.',
-    maxMult: 50,
+      'Authentic 1985 Las Vegas 3-reel chrome-arm stepper! 25¢ quarter play with physical center wire payline, Hold/Nudge, Streak Fever & mechanical bell clatter.',
+    maxMult: 75,
     volatility: 'Medium'
+  },
+  {
+    id: 'neon_special',
+    name: "Neon Supernova Special '86",
+    shortName: 'Neon Special',
+    badge: '⚡ 6 POWERUPS',
+    tag: '5×3 • 25 Laser Lines • Flashing Chase Lights & Powerups',
+    icon: '🎆',
+    accent: '#ff2a85',
+    marqueeSub: '★ 1986 LASER SPECIAL • 6 POWERUPS • HOUSE ALWAYS WINS ★',
+    eraYear: '1986',
+    coinDenom: '25¢',
+    payGlassTitle: 'STARDOME ARCADE 1986 • NEON OVERDRIVE POWERUP REACTOR (~11.5% HOUSE EDGE)',
+    houseEdgeLabel: '~11.5% House Edge • Vegas 1986 Certified',
+    isNeonSpecial: true,
+    description:
+      'Flagship 1986 flashing neon laser slot! Multi-color chasing marquee bulbs, 6 explosive Powerups (Laser Wild Reel, 3× Synth, Twin Sync, Zapper, Hyper Wilds & Airwolf Raid) calibrated with authentic house-always-wins Vegas odds!',
+    maxMult: 120,
+    volatility: 'High'
   },
   {
     id: 'silver_mustang',
     name: 'Mr. Jackpots: Silver Mustang',
     shortName: 'Mr. Jackpots',
     badge: 'DOUGIE S3',
-    tag: '5×3 • 25 Lines • Coffee Free Spins',
+    tag: '5×3 • 25 Lines • 25¢ Quarter • Coffee Free Spins',
     icon: '☕',
     accent: '#ef4444',
     marqueeSub: '★ SILVER MUSTANG CASINO • HELLOOOOO-O-O! ★',
+    eraYear: '1985',
+    coinDenom: '25¢',
+    payGlassTitle: 'SILVER MUSTANG VEGAS • 25¢ COIN-OP CABINET (1985 ODDS)',
+    houseEdgeLabel: '~12.0% House Edge • Authentic Vegas Odds',
     description:
       'Twin Peaks S3 Dougie Jones tribute! Follow the Black Lodge Golden Orb, brew 10 Coffees for Free Spins, & trigger Pie Wilds!',
     maxMult: 120,
@@ -41,12 +126,16 @@ export const SLOT_MACHINES = [
     name: 'Neon Lightning Vault 5000',
     shortName: 'Lightning 5000',
     badge: 'HOLD & SPIN',
-    tag: '5×3 • 4 Progressives • Lock-It Orbs',
+    tag: '5×3 • 4 Progressives • 25¢ Lock-It Orbs',
     icon: '⚡',
     accent: '#00f3ff',
-    marqueeSub: '★ HIGH-VOLTAGE VEGAS PROGRESSIVE ★',
+    marqueeSub: '★ 1986 HIGH-VOLTAGE VEGAS PROGRESSIVE ★',
+    eraYear: '1986',
+    coinDenom: '25¢',
+    payGlassTitle: 'LIGHTNING VAULT 5000 • PROGRESSIVE LOCK-IT CABINET (1986)',
+    houseEdgeLabel: '~11.8% House Edge • Authentic Vegas Odds',
     description:
-      'Modern Vegas Hold & Spin cabinet! Charge the Voltage Surge, toggle Ante Boost, and lock 3+ Lightning Orbs for Mini/Minor/Major/Grand!',
+      'High-voltage Hold & Spin cabinet! Charge the Voltage Surge, toggle Ante Boost, and lock 3+ Lightning Orbs for Mini/Minor/Major/Grand!',
     maxMult: 150,
     volatility: 'High'
   },
@@ -55,12 +144,16 @@ export const SLOT_MACHINES = [
     name: "Cyber Buffalo Stampede '86",
     shortName: "Buffalo '86",
     badge: '1024 WAYS',
-    tag: '5×4 • 2×/3× Wilds • Bonus Wheel',
+    tag: '5×4 • 2×/3× Wilds • 25¢ Bonus Wheel',
     icon: '🦬',
     accent: '#f97316',
-    marqueeSub: '★ 1,024-WAYS VEGAS MEGA CABINET ★',
+    marqueeSub: '★ 1986 1,024-WAYS VEGAS MEGA CABINET ★',
+    eraYear: '1986',
+    coinDenom: '25¢',
+    payGlassTitle: "CYBER BUFFALO '86 • 1,024-WAYS WIDEBODY CABINET (1986)",
+    houseEdgeLabel: '~12.0% House Edge • Authentic Vegas Odds',
     description:
-      'Tall 5×4 Vegas mega-machine! Stack 2×/3× Multiplier Wilds, trigger Gold Stampede upgrades, and spin the 8-Wedge Bonus Wheel!',
+      'Tall 5×4 Vegas widebody machine! Stack 2×/3× Multiplier Wilds, trigger Gold Stampede upgrades, and spin the 8-Wedge Bonus Wheel!',
     maxMult: 140,
     volatility: 'High'
   }
@@ -94,6 +187,16 @@ export const SLOT_SYMBOLS = {
   vault: { id: 'vault', label: 'CYBER VAULT', short: 'VAULT', color: '#a855f7' },
   bolt: { id: 'bolt', label: 'LIGHTNING ORB', short: 'ORB', color: '#00f3ff', isOrb: true },
   wildchip: { id: 'wildchip', label: 'SURGE WILD', short: 'WILD', color: '#facc15', isWild: true },
+
+  // Neon Supernova Special '86
+  ns_wild: { id: 'ns_wild', label: 'NEON CYBER WILD', short: 'NEON WILD', color: '#00f3ff', isWild: true },
+  ns_orb: { id: 'ns_orb', label: 'PLASMA POWER ORB', short: 'PWR ORB', color: '#a855f7', isScatter: true },
+  ns_airwolf: { id: 'ns_airwolf', label: 'AIRWOLF CHOPPER', short: 'AIRWOLF', color: '#38bdf8' },
+  ns_arcade: { id: 'ns_arcade', label: "'86 ARCADE CABINET", short: 'ARCADE', color: '#ff2a85' },
+  ns_synth: { id: 'ns_synth', label: 'DX7 KEYTAR LASER', short: 'KEYTAR', color: '#f472b6' },
+  ns_shades: { id: 'ns_shades', label: 'OUTRUN AVIATORS', short: 'SHADES', color: '#facc15' },
+  ns_cassette: { id: 'ns_cassette', label: 'MAXELL CHROME 90', short: 'TAPE', color: '#4ade80' },
+  ns_quarter: { id: 'ns_quarter', label: '1986 25¢ QUARTER', short: '25¢', color: '#cbd5e1' },
 
   // Cyber Buffalo Stampede '86
   buffalo: { id: 'buffalo', label: 'CYBER BUFFALO', short: 'BUFFALO', color: '#f97316' },
@@ -330,6 +433,28 @@ const BUFFALO_PAYS = {
   lemon: { 3: 0.006, 4: 0.020, 5: 0.07 }
 };
 
+// Neon Supernova Special '86 — calibrated so base + 6 powerups + free spins yield ~88.5% RTP (house always wins ~11.5%)
+const NEON_SPECIAL_WEIGHTS = [
+  { id: 'ns_quarter', w: 25 },
+  { id: 'ns_cassette', w: 22 },
+  { id: 'ns_shades', w: 18 },
+  { id: 'ns_synth', w: 15 },
+  { id: 'ns_arcade', w: 11 },
+  { id: 'ns_airwolf', w: 7 },
+  { id: 'ns_wild', w: 3.1 },
+  { id: 'ns_orb', w: 3.9 }
+];
+
+const NEON_SPECIAL_PAYS = {
+  ns_wild: { 3: 20, 4: 60, 5: 200 },
+  ns_airwolf: { 3: 15, 4: 46, 5: 155 },
+  ns_arcade: { 3: 9.5, 4: 26, 5: 78 },
+  ns_synth: { 3: 6.5, 4: 16, 5: 48 },
+  ns_shades: { 3: 4.8, 4: 12, 5: 34 },
+  ns_cassette: { 3: 3.6, 4: 8.5, 5: 24 },
+  ns_quarter: { 3: 2.6, 4: 6.5, 5: 17 }
+};
+
 function pickWeighted(weights) {
   let total = 0;
   for (let i = 0; i < weights.length; i += 1) total += weights[i].w;
@@ -341,7 +466,19 @@ function pickWeighted(weights) {
   return weights[0].id;
 }
 
-export function generateVideoGrid(machineId, { cols = 5, rows = 3, anteOrbBoost = false, goldUpgrade = false, pieWildReel = false, lockedCols = null, prevGrid = null } = {}) {
+export function generateVideoGrid(
+  machineId,
+  {
+    cols = 5,
+    rows = 3,
+    anteOrbBoost = false,
+    goldUpgrade = false,
+    pieWildReel = false,
+    lockedCols = null,
+    prevGrid = null,
+    neonPowerups = null
+  } = {}
+) {
   let weights = SILVER_MUSTANG_WEIGHTS;
   if (machineId === 'lightning_vault') {
     weights = LIGHTNING_VAULT_WEIGHTS.map((entry) =>
@@ -352,6 +489,17 @@ export function generateVideoGrid(machineId, { cols = 5, rows = 3, anteOrbBoost 
       if (!goldUpgrade) return entry;
       if (entry.id === 'lemon' || entry.id === 'cherry') return { ...entry, w: 10 };
       if (entry.id === 'buffalo' || entry.id === 'goldcoin') return { ...entry, w: entry.w + 4 };
+      return entry;
+    });
+  } else if (machineId === 'neon_special') {
+    weights = NEON_SPECIAL_WEIGHTS.map((entry) => {
+      if (neonPowerups?.low_zapper) {
+        if (entry.id === 'ns_quarter' || entry.id === 'ns_cassette') return { ...entry, w: entry.w * 0.42 };
+        if (entry.id === 'ns_airwolf' || entry.id === 'ns_arcade') return { ...entry, w: entry.w * 1.35 };
+      }
+      if (neonPowerups?.chopper_siren && entry.id === 'ns_airwolf') {
+        return { ...entry, w: entry.w * 1.75 };
+      }
       return entry;
     });
   }
@@ -366,12 +514,22 @@ export function generateVideoGrid(machineId, { cols = 5, rows = 3, anteOrbBoost 
     for (let r = 0; r < rows; r += 1) {
       // Wilds typically appear on Reels 2..5 (cols 1..4) in Vegas video slots, except powerup drops
       let sym = pickWeighted(weights);
-      if (c === 0 && (sym === 'orb' || sym === 'wildchip' || sym === 'wild2x')) {
-        sym = machineId === 'silver_mustang' ? 'dougie' : machineId === 'lightning_vault' ? 'volt7' : 'buffalo';
+      if (c === 0 && (sym === 'orb' || sym === 'wildchip' || sym === 'wild2x' || sym === 'ns_wild')) {
+        sym =
+          machineId === 'silver_mustang'
+            ? 'dougie'
+            : machineId === 'lightning_vault'
+              ? 'volt7'
+              : machineId === 'neon_special'
+                ? 'ns_arcade'
+                : 'buffalo';
       }
-      // Bonus Wheel scatter max 1 per reel for clean scatter counts
+      // Scatter max 1 per reel for clean scatter counts
       if (sym === 'wheel' && col.includes('wheel')) {
         sym = 'goldcoin';
+      }
+      if (sym === 'ns_orb' && col.includes('ns_orb')) {
+        sym = 'ns_synth';
       }
       col.push(sym);
     }
@@ -382,6 +540,27 @@ export function generateVideoGrid(machineId, { cols = 5, rows = 3, anteOrbBoost 
     }
     grid.push(col);
   }
+
+  // Apply Neon Supernova Special interactive powerup board transforms
+  if (machineId === 'neon_special' && neonPowerups) {
+    if (neonPowerups.laser_wild) {
+      const targetCol = 1 + Math.floor(Math.random() * 3); // reel 2, 3, or 4
+      grid[targetCol] = ['ns_wild', 'ns_wild', 'ns_wild'];
+    }
+    if (neonPowerups.twin_sync) {
+      // Copy Reel 2 onto Reel 3 in Neon Twin-Sync harmony
+      grid[2] = [...grid[1]];
+    }
+    if (neonPowerups.hyper_wilds) {
+      const cA = 1 + Math.floor(Math.random() * 2);
+      const rA = Math.floor(Math.random() * 3);
+      const cB = 3 + Math.floor(Math.random() * 2);
+      const rB = Math.floor(Math.random() * 3);
+      grid[cA][rA] = 'ns_wild';
+      grid[cB][rB] = 'ns_wild';
+    }
+  }
+
   return grid;
 }
 
@@ -389,8 +568,19 @@ export function generateVideoGrid(machineId, { cols = 5, rows = 3, anteOrbBoost 
  * Evaluates a 5x3 video slot grid across `activeLines` paylines.
  */
 export function evaluate5x3Paylines(machineId, grid, activeLines = 25, spinMult = 1) {
-  const pays = machineId === 'lightning_vault' ? LIGHTNING_VAULT_PAYS : SILVER_MUSTANG_PAYS;
-  const wildId = machineId === 'lightning_vault' ? 'wildchip' : 'orb';
+  const pays =
+    machineId === 'lightning_vault'
+      ? LIGHTNING_VAULT_PAYS
+      : machineId === 'neon_special'
+        ? NEON_SPECIAL_PAYS
+        : SILVER_MUSTANG_PAYS;
+  const wildId =
+    machineId === 'lightning_vault'
+      ? 'wildchip'
+      : machineId === 'neon_special'
+        ? 'ns_wild'
+        : 'orb';
+  const fallbackSym = machineId === 'neon_special' ? 'ns_quarter' : 'cherry';
   const linesToCheck = PAYLINES_25.slice(0, activeLines);
 
   let totalLineMult = 0; // Sum of line-bet multipliers
@@ -400,7 +590,7 @@ export function evaluate5x3Paylines(machineId, grid, activeLines = 25, spinMult 
   let bestSym = null;
 
   linesToCheck.forEach((pattern, lineIdx) => {
-    const syms = pattern.map((row, col) => grid[col][row]);
+    const syms = pattern.map((row, col) => grid?.[col]?.[row] || fallbackSym);
     // Determine target paying symbol (first non-wild, or wild if all wilds)
     let target = syms.find((s) => s !== wildId);
     if (!target) target = wildId;
@@ -434,7 +624,7 @@ export function evaluate5x3Paylines(machineId, grid, activeLines = 25, spinMult 
   });
 
   // Convert total line-bet multiplier back to total-bet multiplier
-  const totalBetMult = Number(((totalLineMult / activeLines) * spinMult).toFixed(2));
+  const totalBetMult = Number(((totalLineMult / Math.max(1, activeLines)) * spinMult).toFixed(2));
   return {
     totalBetMult,
     winningLines,
@@ -463,7 +653,7 @@ export function evaluateBuffalo1024Ways(grid, wildMultipliers = {}, spinMult = 1
       const matchingRows = [];
       let colWildBoost = 1;
       for (let r = 0; r < rows; r += 1) {
-        const cell = grid[c][r];
+        const cell = grid?.[c]?.[r] || 'lemon';
         if (cell === sym || cell === wildId) {
           matchingRows.push(r);
           if (cell === wildId) {

@@ -60,8 +60,8 @@ export const ARCADE_GAMES_CATALOG = [
     group: 'casino',
     icon: '🎰',
     label: 'Vegas Slot Arcade',
-    pitch: '4 Vegas machines: Bandit \'85, Mr. Jackpots, Lightning & Buffalo.',
-    badge: '4 Slots',
+    pitch: "5 machines (25¢ min): Bandit '85, Neon Special '86, Mustang, Lightning & Buffalo.",
+    badge: '5 Slots',
     isNew: true,
     accent: '#f472b6'
   },

@@ -1162,3 +1162,153 @@
   85% { opacity: 1; transform: translateY(0) scale(1); }
   100% { opacity: 0; transform: translateY(-6px) scale(0.97); }
 }
+
+/* ============================================================================
+ * 🚁 1984 AIRWOLF & 1983 BLUE THUNDER BIG-WIN HELICOPTER FLYBYS
+ * ============================================================================ */
+.tm-win-chopper-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 3;
+}
+
+.tm-win-chopper-unit {
+  position: absolute;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.72));
+}
+
+.tm-win-chopper-unit.is-airwolf {
+  top: max(18px, 6vh);
+  left: -280px;
+  animation: tmChopperAirwolfFly 2.85s cubic-bezier(0.22, 0.76, 0.28, 0.98) forwards;
+}
+
+.tm-win-chopper-unit.is-bluethunder {
+  top: max(68px, 14vh);
+  right: -280px;
+  animation: tmChopperBlueThunderFly 2.75s cubic-bezier(0.24, 0.72, 0.3, 0.96) forwards;
+}
+
+.tm-chopper-svg {
+  width: clamp(168px, 28vw, 250px);
+  height: auto;
+  display: block;
+}
+
+.tm-chopper-radio-tag {
+  font-family: ui-monospace, 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: #f8fafc;
+  background: rgba(2, 6, 23, 0.88);
+  border: 1px solid rgba(56, 189, 248, 0.75);
+  text-shadow: 0 0 8px rgba(56, 189, 248, 0.65);
+  white-space: nowrap;
+}
+
+.tm-win-chopper-unit.is-airwolf .tm-chopper-radio-tag {
+  border-color: rgba(250, 204, 21, 0.8);
+  color: #fef08a;
+}
+
+.tm-chopper-blade-sweep {
+  transform-origin: center;
+  animation: tmChopperRotorBlur 0.08s linear infinite;
+}
+
+.tm-aw-flame {
+  animation: tmAirwolfFlame 0.14s ease-in-out infinite alternate;
+}
+
+.tm-bt-beam {
+  animation: tmBlueThunderBeam 0.7s ease-in-out infinite alternate;
+}
+
+@keyframes tmChopperAirwolfFly {
+  0% {
+    transform: translate3d(-40px, 24px, 0) rotate(5deg) scale(0.86);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  52% {
+    transform: translate3d(58vw, -6px, 0) rotate(-3deg) scale(1.06);
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(calc(100vw + 340px), -26px, 0) rotate(2deg) scale(0.92);
+    opacity: 0;
+  }
+}
+
+@keyframes tmChopperBlueThunderFly {
+  0% {
+    transform: translate3d(40px, -10px, 0) rotate(-4deg) scale(0.86);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  50% {
+    transform: translate3d(-55vw, 14px, 0) rotate(3deg) scale(1.04);
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(calc(-100vw - 340px), -14px, 0) rotate(-2deg) scale(0.92);
+    opacity: 0;
+  }
+}
+
+@keyframes tmChopperRotorBlur {
+  0% { opacity: 0.92; transform: scaleX(1); }
+  50% { opacity: 0.45; transform: scaleX(0.32); }
+  100% { opacity: 0.92; transform: scaleX(1); }
+}
+
+@keyframes tmAirwolfFlame {
+  from { opacity: 0.72; transform: scaleX(0.88); }
+  to { opacity: 1; transform: scaleX(1.12); }
+}
+
+@keyframes tmBlueThunderBeam {
+  from { opacity: 0.55; }
+  to { opacity: 0.92; }
+}
+
+.tm-lite-perf .tm-chopper-blade-sweep,
+.tm-lite-perf .tm-aw-flame,
+.tm-lite-perf .tm-bt-beam {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tm-win-chopper-unit.is-airwolf,
+  .tm-win-chopper-unit.is-bluethunder {
+    animation-duration: 0.25s;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+  .tm-chopper-blade-sweep,
+  .tm-aw-flame,
+  .tm-bt-beam {
+    animation: none;
+  }
+}

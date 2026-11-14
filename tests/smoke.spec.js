@@ -453,11 +453,12 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     await page.goto('/games/slots', { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('.tm-slot-switcher-bar');
 
-    // Open Slot Floor directory and verify all 4 cabinets appear
+    // Open Slot Floor directory and verify all 5 cabinets appear
     await page.getByRole('button', { name: /Slot Floor/i }).click();
     const floorGrid = page.locator('.tm-slot-floor-grid');
     await expect(floorGrid).toBeVisible();
     await expect(floorGrid).toContainText(/One-Arm Bandit '85/i);
+    await expect(floorGrid).toContainText(/Neon Supernova Special '86/i);
     await expect(floorGrid).toContainText(/Mr\. Jackpots: Silver Mustang/i);
     await expect(floorGrid).toContainText(/Neon Lightning Vault 5000/i);
     await expect(floorGrid).toContainText(/Cyber Buffalo Stampede '86/i);
@@ -502,9 +503,15 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     await page.getByRole('tab', { name: /Buffalo '86/i }).click();
     await expect(page.locator('.tm-bandit-marquee-title')).toContainText(/CYBER BUFFALO STAMPEDE '86/i);
     await expect(page.locator('.tm-video-cell')).toHaveCount(20);
-    await page.getByRole('button', { name: /🪙 5\b/ }).first().click();
+    await page.getByRole('button', { name: /5🪙|🪙 5\b/ }).first().click();
     await page.locator('.tm-bandit-spin-btn').click();
     await expect(page.locator('.tm-bandit-spin-btn')).toBeEnabled({ timeout: 5000 });
+
+    // Switch to Neon Special '86 (5th flagship cabinet) and verify 6 powerups + chase lights + house edge
+    await page.getByRole('tab', { name: /Neon Special/i }).click();
+    await expect(page.locator('.tm-bandit-marquee-title')).toContainText(/NEON SUPERNOVA SPECIAL '86/i);
+    await expect(page.locator('.tm-neon-pw-btn')).toHaveCount(6);
+    await expect(page.locator('.tm-slot-house-edge-strip')).toContainText(/11\.5% HOUSE EDGE/i);
 
     overflowPx = await page.evaluate(
       () => document.documentElement.scrollWidth - window.innerWidth
@@ -592,6 +599,46 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     // Exit Full-Screen Equalizer cleanly
     await overlay.getByRole('button', { name: /Exit Full-Screen Music Equalizer/i }).click();
     await expect(overlay).toBeHidden();
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('Mobile Extras Drawer Fullscreen EQ auto-closes drawer + 80s Characters & Airwolf/Blue Thunder flybys work', async ({
+    page
+  }) => {
+    const pageErrors = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+    // 1. Open Extras drawer and click Fullscreen Equalizer inside it — drawer must close so EQ is on top
+    const extrasBtn = page.getByRole('button', { name: /Extras|More/i }).first();
+    if (await extrasBtn.isVisible()) {
+      await extrasBtn.click();
+      const drawer = page.locator('.tm-extras-drawer-backdrop');
+      if (await drawer.isVisible()) {
+        await drawer.getByRole('button', { name: /Equalizer|Fullscreen/i }).first().click();
+        await expect(page.locator('.tm-eq-fs-overlay')).toBeVisible();
+        await expect(drawer).toBeHidden();
+        await page.locator('.tm-eq-fs-overlay').getByRole('button', { name: /Exit Full-Screen/i }).click();
+      }
+    }
+
+    // 2. Verify 1980s Characters digital faces strip, dossier 1985 price, and Airwolf/Blue Thunder flybys
+    const castBar = page.locator('.tm-80s-cast-bar').first();
+    await castBar.scrollIntoViewIfNeeded();
+    await expect(castBar).toBeVisible();
+    await expect(castBar.locator('.tm-80s-face-chip')).toHaveCount(13);
+    await castBar.locator('.tm-80s-face-chip', { hasText: /Bender/i }).click();
+    await expect(castBar.locator('.tm-80s-dossier-card')).toContainText(/The Breakfast Club/i);
+    await expect(castBar.locator('.tm-80s-dossier-card')).toContainText(/\$1\.25/);
+
+    await castBar.locator('.tm-80s-chopper-btn.is-airwolf').click();
+    await expect(page.locator('.tm-win-chopper-unit.is-airwolf')).toBeVisible();
+
+    await castBar.locator('.tm-80s-chopper-btn.is-bluethunder').click();
+    await expect(page.locator('.tm-win-chopper-unit.is-bluethunder')).toBeVisible();
+
     expect(pageErrors).toEqual([]);
   });
 
@@ -716,7 +763,7 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.evaluate(() => window.scrollTo(0, 1200));
     await page.goto('/games/slots', { waitUntil: 'domcontentloaded' });
-    for (const label of [/Mr\.? Jackpots/i, /Lightning/i, /Buffalo/i, /Bandit/i]) {
+    for (const label of [/Neon Special/i, /Mr\.? Jackpots/i, /Lightning/i, /Buffalo/i, /Bandit/i]) {
       const tab = page.locator('.tm-slot-tab-btn', { hasText: label }).first();
       await expect(tab).toBeVisible();
       await tab.click();

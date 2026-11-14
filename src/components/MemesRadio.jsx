@@ -36,6 +36,8 @@ export function RadioToggleButton({ className = 'tm-btn', onOpenShop }) {
 
   const station = RADIO_STATIONS.find((s) => s.id === radio.activeStation) || RADIO_STATIONS[0];
 
+  const isPopoverOpen = open && !radio.fullscreenEqOpen;
+
   useEffect(() => {
     if (!open) return undefined;
     const onPointerDown = (e) => {
@@ -104,9 +106,9 @@ export function RadioToggleButton({ className = 'tm-btn', onOpenShop }) {
 
         <button
           type="button"
-          className={`${className} tm-radio-chevron-btn ${open ? 'is-open' : ''}`}
+          className={`${className} tm-radio-chevron-btn ${isPopoverOpen ? 'is-open' : ''}`}
           onClick={() => setOpen((prev) => !prev)}
-          aria-expanded={open}
+          aria-expanded={isPopoverOpen}
           aria-haspopup="true"
           aria-label="Open radio station picker"
           title="Pick THE MEMES FM station"
@@ -117,7 +119,10 @@ export function RadioToggleButton({ className = 'tm-btn', onOpenShop }) {
         <button
           type="button"
           className={`${className} tm-radio-eq-quick-btn`}
-          onClick={() => openFullscreenEq({ autoStart: true })}
+          onClick={() => {
+            setOpen(false);
+            openFullscreenEq({ autoStart: true });
+          }}
           aria-label="Quick Equalizer"
           title="Launch 80s Equalizer & Visualizer"
         >
@@ -125,7 +130,7 @@ export function RadioToggleButton({ className = 'tm-btn', onOpenShop }) {
         </button>
       </div>
 
-      {open && (
+      {isPopoverOpen && (
         <div className="tm-radio-popover" role="dialog" aria-label="THE MEMES FM Station Picker">
           <div className="tm-radio-pop-head">
             <div className="tm-radio-pop-now">

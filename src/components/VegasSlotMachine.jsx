@@ -1,11 +1,17 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
-import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
+import {
+  ARCADE_ECONOMY_RULES,
+  validateStakedGamePayout,
+  formatEightiesPrice
+} from '../utils/tokenEconomy';
 import { triggerWinCelebration } from '../utils/winCelebration';
 import SlotSymbolArt from './SlotSymbolArt';
+import EightiesIconsStrip from './EightiesIconsStrip';
 import {
   SLOT_MACHINES,
   SLOT_MACHINE_BY_ID,
+  NEON_SPECIAL_POWERUPS,
   BANDIT_REEL_STRIP,
   wrapBanditStop,
   evaluateBanditPayline,
@@ -21,7 +27,24 @@ import './VegasSlotMachine.css';
 
 const MACHINE_STORAGE_KEY = 'tm_slot_arcade_machine_v1';
 
+function readInitialMachineId() {
+  try {
+    const saved = localStorage.getItem(MACHINE_STORAGE_KEY);
+    if (saved && SLOT_MACHINE_BY_ID[saved]) return saved;
+  } catch {
+    // ignore storage errors
+  }
+  return 'bandit85';
+}
+
 const INITIAL_GRID_BY_MACHINE = {
+  neon_special: [
+    ['ns_airwolf', 'ns_wild', 'ns_synth'],
+    ['ns_arcade', 'ns_orb', 'ns_shades'],
+    ['ns_wild', 'ns_airwolf', 'ns_cassette'],
+    ['ns_synth', 'ns_wild', 'ns_arcade'],
+    ['ns_airwolf', 'ns_shades', 'ns_quarter']
+  ],
   silver_mustang: [
     ['coffee', 'dougie', 'pie'],
     ['owlring', 'orb', 'cherry'],
@@ -61,15 +84,7 @@ export default function VegasSlotMachine({
   const betOptions = ARCADE_ECONOMY_RULES.ARCADE_STAKES.SLOT_BETS; // [5, 10, 25, 50]
   const featuredMeme = memes && memes.length > 0 ? memes[0] : null;
 
-  const [machineId, setMachineId] = useState(() => {
-    try {
-      const saved = localStorage.getItem(MACHINE_STORAGE_KEY);
-      if (saved && SLOT_MACHINE_BY_ID[saved]) return saved;
-    } catch {
-      // ignore storage errors
-    }
-    return 'bandit85';
-  });
+  const [machineId, setMachineId] = useState(readInitialMachineId);
   const [floorOpen, setFloorOpen] = useState(false);
   const [paytableOpen, setPaytableOpen] = useState(false);
 
@@ -91,10 +106,28 @@ export default function VegasSlotMachine({
   const [banditFeverArmed, setBanditFeverArmed] = useState(false);
 
   // Modern 5-Reel Video Slot Grid & Spin State
-  const [videoGrid, setVideoGrid] = useState(() => INITIAL_GRID_BY_MACHINE.silver_mustang);
+  const [videoGrid, setVideoGrid] = useState(
+    () => INITIAL_GRID_BY_MACHINE[readInitialMachineId()] || INITIAL_GRID_BY_MACHINE.neon_special
+  );
   const [videoReelsSpinning, setVideoReelsSpinning] = useState([false, false, false, false, false]);
   const [winningCells, setWinningCells] = useState(() => new Set());
   const [wildMultipliers, setWildMultipliers] = useState(DEFAULT_BUFFALO_WILDS);
+
+  // Neon Supernova Special '86 State (6 Powerups + Neon Free Spins + House Edge)
+  const [neonCharge, setNeonCharge] = useState(2); // 0..6 Reactor cells
+  const [armedNeonPowerups, setArmedNeonPowerups] = useState({
+    laser_wild: false,
+    synth_3x: false,
+    twin_sync: false,
+    low_zapper: false,
+    hyper_wilds: false,
+    chopper_siren: false
+  });
+  const [neonFreeSpins, setNeonFreeSpins] = useState(0);
+  const [neonFreeSpinStake, setNeonFreeSpinStake] = useState(0);
+  const [neonSurgeBanner, setNeonSurgeBanner] = useState(
+    '⚡ 6 NEON POWERUPS ONLINE — Charge reactor cells & fire laser combos!'
+  );
 
   // Silver Mustang (Dougie Jones) Options, Accumulators & Powerups
   const [mustangLines, setMustangLines] = useState(25); // 5 | 15 | 25
@@ -136,9 +169,13 @@ export default function VegasSlotMachine({
   const [statusBanner, setStatusBanner] = useState(
     'Pick a chip bet and pull the chrome arm — or switch machines above!'
   );
-  const [bestWinTokens, setBestWinTokens] = useState(() =>
-    Number(localStorage.getItem('tm_slots_best_win') || 0)
-  );
+  const [bestWinTokens, setBestWinTokens] = useState(() => {
+    try {
+      return Number(localStorage.getItem('tm_slots_best_win') || 0) || 0;
+    } catch {
+      return 0;
+    }
+  });
 
   const timersRef = useRef([]);
   const spinAnimRef = useRef(null);
@@ -245,16 +282,21 @@ export default function VegasSlotMachine({
         headline: headline || '🎰 REEL WINNER!',
         detail:
           activeBet > 0
-            ? detail || `${mult}× Payline Payout!`
-            : `Demo hit ${mult}× — Set a token bet to win 🪙!`,
+            ? `${detail || `${mult}× Payline Payout!`} (${formatEightiesPrice(verifiedPayout)} Value)`
+            : `Demo hit ${mult}× — Set a 1980s coin bet to win 🪙!`,
         multiplier: mult,
         tier: isMega ? 'jackpot' : isBig ? 'big' : 'win',
+        chopperFlyby: isMega ? 'both' : isBig ? (Math.random() < 0.55 ? 'airwolf' : 'bluethunder') : null,
         skipSound: true
       });
 
       if (verifiedPayout > bestWinTokens) {
         setBestWinTokens(verifiedPayout);
-        localStorage.setItem('tm_slots_best_win', String(verifiedPayout));
+        try {
+          localStorage.setItem('tm_slots_best_win', String(verifiedPayout));
+        } catch {
+          // ignore storage errors
+        }
         if (onRecordHighScore) onRecordHighScore('slots', verifiedPayout);
       }
 
@@ -285,9 +327,17 @@ export default function VegasSlotMachine({
     ]
   );
 
-  // Switch between the 4 Slot Arcade machines
+  // Switch between the 5 Slot Arcade machines
   const handleSelectMachine = (nextId) => {
-    if (isAnySpinning || lockItState?.active || bonusWheelState || mustangFreeSpins > 0) return;
+    if (
+      isAnySpinning ||
+      lockItState?.active ||
+      bonusWheelState ||
+      mustangFreeSpins > 0 ||
+      neonFreeSpins > 0
+    ) {
+      return;
+    }
     if (!SLOT_MACHINE_BY_ID[nextId]) return;
     sfx.playToggle();
     setAutoSpinsLeft(0);
@@ -309,12 +359,14 @@ export default function VegasSlotMachine({
     }
     if (nextId === 'silver_mustang') {
       setDougieBanner(pickDougieQuote('idle'));
+    } else if (nextId === 'neon_special') {
+      setNeonSurgeBanner('⚡ 6 NEON POWERUPS ONLINE — Charge reactor cells & fire laser combos!');
     }
-    setStatusBanner(`Stepped up to ${SLOT_MACHINE_BY_ID[nextId].name}!`);
+    setStatusBanner(`Stepped up to ${SLOT_MACHINE_BY_ID[nextId].name} (${SLOT_MACHINE_BY_ID[nextId].coinDenom || '25¢'} Coin-Op)!`);
   };
 
   const handleSelectBet = (nextBet) => {
-    if (isAnySpinning || lockItState?.active || mustangFreeSpins > 0) return;
+    if (isAnySpinning || lockItState?.active || mustangFreeSpins > 0 || neonFreeSpins > 0) return;
     sfx.playCoinInsert();
     setBetAmount(nextBet);
     setHoldAllowed(false);
@@ -324,7 +376,7 @@ export default function VegasSlotMachine({
     setStatusBanner(
       nextBet === 0
         ? 'Demo mode active (0 cost, 0 real token payout).'
-        : `${nextBet} 🪙 wager set — ready to spin!`
+        : `${formatEightiesPrice(nextBet)} (${nextBet} 🪙) wager set — ready to spin!`
     );
   };
 
@@ -496,7 +548,7 @@ export default function VegasSlotMachine({
   ]);
 
   // ==========================================
-  // MACHINE 2, 3, 4: VIDEO SLOTS & BONUSES
+  // MACHINE 2, 3, 4, 5: VIDEO SLOTS & BONUSES
   // ==========================================
   const finalizeVideoSpin = useCallback(
     ({
@@ -506,8 +558,94 @@ export default function VegasSlotMachine({
       isFreeSpinRound,
       coffeeRushUsed,
       wasSurge,
-      usedSecondChance
+      usedSecondChance,
+      neonUsedPowerups = null,
+      neonSpontaneousLabel = ''
     }) => {
+      if (machineId === 'neon_special') {
+        const hasSynth3x = Boolean(neonUsedPowerups?.synth_3x);
+        const spinMult = hasSynth3x ? 3 : isFreeSpinRound ? 1.5 : 1;
+        const evalRes = evaluate5x3Paylines('neon_special', finalGrid, 25, spinMult);
+
+        let orbCount = 0;
+        let airwolfCount = 0;
+        const orbCells = [];
+        finalGrid.forEach((col, c) =>
+          col.forEach((sym, r) => {
+            if (sym === 'ns_orb') {
+              orbCount += 1;
+              orbCells.push(`${c},${r}`);
+            }
+            if (sym === 'ns_airwolf') {
+              airwolfCount += 1;
+            }
+          })
+        );
+
+        const nextWinCells = new Set(evalRes.winningCells);
+        let scatterMult = 0;
+        if (orbCount >= 3) {
+          orbCells.forEach((cellKey) => nextWinCells.add(cellKey));
+          scatterMult = orbCount >= 5 ? 10 : orbCount === 4 ? 4 : 1.5;
+          if (!isFreeSpinRound) {
+            setNeonFreeSpins((n) => n + 4);
+            setNeonFreeSpinStake(activeBet);
+          }
+        }
+        setWinningCells(nextWinCells);
+
+        setNeonCharge((c) => Math.min(6, c + 1 + (orbCount > 0 ? 1 : 0)));
+
+        const totalMult = Number((evalRes.totalBetMult + scatterMult).toFixed(2));
+        const powerNames = Object.entries(neonUsedPowerups || {})
+          .filter(([, on]) => Boolean(on))
+          .map(([id]) => NEON_SPECIAL_POWERUPS.find((p) => p.id === id)?.short || id);
+
+        if (neonSpontaneousLabel) {
+          setNeonSurgeBanner(`⚡ ${neonSpontaneousLabel} TRIGGERED! (+House Odds Certified)`);
+        } else if (orbCount >= 3) {
+          setNeonSurgeBanner('🔮 3+ PLASMA POWER ORBS! +4 NEON SUPERNOVA FREE SPINS UNLOCKED!');
+        } else if (powerNames.length > 0) {
+          setNeonSurgeBanner(`🎆 POWERUPS FIRED: ${powerNames.join(' + ')}!`);
+        } else {
+          setNeonSurgeBanner('⚡ Reactor charging... Activate up to 6 Neon Powerups below!');
+        }
+
+        if (totalMult > 0) {
+          const isMega = totalMult >= 18 || orbCount >= 4;
+          const isBig = isMega || totalMult >= 6 || airwolfCount >= 4 || Boolean(neonUsedPowerups?.chopper_siren);
+          awardSlotWin({
+            activeBet,
+            mult: totalMult,
+            headline: isMega
+              ? `🎆🚨 NEON SUPERNOVA MEGA WIN! (${totalMult}×)`
+              : orbCount >= 3
+                ? `🔮 +4 FREE SPINS & ${totalMult}× LASER PAYOUT!`
+                : hasSynth3x
+                  ? `🔥 3× SYNTH OVERDRIVE HIT! (${totalMult}×)`
+                  : `🎆 ${evalRes.winningLines.length} LASER PAYLINES! (${totalMult}×)`,
+            detail:
+              powerNames.length > 0
+                ? `Active Powerups: ${powerNames.join(', ')}`
+                : `${evalRes.winningLines.length} Neon Laser Lines (1986 Vegas ~11.5% House Edge)`,
+            tier: isMega ? 'jackpot' : isBig ? 'big' : 'win',
+            maxMultiplier: 120,
+            dougiePhrase: isBig ? '🚁 AIRWOLF & BLUE THUNDER ON STANDBY!' : ''
+          });
+        } else if (orbCount >= 3 && !isFreeSpinRound) {
+          fireBigWinSiren(false, '🔮 +4 NEON FREE SPINS!');
+          setStatusBanner('🔮 3+ PLASMA ORBS! 4 Neon Supernova Free Spins Ready!');
+        } else {
+          setLastOutcome({ tier: 'miss', mult: 0, payout: 0, bet: activeBet });
+          setStatusBanner(
+            isFreeSpinRound
+              ? 'Free Spin complete — Pull again for remaining Neon Free Spins!'
+              : 'House holds the edge! +1 ⚡ Reactor Charge banked — activate a Powerup!'
+          );
+        }
+        return;
+      }
+
       if (machineId === 'silver_mustang') {
         const spinMult = coffeeRushUsed ? 1.5 : isFreeSpinRound ? 1.25 : 1;
         const evalRes = evaluate5x3Paylines('silver_mustang', finalGrid, mustangLines, spinMult);
@@ -727,14 +865,21 @@ export default function VegasSlotMachine({
   const triggerVideoSpin = useCallback(() => {
     if (lockItState?.active || bonusWheelState) return;
 
-    const isFreeSpinRound = machineId === 'silver_mustang' && mustangFreeSpins > 0;
-    const activeBet = isFreeSpinRound ? freeSpinStake : getActualSpinCost();
+    const isFreeSpinRound =
+      (machineId === 'silver_mustang' && mustangFreeSpins > 0) ||
+      (machineId === 'neon_special' && neonFreeSpins > 0);
+    const activeBet =
+      machineId === 'neon_special' && neonFreeSpins > 0
+        ? neonFreeSpinStake
+        : machineId === 'silver_mustang' && mustangFreeSpins > 0
+          ? freeSpinStake
+          : getActualSpinCost();
 
     if (!isFreeSpinRound && activeBet > 0) {
       if (tokens < activeBet) {
         sfx.playClownHonk();
         setAutoSpinsLeft(0);
-        setStatusBanner(`Need ${activeBet} 🪙. Lower bet or switch to Demo.`);
+        setStatusBanner(`Need ${activeBet} 🪙 (${formatEightiesPrice(activeBet)}). Lower bet or switch to Demo.`);
         return;
       }
       if (onSpendTokens && !onSpendTokens(activeBet, `${activeMachine.name} Spin`)) return;
@@ -745,8 +890,10 @@ export default function VegasSlotMachine({
     sfx.playSlotLeverPull();
     timersRef.current.push(setTimeout(() => setLeverPulled(false), 380));
 
-    if (isFreeSpinRound) {
+    if (machineId === 'silver_mustang' && mustangFreeSpins > 0) {
       setMustangFreeSpins((n) => Math.max(0, n - 1));
+    } else if (machineId === 'neon_special' && neonFreeSpins > 0) {
+      setNeonFreeSpins((n) => Math.max(0, n - 1));
     }
 
     // Consume armed powerups for this spin
@@ -756,6 +903,28 @@ export default function VegasSlotMachine({
     const wasSurge = machineId === 'lightning_vault' && surgeArmed;
     const wasGoldUpgrade = machineId === 'buffalo_stampede' && goldStampedeArmed;
     const wasSecondChance = machineId === 'buffalo_stampede' && secondChanceArmed;
+
+    let neonUsedPowerups = null;
+    let neonSpontaneousLabel = '';
+    if (machineId === 'neon_special') {
+      neonUsedPowerups = { ...armedNeonPowerups };
+      // 14% spontaneous Neon Powerup Surge on any spin (accounted for in 88.5% Vegas RTP)
+      const anyArmed = Object.values(neonUsedPowerups).some(Boolean);
+      if (!anyArmed && Math.random() < 0.14) {
+        const pool = ['hyper_wilds', 'low_zapper', 'twin_sync'];
+        const pick = pool[Math.floor(Math.random() * pool.length)];
+        neonUsedPowerups[pick] = true;
+        neonSpontaneousLabel = NEON_SPECIAL_POWERUPS.find((p) => p.id === pick)?.name || 'NEON SURGE';
+      }
+      setArmedNeonPowerups({
+        laser_wild: false,
+        synth_3x: false,
+        twin_sync: false,
+        low_zapper: false,
+        hyper_wilds: false,
+        chopper_siren: false
+      });
+    }
 
     if (machineId === 'silver_mustang') {
       setArmedPowerups({ coffeeRush: false, pieWild: false, owlLock: false });
@@ -773,7 +942,7 @@ export default function VegasSlotMachine({
     // Build locked columns for Owl Ring Lock
     let lockedCols = null;
     if (owlLockUsed) {
-      lockedCols = videoGrid.map((col) => col.includes('orb') || col.includes('dougie'));
+      lockedCols = videoGrid.map((col) => Array.isArray(col) && (col.includes('orb') || col.includes('dougie')));
     }
 
     const rows = machineId === 'buffalo_stampede' ? 4 : 3;
@@ -784,14 +953,21 @@ export default function VegasSlotMachine({
       goldUpgrade: wasGoldUpgrade,
       pieWildReel: pieWildUsed || wasSurge,
       lockedCols,
-      prevGrid: videoGrid
+      prevGrid: videoGrid,
+      neonPowerups: neonUsedPowerups
     });
 
     // During Silver Mustang Free Spins, Golden Orb drops a guaranteed Wild on Reel 2 or 4
-    if (isFreeSpinRound) {
+    if (machineId === 'silver_mustang' && isFreeSpinRound) {
       const orbCol = Math.random() < 0.5 ? 1 : 3;
       const orbRow = Math.floor(Math.random() * 3);
       generated[orbCol][orbRow] = 'orb';
+    }
+    // During Neon Supernova Free Spins, guarantee a Cyber Wild drop
+    if (machineId === 'neon_special' && isFreeSpinRound) {
+      const wc = 1 + Math.floor(Math.random() * 3);
+      const wr = Math.floor(Math.random() * 3);
+      generated[wc][wr] = 'ns_wild';
     }
 
     // Smart 2nd-Chance Nudge on Buffalo if 2 Wheels landed
@@ -861,13 +1037,16 @@ export default function VegasSlotMachine({
           isFreeSpinRound,
           coffeeRushUsed,
           wasSurge,
-          usedSecondChance: nudged
+          usedSecondChance: nudged,
+          neonUsedPowerups,
+          neonSpontaneousLabel
         });
       }, lastDelay)
     );
   }, [
     activeMachine.name,
     anteBetOn,
+    armedNeonPowerups,
     armedPowerups.coffeeRush,
     armedPowerups.owlLock,
     armedPowerups.pieWild,
@@ -880,6 +1059,8 @@ export default function VegasSlotMachine({
     lockItState?.active,
     machineId,
     mustangFreeSpins,
+    neonFreeSpins,
+    neonFreeSpinStake,
     onSpendTokens,
     secondChanceArmed,
     surgeArmed,
@@ -902,7 +1083,7 @@ export default function VegasSlotMachine({
   useEffect(() => {
     if (autoSpinsLeft <= 0) return undefined;
     if (isAnySpinning || lockItState?.active || bonusWheelState) return undefined;
-    const cost = mustangFreeSpins > 0 ? 0 : getActualSpinCost();
+    const cost = (mustangFreeSpins > 0 || neonFreeSpins > 0) ? 0 : getActualSpinCost();
     if (cost > 0 && tokens < cost) {
       autoTimerRef.current = setTimeout(() => {
         setAutoSpinsLeft(0);
@@ -927,6 +1108,7 @@ export default function VegasSlotMachine({
     isAnySpinning,
     lockItState?.active,
     mustangFreeSpins,
+    neonFreeSpins,
     tokens,
     turboOn
   ]);
@@ -1078,6 +1260,20 @@ export default function VegasSlotMachine({
     setStatusBanner('🔥 FEVER 2× ARMED! Pull the lever for a Hot 777/Diamond Spin!');
   };
 
+  const activateNeonPowerup = (powerup) => {
+    if (isAnySpinning || machineId !== 'neon_special' || armedNeonPowerups[powerup.id]) return;
+    if (neonCharge < powerup.chargeCost) {
+      sfx.playToggle?.();
+      setStatusBanner(`Need ${powerup.chargeCost} ⚡ Reactor Cells for ${powerup.name} (spin to charge!).`);
+      return;
+    }
+    sfx.playSlotPowerup(powerup.id === 'synth_3x' || powerup.id === 'laser_wild' ? 'voltage' : 'boost');
+    setNeonCharge((c) => Math.max(0, c - powerup.chargeCost));
+    setArmedNeonPowerups((prev) => ({ ...prev, [powerup.id]: true }));
+    setNeonSurgeBanner(`${powerup.icon} ${powerup.name.toUpperCase()} ARMED FOR NEXT SPIN!`);
+    setStatusBanner(`${powerup.icon} ${powerup.name} locked in! Spin the Neon Laser Reels!`);
+  };
+
   const handleLeverPointerDown = (e) => {
     if (isAnySpinning) return;
     leverDragStartYRef.current = e.clientY;
@@ -1188,13 +1384,32 @@ export default function VegasSlotMachine({
             )}
 
             {/* 1. ARCHED LASER MARQUEE TOPPER */}
-            <div className={`tm-bandit-marquee ${machineId === 'silver_mustang' ? 'red-room-trim' : ''}`}>
+            <div
+              className={`tm-bandit-marquee ${
+                machineId === 'silver_mustang'
+                  ? 'red-room-trim'
+                  : machineId === 'neon_special'
+                    ? 'neon-special-marquee'
+                    : ''
+              }`}
+            >
               <div className="tm-bandit-bulbs" aria-hidden="true">
-                {Array.from({ length: 11 }).map((_, idx) => (
-                  <span key={idx} className={`tm-bandit-bulb ${idx % 2 === 0 ? 'even' : 'odd'}`} />
+                {Array.from({ length: machineId === 'neon_special' ? 16 : 11 }).map((_, idx) => (
+                  <span
+                    key={idx}
+                    className={`tm-bandit-bulb ${idx % 2 === 0 ? 'even' : 'odd'} ${
+                      machineId === 'neon_special' ? `chase-${idx % 4}` : ''
+                    }`}
+                  />
                 ))}
               </div>
-              <div className="tm-bandit-marquee-sub">{activeMachine.marqueeSub}</div>
+              <div className="tm-bandit-marquee-sub">
+                {activeMachine.payGlassTitle || activeMachine.marqueeSub}
+              </div>
+              <div className="tm-slot-house-edge-strip">
+                <span>🪙 {activeMachine.coinDenom || '25¢'} COIN-OP ({activeMachine.eraYear || '1985'})</span>
+                <span>⚖️ {activeMachine.houseEdgeLabel || 'HOUSE ALWAYS WINS • VEGAS ODDS'}</span>
+              </div>
               {featuredMeme && machineId === 'bandit85' && (
                 <div style={{ fontSize: '10px', color: '#facc15', fontWeight: 800, marginTop: '1px' }}>
                   ★ FEATURED CREATOR: @{featuredMeme.author_name} ★
@@ -1220,7 +1435,7 @@ export default function VegasSlotMachine({
             {/* OPTIONAL COLLAPSIBLE RULES / PAYTABLE DRAWER */}
             {paytableOpen && (
               <div className="tm-slot-paytable-drawer">
-                <strong>{activeMachine.name} — Vegas Paytable &amp; Features</strong>
+                <strong>{activeMachine.name} — 1980s Vegas Paytable &amp; House Odds</strong>
                 <p>{activeMachine.description}</p>
                 <div className="tm-slot-paytable-grid">
                   {machineId === 'bandit85' && (
@@ -1231,6 +1446,14 @@ export default function VegasSlotMachine({
                       <span>🔔×3 = <strong>15×</strong></span>
                       <span>🍒×3 = <strong>9×</strong></span>
                       <span>2×🍒/Pair = <strong>2×</strong></span>
+                    </>
+                  )}
+                  {machineId === 'neon_special' && (
+                    <>
+                      <span>⚡ Neon Wild×5 = <strong>200× Line</strong></span>
+                      <span>🚁 Airwolf×5 = <strong>155× Line</strong></span>
+                      <span>🔮 3+ Power Orbs = <strong>+4 Free Spins</strong></span>
+                      <span>6 Powerups = <strong>~11.5% House Edge</strong></span>
                     </>
                   )}
                   {machineId === 'silver_mustang' && (
@@ -1263,13 +1486,44 @@ export default function VegasSlotMachine({
 
             {/* MACHINE-SPECIFIC TOP METERS / JACKPOT LEDS */}
             {machineId === 'bandit85' && (
-              <div className="tm-bandit-payglass" aria-label="Slot Machine Payout Multipliers">
-                <div className="tm-bandit-paychip hot"><span>777×3</span> <strong>75×</strong></div>
-                <div className="tm-bandit-paychip"><span>💎×3</span> <strong>36×</strong></div>
-                <div className="tm-bandit-paychip"><span>BAR×3</span> <strong>22×</strong></div>
-                <div className="tm-bandit-paychip"><span>🔔×3</span> <strong>15×</strong></div>
-                <div className="tm-bandit-paychip"><span>🍒×3</span> <strong>9×</strong></div>
-                <div className="tm-bandit-paychip"><span>2×🍒/Pair</span> <strong>2×</strong></div>
+              <div className="tm-bandit-payglass-wrap">
+                <div className="tm-bandit-coin-bezel">
+                  <span>🪙 INSERT 25¢ QUARTER • MECHANICAL REEL STEPPER (1985)</span>
+                  <span>HOLD / NUDGE • ~88.5% PAYBACK</span>
+                </div>
+                <div className="tm-bandit-payglass" aria-label="Slot Machine Payout Multipliers">
+                  <div className="tm-bandit-paychip hot"><span>777×3</span> <strong>75×</strong></div>
+                  <div className="tm-bandit-paychip"><span>💎×3</span> <strong>36×</strong></div>
+                  <div className="tm-bandit-paychip"><span>BAR×3</span> <strong>22×</strong></div>
+                  <div className="tm-bandit-paychip"><span>🔔×3</span> <strong>15×</strong></div>
+                  <div className="tm-bandit-paychip"><span>🍒×3</span> <strong>9×</strong></div>
+                  <div className="tm-bandit-paychip"><span>2×🍒/Pair</span> <strong>2×</strong></div>
+                </div>
+              </div>
+            )}
+
+            {machineId === 'neon_special' && (
+              <div className="tm-slot-feature-strip neon-special">
+                <div className="tm-neon-chase-lights" aria-hidden="true">
+                  {Array.from({ length: 14 }).map((_, i) => (
+                    <span key={i} className={`tm-neon-chase-dot c${i % 5}`} />
+                  ))}
+                </div>
+                <div className="tm-slot-dougie-quote neon-surge">{neonSurgeBanner}</div>
+                <div className="tm-slot-meters-row">
+                  <div className="tm-slot-meter-pill cyan">
+                    <span>⚡ POWERUP REACTOR</span>
+                    <strong>{neonCharge}/6 CELLS</strong>
+                  </div>
+                  <div className="tm-slot-meter-pill gold">
+                    <span>🔮 FREE SPINS</span>
+                    <strong>{neonFreeSpins > 0 ? `🔥 ${neonFreeSpins} ACTIVE!` : '3+ ORBS = 4 SPINS'}</strong>
+                  </div>
+                  <div className="tm-slot-meter-pill">
+                    <span>⚖️ ODDS</span>
+                    <strong>HOUSE ALWAYS WINS (88.5%)</strong>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -1408,11 +1662,13 @@ export default function VegasSlotMachine({
                     const rowCount = machineId === 'buffalo_stampede' ? 4 : 3;
                     const colSyms = videoGrid[colIdx] || [];
                     const previewPool =
-                      machineId === 'silver_mustang'
-                        ? ['dougie', 'coffee', 'pie', 'orb', 'owlring', '777']
-                        : machineId === 'lightning_vault'
-                        ? ['bolt', 'volt7', 'vault', 'wildchip', 'diamond', 'bar']
-                        : ['buffalo', 'eagle', 'wolf', 'goldcoin', 'wild2x', 'wheel'];
+                      machineId === 'neon_special'
+                        ? ['ns_wild', 'ns_airwolf', 'ns_orb', 'ns_arcade', 'ns_synth', 'ns_shades']
+                        : machineId === 'silver_mustang'
+                          ? ['dougie', 'coffee', 'pie', 'orb', 'owlring', '777']
+                          : machineId === 'lightning_vault'
+                            ? ['bolt', 'volt7', 'vault', 'wildchip', 'diamond', 'bar']
+                            : ['buffalo', 'eagle', 'wolf', 'goldcoin', 'wild2x', 'wheel'];
 
                     return (
                       <div
@@ -1521,6 +1777,33 @@ export default function VegasSlotMachine({
                     ⚡ TURBO {turboOn ? 'ON' : 'OFF'}
                   </button>
                 </>
+              )}
+
+              {machineId === 'neon_special' && (
+                <div className="tm-neon-powerups-grid" role="group" aria-label="Neon Special Powerups">
+                  {NEON_SPECIAL_POWERUPS.map((pw) => {
+                    const isArmed = Boolean(armedNeonPowerups[pw.id]);
+                    const isReady = neonCharge >= pw.chargeCost && !isArmed;
+                    return (
+                      <button
+                        key={pw.id}
+                        type="button"
+                        className={`tm-slot-power-btn tm-neon-pw-btn ${isReady ? 'ready' : ''} ${
+                          isArmed ? 'armed' : ''
+                        }`}
+                        style={{ '--pw-color': pw.color }}
+                        disabled={isAnySpinning || isArmed || neonCharge < pw.chargeCost}
+                        onClick={() => activateNeonPowerup(pw)}
+                        title={pw.desc}
+                      >
+                        <span>{pw.icon} {pw.short}</span>
+                        <span className="tm-neon-pw-cost">
+                          {isArmed ? 'ARMED!' : `${pw.chargeCost}⚡`}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               )}
 
               {machineId === 'silver_mustang' && (
@@ -1661,43 +1944,62 @@ export default function VegasSlotMachine({
             <div className="tm-bandit-control-deck">
               <div className="tm-bandit-wallet-row">
                 <div className="tm-bandit-stat-box">
-                  <span>WALLET</span>
-                  <strong>🪙 {tokens.toLocaleString()}</strong>
+                  <span>WALLET (1985$)</span>
+                  <strong>🪙 {tokens.toLocaleString()} ({formatEightiesPrice(tokens, { compact: true })})</strong>
                 </div>
                 <div className="tm-bandit-stat-box">
                   <span>WAGER</span>
-                  <strong>{actualCost === 0 ? '🆓 DEMO' : `🪙 ${actualCost}`}</strong>
+                  <strong>
+                    {actualCost === 0
+                      ? '🆓 DEMO'
+                      : `${formatEightiesPrice(actualCost, { compact: true })} (${actualCost}🪙)`}
+                  </strong>
                 </div>
                 <div className="tm-bandit-stat-box">
                   <span>LAST WIN</span>
                   <strong style={{ color: isWinner ? '#4ade80' : '#94a3b8' }}>
-                    {lastOutcome?.payout ? `+${lastOutcome.payout} 🪙` : '0 🪙'}
+                    {lastOutcome?.payout
+                      ? `+${formatEightiesPrice(lastOutcome.payout, { compact: true })} (${lastOutcome.payout}🪙)`
+                      : '0¢'}
                   </strong>
                 </div>
                 <div className="tm-bandit-stat-box">
                   <span>RECORD</span>
-                  <strong style={{ color: '#facc15' }}>🏆 {bestWinTokens} 🪙</strong>
+                  <strong style={{ color: '#facc15' }}>
+                    🏆 {formatEightiesPrice(bestWinTokens, { compact: true })}
+                  </strong>
                 </div>
               </div>
 
               <div className="tm-bandit-bet-row" role="group" aria-label="Select Chip Wager">
-                <span className="tm-bandit-bet-label">BET:</span>
+                <span className="tm-bandit-bet-label">COIN-OP BET:</span>
                 {betOptions.map((amt) => (
                   <button
                     key={amt}
                     type="button"
-                    disabled={isAnySpinning || Boolean(lockItState?.active) || mustangFreeSpins > 0}
+                    disabled={
+                      isAnySpinning ||
+                      Boolean(lockItState?.active) ||
+                      mustangFreeSpins > 0 ||
+                      neonFreeSpins > 0
+                    }
                     className={`tm-bandit-chip-btn ${betAmount === amt ? 'active' : ''} ${
                       tokens < amt ? 'short' : ''
                     }`}
                     onClick={() => handleSelectBet(amt)}
+                    title={`${amt} Arcade Tokens = ${formatEightiesPrice(amt)} (1985 Quarter Standard)`}
                   >
-                    🪙 {amt}
+                    {formatEightiesPrice(amt, { compact: true })} <small>({amt}🪙)</small>
                   </button>
                 ))}
                 <button
                   type="button"
-                  disabled={isAnySpinning || Boolean(lockItState?.active) || mustangFreeSpins > 0}
+                  disabled={
+                    isAnySpinning ||
+                    Boolean(lockItState?.active) ||
+                    mustangFreeSpins > 0 ||
+                    neonFreeSpins > 0
+                  }
                   className="tm-bandit-chip-btn max"
                   onClick={() => {
                     const affordable = [...betOptions].reverse().find((b) => tokens >= b) ?? 0;
@@ -1709,7 +2011,12 @@ export default function VegasSlotMachine({
                 </button>
                 <button
                   type="button"
-                  disabled={isAnySpinning || Boolean(lockItState?.active) || mustangFreeSpins > 0}
+                  disabled={
+                    isAnySpinning ||
+                    Boolean(lockItState?.active) ||
+                    mustangFreeSpins > 0 ||
+                    neonFreeSpins > 0
+                  }
                   className={`tm-bandit-chip-btn demo ${betAmount === 0 ? 'active' : ''}`}
                   onClick={() => handleSelectBet(0)}
                   title="Practice for free (0 tokens staked, 0 tokens paid)"
@@ -1742,11 +2049,13 @@ export default function VegasSlotMachine({
                   >
                     {isAnySpinning
                       ? '🎰 SPINNING REELS...'
-                      : mustangFreeSpins > 0
-                      ? `☕ PULL FREE SPIN (${mustangFreeSpins} LEFT!)`
-                      : actualCost === 0
-                      ? '🕹️ PULL DEMO SPIN (0 🪙)'
-                      : `🎰 SPIN FOR ${actualCost} 🪙 (UP TO ${actualCost * activeMachine.maxMult} 🪙!)`}
+                      : neonFreeSpins > 0
+                        ? `🎆 PULL NEON FREE SPIN (${neonFreeSpins} LEFT!)`
+                        : mustangFreeSpins > 0
+                          ? `☕ PULL FREE SPIN (${mustangFreeSpins} LEFT!)`
+                          : actualCost === 0
+                            ? '🕹️ PULL DEMO SPIN (FREE)'
+                            : `🎰 SPIN ${formatEightiesPrice(actualCost, { compact: true })} (${actualCost}🪙 • MAX ${formatEightiesPrice(actualCost * activeMachine.maxMult, { compact: true })})`}
                   </button>
                 )}
               </div>
@@ -1782,6 +2091,7 @@ export default function VegasSlotMachine({
             </div>
           </div>
         </div>
+        {!embedded && <EightiesIconsStrip compact />}
       </div>
     </section>
   );

@@ -118,13 +118,13 @@ export function EightiesCarSvg({
   }
 
   if (carId === 'porsche911') {
-    // 1984 Porsche 911 SC / Turbo — Guards Red iconic sloping fastback, frog headlights & tea-tray tail
+    // 1984 Porsche 911 Carrera / 930 Turbo — Guards Red iconic flyline fastback, whale-tail & Fuchs alloys
     return (
       <svg viewBox="0 0 320 110" className={`tm-delorean-svg ${className}`.trim()} aria-hidden="true">
         <defs>
           <linearGradient id={steelId} x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="#ff4d6d" />
-            <stop offset="50%" stopColor="#dc2626" />
+            <stop offset="42%" stopColor="#dc2626" />
             <stop offset="100%" stopColor="#7f1d1d" />
           </linearGradient>
           <linearGradient id={flameId} x1="100%" y1="50%" x2="0%" y2="50%">
@@ -134,30 +134,79 @@ export function EightiesCarSvg({
           </linearGradient>
         </defs>
         {showFlames && (
-          <path d="M 80 86 Q 38 80 6 88 Q 40 96 80 93 Z" fill={`url(#${flameId})`} className="tm-delorean-flames" />
+          <path d="M 76 84 Q 36 78 6 86 Q 38 94 76 91 Z" fill={`url(#${flameId})`} className="tm-delorean-flames" />
         )}
-        <ellipse cx="188" cy="96" rx="108" ry="7" fill="#ff2a85" opacity={fluxActive ? 0.36 : 0.18} />
-        {/* 911 Whale-Tail / Tea-Tray Rear Spoiler */}
-        <path d="M 68 42 L 116 42 L 122 50 L 74 52 Z" fill="#111827" stroke="#facc15" strokeWidth="1.4" />
-        {/* Iconic Curved 911 Coupe Body */}
+        {/* Underglow shadow */}
+        <ellipse cx="185" cy="97" rx="112" ry="6.5" fill="#ff2a85" opacity={fluxActive ? 0.36 : 0.2} />
+        {/* Dual Chrome Rear Exhaust Tips */}
+        <rect x="61" y="76" width="14" height="3.2" rx="1.4" fill="#cbd5e1" stroke="#475569" strokeWidth="0.7" />
+        <rect x="64" y="80" width="12" height="2.8" rx="1.2" fill="#94a3b8" />
+        {/* Iconic 930 Tea-Tray / Whale-Tail Spoiler (Red tray + thick black rubber lip) */}
+        <path d="M 67 44 L 112 46 L 106 54 L 74 54 Z" fill="#b91c1c" stroke="#7f1d1d" strokeWidth="1" />
+        <path d="M 63 39 Q 66 37 72 41 L 116 44 L 113 48 L 64 45 Z" fill="#090d16" stroke="#334155" strokeWidth="1" />
+        {/* Low Flat Hood Line (behind raised cannon front fender) */}
+        <path d="M 212 48 Q 252 49 294 59 L 296 68 L 212 68 Z" fill="#991b1b" />
+        {/* Main Iconic 911 Flyline Body & Fastback Roofline */}
         <path
-          d="M 74 66 Q 82 50 118 46 Q 150 24 202 27 Q 238 40 264 49 Q 294 52 302 64 L 300 79 L 76 79 Z"
+          d="M 73 76 L 71 60 C 74 52 88 50 108 48 C 128 38 144 25 170 24.5 C 188 24.5 203 33 218 48 C 242 48 272 48 294 57 C 299 60 301 66 300 76 L 274 78 A 22 22 0 0 0 230 78 L 136 78 A 22 22 0 0 0 92 78 Z"
           fill={`url(#${steelId})`}
           stroke="#fca5a5"
-          strokeWidth="1.6"
+          strokeWidth="1.4"
+          strokeLinejoin="round"
         />
-        <path d="M 136 45 Q 160 30 198 31 Q 226 42 238 47 Z" fill="#0f172a" stroke="#facc15" strokeWidth="1.2" />
-        {/* Frogeye headlamp & black accordion bumper trim */}
-        <circle cx="290" cy="54" r="6" fill="#fef08a" stroke="#fff" strokeWidth="1.2" />
-        <polygon points="295,52 320,46 320,66 295,60" fill="#fef08a" opacity="0.25" />
-        <rect x="74" y="64" width="12" height="7" rx="2" fill="#0f172a" />
-        <rect x="290" y="66" width="14" height="7" rx="2" fill="#0f172a" />
-        {/* Classic 5-spoke Fuchs Wheels */}
-        {[122, 256].map((wx) => (
-          <g key={wx}>
-            <circle cx={wx} cy="80" r="18" fill="#090d16" stroke="#334155" strokeWidth="2" />
-            <circle cx={wx} cy="80" r="11" fill="#0f172a" stroke="#e2e8f0" strokeWidth="2.2" />
-            <circle cx={wx} cy="80" r="4" fill="#facc15" />
+        {/* Raised Front Cannon Fender Ridge */}
+        <path d="M 216 51 C 244 47 272 48 293 57" fill="none" stroke="#fecaca" strokeWidth="1.4" opacity="0.75" />
+        {/* Signature 911 Teardrop Side Windows + Black B-Pillar */}
+        <path d="M 118 47 C 134 36 150 28 168 27.5 L 168 47 Z" fill="#0f172a" stroke="#e2e8f0" strokeWidth="1.1" />
+        <path d="M 172 27.5 C 188 28 202 35 215 47.5 L 172 47.5 Z" fill="#0f172a" stroke="#e2e8f0" strokeWidth="1.1" />
+        <rect x="167.5" y="27" width="4" height="21" fill="#1e293b" />
+        {/* Wing Mirror Flag */}
+        <path d="M 199 47 L 207 43 L 210 47 Z" fill="#dc2626" stroke="#fca5a5" strokeWidth="0.9" />
+        {/* Door Handle & Panel Seam */}
+        <path d="M 148 48 L 144 74" stroke="#7f1d1d" strokeWidth="1.1" opacity="0.7" />
+        <path d="M 212 49 L 211 75" stroke="#7f1d1d" strokeWidth="1.1" opacity="0.7" />
+        <rect x="155" y="55" width="11" height="2.6" rx="1" fill="#090d16" stroke="#cbd5e1" strokeWidth="0.6" />
+        {/* Black 930 Turbo Shark-Fin Stone Guard ahead of Rear Wheel Arch */}
+        <path d="M 136 75 L 147 59 C 150 65 149 72 146 76 Z" fill="#090d16" opacity="0.92" />
+        {/* Lower Black Sill Rocker & CARRERA Side Stripe */}
+        <rect x="136" y="71" width="94" height="2.4" fill="#090d16" opacity="0.88" />
+        <text x="164" y="69.5" fill="#090d16" fontSize="5.4" fontWeight="900" fontFamily="Impact, sans-serif" letterSpacing="1.2">
+          CARRERA
+        </text>
+        {/* Tilted Frog-Eye Headlight Bezel & Beam */}
+        <ellipse
+          cx="291"
+          cy="56.5"
+          rx="5.2"
+          ry="7.4"
+          transform="rotate(-24 291 56.5)"
+          fill="#fef08a"
+          stroke="#e2e8f0"
+          strokeWidth="1.8"
+        />
+        <polygon points="295,52 320,45 320,68 295,62" fill="#fef08a" opacity="0.24" />
+        {/* Red Taillight Lens & Amber Front Indicator */}
+        <rect x="70" y="56" width="8" height="6" rx="1.2" fill="#ef4444" stroke="#fecaca" strokeWidth="0.8" />
+        <rect x="286" y="64.5" width="9" height="4" rx="1" fill="#f97316" stroke="#fde047" strokeWidth="0.6" />
+        {/* 1984 Accordion Impact Bumpers (Front & Rear) + Chin Spoiler */}
+        <rect x="69" y="64" width="14" height="7" rx="1.5" fill="#090d16" stroke="#334155" strokeWidth="0.9" />
+        <rect x="285" y="68" width="17" height="6.5" rx="1.5" fill="#090d16" stroke="#334155" strokeWidth="0.9" />
+        <path d="M 271 78 L 299 77 L 296 82 L 272 82 Z" fill="#090d16" />
+        {/* Authentic 5-Petal Black/Silver Fuchs Alloy Wheels */}
+        {[114, 252].map((wx) => (
+          <g key={wx} transform={`translate(${wx}, 80)`}>
+            <circle cx="0" cy="0" r="17.5" fill="#090d16" stroke="#334155" strokeWidth="2" />
+            <circle cx="0" cy="0" r="12.2" fill="#111827" stroke="#e2e8f0" strokeWidth="2.3" />
+            {/* 5 Fuchs Petals */}
+            {[0, 72, 144, 216, 288].map((deg) => (
+              <polygon
+                key={deg}
+                points="-2.1,-2.5 2.1,-2.5 3.1,-10.2 -3.1,-10.2"
+                fill="#e2e8f0"
+                transform={`rotate(${deg})`}
+              />
+            ))}
+            <circle cx="0" cy="0" r="3.2" fill="#090d16" stroke="#facc15" strokeWidth="1.2" />
           </g>
         ))}
       </svg>

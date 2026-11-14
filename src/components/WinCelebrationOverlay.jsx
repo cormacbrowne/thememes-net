@@ -61,6 +61,143 @@ function FlyingSaucerSvg() {
   );
 }
 
+/* 1984 Airwolf — sleek supersonic Bell 222 stealth gunship flying left-to-right */
+function AirwolfSvg() {
+  return (
+    <svg viewBox="0 0 260 112" className="tm-chopper-svg tm-airwolf-svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="awAfterburn" x1="100%" y1="50%" x2="0%" y2="50%">
+          <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.95" />
+          <stop offset="50%" stopColor="#fb923c" stopOpacity="0.85" />
+          <stop offset="100%" stopColor="#facc15" stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id="awCanopy" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#67e8f9" stopOpacity="0.88" />
+          <stop offset="55%" stopColor="#0f172a" stopOpacity="0.96" />
+          <stop offset="100%" stopColor="#020617" />
+        </linearGradient>
+      </defs>
+
+      {/* Main rotor blur disc + mast */}
+      <ellipse cx="146" cy="18" rx="92" ry="5" fill="rgba(148,163,184,0.38)" />
+      <rect x="64" y="16" width="164" height="3.2" rx="1.6" fill="#e2e8f0" className="tm-chopper-blade-sweep" />
+      <rect x="142" y="18" width="8" height="14" rx="2" fill="#475569" />
+
+      {/* Supersonic afterburner exhaust plumes */}
+      <polygon points="82,45 14,38 26,45 10,51 82,53" fill="url(#awAfterburn)" className="tm-aw-flame" />
+
+      {/* Tail boom & shark fin */}
+      <path d="M98,44 L36,42 L26,22 L42,22 L52,42 L100,56 Z" fill="#0f172a" stroke="#475569" strokeWidth="1.5" />
+      <path d="M52,49 L86,52 L88,56 L50,53 Z" fill="#cbd5e1" />
+      {/* Tail rotor */}
+      <circle cx="33" cy="31" r="10" fill="none" stroke="#94a3b8" strokeWidth="1.4" strokeDasharray="4 3" />
+      <line x1="33" y1="21" x2="33" y2="41" stroke="#e2e8f0" strokeWidth="2.2" />
+
+      {/* Bell 222 sleek stealth hull (upper matte black, lower silver-white belly) */}
+      <path
+        d="M84,42 C104,28 148,26 178,34 C202,41 226,51 236,61 C238,67 218,74 176,75 L96,73 C84,68 78,54 84,42 Z"
+        fill="#090d16"
+        stroke="#475569"
+        strokeWidth="1.6"
+      />
+      {/* Classic Airwolf pearl-silver underbelly */}
+      <path d="M100,63 L228,63 C220,71 196,75 166,75 L102,73 C94,71 94,66 100,63 Z" fill="#cbd5e1" />
+      <path d="M100,63 L226,63" stroke="#ef4444" strokeWidth="1.8" />
+
+      {/* Tinted dual cockpit canopy */}
+      <path d="M168,36 L220,56 L166,57 Z" fill="url(#awCanopy)" stroke="#38bdf8" strokeWidth="1.2" />
+      <line x1="190" y1="43" x2="188" y2="57" stroke="#0f172a" strokeWidth="2" />
+
+      {/* Twin turbo-thrust engine pod + side sponson wing */}
+      <path d="M114,32 C136,27 160,29 170,38 L110,41 Z" fill="#1e293b" stroke="#64748b" strokeWidth="1.2" />
+      <rect x="86" y="42" width="28" height="10" rx="4" fill="#334155" stroke="#94a3b8" strokeWidth="1" />
+      <path d="M118,56 L158,64 L112,68 Z" fill="#1e293b" stroke="#64748b" strokeWidth="1.2" />
+      <rect x="150" y="61" width="16" height="4" rx="1.5" fill="#94a3b8" />
+
+      {/* Wolf-head emblem stripe */}
+      <circle cx="144" cy="51" r="6" fill="#020617" stroke="#38bdf8" strokeWidth="1.2" />
+      <polygon points="141,53 144,47 147,53" fill="#facc15" />
+    </svg>
+  );
+}
+
+/* 1983 Blue Thunder — LAPD Special Gazelle chopper with Vulcan nose cannon & searchlight */
+function BlueThunderSvg() {
+  return (
+    <svg viewBox="0 0 260 128" className="tm-chopper-svg tm-bluethunder-svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="btSearchlight" x1="50%" y1="0%" x2="50%" y2="100%">
+          <stop offset="0%" stopColor="#fef08a" stopOpacity="0.82" />
+          <stop offset="55%" stopColor="#67e8f9" stopOpacity="0.32" />
+          <stop offset="100%" stopColor="#38bdf8" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+
+      {/* Main whisper rotor disc */}
+      <ellipse cx="114" cy="18" rx="90" ry="5" fill="rgba(56,189,248,0.34)" />
+      <rect x="34" y="16" width="160" height="3.2" rx="1.6" fill="#bae6fd" className="tm-chopper-blade-sweep" />
+      <rect x="110" y="18" width="8" height="14" rx="2" fill="#334155" />
+
+      {/* Tactical xenon searchlight cone angled forward-left */}
+      <polygon points="48,66 2,126 88,126" fill="url(#btSearchlight)" className="tm-bt-beam" />
+
+      {/* Tail boom & iconic Gazelle Fenestron ducted tail rotor (facing left!) */}
+      <path d="M148,44 L222,42 L232,22 L216,22 L208,42 L148,54 Z" fill="#172554" stroke="#60a5fa" strokeWidth="1.5" />
+      <circle cx="222" cy="36" r="10.5" fill="#0f172a" stroke="#93c5fd" strokeWidth="2" />
+      <circle cx="222" cy="36" r="5" fill="#1e40af" stroke="#67e8f9" strokeWidth="1.4" />
+
+      {/* Angular armored tactical hull (facing LEFT) */}
+      <path
+        d="M32,58 L54,40 L108,32 L154,36 L160,64 L138,74 L46,72 Z"
+        fill="#1e3a8a"
+        stroke="#60a5fa"
+        strokeWidth="1.6"
+      />
+      {/* Flat Apache-inspired armored cockpit canopy */}
+      <polygon points="36,56 56,42 104,42 104,58 46,60" fill="#020617" stroke="#22d3ee" strokeWidth="1.3" />
+      <line x1="68" y1="42" x2="64" y2="59" stroke="#38bdf8" strokeWidth="1.6" />
+      <polygon points="44,50 62,45 60,55 44,55" fill="#06b6d4" opacity="0.45" />
+
+      {/* Top turbine fairing + Whisper Mode cowling */}
+      <path d="M90,32 L142,30 L146,42 L88,42 Z" fill="#0f172a" stroke="#60a5fa" strokeWidth="1.2" />
+
+      {/* Chin FLIR pod + M61 20mm Gatling nose cannon */}
+      <circle cx="48" cy="65" r="5" fill="#cbd5e1" stroke="#334155" strokeWidth="1.2" />
+      <circle cx="46" cy="65" r="2.2" fill="#facc15" />
+      <rect x="20" y="61" width="22" height="3.6" rx="1" fill="#94a3b8" />
+      <circle cx="19" cy="62.8" r="2" fill="#f97316" />
+
+      {/* Landing skids */}
+      <path d="M58,72 L52,82 M132,73 L138,82 M42,82 L148,82" stroke="#94a3b8" strokeWidth="2.4" strokeLinecap="round" fill="none" />
+
+      {/* LAPD tactical stripe */}
+      <rect x="108" y="60" width="38" height="4" rx="1" fill="#facc15" />
+    </svg>
+  );
+}
+
+function renderChopperLayer(chopperFlyby) {
+  if (!chopperFlyby) return null;
+  const showAirwolf = chopperFlyby === 'airwolf' || chopperFlyby === 'both';
+  const showBlueThunder = chopperFlyby === 'bluethunder' || chopperFlyby === 'both';
+  return (
+    <div className="tm-win-chopper-layer" aria-hidden="true">
+      {showAirwolf && (
+        <div className="tm-win-chopper-unit is-airwolf">
+          <AirwolfSvg />
+          <span className="tm-chopper-radio-tag">🦅 HAWKE • AIRWOLF MACH 1+</span>
+        </div>
+      )}
+      {showBlueThunder && (
+        <div className="tm-win-chopper-unit is-bluethunder">
+          <BlueThunderSvg />
+          <span className="tm-chopper-radio-tag">🚁 MURPHY • BLUE THUNDER WHISPER</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function WinCelebrationOverlay({
   litePerfMode = false,
   compactPlayfieldMode = false
@@ -118,6 +255,7 @@ export default function WinCelebrationOverlay({
         aria-atomic="true"
       >
         <div className="tm-win-edge-aura" aria-hidden="true" />
+        {renderChopperLayer(activeWin.chopperFlyby)}
         <div className="tm-win-playfield-ticker">
           <span className="tm-win-playfield-badge">{activeWin.headline}</span>
           {activeWin.amount > 0 && (
@@ -182,6 +320,8 @@ export default function WinCelebrationOverlay({
         {rank >= 2 && activeWin.theme === 'disco-strobe' && (
           <div className="tm-win-disco-orb">🪩</div>
         )}
+
+        {renderChopperLayer(activeWin.chopperFlyby)}
 
         {/* Coin rain waterfall for Mega & Legendary rewards even on normal themes */}
         {rank >= 4 && activeWin.theme !== 'meteor-vault' && (

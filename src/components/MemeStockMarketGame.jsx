@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { sfx } from '../utils/soundEngine';
-import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
+import { ARCADE_ECONOMY_RULES, formatEightiesPrice } from '../utils/tokenEconomy';
 import { getCategoryActivity, getRecentMemeHeadlines } from '../utils/memeFeedBridge';
 import { triggerWinCelebration } from '../utils/winCelebration';
 import './MemeStockMarketGame.css';
@@ -807,18 +807,20 @@ export default function MemeStockMarketGame({
           <div className="tm-stocks-kpis">
             <div className="tm-stocks-kpi">
               <span>CASH WALLET</span>
-              <strong>🪙 {tokens.toLocaleString()}</strong>
+              <strong>
+                🪙 {tokens.toLocaleString()} ({formatEightiesPrice(tokens)})
+              </strong>
             </div>
             <div className="tm-stocks-kpi">
               <span>HOLDINGS</span>
               <strong style={{ color: '#00f3ff' }}>
-                🪙 {portfolioStats.holdingsLiquidationValue.toLocaleString()}
+                🪙 {portfolioStats.holdingsLiquidationValue.toLocaleString()} ({formatEightiesPrice(portfolioStats.holdingsLiquidationValue)})
               </strong>
             </div>
             <div className="tm-stocks-kpi">
               <span>NET WORTH</span>
               <strong style={{ color: '#facc15' }}>
-                🪙 {portfolioStats.netWorth.toLocaleString()}
+                🪙 {portfolioStats.netWorth.toLocaleString()} ({formatEightiesPrice(portfolioStats.netWorth)})
               </strong>
             </div>
             <div className="tm-stocks-kpi">
@@ -925,7 +927,9 @@ export default function MemeStockMarketGame({
                     </div>
                   </div>
                   <div className="tm-stock-row-right">
-                    <div className="tm-stock-price">🪙 {q.price.toFixed(2)}</div>
+                    <div className="tm-stock-price">
+                      ${(q.price * 0.25).toFixed(2)} • 🪙 {q.price.toFixed(2)}
+                    </div>
                     <div className={`tm-stock-delta ${up ? 'up' : 'down'}`}>
                       {up ? '▲' : '▼'} {Math.abs(q.lastDeltaPct).toFixed(1)}%
                     </div>
@@ -1178,7 +1182,7 @@ export default function MemeStockMarketGame({
                     disabled={maxAffordableShares < 1}
                     onClick={() => handleBuyShares(1)}
                   >
-                    BUY 1 ({calcBuyCost(1, activeQuote.price)} 🪙)
+                    BUY 1 ({formatEightiesPrice(calcBuyCost(1, activeQuote.price))} / {calcBuyCost(1, activeQuote.price)} 🪙)
                   </button>
                   <button
                     type="button"
@@ -1186,7 +1190,7 @@ export default function MemeStockMarketGame({
                     disabled={maxAffordableShares < 5}
                     onClick={() => handleBuyShares(5)}
                   >
-                    BUY 5 ({calcBuyCost(5, activeQuote.price)} 🪙)
+                    BUY 5 ({formatEightiesPrice(calcBuyCost(5, activeQuote.price))} / {calcBuyCost(5, activeQuote.price)} 🪙)
                   </button>
                   <button
                     type="button"
@@ -1210,7 +1214,7 @@ export default function MemeStockMarketGame({
                     disabled={activeHolding.shares < 1}
                     onClick={() => handleSellShares(1)}
                   >
-                    SELL 1 (+{calcSellProceeds(1, activeQuote.price)} 🪙)
+                    SELL 1 (+{formatEightiesPrice(calcSellProceeds(1, activeQuote.price))} / +{calcSellProceeds(1, activeQuote.price)} 🪙)
                   </button>
                   <button
                     type="button"
@@ -1226,7 +1230,7 @@ export default function MemeStockMarketGame({
                     disabled={activeHolding.shares < 1}
                     onClick={() => handleSellShares(activeHolding.shares)}
                   >
-                    SELL ALL (+{activePosLiquidation} 🪙)
+                    SELL ALL (+{formatEightiesPrice(activePosLiquidation)} / +{activePosLiquidation} 🪙)
                   </button>
                 </div>
               </div>

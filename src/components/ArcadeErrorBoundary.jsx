@@ -1,9 +1,10 @@
 import React from 'react';
+import { isChunkLoadError } from '../utils/lazyWithRetry';
 
 export default class ArcadeErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, errorMessage: '' };
+    this.state = { hasError: false, errorMessage: '', retryNonce: 0 };
   }
 
   static getDerivedStateFromError(error) {
@@ -13,6 +14,12 @@ export default class ArcadeErrorBoundary extends React.Component {
     };
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.state.hasError && prevProps.resetKey !== this.props.resetKey) {
+      this.setState({ hasError: false, errorMessage: '' });
+    }
+  }
+
   componentDidCatch(error, info) {
     if (typeof console !== 'undefined' && console.error) {
       console.error('[ArcadeErrorBoundary]', error, info);
@@ -20,12 +27,27 @@ export default class ArcadeErrorBoundary extends React.Component {
   }
 
   handleRetry = () => {
-    this.setState({ hasError: false, errorMessage: '' });
+    if (typeof window !== 'undefined' && isChunkLoadError({ message: this.state.errorMessage })) {
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set('_cb', String(Date.now()));
+        window.location.replace(url.toString());
+        return;
+      } catch {
+        window.location.reload();
+        return;
+      }
+    }
+    this.setState((prev) => ({
+      hasError: false,
+      errorMessage: '',
+      retryNonce: prev.retryNonce + 1
+    }));
   };
 
   render() {
     if (!this.state.hasError) {
-      return this.props.children;
+      return <React.Fragment key={this.state.retryNonce}>{this.props.children}</React.Fragment>;
     }
 
     const { onReturnHome, title = 'ARCADE SIGNAL INTERRUPTED' } = this.props;

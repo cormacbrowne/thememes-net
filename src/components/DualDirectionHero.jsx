@@ -3,13 +3,13 @@ import { sfx } from '../utils/soundEngine';
 import './DualDirectionHero.css';
 
 const ARCADE_QUICK_LAUNCH = [
-  { id: 'eightball', icon: '🎱', label: 'Magic 8-Ball', tag: 'NEW' },
+  { id: 'eightball', icon: '🎱', label: 'Magic 8-Ball', tag: '25¢ PLAY' },
   { id: 'pinball', icon: '🛸', label: '80s Pinball', tag: '5 TABLES' },
-  { id: 'slots', icon: '🎰', label: 'Vegas Slots', tag: '4 SLOTS' },
-  { id: 'blackjack', icon: '🃏', label: 'Blackjack' },
+  { id: 'slots', icon: '🎰', label: 'Vegas Slots', tag: '5 SLOTS' },
+  { id: 'blackjack', icon: '🃏', label: 'Blackjack', tag: '25¢ MIN' },
   { id: 'poker', icon: '🤠', label: "Hold'em Poker" },
   { id: 'roulette', icon: '🎡', label: 'Roulette' },
-  { id: 'pusher', icon: '🪙', label: 'Coin Dozer' },
+  { id: 'pusher', icon: '🪙', label: 'Coin Dozer', tag: '25¢ DROP' },
   { id: 'derby', icon: '🏇', label: 'Neon Derby' },
   { id: 'stocks', icon: '📈', label: 'MEMEDAQ' }
 ];

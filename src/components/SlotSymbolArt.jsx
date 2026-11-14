@@ -342,6 +342,143 @@ export default function SlotSymbolArt({ symbolId, size = 54, badge = null }) {
         );
       }
 
+      // ===== NEON SUPERNOVA SPECIAL '86 =====
+      case 'ns_wild':
+        return (
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Neon Cyber Wild">
+            <defs>
+              <linearGradient id={`gnsw-${uid}`} x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#00f3ff" />
+                <stop offset="50%" stopColor="#ff2a85" />
+                <stop offset="100%" stopColor="#facc15" />
+              </linearGradient>
+            </defs>
+            <polygon points="32,5 40,20 57,22 45,34 49,51 32,42 15,51 19,34 7,22 24,20" fill={`url(#gnsw-${uid})`} stroke="#ffffff" strokeWidth="2.2" strokeLinejoin="round" />
+            <rect x="8" y="25" width="48" height="16" rx="5" fill="#090a14" stroke="#00f3ff" strokeWidth="2" />
+            <text x="32" y="36.5" textAnchor="middle" fill="#fef08a" fontSize="10" fontWeight="900" fontFamily="Impact, sans-serif" letterSpacing="1">
+              NEON WILD
+            </text>
+          </svg>
+        );
+
+      case 'ns_orb':
+        return (
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Plasma Power Orb">
+            <defs>
+              <radialGradient id={`gnso-${uid}`} cx="38%" cy="32%" r="65%">
+                <stop offset="0%" stopColor="#ffffff" />
+                <stop offset="35%" stopColor="#e879f9" />
+                <stop offset="75%" stopColor="#9333ea" />
+                <stop offset="100%" stopColor="#1e1b4b" />
+              </radialGradient>
+            </defs>
+            <circle cx="32" cy="28" r="21" fill="#ec4899" opacity="0.28" />
+            <circle cx="32" cy="28" r="16" fill={`url(#gnso-${uid})`} stroke="#f0abfc" strokeWidth="2.4" />
+            <polygon points="34,15 26,29 33,29 29,41 40,26 33,26" fill="#00f3ff" stroke="#ffffff" strokeWidth="1" />
+            <rect x="9" y="46" width="46" height="12" rx="4" fill="#111827" stroke="#e879f9" strokeWidth="1.6" />
+            <text x="32" y="55" textAnchor="middle" fill="#f5d0fe" fontSize="7.8" fontWeight="900" fontFamily="Impact, sans-serif">
+              PWR SCATTER
+            </text>
+          </svg>
+        );
+
+      case 'ns_airwolf':
+        return (
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Airwolf Supersonic Chopper">
+            {/* Rotor Blur */}
+            <ellipse cx="32" cy="18" rx="25" ry="3.2" fill="#94a3b8" opacity="0.55" />
+            <line x1="7" y1="18" x2="57" y2="18" stroke="#00f3ff" strokeWidth="2" strokeLinecap="round" />
+            <line x1="32" y1="18" x2="32" y2="25" stroke="#cbd5e1" strokeWidth="2.6" />
+            {/* Sleek Black Bell 222 Stealth Fuselage */}
+            <path d="M12 31 L25 24 H42 L53 31 L48 37 H20 Z" fill="#0f172a" stroke="#38bdf8" strokeWidth="2" />
+            <path d="M22 36 L44 36 L40 40 H24 Z" fill="#e2e8f0" />
+            {/* Cockpit Glass */}
+            <polygon points="38,25 49,30 40,32 36,27" fill="#00f3ff" opacity="0.85" />
+            {/* Side Turbofan Pod & Afterburner Flame */}
+            <ellipse cx="29" cy="34" rx="8" ry="3" fill="#334155" stroke="#38bdf8" strokeWidth="1.4" />
+            <polygon points="20,33 12,35 20,37" fill="#ff2a85" />
+            {/* Tail Boom & Fenestron */}
+            <path d="M15 31 L6 27 L9 34 L15 34 Z" fill="#1e293b" stroke="#38bdf8" strokeWidth="1.5" />
+            <rect x="9" y="46" width="46" height="12" rx="4" fill="#090a0f" stroke="#38bdf8" strokeWidth="1.5" />
+            <text x="32" y="55" textAnchor="middle" fill="#7dd3fc" fontSize="8" fontWeight="900" fontFamily="Impact, sans-serif" letterSpacing="0.8">
+              AIRWOLF
+            </text>
+          </svg>
+        );
+
+      case 'ns_arcade':
+        return (
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="1986 Neon Arcade Cabinet">
+            <path d="M18 10 H46 L48 20 L42 36 H22 L16 20 Z" fill="#1e1b4b" stroke="#ff2a85" strokeWidth="2.2" />
+            <rect x="20" y="36" width="24" height="20" rx="2" fill="#0f172a" stroke="#00f3ff" strokeWidth="2" />
+            <rect x="19" y="12" width="26" height="6" rx="1.5" fill="#ff2a85" />
+            <text x="32" y="16.8" textAnchor="middle" fill="#fef08a" fontSize="5.5" fontWeight="900">1986 ARCADE</text>
+            <rect x="21" y="21" width="22" height="12" rx="2" fill="#020617" stroke="#00f3ff" strokeWidth="1.4" />
+            <circle cx="28" cy="27" r="2.2" fill="#facc15" />
+            <line x1="33" y1="25" x2="39" y2="29" stroke="#22c55e" strokeWidth="1.8" />
+            <rect x="25" y="41" width="14" height="7" rx="1.5" fill="#1e293b" stroke="#facc15" strokeWidth="1.2" />
+            <text x="32" y="46.5" textAnchor="middle" fill="#facc15" fontSize="6" fontWeight="900">25¢</text>
+          </svg>
+        );
+
+      case 'ns_synth':
+        return (
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="1986 Keytar Laser">
+            <g transform="rotate(-18 32 34)">
+              <rect x="8" y="24" width="34" height="18" rx="3" fill="#be185d" stroke="#f472b6" strokeWidth="2.2" />
+              <rect x="42" y="29" width="16" height="7" rx="2" fill="#1e293b" stroke="#00f3ff" strokeWidth="1.8" />
+              <rect x="11" y="27" width="28" height="10" fill="#f8fafc" stroke="#0f172a" strokeWidth="1.4" />
+              {[15, 20, 25, 30, 35].map((kx) => (
+                <rect key={kx} x={kx} y="27" width="2.2" height="6" fill="#090a0f" />
+              ))}
+              <circle cx="51" cy="32.5" r="2" fill="#facc15" />
+            </g>
+          </svg>
+        );
+
+      case 'ns_shades':
+        return (
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Outrun Neon Aviators">
+            <path d="M8 22 H28 L25 41 C18 44, 10 40, 8 22 Z" fill="#090a0f" stroke="#00f3ff" strokeWidth="2.4" />
+            <path d="M36 22 H56 C54 40, 46 44, 39 41 Z" fill="#090a0f" stroke="#ff2a85" strokeWidth="2.4" />
+            <line x1="28" y1="24" x2="36" y2="24" stroke="#facc15" strokeWidth="2.6" />
+            <line x1="12" y1="28" x2="22" y2="28" stroke="#00f3ff" strokeWidth="2" />
+            <line x1="14" y1="33" x2="20" y2="33" stroke="#ff2a85" strokeWidth="1.8" />
+            <line x1="41" y1="28" x2="51" y2="28" stroke="#facc15" strokeWidth="2" />
+            <line x1="43" y1="33" x2="49" y2="33" stroke="#00f3ff" strokeWidth="1.8" />
+          </svg>
+        );
+
+      case 'ns_cassette':
+        return (
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Maxell 1986 Chrome Cassette">
+            <rect x="8" y="16" width="48" height="32" rx="4" fill="#1e293b" stroke="#4ade80" strokeWidth="2.2" />
+            <rect x="12" y="20" width="40" height="18" rx="2" fill="#0f172a" stroke="#38bdf8" strokeWidth="1.4" />
+            <circle cx="22" cy="29" r="5" fill="#e2e8f0" stroke="#0f172a" strokeWidth="1.6" />
+            <circle cx="42" cy="29" r="5" fill="#e2e8f0" stroke="#0f172a" strokeWidth="1.6" />
+            <rect x="28" y="26" width="8" height="6" fill="#00f3ff" opacity="0.6" />
+            <polygon points="16,48 48,48 45,42 19,42" fill="#334155" stroke="#94a3b8" strokeWidth="1.2" />
+          </svg>
+        );
+
+      case 'ns_quarter':
+        return (
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="1986 25 Cent Quarter">
+            <defs>
+              <radialGradient id={`gnsq-${uid}`} cx="35%" cy="30%" r="65%">
+                <stop offset="0%" stopColor="#f8fafc" />
+                <stop offset="55%" stopColor="#94a3b8" />
+                <stop offset="100%" stopColor="#475569" />
+              </radialGradient>
+            </defs>
+            <circle cx="32" cy="32" r="23" fill={`url(#gnsq-${uid})`} stroke="#e2e8f0" strokeWidth="2.4" />
+            <circle cx="32" cy="32" r="18" fill="none" stroke="#1e293b" strokeWidth="1.6" strokeDasharray="3 2" />
+            <text x="32" y="38" textAnchor="middle" fill="#0f172a" fontSize="18" fontWeight="900" fontFamily="Impact, sans-serif">
+              25¢
+            </text>
+          </svg>
+        );
+
       // ===== CYBER BUFFALO STAMPEDE '86 =====
       case 'buffalo':
         return (

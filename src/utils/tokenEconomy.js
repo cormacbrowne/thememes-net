@@ -384,3 +384,15 @@ export function computeXpConversionState(xp = 0, convertedXp = 0, ledger = null)
     isDailyCapped: dailyRemainingTokens < TOKENS_MINTED
   };
 }
+
+/**
+ * Formats any arcade token price or wager into authentic 1980s USD/Coin-Op pricing
+ * (1 Arcade Token = 1 x 25c Arcade Quarter, circa 1985-1986).
+ */
+export function formatEightiesPrice(tokens = 0, { compact = false } = {}) {
+  const n = Math.max(0, Number(tokens) || 0);
+  if (n <= 0) return compact ? 'FREE' : 'FREE (1985 PROMO)';
+  const cents = Math.round(n * 25);
+  if (cents < 100) return `${cents}¢`;
+  return `$${(cents / 100).toFixed(2)}`;
+}

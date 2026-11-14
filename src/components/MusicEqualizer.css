@@ -148,7 +148,7 @@
 .tm-eq-fs-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1250;
+  z-index: 10050;
   width: 100%;
   height: 100dvh;
   max-height: 100dvh;

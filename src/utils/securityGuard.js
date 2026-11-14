@@ -45,7 +45,7 @@ export function sanitizeMediaUrl(rawUrl, fallback = '') {
   }
 
   try {
-    const parsed = new URL(trimmed, typeof window !== 'undefined' ? window.location.origin : 'https://thememes.net');
+    const parsed = new URL(trimmed, typeof window !== 'undefined' ? window.location.origin : 'https://www.thememes.net');
     const protocol = parsed.protocol.toLowerCase();
     if (protocol !== 'https:' && protocol !== 'http:') {
       return fallback;

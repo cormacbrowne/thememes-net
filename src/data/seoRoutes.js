@@ -6,7 +6,7 @@
 
 import { STUDIO_TEMPLATES } from './starterMemes.js';
 
-export const SITE_ORIGIN = 'https://thememes.net';
+export const SITE_ORIGIN = 'https://www.thememes.net';
 export const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/og-card.png`;
 
 export const TEMPLATE_SEO_SLUGS = {

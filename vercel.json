@@ -148,7 +148,7 @@
       "destination": "/api/meme-og?id=:id"
     },
     {
-      "source": "/((?!_vercel/|api/|assets/|seed/|favicon|logo-|apple-touch-icon|manifest\\.webmanifest).*)",
+      "source": "/((?!_vercel/|api/|assets/|seed/|favicon|logo-|apple-touch-icon|manifest\\.webmanifest|BingSiteAuth\\.xml).*)",
       "destination": "/index.html"
     }
   ],

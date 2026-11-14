@@ -91,7 +91,7 @@ export const SEO_ROUTES = [
     path: '/',
     title: 'Free Meme & GIF Maker (Top/Bottom Text) & Funny Memes | THE MEMES.net',
     description:
-      'Make memes and GIFs in 5 seconds: upload any image or GIF, add classic top & bottom meme text, browse funny dank, programming, and gaming memes, and share instant preview links.',
+      'Make memes and GIFs in 5 seconds: upload any image or GIF, add classic top & bottom text, browse dank, coding & gaming memes, and share instant links.',
     h1: 'Free Meme & GIF Maker + Funny Community Memes',
     kicker: 'THE MEMES.net // Instant Memes, GIFs & Classic Captions',
     changefreq: 'hourly',

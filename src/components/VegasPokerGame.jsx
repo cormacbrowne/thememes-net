@@ -257,12 +257,17 @@ export default function VegasPokerGame({
 
   const resolveShowdown = useCallback(
     (finalSeats, boardCards, totalPot, earlyWinSeatId = null) => {
+      const rawPot = Math.max(0, Number(totalPot) || 0);
+      const houseRake = !practiceMode && rawPot >= 10 ? Math.max(1, Math.floor(rawPot * 0.05)) : 0;
+      const netPot = Math.max(0, rawPot - houseRake);
+      const rakeTag = houseRake > 0 ? ` (after ${houseRake} M$ 5% House Rake)` : '';
+
       let winners = [];
       let summaryText;
 
       if (earlyWinSeatId !== null) {
         winners = [finalSeats[earlyWinSeatId]];
-        summaryText = `${winners[0].name} wins ${totalPot} ${practiceMode ? 'chips' : '🪙'} (everyone else folded)!`;
+        summaryText = `${winners[0].name} wins ${netPot} ${practiceMode ? 'chips' : 'M$'}${rakeTag} (everyone else folded)!`;
       } else {
         const contenders = finalSeats
           .filter((s) => !s.folded)
@@ -277,11 +282,11 @@ export default function VegasPokerGame({
         );
         winners = winningEntries.map((c) => c.seat);
         const names = winners.map((w) => w.name).join(' & ');
-        summaryText = `${names} ${winners.length > 1 ? 'split' : 'wins'} ${totalPot} ${practiceMode ? 'chips' : '🪙'} with ${contenders[0].evalRes.name}!`;
+        summaryText = `${names} ${winners.length > 1 ? 'split' : 'wins'} ${netPot} ${practiceMode ? 'chips' : 'M$'}${rakeTag} with ${contenders[0].evalRes.name}!`;
       }
 
-      const share = Math.floor(totalPot / winners.length);
-      const remainder = totalPot - share * winners.length;
+      const share = Math.floor(netPot / winners.length);
+      const remainder = netPot - share * winners.length;
       const winIdSet = new Set(winners.map((w) => w.id));
 
       const nextSeats = finalSeats.map((s) => {

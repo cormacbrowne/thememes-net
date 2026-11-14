@@ -20,6 +20,8 @@ export default function ArcadeLobby({
   onToggleAiAssistant,
   onBackToFeed,
   deloreanEra = 'present',
+  activeCarId = 'delorean',
+  onSelectCar,
   onOpenTimeCircuits,
   onTriggerDeLoreanWarp
 }) {
@@ -61,7 +63,7 @@ export default function ArcadeLobby({
         <div className="tm-lobby-hero-copy">
           <h1 className="tm-lobby-title">🕹️ Cyber-Arcade Lobby</h1>
           <p className="tm-lobby-sub">
-            14 retro cabinets, free token tables &amp; daily meme games.
+            13 retro cabinets, MemeDollarz ($) casino tables &amp; 80s fortune games.
           </p>
         </div>
 
@@ -74,9 +76,9 @@ export default function ArcadeLobby({
                 sfx.playToggle();
                 onOpenRewards();
               }}
-              aria-label={`Wallet balance ${tokens} tokens`}
+              aria-label={`Wallet balance M$${tokens} MemeDollarz`}
             >
-              🪙 <span>{tokens}</span>
+              🪙 <span>M${tokens}</span>
             </button>
           )}
           {onOpenLeaderboard && (
@@ -137,6 +139,8 @@ export default function ArcadeLobby({
       {onOpenTimeCircuits && (
         <DeLoreanDockBanner
           activeEra={deloreanEra}
+          activeCarId={activeCarId}
+          onSelectCar={onSelectCar}
           onOpenModal={onOpenTimeCircuits}
           onQuickWarp={onTriggerDeLoreanWarp}
         />

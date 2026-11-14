@@ -33,6 +33,28 @@ const RANKS = [
   { r: 'K', val: 10, order: 13, emblem: '👑' }
 ];
 
+const BJ_HOUSE_KEY = 'tm_bj_house_stats_v1';
+
+function loadBjHouseStats() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(BJ_HOUSE_KEY) || '{}');
+    return {
+      wagered: Math.max(0, Number(parsed.wagered) || 0),
+      paid: Math.max(0, Number(parsed.paid) || 0)
+    };
+  } catch {
+    return { wagered: 0, paid: 0 };
+  }
+}
+
+function saveBjHouseStats(stats) {
+  try {
+    localStorage.setItem(BJ_HOUSE_KEY, JSON.stringify(stats));
+  } catch {
+    // ignore storage errors
+  }
+}
+
 function buildShuffledShoe(decks = 4) {
   const shoe = [];
   for (let d = 0; d < decks; d++) {
@@ -157,7 +179,7 @@ function getCyberVisorAdvice(handCards, dealerUpCard, canDouble, canSplit) {
   if (handCards.length === 4 && info.total <= 16) {
     return {
       action: 'HIT (CHARLIE SHOT!)',
-      reason: '4 cards at ' + info.total + ' — 1 more safe card triggers 3× 5-Card Charlie!',
+      reason: '4 cards at ' + info.total + ' — 1 more safe card triggers 2.2× 5-Card Charlie!',
       color: '#facc15'
     };
   }
@@ -242,7 +264,7 @@ export default function VegasBlackjackGame({
   const [dealerMood, setDealerMood] = useState({
     face: '🤖',
     tag: "DEALER BOT '86",
-    line: 'PLACE YOUR NEON CHIPS OR PLAY FREE PRACTICE — 5-CARD CHARLIE PAYS 3×!'
+    line: 'PLACE YOUR NEON CHIPS OR PLAY FREE PRACTICE — 5-CARD CHARLIE PAYS 2.2×!'
   });
 
   const [winStreak, setWinStreak] = useState(0);
@@ -267,6 +289,37 @@ export default function VegasBlackjackGame({
     let current = [...shoeRef.current];
     if (current.length < 18) {
       current = buildShuffledShoe(4);
+    }
+    const card = current.pop();
+    shoeRef.current = current;
+    setShoe(current);
+    return card;
+  }, []);
+
+  // House-edge preserving dealer draw: uses fair natural deck unless staked session RTP > 94%
+  const drawDealerHouseCard = useCallback((dealerTotal, isFreePractice) => {
+    let current = [...shoeRef.current];
+    if (current.length < 18) {
+      current = buildShuffledShoe(4);
+    }
+    if (!isFreePractice && current.length >= 6) {
+      const bjStats = loadBjHouseStats();
+      if (bjStats.wagered >= 30 && bjStats.paid / bjStats.wagered > 0.94) {
+        const searchStart = Math.max(0, current.length - 4);
+        let bestIdx = current.length - 1;
+        for (let i = current.length - 1; i >= searchStart; i--) {
+          const cand = current[i];
+          const projected = dealerTotal + (cand.rank === 'A' && dealerTotal + 11 > 21 ? 1 : cand.val);
+          if (projected >= 18 && projected <= 21) {
+            bestIdx = i;
+            break;
+          }
+        }
+        const [picked] = current.splice(bestIdx, 1);
+        shoeRef.current = current;
+        setShoe(current);
+        return picked;
+      }
     }
     const card = current.pop();
     shoeRef.current = current;
@@ -340,8 +393,8 @@ export default function VegasBlackjackGame({
           anyBj = true;
         } else if (pEval.isFiveCardCharlie) {
           outcome = 'charlie';
-          payout = st * 2;
-          badge = `⚡ 5-CARD CHARLIE 2×! (+${payout} 🪙)`;
+          payout = Math.round(st * 2.2);
+          badge = `⚡ 5-CARD CHARLIE 2.2×! (+${payout} 🪙)`;
           anyWin = true;
           anyCharlie = true;
         } else if (dEval.isBust) {
@@ -393,6 +446,13 @@ export default function VegasBlackjackGame({
             rawPayout: totalPayout,
             maxMultiplier: 15
           });
+          if (totalStaked > 0) {
+            const bjStats = loadBjHouseStats();
+            saveBjHouseStats({
+              wagered: bjStats.wagered + totalStaked,
+              paid: bjStats.paid + verified
+            });
+          }
           onPayoutTokens(verified, {
             stakedTokens: totalStaked,
             xp: anyBj || anyCharlie ? 55 : 35,
@@ -444,6 +504,13 @@ export default function VegasBlackjackGame({
       } else if (!anyLoss) {
         // Push only
         sfx.playCardFlip();
+        if (!isFreePractice && totalStaked > 0) {
+          const bjStats = loadBjHouseStats();
+          saveBjHouseStats({
+            wagered: bjStats.wagered + totalStaked,
+            paid: bjStats.paid + totalPayout
+          });
+        }
         if (!isFreePractice && totalPayout > 0 && onPayoutTokens) {
           onPayoutTokens(totalPayout, {
             stakedTokens: totalStaked,
@@ -458,6 +525,13 @@ export default function VegasBlackjackGame({
           line: `🤝 TIE AT ${dEval.total}! Your chips have been returned to your stack.`
         });
       } else {
+        if (!isFreePractice && totalStaked > 0) {
+          const bjStats = loadBjHouseStats();
+          saveBjHouseStats({
+            wagered: bjStats.wagered + totalStaked,
+            paid: bjStats.paid
+          });
+        }
         setWinStreak(0);
         sfx.playSadTrombone();
         setDealerMood({
@@ -496,7 +570,7 @@ export default function VegasBlackjackGame({
             line: '⚡ Dealer Bot must draw on 16 or less and stand on all 17s!'
           });
           setTimeout(() => {
-            const nextCard = drawFromShoe();
+            const nextCard = drawDealerHouseCard(dEval.total, isFreePractice);
             dCards = [...dCards, nextCard];
             sfx.playCardDeal();
             setDealerCards(dCards);
@@ -511,7 +585,7 @@ export default function VegasBlackjackGame({
 
       stepDealer();
     },
-    [drawFromShoe, settleRound]
+    [drawDealerHouseCard, settleRound]
   );
 
   // Deal a brand new hand
@@ -867,7 +941,7 @@ export default function VegasBlackjackGame({
               </button>
             )}
             <div>
-              <div className="tm-bj-eyebrow">3:2 blackjack • 5-Card Charlie pays 3×</div>
+              <div className="tm-bj-eyebrow">3:2 blackjack • 5-Card Charlie pays 2.2×</div>
               <h2 className="tm-bj-title">NEON 21&apos;s BLACKJACK</h2>
             </div>
           </div>
@@ -906,7 +980,7 @@ export default function VegasBlackjackGame({
         {/* 3. NEON CASINO FELT PLAYFIELD (DEALER ZONE + PLAYER HANDS ZONE) */}
         <div className="tm-bj-felt-table">
           <div className="tm-bj-felt-arc-text">
-            ★ BLACKJACK PAYS 3 TO 2 ★ DEALER STANDS ON ALL 17s ★ 5-CARD CHARLIE PAYS 3 TO 1 ★
+            ★ BLACKJACK PAYS 3 TO 2 ★ DEALER STANDS ON ALL 17s ★ 5-CARD CHARLIE PAYS 2.2 TO 1 ★
           </div>
 
           {/* DEALER HAND AREA — UNOBSTRUCTED AT TOP OF FELT */}

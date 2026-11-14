@@ -187,18 +187,59 @@ const PINBALL_TABLES = [
   }
 ];
 
-function computePinballTokenPayout(finalScore, stakedTokens) {
+const PINBALL_HOUSE_KEY = 'tm_pinball_house_stats_v2';
+
+function loadPinballHouseStats() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(PINBALL_HOUSE_KEY) || '{}');
+    return {
+      wagered: Math.max(0, Number(parsed.wagered) || 0),
+      paid: Math.max(0, Number(parsed.paid) || 0)
+    };
+  } catch {
+    return { wagered: 0, paid: 0 };
+  }
+}
+
+function savePinballHouseStats(stats) {
+  try {
+    localStorage.setItem(PINBALL_HOUSE_KEY, JSON.stringify(stats));
+  } catch {
+    // ignore storage failures
+  }
+}
+
+function computePinballTokenPayout(finalScore, stakedTokens, persistHouse = false) {
   if (stakedTokens <= 0) return 0;
   let raw = 0;
-  if (finalScore >= 40000) raw = 35;
-  else if (finalScore >= 25000) raw = 24;
-  else if (finalScore >= 15000) raw = 16;
-  else if (finalScore >= 8000) raw = 10;
-  return validateStakedGamePayout({
+  if (finalScore >= 75000) raw = 28;
+  else if (finalScore >= 50000) raw = 18;
+  else if (finalScore >= 32000) raw = 12;
+  else if (finalScore >= 18000) raw = 8;
+
+  const stats = loadPinballHouseStats();
+  const nextWagered = stats.wagered + stakedTokens;
+  let governedRaw = raw;
+  // Strict long-term house edge (<= 90% session RTP after initial 30 M$ wagered)
+  if (nextWagered >= 30 && raw > 0) {
+    const maxAllowedSessionPaid = Math.max(0, Math.floor(nextWagered * 0.90));
+    const remainingRoom = Math.max(0, maxAllowedSessionPaid - stats.paid);
+    governedRaw = Math.min(raw, remainingRoom);
+  }
+
+  const verified = validateStakedGamePayout({
     stakedTokens,
-    rawPayout: raw,
-    maxMultiplier: 4
+    rawPayout: governedRaw,
+    maxMultiplier: 3
   });
+
+  if (persistHouse) {
+    savePinballHouseStats({
+      wagered: nextWagered,
+      paid: stats.paid + verified
+    });
+  }
+  return verified;
 }
 
 // Fast distance from point P to line segment AB
@@ -262,6 +303,18 @@ function buildInitialEngineState(tbl) {
     nudgeHeat: 0,
     tiltTicks: 0,
     shakeTicks: 0,
+    flasherTicks: 0,
+    magnaCharge: 100,
+    magnaActiveTicks: 0,
+    mysteryBoxCooldown: 0,
+    miniSlot: {
+      active: false,
+      ticks: 0,
+      reels: ['🍒', '🔔', '7️⃣'],
+      targetReels: ['🍒', '🍒', '🍒'],
+      prizeText: '',
+      rewardType: ''
+    },
     mysteryText: '',
     mysteryTicks: 0,
     balls: [
@@ -301,6 +354,9 @@ export default function VegasPinballGame({
   const [hudMission, setHudMission] = useState({ cur: 0, goal: 8 });
   const [hudLanes, setHudLanes] = useState([false, false, false, false]);
   const [hudTargets, setHudTargets] = useState([false, false, false, false]);
+  const [hudMagnaCharge, setHudMagnaCharge] = useState(100);
+  const [hudMagnaActive, setHudMagnaActive] = useState(false);
+  const [hudNudgeHeat, setHudNudgeHeat] = useState(0);
   const [ballWaitingInShooter, setBallWaitingInShooter] = useState(true);
   const [hudBanner, setHudBanner] = useState(
     '🆓 FREE PLAY READY! CLICK 🚀 LAUNCH, TAP THE TABLE, OR PRESS [SPACE] TO SHOOT!'
@@ -328,6 +384,9 @@ export default function VegasPinballGame({
     setHudMission({ cur: 0, goal: initSt.missionGoal });
     setHudLanes([false, false, false, false]);
     setHudTargets([false, false, false, false]);
+    setHudMagnaCharge(100);
+    setHudMagnaActive(false);
+    setHudNudgeHeat(0);
     setBallWaitingInShooter(true);
     setGameOverInfo(null);
     setHudBanner(
@@ -434,38 +493,67 @@ export default function VegasPinballGame({
     }
   }, [resetTableGame]);
 
-  const nudgeTable = useCallback(() => {
+  const nudgeTable = useCallback(
+    (dir = 'up') => {
+      const direction = typeof dir === 'string' ? dir : 'up';
+      const st = stateRef.current;
+      if (!st || st.gameOver || st.tiltTicks > 0) return;
+      const activePlayBalls = st.balls.filter((b) => !b.inShooter);
+      if (activePlayBalls.length === 0) {
+        launchPlunger();
+        return;
+      }
+
+      sfx.playPinballNudge?.();
+      st.shakeTicks = 12;
+      st.flasherTicks = 14;
+      st.nudgeHeat += 36;
+      setHudNudgeHeat(Math.min(100, Math.round(st.nudgeHeat)));
+
+      if (st.nudgeHeat >= 105) {
+        st.tiltTicks = 120; // 2 sec flipper lock warning
+        st.leftDown = false;
+        st.rightDown = false;
+        sfx.playDamageGong();
+        setHudBanner('🚨 TILT OVERLOAD! FLIPPERS LOCKED FOR 2s!');
+        return;
+      }
+
+      activePlayBalls.forEach((b) => {
+        if (direction === 'left') {
+          b.vx -= 3.4;
+          b.vy -= 2.4;
+        } else if (direction === 'right') {
+          b.vx += 3.4;
+          b.vy -= 2.4;
+        } else {
+          b.vy -= 3.9;
+          b.vx += (PLAY_CENTER_X - b.x) * 0.045 + (Math.random() - 0.5) * 1.8;
+        }
+      });
+
+      const dirLabel = direction === 'left' ? '◀ LEFT' : direction === 'right' ? 'RIGHT ▶' : '▲ UP';
+      setHudBanner(
+        st.nudgeHeat >= 70
+          ? `⚠️ NUDGED ${dirLabel}! CAREFUL — NEXT NUDGE MAY TILT!`
+          : `💥 NUDGED ${dirLabel}! BALL STEERED AWAY FROM DRAIN!`
+      );
+    },
+    [launchPlunger]
+  );
+
+  const activateMagnaSave = useCallback(() => {
     const st = stateRef.current;
     if (!st || st.gameOver || st.tiltTicks > 0) return;
-    const activePlayBalls = st.balls.filter((b) => !b.inShooter);
-    if (activePlayBalls.length === 0) {
-      launchPlunger();
-      return;
-    }
-
-    sfx.playPinballNudge?.();
-    st.shakeTicks = 12;
-    st.nudgeHeat += 40;
-
-    if (st.nudgeHeat >= 105) {
-      st.tiltTicks = 120; // 2 sec flipper lock warning
-      st.leftDown = false;
-      st.rightDown = false;
-      sfx.playDamageGong();
-      setHudBanner('Tilt overload! Flippers locked for 2s.');
-      return;
-    }
-
-    activePlayBalls.forEach((b) => {
-      b.vy -= 3.8;
-      b.vx += (PLAY_CENTER_X - b.x) * 0.04 + (Math.random() - 0.5) * 2.0;
-    });
-    setHudBanner(
-      st.nudgeHeat >= 65
-        ? 'Cabinet nudged! One more nudge triggers tilt.'
-        : 'Cabinet nudged! Ball kicked away from drain.'
-    );
-  }, [launchPlunger]);
+    if (st.magnaCharge < 100 || st.magnaActiveTicks > 0) return;
+    st.magnaCharge = 0;
+    st.magnaActiveTicks = 180; // 3 full seconds of electromagnetic drain save
+    st.flasherTicks = 24;
+    setHudMagnaCharge(0);
+    setHudMagnaActive(true);
+    sfx.playPinballMagnaSave?.();
+    setHudBanner('🧲 MAGNA-SAVE ENERGIZED FOR 3s! CENTER DRAIN MAGNETIZED!');
+  }, []);
 
   const setFlipperState = useCallback((side, isDown) => {
     const st = stateRef.current;
@@ -480,7 +568,7 @@ export default function VegasPinballGame({
     }
   }, []);
 
-  // Keyboard bindings (Left/Right Arrows, A/D, Spacebar/Enter/Up to Launch, Down/N/W to Nudge)
+  // Keyboard bindings (Left/Right Flippers, Space Launch, Q/E/W/Down/N 3-Way Nudge, M Magna-Save)
   useEffect(() => {
     const onKeyDown = (e) => {
       if (e.target && ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
@@ -498,9 +586,18 @@ export default function VegasPinballGame({
       } else if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'Enter') {
         e.preventDefault();
         launchPlunger();
+      } else if (e.code === 'KeyQ') {
+        e.preventDefault();
+        nudgeTable('left');
+      } else if (e.code === 'KeyE') {
+        e.preventDefault();
+        nudgeTable('right');
       } else if (e.code === 'ArrowDown' || e.code === 'KeyN' || e.code === 'KeyW') {
         e.preventDefault();
-        nudgeTable();
+        nudgeTable('up');
+      } else if (e.code === 'KeyM') {
+        e.preventDefault();
+        activateMagnaSave();
       }
     };
     const onKeyUp = (e) => {
@@ -521,7 +618,7 @@ export default function VegasPinballGame({
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
     };
-  }, [setFlipperState, launchPlunger, nudgeTable]);
+  }, [setFlipperState, launchPlunger, nudgeTable, activateMagnaSave]);
 
   // Main 60fps Canvas Physics & Hyper-Neon Synthwave Renderer
   useEffect(() => {
@@ -570,7 +667,8 @@ export default function VegasPinballGame({
       isMajorHit = false
     ) => {
       const feverMult = st.feverTicks > 0 ? 2 : 1;
-      const pts = Math.round(basePts * st.multiplier * feverMult);
+      const stakedScale = stakedRef.current > 0 ? 0.72 : 1.0;
+      const pts = Math.round(basePts * st.multiplier * feverMult * stakedScale);
       st.score += pts;
       setHudScore(st.score);
 
@@ -582,6 +680,7 @@ export default function VegasPinballGame({
         if (st.comboCount > 0 && st.comboCount % 6 === 0 && st.feverTicks <= 0) {
           st.feverTicks = 660; // 11 seconds of 2x Fever Overdrive + Auto Ball Saver!
           st.drainShield = true;
+          st.flasherTicks = 30;
           setHudShield(true);
           setHudFever(true);
           sfx.playLightningStrike?.();
@@ -592,9 +691,10 @@ export default function VegasPinballGame({
         if (st.missionProgress >= st.missionGoal) {
           st.missionProgress = 0;
           st.missionsCleared += 1;
-          const missionBonus = 3500 * st.multiplier;
+          const missionBonus = Math.round(3500 * st.multiplier * stakedScale);
           st.score += missionBonus;
           st.drainShield = true;
+          st.flasherTicks = 34;
           setHudScore(st.score);
           setHudShield(true);
           triggerWinCelebration({
@@ -642,22 +742,22 @@ export default function VegasPinballGame({
       }
 
       const activeStake = stakedRef.current;
-      const payout = computePinballTokenPayout(finalScore, activeStake);
+      const payout = computePinballTokenPayout(finalScore, activeStake, activeStake > 0);
       if (payout > 0 && onPayoutTokens) {
         onPayoutTokens(payout, {
           stakedTokens: activeStake,
           xp: 50,
-          label: `🎱 Pinball ${st.table.name}: ${finalScore.toLocaleString()} pts!`,
+          label: `🎱 Pinball ${st.table.name}: ${finalScore.toLocaleString()} pts (+M$${payout})!`,
           emoji: '🎱'
         });
         triggerWinCelebration({
           amount: payout,
-          unit: '🪙',
+          unit: 'M$',
           game: 'Neon Pinball',
           headline: `🎱 PINBALL PAYOUT!`,
           detail: `${st.table.name} • ${finalScore.toLocaleString()} pts`,
           multiplier: activeStake > 0 ? payout / Math.max(1, activeStake) : 2,
-          tier: payout >= activeStake * 3 ? 'jackpot' : 'big'
+          tier: payout >= activeStake * 2.5 ? 'jackpot' : 'big'
         });
       } else if (finalScore > prevBest && finalScore >= 5000) {
         triggerWinCelebration({
@@ -723,10 +823,75 @@ export default function VegasPinballGame({
       if (st.sinkCooldown > 0) st.sinkCooldown -= 1;
       if (st.shakeTicks > 0) st.shakeTicks -= 1;
       if (st.tiltTicks > 0) st.tiltTicks -= 1;
+      if (st.flasherTicks > 0) st.flasherTicks -= 1;
+      if (st.mysteryBoxCooldown > 0) st.mysteryBoxCooldown -= 1;
       if (st.nudgeHeat > 0) st.nudgeHeat = Math.max(0, st.nudgeHeat - 0.35);
       if (st.mysteryTicks > 0) st.mysteryTicks -= 1;
       if (st.ballSaveTicks > 0) {
         st.ballSaveTicks -= 1;
+      }
+      if (st.magnaActiveTicks > 0) {
+        st.magnaActiveTicks -= 1;
+        if (st.magnaActiveTicks === 0) {
+          setHudMagnaActive(false);
+        }
+      } else if (st.magnaCharge < 100) {
+        st.magnaCharge = Math.min(100, st.magnaCharge + 0.095);
+      }
+      if (st.tick % 6 === 0 || st.magnaCharge >= 100) {
+        setHudMagnaCharge(Math.floor(st.magnaCharge));
+        setHudNudgeHeat(Math.min(100, Math.round(st.nudgeHeat)));
+      }
+
+      // Animate on-canvas Mini-Slot Reels & award result at lock-in
+      if (st.miniSlot?.active) {
+        st.miniSlot.ticks -= 1;
+        const slotSyms = ['🍒', '🔔', '7️⃣', '💎'];
+        if (st.miniSlot.ticks > 85 && st.miniSlot.ticks % 4 === 0) {
+          st.miniSlot.reels = [
+            slotSyms[(st.tick + 1) % slotSyms.length],
+            slotSyms[(st.tick + 2) % slotSyms.length],
+            slotSyms[(st.tick + 3) % slotSyms.length]
+          ];
+        } else if (st.miniSlot.ticks === 85) {
+          st.miniSlot.reels = [...st.miniSlot.targetReels];
+          st.flasherTicks = 32;
+          sfx.playJackpot?.();
+          const stakedScale = stakedRef.current > 0 ? 0.72 : 1.0;
+          if (st.miniSlot.rewardType === 'pts2500') {
+            const p = Math.round(2500 * stakedScale);
+            st.score += p;
+            setHudScore(st.score);
+          } else if (st.miniSlot.rewardType === 'pts4000') {
+            const p = Math.round(4000 * stakedScale);
+            st.score += p;
+            setHudScore(st.score);
+          } else if (st.miniSlot.rewardType === 'fever6000') {
+            const p = Math.round(6000 * stakedScale);
+            st.score += p;
+            st.feverTicks = 600;
+            setHudScore(st.score);
+            setHudFever(true);
+          } else if (st.miniSlot.rewardType === 'multiball') {
+            const p = Math.round(3000 * stakedScale);
+            st.score += p;
+            setHudScore(st.score);
+            if (st.balls.length < 3) {
+              st.balls.push({
+                id: Date.now() + Math.random(),
+                x: PLAY_CENTER_X,
+                y: 120,
+                vx: (Math.random() - 0.5) * 7,
+                vy: 3.0,
+                inShooter: false,
+                trail: []
+              });
+            }
+          }
+          setHudBanner(`🎰 MINI-SLOT WIN: ${st.miniSlot.prizeText}!`);
+        } else if (st.miniSlot.ticks <= 0) {
+          st.miniSlot.active = false;
+        }
       }
 
       // Oscillate Skill Shot Plunger Gauge (0..100)
@@ -917,6 +1082,10 @@ export default function VegasPinballGame({
                 b.vy = uy * kick;
                 if (st.bumperFlashes[idx] <= 2) {
                   st.bumperFlashes[idx] = 12;
+                  st.flasherTicks = Math.max(st.flasherTicks, 10);
+                  if (st.magnaActiveTicks <= 0) {
+                    st.magnaCharge = Math.min(100, st.magnaCharge + 14);
+                  }
                   sfx.playPinballBumper(idx % 4);
                   spawnNeonImpact(st, bx, by, bmp.color, bmp.r + 28, true);
                   addPoints(st, bmp.pts, bx, by - bmp.r, null, bmp.color, true);
@@ -938,6 +1107,10 @@ export default function VegasPinballGame({
                 b.y = mb.y + uy * (minDist + 1.2);
                 b.vx = ux * 9.2;
                 b.vy = uy * 9.2;
+                st.flasherTicks = Math.max(st.flasherTicks, 14);
+                if (st.magnaActiveTicks <= 0) {
+                  st.magnaCharge = Math.min(100, st.magnaCharge + 28);
+                }
                 sfx.playMetalPipe();
                 spawnNeonImpact(st, st.movingX, mb.y, mb.color, mb.r + 26, true);
                 addPoints(
@@ -1114,6 +1287,69 @@ export default function VegasPinballGame({
               addPoints(st, 110, sp.x, sp.y, '+110', '#38bdf8');
             }
           });
+
+          // 7. Center Mystery Bullseye Target (Triggers On-Canvas 3-Reel Mini-Slot!)
+          if (
+            st.mysteryBoxCooldown <= 0 &&
+            Math.hypot(b.x - PLAY_CENTER_X, b.y - 275) < 16 + BALL_R
+          ) {
+            st.mysteryBoxCooldown = 190;
+            st.flasherTicks = 28;
+            b.vy = -8.4;
+            b.vx += (Math.random() - 0.5) * 4.2;
+            const roll = Math.random();
+            let targetReels = ['🍒', '🍒', '🍒'];
+            let prizeText = '🍒🍒🍒 +2,500 PTS!';
+            let rewardType = 'pts2500';
+            if (roll >= 0.90) {
+              targetReels = ['💎', '💎', '💎'];
+              prizeText = '💎💎💎 MULTIBALL +3,000!';
+              rewardType = 'multiball';
+            } else if (roll >= 0.72) {
+              targetReels = ['7️⃣', '7️⃣', '7️⃣'];
+              prizeText = '7️⃣7️⃣7️⃣ FEVER +6,000!';
+              rewardType = 'fever6000';
+            } else if (roll >= 0.42) {
+              targetReels = ['🔔', '🔔', '🔔'];
+              prizeText = '🔔🔔🔔 +4,000 PTS!';
+              rewardType = 'pts4000';
+            }
+            st.miniSlot = {
+              active: true,
+              ticks: 145,
+              reels: ['🍒', '🔔', '7️⃣'],
+              targetReels,
+              prizeText,
+              rewardType
+            };
+            sfx.playSpinnerTick?.();
+            spawnNeonImpact(st, PLAY_CENTER_X, 275, '#facc15', 46, true);
+            setHudBanner('🎰 MYSTERY TARGET HIT! SPINNING ON-TABLE MINI-SLOT...');
+          }
+        }
+
+        // Active MAGNA-SAVE Electromagnetic Coil Catch near Center Drain
+        if (
+          st.magnaActiveTicks > 0 &&
+          !b.inShooter &&
+          b.y > 498 &&
+          b.x > 112 &&
+          b.x < 296 &&
+          b.vy > 0
+        ) {
+          b.y = 492;
+          b.vy = -13.6;
+          b.vx = (PLAY_CENTER_X - b.x) * 0.08 + (Math.random() - 0.5) * 2.2;
+          sfx.playPinballMagnaSave?.();
+          spawnNeonImpact(st, b.x, 514, '#00f3ff', 52, false);
+          st.floatTexts.push({
+            x: b.x,
+            y: 468,
+            text: '🧲 MAGNA-SAVED!',
+            color: '#00f3ff',
+            life: 36
+          });
+          setHudBanner('🧲 MAGNA-SAVE CAUGHT THE DRAIN! BALL LAUNCHED BACK UP!');
         }
 
         // Check Bottom Drain (Saved by Ball Save Timer, Plasma Drain Shield, OR Fever Overdrive!)
@@ -1413,6 +1649,114 @@ export default function VegasPinballGame({
         ctx.font = '900 12px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('▲', cx, 306 - i * 14);
+      }
+
+      // 1f. Flashing Playfield Insert Arrows (Left Orbit, Center Mystery Slot, Right Ramp)
+      [
+        { x: 64, y: 170, ang: -0.45, col: '#00f3ff', label: 'ORBIT' },
+        { x: cx, y: 248, ang: 0, col: '#facc15', label: 'SLOT' },
+        { x: 344, y: 170, ang: 0.45, col: '#ff007f', label: 'RAMP' }
+      ].forEach((ins, idx) => {
+        const pulse = ((Math.floor(st.tick / 6) + idx) % 3) === 0 || st.flasherTicks > 0;
+        ctx.save();
+        ctx.translate(ins.x, ins.y);
+        ctx.rotate(ins.ang);
+        ctx.fillStyle = pulse ? ins.col : 'rgba(148, 163, 184, 0.25)';
+        if (pulse) {
+          ctx.shadowColor = ins.col;
+          ctx.shadowBlur = 12;
+        }
+        ctx.beginPath();
+        ctx.moveTo(0, -14);
+        ctx.lineTo(10, 4);
+        ctx.lineTo(4, 4);
+        ctx.lineTo(4, 16);
+        ctx.lineTo(-4, 16);
+        ctx.lineTo(-4, 4);
+        ctx.lineTo(-10, 4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.font = '900 7.5px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(ins.label, 0, 26);
+        ctx.restore();
+      });
+
+      // 1g. Center Mystery Mini-Slot Bullseye Target (x=204, y=275)
+      ctx.save();
+      const mReady = st.mysteryBoxCooldown <= 0;
+      const mPulse = mReady ? 0.72 + Math.sin(st.tick * 0.16) * 0.28 : 0.35;
+      ctx.globalAlpha = mPulse;
+      ctx.shadowColor = '#facc15';
+      ctx.shadowBlur = mReady ? 16 : 4;
+      ctx.fillStyle = 'rgba(250, 204, 21, 0.22)';
+      ctx.strokeStyle = mReady ? '#fde047' : '#64748b';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(PLAY_CENTER_X, 275, 16, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.font = '14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('🎰', PLAY_CENTER_X, 280);
+      ctx.restore();
+
+      // 1h. 5 Top Backglass Strobe Flasher Domes
+      const domeXs = [64, 134, PLAY_CENTER_X, 274, 344];
+      const domeCols = ['#00f3ff', '#ff007f', '#facc15', '#00ff88', '#c084fc'];
+      domeXs.forEach((dx, di) => {
+        const strobe =
+          st.flasherTicks > 0 ||
+          st.feverTicks > 0 ||
+          (Math.floor(st.tick / 5) + di) % domeXs.length === 0;
+        ctx.save();
+        ctx.globalAlpha = strobe ? 0.92 : 0.22;
+        if (strobe) {
+          ctx.shadowColor = domeCols[di];
+          ctx.shadowBlur = 20;
+        }
+        ctx.fillStyle = domeCols[di];
+        ctx.beginPath();
+        ctx.arc(dx, 14, strobe ? 7 : 4.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // 1i. 36-Bulb Chasing Perimeter Marquee Lights
+      const chaseSpeed = st.feverTicks > 0 || st.balls.length > 1 || st.flasherTicks > 0 ? 2 : 5;
+      const activePhase = Math.floor(st.tick / chaseSpeed);
+      const bulbColors = [tbl.accent, tbl.secondary, '#facc15', '#00ff88'];
+      const totalBulbs = 36;
+      for (let bi = 0; bi < totalBulbs; bi++) {
+        let bx;
+        let by;
+        if (bi < 10) {
+          bx = 20 + (bi / 9) * (W - 40);
+          by = 8;
+        } else if (bi < 18) {
+          bx = W - 8;
+          by = 28 + ((bi - 10) / 7) * (H - 56);
+        } else if (bi < 28) {
+          bx = W - 20 - ((bi - 18) / 9) * (W - 40);
+          by = H - 8;
+        } else {
+          bx = 10;
+          by = H - 28 - ((bi - 28) / 7) * (H - 56);
+        }
+        const lit = (bi + activePhase) % 3 === 0 || st.feverTicks > 0;
+        const bCol = bulbColors[bi % bulbColors.length];
+        ctx.save();
+        ctx.globalAlpha = lit ? 0.95 : 0.24;
+        if (lit) {
+          ctx.shadowColor = bCol;
+          ctx.shadowBlur = 10;
+        }
+        ctx.fillStyle = lit ? bCol : '#334155';
+        ctx.beginPath();
+        ctx.arc(bx, by, lit ? 3.6 : 2.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
       }
 
       // 2. Gravity Well (Table 5)
@@ -1897,6 +2241,82 @@ export default function VegasPinballGame({
         ctx.restore();
       });
 
+      // 15. MAGNA-SAVE Twin Drain Coils & Active Electromagnetic Arc
+      const magnaReady = st.magnaCharge >= 100;
+      const magnaOn = st.magnaActiveTicks > 0;
+      [126, 282].forEach((mx) => {
+        ctx.save();
+        ctx.fillStyle = magnaOn ? '#fde047' : magnaReady ? '#00f3ff' : '#334155';
+        ctx.shadowColor = magnaOn ? '#facc15' : '#00f3ff';
+        ctx.shadowBlur = magnaOn || magnaReady ? 14 : 0;
+        ctx.beginPath();
+        ctx.arc(mx, H - 30, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#090d16';
+        ctx.font = '900 8px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('M', mx, H - 27);
+        ctx.restore();
+      });
+      if (magnaOn) {
+        ctx.save();
+        ctx.strokeStyle = st.tick % 4 < 2 ? '#00f3ff' : '#fde047';
+        ctx.shadowColor = '#00f3ff';
+        ctx.shadowBlur = 16;
+        ctx.lineWidth = 3.2;
+        ctx.beginPath();
+        ctx.moveTo(126, H - 30);
+        for (let sx = 140; sx <= 272; sx += 16) {
+          ctx.lineTo(sx, H - 30 + (Math.random() - 0.5) * 14);
+        }
+        ctx.lineTo(282, H - 30);
+        ctx.stroke();
+        ctx.fillStyle = '#00f3ff';
+        ctx.font = '900 9.5px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🧲 MAGNA-SAVE ACTIVE!', PLAY_CENTER_X, H - 42);
+        ctx.restore();
+      }
+
+      // 16. On-Canvas 3-Reel Mystery MINI-SLOT Overlay
+      if (st.miniSlot?.active) {
+        const ms = st.miniSlot;
+        ctx.save();
+        ctx.shadowColor = '#facc15';
+        ctx.shadowBlur = 22;
+        ctx.fillStyle = 'rgba(8, 12, 32, 0.94)';
+        ctx.strokeStyle = ms.ticks <= 85 ? '#facc15' : '#00f3ff';
+        ctx.lineWidth = 2.6;
+        ctx.beginPath();
+        ctx.roundRect(114, 152, 180, 86, 14);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#fde047';
+        ctx.font = '900 10.5px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🎰 MYSTERY MINI-SLOT', PLAY_CENTER_X, 170);
+
+        ms.reels.forEach((sym, ri) => {
+          const rx = 144 + ri * 60;
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.roundRect(rx - 22, 176, 44, 34, 8);
+          ctx.fill();
+          ctx.stroke();
+          ctx.font = '20px sans-serif';
+          ctx.fillText(sym, rx, 200);
+        });
+
+        ctx.fillStyle = ms.ticks <= 85 ? '#4ade80' : '#a5f3fc';
+        ctx.font = '900 10px sans-serif';
+        ctx.fillText(ms.ticks <= 85 ? ms.prizeText : 'SPINNING REELS...', PLAY_CENTER_X, 228);
+        ctx.restore();
+      }
+
       ctx.restore();
     };
 
@@ -1990,9 +2410,9 @@ export default function VegasPinballGame({
               type="button"
               className={`tm-bj-mode-pill ${stakedTokens > 0 ? 'active' : ''}`}
               onClick={handleStartPrizeRun}
-              title="Insert 10 Tokens to play for 10–35 Token high-score payouts!"
+              title="Insert 10 M$ MemeDollarz to play for 8–28 M$ high-score payouts!"
             >
-              {stakedTokens > 0 && !gameOverInfo ? '🏆 10🪙 LIVE' : `🪙 ${entryCost}🪙 Prize`}
+              {stakedTokens > 0 && !gameOverInfo ? '🏆 10 M$ LIVE' : `🪙 ${entryCost} M$ Prize`}
             </button>
             <button
               type="button"
@@ -2109,9 +2529,9 @@ export default function VegasPinballGame({
                   <p>
                     {gameOverInfo.staked > 0
                       ? gameOverInfo.payout > 0
-                        ? `Awesome run! You won +${gameOverInfo.payout} 🪙 Arcade Tokens!`
-                        : 'Needed 8,000+ pts to cash on a 10-🪙 coin-op run. Try again!'
-                      : `Free Play Complete! Play Free again anytime or insert ${entryCost} 🪙 to win up to 35 🪙!`}
+                        ? `Awesome run! You won +M$${gameOverInfo.payout} MemeDollarz!`
+                        : 'Needed 18,000+ pts to cash on a M$10 Prize Run. Try again!'
+                      : `Free Play Complete! Play Free again anytime or insert M$${entryCost} to win up to M$28!`}
                   </p>
                   <div className="tm-crush2-modal-btns">
                     <button
@@ -2126,7 +2546,7 @@ export default function VegasPinballGame({
                       className="tm-btn"
                       onClick={handleStartPrizeRun}
                     >
-                      🪙 Play Prize Run ({entryCost} 🪙)
+                      🪙 Play Prize Run (M${entryCost})
                     </button>
                     {tokens < entryCost && onOpenUpload && (
                       <button
@@ -2134,7 +2554,7 @@ export default function VegasPinballGame({
                         className="tm-btn"
                         onClick={onOpenUpload}
                       >
-                        📸 Upload Meme (+12 🪙)
+                        📸 Upload Meme (+M$12)
                       </button>
                     )}
                   </div>
@@ -2146,7 +2566,7 @@ export default function VegasPinballGame({
           {/* PC RIGHT WING: ARCADE ACTION BUTTONS & PC KEYBOARD CONTROLS */}
           <aside className="tm-pin2-side-wing right-wing">
             <div className="tm-pin2-wing-card">
-              <div className="tm-pin2-wing-label">🚀 PLUNGER &amp; FLIPPER DECK</div>
+              <div className="tm-pin2-wing-label">🚀 PLUNGER, NUDGE &amp; MAGNA-SAVE</div>
               <button
                 type="button"
                 className={`tm-pin2-big-launch-btn ${ballWaitingInShooter ? 'pulse-ready' : ''}`}
@@ -2180,30 +2600,63 @@ export default function VegasPinballGame({
                   RIGHT [D] ▶
                 </button>
               </div>
+              <div className="tm-pin2-nudge-grid" role="group" aria-label="3-Way Cabinet Nudge">
+                <button
+                  type="button"
+                  className={`tm-pin2-nudge-mini ${hudNudgeHeat >= 70 ? 'hot' : ''}`}
+                  onClick={() => nudgeTable('left')}
+                  title="Nudge Left [Q]"
+                >
+                  ◀ NUDGE L
+                </button>
+                <button
+                  type="button"
+                  className={`tm-pin2-nudge-mini ${hudNudgeHeat >= 70 ? 'hot' : ''}`}
+                  onClick={() => nudgeTable('up')}
+                  title="Nudge Up [N / W]"
+                >
+                  ▲ UP
+                </button>
+                <button
+                  type="button"
+                  className={`tm-pin2-nudge-mini ${hudNudgeHeat >= 70 ? 'hot' : ''}`}
+                  onClick={() => nudgeTable('right')}
+                  title="Nudge Right [E]"
+                >
+                  NUDGE R ▶
+                </button>
+              </div>
               <button
                 type="button"
-                className="tm-pin2-nudge-btn"
-                style={{ width: '100%', marginTop: '4px' }}
-                onClick={nudgeTable}
+                className={`tm-pin2-magna-btn ${
+                  hudMagnaActive ? 'active' : hudMagnaCharge >= 100 ? 'ready' : ''
+                }`}
+                disabled={!hudMagnaActive && hudMagnaCharge < 100}
+                onClick={activateMagnaSave}
+                title="Activate Electromagnetic Drain Magnet [M]"
               >
-                💥 NUDGE CABINET [N / ↓]
+                {hudMagnaActive
+                  ? '🧲 MAGNA-SAVE ACTIVE!'
+                  : hudMagnaCharge >= 100
+                  ? '🧲 MAGNA-SAVE READY [M]'
+                  : `🧲 CHARGING ${hudMagnaCharge}%`}
               </button>
             </div>
 
             <div className="tm-pin2-wing-card">
-              <div className="tm-pin2-wing-label">💰 10-🪙 PRIZE PAYOUTS</div>
+              <div className="tm-pin2-wing-label">💰 M$10 PRIZE PAYOUTS (90% RTP)</div>
               <div className="tm-pin2-key-list">
                 <div>
-                  <strong>8,000+ pts</strong> <span>10 🪙</span>
+                  <strong>18,000+ pts</strong> <span>M$8</span>
                 </div>
                 <div>
-                  <strong>15,000+ pts</strong> <span>16 🪙</span>
+                  <strong>32,000+ pts</strong> <span>M$12</span>
                 </div>
                 <div>
-                  <strong>25,000+ pts</strong> <span>24 🪙</span>
+                  <strong>50,000+ pts</strong> <span>M$18</span>
                 </div>
                 <div>
-                  <strong>40,000+ pts</strong> <span>35 🪙 Jackpot!</span>
+                  <strong>75,000+ pts</strong> <span>M$28 Jackpot!</span>
                 </div>
               </div>
             </div>
@@ -2226,22 +2679,55 @@ export default function VegasPinballGame({
             ◀ FLIP
           </button>
 
-          <div style={{ display: 'flex', gap: '5px' }}>
-            <button
-              type="button"
-              className={`tm-pin2-launch-btn ${ballWaitingInShooter ? 'pulse-ready' : ''}`}
-              style={{ flex: 1 }}
-              onClick={launchPlunger}
-            >
-              🚀 LAUNCH
-            </button>
-            <button
-              type="button"
-              className="tm-pin2-nudge-btn"
-              onClick={nudgeTable}
-            >
-              💥 NUDGE
-            </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
+            <div style={{ display: 'flex', gap: '4px' }}>
+              <button
+                type="button"
+                className={`tm-pin2-launch-btn ${ballWaitingInShooter ? 'pulse-ready' : ''}`}
+                style={{ flex: 1 }}
+                onClick={launchPlunger}
+              >
+                🚀 LAUNCH
+              </button>
+              <button
+                type="button"
+                className={`tm-pin2-magna-btn ${
+                  hudMagnaActive ? 'active' : hudMagnaCharge >= 100 ? 'ready' : ''
+                }`}
+                style={{ width: 'auto', marginTop: 0, padding: '6px 7px' }}
+                disabled={!hudMagnaActive && hudMagnaCharge < 100}
+                onClick={activateMagnaSave}
+                aria-label="Activate Magna-Save"
+              >
+                🧲 {hudMagnaActive ? 'ON' : hudMagnaCharge >= 100 ? 'SAVE' : `${hudMagnaCharge}%`}
+              </button>
+            </div>
+            <div className="tm-pin2-nudge-grid" style={{ marginTop: 0 }} role="group" aria-label="Mobile 3-Way Nudge">
+              <button
+                type="button"
+                className={`tm-pin2-nudge-mini ${hudNudgeHeat >= 70 ? 'hot' : ''}`}
+                onClick={() => nudgeTable('left')}
+                aria-label="Nudge Left"
+              >
+                ◀ L
+              </button>
+              <button
+                type="button"
+                className={`tm-pin2-nudge-mini ${hudNudgeHeat >= 70 ? 'hot' : ''}`}
+                onClick={() => nudgeTable('up')}
+                aria-label="Nudge Up"
+              >
+                ▲ UP
+              </button>
+              <button
+                type="button"
+                className={`tm-pin2-nudge-mini ${hudNudgeHeat >= 70 ? 'hot' : ''}`}
+                onClick={() => nudgeTable('right')}
+                aria-label="Nudge Right"
+              >
+                R ▶
+              </button>
+            </div>
           </div>
 
           <button

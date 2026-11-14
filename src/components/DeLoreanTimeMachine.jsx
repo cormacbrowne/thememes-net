@@ -1,25 +1,172 @@
 import { useState, useEffect, useId } from 'react';
 import { sfx } from '../utils/soundEngine';
-import { DELOREAN_ERAS } from '../data/deloreanEras';
+import { DELOREAN_ERAS, EIGHTIES_CARS } from '../data/deloreanEras';
 import './DeLoreanTimeMachine.css';
 
 /**
- * Crisp SVG DeLorean DMC-12 Time Machine side profile with gull-wing seam,
- * rear louvers, Mr. Fusion, glowing cyan flux bands, and twin 88 MPH flame trails.
+ * Distinct SVG side-profiles for our 1980s iconic garage:
+ * DeLorean DMC-12, Aston Martin Lagonda, Ford Sierra RS Cosworth & Porsche 911 SC.
  */
-export function DeLoreanSvg({ className = '', showFlames = true, fluxActive = true }) {
+export function EightiesCarSvg({
+  carId = 'delorean',
+  className = '',
+  showFlames = true,
+  fluxActive = true
+}) {
   const uid = useId().replace(/:/g, '');
-  const steelId = `dmcSteel-${uid}`;
-  const glassId = `dmcGlass-${uid}`;
-  const flameId = `dmcFlame-${uid}`;
-  const fluxId = `dmcFlux-${uid}`;
+  const flameId = `carFlame-${uid}`;
+  const steelId = `carSteel-${uid}`;
+  const glassId = `carGlass-${uid}`;
+  const fluxId = `carFlux-${uid}`;
 
+  if (carId === 'lagonda') {
+    // 1982 Aston Martin Lagonda — Ultra-long origami wedge saloon with green CRT digital glow
+    return (
+      <svg viewBox="0 0 320 110" className={`tm-delorean-svg ${className}`.trim()} aria-hidden="true">
+        <defs>
+          <linearGradient id={steelId} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#1e3a3a" />
+            <stop offset="48%" stopColor="#0f2928" />
+            <stop offset="100%" stopColor="#34d399" stopOpacity="0.65" />
+          </linearGradient>
+          <linearGradient id={flameId} x1="100%" y1="50%" x2="0%" y2="50%">
+            <stop offset="0%" stopColor="#a7f3d0" />
+            <stop offset="50%" stopColor="#10b981" />
+            <stop offset="100%" stopColor="#047857" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {showFlames && (
+          <path d="M 66 86 Q 28 82 2 88 Q 30 94 66 93 Z" fill={`url(#${flameId})`} className="tm-delorean-flames" />
+        )}
+        <ellipse cx="182" cy="96" rx="122" ry="7" fill="#4ade80" opacity={fluxActive ? 0.32 : 0.16} />
+        {/* Long angular Lagonda 4-door wedge */}
+        <path
+          d="M 48 64 L 64 52 L 122 31 L 194 31 L 236 50 L 306 58 L 309 69 L 300 79 L 52 79 Z"
+          fill={`url(#${steelId})`}
+          stroke="#4ade80"
+          strokeWidth="1.7"
+          strokeLinejoin="round"
+        />
+        <polygon points="126,35 190,35 224,50 116,50" fill="#061217" stroke="#34d399" strokeWidth="1.2" />
+        <line x1="158" y1="35" x2="158" y2="77" stroke="#065f46" strokeWidth="1.8" />
+        {/* Pop-up quad headlamps & crisp gold coachline */}
+        <line x1="56" y1="63" x2="305" y2="63" stroke="#facc15" strokeWidth="1.6" />
+        <polygon points="295,58 308,60 308,66 295,66" fill="#fef08a" />
+        <polygon points="308,60 320,55 320,69 308,66" fill="#fde047" opacity="0.3" />
+        <rect x="49" y="61" width="9" height="6" rx="1" fill="#ef4444" />
+        {[106, 256].map((wx) => (
+          <g key={wx}>
+            <circle cx={wx} cy="80" r="17" fill="#090d16" stroke="#334155" strokeWidth="2" />
+            <circle cx={wx} cy="80" r="10.5" fill="#d1d5db" stroke="#4ade80" strokeWidth="1.5" />
+            <circle cx={wx} cy="80" r="4" fill="#facc15" />
+          </g>
+        ))}
+      </svg>
+    );
+  }
+
+  if (carId === 'cosworth') {
+    // 1986 Ford Sierra RS Cosworth — Signature huge upright whale-tail wing & turbo blue stripes
+    return (
+      <svg viewBox="0 0 320 110" className={`tm-delorean-svg ${className}`.trim()} aria-hidden="true">
+        <defs>
+          <linearGradient id={steelId} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#f8fafc" />
+            <stop offset="55%" stopColor="#cbd5e1" />
+            <stop offset="100%" stopColor="#64748b" />
+          </linearGradient>
+          <linearGradient id={flameId} x1="100%" y1="50%" x2="0%" y2="50%">
+            <stop offset="0%" stopColor="#7dd3fc" />
+            <stop offset="45%" stopColor="#38bdf8" />
+            <stop offset="100%" stopColor="#1d4ed8" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {showFlames && (
+          <path d="M 76 86 Q 36 80 4 88 Q 36 96 76 93 Z" fill={`url(#${flameId})`} className="tm-delorean-flames" />
+        )}
+        <ellipse cx="186" cy="96" rx="112" ry="7" fill="#38bdf8" opacity={fluxActive ? 0.38 : 0.18} />
+        {/* Massive Sierra RS Cosworth Whale-Tail Wing */}
+        <path
+          d="M 52 24 L 96 24 L 106 38 L 86 52 L 64 52 L 62 38 Z"
+          fill="#0f172a"
+          stroke="#38bdf8"
+          strokeWidth="1.6"
+        />
+        {/* 3-door Sierra Fastback Shell */}
+        <path
+          d="M 74 64 L 84 48 L 136 28 L 204 28 L 246 47 L 298 55 L 304 68 L 298 80 L 74 80 Z"
+          fill={`url(#${steelId})`}
+          stroke="#38bdf8"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+        <polygon points="140,32 200,32 238,48 122,48" fill="#0f172a" stroke="#38bdf8" strokeWidth="1.2" />
+        {/* Ford Motorsport Blue/Red Stripe */}
+        <rect x="78" y="64" width="222" height="4" fill="#2563eb" />
+        <rect x="78" y="68" width="222" height="2" fill="#ef4444" />
+        <polygon points="292,57 305,59 305,65 292,65" fill="#fef08a" />
+        <rect x="73" y="60" width="8" height="7" rx="1" fill="#ef4444" />
+        {[120, 256].map((wx) => (
+          <g key={wx}>
+            <circle cx={wx} cy="80" r="18" fill="#090d16" stroke="#334155" strokeWidth="2" />
+            <circle cx={wx} cy="80" r="11" fill="#e2e8f0" stroke="#38bdf8" strokeWidth="1.6" />
+            <circle cx={wx} cy="80" r="4" fill="#ef4444" />
+          </g>
+        ))}
+      </svg>
+    );
+  }
+
+  if (carId === 'porsche911') {
+    // 1984 Porsche 911 SC / Turbo — Guards Red iconic sloping fastback, frog headlights & tea-tray tail
+    return (
+      <svg viewBox="0 0 320 110" className={`tm-delorean-svg ${className}`.trim()} aria-hidden="true">
+        <defs>
+          <linearGradient id={steelId} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#ff4d6d" />
+            <stop offset="50%" stopColor="#dc2626" />
+            <stop offset="100%" stopColor="#7f1d1d" />
+          </linearGradient>
+          <linearGradient id={flameId} x1="100%" y1="50%" x2="0%" y2="50%">
+            <stop offset="0%" stopColor="#fde047" />
+            <stop offset="45%" stopColor="#ff2a85" />
+            <stop offset="100%" stopColor="#991b1b" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {showFlames && (
+          <path d="M 80 86 Q 38 80 6 88 Q 40 96 80 93 Z" fill={`url(#${flameId})`} className="tm-delorean-flames" />
+        )}
+        <ellipse cx="188" cy="96" rx="108" ry="7" fill="#ff2a85" opacity={fluxActive ? 0.36 : 0.18} />
+        {/* 911 Whale-Tail / Tea-Tray Rear Spoiler */}
+        <path d="M 68 42 L 116 42 L 122 50 L 74 52 Z" fill="#111827" stroke="#facc15" strokeWidth="1.4" />
+        {/* Iconic Curved 911 Coupe Body */}
+        <path
+          d="M 74 66 Q 82 50 118 46 Q 150 24 202 27 Q 238 40 264 49 Q 294 52 302 64 L 300 79 L 76 79 Z"
+          fill={`url(#${steelId})`}
+          stroke="#fca5a5"
+          strokeWidth="1.6"
+        />
+        <path d="M 136 45 Q 160 30 198 31 Q 226 42 238 47 Z" fill="#0f172a" stroke="#facc15" strokeWidth="1.2" />
+        {/* Frogeye headlamp & black accordion bumper trim */}
+        <circle cx="290" cy="54" r="6" fill="#fef08a" stroke="#fff" strokeWidth="1.2" />
+        <polygon points="295,52 320,46 320,66 295,60" fill="#fef08a" opacity="0.25" />
+        <rect x="74" y="64" width="12" height="7" rx="2" fill="#0f172a" />
+        <rect x="290" y="66" width="14" height="7" rx="2" fill="#0f172a" />
+        {/* Classic 5-spoke Fuchs Wheels */}
+        {[122, 256].map((wx) => (
+          <g key={wx}>
+            <circle cx={wx} cy="80" r="18" fill="#090d16" stroke="#334155" strokeWidth="2" />
+            <circle cx={wx} cy="80" r="11" fill="#0f172a" stroke="#e2e8f0" strokeWidth="2.2" />
+            <circle cx={wx} cy="80" r="4" fill="#facc15" />
+          </g>
+        ))}
+      </svg>
+    );
+  }
+
+  // Default: 1981 DeLorean DMC-12 Time Machine
   return (
-    <svg
-      viewBox="0 0 320 110"
-      className={`tm-delorean-svg ${className}`.trim()}
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 320 110" className={`tm-delorean-svg ${className}`.trim()} aria-hidden="true">
       <defs>
         <linearGradient id={steelId} x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor="#f1f5f9" />
@@ -45,7 +192,6 @@ export function DeLoreanSvg({ className = '', showFlames = true, fluxActive = tr
         </linearGradient>
       </defs>
 
-      {/* Twin 88 MPH Flame Trails behind rear tires */}
       {showFlames && (
         <g className="tm-delorean-flames">
           <path d="M 88 86 Q 40 82 4 88 Q 38 94 88 94 Z" fill={`url(#${flameId})`} />
@@ -53,24 +199,12 @@ export function DeLoreanSvg({ className = '', showFlames = true, fluxActive = tr
         </g>
       )}
 
-      {/* Neon Underbody Hover Glow */}
-      <ellipse
-        cx="192"
-        cy="96"
-        rx="108"
-        ry="7"
-        fill={fluxActive ? '#00f3ff' : '#38bdf8'}
-        opacity={fluxActive ? 0.35 : 0.18}
-      />
-
-      {/* Mr. Fusion & Rear Plutonium Reactor Deck */}
+      <ellipse cx="192" cy="96" rx="108" ry="7" fill={fluxActive ? '#00f3ff' : '#38bdf8'} opacity={fluxActive ? 0.35 : 0.18} />
       <rect x="86" y="34" width="24" height="14" rx="3" fill="#475569" stroke="#94a3b8" strokeWidth="1.5" />
       <rect x="92" y="24" width="12" height="11" rx="2" fill="#e2e8f0" stroke="#38bdf8" strokeWidth="1.2" />
       <rect x="95" y="20" width="6" height="5" rx="1" fill="#00f3ff" />
-      {/* Rear exhaust vents */}
       <polygon points="72,56 96,46 112,48 96,62" fill="#1e293b" stroke="#64748b" strokeWidth="1.2" />
 
-      {/* Main Brushed Stainless Steel DMC-12 Wedge Body */}
       <path
         d="M 80 64 L 112 46 L 156 28 L 210 28 L 252 47 L 298 56 L 304 68 L 298 80 L 82 80 L 74 72 Z"
         fill={`url(#${steelId})`}
@@ -79,25 +213,16 @@ export function DeLoreanSvg({ className = '', showFlames = true, fluxActive = tr
         strokeLinejoin="round"
       />
 
-      {/* Iconic Side Rub-Strip & Gull-Wing Door Seam */}
       <line x1="94" y1="64" x2="296" y2="64" stroke="#0f172a" strokeWidth="2.5" />
       <path d="M 164 31 L 160 78 M 224 31 L 230 78" stroke="#334155" strokeWidth="1.5" fill="none" />
 
-      {/* Rear Window Louvers */}
       <g stroke="#334155" strokeWidth="2">
         <line x1="120" y1="44" x2="152" y2="32" />
         <line x1="126" y1="47" x2="155" y2="36" />
         <line x1="133" y1="49" x2="158" y2="40" />
       </g>
 
-      {/* Cabin Windows */}
-      <polygon
-        points="162,32 208,32 242,48 160,48"
-        fill={`url(#${glassId})`}
-        stroke="#00f3ff"
-        strokeWidth="1.2"
-      />
-      {/* Glowing Flux Capacitor Spark inside cabin */}
+      <polygon points="162,32 208,32 242,48 160,48" fill={`url(#${glassId})`} stroke="#00f3ff" strokeWidth="1.2" />
       {fluxActive && (
         <path
           d="M 183 36 L 188 41 L 193 36 M 188 41 L 188 46"
@@ -108,7 +233,6 @@ export function DeLoreanSvg({ className = '', showFlames = true, fluxActive = tr
         />
       )}
 
-      {/* Flux Band / Cyan Time-Coil Wiring around bumper & rocker */}
       <path
         d="M 82 72 L 106 72 M 256 71 L 302 68 M 112 48 L 154 30"
         stroke={`url(#${fluxId})`}
@@ -117,12 +241,10 @@ export function DeLoreanSvg({ className = '', showFlames = true, fluxActive = tr
         fill="none"
       />
 
-      {/* Headlight & Taillight Glow */}
       <polygon points="294,57 305,59 305,65 294,65" fill="#fef08a" />
       <polygon points="305,59 320,54 320,68 305,65" fill="#fef08a" opacity="0.28" />
       <rect x="76" y="61" width="7" height="7" rx="1" fill="#ef4444" />
 
-      {/* Front & Rear Wheel Arches + Turbine Wheels */}
       {[124, 256].map((wx) => (
         <g key={wx} className="tm-delorean-wheel">
           <circle cx={wx} cy="80" r="18" fill="#090d16" stroke="#334155" strokeWidth="2" />
@@ -136,72 +258,85 @@ export function DeLoreanSvg({ className = '', showFlames = true, fluxActive = tr
   );
 }
 
-function DeLoreanFlybyLayer({ eraLabel }) {
-  const [mph, setMph] = useState(12);
+export function DeLoreanSvg(props) {
+  return <EightiesCarSvg {...props} />;
+}
+
+function DeLoreanFlybyLayer({ eraLabel, carId = 'delorean' }) {
+  const carObj = EIGHTIES_CARS.find((c) => c.id === carId) || EIGHTIES_CARS[0];
+  const targetSpeed = carObj.topSpeedMph || 88;
+  const [mph, setMph] = useState(14);
 
   useEffect(() => {
     const iv = setInterval(() => {
       setMph((prev) => {
-        const next = Math.min(88, prev + 11);
-        if (next >= 88) clearInterval(iv);
+        const step = Math.max(8, Math.ceil(targetSpeed / 7));
+        const next = Math.min(targetSpeed, prev + step);
+        if (next >= targetSpeed) clearInterval(iv);
         return next;
       });
     }, 65);
     return () => clearInterval(iv);
-  }, []);
+  }, [targetSpeed]);
 
   return (
     <div className="tm-delorean-flyby-layer" aria-hidden="true">
       <div className="tm-delorean-flux-flash" />
       <div className="tm-delorean-tire-tracks" />
-      <div className="tm-delorean-speed-hud">
+      <div className="tm-delorean-speed-hud" style={{ borderColor: carObj.accent }}>
         <span className="tm-delorean-mph">{String(mph).padStart(2, '0')} MPH</span>
-        <span className="tm-delorean-hud-tag">⚡ {eraLabel || '1.21 GIGAWATTS!'}</span>
+        <span className="tm-delorean-hud-tag">
+          ⚡ {carObj.shortName.toUpperCase()} • {eraLabel || '80s TURBO WARP!'}
+        </span>
       </div>
       <div className="tm-delorean-car-runner">
-        <DeLoreanSvg showFlames fluxActive />
+        <EightiesCarSvg carId={carId} showFlames fluxActive />
       </div>
     </div>
   );
 }
 
 /**
- * Global DeLorean 88 MPH Flyby Animation + Time Circuits Modal.
+ * Global 80s Cars Flyby Animation + Garage & Time Circuits Modal.
  */
 export function DeLoreanTimeWarpStage({
   flybyEvent,
   activeEra,
+  activeCarId = 'delorean',
+  onSelectCar,
   modalOpen,
   onCloseModal,
   onTriggerWarp,
   bonusClaimedToday = false
 }) {
   const activeEraObj = DELOREAN_ERAS.find((e) => e.id === activeEra) || DELOREAN_ERAS[3];
+  const activeCar = EIGHTIES_CARS.find((c) => c.id === activeCarId) || EIGHTIES_CARS[0];
 
   return (
     <>
-      {/* 1. Full-width 88 MPH Flyby Overlay (non-blocking, overflow-hidden) */}
       {flybyEvent && (
-        <DeLoreanFlybyLayer key={flybyEvent.id} eraLabel={flybyEvent.eraLabel} />
+        <DeLoreanFlybyLayer
+          key={flybyEvent.id}
+          eraLabel={flybyEvent.eraLabel}
+          carId={flybyEvent.carId || activeCarId}
+        />
       )}
 
-      {/* 2. Interactive Time Circuits Console Modal */}
       {modalOpen && (
         <div
           className="tm-modal-backdrop tm-delorean-modal-backdrop"
           onClick={onCloseModal}
           role="dialog"
           aria-modal="true"
-          aria-label="DeLorean Time Circuits Console"
+          aria-label="80s Iconic Cars & Time Circuits Console"
         >
-          <div
-            className="tm-modal-card tm-delorean-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="tm-modal-card tm-delorean-modal" onClick={(e) => e.stopPropagation()}>
             <div className="tm-delorean-modal-head">
               <div>
-                <div className="tm-delorean-kicker">🚗⚡ DMC-12 TIME MACHINE • OUTATIME</div>
-                <h2 className="tm-delorean-modal-title">TIME CIRCUITS &amp; FLUX CAPACITOR</h2>
+                <div className="tm-delorean-kicker">
+                  🚗⚡ 80s GARAGE FLEET • {activeCar.plate}
+                </div>
+                <h2 className="tm-delorean-modal-title">80s CARS &amp; TIME CIRCUITS</h2>
               </div>
               <button
                 type="button"
@@ -216,6 +351,27 @@ export function DeLoreanTimeWarpStage({
               </button>
             </div>
 
+            {/* 80s Iconic Cars Garage Selector */}
+            <div className="tm-80s-car-picker" role="tablist" aria-label="Select 1980s Hero Car">
+              {EIGHTIES_CARS.map((car) => (
+                <button
+                  key={car.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeCar.id === car.id}
+                  className={`tm-80s-car-tab ${activeCar.id === car.id ? 'active' : ''}`}
+                  style={{ '--car-accent': car.accent }}
+                  onClick={() => {
+                    sfx.playToggle?.();
+                    onSelectCar?.(car.id);
+                  }}
+                >
+                  <strong>{car.shortName}</strong>
+                  <span>{car.topSpeedMph} MPH</span>
+                </button>
+              ))}
+            </div>
+
             <div className="tm-delorean-showcase">
               <div className="tm-flux-capacitor-box" aria-hidden="true">
                 <div className="tm-flux-y">
@@ -224,14 +380,16 @@ export function DeLoreanTimeWarpStage({
                   <span className="tm-flux-arm a3" />
                   <span className="tm-flux-core" />
                 </div>
-                <span className="tm-flux-label">1.21 GW</span>
+                <span className="tm-flux-label">{activeCar.topSpeedMph} MPH</span>
               </div>
               <div className="tm-delorean-showcase-car">
-                <DeLoreanSvg showFlames fluxActive />
+                <EightiesCarSvg carId={activeCar.id} showFlames fluxActive />
+                <div className="tm-80s-car-caption">
+                  <strong>{activeCar.name}</strong> — {activeCar.tagline}
+                </div>
               </div>
             </div>
 
-            {/* Classic 3-Row LED Time Circuits Display */}
             <div className="tm-time-circuits-panel">
               <div className="tm-tc-row dest">
                 <span className="tm-tc-tag">DESTINATION TIME</span>
@@ -239,16 +397,16 @@ export function DeLoreanTimeWarpStage({
                 <span className="tm-tc-led">{activeEraObj.timeLabel}</span>
               </div>
               <div className="tm-tc-row present">
-                <span className="tm-tc-tag">PRESENT TIME</span>
-                <span className="tm-tc-led">NOV 13 2026</span>
-                <span className="tm-tc-led">THEMEMES</span>
+                <span className="tm-tc-tag">ACTIVE GARAGE RIDE</span>
+                <span className="tm-tc-led">{activeCar.name.toUpperCase()}</span>
+                <span className="tm-tc-led">{activeCar.plate}</span>
               </div>
               <div className="tm-tc-row departed">
                 <span className="tm-tc-tag">FLUX BONUS</span>
                 <span className="tm-tc-led">
-                  {bonusClaimedToday ? 'CHARGED TODAY' : '+5 TOKENS READY'}
+                  {bonusClaimedToday ? 'CHARGED TODAY' : '+M$5 MEMEDOLLARZ'}
                 </span>
-                <span className="tm-tc-led">88 MPH</span>
+                <span className="tm-tc-led">{activeCar.topSpeedMph} MPH</span>
               </div>
             </div>
 
@@ -261,7 +419,7 @@ export function DeLoreanTimeWarpStage({
                     type="button"
                     className={`tm-delorean-era-btn ${isSelected ? 'active' : ''}`}
                     style={{ '--era-accent': era.accent }}
-                    onClick={() => onTriggerWarp(era.id)}
+                    onClick={() => onTriggerWarp(era.id, activeCar.id)}
                   >
                     <span className="tm-era-badge">{era.badge}</span>
                     <strong className="tm-era-title">{era.title}</strong>
@@ -275,9 +433,10 @@ export function DeLoreanTimeWarpStage({
               <button
                 type="button"
                 className="tm-btn tm-btn-primary tm-delorean-warp-cta"
-                onClick={() => onTriggerWarp(activeEra === 'present' ? '1985' : activeEra)}
+                onClick={() => onTriggerWarp(activeEra === 'present' ? '1985' : activeEra, activeCar.id)}
               >
-                ⚡ HIT 88 MPH TIME WARP!{!bonusClaimedToday ? ' (+5 🪙)' : ''}
+                ⚡ DRIVE {activeCar.shortName.toUpperCase()} TO {activeCar.topSpeedMph} MPH!
+                {!bonusClaimedToday ? ' (+M$5)' : ''}
               </button>
             </div>
           </div>
@@ -288,35 +447,62 @@ export function DeLoreanTimeWarpStage({
 }
 
 /**
- * Compact interactive DeLorean DMC-12 Banner / Strip for Arcade Lobby & Feed.
+ * Interactive 80s Iconic Cars Garage Banner for Arcade Lobby & Home Feed.
  */
-export function DeLoreanDockBanner({ activeEra, onOpenModal, onQuickWarp }) {
+export function DeLoreanDockBanner({
+  activeEra,
+  activeCarId = 'delorean',
+  onSelectCar,
+  onOpenModal,
+  onQuickWarp
+}) {
   const eraObj = DELOREAN_ERAS.find((e) => e.id === activeEra);
+  const activeCar = EIGHTIES_CARS.find((c) => c.id === activeCarId) || EIGHTIES_CARS[0];
+
   return (
-    <div className="tm-delorean-banner" role="region" aria-label="DeLorean DMC-12 Time Machine">
+    <div className="tm-delorean-banner" role="region" aria-label="80s Iconic Cars Time Machine Garage">
       <button
         type="button"
         className="tm-delorean-banner-car-btn"
-        onClick={() => onQuickWarp?.(activeEra === 'present' ? '1985' : activeEra)}
-        title="Tap the DeLorean to hit 88 MPH!"
+        onClick={() => onQuickWarp?.(activeEra === 'present' ? activeCar.defaultEra : activeEra, activeCar.id)}
+        title={`Tap the ${activeCar.name} to hit ${activeCar.topSpeedMph} MPH!`}
       >
-        <DeLoreanSvg className="tm-delorean-mini-svg" showFlames={false} fluxActive />
+        <EightiesCarSvg carId={activeCar.id} className="tm-delorean-mini-svg" showFlames={false} fluxActive />
       </button>
+
       <div className="tm-delorean-banner-copy">
         <div className="tm-delorean-banner-eyebrow">
-          ⚡ DMC-12 TIME MACHINE {activeEra !== 'present' && eraObj ? `• ${eraObj.badge} ACTIVE` : '• PARKED IN THE ARCADE'}
+          ⚡ 80s GARAGE: {activeCar.name} {activeEra !== 'present' && eraObj ? `• ${eraObj.badge}` : ''}
         </div>
         <div className="tm-delorean-banner-title">
-          Hit <strong>88 MPH</strong> to Time-Warp the Site &amp; Charge the Flux Capacitor
+          Pick an 80s legend to cruise &amp; warp ({activeCar.tagline})
+        </div>
+        <div className="tm-80s-banner-car-strip" role="group" aria-label="Switch 80s Car">
+          {EIGHTIES_CARS.map((car) => (
+            <button
+              key={car.id}
+              type="button"
+              className={`tm-80s-car-chip ${activeCar.id === car.id ? 'active' : ''}`}
+              style={{ '--car-accent': car.accent }}
+              onClick={() => {
+                onSelectCar?.(car.id);
+                onQuickWarp?.(activeEra === 'present' ? car.defaultEra : activeEra, car.id);
+              }}
+              title={`Cruise in the ${car.name}`}
+            >
+              🚗 {car.shortName}
+            </button>
+          ))}
         </div>
       </div>
+
       <div className="tm-delorean-banner-actions">
         <button
           type="button"
           className="tm-btn tm-btn-primary tm-delorean-pill-btn"
-          onClick={() => onQuickWarp?.(activeEra === 'present' ? '1985' : activeEra)}
+          onClick={() => onQuickWarp?.(activeEra === 'present' ? activeCar.defaultEra : activeEra, activeCar.id)}
         >
-          ⚡ 88 MPH!
+          ⚡ {activeCar.topSpeedMph} MPH!
         </button>
         <button
           type="button"

@@ -298,6 +298,93 @@ ${urlsXml}
 `;
 }
 
+function renderMemeHtml(baseHtml, meme) {
+  const safeId = encodeURIComponent(String(meme.id));
+  const canonicalUrl = `${SITE_ORIGIN}/m/${safeId}`;
+  const author = meme.author_name || 'TheMemesHQ';
+  const titleText = `${meme.title || 'Funny Meme'} — @${author} | THE MEMES.net`;
+  const descText = `Laugh, upvote (${Number(meme.score || 1)} pts), or remix "${
+    meme.title || 'this meme'
+  }" by adding your own top & bottom text free on THE MEMES.net.`;
+  const rawImg = meme.media_type === 'video' ? meme.poster_url || DEFAULT_OG_IMAGE : meme.image_url;
+  const ogImg =
+    rawImg && rawImg.startsWith('/')
+      ? `${SITE_ORIGIN}${rawImg}`
+      : rawImg && rawImg.startsWith('https://')
+      ? rawImg
+      : DEFAULT_OG_IMAGE;
+
+  let html = baseHtml;
+  const preloadPattern = /\s*<link\s+rel="preload"\s+as="image"[^>]*>/i;
+  if (rawImg && rawImg.endsWith('.webp')) {
+    html = html.replace(
+      preloadPattern,
+      `\n    <link rel="preload" as="image" href="${escapeHtml(rawImg)}" type="image/webp" fetchpriority="high" />`
+    );
+  } else {
+    html = html.replace(preloadPattern, '');
+  }
+
+  const safeTitle = escapeHtml(titleText);
+  const safeDesc = escapeHtml(descText);
+  const safeUrl = escapeHtml(canonicalUrl);
+  const safeImg = escapeHtml(ogImg);
+
+  html = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>${safeTitle}</title>`);
+  html = html.replace(/<meta\s+name="description"\s+content="[^"]*"\s*\/?>/i, `<meta name="description" content="${safeDesc}" />`);
+  html = html.replace(/<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${safeUrl}" />`);
+  html = html.replace(/<meta\s+property="og:title"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${safeTitle}" />`);
+  html = html.replace(/<meta\s+property="og:description"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${safeDesc}" />`);
+  html = html.replace(/<meta\s+property="og:url"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${safeUrl}" />`);
+  html = html.replace(/<meta\s+property="og:image"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${safeImg}" />`);
+  html = html.replace(/<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${safeTitle}" />`);
+  html = html.replace(/<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${safeDesc}" />`);
+  html = html.replace(/<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${safeImg}" />`);
+
+  const memeJsonLd = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'SocialMediaPosting',
+    headline: meme.title || 'Funny Meme',
+    name: meme.title || 'Funny Meme',
+    description: descText,
+    url: canonicalUrl,
+    image: ogImg,
+    author: { '@type': 'Person', name: author }
+  }).replaceAll('<', '\\u003c');
+  html = html.replace(/\s*<script[^>]*id="tm-dynamic-jsonld"[^>]*>[\s\S]*?<\/script>/i, '');
+  html = html.replace(
+    /<\/head>/i,
+    `  <script id="tm-dynamic-jsonld" type="application/ld+json">${memeJsonLd}</script>\n  </head>`
+  );
+
+  const prerenderMain = `<main class="tm-seo-prerender" data-seo-route="/m/${escapeHtml(safeId)}" style="min-height:100vh;background:#070810;color:#f8fafc;padding:32px 18px 64px;font-family:system-ui,-apple-system,sans-serif;">
+      <article style="max-width:740px;margin:0 auto;background:#11131c;border:1px solid #26293d;border-radius:16px;padding:24px;">
+        <div style="font-size:12px;color:#38bdf8;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;">THE MEMES.net // #${escapeHtml(meme.category || 'dank')}</div>
+        <h1 style="margin:8px 0 10px;font-size:28px;color:#ffffff;">${escapeHtml(meme.title || 'Meme')}</h1>
+        <p style="margin:0 0 16px;font-size:13px;color:#94a3b8;">Posted by @${escapeHtml(author)} · Score: ${Number(meme.score || 1)}</p>
+        <img src="${escapeHtml(rawImg || safeImg)}" alt="${escapeHtml(meme.title || 'Meme')}" width="${meme.width || 540}" height="${meme.height || 480}" loading="eager" style="display:block;max-width:100%;height:auto;border-radius:12px;margin:0 auto 16px;" />
+        <p style="margin:0 0 18px;color:#cbd5e1;line-height:1.6;">${safeDesc}</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <a href="/" style="color:#00f5ff;text-decoration:none;font-weight:700;">🔥 Explore More Memes</a>
+          <a href="/games" style="color:#facc15;text-decoration:none;font-weight:700;">🕹️ Enter 80s Cyber-Arcade</a>
+        </div>
+      </article>
+    </main>`;
+
+  return html.replace(/<div\s+id="root"><\/div>/i, `<div id="root">${prerenderMain}</div>`);
+}
+
+function writeDualCleanUrlFiles(relativeRoutePath, renderedHtml) {
+  const cleanRel = relativeRoutePath.replace(/^\/+/, '');
+  if (!cleanRel) return;
+  const dirIndex = path.join(DIST_DIR, cleanRel, 'index.html');
+  const flatHtml = path.join(DIST_DIR, `${cleanRel}.html`);
+  fs.mkdirSync(path.dirname(dirIndex), { recursive: true });
+  fs.writeFileSync(dirIndex, renderedHtml, 'utf8');
+  fs.mkdirSync(path.dirname(flatHtml), { recursive: true });
+  fs.writeFileSync(flatHtml, renderedHtml, 'utf8');
+}
+
 function main() {
   const distIndexPath = path.join(DIST_DIR, 'index.html');
   if (!fs.existsSync(distIndexPath)) {
@@ -309,13 +396,16 @@ function main() {
 
   for (const route of SEO_ROUTES) {
     const renderedHtml = renderRouteHtml(baseHtml, route);
-    const outPath =
-      route.path === '/'
-        ? distIndexPath
-        : path.join(DIST_DIR, route.path.replace(/^\/+/, ''), 'index.html');
+    if (route.path === '/') {
+      fs.writeFileSync(distIndexPath, renderedHtml, 'utf8');
+    } else {
+      writeDualCleanUrlFiles(route.path, renderedHtml);
+    }
+  }
 
-    fs.mkdirSync(path.dirname(outPath), { recursive: true });
-    fs.writeFileSync(outPath, renderedHtml, 'utf8');
+  for (const meme of STARTER_MEMES) {
+    const renderedMeme = renderMemeHtml(baseHtml, meme);
+    writeDualCleanUrlFiles(`/m/${encodeURIComponent(String(meme.id))}`, renderedMeme);
   }
 
   const sitemapXml = generateSitemapXml(todayIso);
@@ -323,7 +413,7 @@ function main() {
   fs.writeFileSync(path.join(DIST_DIR, 'sitemap.xml'), sitemapXml, 'utf8');
 
   console.log(
-    `[prerender-seo] Generated ${SEO_ROUTES.length} static SEO routes in dist/ + updated public/sitemap.xml and dist/sitemap.xml (${todayIso}).`
+    `[prerender-seo] Generated ${SEO_ROUTES.length} static SEO routes + ${STARTER_MEMES.length} static meme pages in dist/ + updated sitemaps (${todayIso}).`
   );
 }
 

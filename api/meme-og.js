@@ -25,6 +25,68 @@ function replaceMeta(html, pattern, replacement) {
   return pattern.test(html) ? html.replace(pattern, replacement) : html;
 }
 
+async function loadBaseIndexHtml() {
+  const candidates = [
+    path.join(process.cwd(), 'dist', 'index.html'),
+    path.join(process.cwd(), 'index.html')
+  ];
+  for (const filePath of candidates) {
+    try {
+      const content = await fs.readFile(filePath, 'utf8');
+      if (content && content.includes('id="root"')) {
+        return content;
+      }
+    } catch {
+      // try next source
+    }
+  }
+
+  // Never 302 redirect Googlebot when dist/index.html isn't mounted in Lambda:
+  // fetch the static /index.html shell directly.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 1800);
+  try {
+    const res = await fetch(`${SITE_ORIGIN}/index.html`, {
+      headers: { Accept: 'text/html' },
+      signal: controller.signal
+    });
+    if (res.ok) {
+      const text = await res.text();
+      if (text && text.includes('id="root"')) {
+        return text;
+      }
+    }
+  } catch {
+    // fall back to standalone semantic 200 OK HTML document below
+  } finally {
+    clearTimeout(timer);
+  }
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>THE MEMES.net — Community Meme &amp; 80s Cyber-Arcade</title>
+    <meta name="description" content="Explore funny community memes, remix templates, and play 80s Cyber-Arcade games on THE MEMES.net." />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <link rel="canonical" href="${SITE_ORIGIN}/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="THE MEMES.net" />
+    <meta property="og:description" content="Community Memes &amp; 80s Cyber-Arcade" />
+    <meta property="og:url" content="${SITE_ORIGIN}/" />
+    <meta property="og:image" content="${DEFAULT_OG_IMAGE}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="THE MEMES.net" />
+    <meta name="twitter:description" content="Community Memes &amp; 80s Cyber-Arcade" />
+    <meta name="twitter:image" content="${DEFAULT_OG_IMAGE}" />
+  </head>
+  <body style="background:#070810;color:#f8fafc;font-family:system-ui,sans-serif;">
+    <div id="root"></div>
+  </body>
+</html>`;
+}
+
 async function fetchLiveMeme(memeId) {
   const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
   const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
@@ -35,7 +97,7 @@ async function fetchLiveMeme(memeId) {
   try {
     const endpoint = `${supabaseUrl.replace(/\/+$/, '')}/rest/v1/memes?id=eq.${encodeURIComponent(
       String(memeId)
-    )}&select=id,title,image_url,poster_url,media_type,category,author_name,score&limit=1`;
+    )}&select=id,title,image_url,poster_url,media_type,category,author_name,score,created_at&limit=1`;
     const res = await fetch(endpoint, {
       headers: {
         apikey: supabaseKey,
@@ -58,15 +120,7 @@ export default async function handler(req, res) {
   const rawId = Array.isArray(req.query?.id) ? req.query.id[0] : req.query?.id;
   const memeId = String(rawId || '').trim().slice(0, 128);
 
-  let html;
-  try {
-    html = await fs.readFile(path.join(process.cwd(), 'dist', 'index.html'), 'utf8');
-  } catch {
-    res.statusCode = 302;
-    res.setHeader('Location', memeId ? `/?m=${encodeURIComponent(memeId)}` : '/');
-    res.end();
-    return;
-  }
+  let html = await loadBaseIndexHtml();
 
   let meme = STARTER_MEMES.find((m) => String(m.id) === memeId) || null;
   if (!meme && memeId) {
@@ -133,6 +187,9 @@ export default async function handler(req, res) {
       /<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/?>/i,
       `<meta name="twitter:image" content="${safeImg}" />`
     );
+
+    const articleMarkup = `<main class="tm-seo-prerender" data-meme-id="${escapeHtml(String(meme.id))}" style="min-height:100vh;background:#070810;color:#f8fafc;padding:32px 18px 64px;font-family:system-ui,-apple-system,sans-serif;"><article style="max-width:720px;margin:0 auto;"><h1 style="margin:0 0 12px;font-size:28px;">${escapeHtml(meme.title || 'Meme')}</h1><p style="color:#94a3b8;margin:0 0 16px;">By @${escapeHtml(meme.author_name || 'Anon')} · Category #${escapeHtml(meme.category || 'dank')} · Score ${Number(meme.score || 1)}</p><img src="${safeImg}" alt="${escapeHtml(meme.title || 'Meme')}" style="max-width:100%;height:auto;border-radius:12px;display:block;margin-bottom:16px;" /><p style="line-height:1.6;color:#cbd5e1;">${safeDesc}</p><a href="/" style="color:#00f5ff;">← Back to THE MEMES.net Feed &amp; 80s Cyber-Arcade</a></article></main>`;
+    html = replaceMeta(html, /<div\s+id="root">[\s\S]*?<\/div>/i, `<div id="root">${articleMarkup}</div>`);
   }
 
   res.statusCode = 200;

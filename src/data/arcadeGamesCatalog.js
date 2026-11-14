@@ -7,7 +7,7 @@ export const RECENT_GAMES_KEY = 'tm_recent_games_v1';
 export const FAV_GAMES_KEY = 'tm_fav_games_v1';
 
 export const ARCADE_LOBBY_GROUPS = [
-  { id: 'casino', label: '🎰 Casino', desc: 'Free token tables & odds games' },
+  { id: 'casino', label: '🎰 Casino & Oracle', desc: 'MemeDollarz ($) tables & odds games' },
   { id: 'skill', label: '🕹️ Skill', desc: 'Reflex & puzzle arcade cabinets' },
   { id: 'meme', label: '🧠 Meme Games', desc: 'Daily challenges & crowd battles' },
   { id: 'sim', label: '📈 Sim', desc: 'Live market & ticker chaos' }
@@ -66,14 +66,14 @@ export const ARCADE_GAMES_CATALOG = [
     accent: '#f472b6'
   },
   {
-    id: 'plinko',
+    id: 'eightball',
     group: 'casino',
-    icon: '🎯',
-    label: 'Meme Plinko',
-    pitch: 'Drop meme balls down 3 risk peg rows.',
-    badge: '26x',
+    icon: '🎱',
+    label: "80s Magic 8-Ball",
+    pitch: 'Ask the neon oracle & wager MemeDollarz on destiny.',
+    badge: 'Oracle',
     isNew: true,
-    accent: '#a78bfa'
+    accent: '#00f5ff'
   },
   {
     id: 'derby',

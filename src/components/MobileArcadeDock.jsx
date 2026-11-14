@@ -21,7 +21,7 @@ export default function MobileArcadeDock({
     'stocks',
     'derby',
     'guess',
-    'plinko',
+    'eightball',
     'hilow',
     'battle',
     'arena',
@@ -48,9 +48,10 @@ export default function MobileArcadeDock({
           type="button"
           className={`tm-dock-btn ${viewMode === 'feed' && !isAnyModalOpen ? 'active' : ''}`}
           onClick={() => handlePickMode('feed')}
+          aria-label="Home Memes Feed"
         >
-          <span className="tm-dock-icon">📱</span>
-          <span>Memes</span>
+          <span className="tm-dock-icon">🏠</span>
+          <span>Home</span>
         </button>
       )}
 

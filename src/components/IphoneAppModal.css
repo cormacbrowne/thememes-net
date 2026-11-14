@@ -1,0 +1,142 @@
+/* =====================================================================
+   IPHONE / MOBILE HOME-SCREEN APP INSTALL MODAL
+   ===================================================================== */
+
+.tm-iphone-modal {
+  max-width: 580px;
+  width: min(580px, 94vw);
+  padding: 18px;
+  border-radius: 20px;
+  background: radial-gradient(circle at 50% 0%, rgba(25, 8, 56, 0.98), rgba(6, 9, 20, 0.99));
+  border: 2px solid #00f5ff;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.92), 0 0 38px rgba(0, 245, 255, 0.3);
+  color: #f8fafc;
+}
+
+.tm-iphone-hero-preview {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 42, 133, 0.35);
+  margin: 12px 0;
+}
+
+.tm-iphone-icon-showcase {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.tm-iphone-preview-img {
+  border-radius: 22px;
+  border: 2px solid rgba(0, 245, 255, 0.65);
+  box-shadow: 0 10px 26px rgba(0, 245, 255, 0.35), 0 0 22px rgba(255, 42, 133, 0.35);
+}
+
+.tm-iphone-icon-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #e2e8f0;
+  letter-spacing: 0.04em;
+}
+
+.tm-iphone-badge {
+  font-size: 10px;
+  font-weight: 900;
+  color: #facc15;
+  letter-spacing: 0.08em;
+  margin-bottom: 5px;
+}
+
+.tm-iphone-hero-copy p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #cbd5e1;
+}
+
+.tm-iphone-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.tm-iphone-step-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 11px 13px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(0, 245, 255, 0.22);
+}
+
+.tm-iphone-step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00f5ff, #ff2a85);
+  color: #050814;
+  font-weight: 900;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tm-iphone-step-card strong {
+  display: block;
+  font-size: 13.5px;
+  color: #ffffff;
+  margin-bottom: 3px;
+}
+
+.tm-iphone-step-card p {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #94a3b8;
+}
+
+.tm-iphone-tip-bar {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(250, 204, 21, 0.09);
+  border: 1px solid rgba(250, 204, 21, 0.35);
+  font-size: 12px;
+  line-height: 1.45;
+  color: #fef08a;
+}
+
+.tm-iphone-install-cta {
+  width: 100%;
+  margin-top: 12px;
+  min-height: 44px;
+  font-weight: 900;
+}
+
+.tm-iphone-success-pill {
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(74, 222, 128, 0.14);
+  border: 1px solid #4ade80;
+  color: #86efac;
+  font-weight: 800;
+  font-size: 13px;
+  text-align: center;
+}
+
+@media (max-width: 520px) {
+  .tm-iphone-hero-preview {
+    flex-direction: column;
+    text-align: center;
+  }
+}

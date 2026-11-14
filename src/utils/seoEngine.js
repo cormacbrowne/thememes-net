@@ -51,6 +51,7 @@ function upsertCanonical(href) {
 
 export function updateDynamicSeo({
   activeMeme = null,
+  theaterMemeId = null,
   category = 'all',
   viewMode = 'feed',
   showStudio = false,
@@ -81,7 +82,8 @@ export function updateDynamicSeo({
     extrasDrawerOpen,
     extrasFocus,
     bossKeyActive,
-    prankDisguise
+    prankDisguise,
+    theaterMemeId
   });
 
   let pageTitle = routeMeta.title;

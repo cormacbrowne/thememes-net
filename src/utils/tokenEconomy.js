@@ -7,6 +7,14 @@
 // 4. ZERO FREE-TOKEN LOOPHOLES (Free Practice / Demo modes award 0 tokens; Piñata requires 8 moving hits)
 // ==========================================
 
+export const CURRENCY_BRAND = {
+  dollarName: 'MemeDollarz',
+  dollarShort: 'M$',
+  centzName: 'MemeCentz',
+  centzShort: '¢',
+  maxDailyCentz: 500 // up to M$5.00/day from MemeCentz micro-earnings
+};
+
 export const ARCADE_ECONOMY_RULES = {
   STARTER_WELCOME_TOKENS: 20,
   STARTER_FIRST_PLAY_BONUS: 10,
@@ -67,13 +75,16 @@ export const ARCADE_ECONOMY_RULES = {
     CRUSH_CONTINUE_COST: 10,
     PINBALL_ENTRY_COST: 10,
     PINBALL_EXTRA_BALL_COST: 10,
-    PINBALL_PAYOUT_TIERS: { 8000: 8, 15000: 12, 25000: 18, 40000: 28 },
+    PINBALL_PAYOUT_TIERS: { 18000: 8, 32000: 12, 50000: 18, 75000: 28 },
+    EIGHTBALL_BETS: [2, 5, 10],
     STOCK_FEE_RATE: 0.015 // 1.5% brokerage spread prevents rapid buy/sell arbitrage & gives house edge
   }
 };
 
 const LEDGER_STORAGE_KEY = 'tm_token_ledger_v2';
 const TOKENS_BALANCE_KEY = 'tm_tokens_balance_v2';
+const CENTZ_BALANCE_KEY = 'tm_memecentz_balance_v1';
+const CENTZ_DAILY_KEY = 'tm_memecentz_daily_v1';
 
 export function getTodayDateString() {
   const now = new Date();
@@ -158,6 +169,53 @@ export function saveTokenBalance(tokens) {
   } catch {
     // Ignore storage quota restrictions
   }
+}
+
+export function loadMemeCentzBalance() {
+  try {
+    const saved = localStorage.getItem(CENTZ_BALANCE_KEY);
+    if (saved === null) return 25;
+    return Math.max(0, Math.min(99, Math.floor(Number(saved) || 0)));
+  } catch {
+    return 25;
+  }
+}
+
+export function saveMemeCentzBalance(centz) {
+  try {
+    localStorage.setItem(CENTZ_BALANCE_KEY, String(Math.max(0, Math.min(99, Math.floor(centz || 0)))));
+  } catch {
+    // Ignore storage quota restrictions
+  }
+}
+
+export function loadDailyCentzEarned() {
+  const today = getTodayDateString();
+  try {
+    const raw = JSON.parse(localStorage.getItem(CENTZ_DAILY_KEY) || 'null');
+    if (raw && raw.date === today) return Math.max(0, Math.floor(Number(raw.earned || 0)));
+  } catch {
+    // ignore
+  }
+  return 0;
+}
+
+export function saveDailyCentzEarned(earned) {
+  try {
+    localStorage.setItem(
+      CENTZ_DAILY_KEY,
+      JSON.stringify({ date: getTodayDateString(), earned: Math.max(0, Math.floor(earned || 0)) })
+    );
+  } catch {
+    // ignore
+  }
+}
+
+export function formatMemeCurrency(dollarz = 0, centz = 0, { showCentz = true } = {}) {
+  const safeD = Math.max(0, Math.floor(Number(dollarz) || 0));
+  const safeC = Math.max(0, Math.min(99, Math.floor(Number(centz) || 0)));
+  if (!showCentz) return `M$${safeD.toLocaleString()}`;
+  return `M$${safeD.toLocaleString()}.${String(safeC).padStart(2, '0')}`;
 }
 
 /**

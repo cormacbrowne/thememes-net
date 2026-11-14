@@ -349,6 +349,21 @@
   color: #00f3ff;
 }
 
+.tm-radio-eq-quick-btn {
+  width: auto;
+  padding: 4px 6px !important;
+  min-width: 26px;
+  font-size: 11px;
+  line-height: 1;
+  touch-action: manipulation;
+}
+
+@media (max-width: 480px) {
+  .tm-nav .tm-radio-eq-quick-btn {
+    display: none !important;
+  }
+}
+
 .tm-radio-popover {
   position: absolute;
   top: calc(100% + 6px);

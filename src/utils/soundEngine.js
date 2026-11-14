@@ -3023,6 +3023,195 @@ export class SoundEngine {
       // Ignore audio errors
     }
   }
+
+  /**
+   * 🎱 80s MAGIC 8-BALL — MYSTIC LIQUID SLOSH & CRYSTAL SHIMMER
+   */
+  playMagic8BallShake() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+
+      // Liquid slosh noise burst through sweeping bandpass filter
+      const dur = 0.65;
+      const bufSize = Math.floor(this.ctx.sampleRate * dur);
+      const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * (0.4 + 0.6 * Math.sin((i / bufSize) * Math.PI));
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buf;
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.Q.setValueAtTime(3.2, now);
+      filter.frequency.setValueAtTime(320, now);
+      filter.frequency.exponentialRampToValueAtTime(1150, now + 0.24);
+      filter.frequency.exponentialRampToValueAtTime(280, now + 0.58);
+      const nGain = this.ctx.createGain();
+      nGain.gain.setValueAtTime(0.01, now);
+      nGain.gain.linearRampToValueAtTime(0.16, now + 0.14);
+      nGain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+      noise.connect(filter);
+      filter.connect(nGain);
+      nGain.connect(out);
+      noise.start(now);
+
+      // Bubbling 80s synth crystal shimmer notes
+      [440, 587.33, 783.99, 659.25, 987.77].forEach((freq, idx) => {
+        const t = now + idx * 0.085;
+        const osc = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, t);
+        osc.frequency.exponentialRampToValueAtTime(freq * 1.18, t + 0.12);
+        g.gain.setValueAtTime(0.055, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+        osc.connect(g);
+        g.connect(out);
+        osc.start(t);
+        osc.stop(t + 0.18);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🎱 80s MAGIC 8-BALL — SYNTHWAVE DESTINY REVEAL CHORD
+   */
+  playMagic8BallReveal(tone = 'positive') {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+
+      const chords = {
+        positive: [261.63, 329.63, 392.0, 493.88, 587.33, 783.99],
+        neutral: [220.0, 293.66, 392.0, 523.25],
+        negative: [146.83, 174.61, 207.65, 293.66]
+      };
+      const notes = chords[tone] || chords.positive;
+
+      notes.forEach((freq, idx) => {
+        const t = now + idx * 0.055;
+        const osc1 = this.ctx.createOscillator();
+        const osc2 = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        osc1.type = tone === 'negative' ? 'sawtooth' : 'triangle';
+        osc2.type = 'sine';
+        osc1.frequency.setValueAtTime(freq, t);
+        osc2.frequency.setValueAtTime(freq * 1.006, t); // rich 80s Juno chorus detune
+        g.gain.setValueAtTime(0.001, t);
+        g.gain.linearRampToValueAtTime(tone === 'negative' ? 0.07 : 0.09, t + 0.04);
+        g.gain.exponentialRampToValueAtTime(0.0008, t + 0.95);
+        osc1.connect(g);
+        osc2.connect(g);
+        g.connect(out);
+        osc1.start(t);
+        osc2.start(t);
+        osc1.stop(t + 1.0);
+        osc2.stop(t + 1.0);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🧲 PINBALL MAGNA-SAVE ELECTROMAGNET HUM
+   */
+  playPinballMagnaSave() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+      const osc = this.ctx.createOscillator();
+      const lfo = this.ctx.createOscillator();
+      const lfoGain = this.ctx.createGain();
+      const g = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(140, now);
+      osc.frequency.linearRampToValueAtTime(280, now + 0.45);
+      lfo.frequency.setValueAtTime(26, now);
+      lfoGain.gain.setValueAtTime(22, now);
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+      g.gain.setValueAtTime(0.11, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+      osc.connect(g);
+      g.connect(out);
+      osc.start(now);
+      lfo.start(now);
+      osc.stop(now + 0.58);
+      lfo.stop(now + 0.58);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🚗 80s ICONIC CAR TURBO & ENGINE SYNTH FLYBY
+   */
+  playEightiesCarWarp(carId = 'delorean') {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+
+      const osc = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+
+      if (carId === 'cosworth') {
+        // Group A Turbo spool + wastegate chirp
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(110, now);
+        osc.frequency.exponentialRampToValueAtTime(420, now + 0.35);
+        osc.frequency.exponentialRampToValueAtTime(190, now + 0.65);
+        g.gain.setValueAtTime(0.12, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+      } else if (carId === 'porsche911') {
+        // Air-cooled flat-six two-gear scream
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(145, now);
+        osc.frequency.exponentialRampToValueAtTime(360, now + 0.25);
+        osc.frequency.setValueAtTime(230, now + 0.27);
+        osc.frequency.exponentialRampToValueAtTime(510, now + 0.65);
+        g.gain.setValueAtTime(0.12, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.72);
+      } else if (carId === 'lagonda') {
+        // Aston Martin Lagonda digital CRT chime + V8 glide
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(98, now);
+        osc.frequency.exponentialRampToValueAtTime(310, now + 0.65);
+        g.gain.setValueAtTime(0.13, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+      } else {
+        // DeLorean Flux Capacitor 88 MPH warp
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(160, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.55);
+        g.gain.setValueAtTime(0.11, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+      }
+
+      osc.connect(g);
+      g.connect(out);
+      osc.start(now);
+      osc.stop(now + 0.78);
+    } catch {
+      // Ignore audio errors
+    }
+  }
 }
 
 export const sfx = new SoundEngine();

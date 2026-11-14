@@ -76,7 +76,7 @@ export const GAME_VIEW_MODE_TO_PATH = {
   stocks: '/games/meme-stock-market',
   derby: '/games/horse-racing',
   guess: '/games/guess-the-meme',
-  plinko: '/games/plinko',
+  eightball: '/games/magic-8-ball',
   hilow: '/games/higher-or-lower'
 };
 
@@ -145,7 +145,7 @@ export const SEO_ROUTES = [
     path: '/games',
     title: 'Free Cyber-Arcade Lobby — 13 Retro & Meme Games | THE MEMES.net',
     description:
-      'Explore all 13 free browser arcade games on THE MEMES.net: Neon Coin Dozer, Lightning Roulette, Pinball, Neon Derby, Guess The Meme, Plinko, Higher or Lower & MEMEDAQ.',
+      'Explore all 13 free browser arcade games on THE MEMES.net: Neon Coin Dozer, Lightning Roulette, Pinball, Magic 8-Ball, Neon Derby, Guess The Meme, Higher or Lower & MEMEDAQ.',
     h1: 'Cyber-Arcade Lobby — Play 13 Free Retro & Meme Games',
     kicker: 'THE MEMES.net // Casino, Skill, Daily Meme Games & Market Sim',
     changefreq: 'daily',
@@ -154,8 +154,8 @@ export const SEO_ROUTES = [
     category: 'all',
     introParagraphs: [
       "Step inside the Cyber-Arcade Lobby on THE MEMES.net—home to 13 free browser-based arcade cabinets, neon casino tables, skill challenges, and daily meme prediction games with zero downloads, accounts, or real-money deposits required. Filter quickly across Casino, Skill, Meme Games, and Market Sim sections, pin your favorite cabinets with star bookmarks, and pick up immediately from your Continue Playing shelf.",
-      "Choose between fast casino tables like Neon Coin Dozer '86, Lightning Roulette, Neon 21's, Vegas 777 Slots, Meme Plinko, and Neon Derby '86 meme horse racing, or dive into skill hits like 5-table Neon Pinball and Meme Crush Saga. Need quick token-free rounds? Try daily pixelated Guess The Meme, endless Higher or Lower upvote streaks, Hyper Swipe, or 1v1 Meme Arena.",
-      'Every wager runs purely on free Arcade Tokens earned by uploading and voting on memes, and practice mode activates automatically so newcomers can play any cabinet risk-free on desktop, iPad, or mobile portrait screens with procedural synthwave radio. Switch smoothly between cabinets or head back to the live meme feed and Meme Forge Studio anytime.'
+      "Choose between fast casino tables like Neon Coin Dozer '86, Lightning Roulette, Neon 21's, Vegas 777 Slots, 80s Magic 8-Ball Oracle, and Neon Derby '86 meme horse racing, or dive into skill hits like 5-table Neon Pinball and Meme Crush Saga. Need quick token-free rounds? Try daily pixelated Guess The Meme, endless Higher or Lower upvote streaks, Hyper Swipe, or 1v1 Meme Arena.",
+      'Every wager runs purely on free MemeDollarz ($) and MemeCentz (¢) earned by uploading and voting on memes, and practice mode activates automatically so newcomers can play any cabinet risk-free on desktop, iPad, or mobile portrait screens with procedural synthwave radio. Switch smoothly between cabinets or head back to the live meme feed and Meme Forge Studio anytime.'
     ]
   },
   {
@@ -261,20 +261,21 @@ export const SEO_ROUTES = [
     ]
   },
   {
-    path: '/games/plinko',
-    title: 'Meme Plinko Online Free — 26x Peg Drop Arcade Game | THE MEMES.net',
+    path: '/games/magic-8-ball',
+    title: '80s Magic 8-Ball Oracle — Retro Fortune Predictor Game | THE MEMES.net',
     description:
-      'Play Meme Plinko free online with real canvas peg physics, Low/Medium/High multiplier rows up to 26x, meme ball faces, Auto x10 drops, and one-handed mobile controls.',
-    h1: "Meme Plinko '86 — Free One-Tap Peg Drop Game",
-    kicker: '8-Row Galton Peg Physics // Low, Med & High Risk up to 26x',
+      'Shake the glowing 1980s neon Magic 8-Ball Oracle free online! Ask any meme, crypto, or life question for glowing synthwave prophecies, liquid die reveals, and MemeDollarz fate wagers.',
+    h1: "80s Neon Magic 8-Ball '86 — Fortune Predictor Oracle",
+    kicker: '1986 Synthwave Oracle // Shake Physics & 80s Audio',
     changefreq: 'daily',
     priority: '0.9',
-    viewMode: 'plinko',
+    viewMode: 'eightball',
     category: 'all',
+    schemaType: 'VideoGame',
     introParagraphs: [
-      'Drop neon meme balls down a glowing 8-row triangular peg board in Meme Plinko, one of the fastest one-handed casino arcade games on THE MEMES.net. Choose your favorite arcade token stake, pick Low, Medium, or High multiplier rows reaching up to 26x on the corners, and tap anywhere on the board or button bar to launch cascading physics drops with crisp peg sparks.',
-      'Built on fair Binomial eight-row bounce odds across nine multiplier buckets, Meme Plinko keeps transparent 3.55% to 4.53% house edge math while delivering satisfying 2D elastic circle collisions, multi-ball Auto x10 bursts, and playful Pepe, Doge, Stonks, and Moai ball sprites that spin and clatter into neon scoring slots.',
-      'Play risk-free in unlimited Free Practice mode (enabled automatically whenever your wallet is below 10 tokens) or wager free site Arcade Tokens earned by making and upvoting memes with never any real money, deposits, or cashouts. Switch smoothly between portrait thumb-only phone play and wide desktop layout anytime.'
+      'Consult the glowing 1980s Neon Magic 8-Ball Oracle on THE MEMES.net—a hyper-stylized retro fortune predictor built with deep obsidian liquid shading, synthwave laser reflections, CRT scanlines, and custom Web Audio FM synthesizer pads right in your browser on desktop, iPad, and iPhone.',
+      'Type any burning life, work, dating, or meme-coin question—or tap one-click 80s preset prompts like Will my meme go viral or Should I YOLO on MEMEDAQ—then grab, tap, or hit Shake the 8-Ball to watch the mystic liquid churn before a glowing equilateral icosahedron die floats up through the indigo depths to unveil your destiny.',
+      'Enjoy unlimited free Oracle readings that sprinkle bonus MemeCentz into your MemeDollarz wallet on every single shake, track your recent prophecy history across rounds, copy formatted fortunes directly to friends in one tap, or toggle a thrilling Double-or-Nothing Fate Wager using your arcade stack while testing your luck against the cosmic synthwave void with calibrated arcade odds and zero downloads, accounts, or real-money deposits required.'
     ]
   },
   {
@@ -520,6 +521,7 @@ export function normalizeRoutePath(pathname = '/') {
   cleaned = cleaned.toLowerCase();
   if (cleaned === '/memes/tech') return '/memes/programming';
   if (cleaned === '/templates' || cleaned.startsWith('/templates/')) return '/meme-generator';
+  if (cleaned === '/games/plinko') return '/games';
   return cleaned || '/';
 }
 
@@ -631,7 +633,7 @@ export function resolveRouteFromLocation(pathname = '/', search = '') {
     'stocks',
     'derby',
     'guess',
-    'plinko',
+    'eightball',
     'hilow',
     'swipe',
     'battle'
@@ -640,6 +642,8 @@ export function resolveRouteFromLocation(pathname = '/', search = '') {
   let viewMode;
   if (validModes.includes(mode)) {
     viewMode = mode;
+  } else if (mode === 'plinko') {
+    viewMode = 'lobby';
   } else if (mappedCat !== 'all' || searchQuery || theaterMemeId) {
     viewMode = 'feed';
   } else {
@@ -657,7 +661,11 @@ export function resolveRouteFromLocation(pathname = '/', search = '') {
   );
 
   return {
-    matchedPath: mappedCat !== 'all' && viewMode === 'feed' ? `/memes/${CATEGORY_ID_TO_SLUG[mappedCat]}` : GAME_VIEW_MODE_TO_PATH[viewMode] || '/',
+    matchedPath: pathMemeMatch
+      ? `/m/${encodeURIComponent(theaterMemeId)}`
+      : mappedCat !== 'all' && viewMode === 'feed'
+      ? `/memes/${CATEGORY_ID_TO_SLUG[mappedCat]}`
+      : GAME_VIEW_MODE_TO_PATH[viewMode] || '/',
     isDedicatedLanding,
     viewMode,
     category: mappedCat,
@@ -681,8 +689,12 @@ export function getCanonicalPathForState({
   extrasDrawerOpen = false,
   extrasFocus = null,
   bossKeyActive = false,
-  prankDisguise = null
+  prankDisguise = null,
+  theaterMemeId = null
 } = {}) {
+  if (theaterMemeId) {
+    return `/m/${encodeURIComponent(String(theaterMemeId))}`;
+  }
   if (bossKeyActive && prankDisguise && PRANK_DISGUISE_TO_PATH[prankDisguise]) {
     return PRANK_DISGUISE_TO_PATH[prankDisguise];
   }

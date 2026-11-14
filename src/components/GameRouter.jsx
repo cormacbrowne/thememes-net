@@ -17,7 +17,7 @@ const VegasCoinPusherGame = lazy(() => import('./VegasCoinPusherGame'));
 const MemeStockMarketGame = lazy(() => import('./MemeStockMarketGame'));
 const NeonDerbyGame = lazy(() => import('./NeonDerbyGame'));
 const GuessTheMemeGame = lazy(() => import('./GuessTheMemeGame'));
-const MemePlinkoGame = lazy(() => import('./MemePlinkoGame'));
+const Magic8BallOracle = lazy(() => import('./Magic8BallOracle'));
 const HigherOrLowerGame = lazy(() => import('./HigherOrLowerGame'));
 
 /**
@@ -27,6 +27,7 @@ export function FixedArcadeTopBar({
   viewMode,
   setViewMode,
   tokens,
+  memeCentz = 0,
   setShowRewardsModal,
   setExtrasFocus,
   setExtrasDrawerOpen
@@ -39,12 +40,12 @@ export function FixedArcadeTopBar({
         onClick={() => {
           sfx.playToggle();
           setExtrasDrawerOpen?.(false);
-          setViewMode('lobby');
+          setViewMode('feed');
           window.scrollTo?.({ top: 0, left: 0, behavior: 'auto' });
         }}
-        title="Back to Cyber-Arcade Lobby"
+        title="Return to Home Page"
       >
-        🕹️ Lobby
+        🏠 Home
       </button>
       <button
         type="button"
@@ -52,11 +53,12 @@ export function FixedArcadeTopBar({
         onClick={() => {
           sfx.playToggle();
           setExtrasDrawerOpen?.(false);
-          setViewMode('feed');
+          setViewMode('lobby');
           window.scrollTo?.({ top: 0, left: 0, behavior: 'auto' });
         }}
+        title="Back to Cyber-Arcade Lobby"
       >
-        ← Memes
+        🕹️ Lobby
       </button>
 
       <nav className="tm-fixed-game-pills" aria-label="Switch Arcade Game">
@@ -152,13 +154,13 @@ export function FixedArcadeTopBar({
         </button>
         <button
           type="button"
-          className={`tm-fixed-game-pill ${viewMode === 'plinko' ? 'active' : ''}`}
+          className={`tm-fixed-game-pill ${viewMode === 'eightball' ? 'active' : ''}`}
           onClick={() => {
-            sfx.playToggle();
-            setViewMode('plinko');
+            sfx.playMagic8BallShake?.();
+            setViewMode('eightball');
           }}
         >
-          🎯 Plinko
+          🎱 8-Ball
         </button>
         <button
           type="button"
@@ -190,9 +192,9 @@ export function FixedArcadeTopBar({
             sfx.playToggle();
             setShowRewardsModal(true);
           }}
-          title="Open Token Wallet & Daily Quests"
+          title="Open MemeDollarz Wallet & Daily Quests"
         >
-          🪙 <strong>{tokens}</strong>
+          🪙 <strong>M${tokens}.{String(memeCentz || 0).padStart(2, '0')}</strong>
         </button>
         <RadioToggleButton className="tm-fixed-icon-btn" />
         <button
@@ -583,6 +585,7 @@ export default function GameRouter({
   tokens,
   handleSpendTokens,
   handlePayoutGameTokens,
+  handleEarnMemeCentz,
   awardXpOnly,
   soundOn,
   setSoundOn,
@@ -623,6 +626,8 @@ export default function GameRouter({
   handleBattlePick,
   handleSkipMatchup,
   deloreanEra,
+  activeCarId,
+  onSelectCar,
   onOpenTimeCircuits,
   onTriggerDeLoreanWarp
 }) {
@@ -739,16 +744,11 @@ export default function GameRouter({
         </Suspense>
       )}
 
-      {viewMode === 'plinko' && (
+      {viewMode === 'eightball' && (
         <Suspense fallback={<MemeSkeletonGrid count={3} />}>
-          <MemePlinkoGame
+          <Magic8BallOracle
             tokens={tokens}
             soundOn={soundOn}
-            litePerfMode={litePerfMode}
-            prefersReducedMotion={
-              typeof window !== 'undefined' &&
-              Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)
-            }
             onToggleSound={() => {
               const nextState = !soundOn;
               sfx.enabled = nextState;
@@ -757,6 +757,7 @@ export default function GameRouter({
             }}
             onSpendTokens={handleSpendTokens}
             onPayoutTokens={handlePayoutGameTokens}
+            onEarnMemeCentz={handleEarnMemeCentz}
             onBackToFeed={() => {
               sfx.playToggle();
               setViewMode('feed');
@@ -960,6 +961,8 @@ export default function GameRouter({
               setViewMode('feed');
             }}
             deloreanEra={deloreanEra}
+            activeCarId={activeCarId}
+            onSelectCar={onSelectCar}
             onOpenTimeCircuits={onOpenTimeCircuits}
             onTriggerDeLoreanWarp={onTriggerDeLoreanWarp}
           />

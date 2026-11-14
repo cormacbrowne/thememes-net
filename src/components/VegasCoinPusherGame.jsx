@@ -834,7 +834,7 @@ export default function VegasCoinPusherGame({
           if (cb.freePlay) {
             tokenAward = Math.max(1, c.tokens);
           } else if (c.modeTag === 'token' && c.tokens > 0) {
-            const maxAllowedSessionPaid = Math.floor(s.sessionTokensSpent * 0.92);
+            const maxAllowedSessionPaid = Math.floor(s.sessionTokensSpent * 0.88);
             const remainingRoom = Math.max(0, maxAllowedSessionPaid - s.sessionTokensPaid);
             tokenAward = Math.min(c.tokens, remainingRoom);
             s.sessionTokensPaid += tokenAward;

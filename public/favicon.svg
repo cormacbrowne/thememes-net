@@ -1,84 +1,168 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#090a14" />
-      <stop offset="55%" stop-color="#17092e" />
-      <stop offset="100%" stop-color="#05060c" />
+    <linearGradient id="bgSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#050312" />
+      <stop offset="52%" stop-color="#190538" />
+      <stop offset="100%" stop-color="#070a1c" />
     </linearGradient>
-    <linearGradient id="rimGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00f3ff" />
-      <stop offset="50%" stop-color="#ec4899" />
+    <linearGradient id="outrunSun" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="38%" stop-color="#f97316" />
+      <stop offset="72%" stop-color="#ff2a85" />
+      <stop offset="100%" stop-color="#9333ea" />
+    </linearGradient>
+    <linearGradient id="neonRim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f5ff" />
+      <stop offset="50%" stop-color="#ff2a85" />
       <stop offset="100%" stop-color="#facc15" />
     </linearGradient>
-    <linearGradient id="faceGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+    <linearGradient id="chromePlate" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="46%" stop-color="#cbd5e1" />
+      <stop offset="50%" stop-color="#1e293b" />
+      <stop offset="54%" stop-color="#60a5fa" />
+      <stop offset="100%" stop-color="#f8fafc" />
+    </linearGradient>
+    <linearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#fef08a" />
-      <stop offset="50%" stop-color="#facc15" />
-      <stop offset="100%" stop-color="#f97316" />
+      <stop offset="50%" stop-color="#00f5ff" />
+      <stop offset="100%" stop-color="#ff2a85" />
     </linearGradient>
-    <linearGradient id="crownGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#fef08a" />
-      <stop offset="50%" stop-color="#facc15" />
-      <stop offset="100%" stop-color="#f59e0b" />
-    </linearGradient>
-    <linearGradient id="headsetGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00f3ff" />
-      <stop offset="100%" stop-color="#ec4899" />
-    </linearGradient>
-    <filter id="neonGlow" x="-15%" y="-15%" width="130%" height="130%">
-      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#00f3ff" flood-opacity="0.45" />
+    <clipPath id="squircleClip">
+      <rect x="12" y="12" width="488" height="488" rx="108" />
+    </clipPath>
+    <clipPath id="sunSliceClip">
+      <circle cx="256" cy="214" r="146" />
+    </clipPath>
+    <filter id="cyanGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#00f5ff" flood-opacity="0.7" />
+    </filter>
+    <filter id="pinkGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="#ff2a85" flood-opacity="0.75" />
     </filter>
   </defs>
 
-  <!-- Outer Rounded Square Cyber Badge -->
-  <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#bgGrad)" stroke="url(#rimGrad)" stroke-width="20" />
-  <circle cx="256" cy="272" r="192" fill="none" stroke="url(#rimGrad)" stroke-width="8" opacity="0.65" />
+  <!-- Outer Backdrop + Synthwave Horizon -->
+  <g clip-path="url(#squircleClip)">
+    <rect x="0" y="0" width="512" height="512" fill="url(#bgSky)" />
 
-  <!-- Neon Gaming Headphones Arch & Ear Cups -->
-  <path d="M98,284 A158,158 0 0,1 414,284" fill="none" stroke="url(#headsetGrad)" stroke-width="26" stroke-linecap="round" />
-  <rect x="68" y="232" width="46" height="114" rx="23" fill="#00f3ff" stroke="#070810" stroke-width="10" />
-  <rect x="398" y="232" width="46" height="114" rx="23" fill="#ec4899" stroke="#070810" stroke-width="10" />
+    <!-- Stars in 80s Night Sky -->
+    <g fill="#ffffff" opacity="0.85">
+      <circle cx="88" cy="76" r="3" />
+      <circle cx="144" cy="52" r="2.2" />
+      <circle cx="382" cy="68" r="2.8" />
+      <circle cx="424" cy="112" r="2" />
+      <circle cx="64" cy="146" r="2.4" />
+      <circle cx="446" cy="176" r="3.2" fill="#00f5ff" />
+    </g>
 
-  <!-- Joyful Beaming Mascot Head -->
-  <circle cx="256" cy="288" r="134" fill="url(#faceGrad)" stroke="#070810" stroke-width="12" filter="url(#neonGlow)" />
+    <!-- Sliced 1986 Outrun Sunset -->
+    <g clip-path="url(#sunSliceClip)">
+      <circle cx="256" cy="214" r="146" fill="url(#outrunSun)" />
+      <rect x="90" y="218" width="332" height="10" fill="#170533" />
+      <rect x="90" y="242" width="332" height="14" fill="#170533" />
+      <rect x="90" y="268" width="332" height="18" fill="#12042b" />
+      <rect x="90" y="298" width="332" height="24" fill="#0d0420" />
+    </g>
 
-  <!-- Tilted Golden Star Crown -->
-  <g transform="rotate(8 256 125)">
+    <!-- Horizon Neon Floor & Perspective Wireframe Grid -->
+    <rect x="0" y="330" width="512" height="182" fill="#060416" />
+    <line x1="0" y1="330" x2="512" y2="330" stroke="#ff2a85" stroke-width="5" filter="url(#pinkGlow)" />
+
+    <g stroke="#00f5ff" stroke-width="2.5" opacity="0.65">
+      <!-- Radial perspective grid rays -->
+      <line x1="256" y1="330" x2="-40" y2="512" />
+      <line x1="256" y1="330" x2="64" y2="512" />
+      <line x1="256" y1="330" x2="160" y2="512" />
+      <line x1="256" y1="330" x2="256" y2="512" />
+      <line x1="256" y1="330" x2="352" y2="512" />
+      <line x1="256" y1="330" x2="448" y2="512" />
+      <line x1="256" y1="330" x2="552" y2="512" />
+      <!-- Horizontal grid depth rungs -->
+      <line x1="0" y1="354" x2="512" y2="354" />
+      <line x1="0" y1="386" x2="512" y2="386" />
+      <line x1="0" y1="428" x2="512" y2="428" />
+      <line x1="0" y1="478" x2="512" y2="478" />
+    </g>
+
+    <!-- Inverted Outrun Triangle Halo -->
     <polygon
-      points="146,166 158,76 212,124 256,52 300,124 354,76 366,166"
-      fill="url(#crownGrad)"
-      stroke="#070810"
-      stroke-width="12"
+      points="256,412 88,128 424,128"
+      fill="rgba(7, 8, 22, 0.56)"
+      stroke="#00f5ff"
+      stroke-width="10"
       stroke-linejoin="round"
+      filter="url(#cyanGlow)"
     />
-    <circle cx="158" cy="70" r="12" fill="#00f3ff" stroke="#070810" stroke-width="5" />
-    <circle cx="256" cy="46" r="15" fill="#facc15" stroke="#070810" stroke-width="5" />
-    <circle cx="354" cy="70" r="12" fill="#ec4899" stroke="#070810" stroke-width="5" />
+    <polygon
+      points="256,390 112,144 400,144"
+      fill="none"
+      stroke="#ff2a85"
+      stroke-width="4"
+      opacity="0.9"
+    />
+
+    <!-- Iconic 80s Deal-With-It Laser Visor Shades -->
+    <g filter="url(#pinkGlow)">
+      <!-- Left + Right frame silhouette -->
+      <path
+        d="M114,196 L398,196 L398,236 L378,236 L378,258 L354,258 L354,276 L278,276 L278,258 L266,258 L266,226 L246,226 L246,258 L234,258 L234,276 L158,276 L158,258 L134,258 L134,236 L114,236 Z"
+        fill="#04050c"
+        stroke="#00f5ff"
+        stroke-width="5"
+        stroke-linejoin="miter"
+      />
+      <!-- Chrome Laser Lens Reflections -->
+      <polygon points="154,208 184,208 164,254 146,254" fill="#00f5ff" opacity="0.9" />
+      <polygon points="196,208 214,208 194,254 176,254" fill="#ffffff" opacity="0.92" />
+      <polygon points="292,208 322,208 302,254 284,254" fill="#ff2a85" opacity="0.92" />
+      <polygon points="334,208 352,208 332,254 314,254" fill="#ffffff" opacity="0.92" />
+    </g>
+
+    <!-- High-Voltage Chrome Lightning Accent -->
+    <polygon
+      points="272,72 214,174 252,174 228,238 300,148 260,148"
+      fill="url(#boltGrad)"
+      stroke="#060414"
+      stroke-width="6"
+      stroke-linejoin="round"
+      filter="url(#cyanGlow)"
+    />
+
+    <!-- Bold Chrome & Neon Brand Plaque -->
+    <g filter="url(#pinkGlow)">
+      <rect x="64" y="348" width="384" height="84" rx="20" fill="#070516" stroke="url(#neonRim)" stroke-width="6" />
+      <text
+        x="256"
+        y="404"
+        text-anchor="middle"
+        font-family="Impact, 'Arial Black', sans-serif"
+        font-style="italic"
+        font-size="56"
+        letter-spacing="4"
+        fill="url(#chromePlate)"
+        stroke="#ff2a85"
+        stroke-width="2.2"
+      >
+        THE MEMES
+      </text>
+    </g>
+
+    <!-- '86 Cyber-Arcade Ribbon -->
+    <text
+      x="256"
+      y="468"
+      text-anchor="middle"
+      font-family="'Courier New', monospace"
+      font-weight="900"
+      font-size="23"
+      letter-spacing="5"
+      fill="#00f5ff"
+    >
+      .NET ★ '86 ARCADE
+    </text>
   </g>
 
-  <!-- Friendly Sparkling Anime/Arcade Eyes -->
-  <ellipse cx="204" cy="256" rx="22" ry="26" fill="#070810" />
-  <ellipse cx="308" cy="256" rx="22" ry="26" fill="#070810" />
-  <circle cx="197" cy="246" r="9" fill="#ffffff" />
-  <circle cx="212" cy="264" r="4" fill="#00f3ff" />
-  <circle cx="301" cy="246" r="9" fill="#ffffff" />
-  <circle cx="316" cy="264" r="4" fill="#00f3ff" />
-
-  <!-- Rosy Neon Cheeks -->
-  <ellipse cx="164" cy="292" rx="22" ry="12" fill="#ec4899" opacity="0.75" />
-  <ellipse cx="348" cy="292" rx="22" ry="12" fill="#ec4899" opacity="0.75" />
-
-  <!-- Big Friendly Happy Laughing Smile -->
-  <path
-    d="M182,310 Q256,338 330,310 C324,376 292,396 256,396 C220,396 188,376 182,310 Z"
-    fill="#070810"
-    stroke="#070810"
-    stroke-width="10"
-    stroke-linejoin="round"
-  />
-  <path d="M196,316 Q256,336 316,316 L310,336 Q256,352 202,336 Z" fill="#ffffff" />
-  <ellipse cx="256" cy="374" rx="34" ry="16" fill="#fb7185" />
-
-  <!-- Gamer Headset Mic Boom -->
-  <path d="M412,332 Q382,392 308,392" fill="none" stroke="#00f3ff" stroke-width="10" stroke-linecap="round" />
-  <rect x="284" y="380" width="32" height="20" rx="10" fill="#00f3ff" stroke="#070810" stroke-width="5" />
+  <!-- Outer Glowing Border Frame -->
+  <rect x="12" y="12" width="488" height="488" rx="108" fill="none" stroke="url(#neonRim)" stroke-width="14" />
 </svg>

@@ -55,11 +55,11 @@ const GAME_ROUTES = [
     }
   },
   {
-    name: 'Meme Plinko',
-    path: '/games/plinko',
+    name: '80s Magic 8-Ball',
+    path: '/games/magic-8-ball',
     verify: async (page) => {
-      await expect(page.locator('canvas').first()).toBeVisible();
-      await expect(page.locator('.tm-plinko-drop-btn').first()).toBeVisible();
+      await expect(page.locator('.tm-8ball-stage').first()).toBeVisible();
+      await expect(page.locator('.tm-8ball-sphere').first()).toBeVisible();
     }
   },
   {
@@ -725,6 +725,64 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
       expect(spinBox).not.toBeNull();
       expect(spinBox.height).toBeGreaterThan(20);
     }
+
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('Dual-Direction Hero, 80s Cars, Magic 8-Ball, iPhone App Modal & Upgraded Pinball work cleanly on iPhone', async ({
+    page
+  }) => {
+    const pageErrors = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const hero = page.locator('.tm-dual-hero');
+    await expect(hero).toBeVisible();
+    await expect(hero.locator('h1')).toContainText(/TWO 80s WORLDS/i);
+    await expect(hero.locator('.tm-portal-card.is-memes')).toBeVisible();
+    await expect(hero.locator('.tm-portal-card.is-arcade')).toBeVisible();
+
+    const overflowHome = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth
+    );
+    expect(overflowHome).toBeLessThanOrEqual(2);
+
+    // Open & close iPhone App Home Screen installation modal
+    await hero.locator('.tm-dual-iphone-btn').click();
+    const iphoneModal = page.locator('.tm-iphone-modal');
+    await expect(iphoneModal).toBeVisible();
+    await expect(iphoneModal).toContainText(/Add to Home Screen/i);
+    await iphoneModal.locator('.tm-modal-sticky-header button').click();
+    await expect(iphoneModal).toBeHidden();
+
+    // Switch 80s Iconic Cars in the Garage banner
+    const banner = page.locator('.tm-delorean-banner');
+    await banner.scrollIntoViewIfNeeded();
+    for (const carShort of [/Lagonda/i, /Cosworth/i, /911 SC/i]) {
+      const chip = banner.locator('.tm-80s-car-chip', { hasText: carShort });
+      await expect(chip).toBeVisible();
+      await chip.click();
+      await expect(page.locator('.tm-delorean-flyby-layer')).toBeVisible();
+    }
+
+    // Visit /games/magic-8-ball and shake the 80s Magic 8-Ball Oracle
+    await page.goto('/games/magic-8-ball', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.tm-8ball-sphere')).toBeVisible();
+    await page.locator('.tm-8ball-shake-cta').click();
+    await page.waitForTimeout(1150);
+    await expect(page.locator('.tm-8ball-tri-text')).toBeVisible();
+
+    // Verify upgraded Pinball 3-Way Nudge & Magna-Save buttons on iPhone
+    await page.goto('/games/pinball', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.tm-pin2-canvas')).toBeVisible();
+    await expect(page.locator('[aria-label="Mobile 3-Way Nudge"] button')).toHaveCount(3);
+    await expect(page.locator('button[aria-label="Activate Magna-Save"]')).toBeVisible();
+
+    const overflowPinball = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth
+    );
+    expect(overflowPinball).toBeLessThanOrEqual(2);
 
     expect(pageErrors).toEqual([]);
   });

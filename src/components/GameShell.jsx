@@ -101,14 +101,14 @@ export default function GameShell({
 
         <div className="tm-gs-right">
           {showWallet && typeof tokens === 'number' && (
-            <span className="tm-gs-wallet" aria-label={`Wallet ${tokens} tokens`}>
-              🪙 <strong>{tokens}</strong>
+            <span className="tm-gs-wallet" aria-label={`Wallet ${tokens} MemeDollarz`}>
+              🪙 <strong>M${tokens}</strong>
               {deltaInfo && (
                 <span
                   key={deltaInfo.id}
                   className={`tm-gs-delta ${deltaInfo.diff >= 0 ? 'is-up' : 'is-down'}`}
                 >
-                  {deltaInfo.diff > 0 ? `+${deltaInfo.diff}` : deltaInfo.diff}
+                  {deltaInfo.diff > 0 ? `+M$${deltaInfo.diff}` : `-M$${Math.abs(deltaInfo.diff)}`}
                 </span>
               )}
             </span>
@@ -127,7 +127,7 @@ export default function GameShell({
               }}
               aria-pressed={practiceMode}
             >
-              {practiceMode ? '🆓 Practice ON' : '🪙 Token Mode'}
+              {practiceMode ? '🆓 Practice ON' : '💵 MemeDollarz Mode'}
             </button>
           )}
 

@@ -547,6 +547,66 @@
   cursor: not-allowed;
 }
 
+.tm-pin2-nudge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.tm-pin2-nudge-mini {
+  padding: 7px 4px;
+  border-radius: 9px;
+  border: 1.5px solid rgba(250, 204, 21, 0.7);
+  background: linear-gradient(145deg, rgba(250, 204, 21, 0.2), rgba(236, 72, 153, 0.2));
+  color: #fde047;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+  touch-action: manipulation;
+}
+
+.tm-pin2-nudge-mini.hot {
+  border-color: #ef4444;
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.28);
+}
+
+.tm-pin2-magna-btn {
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(0, 243, 255, 0.55);
+  background: rgba(15, 23, 42, 0.88);
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.12s ease, box-shadow 0.14s ease;
+}
+
+.tm-pin2-magna-btn.ready {
+  border-color: #00f3ff;
+  background: linear-gradient(135deg, rgba(0, 243, 255, 0.26), rgba(34, 197, 94, 0.24));
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(0, 243, 255, 0.45);
+}
+
+.tm-pin2-magna-btn.active {
+  border-color: #facc15;
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.35), rgba(0, 243, 255, 0.35));
+  color: #fef08a;
+  box-shadow: 0 0 20px rgba(250, 204, 21, 0.6);
+}
+
+.tm-pin2-magna-btn:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+}
+
 /* Local shared UI tokens so /games/pinball styles cleanly on cold load */
 .tm-pin2-title-wrap {
   display: flex;
@@ -783,12 +843,19 @@
   .tm-pin2-launch-btn,
   .tm-pin2-plunger-btn,
   .tm-pin2-nudge-btn,
+  .tm-pin2-magna-btn,
   .tm-pin2-slim-topbar button {
     min-height: 44px;
     min-width: 44px;
     padding: 8px 8px;
     font-size: 11px;
     touch-action: manipulation;
+  }
+
+  .tm-pin2-nudge-mini {
+    min-height: 36px;
+    padding: 4px 2px;
+    font-size: 10px;
   }
 }
 

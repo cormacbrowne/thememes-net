@@ -1,0 +1,476 @@
+/* =====================================================================
+   80s NEON MAGIC 8-BALL ORACLE — SYNTHWAVE FORTUNE PREDICTOR
+   ===================================================================== */
+
+.tm-8ball-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 1.05fr) minmax(260px, 0.95fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.tm-8ball-stage {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(0, 245, 255, 0.35);
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255, 42, 133, 0.24), transparent 58%),
+    radial-gradient(circle at 50% 65%, rgba(0, 245, 255, 0.2), transparent 62%),
+    linear-gradient(180deg, #070316 0%, #120636 52%, #050814 100%);
+  padding: 24px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 360px;
+}
+
+.tm-8ball-synth-grid {
+  position: absolute;
+  inset: 48% -40% -20% -40%;
+  background-image:
+    linear-gradient(rgba(0, 245, 255, 0.26) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 42, 133, 0.26) 1px, transparent 1px);
+  background-size: 32px 32px;
+  transform: perspective(360px) rotateX(66deg);
+  pointer-events: none;
+  opacity: 0.72;
+}
+
+.tm-8ball-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.03) 0px,
+    rgba(255, 255, 255, 0.03) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  pointer-events: none;
+}
+
+.tm-8ball-sparks span {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00f5ff;
+  box-shadow: 0 0 12px #00f5ff, 0 0 22px #ff2a85;
+  animation: tm-8ball-float 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+.tm-8ball-sparks span:nth-child(1) { top: 14%; left: 16%; animation-delay: 0s; }
+.tm-8ball-sparks span:nth-child(2) { top: 22%; right: 14%; animation-delay: -0.9s; background: #ff2a85; }
+.tm-8ball-sparks span:nth-child(3) { top: 68%; left: 12%; animation-delay: -1.7s; background: #facc15; }
+.tm-8ball-sparks span:nth-child(4) { top: 72%; right: 18%; animation-delay: -2.4s; }
+.tm-8ball-sparks span:nth-child(5) { top: 44%; left: 8%; animation-delay: -3.1s; background: #c084fc; }
+.tm-8ball-sparks span:nth-child(6) { top: 38%; right: 9%; animation-delay: -3.8s; background: #facc15; }
+
+@keyframes tm-8ball-float {
+  0%, 100% { transform: translateY(0) scale(0.9); opacity: 0.5; }
+  50% { transform: translateY(-14px) scale(1.25); opacity: 1; }
+}
+
+/* ---------- 3D GLOSSY 80s MAGIC 8-BALL SPHERE ---------- */
+.tm-8ball-sphere {
+  position: relative;
+  width: 248px;
+  height: 248px;
+  border-radius: 50%;
+  border: 3px solid rgba(0, 245, 255, 0.65);
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.22) 0%, rgba(148, 163, 184, 0.08) 18%, rgba(8, 10, 24, 0.96) 52%, #020308 100%);
+  box-shadow:
+    0 0 34px rgba(0, 245, 255, 0.42),
+    0 0 64px rgba(255, 42, 133, 0.34),
+    inset -18px -22px 42px rgba(0, 0, 0, 0.92),
+    inset 14px 16px 28px rgba(0, 245, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  z-index: 2;
+  transition: transform 0.2s ease, box-shadow 0.25s ease;
+}
+
+.tm-8ball-sphere:hover {
+  transform: scale(1.03);
+  box-shadow:
+    0 0 42px rgba(0, 245, 255, 0.62),
+    0 0 80px rgba(255, 42, 133, 0.48),
+    inset -18px -22px 42px rgba(0, 0, 0, 0.92);
+}
+
+.tm-8ball-sphere.phase-shaking {
+  animation: tm-8ball-shake 0.92s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes tm-8ball-shake {
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  12% { transform: translate(-14px, -9px) rotate(-11deg) scale(1.04); }
+  25% { transform: translate(16px, 8px) rotate(12deg) scale(1.06); }
+  38% { transform: translate(-15px, 10px) rotate(-13deg) scale(1.04); }
+  52% { transform: translate(14px, -12px) rotate(10deg) scale(1.05); }
+  66% { transform: translate(-10px, 6px) rotate(-8deg) scale(1.03); }
+  82% { transform: translate(8px, -4px) rotate(5deg) scale(1.01); }
+  100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+}
+
+.tm-8ball-rim-glow {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 42, 133, 0.55);
+  animation: tm-8ball-orbit 9s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes tm-8ball-orbit {
+  to { transform: rotate(360deg); }
+}
+
+.tm-8ball-gloss {
+  position: absolute;
+  top: 16px;
+  left: 36px;
+  width: 78px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.48), transparent);
+  transform: rotate(-28deg);
+  pointer-events: none;
+}
+
+.tm-8ball-front-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.tm-8ball-white-circle {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #ffffff, #e2e8f0 70%, #94a3b8 100%);
+  border: 3px solid #00f5ff;
+  box-shadow: 0 0 22px rgba(0, 245, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #090d1a;
+  font-family: 'Press Start 2P', system-ui, sans-serif;
+  font-size: 48px;
+  font-weight: 900;
+}
+
+.tm-8ball-tap-hint {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  color: #7df9ff;
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.8);
+}
+
+/* ---------- LIQUID INDIGO WINDOW & FLOATING DIE ---------- */
+.tm-8ball-window {
+  position: relative;
+  width: 146px;
+  height: 146px;
+  border-radius: 50%;
+  border: 4px solid #1e293b;
+  box-shadow:
+    inset 0 0 28px #020312,
+    0 0 18px rgba(0, 245, 255, 0.4);
+  background: radial-gradient(circle at 50% 50%, #0d1654 0%, #050826 65%, #020310 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.tm-8ball-liquid-swirl {
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    rgba(0, 245, 255, 0.18),
+    rgba(255, 42, 133, 0.08),
+    rgba(139, 92, 246, 0.2),
+    rgba(0, 245, 255, 0.12)
+  );
+  animation: tm-8ball-orbit 4.5s linear infinite;
+  pointer-events: none;
+}
+
+.tm-8ball-triangle {
+  position: relative;
+  width: 118px;
+  height: 108px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #00f5ff;
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.45s ease;
+}
+
+.tm-8ball-window.tone-positive .tm-8ball-triangle {
+  color: #4ade80;
+}
+.tm-8ball-window.tone-negative .tm-8ball-triangle {
+  color: #fb7185;
+}
+.tm-8ball-window.tone-neutral .tm-8ball-triangle {
+  color: #38bdf8;
+}
+
+.tm-8ball-triangle.is-tumbling {
+  transform: scale(0.55) rotate(-140deg);
+  opacity: 0.25;
+}
+
+.tm-8ball-triangle.is-floating {
+  animation: tm-tri-hover 3.2s ease-in-out infinite;
+}
+
+@keyframes tm-tri-hover {
+  0%, 100% { transform: translateY(0px) rotate(-1deg); }
+  50% { transform: translateY(-4px) rotate(1.5deg); }
+}
+
+.tm-8ball-tri-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 10px currentColor);
+}
+
+.tm-8ball-tri-text {
+  position: relative;
+  z-index: 2;
+  max-width: 72px;
+  margin-top: 28px;
+  text-align: center;
+  font-size: 9px;
+  line-height: 1.25;
+  font-weight: 900;
+  color: #f8fafc;
+  text-shadow: 0 0 8px currentColor;
+  letter-spacing: 0.03em;
+}
+
+.tm-8ball-readout-bar {
+  position: relative;
+  z-index: 2;
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tm-8ball-tone-pill {
+  font-size: 11px;
+  font-weight: 900;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  background: rgba(15, 23, 42, 0.86);
+  color: #7df9ff;
+}
+.tm-8ball-tone-pill.tone-positive {
+  border-color: rgba(74, 222, 128, 0.7);
+  color: #86efac;
+}
+.tm-8ball-tone-pill.tone-negative {
+  border-color: rgba(251, 113, 133, 0.7);
+  color: #fda4af;
+}
+
+.tm-8ball-share-btn {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* ---------- RIGHT CONSOLE ---------- */
+.tm-8ball-console {
+  background: rgba(10, 14, 29, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tm-8ball-field-label {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+  color: #00f5ff;
+}
+
+.tm-8ball-input {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 11px;
+  border: 1px solid rgba(0, 245, 255, 0.38);
+  background: #060914;
+  color: #f8fafc;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 10px 12px;
+}
+
+.tm-8ball-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tm-8ball-preset-chip {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.tm-8ball-preset-chip.active,
+.tm-8ball-preset-chip:hover {
+  border-color: #00f5ff;
+  color: #ffffff;
+  background: rgba(0, 245, 255, 0.16);
+}
+
+.tm-8ball-stake-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(250, 204, 21, 0.22);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.tm-8ball-stake-head {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  color: #facc15;
+  margin-bottom: 8px;
+}
+
+.tm-8ball-stake-pills {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.tm-8ball-stake-btn {
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #111629;
+  color: #e2e8f0;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 8px 4px;
+  cursor: pointer;
+}
+.tm-8ball-stake-btn.active {
+  border-color: #facc15;
+  background: rgba(250, 204, 21, 0.2);
+  color: #fef08a;
+  box-shadow: 0 0 12px rgba(250, 204, 21, 0.28);
+}
+.tm-8ball-stake-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tm-8ball-shake-cta {
+  width: 100%;
+  min-height: 50px;
+  border-radius: 14px;
+  border: 2px solid #00f5ff;
+  background: linear-gradient(135deg, #ff2a85, #7c3aed 52%, #00f5ff);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 0 6px 24px rgba(255, 42, 133, 0.4);
+}
+.tm-8ball-shake-cta:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.tm-8ball-history {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tm-8ball-history-title {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+}
+
+.tm-8ball-history-row {
+  padding: 7px 10px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.04);
+  border-left: 3px solid #38bdf8;
+  font-size: 11px;
+}
+.tm-8ball-history-row.tone-positive {
+  border-left-color: #4ade80;
+}
+.tm-8ball-history-row.tone-negative {
+  border-left-color: #fb7185;
+}
+
+.tm-8ball-history-q {
+  color: #94a3b8;
+  margin-bottom: 2px;
+}
+
+.tm-8ball-history-a {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: #f8fafc;
+}
+
+@media (max-width: 780px) {
+  .tm-8ball-layout {
+    grid-template-columns: 1fr;
+  }
+  .tm-8ball-stage {
+    min-height: 310px;
+    padding: 18px 12px;
+  }
+  .tm-8ball-sphere {
+    width: 218px;
+    height: 218px;
+  }
+  .tm-8ball-stake-pills {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

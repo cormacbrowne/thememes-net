@@ -5,7 +5,7 @@ const GAME_IDS = [
   { id: 'roulette', name: /Lightning Roulette/i, fixed: true },
   { id: 'blackjack', name: /Neon 21's/i, fixed: true },
   { id: 'slots', name: /Vegas Slot Arcade/i, fixed: true },
-  { id: 'plinko', name: /Meme Plinko/i, fixed: true },
+  { id: 'eightball', name: /Magic 8-Ball/i, fixed: true },
   { id: 'derby', name: /Neon Derby/i, fixed: true },
   { id: 'pinball', name: /Neon Pinball/i, fixed: true },
   { id: 'crush', name: /Meme Crush Saga/i, fixed: true },

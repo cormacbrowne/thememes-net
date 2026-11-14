@@ -114,6 +114,23 @@
       "source": "/templates/:slug",
       "destination": "/meme-generator",
       "statusCode": 301
+    },
+    {
+      "source": "/games/plinko",
+      "destination": "/games",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "mode", "value": "plinko" }],
+      "destination": "/games",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "mode", "value": "eightball" }],
+      "destination": "/games/magic-8-ball",
+      "statusCode": 301
     }
   ],
   "functions": {
@@ -131,7 +148,7 @@
       "destination": "/api/meme-og?id=:id"
     },
     {
-      "source": "/((?!_vercel/|api/|assets/|seed/).*)",
+      "source": "/((?!_vercel/|api/|assets/|seed/|favicon|logo-|apple-touch-icon|manifest\\.webmanifest).*)",
       "destination": "/index.html"
     }
   ],

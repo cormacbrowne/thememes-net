@@ -121,7 +121,7 @@ export default function RewardsModal({
               ← Back
             </button>
             <h2 style={{ margin: 0, fontSize: '20px', color: '#facc15' }}>
-              🎰 Arcade Token Vault: Fair Economy, Sub-Games &amp; Rewards
+              💵 MemeDollarz ($) &amp; MemeCentz (¢) Vault: Quests &amp; Cosmetics
             </h2>
           </div>
           <button type="button" className="tm-btn" onClick={onClose}>
@@ -166,11 +166,11 @@ export default function RewardsModal({
                     🛍️ CYBER-ARCADE COSMETICS SHOP
                   </div>
                   <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '2px' }}>
-                    Spend earned <strong>🪙 Tokens</strong> or unlock for free at <strong>⚡ XP milestones</strong>!
+                    Spend earned <strong>🪙 MemeDollarz (M$)</strong> or unlock for free at <strong>⚡ XP milestones</strong>!
                   </div>
                 </div>
                 <div style={{ fontSize: '15px', fontWeight: 900 }}>
-                  <span style={{ color: '#facc15' }}>🪙 {tokens}</span> •{' '}
+                  <span style={{ color: '#facc15' }}>🪙 M${tokens}</span> •{' '}
                   <span style={{ color: '#00f3ff' }}>{xp} XP</span>
                 </div>
               </div>

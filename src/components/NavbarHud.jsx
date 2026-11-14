@@ -10,6 +10,7 @@ export default function NavbarHud({
   unreadNotificationsCount = 0,
   currentRank,
   tokens = 50,
+  memeCentz = 25,
   xpConversionState = null,
   reactorFlash = false,
   onExchangeXpForTokens,
@@ -25,7 +26,8 @@ export default function NavbarHud({
   onResetFeed,
   canGoBack,
   onNavigateBack,
-  onOpenExtras
+  onOpenExtras,
+  onOpenInstallModal
 }) {
   const reactorReadyTokens = xpConversionState ? xpConversionState.readyTokens : 0;
   const activeGame = ARCADE_GAMES_CATALOG.find((g) => g.id === viewMode);
@@ -60,14 +62,11 @@ export default function NavbarHud({
           >
             <div className="tm-mascot-logo-wrap">
               <img
-                src="/logo-512.png"
-                alt="THE MEMES.net Friendly Cyber-Arcade Star Mascot Logo"
+                src="/favicon.svg"
+                alt="THE MEMES.net 80s Neon Arcade Crest Logo"
                 className="tm-mascot-logo-img"
                 width="36"
                 height="36"
-                onError={(e) => {
-                  e.currentTarget.src = '/favicon.svg';
-                }}
               />
             </div>
             <div className="tm-logo-badge">THE MEMES.net</div>
@@ -87,15 +86,16 @@ export default function NavbarHud({
           </div>
         </div>
 
-        {/* DESKTOP PRIMARY MODE SWITCHER: Memes / Reels / Games */}
+        {/* DESKTOP PRIMARY MODE SWITCHER: Home / Reels / Games */}
         {onSelectViewMode && (
           <nav className="tm-nav-primary-modes tm-hide-mobile" aria-label="Primary Views">
             <button
               type="button"
               className={`tm-btn tm-nav-mode-pill ${viewMode === 'feed' ? 'active' : ''}`}
-              onClick={() => onSelectViewMode('feed')}
+              onClick={() => (onResetFeed ? onResetFeed() : onSelectViewMode('feed'))}
+              title="Back to Home Page (Memes + Arcade Portal)"
             >
-              📱 Memes
+              🏠 Home
             </button>
             <button
               type="button"
@@ -127,7 +127,7 @@ export default function NavbarHud({
             ➕ Create
           </button>
 
-          {/* 2. UNIFIED WALLET / VAULT PILL */}
+          {/* 2. UNIFIED MEMEDOLLARZ & MEMECENTZ WALLET PILL */}
           <button
             type="button"
             className={`tm-token-wallet-pill ${reactorFlash ? 'tm-wallet-mint-flash' : ''}`}
@@ -138,22 +138,39 @@ export default function NavbarHud({
                 onOpenRewards();
               }
             }}
+            aria-label={`Open Token Wallet — ${tokens} MemeDollarz and ${memeCentz} MemeCentz`}
             title={
               reactorReadyTokens > 0
-                ? `Tap to mint +${reactorReadyTokens} 🪙 from your XP Reactor!`
-                : `Arcade Wallet & Vault (Lv.${currentRank?.level || 1} • Max ${ARCADE_ECONOMY_RULES.MAX_DAILY_EARNED_TOKENS}/day)`
+                ? `Tap to mint +M$${reactorReadyTokens} MemeDollarz from your XP Reactor!`
+                : `MemeDollarz Wallet & Vault: M$${tokens}.${String(memeCentz).padStart(2, '0')} (Lv.${currentRank?.level || 1} • Max M$${ARCADE_ECONOMY_RULES.MAX_DAILY_EARNED_TOKENS}/day)`
             }
           >
             <span className="tm-token-coin">{reactorReadyTokens > 0 ? '🔥' : '🪙'}</span>
-            <span className="tm-token-balance">{tokens}</span>
+            <span className="tm-token-balance">
+              M${tokens}.{String(memeCentz).padStart(2, '0')}
+            </span>
             {(unclaimedRewardsCount > 0 || reactorReadyTokens > 0) && (
               <span className="tm-reward-alert-dot">
-                {reactorReadyTokens > 0 ? `+${reactorReadyTokens}` : unclaimedRewardsCount}
+                {reactorReadyTokens > 0 ? `+M$${reactorReadyTokens}` : unclaimedRewardsCount}
               </span>
             )}
           </button>
 
-          {/* 2.5 THE MEMES FM COMPACT RADIO TOGGLE */}
+          {/* 2.2 INSTALL AS IPHONE APP SHORTCUT (Desktop / Tablet) */}
+          {onOpenInstallModal && (
+            <button
+              type="button"
+              className="tm-btn tm-hide-mobile"
+              onClick={onOpenInstallModal}
+              title="Make THE MEMES.net an iPhone / Mobile App"
+              aria-label="Make THE MEMES.net an iPhone App"
+              style={{ borderColor: 'rgba(0, 245, 255, 0.45)', color: '#7df9ff' }}
+            >
+              📲 App
+            </button>
+          )}
+
+          {/* 2.5 THE MEMES FM COMPACT RADIO & EQUALISER CLUSTER */}
           <RadioToggleButton />
 
           {/* 3. UNIFIED EXTRAS DRAWER BUTTON */}

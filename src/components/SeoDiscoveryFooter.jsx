@@ -9,7 +9,8 @@ export default function SeoDiscoveryFooter({
   onOpenSoundboard,
   onOpenPrankDisguise,
   onSelectViewMode,
-  onOpenRewards
+  onOpenRewards,
+  onOpenInstallModal
 }) {
   const [sharedSite, setSharedSite] = useState(false);
 
@@ -46,19 +47,31 @@ export default function SeoDiscoveryFooter({
         <div className="tm-seo-viral-strip">
           <div>
             <strong style={{ color: '#facc15', fontSize: '14px' }}>
-              📲 Love THE MEMES.net on iPhone or Android?
+              📲 Make THE MEMES.net an iPhone or Mobile App!
             </strong>
             <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '2px' }}>
-              Tap <strong>Share → Add to Home Screen</strong> in Safari/Chrome for 1-tap full-screen meme browsing, or invite a friend!
+              Tap <strong>Share (⬆️) → Add to Home Screen</strong> in iPhone Safari for full-screen 80s neon icon &amp; app mode!
             </div>
           </div>
-          <button
-            type="button"
-            className="tm-btn tm-btn-primary"
-            onClick={handleShareSite}
-          >
-            {sharedSite ? '✅ Site Link Copied!' : '🚀 Share THE MEMES.net'}
-          </button>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {onOpenInstallModal && (
+              <button
+                type="button"
+                className="tm-btn"
+                style={{ borderColor: 'rgba(0, 245, 255, 0.5)', color: '#7df9ff' }}
+                onClick={onOpenInstallModal}
+              >
+                📱 iPhone App Guide
+              </button>
+            )}
+            <button
+              type="button"
+              className="tm-btn tm-btn-primary"
+              onClick={handleShareSite}
+            >
+              {sharedSite ? '✅ Site Link Copied!' : '🚀 Share THE MEMES.net'}
+            </button>
+          </div>
         </div>
 
         <div className="tm-seo-grid">
@@ -150,7 +163,14 @@ export default function SeoDiscoveryFooter({
                 className="tm-seo-link"
                 onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('pinball'))}
               >
-                🎱 Las Vegas Retro Pinball (5 Tables)
+                🛸 Las Vegas Retro Pinball (5 Tables)
+              </a>
+              <a
+                href="/games/magic-8-ball"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('eightball'))}
+              >
+                🎱 80s Neon Magic 8-Ball Fortune Oracle
               </a>
               <a
                 href="/games/slots"
@@ -253,8 +273,8 @@ export default function SeoDiscoveryFooter({
         </div>
 
         <div className="tm-seo-copyright">
-          <span>© 2026 THE MEMES.net // Community Memes &amp; Cyber-Arcade</span>
-          <span>🪙 Tokens are free, just for fun, can&apos;t be bought or cashed out.</span>
+          <span>© 2026 THE MEMES.net // Community Memes &amp; 80s Cyber-Arcade</span>
+          <span>💵 MemeDollarz (M$) &amp; MemeCentz (¢) are 100% free arcade fun — cannot be bought or cashed out.</span>
           <span>🔒 Secured with OAuth 2.0 (Google • Discord • Facebook)</span>
         </div>
       </div>

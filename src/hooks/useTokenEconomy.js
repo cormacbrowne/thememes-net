@@ -10,10 +10,15 @@ import {
 } from '../data/starterMemes';
 import {
   ARCADE_ECONOMY_RULES,
+  CURRENCY_BRAND,
   loadTokenLedger,
   saveTokenLedger,
   loadTokenBalance,
   saveTokenBalance,
+  loadMemeCentzBalance,
+  saveMemeCentzBalance,
+  loadDailyCentzEarned,
+  saveDailyCentzEarned,
   evaluateTokenAward,
   hasActionBeenRewarded,
   validateStakedGamePayout,
@@ -49,6 +54,10 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
   const bossStealthCountRef = useRef(0);
   const [tokens, setTokens] = useState(() => loadTokenBalance());
   const tokensRef = useRef(tokens);
+  const [memeCentz, setMemeCentz] = useState(() => loadMemeCentzBalance());
+  const memeCentzRef = useRef(memeCentz);
+  const [dailyCentzEarned, setDailyCentzEarned] = useState(() => loadDailyCentzEarned());
+  const dailyCentzRef = useRef(dailyCentzEarned);
   const [tokenLedger, setTokenLedger] = useState(() => loadTokenLedger());
   const [combo, setCombo] = useState(1);
   const [comboTimer, setComboTimer] = useState(0);
@@ -151,6 +160,14 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
     tokensRef.current = tokens;
     saveTokenBalance(tokens);
   }, [tokens]);
+  useEffect(() => {
+    memeCentzRef.current = memeCentz;
+    saveMemeCentzBalance(memeCentz);
+  }, [memeCentz]);
+  useEffect(() => {
+    dailyCentzRef.current = dailyCentzEarned;
+    saveDailyCentzEarned(dailyCentzEarned);
+  }, [dailyCentzEarned]);
   useEffect(() => {
     saveTokenLedger(tokenLedger);
   }, [tokenLedger]);
@@ -328,6 +345,42 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
     [combo, spawnParticles]
   );
 
+  const handleEarnMemeCentz = useCallback(
+    (centzAmount = 10, event = null, label = '') => {
+      const cleanCentz = Math.max(0, Math.floor(Number(centzAmount) || 0));
+      if (cleanCentz <= 0) return { awardedCentz: 0, rolledOverDollarz: 0 };
+
+      const remainingCap = Math.max(0, CURRENCY_BRAND.maxDailyCentz - dailyCentzRef.current);
+      const allowedCentz = Math.min(cleanCentz, remainingCap);
+      if (allowedCentz <= 0) return { awardedCentz: 0, rolledOverDollarz: 0 };
+
+      dailyCentzRef.current += allowedCentz;
+      setDailyCentzEarned(dailyCentzRef.current);
+
+      const combined = memeCentzRef.current + allowedCentz;
+      const rolledOverDollarz = Math.floor(combined / 100);
+      const nextCentz = combined % 100;
+      memeCentzRef.current = nextCentz;
+      setMemeCentz(nextCentz);
+
+      if (rolledOverDollarz > 0) {
+        tokensRef.current += rolledOverDollarz;
+        setTokens(tokensRef.current);
+        sfx.playJackpot?.();
+      }
+
+      const clientX = event?.clientX || (typeof window !== 'undefined' ? window.innerWidth / 2 : 300);
+      const clientY = event?.clientY || 120;
+      const badge =
+        rolledOverDollarz > 0
+          ? `+M$${rolledOverDollarz}.00 MemeDollarz!`
+          : `+${allowedCentz}¢ ${label || 'MemeCentz'}`;
+      spawnParticles(clientX, clientY, badge, rolledOverDollarz > 0 ? '💵' : '🪙');
+      return { awardedCentz: allowedCentz, rolledOverDollarz };
+    },
+    [spawnParticles]
+  );
+
   const awardFairReward = useCallback(
     ({
       category = 'engagement',
@@ -455,13 +508,13 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
       tokensRef.current += verified;
       setTokens(tokensRef.current);
       if (xpGain > 0) {
-        awardXpOnly(xpGain, null, emoji, label || `+${verified} 🪙`);
+        awardXpOnly(xpGain, null, emoji, label || `+M$${verified} MemeDollarz`);
       }
       if (verified >= 2 && !wasCelebrationRecentlyTriggered(500)) {
         triggerWinCelebration({
           amount: verified,
-          unit: '🪙',
-          headline: label || `+${verified} 🪙 WON!`,
+          unit: 'M$',
+          headline: label || `+M$${verified} MemeDollarz WON!`,
           multiplier: stakedTokens > 0 ? verified / Math.max(1, stakedTokens) : 2
         });
       }
@@ -873,6 +926,8 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
     xpAutoConvert,
     reactorFlash,
     tokens,
+    memeCentz,
+    dailyCentzEarned,
     tokenLedger,
     combo,
     comboTimer,
@@ -908,6 +963,7 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
     incrementQuest,
     awardXpOnly,
     awardFairReward,
+    handleEarnMemeCentz,
     awardXpAndCombo,
     handleSpendTokens,
     handleEquipCosmetic,

@@ -32,7 +32,8 @@ import {
   DeLoreanTimeWarpStage,
   DeLoreanDockBanner
 } from './components/DeLoreanTimeMachine';
-import { DELOREAN_ERAS } from './data/deloreanEras';
+import { DELOREAN_ERAS, EIGHTIES_CARS } from './data/deloreanEras';
+import DualDirectionHero from './components/DualDirectionHero';
 import MemeSkeletonGrid from './components/MemeSkeletonGrid';
 import MobileArcadeDock from './components/MobileArcadeDock';
 import SeoDiscoveryFooter from './components/SeoDiscoveryFooter';
@@ -74,6 +75,7 @@ const DailyCaptionBattleModal = lazy(() => import('./components/DailyCaptionBatt
 const FullscreenMusicEqualizer = lazy(() =>
   import('./components/MusicEqualizer').then((m) => ({ default: m.FullscreenMusicEqualizer }))
 );
+const IphoneAppModal = lazy(() => import('./components/IphoneAppModal'));
 
 const MODAL_SKELETON_FALLBACK = (
   <div className="tm-modal-backdrop" role="status" aria-live="polite">
@@ -137,6 +139,8 @@ export default function App() {
     setAiAssistantOpen,
     showIntro,
     setShowIntro,
+    showInstallModal,
+    setShowInstallModal,
     isFixedArcadeGame,
     hasCanonicalSubpath,
     activeNavDepth,
@@ -184,6 +188,9 @@ export default function App() {
   const [deloreanEra, setDeloreanEra] = useState(() =>
     typeof window !== 'undefined' ? localStorage.getItem('tm_delorean_era_v1') || 'present' : 'present'
   );
+  const [activeCarId, setActiveCarId] = useState(() =>
+    typeof window !== 'undefined' ? localStorage.getItem('tm_80s_car_v1') || 'delorean' : 'delorean'
+  );
   const [deloreanModalOpen, setDeloreanModalOpen] = useState(false);
   const [deloreanFlyby, setDeloreanFlyby] = useState(null);
   const logoTapRef = useRef({ count: 0, lastTap: 0 });
@@ -207,6 +214,7 @@ export default function App() {
     xpAutoConvert,
     reactorFlash,
     tokens,
+    memeCentz,
     tokenLedger,
     combo,
     comboTimer,
@@ -244,6 +252,7 @@ export default function App() {
     handleEquipCosmetic,
     handleBuyOrUnlockCosmetic,
     handleClaimGoldenMeme,
+    handleEarnMemeCentz,
     handlePayoutGameTokens,
     handleWinPinataReward,
     handleClaimPayphoneCoinReturn,
@@ -258,10 +267,31 @@ export default function App() {
     recordWildGoblinReward
   } = economy;
 
+  const handleSelectEightiesCar = useCallback((carId) => {
+    const valid = EIGHTIES_CARS.find((c) => c.id === carId);
+    if (!valid) return;
+    setActiveCarId(valid.id);
+    try {
+      localStorage.setItem('tm_80s_car_v1', valid.id);
+    } catch {
+      // ignore
+    }
+  }, []);
+
   const handleTriggerDeLoreanWarp = useCallback(
-    (targetEra = '1985') => {
+    (targetEra = '1985', carIdOverride = null) => {
       const eraObj = DELOREAN_ERAS.find((e) => e.id === targetEra) || DELOREAN_ERAS[0];
-      sfx.playDeLoreanWarp?.();
+      const chosenCarId = carIdOverride || activeCarId || 'delorean';
+      const carObj = EIGHTIES_CARS.find((c) => c.id === chosenCarId) || EIGHTIES_CARS[0];
+      if (carIdOverride && carObj.id !== activeCarId) {
+        setActiveCarId(carObj.id);
+        try {
+          localStorage.setItem('tm_80s_car_v1', carObj.id);
+        } catch {
+          // ignore
+        }
+      }
+      sfx.playEightiesCarWarp?.(carObj.id);
       setDeloreanEra(eraObj.id);
       try {
         localStorage.setItem('tm_delorean_era_v1', eraObj.id);
@@ -269,7 +299,11 @@ export default function App() {
         // ignore
       }
       const flyId = `fly-${Date.now()}`;
-      setDeloreanFlyby({ id: flyId, eraLabel: `WARPED TO ${eraObj.dateLabel}` });
+      setDeloreanFlyby({
+        id: flyId,
+        eraLabel: `WARPED TO ${eraObj.dateLabel}`,
+        carId: carObj.id
+      });
       setTimeout(() => {
         setDeloreanFlyby((curr) => (curr && curr.id === flyId ? null : curr));
       }, 1750);
@@ -277,12 +311,12 @@ export default function App() {
       const awarded = handleClaimDeLoreanFluxBonus?.();
       setGoblinFortuneToast(
         awarded > 0
-          ? `🚗⚡ 88 MPH! Warped to ${eraObj.title} & charged Flux Capacitor (+${awarded} 🪙 & +50 XP)!`
-          : `🚗⚡ 88 MPH! Time Circuits locked on ${eraObj.title}!`
+          ? `🏎️⚡ ${carObj.topSpeedMph} MPH! ${carObj.name} warped to ${eraObj.title} (+M$${awarded} 🪙 & +50 XP)!`
+          : `🏎️⚡ ${carObj.topSpeedMph} MPH! ${carObj.name} Time Circuits locked on ${eraObj.title}!`
       );
       setTimeout(() => setGoblinFortuneToast(''), 4500);
     },
-    [handleClaimDeLoreanFluxBonus, setGoblinFortuneToast]
+    [activeCarId, handleClaimDeLoreanFluxBonus, setGoblinFortuneToast]
   );
 
   const memesRef = useRef([]);
@@ -441,7 +475,7 @@ export default function App() {
       setRadioContextStation('vaporwave');
     } else if (['pinball', 'crush', 'pusher', 'battle', 'swipe'].includes(viewMode)) {
       setRadioContextStation('chiptune');
-    } else if (['blackjack', 'poker', 'roulette', 'slots', 'plinko'].includes(viewMode)) {
+    } else if (['blackjack', 'poker', 'roulette', 'slots', 'eightball'].includes(viewMode)) {
       setRadioContextStation('casinojazz');
     } else if (viewMode === 'derby') {
       setRadioContextStation('western');
@@ -786,6 +820,7 @@ export default function App() {
       showAuthModal ||
       extrasDrawerOpen ||
       deloreanModalOpen ||
+      showInstallModal ||
       bossKeyActive
   );
 
@@ -917,6 +952,8 @@ export default function App() {
       <DeLoreanTimeWarpStage
         flybyEvent={deloreanFlyby}
         activeEra={deloreanEra}
+        activeCarId={activeCarId}
+        onSelectCar={handleSelectEightiesCar}
         modalOpen={deloreanModalOpen}
         onCloseModal={() => setDeloreanModalOpen(false)}
         onTriggerWarp={handleTriggerDeLoreanWarp}
@@ -958,6 +995,7 @@ export default function App() {
             viewMode={viewMode}
             setViewMode={setViewMode}
             tokens={tokens}
+            memeCentz={memeCentz}
             setShowRewardsModal={setShowRewardsModal}
             setExtrasFocus={setExtrasFocus}
             setExtrasDrawerOpen={setExtrasDrawerOpen}
@@ -974,9 +1012,15 @@ export default function App() {
             unreadNotificationsCount={unreadNotificationsCount}
             currentRank={currentRank}
             tokens={tokens}
+            memeCentz={memeCentz}
             xpConversionState={xpConversionState}
             reactorFlash={reactorFlash}
             onExchangeXpForTokens={handleExchangeXpForTokens}
+            onOpenInstallModal={() => {
+              sfx.playToggle?.();
+              closeAllModals();
+              setShowInstallModal(true);
+            }}
             viewMode={viewMode}
             onSelectViewMode={(mode) => {
               sfx.playToggle();
@@ -1043,9 +1087,42 @@ export default function App() {
             }}
           />
 
+          {viewMode === 'feed' && (
+            <DualDirectionHero
+              tokens={tokens}
+              memeCentz={memeCentz}
+              onSelectViewMode={(mode) => {
+                sfx.playToggle?.();
+                closeAllModals();
+                setViewMode(mode);
+                window.scrollTo?.({ top: 0, left: 0, behavior: 'auto' });
+              }}
+              onOpenBlankStudio={() => {
+                closeAllModals();
+                handleOpenBlankStudio();
+              }}
+              onOpenSoundboard={() => {
+                sfx.playToggle?.();
+                closeAllModals();
+                setExtrasFocus('soundboard');
+                setExtrasDrawerOpen(true);
+              }}
+              onOpenInstallModal={() => {
+                sfx.playToggle?.();
+                closeAllModals();
+                setShowInstallModal(true);
+              }}
+              onScrollToMemes={() => {
+                document
+                  .getElementById('tm-memes-feed-start')
+                  ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            />
+          )}
+
           {/* PHASE 28.3: STREAMLINED FEED FILTER BAR (Visible only on grid feed; button count halved) */}
           {viewMode === 'feed' && (
-            <section className="tm-controls">
+            <section id="tm-memes-feed-start" className="tm-controls">
               <div className="tm-tabs">
                 <button
                   type="button"
@@ -1419,6 +1496,8 @@ export default function App() {
           <div style={{ maxWidth: 1240, margin: '0 auto', padding: '0 14px' }}>
             <DeLoreanDockBanner
               activeEra={deloreanEra}
+              activeCarId={activeCarId}
+              onSelectCar={handleSelectEightiesCar}
               onOpenModal={() => {
                 sfx.playToggle?.();
                 setDeloreanModalOpen(true);
@@ -1446,6 +1525,7 @@ export default function App() {
         tokens={tokens}
         handleSpendTokens={handleSpendTokens}
         handlePayoutGameTokens={handlePayoutGameTokens}
+        handleEarnMemeCentz={handleEarnMemeCentz}
         awardXpOnly={awardXpOnly}
         soundOn={soundOn}
         setSoundOn={setSoundOn}
@@ -1486,6 +1566,8 @@ export default function App() {
         handleBattlePick={handleBattlePick}
         handleSkipMatchup={handleSkipMatchup}
         deloreanEra={deloreanEra}
+        activeCarId={activeCarId}
+        onSelectCar={handleSelectEightiesCar}
         onOpenTimeCircuits={() => {
           sfx.playToggle?.();
           setDeloreanModalOpen(true);
@@ -2037,9 +2119,20 @@ export default function App() {
         </Suspense>
       )}
 
+      {showInstallModal && (
+        <Suspense fallback={MODAL_SKELETON_FALLBACK}>
+          <IphoneAppModal onClose={() => setShowInstallModal(false)} />
+        </Suspense>
+      )}
+
       {/* PHASE 10: CRAWLABLE SEO DISCOVERY DIRECTORY & FAQ HUB */}
       {!isFixedArcadeGame && (
         <SeoDiscoveryFooter
+          onOpenInstallModal={() => {
+            sfx.playToggle();
+            closeAllModals();
+            setShowInstallModal(true);
+          }}
           onSelectCategory={(cat) => {
             sfx.playToggle();
             closeAllModals();

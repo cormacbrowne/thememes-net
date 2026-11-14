@@ -11,7 +11,8 @@ import {
   isTrackFavorited,
   setRadioSleepTimer,
   setRadioAllowContextOverride,
-  openFullscreenEq
+  openFullscreenEq,
+  cycleRadioStation
 } from '../utils/radioBus';
 import {
   loadUnlockedCosmetics,
@@ -112,6 +113,16 @@ export function RadioToggleButton({ className = 'tm-btn', onOpenShop }) {
         >
           ▾
         </button>
+
+        <button
+          type="button"
+          className={`${className} tm-radio-eq-quick-btn`}
+          onClick={() => openFullscreenEq({ autoStart: true })}
+          aria-label="Quick Equalizer"
+          title="Launch 80s Equalizer & Visualizer"
+        >
+          🎛️
+        </button>
       </div>
 
       {open && (
@@ -155,6 +166,15 @@ export function RadioToggleButton({ className = 'tm-btn', onOpenShop }) {
                 title="Next track (N)"
               >
                 ⏭
+              </button>
+              <button
+                type="button"
+                className="tm-radio-pop-icon-btn"
+                onClick={cycleRadioStation}
+                aria-label="Switch to next radio station"
+                title="Next station"
+              >
+                📻
               </button>
               <button
                 type="button"

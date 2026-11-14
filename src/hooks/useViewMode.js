@@ -22,7 +22,7 @@ const FIXED_ARCADE_GAMES = [
   'stocks',
   'derby',
   'guess',
-  'plinko',
+  'eightball',
   'hilow'
 ];
 
@@ -96,6 +96,7 @@ export function useViewMode() {
   const [evolutionModalMeme, setEvolutionModalMeme] = useState(null);
   const [payphoneModalOpen, setPayphoneModalOpen] = useState(false);
   const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
+  const [showInstallModal, setShowInstallModal] = useState(false);
   // Phase 30: Do not gate first-time visitors behind a blocking boot dialog — land straight on memes!
   // Kept stateful so Extras / Settings can optionally replay the retro intro.
   const [showIntro, setShowIntro] = useState(false);
@@ -112,7 +113,8 @@ export function useViewMode() {
         extrasDrawerOpen,
         extrasFocus,
         bossKeyActive,
-        prankDisguise
+        prankDisguise,
+        theaterMemeId
       }),
     [
       viewMode,
@@ -122,7 +124,8 @@ export function useViewMode() {
       extrasDrawerOpen,
       extrasFocus,
       bossKeyActive,
-      prankDisguise
+      prankDisguise,
+      theaterMemeId
     ]
   );
 
@@ -186,6 +189,7 @@ export function useViewMode() {
     setExtrasFocus(null);
     setBossKeyActive(false);
     setPrankDisguise(null);
+    setShowInstallModal(false);
     if (typeof window !== 'undefined' && window.history?.replaceState) {
       const url = new URL(window.location.href);
       let changed = false;
@@ -212,6 +216,8 @@ export function useViewMode() {
     } else if (extrasDrawerOpen) {
       setExtrasDrawerOpen(false);
       setExtrasFocus(null);
+    } else if (showInstallModal) {
+      setShowInstallModal(false);
     } else if (showAuthModal) {
       setShowAuthModal(false);
     } else if (roastModalMeme) {
@@ -242,6 +248,7 @@ export function useViewMode() {
   }, [
     bossKeyActive,
     extrasDrawerOpen,
+    showInstallModal,
     showAuthModal,
     roastModalMeme,
     liveCelebrationData,
@@ -310,6 +317,8 @@ export function useViewMode() {
     setPayphoneModalOpen,
     aiAssistantOpen,
     setAiAssistantOpen,
+    showInstallModal,
+    setShowInstallModal,
     showIntro,
     setShowIntro,
     canonicalPath,
@@ -367,6 +376,7 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
   useEffect(() => {
     updateDynamicSeo({
       activeMeme: theaterMeme || roastModalMeme,
+      theaterMemeId,
       category,
       viewMode,
       showStudio,
@@ -378,6 +388,7 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
     });
   }, [
     theaterMeme,
+    theaterMemeId,
     roastModalMeme,
     category,
     viewMode,

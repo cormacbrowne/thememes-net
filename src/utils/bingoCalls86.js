@@ -253,7 +253,7 @@ export function generate75BallCard(cardIndex = 0) {
 export function evaluateCardStatus(card, calledSet, dabbedSet) {
   const isCellDabbed = (val) => val === 'FREE' || dabbedSet.has(val);
   let completedLines = 0;
-  let completedCorners = false;
+  let completedCorners;
   let minLineMissing = 99;
   const nearWinNumbers = new Set();
 

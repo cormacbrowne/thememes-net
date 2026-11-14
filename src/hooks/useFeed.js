@@ -5,6 +5,9 @@ import { triggerWinCelebration } from '../utils/winCelebration';
 import { loadImageFromFileOrBlob } from '../utils/canvasMutator';
 import {
   makeTextLayer,
+  buildFallbackCaptionLayers,
+  burnInAnimatedGif,
+  renderStillImageBlob,
   drawLayers,
   ensureFontsLoaded,
   exportMemeWithWatermark,
@@ -23,7 +26,7 @@ import {
   trackShareClicked
 } from '../utils/analytics';
 import { publishMeme } from '../utils/publishMeme';
-import { validateFile, canvasToCompressedBlob } from '../utils/mediaPipeline';
+import { validateFile, canvasToCompressedBlob, makePoster } from '../utils/mediaPipeline';
 import { recordPublishDailyPerk } from '../utils/memeFeedBridge';
 import {
   getDailyCaptionBattle,
@@ -845,18 +848,58 @@ export function useFeed({
       );
     }
 
+    const effectiveLayers = [...cleanLayers];
+    if (!effectiveLayers.length && title.trim()) {
+      effectiveLayers.push(...buildFallbackCaptionLayers(title.trim()));
+    }
+
     let media;
     let overlay = null;
     if (v.kind === 'video' || v.kind === 'gif') {
+      let uploadFile = file;
+      let posterBlob = null;
+      let burnedMotion = false;
+
+      if (v.kind === 'gif' && effectiveLayers.length) {
+        try {
+          const burnedGif = await burnInAnimatedGif(
+            file,
+            { id: 'quick-gif', filter: 'none', layers: effectiveLayers },
+            new Map(),
+            { watermark: true }
+          );
+          if (burnedGif) {
+            uploadFile = new File([burnedGif], `meme-${Date.now()}.gif`, { type: 'image/gif' });
+            burnedMotion = true;
+          }
+        } catch {
+          // Keep original GIF + non-destructive overlay if client-side GIF re-encode fails
+        }
+      }
+
+      if (effectiveLayers.length) {
+        try {
+          const rawPoster = await makePoster(file, v.kind);
+          if (rawPoster) {
+            posterBlob = await renderStillImageBlob(rawPoster, effectiveLayers, { watermark: true });
+          }
+        } catch {
+          posterBlob = null;
+        }
+      }
+
       media = {
         kind: v.kind,
-        file,
+        file: uploadFile,
+        posterBlob,
         width: v.probe?.width || 0,
         height: v.probe?.height || 0,
         duration: v.probe?.duration || 0
       };
-      if (cleanLayers.length) {
-        overlay = { v: 1, layers: cleanLayers };
+      if (effectiveLayers.length) {
+        overlay = burnedMotion
+          ? { v: 1, burned: true, layers: effectiveLayers }
+          : { v: 1, layers: effectiveLayers };
       }
     } else {
       const img = await loadImageFromFileOrBlob(file);
@@ -867,10 +910,10 @@ export function useFeed({
       fullCanvas.height = H;
       const ctx = fullCanvas.getContext('2d');
       ctx.drawImage(img, 0, 0, W, H);
-      if (cleanLayers.length) {
-        await ensureFontsLoaded(cleanLayers);
-        drawLayers(ctx, W, H, cleanLayers, new Map());
-        overlay = { v: 1, burned: true, layers: cleanLayers };
+      if (effectiveLayers.length) {
+        await ensureFontsLoaded(effectiveLayers);
+        drawLayers(ctx, W, H, effectiveLayers, new Map());
+        overlay = { v: 1, burned: true, layers: effectiveLayers };
       }
       const blob = await canvasToCompressedBlob(fullCanvas);
 

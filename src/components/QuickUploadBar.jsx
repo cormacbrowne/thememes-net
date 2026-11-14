@@ -4,6 +4,8 @@ import { VIRAL_CAPTIONS } from '../data/starterMemes';
 import { ACCEPT_MEDIA, validateFile } from '../utils/mediaPipeline';
 import {
   makeTextLayer,
+  buildFallbackCaptionLayers,
+  hasVisibleOverlayContent,
   exportMemeWithWatermark,
   triggerBlobDownload,
   shareExportedMeme
@@ -35,6 +37,9 @@ export default function QuickUploadBar({
     }
     if (quickBottomCaption.trim()) {
       layers.push(makeTextLayer({ slot: 'bottom', text: quickBottomCaption.trim(), y: 0.89, h: 0.18, fill: '#ffffff' }));
+    }
+    if (!hasVisibleOverlayContent(layers) && quickTitle.trim()) {
+      return buildFallbackCaptionLayers(quickTitle.trim());
     }
     return layers;
   };
@@ -115,6 +120,9 @@ export default function QuickUploadBar({
         },
         {
           watermark: true,
+          captionText: quickTitle.trim(),
+          topText: quickTopCaption.trim(),
+          bottomText: quickBottomCaption.trim(),
           onProgress: (p) => {
             if (selectedKind === 'gif') {
               setStatusMsg(`🎞️ Encoding GIF… ${Math.round(p * 100)}%`);
@@ -148,6 +156,9 @@ export default function QuickUploadBar({
         },
         {
           watermark: true,
+          captionText: quickTitle.trim(),
+          topText: quickTopCaption.trim(),
+          bottomText: quickBottomCaption.trim(),
           onProgress: (p) => {
             if (selectedKind === 'gif') {
               setStatusMsg(`🎞️ Preparing GIF… ${Math.round(p * 100)}%`);
@@ -306,9 +317,11 @@ export default function QuickUploadBar({
             {quickTopCaption.trim() && (
               <div className="tm-quick-live-meme-text is-top">{quickTopCaption}</div>
             )}
-            {quickBottomCaption.trim() && (
+            {quickBottomCaption.trim() ? (
               <div className="tm-quick-live-meme-text is-bottom">{quickBottomCaption}</div>
-            )}
+            ) : !quickTopCaption.trim() && quickTitle.trim() ? (
+              <div className="tm-quick-live-meme-text is-bottom">{quickTitle}</div>
+            ) : null}
             <button
               type="button"
               className="tm-quick-preview-clear"

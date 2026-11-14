@@ -3,6 +3,7 @@ import { sfx } from '../utils/soundEngine';
 import './DualDirectionHero.css';
 
 const ARCADE_QUICK_LAUNCH = [
+  { id: 'bingo', icon: '🎱', label: "Neon Bingo '86", tag: '90 CALLS' },
   { id: 'eightball', icon: '🎱', label: 'Magic 8-Ball', tag: '25¢ PLAY' },
   { id: 'pinball', icon: '🛸', label: '80s Pinball', tag: '5 TABLES' },
   { id: 'slots', icon: '🎰', label: 'Vegas Slots', tag: '5 SLOTS' },
@@ -190,8 +191,9 @@ export default function DualDirectionHero({
               <span className="tm-portal-badge is-pink">REALM 02 • PLAY &amp; WIN</span>
               <h2>🕹️ 80s CYBER-ARCADE &amp; CASINO</h2>
               <p>
-                Shake the <strong>80s Magic 8-Ball</strong>, flip neon Pinball with Magna-Save &amp;
-                Mini-Slot bonuses, or try Slots, Poker &amp; Roulette (pure <strong>MemeDollarz M$</strong> fun).
+                Dab <strong>Neon Bingo &apos;86</strong> (90 UK comedy calls!), flip 80s Pinball
+                with Magna-Save, or play Coin Dozer, Slots, Poker &amp; Roulette (pure{' '}
+                <strong>MemeDollarz M$</strong> fun).
               </p>
             </div>
 

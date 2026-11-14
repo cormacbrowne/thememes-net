@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import MemeMedia from './MemeMedia';
-import { exportMemeWithWatermark, shareExportedMeme } from './forge/forgeEngine';
+import { exportMemeWithWatermark, shareExportedMeme, triggerBlobDownload } from './forge/forgeEngine';
 import './MemeLiveCelebrationModal.css';
 
 const CONFETTI_PIECES = [
@@ -124,6 +124,18 @@ export default function MemeLiveCelebrationModal({
             onClick={handleNativeShare}
           >
             {nativeShared ? '✅ Shared!' : '📲 Share Meme'}
+          </button>
+          <button
+            type="button"
+            className="tm-btn"
+            onClick={async () => {
+              const exported = await exportMemeWithWatermark(meme, { watermark: true }).catch(() => null);
+              if (exported?.blob) {
+                triggerBlobDownload(exported.blob, exported.filename || `thememes-net-${meme.id || Date.now()}.png`);
+              }
+            }}
+          >
+            ⬇ Save Image
           </button>
           <button
             type="button"

@@ -5,7 +5,6 @@ import { triggerWinCelebration } from '../utils/winCelebration';
 import { speakUtteranceChain } from '../utils/aiSpeech';
 import {
   DABBER_COLORS,
-  RETRO_CARD_THEMES,
   BINGO_CALLS_86,
   RIVAL_HALL_PLAYERS,
   FALSE_CALL_ROASTS,
@@ -17,17 +16,17 @@ import GameShell from './GameShell';
 import './NeonBingoGame.css';
 
 const SPEED_OPTIONS = [
-  { id: 'chill', label: '🐢 Chill 4.5s', ms: 4500 },
-  { id: 'club', label: '🕺 Club 2.8s', ms: 2800 },
-  { id: 'turbo', label: '⚡ Turbo 1.6s', ms: 1650 },
-  { id: 'manual', label: '✋ Manual Only', ms: 0 }
+  { id: 'chill', label: '🐢 4.5s', ms: 4500 },
+  { id: 'club', label: '🕺 2.8s', ms: 2800 },
+  { id: 'turbo', label: '⚡ 1.6s', ms: 1650 },
+  { id: 'manual', label: '✋ Manual', ms: 0 }
 ];
 
 const PRIZE_META = {
-  fourCorners: { label: '4 Corners', mult: 2.2, emoji: '📐' },
-  oneLine: { label: '1 Line', mult: 1.8, emoji: '➖' },
-  twoLines: { label: '2 Lines', mult: 3.5, emoji: '➖➖' },
-  fullHouse: { label: 'FULL HOUSE', mult: 8.5, emoji: '🏆' }
+  fourCorners: { label: 'Corners', fullLabel: '4 Corners', mult: 2.2, emoji: '📐' },
+  oneLine: { label: '1 Line', fullLabel: '1 Line', mult: 1.8, emoji: '➖' },
+  twoLines: { label: '2 Lines', fullLabel: '2 Lines', mult: 3.5, emoji: '➖➖' },
+  fullHouse: { label: 'House', fullLabel: 'FULL HOUSE', mult: 8.5, emoji: '🏆' }
 };
 
 const BALL_STRIPE_COLORS = ['#ff2a85', '#00f3ff', '#facc15', '#4ade80', '#c084fc'];
@@ -76,8 +75,7 @@ export default function NeonBingoGame({
   // Game setup & mode state
   const [practiceMode, setPracticeMode] = useState(() => tokens < cardBuyin);
   const [ballMode, setBallMode] = useState('90'); // '90' | '75'
-  const [cardCount, setCardCount] = useState(2); // 1 | 2 | 4
-  const [cardTheme, setCardTheme] = useState('miami');
+  const [cardCount, setCardCount] = useState(1); // 1 | 2 | 4 (default 1 for crisp single-screen play)
   const [dabberId, setDabberId] = useState('pink');
   const [autoDab, setAutoDab] = useState(false);
   const [voiceCaller, setVoiceCaller] = useState(true);
@@ -88,7 +86,7 @@ export default function NeonBingoGame({
   // Active round state
   const [roundActive, setRoundActive] = useState(false);
   const [roundStaked, setRoundStaked] = useState(0);
-  const [tickets, setTickets] = useState(() => makeTickets('90', 2));
+  const [tickets, setTickets] = useState(() => makeTickets('90', 1));
   const [ballQueue, setBallQueue] = useState(() => buildShuffledCage(90));
   const [calledNumbers, setCalledNumbers] = useState([]);
   const [dabbedNumbers, setDabbedNumbers] = useState([]);
@@ -141,23 +139,6 @@ export default function NeonBingoGame({
       }
     };
   }, []);
-
-  // Auto-dab any newly called numbers when autoDab is toggled ON
-  useEffect(() => {
-    if (!autoDab || !calledNumbers.length) return;
-    const allCardNums = new Set(tickets.flatMap((t) => t.numbers));
-    setDabbedNumbers((prev) => {
-      const prevSet = new Set(prev);
-      let changed = false;
-      calledNumbers.forEach((n) => {
-        if (allCardNums.has(n) && !prevSet.has(n)) {
-          prevSet.add(n);
-          changed = true;
-        }
-      });
-      return changed ? [...prevSet] : prev;
-    });
-  }, [autoDab, calledNumbers, tickets]);
 
   // Animated HTML5 Canvas 1986 Rotary Air-Blower Bingo Cage
   useEffect(() => {
@@ -387,6 +368,9 @@ export default function NeonBingoGame({
       const nextBall = ballQueue[0];
       setBallQueue((prev) => prev.slice(1));
       setCalledNumbers((prev) => [...prev, nextBall]);
+      if (autoDab && tickets.some((t) => t.numbers.includes(nextBall))) {
+        setDabbedNumbers((prev) => (prev.includes(nextBall) ? prev : [...prev, nextBall]));
+      }
       popImpulseRef.current = 1;
       sfx.playBingoBallPop?.();
 
@@ -404,7 +388,7 @@ export default function NeonBingoGame({
         })
       );
     },
-    [ballMode, ballQueue, cardCount, handleStartNewRound, practiceMode, roundActive, speakCallout]
+    [autoDab, ballMode, ballQueue, cardCount, handleStartNewRound, practiceMode, roundActive, speakCallout, tickets]
   );
 
   // Auto-caller interval when round is running
@@ -671,7 +655,7 @@ export default function NeonBingoGame({
       ]}
     >
       <div
-        className={`tm-bingo-arena tm-bingo-theme-${cardTheme}`}
+        className="tm-bingo-arena"
         style={{
           '--dab-color': activeDabber.hex,
           '--dab-ink': activeDabber.ink,
@@ -697,113 +681,112 @@ export default function NeonBingoGame({
           </div>
         )}
 
-        {/* TOP CONTROLS: CARD SETUP, NEON DABBER PEN & RETRO SKINS */}
+        {/* TOP CONTROLS: COMPACT FORMAT, CARDS, UV DABBER INK & CEEFAX */}
         <section className="tm-bingo-toolbar" aria-label="Bingo Hall Controls">
-          <div className="tm-bingo-tool-group">
-            <span className="tm-bingo-label">🎱 Format:</span>
-            {[
-              { id: '90', label: '90-Ball UK Hall' },
-              { id: '75', label: '75-Ball Vegas 5×5' }
-            ].map((m) => (
-              <button
-                key={m.id}
-                type="button"
-                className={`tm-bingo-chip ${ballMode === m.id ? 'active' : ''}`}
-                disabled={roundActive}
-                onClick={() => handleSwitchFormat(m.id, cardCount)}
-              >
-                {m.label}
-              </button>
-            ))}
-
-            <span className="tm-bingo-label">🎟️ Cards:</span>
-            {[1, 2, 4].map((cnt) => (
-              <button
-                key={cnt}
-                type="button"
-                className={`tm-bingo-chip ${cardCount === cnt ? 'active' : ''}`}
-                disabled={roundActive}
-                onClick={() => handleSwitchFormat(ballMode, cnt)}
-              >
-                {cnt}x {practiceMode ? '' : `(M$${cnt * cardBuyin})`}
-              </button>
-            ))}
-          </div>
-
-          <div className="tm-bingo-tool-group">
-            <span className="tm-bingo-label">🖊️ Neon Dabber:</span>
-            <div className="tm-bingo-dabber-rack" role="radiogroup" aria-label="Dabber Ink Color">
-              {DABBER_COLORS.map((d) => (
+          <div className="tm-bingo-tool-row">
+            <div className="tm-bingo-tool-cluster">
+              {[
+                { id: '90', label: '🇬🇧 90' },
+                { id: '75', label: '🇺🇸 75' }
+              ].map((m) => (
                 <button
-                  key={d.id}
+                  key={m.id}
                   type="button"
-                  role="radio"
-                  aria-checked={dabberId === d.id}
-                  className={`tm-bingo-dabber-btn ${dabberId === d.id ? 'active' : ''}`}
-                  style={{ '--pen-hex': d.hex }}
-                  onClick={() => {
-                    sfx.playBingoDab?.(DABBER_COLORS.indexOf(d));
-                    setDabberId(d.id);
-                  }}
-                  title={`${d.name} UV Dabber Pen`}
+                  className={`tm-bingo-chip ${ballMode === m.id ? 'active' : ''}`}
+                  disabled={roundActive}
+                  onClick={() => handleSwitchFormat(m.id, cardCount)}
                 >
-                  <span className="tm-dabber-cap" style={{ background: d.hex }} />
-                  <span>{d.name.split(' ')[1]}</span>
+                  {m.label}
+                </button>
+              ))}
+
+              <span className="tm-bingo-sep" aria-hidden="true" />
+
+              {[1, 2, 4].map((cnt) => (
+                <button
+                  key={cnt}
+                  type="button"
+                  className={`tm-bingo-chip tm-card-count-chip ${cnt === 4 ? 'is-desktop-extra' : ''} ${
+                    cardCount === cnt ? 'active' : ''
+                  }`}
+                  disabled={roundActive}
+                  onClick={() => handleSwitchFormat(ballMode, cnt)}
+                  title={`${cnt} Bingo Card${cnt > 1 ? 's' : ''}`}
+                >
+                  {cnt}x{practiceMode ? '' : `·M$${cnt * cardBuyin}`}
                 </button>
               ))}
             </div>
 
-            <button
-              type="button"
-              className={`tm-bingo-chip ${autoDab ? 'active' : ''}`}
-              onClick={() => {
-                sfx.playToggle?.();
-                setAutoDab((v) => !v);
-              }}
-              title="Toggle Auto-Dabber vs Manual Pen Bonus"
-            >
-              {autoDab ? '🤖 Auto-Dab ON' : '🖊️ Manual Pen (+15¢)'}
-            </button>
-          </div>
+            <div className="tm-bingo-tool-cluster">
+              <div className="tm-bingo-dabber-rack" role="radiogroup" aria-label="Dabber Ink Color">
+                {DABBER_COLORS.map((d) => (
+                  <button
+                    key={d.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={dabberId === d.id}
+                    aria-label={`${d.name} UV Dabber Ink`}
+                    className={`tm-bingo-dabber-dot ${dabberId === d.id ? 'active' : ''}`}
+                    style={{ '--pen-hex': d.hex }}
+                    onClick={() => {
+                      sfx.playBingoDab?.(DABBER_COLORS.indexOf(d));
+                      setDabberId(d.id);
+                    }}
+                    title={`${d.name} UV Dabber Pen`}
+                  >
+                    <span className="tm-dabber-cap" style={{ background: d.hex }} />
+                  </button>
+                ))}
+              </div>
 
-          <div className="tm-bingo-tool-group">
-            <span className="tm-bingo-label">🎨 Card Paper:</span>
-            {RETRO_CARD_THEMES.map((t) => (
               <button
-                key={t.id}
                 type="button"
-                className={`tm-bingo-chip ${cardTheme === t.id ? 'active' : ''}`}
+                className={`tm-bingo-chip ${autoDab ? 'active' : ''}`}
                 onClick={() => {
                   sfx.playToggle?.();
-                  setCardTheme(t.id);
+                  const nextAuto = !autoDab;
+                  setAutoDab(nextAuto);
+                  if (nextAuto && calledNumbers.length) {
+                    const allCardNums = new Set(tickets.flatMap((t) => t.numbers));
+                    setDabbedNumbers((prev) => {
+                      const merged = new Set(prev);
+                      calledNumbers.forEach((n) => {
+                        if (allCardNums.has(n)) merged.add(n);
+                      });
+                      return [...merged];
+                    });
+                  }
                 }}
+                title="Toggle Auto-Dabber vs Manual Pen +15¢ Bonus"
               >
-                {t.label}
+                {autoDab ? '🤖 Auto' : '🖊️ +15¢'}
               </button>
-            ))}
 
-            <button
-              type="button"
-              className={`tm-bingo-chip ${ceefaxMode ? 'active' : ''}`}
-              onClick={() => {
-                sfx.playToggle?.();
-                setCeefaxMode((v) => !v);
-              }}
-              title="Switch to 1986 BBC Ceefax Page 888 Teletext Display"
-            >
-              📺 {ceefaxMode ? 'CEEFAX P.888 ON' : 'Ceefax 888'}
-            </button>
+              <button
+                type="button"
+                className={`tm-bingo-chip ${ceefaxMode ? 'active' : ''}`}
+                onClick={() => {
+                  sfx.playToggle?.();
+                  setCeefaxMode((v) => !v);
+                }}
+                title="Switch to 1986 BBC Ceefax Page 888 Teletext Display"
+              >
+                📺 {ceefaxMode ? '888 ON' : '888'}
+              </button>
 
-            <button
-              type="button"
-              className={`tm-bingo-chip ${dictionaryOpen ? 'active' : ''}`}
-              onClick={() => {
-                sfx.playToggle?.();
-                setDictionaryOpen((v) => !v);
-              }}
-            >
-              📖 All 90 Calls
-            </button>
+              <button
+                type="button"
+                className={`tm-bingo-chip ${dictionaryOpen ? 'active' : ''}`}
+                onClick={() => {
+                  sfx.playToggle?.();
+                  setDictionaryOpen((v) => !v);
+                }}
+                title="Browse all 90 classic 1986 Bingo callouts"
+              >
+                📖 Calls
+              </button>
+            </div>
           </div>
         </section>
 
@@ -850,14 +833,14 @@ export default function NeonBingoGame({
           </section>
         )}
 
-        {/* MAIN STAGE: LEFT BLOWER CAGE + CALLOUT | RIGHT RETRO CARDS + SHOUT BINGO BUTTON */}
+        {/* MAIN STAGE: LEFT BLOWER CAGE + CALLOUT + RECENT CALLS | RIGHT TICKETS + SHOUT BINGO */}
         <div className="tm-bingo-stage">
-          {/* LEFT: BLOWER CAGE, CURRENT CALLOUT, HISTORY & SOUND DECK */}
+          {/* LEFT: BLOWER CAGE, CURRENT CALLOUT, PRIZES & RECENT CALLS */}
           <aside className="tm-bingo-caller-col">
             <div className="tm-bingo-blower-card">
               <div className="tm-bingo-blower-head">
                 <span>
-                  {ceefaxMode ? 'CEEFAX 888  SUN 1986  BINGO HALL' : '🪩 1986 AIR-BLOWER CAGE'}
+                  {ceefaxMode ? 'CEEFAX 888 · BINGO' : '🪩 ’86 AIR-BLOWER'}
                 </span>
                 <span className="tm-bingo-ball-counter">
                   {calledNumbers.length}/{maxBalls} DRAWN
@@ -872,30 +855,32 @@ export default function NeonBingoGame({
                 />
 
                 <div className="tm-bingo-current-orb-wrap">
-                  {currentBall ? (
-                    <div
-                      key={currentBall}
-                      className="tm-bingo-current-orb"
-                      style={{
-                        '--orb-color': getBallColor(currentBall)
-                      }}
-                    >
-                      <span className="tm-orb-num">{currentBall}</span>
-                    </div>
-                  ) : (
-                    <div className="tm-bingo-current-orb is-idle">
-                      <span className="tm-orb-num">’86</span>
-                    </div>
-                  )}
+                  <div className="tm-bingo-orb-and-call">
+                    {currentBall ? (
+                      <div
+                        key={currentBall}
+                        className="tm-bingo-current-orb"
+                        style={{
+                          '--orb-color': getBallColor(currentBall)
+                        }}
+                      >
+                        <span className="tm-orb-num">{currentBall}</span>
+                      </div>
+                    ) : (
+                      <div className="tm-bingo-current-orb is-idle">
+                        <span className="tm-orb-num">’86</span>
+                      </div>
+                    )}
 
-                  <div className="tm-bingo-callout-box" aria-live="polite">
-                    <div className="tm-callout-headline">
-                      {activeCall ? `${activeCall.emoji} ${activeCall.call}` : 'READY ON THE TUBE!'}
-                    </div>
-                    <div className="tm-callout-chant">
-                      {activeCall
-                        ? activeCall.chant
-                        : 'Press EYES DOWN below to launch Ball #1!'}
+                    <div className="tm-bingo-callout-box" aria-live="polite">
+                      <div className="tm-callout-headline">
+                        {activeCall ? `${activeCall.emoji} ${activeCall.call}` : 'READY ON THE TUBE!'}
+                      </div>
+                      <div className="tm-callout-chant">
+                        {activeCall
+                          ? activeCall.chant
+                          : 'Tap EYES DOWN to launch Ball #1!'}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -909,7 +894,7 @@ export default function NeonBingoGame({
                     className="tm-bingo-primary-btn"
                     onClick={() => handleStartNewRound(ballMode, cardCount, practiceMode)}
                   >
-                    👀 EYES DOWN! PLAY! {totalBuyinCost > 0 ? `(M$${totalBuyinCost})` : '(FREE)'}
+                    👀 EYES DOWN! {totalBuyinCost > 0 ? `(M$${totalBuyinCost})` : '(FREE)'}
                   </button>
                 ) : (
                   <>
@@ -918,7 +903,7 @@ export default function NeonBingoGame({
                       className="tm-bingo-primary-btn"
                       onClick={() => drawNextBall(true)}
                     >
-                      🎱 DRAW NEXT BALL
+                      🎱 NEXT BALL
                     </button>
                     <button
                       type="button"
@@ -928,7 +913,7 @@ export default function NeonBingoGame({
                         setIsAutoCalling((v) => !v);
                       }}
                     >
-                      {isAutoCalling ? '⏸ Pause' : '▶ Auto-Call'}
+                      {isAutoCalling ? '⏸ Pause' : '▶ Auto'}
                     </button>
                   </>
                 )}
@@ -959,8 +944,39 @@ export default function NeonBingoGame({
                   }}
                   title="Toggle DJ Flashman Live Voice Callouts"
                 >
-                  {voiceCaller ? '🎙️ Voice ON' : '🎙️ Voice OFF'}
+                  🎙️{voiceCaller ? ' ON' : ' OFF'}
                 </button>
+              </div>
+            </div>
+
+            {/* Recent Called Balls Board */}
+            <div className="tm-bingo-history-box">
+              <div className="tm-bingo-subhead">
+                <span>📡 RECENT CALLS</span>
+                <span className="tm-bingo-last-tag">
+                  {calledNumbers.length > 0 ? `#${currentBall}` : 'Ready'}
+                </span>
+              </div>
+              <div className="tm-bingo-history-pills">
+                {calledNumbers.length === 0 ? (
+                  <span className="tm-bingo-muted">No balls drawn yet — spin that cage!</span>
+                ) : (
+                  [...calledNumbers]
+                    .reverse()
+                    .slice(0, 18)
+                    .map((n, i) => (
+                      <button
+                        key={n}
+                        type="button"
+                        className={`tm-history-ball ${i === 0 ? 'is-latest' : ''}`}
+                        style={{ borderColor: getBallColor(n) }}
+                        onClick={() => speakCallout(n, true)}
+                        title={`${n}: ${BINGO_CALLS_86[n]?.call}`}
+                      >
+                        {n}
+                      </button>
+                    ))
+                )}
               </div>
             </div>
 
@@ -986,89 +1002,11 @@ export default function NeonBingoGame({
                       {meta.emoji} {meta.label}
                     </span>
                     <strong>
-                      {isClaimed ? '✅ PAID' : isReadyNow ? '🔔 SHOUT!' : totalBuyinCost > 0 ? `M$${payAmt}` : 'DEMO'}
+                      {isClaimed ? '✅' : isReadyNow ? '🔔 WIN!' : totalBuyinCost > 0 ? `M$${payAmt}` : 'DEMO'}
                     </strong>
                   </div>
                 );
               })}
-            </div>
-
-            {/* Recent Called Balls Board */}
-            <div className="tm-bingo-history-box">
-              <div className="tm-bingo-subhead">
-                <span>📡 RECENT CALLS</span>
-                <span>{calledNumbers.length > 0 ? `Last: #${currentBall}` : 'Waiting...'}</span>
-              </div>
-              <div className="tm-bingo-history-pills">
-                {calledNumbers.length === 0 ? (
-                  <span className="tm-bingo-muted">No balls drawn yet — spin that cage!</span>
-                ) : (
-                  [...calledNumbers]
-                    .reverse()
-                    .slice(0, 18)
-                    .map((n, i) => (
-                      <button
-                        key={n}
-                        type="button"
-                        className={`tm-history-ball ${i === 0 ? 'is-latest' : ''}`}
-                        style={{ borderColor: getBallColor(n) }}
-                        onClick={() => speakCallout(n, true)}
-                        title={`${n}: ${BINGO_CALLS_86[n]?.call}`}
-                      >
-                        {n}
-                      </button>
-                    ))
-                )}
-              </div>
-            </div>
-
-            {/* WOW Feature: Caller's 1986 Crowd Sound & Heckle Deck */}
-            <div className="tm-bingo-heckle-deck">
-              <div className="tm-bingo-subhead">
-                <span>🎛️ CROWD SOUND & HECKLE DECK</span>
-              </div>
-              <div className="tm-heckle-btns">
-                <button
-                  type="button"
-                  className="tm-heckle-btn"
-                  onClick={() => {
-                    sfx.playBingoDuckQuack?.();
-                    setCallerBanner('🦆🦆 TWO LITTLE DUCKS IN THE CROWD! QUACK QUACK!');
-                  }}
-                >
-                  🦆 Quack!
-                </button>
-                <button
-                  type="button"
-                  className="tm-heckle-btn"
-                  onClick={() => {
-                    sfx.playAirhorn?.();
-                    setCallerBanner('📯 MLG 1986 HORN! EVERYBODY WAKE UP AT TABLE 6!');
-                  }}
-                >
-                  📯 Airhorn
-                </button>
-                <button
-                  type="button"
-                  className="tm-heckle-btn"
-                  onClick={() => {
-                    sfx.playBingoCrowdCheer?.();
-                    setCallerBanner('👏 STADIUM APPLAUSE FOR NANNA TURBO’S HAIRSPRAY!');
-                  }}
-                >
-                  👏 Cheer!
-                </button>
-                <button
-                  type="button"
-                  className="tm-heckle-btn"
-                  onClick={() => {
-                    sfx.playBingoCrowdBoo?.();
-                    setCallerBanner('🍅 CROWD BOOS THE CALLER! "CHECK THE MACHINE, PAL!"');
-                  }}
-                >
-                  🍅 Boo!
-                </button>
-              </div>
             </div>
           </aside>
 
@@ -1211,7 +1149,7 @@ export default function NeonBingoGame({
                 <span className="tm-shout-icon">📢</span>
                 <span className="tm-shout-text">
                   <strong>SHOUT &ldquo;BINGO!&rdquo;</strong>
-                  <small>Claim 4 Corners, 1 Line, 2 Lines or Full House (False calls get 🍅!)</small>
+                  <small>4 Corners · 1 Line · 2 Lines · Full House</small>
                 </span>
               </button>
 
@@ -1228,7 +1166,7 @@ export default function NeonBingoGame({
 
             {/* RIVAL 1986 BINGO HALL PLAYERS */}
             <div className="tm-bingo-rivals-strip" aria-label="Rival Bingo Hall Players">
-              <span className="tm-rivals-title">🏟️ TABLE RIVALS:</span>
+              <span className="tm-rivals-title">🏟️ RIVALS:</span>
               {rivals.map((r) => (
                 <div
                   key={r.id}
@@ -1236,8 +1174,8 @@ export default function NeonBingoGame({
                   title={r.bio}
                 >
                   <span>{r.avatar}</span>
-                  <span>{r.name}</span>
-                  <strong>{r.toGo} TO GO</strong>
+                  <span>{r.name.split(' ')[0]}</span>
+                  <strong>{r.toGo}</strong>
                 </div>
               ))}
             </div>

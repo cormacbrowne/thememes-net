@@ -151,18 +151,18 @@ export const SEO_ROUTES = [
   },
   {
     path: '/games',
-    title: 'Free Cyber-Arcade Lobby — 13 Retro & Meme Games | THE MEMES.net',
+    title: 'Free Cyber-Arcade Lobby — 15 Retro & Meme Games | THE MEMES.net',
     description:
-      'Explore all 13 free browser arcade games on THE MEMES.net: Neon Coin Dozer, Lightning Roulette, Pinball, Magic 8-Ball, Neon Derby, Guess The Meme, Higher or Lower & MEMEDAQ.',
-    h1: 'Cyber-Arcade Lobby — Play 13 Free Retro & Meme Games',
+      "Explore all 15 free browser arcade games on THE MEMES.net: Neon Bingo '86 (90 UK calls), Neon Coin Dozer, Lightning Roulette, Pinball, Magic 8-Ball, Neon Derby, Guess The Meme & MEMEDAQ.",
+    h1: 'Cyber-Arcade Lobby — Play 15 Free Retro & Meme Games',
     kicker: 'THE MEMES.net // Casino, Skill, Daily Meme Games & Market Sim',
     changefreq: 'daily',
     priority: '0.95',
     viewMode: 'lobby',
     category: 'all',
     introParagraphs: [
-      "Step inside the Cyber-Arcade Lobby on THE MEMES.net—home to 13 free browser-based arcade cabinets, neon casino tables, skill challenges, and daily meme prediction games with zero downloads, accounts, or real-money deposits required. Filter quickly across Casino, Skill, Meme Games, and Market Sim sections, pin your favorite cabinets with star bookmarks, and pick up immediately from your Continue Playing shelf.",
-      "Choose between fast casino tables like Neon Coin Dozer '86, Lightning Roulette, Neon 21's, Vegas 777 Slots, 80s Magic 8-Ball Oracle, and Neon Derby '86 meme horse racing, or dive into skill hits like 5-table Neon Pinball and Meme Crush Saga. Need quick token-free rounds? Try daily pixelated Guess The Meme, endless Higher or Lower upvote streaks, Hyper Swipe, or 1v1 Meme Arena.",
+      "Step inside the Cyber-Arcade Lobby on THE MEMES.net—home to 15 free browser-based arcade cabinets, neon casino tables, skill challenges, and daily meme prediction games with zero downloads, accounts, or real-money deposits required. Filter quickly across Casino, Skill, Meme Games, and Market Sim sections, pin your favorite cabinets with star bookmarks, and pick up immediately from your Continue Playing shelf.",
+      "Choose between fast hits like Neon Bingo '86 (all 90 classic comedy calls, UV dabber pens & Ceefax 888), Neon Coin Dozer '86, Lightning Roulette, Neon 21's, Vegas 777 Slots, 80s Magic 8-Ball Oracle, and Neon Derby '86 meme horse racing, or dive into skill hits like 5-table Neon Pinball and Meme Crush Saga. Need quick token-free rounds? Try daily pixelated Guess The Meme, endless Higher or Lower upvote streaks, Hyper Swipe, or 1v1 Meme Arena.",
       'Every wager runs purely on free MemeDollarz ($) and MemeCentz (¢) earned by uploading and voting on memes, and practice mode activates automatically so newcomers can play any cabinet risk-free on desktop, iPad, or mobile portrait screens with procedural synthwave radio. Switch smoothly between cabinets or head back to the live meme feed and Meme Forge Studio anytime.'
     ]
   },
@@ -550,7 +550,7 @@ export const SEO_ROUTES = [
     introParagraphs: [
       'Rate the funniest internet humor at lightning speed with Meme Speed Swipe on THE MEMES.net. Instead of endlessly scrolling passive feeds, step into the neon judge booth where community uploads and curated cult classics flip onto the stage one card at a time for instant rapid-fire verdicts right on phone, tablet, or desktop.',
       'Swipe left to roast Cringe or swipe right to certify pure Dank gold—or use lightning keyboard arrows to chain rapid streak combos that charge your Overdrive Arcade XP multiplier and climb the community ranks. Spot a meme template crying out for a better joke? Launch any card straight into Meme Forge 3.0 to rewrite the top and bottom captions in seconds.',
-      'Every swipe also helps surface rising community creators to the top of the Hot feed leaderboard without logins, downloads, or clutter. Open Theater inspection anytime, share direct permalinks straight to your group chats, or switch between Speed Swipe and 13 other free Cyber-Arcade games in one tap.'
+      'Every swipe also helps surface rising community creators to the top of the Hot feed leaderboard without logins, downloads, or clutter. Open Theater inspection anytime, share direct permalinks straight to your group chats, or switch between Speed Swipe and 14 other free Cyber-Arcade games in one tap.'
     ]
   },
   {
@@ -626,6 +626,26 @@ export const SEO_ROUTES = [
     ]
   }
 ];
+
+export function getOgImageSlugForRoutePath(routePath = '/') {
+  const clean = String(routePath || '/').split('?')[0].split('#')[0].trim().replace(/\/+$/, '') || '/';
+  if (clean === '/' || clean === '/index.html') return null;
+  if (clean === '/games') return 'games';
+  if (clean.startsWith('/games/')) return clean.slice('/games/'.length);
+  if (clean.startsWith('/memes/')) return `memes-${clean.slice('/memes/'.length)}`;
+  return clean.replace(/^\/+/, '').replaceAll('/', '-');
+}
+
+export function getOgImageForRoutePath(routePath = '/') {
+  const slug = getOgImageSlugForRoutePath(routePath);
+  return slug ? `${SITE_ORIGIN}/og/${slug}.png` : DEFAULT_OG_IMAGE;
+}
+
+for (const route of SEO_ROUTES) {
+  if (!route.ogImage) {
+    route.ogImage = getOgImageForRoutePath(route.path);
+  }
+}
 
 const ROUTE_BY_PATH = new Map(SEO_ROUTES.map((r) => [r.path, r]));
 

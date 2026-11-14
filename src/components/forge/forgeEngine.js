@@ -110,6 +110,58 @@ export function makeSticker(overrides = {}) {
   return { id: newId('stk'), type: 'sticker', emoji: '🔥', src: '', x: 0.5, y: 0.5, w: 0.2, h: 0.2, rot: 0, ...overrides };
 }
 
+const AUTO_TITLE_RE = /^(untitled meme|(?:fresh|community) upload by @\S+|caption:\s*)$/i;
+
+export function hasVisibleOverlayContent(layers = []) {
+  return Array.isArray(layers)
+    ? layers.some((l) => (l?.type === 'text' ? Boolean(String(l.text || '').trim()) : l?.type === 'sticker' ? Boolean(l.emoji || l.src) : false))
+    : false;
+}
+
+/**
+ * Builds classic Impact Top/Bottom meme text layers from a caption or title string
+ * so images without explicit overlay layers still get legible meme text burned in.
+ */
+export function buildFallbackCaptionLayers(captionText = '', topText = '', bottomText = '') {
+  const top = String(topText || '').trim();
+  const bottom = String(bottomText || '').trim();
+  if (top || bottom) {
+    const out = [];
+    if (top) out.push(makeTextLayer({ slot: 'top', text: top, y: 0.11, h: 0.2, stroke: 0.14, fill: '#ffffff' }));
+    if (bottom) out.push(makeTextLayer({ slot: 'bottom', text: bottom, y: 0.88, h: 0.2, stroke: 0.14, fill: '#ffffff' }));
+    return out;
+  }
+  const raw = String(captionText || '').trim();
+  if (!raw || AUTO_TITLE_RE.test(raw)) return [];
+
+  for (const sep of ['\n', ' — ', ' | ', ' - ']) {
+    const idx = raw.indexOf(sep);
+    if (idx > 0 && idx < raw.length - sep.length) {
+      const a = raw.slice(0, idx).trim();
+      const b = raw.slice(idx + sep.length).trim();
+      if (a && b) {
+        return [
+          makeTextLayer({ slot: 'top', text: a, y: 0.11, h: 0.2, stroke: 0.14, fill: '#ffffff' }),
+          makeTextLayer({ slot: 'bottom', text: b, y: 0.88, h: 0.2, stroke: 0.14, fill: '#ffffff' })
+        ];
+      }
+    }
+  }
+
+  if (raw.length > 36) {
+    const words = raw.split(/\s+/).filter(Boolean);
+    if (words.length >= 4) {
+      const half = Math.ceil(words.length / 2);
+      return [
+        makeTextLayer({ slot: 'top', text: words.slice(0, half).join(' '), y: 0.11, h: 0.2, stroke: 0.14, fill: '#ffffff' }),
+        makeTextLayer({ slot: 'bottom', text: words.slice(half).join(' '), y: 0.88, h: 0.2, stroke: 0.14, fill: '#ffffff' })
+      ];
+    }
+  }
+
+  return [makeTextLayer({ slot: 'top', text: raw, y: 0.12, h: 0.22, stroke: 0.14, fill: '#ffffff' })];
+}
+
 const blackCaption = { fill: '#000000', stroke: 0, caps: false, font: 'Inter', size: 0.06 };
 
 // ---------- Layout presets ----------
@@ -568,15 +620,19 @@ export async function renderStillImageBlob(source, layers = [], { maxWidth = 120
 
 /**
  * Shared export helper for QuickUpload, MemeForge, and Feed/Theater cards.
- * Always embeds top/bottom captions and the subtle `www.thememes.net` watermark
- * on still images and animated GIFs when downloaded or shared.
+ * Always embeds top/bottom captions (including fallback title text when no overlay
+ * was pre-burned) and the subtle `www.thememes.net` watermark on images and GIFs.
  */
-export async function exportMemeWithWatermark(input, { onProgress, watermark = true } = {}) {
+export async function exportMemeWithWatermark(
+  input,
+  { onProgress, watermark = true, captionText = '', topText = '', bottomText = '' } = {}
+) {
   if (!input) return null;
   const isFeedMeme = typeof input.image_url === 'string' || typeof input.media_type === 'string';
-  const hasLiveOverlayLayers = Array.isArray(input.overlay?.layers) && input.overlay.layers.length > 0;
+  const rawLayers = isFeedMeme ? input.overlay?.layers || [] : input.layers || [];
+  const hasVisibleOverlay = hasVisibleOverlayContent(rawLayers);
   const rawUrl = isFeedMeme
-    ? (hasLiveOverlayLayers ? input.base_image_url : null) || input.image_url || input.base_image_url
+    ? (hasVisibleOverlay ? input.base_image_url : null) || input.image_url || input.base_image_url
     : input.url || '';
   const sourceFile = isFeedMeme ? null : input.file || null;
   const source = sourceFile || rawUrl;
@@ -588,12 +644,32 @@ export async function exportMemeWithWatermark(input, { onProgress, watermark = t
         : 'image'
     : input.kind || 'image';
 
-  // Avoid double-drawing text when falling back to an already-burned still image without a clean base_image_url
-  const overlayLayers = isFeedMeme
-    ? (hasLiveOverlayLayers && (input.base_image_url || !input.overlay?.burned))
-      ? input.overlay?.layers || []
-      : []
-    : input.layers || [];
+  const isPreBurnedSeed =
+    Boolean(input.is_seed) ||
+    String(input.id || '').startsWith('seed-') ||
+    /\/seed\/seed-/i.test(String(rawUrl || ''));
+  const explicitFallback = buildFallbackCaptionLayers(captionText, topText, bottomText);
+  const feedTitleFallback =
+    isFeedMeme && !input.overlay?.burned && !isPreBurnedSeed && input.title
+      ? buildFallbackCaptionLayers(input.title)
+      : [];
+
+  let overlayLayers = [];
+  if (isFeedMeme) {
+    if (hasVisibleOverlay && (input.base_image_url || !input.overlay?.burned)) {
+      overlayLayers = rawLayers;
+    } else if (explicitFallback.length) {
+      overlayLayers = explicitFallback;
+    } else if (!input.overlay?.burned) {
+      overlayLayers = feedTitleFallback;
+    }
+  } else if (hasVisibleOverlay) {
+    overlayLayers = rawLayers;
+  } else if (explicitFallback.length) {
+    overlayLayers = explicitFallback;
+  } else if (input.title) {
+    overlayLayers = buildFallbackCaptionLayers(input.title);
+  }
 
   const stamp = Date.now();
   if (kind === 'gif') {
@@ -632,8 +708,11 @@ export async function exportMemeWithWatermark(input, { onProgress, watermark = t
   }
 
   if (input.doc && input.images) {
-    await ensureFontsLoaded(input.doc.layers || []);
-    const canvas = renderDocToCanvas(input.doc, input.images, { width: 1080, watermark });
+    const exportDoc = hasVisibleOverlayContent(input.doc.layers) || !overlayLayers.length
+      ? input.doc
+      : { ...input.doc, layers: overlayLayers };
+    await ensureFontsLoaded(exportDoc.layers || []);
+    const canvas = renderDocToCanvas(exportDoc, input.images, { width: 1080, watermark });
     const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
     return blob ? { blob, mime: 'image/png', filename: `thememes-net-${stamp}.png` } : null;
   }

@@ -1,6 +1,7 @@
 import { useState, Suspense } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { GAME_VIEW_MODE_TO_PATH, SITE_ORIGIN } from '../data/seoRoutes';
+import { getArcadeGameById } from '../data/arcadeGamesCatalog';
 import lazyWithRetry from '../utils/lazyWithRetry';
 import MemeSkeletonGrid from './MemeSkeletonGrid';
 import VerticalReelsView from './VerticalReelsView';
@@ -49,12 +50,19 @@ export function FixedArcadeTopBar({
     if (typeof window === 'undefined') return;
     const canonical = GAME_VIEW_MODE_TO_PATH[viewMode] || window.location.pathname;
     const shareUrl = `${window.location.origin || SITE_ORIGIN}${canonical}`;
+    const gameMeta = getArcadeGameById(viewMode);
+    const shareTitle = gameMeta
+      ? `${gameMeta.icon} ${gameMeta.label} | THE MEMES.net`
+      : `80s Cyber-Arcade | THE MEMES.net`;
+    const shareText = gameMeta
+      ? `${gameMeta.icon} ${gameMeta.label} — ${gameMeta.pitch}`
+      : `Play 15 free 80s neon arcade games on THE MEMES.net! 🕹️`;
     navigator.clipboard?.writeText(shareUrl).catch(() => {});
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       navigator
         .share({
-          title: `Play on THE MEMES.net`,
-          text: `Check out this arcade game on THE MEMES.net! 🕹️`,
+          title: shareTitle,
+          text: shareText,
           url: shareUrl
         })
         .catch(() => {});
@@ -279,6 +287,49 @@ export function ArcadeLoungePromo({ setViewMode }) {
         </h2>
       </div>
       <div className="tm-arcade-steer-grid tm-arcade-steer-grid-4">
+        {/* Cabinet 00-A: Neon Bingo '86 — 1986 Electric Bingo Hall */}
+        <div
+          className="tm-arcade-steer-card tm-steer-pinball"
+          onClick={() => {
+            sfx.playBingoBallPop?.();
+            setViewMode('bingo');
+          }}
+        >
+          <div className="tm-arcade-steer-top">
+            <span className="tm-arcade-steer-pill">🎱 NEON BINGO &apos;86 • 90 UK COMEDY CALLS</span>
+            <span className="tm-arcade-steer-best">
+              📺 Ceefax P.888 + UV Dabber
+            </span>
+          </div>
+          <div className="tm-arcade-steer-body">
+            <div className="tm-arcade-steer-icons">🎱🦆🎟️🏆</div>
+            <div>
+              <h3 className="tm-arcade-steer-title">NEON BINGO &apos;86 — ELECTRIC BINGO HALL</h3>
+              <p className="tm-arcade-steer-desc">
+                Spin the rotary <strong>Air-Blower Ball Cage</strong> while DJ Flashman calls all{' '}
+                <strong>90 Classic UK Rhymes</strong> (&ldquo;Two Little Ducks 22!&rdquo;), stamp with{' '}
+                <strong>UV Neon Dabbers</strong> (+15¢ Manual Skill Bonus) &amp; shout <strong>BINGO!</strong>
+              </p>
+            </div>
+          </div>
+          <div className="tm-arcade-steer-footer">
+            <span className="tm-arcade-steer-payout">
+              🎟️ Free Practice or M$10 Card Buy-In (Up to 8.5× Full House!)
+            </span>
+            <button
+              type="button"
+              className="tm-btn tm-btn-primary tm-arcade-steer-cta"
+              onClick={(e) => {
+                e.stopPropagation();
+                sfx.playBingoBallPop?.();
+                setViewMode('bingo');
+              }}
+            >
+              ▶ Play Neon Bingo &apos;86
+            </button>
+          </div>
+        </div>
+
         {/* Cabinet 00: Neon Coin Dozer '86 — Arcade Penny Falls & Prize Machine */}
         <div
           className="tm-arcade-steer-card tm-steer-roulette"

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { sfx } from '../utils/soundEngine';
-import { PRANK_DISGUISE_TO_PATH, SITE_ORIGIN } from '../data/seoRoutes';
+import { PRANK_DISGUISE_TO_PATH, SITE_ORIGIN, getSeoRouteByPath } from '../data/seoRoutes';
 import './BossKeyOverlay.css';
 
 const DISGUISE_MODES = [
@@ -86,21 +86,27 @@ export default function BossKeyOverlay({
   const [copiedPrankLink, setCopiedPrankLink] = useState(false);
   const [aiMessages, setAiMessages] = useState([AI_COPILOT_MEMOS[0]]);
   const [bsodPct, setBsodPct] = useState(42);
+  const [prevInitialDisguise, setPrevInitialDisguise] = useState(initialDisguise);
 
-  useEffect(() => {
+  if (initialDisguise !== prevInitialDisguise) {
+    setPrevInitialDisguise(initialDisguise);
     if (initialDisguise) setDisguise(initialDisguise);
-  }, [initialDisguise]);
+  }
 
   const handleSharePrankScreen = () => {
     if (typeof window === 'undefined') return;
     const path = PRANK_DISGUISE_TO_PATH[disguise] || '/fake-excel-boss-screen';
+    const route = getSeoRouteByPath(path);
     const shareUrl = `${window.location.origin || SITE_ORIGIN}${path}`;
+    const label = DISGUISE_MODES.find((d) => d.id === disguise)?.label || 'Prank Screen';
+    const shareTitle = route?.title || `Boss Key Disguise: ${label}`;
+    const shareText = route?.description || 'Check out this interactive prank/boss screen on THE MEMES.net! 💼';
     navigator.clipboard?.writeText(shareUrl).catch(() => {});
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       navigator
         .share({
-          title: `Boss Key Disguise: ${DISGUISE_MODES.find((d) => d.id === disguise)?.label || 'Prank Screen'}`,
-          text: 'Check out this interactive prank/boss screen on THE MEMES.net! 💼',
+          title: shareTitle,
+          text: shareText,
           url: shareUrl
         })
         .catch(() => {});

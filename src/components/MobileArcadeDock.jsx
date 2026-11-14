@@ -11,6 +11,7 @@ export default function MobileArcadeDock({
 }) {
   const isSideGameActive = [
     'lobby',
+    'bingo',
     'pusher',
     'blackjack',
     'poker',

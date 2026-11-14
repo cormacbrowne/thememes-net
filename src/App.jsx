@@ -498,7 +498,7 @@ export default function App() {
       setRadioContextStation('vaporwave');
     } else if (['pinball', 'crush', 'pusher', 'battle', 'swipe'].includes(viewMode)) {
       setRadioContextStation('chiptune');
-    } else if (['blackjack', 'poker', 'roulette', 'slots', 'eightball'].includes(viewMode)) {
+    } else if (['bingo', 'blackjack', 'poker', 'roulette', 'slots', 'eightball'].includes(viewMode)) {
       setRadioContextStation('casinojazz');
     } else if (viewMode === 'derby') {
       setRadioContextStation('western');
@@ -1365,14 +1365,24 @@ export default function App() {
                       <div className="tm-infeed-arcade-badge">🕹️ 80s NEON TOKEN ARCADE &amp; CASINO</div>
                       <div style={{ fontSize: '34px', margin: '6px 0' }}>🃏🎡🎰📈🍬🎱</div>
                       <h3 style={{ margin: '0 0 6px', fontSize: '18px', color: '#facc15' }}>
-                        READY TO PLAY NEON 21&apos;S, LIGHTNING ROULETTE &amp; ARCADE CABINETS?
+                        READY FOR NEON BINGO &apos;86, COIN DOZER, ROULETTE &amp; ARCADE CABINETS?
                       </h3>
                       <p style={{ margin: '0 0 12px', fontSize: '12.5px', color: '#cbd5e1', lineHeight: 1.5 }}>
-                        Challenge Dealer Bot &apos;86 in <strong>🃏 Neon 21&apos;s Blackjack</strong>, spin{' '}
-                        <strong>🎡 Lightning Roulette (150×)</strong>, pull the <strong>🎰 One-Arm Bandit</strong>, trade{' '}
-                        <strong>📈 MEMEDAQ &apos;86</strong>, or fire up <strong>🎱 Upgraded 80s Pinball</strong>!
+                        Dab all 90 classic comedy calls in <strong>🎱 Neon Bingo &apos;86</strong>, drop coins in{' '}
+                        <strong>🪙 Coin Dozer &apos;86</strong>, spin <strong>🎡 Lightning Roulette (150×)</strong>, pull the{' '}
+                        <strong>🎰 One-Arm Bandit</strong>, or fire up <strong>🎱 Upgraded 80s Pinball</strong>!
                       </p>
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          className="tm-btn tm-btn-primary"
+                          onClick={() => {
+                            sfx.playBingoBallPop?.();
+                            setViewMode('bingo');
+                          }}
+                        >
+                          🎱 Neon Bingo &apos;86
+                        </button>
                         <button
                           type="button"
                           className="tm-btn tm-btn-primary"

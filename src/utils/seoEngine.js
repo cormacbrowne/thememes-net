@@ -119,9 +119,10 @@ export function updateDynamicSeo({
   upsertMeta('meta[property="og:title"]', 'property', 'og:title', pageTitle);
   upsertMeta('meta[property="og:description"]', 'property', 'og:description', pageDesc);
   upsertMeta('meta[property="og:url"]', 'property', 'og:url', canonicalUrl);
+  const isBannerOg = ogImageUrl === DEFAULT_OG_IMAGE || ogImageUrl.startsWith(`${SITE_ORIGIN}/og/`);
   upsertMeta('meta[property="og:image"]', 'property', 'og:image', ogImageUrl);
-  upsertMeta('meta[property="og:image:width"]', 'property', 'og:image:width', ogImageUrl === DEFAULT_OG_IMAGE ? '1200' : '540');
-  upsertMeta('meta[property="og:image:height"]', 'property', 'og:image:height', ogImageUrl === DEFAULT_OG_IMAGE ? '630' : '480');
+  upsertMeta('meta[property="og:image:width"]', 'property', 'og:image:width', isBannerOg ? '1200' : '540');
+  upsertMeta('meta[property="og:image:height"]', 'property', 'og:image:height', isBannerOg ? '630' : '480');
   upsertMeta('meta[name="twitter:title"]', 'name', 'twitter:title', pageTitle);
   upsertMeta('meta[name="twitter:description"]', 'name', 'twitter:description', pageDesc);
   upsertMeta('meta[name="twitter:image"]', 'name', 'twitter:image', ogImageUrl);

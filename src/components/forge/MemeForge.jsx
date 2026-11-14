@@ -8,7 +8,11 @@ import {
   makeDoc,
   makeTextLayer,
   makeSticker,
+  buildFallbackCaptionLayers,
+  hasVisibleOverlayContent,
   renderDocToCanvas,
+  renderStillImageBlob,
+  burnInAnimatedGif,
   ensureFontsLoaded,
   loadImg,
   docRatio,
@@ -20,7 +24,8 @@ import {
 import {
   ACCEPT_MEDIA,
   validateFile,
-  canvasToCompressedBlob
+  canvasToCompressedBlob,
+  makePoster
 } from '../../utils/mediaPipeline';
 import { VIRAL_CAPTIONS } from '../../data/starterMemes';
 import { sfx } from '../../utils/soundEngine';
@@ -382,9 +387,15 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
     }
   };
 
-  const exportStill = async (withWatermark = true) => {
-    await ensureFontsLoaded(doc.layers);
-    return renderDocToCanvas(doc, images, { width: 1080, watermark: withWatermark });
+  const exportStill = async (withWatermark = true, exportDoc = doc) => {
+    await ensureFontsLoaded(exportDoc.layers);
+    return renderDocToCanvas(exportDoc, images, { width: 1080, watermark: withWatermark });
+  };
+
+  const getEffectiveLayers = (layersList = doc.layers) => {
+    if (hasVisibleOverlayContent(layersList)) return layersList;
+    if (title.trim()) return buildFallbackCaptionLayers(title.trim());
+    return [];
   };
 
   const buildWatermarkedExport = async (progressLabel) => {
@@ -392,20 +403,24 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
     if (isGif) {
       setStatus(`🎞️ ${progressLabel} GIF with www.thememes.net watermark… 0%`);
     }
+    const effectiveLayers = getEffectiveLayers(doc.layers);
+    const exportDoc = effectiveLayers === doc.layers ? doc : { ...doc, layers: effectiveLayers };
     return exportMemeWithWatermark(
       doc.base
         ? {
             kind: doc.base.kind,
             file: doc.base.file || null,
             url: doc.base.url,
-            doc,
+            doc: exportDoc,
             images,
-            layers: doc.layers,
-            filter: doc.filter
+            layers: effectiveLayers,
+            filter: doc.filter,
+            title: title.trim()
           }
-        : { kind: 'image', doc, images },
+        : { kind: 'image', doc: exportDoc, images, title: title.trim() },
       {
         watermark: true,
+        captionText: title.trim(),
         onProgress: (p) => {
           if (isGif) setStatus(`🎞️ ${progressLabel} GIF… ${Math.round(p * 100)}%`);
         }
@@ -522,26 +537,67 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
     setBusy(true);
     setError('');
     try {
-      const cleanLayers = doc.layers.map((l) => {
+      const rawCleanLayers = doc.layers.map((l) => {
         const rest = { ...l };
         delete rest.blob;
         return rest;
       });
+      const cleanLayers = getEffectiveLayers(rawCleanLayers);
+      const exportDoc =
+        cleanLayers.length && !hasVisibleOverlayContent(doc.layers)
+          ? { ...doc, layers: cleanLayers }
+          : doc;
       let media;
       let overlay;
       if (doc.base) {
+        let uploadFile = doc.base.file || null;
+        let posterBlob = null;
+        let burnedMotion = false;
+
+        if (doc.base.kind === 'gif' && cleanLayers.length && (uploadFile || doc.base.url)) {
+          try {
+            const burnedGif = await burnInAnimatedGif(
+              uploadFile || doc.base.url,
+              exportDoc,
+              images,
+              { watermark: true }
+            );
+            if (burnedGif) {
+              uploadFile = new File([burnedGif], `meme-${Date.now()}.gif`, { type: 'image/gif' });
+              burnedMotion = true;
+            }
+          } catch {
+            // Fall back to raw GIF + non-destructive overlay if remote CORS blocks fetch
+          }
+        }
+
+        if (cleanLayers.length) {
+          try {
+            const posterSource =
+              doc.base.posterUrl || (uploadFile ? await makePoster(uploadFile, doc.base.kind) : null);
+            if (posterSource) {
+              posterBlob = await renderStillImageBlob(posterSource, cleanLayers, { watermark: true });
+            }
+          } catch {
+            posterBlob = null;
+          }
+        }
+
         media = {
           kind: doc.base.kind,
-          file: doc.base.file || null,
-          url: doc.base.file ? null : doc.base.url,
+          file: uploadFile,
+          url: uploadFile ? null : doc.base.url,
           posterUrl: doc.base.file ? null : doc.base.posterUrl,
+          posterBlob,
           width: doc.base.width,
           height: doc.base.height,
           duration: doc.base.duration
         };
-        overlay = { v: 1, layers: cleanLayers };
+        overlay = burnedMotion
+          ? { v: 1, burned: true, layers: cleanLayers }
+          : { v: 1, layers: cleanLayers };
       } else {
-        const full = await exportStill(false);
+        const full = await exportStill(false, exportDoc);
         const blob = await canvasToCompressedBlob(full);
         const clean = renderDocToCanvas({ ...doc, layers: [] }, images, { width: 1080, withLayers: false });
         const baseBlob = await canvasToCompressedBlob(clean);

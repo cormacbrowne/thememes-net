@@ -87,9 +87,12 @@ async function loadBaseIndexHtml() {
 </html>`;
 }
 
+const DEFAULT_SUPABASE_URL = 'https://otvvphmjojqyjaznjzyo.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY = 'sb_publishable_IcrXK6kDdGaWZo9rU0GFRg_ZxtaY-wB';
+
 async function fetchLiveMeme(memeId) {
-  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL;
+  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
   if (!supabaseUrl || !supabaseKey || !memeId) return null;
 
   const controller = new AbortController();
@@ -125,6 +128,16 @@ export default async function handler(req, res) {
   let meme = STARTER_MEMES.find((m) => String(m.id) === memeId) || null;
   if (!meme && memeId) {
     meme = await fetchLiveMeme(memeId);
+  }
+  if (!meme && /^(?:seed|tpl)-[a-z0-9-]+$/i.test(memeId)) {
+    meme = {
+      id: memeId,
+      title: memeId.replace(/^(?:seed|tpl)-/i, '').replaceAll('-', ' '),
+      author_name: 'TheMemesHQ',
+      score: 1,
+      media_type: 'image',
+      image_url: `/seed/${memeId}.webp`
+    };
   }
 
   if (meme) {

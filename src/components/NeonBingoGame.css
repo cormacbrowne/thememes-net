@@ -60,8 +60,7 @@
 .tm-bingo-shell.is-ceefax .tm-bingo-blower-card,
 .tm-bingo-shell.is-ceefax .tm-bingo-ticket,
 .tm-bingo-shell.is-ceefax .tm-bingo-toolbar,
-.tm-bingo-shell.is-ceefax .tm-bingo-history-box,
-.tm-bingo-shell.is-ceefax .tm-bingo-heckle-deck {
+.tm-bingo-shell.is-ceefax .tm-bingo-history-box {
   background: #000000 !important;
   border-color: #facc15 !important;
   border-radius: 2px !important;
@@ -79,39 +78,47 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 8px 10px;
-  border-radius: 14px;
+  padding: 6px 10px;
+  border-radius: 12px;
   border: 1px solid rgba(255, 42, 133, 0.35);
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(30, 12, 46, 0.92));
   max-width: 100%;
   box-sizing: border-box;
 }
 
-.tm-bingo-tool-group {
+.tm-bingo-tool-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: 6px;
 }
 
-.tm-bingo-label {
-  font-size: 0.74rem;
-  font-weight: 900;
-  color: #cbd5e1;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.tm-bingo-tool-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+
+.tm-bingo-sep {
+  width: 1px;
+  height: 18px;
+  background: rgba(148, 163, 184, 0.28);
+  margin: 0 2px;
 }
 
 .tm-bingo-chip {
-  min-height: 32px;
-  padding: 4px 10px;
+  min-height: 30px;
+  padding: 3px 9px;
   border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.35);
   background: rgba(15, 23, 42, 0.85);
   color: #e2e8f0;
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   font-weight: 800;
   cursor: pointer;
+  white-space: nowrap;
   transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease;
 }
 
@@ -124,7 +131,7 @@
   border-color: #00f3ff;
   background: rgba(0, 243, 255, 0.18);
   color: #ffffff;
-  box-shadow: 0 0 12px rgba(0, 243, 255, 0.3);
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.28);
 }
 
 .tm-bingo-chip:disabled {
@@ -134,36 +141,34 @@
 
 .tm-bingo-dabber-rack {
   display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-
-.tm-bingo-dabber-btn {
-  display: inline-flex;
   align-items: center;
   gap: 5px;
-  min-height: 32px;
-  padding: 4px 9px;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  background: rgba(9, 13, 22, 0.9);
-  color: #f8fafc;
-  font-size: 0.74rem;
-  font-weight: 800;
-  cursor: pointer;
 }
 
-.tm-bingo-dabber-btn.active {
-  border-color: var(--pen-hex);
-  box-shadow: 0 0 12px var(--pen-hex);
-  background: rgba(15, 23, 42, 0.96);
+.tm-bingo-dabber-dot {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(148, 163, 184, 0.35);
+  background: rgba(9, 13, 22, 0.92);
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.15s ease;
+}
+
+.tm-bingo-dabber-dot.active {
+  border-color: #ffffff;
+  box-shadow: 0 0 10px var(--pen-hex);
+  transform: scale(1.1);
 }
 
 .tm-dabber-cap {
-  width: 12px;
-  height: 12px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  box-shadow: 0 0 8px currentColor;
+  box-shadow: 0 0 6px currentColor;
   flex-shrink: 0;
 }
 
@@ -218,13 +223,12 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
   justify-content: center;
 }
 
 .tm-bingo-cage-canvas {
-  width: 168px;
-  height: 152px;
+  width: 152px;
+  height: 138px;
   flex-shrink: 0;
 }
 
@@ -234,7 +238,16 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 8px;
+  gap: 6px;
+  min-width: 0;
+}
+
+.tm-bingo-orb-and-call {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
   min-width: 0;
 }
 
@@ -389,10 +402,9 @@
   }
 }
 
-/* RECENT BALLS & HECKLE DECK */
-.tm-bingo-history-box,
-.tm-bingo-heckle-deck {
-  padding: 8px 10px;
+/* RECENT BALLS BOARD */
+.tm-bingo-history-box {
+  padding: 6px 9px;
   border-radius: 12px;
   border: 1px solid rgba(56, 189, 248, 0.28);
   background: rgba(15, 23, 42, 0.85);
@@ -402,11 +414,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 900;
   color: #38bdf8;
   letter-spacing: 0.04em;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
 }
 
 .tm-bingo-history-pills {
@@ -416,51 +428,29 @@
 }
 
 .tm-history-ball {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   border: 2px solid #00f3ff;
   background: #0f172a;
   color: #f8fafc;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 900;
   display: grid;
   place-items: center;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .tm-history-ball.is-latest {
   background: #facc15;
   color: #090d16;
-  transform: scale(1.1);
+  transform: scale(1.08);
 }
 
 .tm-bingo-muted {
-  font-size: 0.75rem;
-  color: #94a3b8;
-}
-
-.tm-heckle-btns {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 5px;
-}
-
-.tm-heckle-btn {
-  min-height: 32px;
-  padding: 4px 6px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 42, 133, 0.4);
-  background: rgba(255, 42, 133, 0.14);
-  color: #fdf2f8;
   font-size: 0.72rem;
-  font-weight: 800;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.tm-heckle-btn:hover {
-  background: rgba(255, 42, 133, 0.3);
+  color: #94a3b8;
 }
 
 /* RIGHT: RETRO BINGO CARDS */
@@ -544,21 +534,6 @@
   background: linear-gradient(180deg, rgba(34, 15, 45, 0.94), rgba(12, 18, 34, 0.96));
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
   min-width: 0;
-}
-
-.tm-bingo-theme-crt .tm-bingo-ticket {
-  border-color: rgba(74, 222, 128, 0.65);
-  background: linear-gradient(180deg, rgba(6, 36, 18, 0.96), rgba(4, 18, 10, 0.98));
-}
-
-.tm-bingo-theme-outrun .tm-bingo-ticket {
-  border-color: rgba(0, 243, 255, 0.65);
-  background: linear-gradient(180deg, rgba(10, 26, 56, 0.96), rgba(8, 12, 30, 0.98));
-}
-
-.tm-bingo-theme-gold .tm-bingo-ticket {
-  border-color: rgba(250, 204, 21, 0.72);
-  background: linear-gradient(180deg, rgba(46, 32, 8, 0.95), rgba(18, 14, 6, 0.98));
 }
 
 .tm-bingo-ticket.has-bingo-glow {
@@ -944,10 +919,11 @@
   100% { transform: translateY(36px) scale(0.85); opacity: 0; }
 }
 
-/* RESPONSIVE TABLET & MOBILE */
+/* RESPONSIVE TABLET & MOBILE — FITS ALL ON ONE IPHONE SCREEN */
 @media (max-width: 900px) {
   .tm-bingo-stage {
     grid-template-columns: 1fr;
+    gap: 6px;
   }
 
   .tm-bingo-tickets-grid.count-4 {
@@ -955,26 +931,269 @@
   }
 }
 
-@media (max-width: 520px) {
+@media (max-width: 860px) {
+  .tm-bingo-shell .tm-gs-live {
+    display: none;
+  }
+
+  .tm-bingo-arena {
+    gap: 5px;
+  }
+
+  .tm-bingo-toolbar {
+    padding: 5px 7px;
+    border-radius: 10px;
+  }
+
+  .tm-bingo-tool-row {
+    gap: 4px;
+  }
+
+  .tm-bingo-chip {
+    min-height: 27px;
+    padding: 2px 7px;
+    font-size: 0.69rem;
+  }
+
+  .tm-bingo-dabber-dot {
+    width: 24px;
+    height: 24px;
+  }
+
+  .tm-dabber-cap {
+    width: 13px;
+    height: 13px;
+  }
+
+  .tm-card-count-chip.is-desktop-extra {
+    display: none;
+  }
+
+  .tm-bingo-caller-col {
+    gap: 5px;
+  }
+
+  .tm-bingo-blower-card {
+    padding: 6px 8px;
+    gap: 5px;
+    border-radius: 12px;
+  }
+
+  .tm-bingo-blower-head {
+    font-size: 0.68rem;
+  }
+
+  .tm-bingo-cage-stage {
+    gap: 8px;
+    justify-content: flex-start;
+  }
+
   .tm-bingo-cage-canvas {
-    width: 132px;
-    height: 120px;
+    width: 68px;
+    height: 62px;
+  }
+
+  .tm-bingo-current-orb-wrap {
+    flex: 1;
+    gap: 0;
+  }
+
+  .tm-bingo-orb-and-call {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    text-align: left;
+  }
+
+  .tm-bingo-current-orb {
+    width: 50px;
+    height: 50px;
+    border-width: 2px;
+    flex-shrink: 0;
+  }
+
+  .tm-orb-num {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+
+  .tm-bingo-callout-box {
+    padding: 4px 7px;
+    min-width: 0;
+  }
+
+  .tm-callout-headline {
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tm-callout-chant {
+    font-size: 0.68rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tm-bingo-caller-controls {
+    gap: 4px;
+    flex-wrap: nowrap;
+  }
+
+  .tm-bingo-primary-btn {
+    flex: 1 1 auto;
+    min-height: 34px;
+    padding: 4px 10px;
+    font-size: 0.76rem;
+    border-radius: 9px;
+    white-space: nowrap;
+  }
+
+  .tm-bingo-speed-select {
+    min-height: 30px;
+    padding: 2px 5px;
+    font-size: 0.69rem;
+    max-width: 82px;
+  }
+
+  .tm-bingo-history-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 10px;
+  }
+
+  .tm-bingo-subhead {
+    margin-bottom: 0;
+    flex-shrink: 0;
+    gap: 4px;
+    font-size: 0.65rem;
+  }
+
+  .tm-bingo-last-tag {
+    display: none;
+  }
+
+  .tm-bingo-history-pills {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 4px;
+    scrollbar-width: none;
+    min-width: 0;
+  }
+
+  .tm-bingo-history-pills::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tm-history-ball {
+    width: 24px;
+    height: 24px;
+    font-size: 0.68rem;
+  }
+
+  .tm-bingo-prizes-bar {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .tm-bingo-prize-pill {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1px;
+    padding: 3px 4px;
+    border-radius: 8px;
+    font-size: 0.62rem;
+  }
+
+  .tm-bingo-prize-pill strong {
+    font-size: 0.66rem;
+  }
+
+  .tm-bingo-cards-col {
+    gap: 5px;
+  }
+
+  .tm-bingo-ticket {
+    padding: 6px;
+    border-radius: 11px;
+  }
+
+  .tm-ticket-header {
+    margin-bottom: 4px;
+    font-size: 0.66rem;
   }
 
   .tm-ticket-cells.mode-90 {
     gap: 2px;
   }
 
+  .tm-ticket-cells.mode-75 {
+    gap: 3px;
+  }
+
   .tm-ticket-cell {
-    min-height: 32px;
+    min-height: 33px;
     border-radius: 5px;
   }
 
-  .tm-ticket-cell.is-number {
-    font-size: 0.78rem;
+  .tm-ticket-cells.mode-75 .tm-ticket-cell {
+    aspect-ratio: 1 / 0.78;
+    min-height: 30px;
   }
 
-  .tm-heckle-btns {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .tm-ticket-cell.is-number {
+    font-size: 0.82rem;
+  }
+
+  .tm-bingo-shout-bar {
+    gap: 5px;
+  }
+
+  .tm-shout-bingo-btn {
+    min-height: 42px;
+    padding: 6px 12px;
+    border-radius: 10px;
+    gap: 7px;
+  }
+
+  .tm-shout-icon {
+    font-size: 1.25rem;
+  }
+
+  .tm-shout-text strong {
+    font-size: 0.9rem;
+  }
+
+  .tm-shout-text small {
+    font-size: 0.64rem;
+  }
+
+  .tm-bingo-reset-btn {
+    min-height: 42px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+  }
+
+  .tm-bingo-rivals-strip {
+    padding: 4px 7px;
+    gap: 4px;
+    border-radius: 9px;
+    justify-content: space-between;
+  }
+
+  .tm-rivals-title {
+    font-size: 0.64rem;
+  }
+
+  .tm-rival-pill {
+    padding: 2px 6px;
+    font-size: 0.65rem;
+    gap: 3px;
   }
 }

@@ -206,7 +206,7 @@
   align-items: center;
   justify-content: space-between;
   min-height: 76px;
-  padding: 12px 54px 12px 14px;
+  padding: 12px 102px 12px 14px;
   background: radial-gradient(
       circle at 18% 35%,
       color-mix(in srgb, var(--card-accent, #00f3ff) 42%, transparent),
@@ -298,6 +298,33 @@
   border-color: rgba(250, 204, 21, 0.72);
   background: rgba(250, 204, 21, 0.18);
   color: #facc15;
+}
+
+.tm-lobby-share-btn {
+  position: absolute;
+  top: 8px;
+  right: 58px;
+  z-index: 2;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: rgba(15, 23, 42, 0.85);
+  color: #7df9ff;
+  font-size: 1rem;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: border-color 0.14s ease, background 0.14s ease, transform 0.12s ease;
+}
+
+.tm-lobby-share-btn:hover,
+.tm-lobby-share-btn.is-copied {
+  border-color: #4ade80;
+  background: rgba(20, 83, 45, 0.75);
+  color: #86efac;
 }
 
 .tm-lobby-empty {

@@ -159,8 +159,8 @@ export default function QuickUploadBar({
       const outcome = await shareExportedMeme({
         blob: res?.blob || null,
         filename: res?.filename || `thememes-net-${Date.now()}.png`,
-        title: quickTitle.trim() || caption || 'Meme made on www.thememes.net',
-        text: 'Made on www.thememes.net',
+        title: quickTitle.trim() || caption || 'Fresh Meme',
+        text: `${quickTitle.trim() || caption || 'Fresh Meme'} ⚡`,
         url: typeof window !== 'undefined' ? window.location.origin : 'https://www.thememes.net'
       });
       if (outcome.method === 'files' || outcome.method === 'url') {

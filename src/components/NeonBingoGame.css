@@ -1,0 +1,980 @@
+/* ==========================================
+   NEON BINGO '86 — 1986 ELECTRIC BINGO HALL
+   Retro cards, UV Neon Dabber splats, Ceefax P.888 mode, & tomato splats!
+   ========================================== */
+
+.tm-bingo-live-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  background: linear-gradient(90deg, rgba(255, 42, 133, 0.35), rgba(0, 243, 255, 0.35));
+  border: 1px solid rgba(0, 243, 255, 0.65);
+  color: #f8fafc;
+}
+
+.tm-bingo-win-pill,
+.tm-bingo-shame-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.tm-bingo-win-pill {
+  border: 1px solid rgba(74, 222, 128, 0.55);
+  background: rgba(20, 83, 45, 0.55);
+  color: #86efac;
+}
+
+.tm-bingo-shame-pill {
+  border: 1px solid rgba(248, 113, 113, 0.65);
+  background: rgba(127, 29, 29, 0.55);
+  color: #fecaca;
+}
+
+.tm-bingo-arena {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  cursor: crosshair;
+}
+
+/* 1986 BBC CEEFAX PAGE 888 MODE */
+.tm-bingo-shell.is-ceefax .tm-bingo-arena {
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.tm-bingo-shell.is-ceefax .tm-bingo-blower-card,
+.tm-bingo-shell.is-ceefax .tm-bingo-ticket,
+.tm-bingo-shell.is-ceefax .tm-bingo-toolbar,
+.tm-bingo-shell.is-ceefax .tm-bingo-history-box,
+.tm-bingo-shell.is-ceefax .tm-bingo-heckle-deck {
+  background: #000000 !important;
+  border-color: #facc15 !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+}
+
+.tm-bingo-shell.is-ceefax .tm-bingo-blower-head {
+  background: #0000aa;
+  color: #ffff00;
+  padding: 4px 8px;
+}
+
+/* TOOLBAR */
+.tm-bingo-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 42, 133, 0.35);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(30, 12, 46, 0.92));
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.tm-bingo-tool-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.tm-bingo-label {
+  font-size: 0.74rem;
+  font-weight: 900;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tm-bingo-chip {
+  min-height: 32px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.85);
+  color: #e2e8f0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.tm-bingo-chip:hover:not(:disabled) {
+  border-color: #00f3ff;
+  transform: translateY(-1px);
+}
+
+.tm-bingo-chip.active {
+  border-color: #00f3ff;
+  background: rgba(0, 243, 255, 0.18);
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(0, 243, 255, 0.3);
+}
+
+.tm-bingo-chip:disabled {
+  opacity: 0.52;
+  cursor: not-allowed;
+}
+
+.tm-bingo-dabber-rack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.tm-bingo-dabber-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 32px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(9, 13, 22, 0.9);
+  color: #f8fafc;
+  font-size: 0.74rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tm-bingo-dabber-btn.active {
+  border-color: var(--pen-hex);
+  box-shadow: 0 0 12px var(--pen-hex);
+  background: rgba(15, 23, 42, 0.96);
+}
+
+.tm-dabber-cap {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px currentColor;
+  flex-shrink: 0;
+}
+
+/* MAIN TWO-COLUMN BINGO HALL STAGE */
+.tm-bingo-stage {
+  display: grid;
+  grid-template-columns: minmax(280px, 370px) minmax(0, 1fr);
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  align-items: start;
+}
+
+.tm-bingo-caller-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.tm-bingo-blower-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 243, 255, 0.4);
+  background: radial-gradient(circle at top, rgba(0, 243, 255, 0.12), rgba(9, 13, 26, 0.96));
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.45);
+}
+
+.tm-bingo-blower-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 0.74rem;
+  font-weight: 900;
+  color: #00f3ff;
+  letter-spacing: 0.04em;
+}
+
+.tm-bingo-ball-counter {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 42, 133, 0.24);
+  border: 1px solid rgba(255, 42, 133, 0.55);
+  color: #fbcfe8;
+}
+
+.tm-bingo-cage-stage {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.tm-bingo-cage-canvas {
+  width: 168px;
+  height: 152px;
+  flex-shrink: 0;
+}
+
+.tm-bingo-current-orb-wrap {
+  flex: 1 1 130px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.tm-bingo-current-orb {
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 30% 25%, #ffffff 0%, var(--orb-color, #00f3ff) 52%, #090d16 100%);
+  box-shadow: 0 0 22px var(--orb-color, #00f3ff);
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  animation: tmBingoBallPop 0.38s cubic-bezier(0.22, 1.4, 0.36, 1);
+}
+
+.tm-bingo-current-orb.is-idle {
+  background: radial-gradient(circle at 30% 25%, #facc15 0%, #ff2a85 75%, #090d16 100%);
+  box-shadow: 0 0 18px rgba(255, 42, 133, 0.55);
+}
+
+@keyframes tmBingoBallPop {
+  0% {
+    transform: scale(0.35) rotate(-18deg);
+    opacity: 0.3;
+  }
+  70% {
+    transform: scale(1.1) rotate(5deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.tm-orb-num {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #090d16;
+  font-size: 1.38rem;
+  font-weight: 950;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.25);
+}
+
+.tm-bingo-callout-box {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: rgba(2, 6, 23, 0.78);
+  border: 1px solid rgba(250, 204, 21, 0.35);
+}
+
+.tm-callout-headline {
+  font-size: 0.92rem;
+  font-weight: 950;
+  color: #fde047;
+  line-height: 1.2;
+}
+
+.tm-callout-chant {
+  margin-top: 2px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #f472b6;
+  line-height: 1.25;
+}
+
+.tm-bingo-caller-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.tm-bingo-primary-btn {
+  flex: 1 1 160px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 243, 255, 0.8);
+  background: linear-gradient(90deg, #ff2a85, #7c3aed, #06b6d4);
+  color: #ffffff;
+  font-size: 0.84rem;
+  font-weight: 950;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(255, 42, 133, 0.4);
+}
+
+.tm-bingo-primary-btn:hover {
+  filter: brightness(1.1);
+}
+
+.tm-bingo-speed-select {
+  min-height: 34px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: #0f172a;
+  color: #f8fafc;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+/* PRIZE METER */
+.tm-bingo-prizes-bar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.tm-bingo-prize-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 6px 9px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.85);
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: #cbd5e1;
+}
+
+.tm-bingo-prize-pill strong {
+  color: #facc15;
+}
+
+.tm-bingo-prize-pill.is-claimed {
+  border-color: rgba(74, 222, 128, 0.55);
+  background: rgba(20, 83, 45, 0.45);
+  color: #86efac;
+}
+
+.tm-bingo-prize-pill.is-ready {
+  border-color: #facc15;
+  background: rgba(250, 204, 21, 0.22);
+  color: #fef08a;
+  animation: tmPrizePulse 1s ease-in-out infinite;
+}
+
+@keyframes tmPrizePulse {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(250, 204, 21, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 14px rgba(250, 204, 21, 0.65);
+  }
+}
+
+/* RECENT BALLS & HECKLE DECK */
+.tm-bingo-history-box,
+.tm-bingo-heckle-deck {
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  background: rgba(15, 23, 42, 0.85);
+}
+
+.tm-bingo-subhead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: #38bdf8;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.tm-bingo-history-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.tm-history-ball {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #00f3ff;
+  background: #0f172a;
+  color: #f8fafc;
+  font-size: 0.75rem;
+  font-weight: 900;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.tm-history-ball.is-latest {
+  background: #facc15;
+  color: #090d16;
+  transform: scale(1.1);
+}
+
+.tm-bingo-muted {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.tm-heckle-btns {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.tm-heckle-btn {
+  min-height: 32px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 42, 133, 0.4);
+  background: rgba(255, 42, 133, 0.14);
+  color: #fdf2f8;
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tm-heckle-btn:hover {
+  background: rgba(255, 42, 133, 0.3);
+}
+
+/* RIGHT: RETRO BINGO CARDS */
+.tm-bingo-cards-col {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+}
+
+.tm-bingo-crowd-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  border: 2px solid #38bdf8;
+  background: rgba(15, 23, 42, 0.94);
+  animation: tmBingoBallPop 0.3s ease;
+}
+
+.tm-bingo-crowd-banner.is-cheer {
+  border-color: #4ade80;
+  background: linear-gradient(90deg, rgba(20, 83, 45, 0.86), rgba(15, 23, 42, 0.95));
+}
+
+.tm-bingo-crowd-banner.is-boo {
+  border-color: #f87171;
+  background: linear-gradient(90deg, rgba(127, 29, 29, 0.88), rgba(15, 23, 42, 0.95));
+}
+
+.tm-crowd-emoji {
+  font-size: 1.7rem;
+  flex-shrink: 0;
+}
+
+.tm-crowd-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.tm-crowd-copy strong {
+  display: block;
+  font-size: 0.88rem;
+  color: #ffffff;
+}
+
+.tm-crowd-copy p {
+  margin: 2px 0 0;
+  font-size: 0.78rem;
+  color: #e2e8f0;
+  line-height: 1.3;
+}
+
+.tm-crowd-close {
+  border: none;
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.tm-bingo-tickets-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr;
+  min-width: 0;
+}
+
+.tm-bingo-tickets-grid.count-4 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tm-bingo-ticket {
+  border-radius: 14px;
+  padding: 8px;
+  border: 2px solid rgba(255, 42, 133, 0.55);
+  background: linear-gradient(180deg, rgba(34, 15, 45, 0.94), rgba(12, 18, 34, 0.96));
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  min-width: 0;
+}
+
+.tm-bingo-theme-crt .tm-bingo-ticket {
+  border-color: rgba(74, 222, 128, 0.65);
+  background: linear-gradient(180deg, rgba(6, 36, 18, 0.96), rgba(4, 18, 10, 0.98));
+}
+
+.tm-bingo-theme-outrun .tm-bingo-ticket {
+  border-color: rgba(0, 243, 255, 0.65);
+  background: linear-gradient(180deg, rgba(10, 26, 56, 0.96), rgba(8, 12, 30, 0.98));
+}
+
+.tm-bingo-theme-gold .tm-bingo-ticket {
+  border-color: rgba(250, 204, 21, 0.72);
+  background: linear-gradient(180deg, rgba(46, 32, 8, 0.95), rgba(18, 14, 6, 0.98));
+}
+
+.tm-bingo-ticket.has-bingo-glow {
+  box-shadow: 0 0 22px rgba(250, 204, 21, 0.55);
+  border-color: #facc15;
+}
+
+.tm-ticket-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.tm-ticket-title {
+  color: #facc15;
+  letter-spacing: 0.04em;
+}
+
+.tm-ticket-progress {
+  color: #cbd5e1;
+}
+
+.tm-undabbed-hint {
+  color: #fb7185;
+}
+
+.tm-bingo-75-head {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+  margin-bottom: 4px;
+  text-align: center;
+  font-weight: 950;
+  font-size: 0.9rem;
+  color: #00f3ff;
+  letter-spacing: 0.1em;
+}
+
+.tm-ticket-cells.mode-90 {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.tm-ticket-cells.mode-75 {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.tm-ticket-cell {
+  position: relative;
+  aspect-ratio: 1 / 0.95;
+  min-height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 950;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(248, 250, 252, 0.94);
+  color: #0f172a;
+  padding: 0;
+}
+
+.tm-ticket-cell.is-blank {
+  background: rgba(15, 23, 42, 0.45);
+  border-color: rgba(148, 163, 184, 0.12);
+}
+
+.tm-blank-logo {
+  font-size: 0.56rem;
+  font-weight: 900;
+  color: rgba(255, 42, 133, 0.32);
+}
+
+.tm-ticket-cell.is-number {
+  cursor: pointer;
+  font-size: clamp(0.84rem, 1.5vw, 1.08rem);
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.tm-ticket-cell.is-number:hover {
+  transform: scale(1.04);
+  border-color: var(--dab-color);
+}
+
+.tm-ticket-cell.is-callable {
+  box-shadow: inset 0 0 0 2px #00f3ff, 0 0 10px rgba(0, 243, 255, 0.45);
+  background: #ecfeff;
+}
+
+.tm-ticket-cell.is-latest {
+  animation: tmPrizePulse 0.9s infinite;
+  background: #fef9c3;
+}
+
+.tm-ticket-cell.is-1togo {
+  box-shadow: inset 0 0 0 2px #facc15;
+}
+
+.tm-ticket-cell.is-free {
+  background: linear-gradient(135deg, #00f3ff, #ff2a85);
+  color: #ffffff;
+  font-size: 0.68rem;
+}
+
+.tm-ticket-cell.is-shaking {
+  animation: tmCellShake 0.35s ease;
+  background: #fee2e2;
+}
+
+@keyframes tmCellShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.tm-dab-splat {
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--dab-ink) 52%, transparent 74%);
+  box-shadow: 0 0 10px var(--dab-glow);
+  pointer-events: none;
+  animation: tmDabStamp 0.22s cubic-bezier(0.22, 1.5, 0.36, 1);
+}
+
+@keyframes tmDabStamp {
+  0% { transform: scale(1.7); opacity: 0.3; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.tm-cell-num,
+.tm-cell-free-lbl {
+  position: relative;
+  z-index: 2;
+}
+
+.tm-ticket-cell.is-dabbed .tm-cell-num {
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+}
+
+/* SHOUT BINGO ACTION BAR */
+.tm-bingo-shout-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.tm-shout-bingo-btn {
+  flex: 1 1 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 54px;
+  padding: 10px 18px;
+  border-radius: 14px;
+  border: 2px solid #facc15;
+  background: linear-gradient(90deg, #b91c1c, #ea580c, #ca8a04);
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(234, 88, 12, 0.42);
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+
+.tm-shout-bingo-btn.is-hot {
+  border-color: #4ade80;
+  background: linear-gradient(90deg, #16a34a, #06b6d4, #eab308);
+  animation: tmPrizePulse 0.85s infinite;
+}
+
+.tm-shout-bingo-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.tm-shout-icon {
+  font-size: 1.65rem;
+}
+
+.tm-shout-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.tm-shout-text strong {
+  font-size: 1rem;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+}
+
+.tm-shout-text small {
+  font-size: 0.72rem;
+  opacity: 0.92;
+}
+
+.tm-bingo-reset-btn {
+  min-height: 54px;
+  padding: 8px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: rgba(15, 23, 42, 0.9);
+  color: #e2e8f0;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* RIVAL HALL PLAYERS */
+.tm-bingo-rivals-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(9, 13, 22, 0.78);
+}
+
+.tm-rivals-title {
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: #94a3b8;
+}
+
+.tm-rival-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  font-size: 0.72rem;
+  color: #cbd5e1;
+}
+
+.tm-rival-pill strong {
+  color: #38bdf8;
+}
+
+.tm-rival-pill.is-sweating {
+  border-color: #f97316;
+  color: #fed7aa;
+}
+
+.tm-rival-pill.is-sweating strong {
+  color: #fb923c;
+}
+
+/* ALL 90 CALLOUTS DICTIONARY */
+.tm-bingo-dict-drawer {
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  background: rgba(9, 13, 24, 0.96);
+}
+
+.tm-bingo-dict-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.tm-bingo-dict-head strong {
+  display: block;
+  font-size: 0.85rem;
+  color: #facc15;
+}
+
+.tm-bingo-dict-head span {
+  font-size: 0.74rem;
+  color: #cbd5e1;
+}
+
+.tm-bingo-dict-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.tm-bingo-dict-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  padding: 6px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.88);
+  color: #f8fafc;
+  cursor: pointer;
+}
+
+.tm-bingo-dict-item.is-called {
+  border-color: #4ade80;
+  background: rgba(20, 83, 45, 0.35);
+}
+
+.tm-dict-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #00f3ff;
+  display: grid;
+  place-items: center;
+  font-size: 0.78rem;
+  font-weight: 950;
+  flex-shrink: 0;
+}
+
+.tm-dict-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.tm-dict-text strong {
+  font-size: 0.74rem;
+  color: #fde047;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tm-dict-text small {
+  font-size: 0.68rem;
+  color: #cbd5e1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* FLYING TOMATO SPLATS */
+.tm-bingo-tomato-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+}
+
+.tm-bingo-tomato-splat {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 3.1rem;
+  filter: drop-shadow(0 6px 12px rgba(220, 38, 38, 0.75));
+  animation: tmTomatoHit 2.3s ease forwards;
+}
+
+.tm-bingo-tomato-splat span {
+  font-size: 0.9rem;
+  font-weight: 950;
+  color: #ffffff;
+  background: #dc2626;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+@keyframes tmTomatoHit {
+  0% { transform: scale(2.2); opacity: 0; }
+  15% { transform: scale(1); opacity: 1; }
+  80% { transform: translateY(14px) scale(0.95); opacity: 1; }
+  100% { transform: translateY(36px) scale(0.85); opacity: 0; }
+}
+
+/* RESPONSIVE TABLET & MOBILE */
+@media (max-width: 900px) {
+  .tm-bingo-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .tm-bingo-tickets-grid.count-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .tm-bingo-cage-canvas {
+    width: 132px;
+    height: 120px;
+  }
+
+  .tm-ticket-cells.mode-90 {
+    gap: 2px;
+  }
+
+  .tm-ticket-cell {
+    min-height: 32px;
+    border-radius: 5px;
+  }
+
+  .tm-ticket-cell.is-number {
+    font-size: 0.78rem;
+  }
+
+  .tm-heckle-btns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

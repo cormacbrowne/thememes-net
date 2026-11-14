@@ -46,7 +46,9 @@ export const TEMPLATE_ID_TO_PATH = Object.fromEntries(
 export const MODE_ALIASES = {
   dozer: 'pusher',
   coindozer: 'pusher',
-  coinpusher: 'pusher'
+  coinpusher: 'pusher',
+  bingo: 'bingo',
+  'neon-bingo': 'bingo'
 };
 
 export const CATEGORY_SLUG_TO_ID = {
@@ -66,6 +68,7 @@ export const CATEGORY_ID_TO_SLUG = {
 
 export const GAME_VIEW_MODE_TO_PATH = {
   lobby: '/games',
+  bingo: '/games/neon-bingo',
   pusher: '/games/coin-pusher',
   pinball: '/games/pinball',
   slots: '/games/slots',
@@ -77,13 +80,18 @@ export const GAME_VIEW_MODE_TO_PATH = {
   derby: '/games/horse-racing',
   guess: '/games/guess-the-meme',
   eightball: '/games/magic-8-ball',
-  hilow: '/games/higher-or-lower'
+  hilow: '/games/higher-or-lower',
+  swipe: '/games/speed-swipe',
+  battle: '/games/meme-battle-arena'
 };
 
 export const PRANK_DISGUISE_TO_PATH = {
   update: '/fake-windows-update-screen',
   bsod: '/fake-blue-screen-prank',
-  excel: '/fake-excel-boss-screen'
+  excel: '/fake-excel-boss-screen',
+  zoom: '/fake-teams-zoom-call-screen',
+  terminal: '/fake-hacker-terminal-screen',
+  ai: '/fake-ai-workspace-boss-screen'
 };
 
 export const SEO_ROUTES = [
@@ -508,6 +516,114 @@ export const SEO_ROUTES = [
       'Unlike static screenshot editors that freeze animation into a flat image, THE MEMES.net composites your custom Top Text, Bottom Text, color accents, and optional emoji stickers into every frame of the animated GIF right on your device, preserving frame timing and transparent disposal behavior for crisp sharing on iMessage, WhatsApp, Discord, Slack, and Reddit.',
       'Need inspiration fast? Hit Random Meme Text for instant comedic pairings, adjust text size or color fills with one tap, and download or share a crisp GIF stamped cleanly with www.thememes.net—or publish directly to the community feed with its own shareable preview card link. Works seamlessly on iPhone Safari, Android Chrome, iPad, and desktop browsers.'
     ]
+  },
+  {
+    path: '/games/neon-bingo',
+    title: "80s Neon Bingo Game Online — Free Retro Bingo Caller & Virtual Dabber | THE MEMES.net",
+    description:
+      "Play Neon Bingo '86 free online! Features all 90 classic comedy bingo callouts (Two Little Ducks Quack Quack 22!), interactive UV Neon Dabber pen, cheers vs tomato boos, Ceefax 888 mode, and MemeDollarz jackpots.",
+    h1: "Neon Bingo '86 — Free 80s Bingo Hall & Comedy Caller Online",
+    kicker: '1986 Electric Bingo Hall // All 90 Comedy Calls & UV Dabber Pen',
+    changefreq: 'daily',
+    priority: '0.95',
+    viewMode: 'bingo',
+    category: 'all',
+    schemaType: 'VideoGame',
+    introParagraphs: [
+      "Step inside the neon-soaked 1986 Electric Bingo Hall with Neon Bingo '86—free to play directly in your browser on desktop, iPad, and iPhone with zero downloads or deposits. Watch the animated rotary air-blower cage spin and fire glowing balls while DJ Flashman calls out every classic British and 80s comedy bingo rhyme from 1 to 90, including Two Little Ducks Quack Quack 22, Legs Eleven, Heinz Varieties 57, Clickety Click 66, and Two Fat Ladies 88 MPH.",
+      'Pick your favorite UV ink Neon Dabber pen in Laser Pink, Electric Cyan, Acid Lime, Solar Gold, or UV Violet and stamp numbers across 1, 2, or 4 authentic retro 90-Ball tickets or 75-Ball Vegas 5x5 cards. Stamping manually earns bonus MemeCentz skill rewards, or switch seamlessly to BBC Ceefax Page 888 teletext view and preview all 90 funny sound callouts.',
+      'Race hilarious hall rivals like Nanna Turbo and Commodore Clive to complete 4 Corners, 1 Line, 2 Lines, or Full House, then smash the pulsing SHOUT BINGO button for stadium cheers and MemeDollarz jackpots—just watch out for false calls or the whole crowd boos and pelts your screen with tomatoes.'
+    ]
+  },
+  {
+    path: '/games/speed-swipe',
+    title: 'Meme Speed Swipe — Fast Dank or Cringe Rating Arcade Game | THE MEMES.net',
+    description:
+      'Play Meme Speed Swipe free online! Rapid-fire swipe through fresh community memes, crown Dank hits, combo your XP multiplier, and jump straight into Meme Forge remixes.',
+    h1: 'Meme Speed Swipe — Fast-Paced Community Meme Judge Game',
+    kicker: 'THE MEMES.net // Lightning Card Rating & XP Combos',
+    changefreq: 'daily',
+    priority: '0.85',
+    viewMode: 'swipe',
+    category: 'all',
+    schemaType: 'VideoGame',
+    introParagraphs: [
+      'Rate the funniest internet humor at lightning speed with Meme Speed Swipe on THE MEMES.net. Instead of endlessly scrolling passive feeds, step into the neon judge booth where community uploads and curated cult classics flip onto the stage one card at a time for instant rapid-fire verdicts right on phone, tablet, or desktop.',
+      'Swipe left to roast Cringe or swipe right to certify pure Dank gold—or use lightning keyboard arrows to chain rapid streak combos that charge your Overdrive Arcade XP multiplier and climb the community ranks. Spot a meme template crying out for a better joke? Launch any card straight into Meme Forge 3.0 to rewrite the top and bottom captions in seconds.',
+      'Every swipe also helps surface rising community creators to the top of the Hot feed leaderboard without logins, downloads, or clutter. Open Theater inspection anytime, share direct permalinks straight to your group chats, or switch between Speed Swipe and 13 other free Cyber-Arcade games in one tap.'
+    ]
+  },
+  {
+    path: '/games/meme-battle-arena',
+    title: 'Meme Battle Arena — Live 1v1 Head-to-Head Meme Voting Showdown | THE MEMES.net',
+    description:
+      'Play the 1v1 King of the Hill Meme Battle Arena free online! Pit viral memes head-to-head, vote for crowd champions, track win streaks, and share direct arena matchups.',
+    h1: '1v1 Meme Battle Arena — King of the Hill Showdown',
+    kicker: 'THE MEMES.net // Head-To-Head Meme Bracket Battles',
+    changefreq: 'daily',
+    priority: '0.85',
+    viewMode: 'battle',
+    category: 'all',
+    schemaType: 'VideoGame',
+    introParagraphs: [
+      'Enter the neon colosseum in the 1v1 Meme Battle Arena on THE MEMES.net, where two viral challengers square off side-by-side in a ruthless King of the Hill championship. Only one joke survives each round based on live player taste, building an unbeatable title reign while hungry new challengers try to dethrone the reigning champion.',
+      'Compare reaction memes, developer jokes, gaming moments, and community remixes head-to-head in clean full-contrast arena cards. Vote for your winner with a single click or keystroke to see instant crowd agreement percentages, rack up undefeated judging streaks, earn Arcade XP toward free cosmetic rewards, and trigger arena fanfare sound effects.',
+      'Curious who created a champion meme or want to challenge it yourself? Tap any fighter inside the arena to inspect its full remix family tree in Theater View, grab a direct shareable link for WhatsApp or Discord debates, or spin up your own challenger directly in Meme Forge 3.0.'
+    ]
+  },
+  {
+    path: '/fake-teams-zoom-call-screen',
+    title: 'Fake Microsoft Teams & Zoom Call Screen — Boss Key Meeting Simulator | THE MEMES.net',
+    description:
+      'Open a realistic fake Microsoft Teams & Zoom standup video call screen with 4 coworkers, live corporate transcript captions, incoming Boss Call ringtone prank, and Wi-Fi freeze button.',
+    h1: 'Fake Microsoft Teams & Zoom Call Screen — Boss Key Meeting Simulator',
+    kicker: 'Boss Key Panic Suite // Fake Video Call & Incoming Boss Ringer',
+    changefreq: 'weekly',
+    priority: '0.92',
+    viewMode: 'feed',
+    category: 'all',
+    bossDisguise: 'zoom',
+    introParagraphs: [
+      'Look completely locked into a high-stakes corporate video meeting in one split second with our realistic Fake Microsoft Teams & Zoom Call Screen. Designed to pass an immediate over-the-shoulder glance or pull off hilarious office pranks, the simulator displays a crisp multi-participant standup call grid complete with live speaker borders, muted icons, shared screen badges, and rolling closed-caption buzzwords.',
+      'Toggle seamlessly between authentic Microsoft Teams and Zoom Meeting layouts, trigger a hyper-realistic Incoming Boss Call video ringtone alert from the VP of Synergy complete with Decline or busy auto-reply options, or click Fake Tunnel Lag to switch your tile into a convincing Low Bandwidth Reconnecting state while mining secret Stealth XP.',
+      'Hit F11 Fullscreen and Hide Bar for a completely edge-to-edge enterprise video call window, or share this exact URL directly with friends and coworkers. Tap keys 1 through 6 anytime to swap into Excel spreadsheets, DevOps Kubernetes terminals, Enterprise AI, Windows Update, or Blue Screen pranks.'
+    ]
+  },
+  {
+    path: '/fake-hacker-terminal-screen',
+    title: 'Fake Hacker Terminal & Linux DevOps Compiler Screen — Boss Key Prank | THE MEMES.net',
+    description:
+      'Launch a convincing fullscreen fake Linux DevOps terminal & hacker console screen. Mash any key to compile fake Kubernetes & Rust microservices while earning Stealth XP.',
+    h1: 'Fake Hacker Terminal & DevOps Linux Screen — Fullscreen Simulator',
+    kicker: 'Boss Key Panic Suite // Live Type-To-Compile Terminal',
+    changefreq: 'weekly',
+    priority: '0.9',
+    viewMode: 'feed',
+    category: 'all',
+    bossDisguise: 'terminal',
+    introParagraphs: [
+      'Channel instant elite sysadmin and hacker energy with the Fake Hacker Terminal & Linux DevOps Compiler Screen on THE MEMES.net. Crafted with glowing phosphor green telemetry on deep Ubuntu server dark gray, it streams live Kubernetes pod rebalancing notices, Terraform apply confirmations, Rust release optimization logs, zero-trust cluster checks, and SOC2 handshake diagnostics.',
+      'Want to sell the illusion in front of coworkers or friends during a surprise desk check? Every single key you press—or tap on mobile—types realistic new production microservice compilation lines with live CPU and memory bar readouts, turning casual keyboard mashing into high-intensity DevOps release theater while secretly banking Stealth Arcade XP.',
+      'Use F11 Fullscreen alongside the Hide Bar toggle for an unmistakable full-monitor SSH terminal display, share this direct URL link with teammates for harmless office pranks, or press number keys 1 to 6 anytime to pivot instantly into Excel Q4 sheets, Microsoft Teams calls, Blue Screen crashes, or Windows Update screens.'
+    ]
+  },
+  {
+    path: '/fake-ai-workspace-boss-screen',
+    title: 'Fake Enterprise AI Workspace & Prompt Dashboard — Boss Key Screen | THE MEMES.net',
+    description:
+      'Open a realistic fake Enterprise AI Copilot Q4 strategic planning dashboard generating boardroom architecture memos. Great Boss Key disguise or coworker prank.',
+    h1: 'Fake Enterprise AI Copilot Workspace — Boss Key Screen Disguise',
+    kicker: 'Boss Key Panic Suite // Q4 Executive AI Strategy Console',
+    changefreq: 'weekly',
+    priority: '0.88',
+    viewMode: 'feed',
+    category: 'all',
+    bossDisguise: 'ai',
+    introParagraphs: [
+      'Blend effortlessly into the modern corporate workday with our Fake Enterprise AI Copilot Workspace (SynergyGPT v5.4). Featuring a crisp light-mode internal dashboard connected to mock Jira tickets, Confluence wikis, and Executive OKR graphs, it displays confidential Q4 architecture alignment summaries, latency reports, and ROI projections that look right at home on any office laptop.',
+      'Click Generate Q4 Executive Deliverable anytime someone walks by your monitor to stream fresh corporate memos—from Kubernetes EBITDA guardrail briefings to polite sprint-delay emails packed with holistic scope calibration and stakeholder synergy phrases—while quietly collecting bonus Stealth Arcade XP in the background.',
+      'Switch cleanly to fullscreen with Hide Bar enabled for a completely distraction-free enterprise AI tab on any laptop or desktop screen, share this direct screen link with friends and colleagues for instant office humor, or press number keys 1 through 6 to flip immediately into fake Excel spreadsheets, Microsoft Teams calls, DevOps Linux terminals, Windows Updates, or Blue Screen crashes.'
+    ]
   }
 ];
 
@@ -522,6 +638,13 @@ export function normalizeRoutePath(pathname = '/') {
   if (cleaned === '/memes/tech') return '/memes/programming';
   if (cleaned === '/templates' || cleaned.startsWith('/templates/')) return '/meme-generator';
   if (cleaned === '/games/plinko') return '/games';
+  if (cleaned === '/games/bingo' || cleaned === '/neon-bingo' || cleaned === '/bingo') return '/games/neon-bingo';
+  if (cleaned === '/fake-teams-call' || cleaned === '/fake-zoom-call' || cleaned === '/fake-teams-screen') {
+    return '/fake-teams-zoom-call-screen';
+  }
+  if (cleaned === '/fake-terminal' || cleaned === '/fake-hacker-screen') return '/fake-hacker-terminal-screen';
+  if (cleaned === '/fake-ai-screen' || cleaned === '/fake-ai-workspace') return '/fake-ai-workspace-boss-screen';
+  if (cleaned === '/boss-screen') return '/fake-excel-boss-screen';
   return cleaned || '/';
 }
 
@@ -623,6 +746,7 @@ export function resolveRouteFromLocation(pathname = '/', search = '') {
     'feed',
     'reels',
     'lobby',
+    'bingo',
     'blackjack',
     'poker',
     'roulette',

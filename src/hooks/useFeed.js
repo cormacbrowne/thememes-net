@@ -1090,16 +1090,16 @@ export function useFeed({
               shareExportedMeme({
                 blob: res?.blob || null,
                 filename: res?.filename || `thememes-net-${meme.id}.png`,
-                title: `${meme.title} — www.thememes.net`,
-                text: `Check out "${meme.title}" on www.thememes.net`,
+                title: meme.title || 'Check out this meme!',
+                text: `${meme.title || 'Fresh Meme'} ⚡`,
                 url: shareUrl
               })
             )
             .catch(() => {
               navigator
                 .share({
-                  title: `${meme.title} — www.thememes.net`,
-                  text: `Check out "${meme.title}" on www.thememes.net`,
+                  title: meme.title || 'Check out this meme!',
+                  text: `${meme.title || 'Fresh Meme'} ⚡`,
                   url: shareUrl
                 })
                 .catch(() => {});
@@ -1107,8 +1107,8 @@ export function useFeed({
         } else {
           navigator
             .share({
-              title: `${meme.title} — www.thememes.net`,
-              text: `Check out "${meme.title}" on www.thememes.net`,
+              title: meme.title || 'Check out this meme!',
+              text: `${meme.title || 'Fresh Meme'} ⚡`,
               url: shareUrl
             })
             .catch(() => {});

@@ -149,7 +149,14 @@ export default function SeoDiscoveryFooter({
                 className="tm-seo-link"
                 onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('lobby'))}
               >
-                🕹️ Cyber-Arcade Lobby (All 13 Games)
+                🕹️ Cyber-Arcade Lobby (All 15 Games)
+              </a>
+              <a
+                href="/games/neon-bingo"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('bingo'))}
+              >
+                🎱 Neon Bingo &apos;86 (80s Caller &amp; UV Dabber)
               </a>
               <a
                 href="/games/coin-pusher"
@@ -171,6 +178,27 @@ export default function SeoDiscoveryFooter({
                 onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('eightball'))}
               >
                 🎱 80s Neon Magic 8-Ball Fortune Oracle
+              </a>
+              <a
+                href="/games/horse-racing"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('derby'))}
+              >
+                🏇 Neon Derby &apos;86 Synthwave Horse Racing
+              </a>
+              <a
+                href="/games/guess-the-meme"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('guess'))}
+              >
+                🧠 Guess The Meme Daily Pixel Puzzle
+              </a>
+              <a
+                href="/games/higher-or-lower"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('hilow'))}
+              >
+                ⬆️ Higher or Lower Meme Score Streak
               </a>
               <a
                 href="/games/slots"
@@ -215,11 +243,32 @@ export default function SeoDiscoveryFooter({
                 📈 MEMEDAQ &apos;86 Meme Stock Market Simulator
               </a>
               <a
-                href="/fake-windows-update-screen"
+                href="/games/speed-swipe"
                 className="tm-seo-link"
-                onClick={(e) => handleSpaLinkClick(e, () => onOpenPrankDisguise?.('update'))}
+                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('swipe'))}
               >
-                🔄 Fake Windows Update Screen (F11 Prank)
+                ⚡ Meme Speed Swipe (Fast Meme Rating)
+              </a>
+              <a
+                href="/games/meme-battle-arena"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('battle'))}
+              >
+                ⚔️ 1v1 King of the Hill Meme Arena
+              </a>
+              <a
+                href="/fake-teams-zoom-call-screen"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onOpenPrankDisguise?.('zoom'))}
+              >
+                📹 Fake Microsoft Teams &amp; Zoom Call Screen (Boss Key)
+              </a>
+              <a
+                href="/fake-excel-boss-screen"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onOpenPrankDisguise?.('excel'))}
+              >
+                📊 Fake Excel Boss Key Screen Disguise
               </a>
               <a
                 href="/fake-blue-screen-prank"
@@ -229,15 +278,26 @@ export default function SeoDiscoveryFooter({
                 💀 Fake Blue Screen of Death (BSOD Prank)
               </a>
               <a
-                href="/fake-excel-boss-screen"
+                href="/fake-windows-update-screen"
                 className="tm-seo-link"
-                onClick={(e) => handleSpaLinkClick(e, () => onOpenPrankDisguise?.('excel'))}
+                onClick={(e) => handleSpaLinkClick(e, () => onOpenPrankDisguise?.('update'))}
               >
-                📊 Fake Excel Boss Key Screen Disguise
+                🔄 Fake Windows Update Screen (F11 Prank)
               </a>
-              <button type="button" className="tm-seo-link" onClick={() => onSelectViewMode('battle')}>
-                ⚔️ 1v1 King of the Hill Meme Arena
-              </button>
+              <a
+                href="/fake-hacker-terminal-screen"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onOpenPrankDisguise?.('terminal'))}
+              >
+                💻 Fake Hacker &amp; DevOps Linux Terminal Screen
+              </a>
+              <a
+                href="/fake-ai-workspace-boss-screen"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onOpenPrankDisguise?.('ai'))}
+              >
+                🤖 Fake Enterprise AI Workspace Boss Screen
+              </a>
               <button type="button" className="tm-seo-link" onClick={onOpenRewards}>
                 🏆 Fair Token Vault &amp; Daily Quests
               </button>

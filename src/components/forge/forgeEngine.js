@@ -574,7 +574,10 @@ export async function renderStillImageBlob(source, layers = [], { maxWidth = 120
 export async function exportMemeWithWatermark(input, { onProgress, watermark = true } = {}) {
   if (!input) return null;
   const isFeedMeme = typeof input.image_url === 'string' || typeof input.media_type === 'string';
-  const rawUrl = isFeedMeme ? input.base_image_url || input.image_url : input.url || '';
+  const hasLiveOverlayLayers = Array.isArray(input.overlay?.layers) && input.overlay.layers.length > 0;
+  const rawUrl = isFeedMeme
+    ? (hasLiveOverlayLayers ? input.base_image_url : null) || input.image_url || input.base_image_url
+    : input.url || '';
   const sourceFile = isFeedMeme ? null : input.file || null;
   const source = sourceFile || rawUrl;
   const kind = isFeedMeme
@@ -587,7 +590,7 @@ export async function exportMemeWithWatermark(input, { onProgress, watermark = t
 
   // Avoid double-drawing text when falling back to an already-burned still image without a clean base_image_url
   const overlayLayers = isFeedMeme
-    ? input.base_image_url || !input.overlay?.burned
+    ? (hasLiveOverlayLayers && (input.base_image_url || !input.overlay?.burned))
       ? input.overlay?.layers || []
       : []
     : input.layers || [];

@@ -1599,6 +1599,12 @@ export default function App() {
           setDeloreanModalOpen(true);
         }}
         onTriggerDeLoreanWarp={handleTriggerDeLoreanWarp}
+        onOpenPrankDisguise={(disguise) => {
+          sfx.playToggle?.();
+          closeAllModals();
+          setPrankDisguise(disguise);
+          setBossKeyActive(true);
+        }}
           />
         </Suspense>
       </ArcadeErrorBoundary>

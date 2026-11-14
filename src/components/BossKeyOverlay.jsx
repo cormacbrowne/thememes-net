@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { sfx } from '../utils/soundEngine';
+import { PRANK_DISGUISE_TO_PATH, SITE_ORIGIN } from '../data/seoRoutes';
 import './BossKeyOverlay.css';
 
 const DISGUISE_MODES = [
   { id: 'excel', label: '📊 1. Excel Sheet' },
   { id: 'terminal', label: '💻 2. DevOps Terminal' },
-  { id: 'zoom', label: '📹 3. Zoom Standup' },
+  { id: 'zoom', label: '📹 3. Teams / Zoom' },
   { id: 'ai', label: '🤖 4. Enterprise AI' },
   { id: 'update', label: '🔄 5. OS Update' },
   { id: 'bsod', label: '💀 6. Blue Screen' }
@@ -79,8 +80,35 @@ export default function BossKeyOverlay({
   const [secretXpEarned, setSecretXpEarned] = useState(0);
   const [activeBuzzword, setActiveBuzzword] = useState(BUZZWORD_EXCUSES[0]);
   const [webcamFrozen, setWebcamFrozen] = useState(false);
+  const [meetingApp, setMeetingApp] = useState('teams'); // 'teams' | 'zoom'
+  const [incomingBossCall, setIncomingBossCall] = useState(false);
+  const [callReplyToast, setCallReplyToast] = useState('');
+  const [copiedPrankLink, setCopiedPrankLink] = useState(false);
   const [aiMessages, setAiMessages] = useState([AI_COPILOT_MEMOS[0]]);
   const [bsodPct, setBsodPct] = useState(42);
+
+  useEffect(() => {
+    if (initialDisguise) setDisguise(initialDisguise);
+  }, [initialDisguise]);
+
+  const handleSharePrankScreen = () => {
+    if (typeof window === 'undefined') return;
+    const path = PRANK_DISGUISE_TO_PATH[disguise] || '/fake-excel-boss-screen';
+    const shareUrl = `${window.location.origin || SITE_ORIGIN}${path}`;
+    navigator.clipboard?.writeText(shareUrl).catch(() => {});
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      navigator
+        .share({
+          title: `Boss Key Disguise: ${DISGUISE_MODES.find((d) => d.id === disguise)?.label || 'Prank Screen'}`,
+          text: 'Check out this interactive prank/boss screen on THE MEMES.net! 💼',
+          url: shareUrl
+        })
+        .catch(() => {});
+    }
+    sfx.playPop?.(2);
+    setCopiedPrankLink(true);
+    setTimeout(() => setCopiedPrankLink(false), 2200);
+  };
 
   useEffect(() => {
     if (typeof document === 'undefined') return undefined;
@@ -253,6 +281,24 @@ export default function BossKeyOverlay({
                 {m.label}
               </button>
             ))}
+
+            <button
+              type="button"
+              onClick={handleSharePrankScreen}
+              style={{
+                background: copiedPrankLink ? '#16a34a' : 'rgba(255,255,255,0.22)',
+                color: '#ffffff',
+                border: '1px solid rgba(255,255,255,0.35)',
+                padding: '5px 10px',
+                borderRadius: '6px',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+              title="Copy or Share direct URL for this exact prank / boss screen"
+            >
+              {copiedPrankLink ? '✅ Link Copied!' : '🔗 Share Screen'}
+            </button>
 
             <button
               type="button"
@@ -474,20 +520,209 @@ export default function BossKeyOverlay({
         </div>
       )}
 
-      {/* DISGUISE 3: CORPORATE ZOOM / TEAMS STANDUP CALL */}
+      {/* DISGUISE 3: CORPORATE MICROSOFT TEAMS / ZOOM STANDUP CALL */}
       {disguise === 'zoom' && (
         <div
           style={{
             flex: 1,
-            background: '#0f172a',
+            background: meetingApp === 'teams' ? '#141418' : '#0f172a',
             color: '#f8fafc',
-            padding: '20px',
+            padding: '16px 20px',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            overflowY: 'auto'
+            overflowY: 'auto',
+            position: 'relative'
           }}
         >
+          {/* Meeting App Header Bar (Teams vs Zoom Switcher) */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '8px',
+              marginBottom: '12px',
+              padding: '8px 12px',
+              borderRadius: '8px',
+              background: meetingApp === 'teams' ? '#29293a' : '#1e293b',
+              border: `1px solid ${meetingApp === 'teams' ? '#6264a7' : '#2563eb'}`
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 700 }}>
+              <span
+                style={{
+                  background: meetingApp === 'teams' ? '#6264a7' : '#2d8cff',
+                  padding: '2px 8px',
+                  borderRadius: '4px'
+                }}
+              >
+                {meetingApp === 'teams' ? 'Microsoft Teams' : 'Zoom Enterprise'}
+              </span>
+              <span>🔴 REC 00:42:19 · Q4 Architecture &amp; Budget Alignment (4)</span>
+            </div>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <button
+                type="button"
+                onClick={() => setMeetingApp((app) => (app === 'teams' ? 'zoom' : 'teams'))}
+                style={{
+                  background: 'rgba(255,255,255,0.12)',
+                  color: '#fff',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                🔄 Switch to {meetingApp === 'teams' ? 'Zoom UI' : 'Microsoft Teams UI'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  earnStealthXp(15);
+                  sfx.playTeamsRingtone?.();
+                  setCallReplyToast('');
+                  setIncomingBossCall(true);
+                }}
+                style={{
+                  background: '#6264a7',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                📞 Trigger Incoming Boss Call
+              </button>
+            </div>
+          </div>
+
+          {callReplyToast && (
+            <div
+              style={{
+                marginBottom: '10px',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                background: 'rgba(34, 197, 94, 0.2)',
+                border: '1px solid #22c55e',
+                color: '#86efac',
+                fontSize: '12px',
+                fontWeight: 700,
+                textAlign: 'center'
+              }}
+            >
+              {callReplyToast}
+            </div>
+          )}
+
+          {/* Simulated Incoming Boss Call Prank Toast Modal */}
+          {incomingBossCall && (
+            <div
+              style={{
+                position: 'fixed',
+                bottom: '26px',
+                right: '26px',
+                zIndex: 999999,
+                width: 'min(320px, calc(100vw - 32px))',
+                padding: '16px',
+                borderRadius: '12px',
+                background: meetingApp === 'teams' ? '#242436' : '#1e293b',
+                border: `2px solid ${meetingApp === 'teams' ? '#7b83eb' : '#38bdf8'}`,
+                boxShadow: '0 14px 36px rgba(0, 0, 0, 0.75)',
+                color: '#ffffff'
+              }}
+            >
+              <div style={{ fontSize: '11px', color: '#a5b4fc', fontWeight: 800, marginBottom: '4px' }}>
+                {meetingApp === 'teams' ? '🟣 MICROSOFT TEAMS INCOMING CALL' : '🔵 ZOOM INCOMING MEETING INVITE'}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                <div
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: '50%',
+                    background: '#4f46e5',
+                    display: 'grid',
+                    placeItems: 'center',
+                    fontWeight: 900,
+                    fontSize: '15px'
+                  }}
+                >
+                  RV
+                </div>
+                <div>
+                  <strong style={{ display: 'block', fontSize: '14px' }}>Richard Vance (VP of Synergy)</strong>
+                  <span style={{ fontSize: '11px', color: '#cbd5e1' }}>&ldquo;Quick 5-min sync before EOD?&rdquo;</span>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    earnStealthXp(15);
+                    setIncomingBossCall(false);
+                    setActiveBuzzword('"Joining audio now — just unmuting while looking at the Q4 deck..."');
+                  }}
+                  style={{
+                    flex: 1,
+                    background: '#16a34a',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '7px 10px',
+                    borderRadius: '6px',
+                    fontWeight: 700,
+                    fontSize: '11px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  📞 Accept
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    earnStealthXp(15);
+                    setIncomingBossCall(false);
+                    setCallReplyToast('💬 Auto-replied: "On a client production sync — will circle back in 15 mins!"');
+                  }}
+                  style={{
+                    flex: 1,
+                    background: '#334155',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '7px 10px',
+                    borderRadius: '6px',
+                    fontWeight: 700,
+                    fontSize: '11px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  💬 I&apos;m Busy
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIncomingBossCall(false)}
+                  style={{
+                    background: '#dc2626',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '7px 10px',
+                    borderRadius: '6px',
+                    fontWeight: 700,
+                    fontSize: '11px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Decline
+                </button>
+              </div>
+            </div>
+          )}
           <div
             style={{
               display: 'grid',

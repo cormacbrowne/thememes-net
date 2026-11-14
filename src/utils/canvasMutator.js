@@ -189,7 +189,9 @@ export function renderArtworkWithFilter(ctx, W, areaY, areaH, filterMode, drawAr
 }
 
 /**
- * Subtle corner watermark stamped on exported/shared images and GIFs.
+ * Subtle electric-blue corner watermark with lightning strike stamped once on exported/shared images and GIFs.
+ * Automatically detects and cleanly replaces any legacy/pre-existing bottom-right cartridge stamp so
+ * `www.thememes.net` is never stamped twice on forwarded or remixed memes.
  */
 export function stampArcadeCartridgeFooter(ctx, W, H) {
   const label = 'www.thememes.net';
@@ -198,24 +200,103 @@ export function stampArcadeCartridgeFooter(ctx, W, H) {
   ctx.save();
   ctx.font = `700 ${fs}px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
   const tw = ctx.measureText(label).width;
-  const pad = Math.round(fs * 0.55);
+  const boltW = Math.max(8, Math.round(fs * 0.78));
+  const boltGap = Math.max(4, Math.round(fs * 0.34));
+  const pad = Math.round(fs * 0.58);
   const margin = Math.max(6, Math.round(fs * 0.5));
-  const x = W - tw - pad * 2 - margin;
+  const pillW = Math.round(boltW + boltGap + tw + pad * 2);
+  const x = W - pillW - margin;
   const y = H - pillH - margin;
-  ctx.globalAlpha = 0.68;
+
+  // Clean up any wider legacy `#070810` + `#00f3ff` bottom-right stamp so it never renders twice
+  try {
+    const scanLeft = Math.max(0, Math.floor(W * 0.35));
+    const scanTop = Math.max(0, y - Math.round(pillH * 0.6));
+    const scanW = W - scanLeft;
+    const scanH = H - scanTop;
+    if (scanW > 0 && scanH > 4) {
+      const imgData = ctx.getImageData(scanLeft, scanTop, scanW, scanH);
+      const data = imgData.data;
+      let leftmostLegacyX = W;
+      let topLegacyY = H;
+      let foundLeftOverhangCyan = false;
+      const localPillStartX = Math.max(0, x - scanLeft);
+
+      for (let py = Math.max(0, y - scanTop - 6); py < scanH; py += 1) {
+        for (let px = 0; px < localPillStartX; px += 1) {
+          const idx = (py * scanW + px) * 4;
+          const r = data[idx];
+          const g = data[idx + 1];
+          const b = data[idx + 2];
+          // Match legacy electric-blue/gold/white stamp glyphs sitting inside dark #070810 pill overhang
+          const isCyanOrGoldGlyph = (r < 75 && g > 175 && b > 200) || (r > 220 && g > 170 && b < 90);
+          if (isCyanOrGoldGlyph) {
+            // Confirm dark cartridge neighbor pixel right beside it
+            const nIdx = (py * scanW + Math.max(0, px - 2)) * 4;
+            const nDark = data[nIdx] < 24 && data[nIdx + 1] < 26 && data[nIdx + 2] < 40;
+            if (nDark) {
+              foundLeftOverhangCyan = true;
+              const absX = scanLeft + px;
+              const absY = scanTop + py;
+              if (absX < leftmostLegacyX) leftmostLegacyX = absX;
+              if (absY < topLegacyY) topLegacyY = absY;
+            }
+          }
+        }
+      }
+
+      if (foundLeftOverhangCyan && leftmostLegacyX < x) {
+        const cleanX = Math.max(scanLeft, leftmostLegacyX - Math.round(pillH * 0.9));
+        const cleanY = Math.max(0, Math.min(y - 2, topLegacyY - Math.round(pillH * 0.45)));
+        const cleanW = x + 6 - cleanX;
+        const cleanH = H - cleanY;
+        const sampleY = Math.max(0, cleanY - 3);
+        // Paint vertical sample slices from just above the legacy stamp so artwork or footer bar blends seamlessly
+        ctx.drawImage(ctx.canvas, cleanX, sampleY, cleanW, 2, cleanX, cleanY, cleanW, cleanH);
+      }
+    }
+  } catch {
+    // Tainted/CORS canvases skip pixel inspection safely
+  }
+
+  // Dark subtle cartridge pill + delicate electric-blue border
+  ctx.globalAlpha = 0.82;
   ctx.fillStyle = '#070810';
   if (typeof ctx.roundRect === 'function') {
     ctx.beginPath();
-    ctx.roundRect(x, y, tw + pad * 2, pillH, Math.round(pillH * 0.28));
+    ctx.roundRect(x, y, pillW, pillH, Math.round(pillH * 0.3));
     ctx.fill();
+    ctx.lineWidth = Math.max(1, fs * 0.08);
+    ctx.strokeStyle = 'rgba(0, 243, 255, 0.42)';
+    ctx.stroke();
   } else {
-    ctx.fillRect(x, y, tw + pad * 2, pillH);
+    ctx.fillRect(x, y, pillW, pillH);
+    ctx.strokeStyle = 'rgba(0, 243, 255, 0.42)';
+    ctx.strokeRect(x, y, pillW, pillH);
   }
-  ctx.globalAlpha = 0.94;
-  ctx.fillStyle = '#ffffff';
+
+  // Crisp vector lightning strike next to `www.thememes.net`
+  const bx = x + pad;
+  const cy = y + pillH / 2;
+  const bh = fs * 1.05;
+  ctx.globalAlpha = 0.96;
+  ctx.shadowColor = 'rgba(0, 243, 255, 0.55)';
+  ctx.shadowBlur = Math.max(3, Math.round(fs * 0.35));
+  ctx.fillStyle = '#00f3ff';
+  ctx.beginPath();
+  ctx.moveTo(bx + boltW * 0.62, cy - bh * 0.52);
+  ctx.lineTo(bx + boltW * 0.1, cy + bh * 0.06);
+  ctx.lineTo(bx + boltW * 0.48, cy + bh * 0.06);
+  ctx.lineTo(bx + boltW * 0.28, cy + bh * 0.54);
+  ctx.lineTo(bx + boltW * 0.92, cy - bh * 0.08);
+  ctx.lineTo(bx + boltW * 0.52, cy - bh * 0.08);
+  ctx.closePath();
+  ctx.fill();
+
+  // Subtle, cool electric-blue domain text (written once)
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
-  ctx.fillText(label, x + pad, y + pillH / 2);
+  ctx.fillText(label, bx + boltW + boltGap, cy + 0.5);
   ctx.restore();
 }
 

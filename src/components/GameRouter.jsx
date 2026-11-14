@@ -1,5 +1,6 @@
-import { Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { sfx } from '../utils/soundEngine';
+import { GAME_VIEW_MODE_TO_PATH, SITE_ORIGIN } from '../data/seoRoutes';
 import lazyWithRetry from '../utils/lazyWithRetry';
 import MemeSkeletonGrid from './MemeSkeletonGrid';
 import VerticalReelsView from './VerticalReelsView';
@@ -8,6 +9,7 @@ import { RadioToggleButton } from './MemesRadio';
 const SwipeDeck = lazyWithRetry(() => import('./SwipeDeck'));
 const BattleArena = lazyWithRetry(() => import('./BattleArena'));
 const ArcadeLobby = lazyWithRetry(() => import('./ArcadeLobby'));
+const NeonBingoGame = lazyWithRetry(() => import('./NeonBingoGame'));
 const MemeCrushGame = lazyWithRetry(() => import('./MemeCrushGame'));
 const VegasPinballGame = lazyWithRetry(() => import('./VegasPinballGame'));
 const VegasSlotMachine = lazyWithRetry(() => import('./VegasSlotMachine'));
@@ -41,6 +43,27 @@ export function FixedArcadeTopBar({
   setExtrasFocus,
   setExtrasDrawerOpen
 }) {
+  const [sharedGame, setSharedGame] = useState(false);
+
+  const handleShareCurrentGame = () => {
+    if (typeof window === 'undefined') return;
+    const canonical = GAME_VIEW_MODE_TO_PATH[viewMode] || window.location.pathname;
+    const shareUrl = `${window.location.origin || SITE_ORIGIN}${canonical}`;
+    navigator.clipboard?.writeText(shareUrl).catch(() => {});
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      navigator
+        .share({
+          title: `Play on THE MEMES.net`,
+          text: `Check out this arcade game on THE MEMES.net! 🕹️`,
+          url: shareUrl
+        })
+        .catch(() => {});
+    }
+    sfx.playPop?.(2);
+    setSharedGame(true);
+    setTimeout(() => setSharedGame(false), 2000);
+  };
+
   return (
     <header className="tm-fixed-arcade-bar" aria-label="Fixed Arcade Cabinet Bar">
       <button
@@ -71,6 +94,16 @@ export function FixedArcadeTopBar({
       </button>
 
       <nav className="tm-fixed-game-pills" aria-label="Switch Arcade Game">
+        <button
+          type="button"
+          className={`tm-fixed-game-pill ${viewMode === 'bingo' ? 'active' : ''}`}
+          onClick={() => {
+            sfx.playBingoBallPop?.();
+            setViewMode('bingo');
+          }}
+        >
+          🎱 Bingo &apos;86
+        </button>
         <button
           type="button"
           className={`tm-fixed-game-pill ${viewMode === 'pusher' ? 'active' : ''}`}
@@ -194,6 +227,15 @@ export function FixedArcadeTopBar({
       </nav>
 
       <div className="tm-fixed-bar-right">
+        <button
+          type="button"
+          className="tm-fixed-icon-btn"
+          onClick={handleShareCurrentGame}
+          title="Copy or Share Direct Link to This Game"
+          aria-label="Share direct link to this game"
+        >
+          {sharedGame ? '✅' : '🔗'}
+        </button>
         <button
           type="button"
           className="tm-fixed-wallet-pill"
@@ -638,10 +680,33 @@ export default function GameRouter({
   activeCarId,
   onSelectCar,
   onOpenTimeCircuits,
-  onTriggerDeLoreanWarp
+  onTriggerDeLoreanWarp,
+  onOpenPrankDisguise
 }) {
   return (
     <>
+      {viewMode === 'bingo' && (
+        <Suspense fallback={<MemeSkeletonGrid count={3} />}>
+          <NeonBingoGame
+            tokens={tokens}
+            soundOn={soundOn}
+            onToggleSound={() => {
+              const nextState = !soundOn;
+              sfx.enabled = nextState;
+              setSoundOn(nextState);
+              if (nextState) sfx.playToggle();
+            }}
+            onSpendTokens={handleSpendTokens}
+            onPayoutTokens={handlePayoutGameTokens}
+            onEarnMemeCentz={handleEarnMemeCentz}
+            onBackToFeed={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+            }}
+          />
+        </Suspense>
+      )}
+
       {viewMode === 'pusher' && (
         <Suspense fallback={<MemeSkeletonGrid count={3} />}>
           <VegasCoinPusherGame
@@ -974,6 +1039,7 @@ export default function GameRouter({
             onSelectCar={onSelectCar}
             onOpenTimeCircuits={onOpenTimeCircuits}
             onTriggerDeLoreanWarp={onTriggerDeLoreanWarp}
+            onOpenPrankDisguise={onOpenPrankDisguise}
           />
         </Suspense>
       )}

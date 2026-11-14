@@ -16,6 +16,17 @@ export const ARCADE_LOBBY_GROUPS = [
 export const ARCADE_GAMES_CATALOG = [
   // Casino
   {
+    id: 'bingo',
+    group: 'casino',
+    icon: '🎱',
+    label: "Neon Bingo '86",
+    pitch: 'All 90 comedy calls (Two Little Ducks 22!), UV dabber pen, cheers/boos & M$ jackpots.',
+    badge: '90-Ball',
+    isNew: true,
+    accent: '#ff2a85',
+    path: '/games/neon-bingo'
+  },
+  {
     id: 'pusher',
     group: 'casino',
     icon: '🪙',
@@ -23,7 +34,8 @@ export const ARCADE_GAMES_CATALOG = [
     pitch: 'Drop coins & shove 3D prize towers.',
     badge: '3D',
     isNew: false,
-    accent: '#facc15'
+    accent: '#facc15',
+    path: '/games/coin-pusher'
   },
   {
     id: 'roulette',
@@ -33,7 +45,8 @@ export const ARCADE_GAMES_CATALOG = [
     pitch: 'European wheel with 150x strikes.',
     badge: '150x',
     isNew: false,
-    accent: '#ef4444'
+    accent: '#ef4444',
+    path: '/games/roulette'
   },
   {
     id: 'blackjack',
@@ -43,7 +56,8 @@ export const ARCADE_GAMES_CATALOG = [
     pitch: 'Beat the synth dealer to 21.',
     badge: 'Cards',
     isNew: false,
-    accent: '#38bdf8'
+    accent: '#38bdf8',
+    path: '/games/blackjack'
   },
   {
     id: 'poker',
@@ -53,7 +67,8 @@ export const ARCADE_GAMES_CATALOG = [
     pitch: 'Texas Hold’em with casino chips & token buy-ins.',
     badge: 'Hold’em',
     isNew: true,
-    accent: '#ff2a85'
+    accent: '#ff2a85',
+    path: '/games/poker'
   },
   {
     id: 'slots',
@@ -63,7 +78,8 @@ export const ARCADE_GAMES_CATALOG = [
     pitch: "5 machines (25¢ min): Bandit '85, Neon Special '86, Mustang, Lightning & Buffalo.",
     badge: '5 Slots',
     isNew: true,
-    accent: '#f472b6'
+    accent: '#f472b6',
+    path: '/games/slots'
   },
   {
     id: 'eightball',
@@ -73,7 +89,8 @@ export const ARCADE_GAMES_CATALOG = [
     pitch: 'Ask the neon oracle & wager MemeDollarz on destiny.',
     badge: 'Oracle',
     isNew: true,
-    accent: '#00f5ff'
+    accent: '#00f5ff',
+    path: '/games/magic-8-ball'
   },
   {
     id: 'derby',
@@ -83,7 +100,8 @@ export const ARCADE_GAMES_CATALOG = [
     pitch: '8 meme horses sprint synthwave turf.',
     badge: 'Race',
     isNew: true,
-    accent: '#22d3ee'
+    accent: '#22d3ee',
+    path: '/games/horse-racing'
   },
 
   // Skill
@@ -95,7 +113,8 @@ export const ARCADE_GAMES_CATALOG = [
     pitch: 'Flippers, multiball & 5 retro tables.',
     badge: '5 Tables',
     isNew: false,
-    accent: '#c084fc'
+    accent: '#c084fc',
+    path: '/games/pinball'
   },
   {
     id: 'crush',
@@ -105,7 +124,8 @@ export const ARCADE_GAMES_CATALOG = [
     pitch: 'Match meme tiles and chain combos.',
     badge: 'Match-3',
     isNew: false,
-    accent: '#fb7185'
+    accent: '#fb7185',
+    path: '/games/meme-crush'
   },
 
   // Meme Games
@@ -117,7 +137,8 @@ export const ARCADE_GAMES_CATALOG = [
     pitch: 'Spot 5 pixelated formats each day.',
     badge: 'Daily',
     isNew: true,
-    accent: '#4ade80'
+    accent: '#4ade80',
+    path: '/games/guess-the-meme'
   },
   {
     id: 'hilow',
@@ -127,7 +148,8 @@ export const ARCADE_GAMES_CATALOG = [
     pitch: 'Guess which meme earned more votes.',
     badge: 'Endless',
     isNew: true,
-    accent: '#fbbf24'
+    accent: '#fbbf24',
+    path: '/games/higher-or-lower'
   },
   {
     id: 'swipe',
@@ -137,7 +159,8 @@ export const ARCADE_GAMES_CATALOG = [
     pitch: 'Rate fresh feed memes at lightning pace.',
     badge: 'Fast',
     isNew: false,
-    accent: '#60a5fa'
+    accent: '#60a5fa',
+    path: '/games/speed-swipe'
   },
   {
     id: 'battle',
@@ -147,7 +170,8 @@ export const ARCADE_GAMES_CATALOG = [
     pitch: 'Vote head-to-head to crown a king.',
     badge: 'Versus',
     isNew: false,
-    accent: '#f97316'
+    accent: '#f97316',
+    path: '/games/meme-battle-arena'
   },
 
   // Sim
@@ -159,7 +183,59 @@ export const ARCADE_GAMES_CATALOG = [
     pitch: 'Trade viral meme stocks before close.',
     badge: 'Trade',
     isNew: false,
-    accent: '#34d399'
+    accent: '#34d399',
+    path: '/games/meme-stock-market'
+  }
+];
+
+export const BOSS_SCREENS_CATALOG = [
+  {
+    id: 'zoom',
+    icon: '📹',
+    label: 'Fake Microsoft Teams & Zoom Call',
+    pitch: 'Realistic 4-person standup meeting, incoming Boss Call ringtone & bad Wi-Fi camera freeze.',
+    path: '/fake-teams-zoom-call-screen',
+    accent: '#6366f1'
+  },
+  {
+    id: 'excel',
+    icon: '📊',
+    label: 'Fake Excel Q4 Boss Spreadsheet',
+    pitch: 'Interactive Q4 Cloud Synergy financial sheet with clickable cells & Monte Carlo audit.',
+    path: '/fake-excel-boss-screen',
+    accent: '#10b981'
+  },
+  {
+    id: 'bsod',
+    icon: '💀',
+    label: 'Fake Blue Screen of Death (BSOD)',
+    pitch: 'Classic Windows ":(" crash screen with live % recovery & IT support QR prank.',
+    path: '/fake-blue-screen-prank',
+    accent: '#0284c7'
+  },
+  {
+    id: 'update',
+    icon: '🔄',
+    label: 'Fake Windows Update Screen',
+    pitch: 'Fullscreen "Working on updates 69% complete" prank — click anywhere to advance %.',
+    path: '/fake-windows-update-screen',
+    accent: '#0ea5e9'
+  },
+  {
+    id: 'terminal',
+    icon: '💻',
+    label: 'Fake Hacker & DevOps Terminal',
+    pitch: 'Tap any key to compile fake Rust/Kubernetes microservices in fullscreen green text.',
+    path: '/fake-hacker-terminal-screen',
+    accent: '#22c55e'
+  },
+  {
+    id: 'ai',
+    icon: '🤖',
+    label: 'Fake Enterprise AI Copilot',
+    pitch: 'SynergyGPT Q4 Executive Workspace generating ultra-convincing corporate memos.',
+    path: '/fake-ai-workspace-boss-screen',
+    accent: '#8b5cf6'
   }
 ];
 

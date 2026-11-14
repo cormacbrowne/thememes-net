@@ -78,6 +78,8 @@ export const ARCADE_ECONOMY_RULES = {
     PINBALL_EXTRA_BALL_COST: 10,
     PINBALL_PAYOUT_TIERS: { 18000: 8, 32000: 12, 50000: 18, 75000: 28 },
     EIGHTBALL_BETS: [2, 5, 10],
+    BINGO_CARD_BUYIN: 10,
+    BINGO_PAYOUTS: { oneLine: 18, fourCorners: 22, twoLines: 35, fullHouse: 85 },
     STOCK_FEE_RATE: 0.015 // 1.5% brokerage spread prevents rapid buy/sell arbitrage & gives house edge
   }
 };

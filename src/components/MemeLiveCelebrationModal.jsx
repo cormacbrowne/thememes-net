@@ -41,7 +41,7 @@ export default function MemeLiveCelebrationModal({
   const shareUrl =
     typeof window !== 'undefined'
       ? `${window.location.origin}/m/${encodeURIComponent(String(meme.id))}?ref=share`
-      : `https://thememes.net/m/${encodeURIComponent(String(meme.id))}?ref=share`;
+      : `https://www.thememes.net/m/${encodeURIComponent(String(meme.id))}?ref=share`;
 
   const handleCopy = (e) => {
     if (onShareMeme) {
@@ -59,8 +59,8 @@ export default function MemeLiveCelebrationModal({
       const outcome = await shareExportedMeme({
         blob: exported?.blob || null,
         filename: exported?.filename || `thememes-net-${meme.id || Date.now()}.png`,
-        title: meme.title || 'Check out my meme on www.thememes.net!',
-        text: `🚀 "${meme.title || 'Fresh Meme'}" — made on www.thememes.net`,
+        title: meme.title || 'Check out my new meme!',
+        text: `🚀 "${meme.title || 'Fresh Meme'}" ⚡`,
         url: shareUrl
       });
       if (outcome.method === 'files' || outcome.method === 'url') {

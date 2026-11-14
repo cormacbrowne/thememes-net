@@ -1,12 +1,14 @@
 import { useState, useMemo } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { formatEightiesPrice } from '../utils/tokenEconomy';
+import { SITE_ORIGIN } from '../data/seoRoutes';
 import { RadioStationStrip } from './MemesRadio';
 import { DeLoreanDockBanner } from './DeLoreanTimeMachine';
 import EightiesIconsStrip from './EightiesIconsStrip';
 import {
   ARCADE_GAMES_CATALOG,
   ARCADE_LOBBY_GROUPS,
+  BOSS_SCREENS_CATALOG,
   getRecentArcadeGames,
   getFavoriteArcadeGameIds,
   toggleFavoriteArcadeGameId
@@ -25,10 +27,12 @@ export default function ArcadeLobby({
   activeCarId = 'delorean',
   onSelectCar,
   onOpenTimeCircuits,
-  onTriggerDeLoreanWarp
+  onTriggerDeLoreanWarp,
+  onOpenPrankDisguise
 }) {
   const [activeFilter, setActiveFilter] = useState('all');
   const [favoriteIds, setFavoriteIds] = useState(() => getFavoriteArcadeGameIds());
+  const [copiedId, setCopiedId] = useState(null);
   const recentGames = useMemo(() => getRecentArcadeGames(), []);
 
   const favSet = useMemo(() => new Set(favoriteIds), [favoriteIds]);
@@ -41,6 +45,24 @@ export default function ArcadeLobby({
   const handlePlay = (gameId) => {
     sfx.playPop(2);
     if (onSelectGame) onSelectGame(gameId);
+  };
+
+  const handleShareItem = (item) => {
+    if (typeof window === 'undefined' || !item?.path) return;
+    const shareUrl = `${window.location.origin || SITE_ORIGIN}${item.path}`;
+    navigator.clipboard?.writeText(shareUrl).catch(() => {});
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      navigator
+        .share({
+          title: `${item.label} — THE MEMES.net`,
+          text: `${item.pitch} 🔗`,
+          url: shareUrl
+        })
+        .catch(() => {});
+    }
+    sfx.playPop?.(2);
+    setCopiedId(item.id);
+    setTimeout(() => setCopiedId((curr) => (curr === item.id ? null : curr)), 2000);
   };
 
   const visibleGroups = useMemo(() => {
@@ -65,7 +87,7 @@ export default function ArcadeLobby({
         <div className="tm-lobby-hero-copy">
           <h1 className="tm-lobby-title">🕹️ Cyber-Arcade Lobby</h1>
           <p className="tm-lobby-sub">
-            13 retro cabinets, MemeDollarz ($) casino tables &amp; 80s fortune games.
+            {ARCADE_GAMES_CATALOG.length} retro cabinets, MemeDollarz ($) casino tables &amp; shareable prank screens.
           </p>
         </div>
 
@@ -197,8 +219,10 @@ export default function ArcadeLobby({
                 key={`recent-${game.id}`}
                 game={game}
                 isFav={favSet.has(game.id)}
+                copied={copiedId === game.id}
                 onPlay={handlePlay}
                 onToggleFav={handleToggleFavorite}
+                onShare={handleShareItem}
               />
             ))}
           </div>
@@ -223,13 +247,70 @@ export default function ArcadeLobby({
                   key={game.id}
                   game={game}
                   isFav={favSet.has(game.id)}
+                  copied={copiedId === game.id}
                   onPlay={handlePlay}
                   onToggleFav={handleToggleFavorite}
+                  onShare={handleShareItem}
                 />
               ))}
             </div>
           </div>
         ))
+      )}
+
+      {/* Shareable Funny Boss & Prank Disguise Screens */}
+      {activeFilter === 'all' && (
+        <div className="tm-lobby-section">
+          <div className="tm-lobby-section-head">
+            <h2 className="tm-lobby-section-title">🕵️ Funny Boss Key &amp; Prank Screens (Direct Links)</h2>
+            <span className="tm-lobby-section-desc">
+              Launch fullscreen disguises or copy direct prank links for coworkers &amp; friends
+            </span>
+          </div>
+          <div className="tm-lobby-grid">
+            {BOSS_SCREENS_CATALOG.map((item) => (
+              <article
+                key={item.id}
+                className="tm-lobby-card"
+                style={{ '--card-accent': item.accent }}
+              >
+                <button
+                  type="button"
+                  className="tm-lobby-share-btn"
+                  onClick={() => handleShareItem(item)}
+                  aria-label={`Copy shareable link for ${item.label}`}
+                  title={`Copy link: ${SITE_ORIGIN}${item.path}`}
+                >
+                  {copiedId === item.id ? '✅' : '🔗'}
+                </button>
+                <button
+                  type="button"
+                  className="tm-lobby-card-play"
+                  onClick={() => {
+                    if (onOpenPrankDisguise) {
+                      onOpenPrankDisguise(item.id);
+                    } else if (typeof window !== 'undefined') {
+                      window.location.assign(item.path);
+                    }
+                  }}
+                >
+                  <div className="tm-lobby-card-thumb">
+                    <span className="tm-lobby-card-icon" aria-hidden="true">
+                      {item.icon}
+                    </span>
+                    <div className="tm-lobby-card-badges">
+                      <span className="tm-lobby-badge">PRANK / BOSS KEY</span>
+                    </div>
+                  </div>
+                  <div className="tm-lobby-card-body">
+                    <h3 className="tm-lobby-card-title">{item.label}</h3>
+                    <p className="tm-lobby-card-pitch">{item.pitch}</p>
+                  </div>
+                </button>
+              </article>
+            ))}
+          </div>
+        </div>
       )}
 
       <p className="tm-lobby-compliance">
@@ -239,9 +320,20 @@ export default function ArcadeLobby({
   );
 }
 
-function CabinetCard({ game, isFav, onPlay, onToggleFav }) {
+function CabinetCard({ game, isFav, copied, onPlay, onToggleFav, onShare }) {
   return (
     <article className="tm-lobby-card" style={{ '--card-accent': game.accent }}>
+      {game.path && onShare && (
+        <button
+          type="button"
+          className={`tm-lobby-share-btn ${copied ? 'is-copied' : ''}`}
+          onClick={() => onShare(game)}
+          aria-label={`Copy direct share link for ${game.label}`}
+          title={`Share direct link: ${SITE_ORIGIN}${game.path}`}
+        >
+          {copied ? '✅' : '🔗'}
+        </button>
+      )}
       <button
         type="button"
         className={`tm-lobby-fav-btn ${isFav ? 'is-fav' : ''}`}

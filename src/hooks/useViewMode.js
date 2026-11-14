@@ -23,7 +23,8 @@ const FIXED_ARCADE_GAMES = [
   'derby',
   'guess',
   'eightball',
-  'hilow'
+  'hilow',
+  'bingo'
 ];
 
 const TRACKED_GAMES = new Set([

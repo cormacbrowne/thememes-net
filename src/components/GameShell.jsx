@@ -21,11 +21,13 @@ export default function GameShell({
   extraBadges = null,
   soundOn: soundOnProp,
   onToggleSound: onToggleSoundProp,
+  sharePath = '',
   howToPlay = [],
   statusBanner = null,
   children
 }) {
   const [howToOpen, setHowToOpen] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
   const [localSoundOn, setLocalSoundOn] = useState(() => getSettings().sfxOn);
   const [deltaInfo, setDeltaInfo] = useState(null);
   const prevTokensRef = useRef(tokens);
@@ -68,6 +70,26 @@ export default function GameShell({
     const nextOn = !effectiveSoundOn;
     updateSettings({ sfxOn: nextOn });
     if (nextOn) sfx.playToggle();
+  };
+
+  const handleShareGame = () => {
+    if (typeof window === 'undefined') return;
+    const targetUrl = sharePath
+      ? `${window.location.origin}${sharePath.startsWith('/') ? sharePath : `/${sharePath}`}`
+      : window.location.href;
+    navigator.clipboard?.writeText(targetUrl).catch(() => {});
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      navigator
+        .share({
+          title: `${title} — Free Game on THE MEMES.net`,
+          text: `Play ${title} free online! 🎮`,
+          url: targetUrl
+        })
+        .catch(() => {});
+    }
+    sfx.playPop?.(2);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2200);
   };
 
   return (
@@ -132,6 +154,16 @@ export default function GameShell({
           )}
 
           <RadioToggleButton className="tm-gs-btn" />
+
+          <button
+            type="button"
+            className={`tm-gs-btn ${copiedLink ? 'is-active' : ''}`}
+            onClick={handleShareGame}
+            aria-label={`Share link to ${title}`}
+            title={`Copy or share direct link to ${title}`}
+          >
+            {copiedLink ? '✅ Copied!' : '🔗 Share'}
+          </button>
 
           <button
             type="button"

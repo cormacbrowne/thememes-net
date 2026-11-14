@@ -3338,6 +3338,270 @@ export class SoundEngine {
       // Ignore audio errors
     }
   }
+
+  /**
+   * 🎱 NEON BINGO '86 — AIR-BLOWER BALL POP + SYNTH CHIME
+   */
+  playBingoBallPop() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+
+      // Pneumatic tube pop
+      const popOsc = this.ctx.createOscillator();
+      const popGain = this.ctx.createGain();
+      popOsc.type = 'sine';
+      popOsc.frequency.setValueAtTime(190, now);
+      popOsc.frequency.exponentialRampToValueAtTime(640, now + 0.09);
+      popGain.gain.setValueAtTime(0.14, now);
+      popGain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
+      popOsc.connect(popGain);
+      popGain.connect(out);
+      popOsc.start(now);
+      popOsc.stop(now + 0.12);
+
+      // 80s DX7 bingo chime
+      [523.25, 659.25, 783.99].forEach((freq, idx) => {
+        const t = now + 0.05 + idx * 0.045;
+        const osc = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, t);
+        g.gain.setValueAtTime(0.075, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+        osc.connect(g);
+        g.connect(out);
+        osc.start(t);
+        osc.stop(t + 0.24);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🖊️ VIRTUAL NEON DABBER PEN — SATISFYING SPONGY SPLAT + NEON SPARKLE
+   */
+  playBingoDab(colorIndex = 0) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+      const baseNote = 440 + (colorIndex % 5) * 65;
+
+      // Spongy ink thwock
+      const osc = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(240, now);
+      osc.frequency.exponentialRampToValueAtTime(92, now + 0.07);
+      g.gain.setValueAtTime(0.16, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.085);
+      osc.connect(g);
+      g.connect(out);
+      osc.start(now);
+      osc.stop(now + 0.09);
+
+      // UV ink shimmer
+      const shim = this.ctx.createOscillator();
+      const sg = this.ctx.createGain();
+      shim.type = 'triangle';
+      shim.frequency.setValueAtTime(baseNote, now + 0.02);
+      shim.frequency.exponentialRampToValueAtTime(baseNote * 1.5, now + 0.14);
+      sg.gain.setValueAtTime(0.08, now + 0.02);
+      sg.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+      shim.connect(sg);
+      sg.connect(out);
+      shim.start(now + 0.02);
+      shim.stop(now + 0.17);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🦆 TWO LITTLE DUCKS — COMEDIC DOUBLE QUACK-QUACK SYNTH
+   */
+  playBingoDuckQuack() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+
+      [0, 0.2].forEach((offset) => {
+        const t = now + offset;
+        const osc = this.ctx.createOscillator();
+        const filt = this.ctx.createBiquadFilter();
+        const g = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(340, t);
+        osc.frequency.linearRampToValueAtTime(270, t + 0.13);
+        filt.type = 'bandpass';
+        filt.frequency.setValueAtTime(950, t);
+        filt.frequency.linearRampToValueAtTime(1450, t + 0.05);
+        filt.frequency.linearRampToValueAtTime(720, t + 0.14);
+        filt.Q.setValueAtTime(4.2, t);
+        g.gain.setValueAtTime(0.001, t);
+        g.gain.linearRampToValueAtTime(0.18, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+        osc.connect(filt);
+        filt.connect(g);
+        g.connect(out);
+        osc.start(t);
+        osc.stop(t + 0.17);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🎉 VALID BINGO! STADIUM CROWD ROAR + 80s JACKPOT FANFARE
+   */
+  playBingoCrowdCheer() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+
+      // Crowd white-noise roar shaped through warm bandpass
+      const dur = 1.4;
+      const bufSize = Math.floor(this.ctx.sampleRate * dur);
+      const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buf;
+      const bp = this.ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.setValueAtTime(1100, now);
+      bp.frequency.linearRampToValueAtTime(1800, now + 0.45);
+      bp.Q.setValueAtTime(0.85, now);
+      const ng = this.ctx.createGain();
+      ng.gain.setValueAtTime(0.001, now);
+      ng.gain.linearRampToValueAtTime(0.14, now + 0.12);
+      ng.gain.exponentialRampToValueAtTime(0.001, now + dur);
+      noise.connect(bp);
+      bp.connect(ng);
+      ng.connect(out);
+      noise.start(now);
+      noise.stop(now + dur);
+
+      // 80s celebratory brass arpeggio
+      [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((freq, i) => {
+        const t = now + i * 0.08;
+        const osc = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, t);
+        const lp = this.ctx.createBiquadFilter();
+        lp.type = 'lowpass';
+        lp.frequency.setValueAtTime(2600, t);
+        g.gain.setValueAtTime(0.085, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.55);
+        osc.connect(lp);
+        lp.connect(g);
+        g.connect(out);
+        osc.start(t);
+        osc.stop(t + 0.58);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🍅 FALSE BINGO CALL! CROWD "BOOOOOO!" + SAD TROMBONE + TOMATO SPLAT
+   */
+  playBingoCrowdBoo() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+
+      // Low descending "BOOOOO" crowd chorus
+      [148, 155, 163].forEach((startFreq) => {
+        const osc = this.ctx.createOscillator();
+        const lp = this.ctx.createBiquadFilter();
+        const g = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(startFreq, now);
+        osc.frequency.linearRampToValueAtTime(startFreq * 0.72, now + 0.95);
+        lp.type = 'lowpass';
+        lp.frequency.setValueAtTime(480, now);
+        g.gain.setValueAtTime(0.001, now);
+        g.gain.linearRampToValueAtTime(0.055, now + 0.08);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 1.0);
+        osc.connect(lp);
+        lp.connect(g);
+        g.connect(out);
+        osc.start(now);
+        osc.stop(now + 1.02);
+      });
+
+      // Comic Wah-Wah-Waaah trombone steps
+      [311.13, 293.66, 277.18, 261.63].forEach((freq, idx) => {
+        const t = now + 0.18 + idx * 0.21;
+        const osc = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, t);
+        if (idx === 3) {
+          osc.frequency.linearRampToValueAtTime(freq * 0.84, t + 0.42);
+        }
+        g.gain.setValueAtTime(0.11, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + (idx === 3 ? 0.45 : 0.19));
+        osc.connect(g);
+        g.connect(out);
+        osc.start(t);
+        osc.stop(t + 0.48);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 📞 FAKE TEAMS / ZOOM INCOMING BOSS CALL MARIMBA RINGTONE
+   */
+  playTeamsRingtone() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+      const pattern = [587.33, 659.25, 783.99, 659.25, 987.77, 783.99];
+      pattern.forEach((freq, i) => {
+        const t = now + i * 0.13;
+        const osc = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, t);
+        g.gain.setValueAtTime(0.09, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.19);
+        osc.connect(g);
+        g.connect(out);
+        osc.start(t);
+        osc.stop(t + 0.2);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
 }
 
 export const sfx = new SoundEngine();

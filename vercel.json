@@ -131,6 +131,37 @@
       "has": [{ "type": "query", "key": "mode", "value": "eightball" }],
       "destination": "/games/magic-8-ball",
       "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "mode", "value": "bingo" }],
+      "destination": "/games/neon-bingo",
+      "statusCode": 301
+    },
+    {
+      "source": "/games/bingo",
+      "destination": "/games/neon-bingo",
+      "statusCode": 301
+    },
+    {
+      "source": "/fake-teams-call",
+      "destination": "/fake-teams-zoom-call-screen",
+      "statusCode": 301
+    },
+    {
+      "source": "/fake-zoom-call",
+      "destination": "/fake-teams-zoom-call-screen",
+      "statusCode": 301
+    },
+    {
+      "source": "/fake-terminal",
+      "destination": "/fake-hacker-terminal-screen",
+      "statusCode": 301
+    },
+    {
+      "source": "/boss-screen",
+      "destination": "/fake-excel-boss-screen",
+      "statusCode": 301
     }
   ],
   "functions": {

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { stampArcadeCartridgeFooter } from '../src/utils/canvasMutator.js';
 
 const VIEWPORTS = [
   { name: 'iphone-390x844', width: 390, height: 844, isMobile: true, hasTouch: true },
@@ -884,5 +885,215 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     expect(overflowPinball).toBeLessThanOrEqual(2);
 
     expect(pageErrors).toEqual([]);
+  });
+
+  test("Neon Bingo '86 works end-to-end (blower, calls, manual dab, false-call tomato boo, Ceefax 888, zero overflow)", async ({
+    page
+  }) => {
+    const pageErrors = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/games/neon-bingo', { waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveTitle(/80s Neon Bingo/i);
+    await expect(page.locator('.tm-bingo-arena')).toBeVisible();
+    await expect(page.locator('.tm-bingo-cage-canvas')).toBeVisible();
+    await expect(page.locator('.tm-shout-bingo-btn')).toBeVisible();
+
+    // Switch to manual caller speed so timer draws don't race assertions
+    await page.locator('.tm-bingo-speed-select').selectOption('manual');
+    await page.locator('.tm-bingo-primary-btn').click();
+    await expect(page.locator('.tm-bingo-ball-counter')).toContainText('1/90 DRAWN');
+    await expect(page.locator('.tm-bingo-current-orb .tm-orb-num')).toBeVisible();
+
+    // Draw until a called number appears on the player's card and manually stamp it with the Neon Dabber
+    for (let i = 0; i < 15; i++) {
+      const callableCount = await page.locator('.tm-ticket-cell.is-callable').count();
+      if (callableCount > 0) break;
+      await page.locator('.tm-bingo-primary-btn').click();
+    }
+    const firstCallable = page.locator('.tm-ticket-cell.is-callable').first();
+    await expect(firstCallable).toBeVisible();
+    await firstCallable.click();
+    await expect(page.locator('.tm-ticket-cell.is-number.is-dabbed')).toHaveCount(1);
+
+    // Clicking SHOUT BINGO with no valid win triggers crowd BOOOOOO + flying tomato splats
+    await page.locator('.tm-shout-bingo-btn').click();
+    await expect(page.locator('.tm-bingo-crowd-banner.is-boo')).toBeVisible();
+    await expect(page.locator('.tm-bingo-crowd-banner.is-boo')).toContainText(/BOOOOOO!! FALSE BINGO CALL/i);
+    await expect(page.locator('.tm-bingo-tomato-layer')).toBeVisible();
+
+    // Toggle BBC Ceefax P.888 mode & open All 90 Comedy Calls drawer
+    await page.getByRole('button', { name: /Ceefax 888/i }).click();
+    await expect(page.locator('.tm-bingo-blower-head')).toContainText(/CEEFAX 888/i);
+    await page.getByRole('button', { name: /All 90 Calls/i }).click();
+    await expect(page.locator('.tm-bingo-dict-drawer')).toContainText(/Two Little Ducks/i);
+    await page.locator('.tm-bingo-dict-drawer').getByRole('button', { name: /Close/i }).click();
+
+    // Switch to 75-Ball Vegas 5x5 card format
+    await page.getByRole('button', { name: /75-Ball Vegas/i }).click();
+    await expect(page.locator('.tm-bingo-75-head')).toBeVisible();
+
+    // Verify zero horizontal overflow across mobile, tablet, and desktop
+    for (const vp of VIEWPORTS) {
+      await page.setViewportSize({ width: vp.width, height: vp.height });
+      await page.waitForTimeout(150);
+      const overflowPx = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(
+        overflowPx,
+        `Horizontal overflow ${overflowPx}px on /games/neon-bingo at ${vp.name}`
+      ).toBeLessThanOrEqual(2);
+    }
+
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('Shareable Boss/Prank screens & new Game routes load cleanly with SEO metadata and interactive features', async ({
+    page
+  }) => {
+    const pageErrors = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+
+    // Fake Microsoft Teams & Zoom Call Boss Screen
+    await page.goto('/fake-teams-zoom-call-screen', { waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveTitle(/Fake Microsoft Teams & Zoom Call Screen/i);
+    await expect(page.locator('.tm-boss-overlay')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Share Screen/i })).toBeVisible();
+    await expect(page.getByText('Microsoft Teams').first()).toBeVisible();
+    await page.getByRole('button', { name: /Switch to Zoom UI/i }).click();
+    await expect(page.getByText('Zoom Enterprise').first()).toBeVisible();
+    await page.getByRole('button', { name: /Trigger Incoming Boss Call/i }).click();
+    await expect(page.getByText(/Richard Vance \(VP of Synergy\)/i)).toBeVisible();
+
+    // Fake Hacker Terminal Boss Screen
+    await page.goto('/fake-hacker-terminal-screen', { waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveTitle(/Fake Hacker Terminal/i);
+    await expect(page.locator('.tm-boss-overlay')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Share Screen/i })).toBeVisible();
+
+    // Fake Enterprise AI Workspace Boss Screen
+    await page.goto('/fake-ai-workspace-boss-screen', { waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveTitle(/Fake Enterprise AI Workspace/i);
+    await expect(page.locator('.tm-boss-overlay')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Share Screen/i })).toBeVisible();
+
+    // New findable Game SEO routes + GameShell Share button
+    await page.goto('/games/speed-swipe', { waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveTitle(/Meme Speed Swipe/i);
+    await expect(page.locator('.tm-gs-right').getByRole('button', { name: /Share/i })).toBeVisible();
+
+    await page.goto('/games/meme-battle-arena', { waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveTitle(/Meme Battle Arena/i);
+    await expect(page.locator('.tm-gs-right').getByRole('button', { name: /Share/i })).toBeVisible();
+
+    // Lobby shows 15 Retro Cabinets + Funny Boss Key & Prank Screens section
+    await page.goto('/games', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByText(/15 Retro Cabinets/i).first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Funny Boss Key & Prank Screens/i })).toBeVisible();
+
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('www.thememes.net stamp writes single electric-blue badge with lightning bolt and never doubles on re-stamp', async ({
+    page
+  }) => {
+    // 1. Direct spy verification against canvasMutator.stampArcadeCartridgeFooter
+    const textCalls = [];
+    const fillColors = [];
+    let currentFill = '';
+    const spyCtx = {
+      canvas: { width: 800, height: 600 },
+      font: '',
+      globalAlpha: 1,
+      lineWidth: 1,
+      strokeStyle: '',
+      shadowColor: '',
+      shadowBlur: 0,
+      textAlign: 'left',
+      textBaseline: 'alphabetic',
+      get fillStyle() {
+        return currentFill;
+      },
+      set fillStyle(val) {
+        currentFill = val;
+        fillColors.push(val);
+      },
+      save() {},
+      restore() {},
+      measureText(txt) {
+        return { width: txt.length * 8 };
+      },
+      beginPath() {},
+      roundRect() {},
+      rect() {},
+      moveTo() {},
+      lineTo() {},
+      closePath() {},
+      fill() {},
+      stroke() {},
+      fillRect() {},
+      strokeRect() {},
+      fillText(txt) {
+        textCalls.push({ txt, color: currentFill });
+      }
+    };
+
+    stampArcadeCartridgeFooter(spyCtx, 800, 600);
+    expect(textCalls).toEqual([{ txt: 'www.thememes.net', color: '#00f3ff' }]);
+    expect(fillColors).toContain('#070810');
+    expect(fillColors).toContain('#00f3ff');
+
+    // 2. Real Chromium canvas pixel verification: pre-existing wider legacy bottom-right stamp is cleanly replaced
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const pixelCheck = await page.evaluate((fnSrc) => {
+      const stampFn = new Function(`return (${fnSrc})`)();
+      const canvas = document.createElement('canvas');
+      canvas.width = 800;
+      canvas.height = 600;
+      const ctx = canvas.getContext('2d');
+
+      // Bright magenta background
+      ctx.fillStyle = '#e0e7ff';
+      ctx.fillRect(0, 0, 800, 600);
+
+      // Simulate an older wide legacy `#070810` + `#00f3ff` pill extending left of x=520
+      const legacyX = 430;
+      const legacyY = 562;
+      ctx.fillStyle = '#070810';
+      ctx.fillRect(legacyX, legacyY, 350, 30);
+      ctx.fillStyle = '#00f3ff';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.fillText('THE MEMES.net  www.thememes.net', legacyX + 12, legacyY + 20);
+
+      // Stamp new badge
+      stampFn(ctx, 800, 600);
+
+      // Verify legacy left overhang region around x=440..515 no longer has bright cyan pixels
+      const leftData = ctx.getImageData(435, legacyY, 85, 30).data;
+      let strayCyanPixels = 0;
+      for (let i = 0; i < leftData.length; i += 4) {
+        if (leftData[i] < 75 && leftData[i + 1] > 175 && leftData[i + 2] > 200) {
+          strayCyanPixels += 1;
+        }
+      }
+
+      // Verify bottom-right badge area does contain electric-blue pixels
+      const rightData = ctx.getImageData(640, 560, 155, 38).data;
+      let badgeCyanPixels = 0;
+      for (let i = 0; i < rightData.length; i += 4) {
+        if (rightData[i] < 75 && rightData[i + 1] > 175 && rightData[i + 2] > 200) {
+          badgeCyanPixels += 1;
+        }
+      }
+
+      return { strayCyanPixels, badgeCyanPixels };
+    }, stampArcadeCartridgeFooter.toString());
+
+    expect(pixelCheck.strayCyanPixels).toBe(0);
+    expect(pixelCheck.badgeCyanPixels).toBeGreaterThan(20);
   });
 });

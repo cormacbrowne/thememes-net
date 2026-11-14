@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { triggerHelicopterFlyby } from '../utils/winCelebration';
 import { formatEightiesPrice } from '../utils/tokenEconomy';
 import { sfx } from '../utils/soundEngine';
@@ -360,7 +360,7 @@ export function EightiesDigitalFaceSvg({ id, size = 38 }) {
   );
 }
 
-export default function EightiesIconsStrip({ compact = false }) {
+const EightiesIconsStrip = memo(function EightiesIconsStrip({ compact = false }) {
   const [selectedId, setSelectedId] = useState(compact ? '' : 'ferris');
   const selected = EIGHTIES_ICON_CAST.find((c) => c.id === selectedId) || null;
 
@@ -462,4 +462,6 @@ export default function EightiesIconsStrip({ compact = false }) {
       )}
     </section>
   );
-}
+});
+
+export default EightiesIconsStrip;

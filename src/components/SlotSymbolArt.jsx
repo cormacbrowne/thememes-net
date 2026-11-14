@@ -1,10 +1,10 @@
-import { useId } from 'react';
+import { memo, useId } from 'react';
 
 /**
  * Crisp inline SVG Las Vegas Slot Machine Reel Graphics
  * Covers Classic Bandit '85 + Silver Mustang (Dougie S3) + Lightning Vault + Cyber Buffalo '86
  */
-export default function SlotSymbolArt({ symbolId, size = 54, badge = null }) {
+const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge = null }) {
   const uid = useId().replace(/:/g, '');
 
   const renderSvg = () => {
@@ -561,4 +561,6 @@ export default function SlotSymbolArt({ symbolId, size = 54, badge = null }) {
       {badge && <span className="tm-slot-cell-badge">{badge}</span>}
     </div>
   );
-}
+});
+
+export default SlotSymbolArt;

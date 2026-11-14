@@ -131,6 +131,21 @@ export class SoundEngine {
     return this.sfxGain;
   }
 
+  _disconnectOnEnded(sourceNode, nodes = []) {
+    if (!sourceNode || typeof sourceNode !== 'object') return;
+    const allNodes = [sourceNode, ...nodes].filter(Boolean);
+    sourceNode.onended = () => {
+      sourceNode.onended = null;
+      allNodes.forEach((node) => {
+        try {
+          node.disconnect();
+        } catch {
+          // ignore already-disconnected AudioNode
+        }
+      });
+    };
+  }
+
   _configureIosAudioSession() {
     try {
       // iOS 16.4+ / 17+ WebKit AudioSession API: forces media playback even when iPhone physical mute switch is ON
@@ -1293,6 +1308,7 @@ export class SoundEngine {
         gain.gain.exponentialRampToValueAtTime(0.001, start + 0.028);
         osc.connect(gain);
         gain.connect(this._getOutputNode());
+        this._disconnectOnEnded(osc, [gain]);
         osc.start(start);
         osc.stop(start + 0.03);
       });
@@ -1322,6 +1338,7 @@ export class SoundEngine {
       thudGain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
       thud.connect(thudGain);
       thudGain.connect(this._getOutputNode());
+      this._disconnectOnEnded(thud, [thudGain]);
       thud.start(now);
       thud.stop(now + 0.095);
 
@@ -1336,6 +1353,7 @@ export class SoundEngine {
       bellGain.gain.exponentialRampToValueAtTime(0.001, now + 0.19);
       bell.connect(bellGain);
       bellGain.connect(this._getOutputNode());
+      this._disconnectOnEnded(bell, [bellGain]);
       bell.start(now + 0.015);
       bell.stop(now + 0.2);
     } catch {
@@ -1375,6 +1393,7 @@ export class SoundEngine {
           gain.gain.exponentialRampToValueAtTime(0.0008, t + part.dur);
           osc.connect(gain);
           gain.connect(out);
+          this._disconnectOnEnded(osc, [gain]);
           osc.start(t);
           osc.stop(t + part.dur + 0.02);
         });
@@ -1434,6 +1453,8 @@ export class SoundEngine {
       sirenOscB.connect(sirenFilter);
       sirenFilter.connect(sirenGain);
       sirenGain.connect(out);
+      this._disconnectOnEnded(sirenOscA);
+      this._disconnectOnEnded(sirenOscB, [sirenFilter, sirenGain]);
       sirenOscA.start(now);
       sirenOscB.start(now);
       sirenOscA.stop(now + totalDur + 0.04);
@@ -1459,6 +1480,7 @@ export class SoundEngine {
           bGain.gain.exponentialRampToValueAtTime(0.0008, bt + p.d);
           bOsc.connect(bGain);
           bGain.connect(out);
+          this._disconnectOnEnded(bOsc, [bGain]);
           bOsc.start(bt);
           bOsc.stop(bt + p.d + 0.02);
         });
@@ -1479,6 +1501,7 @@ export class SoundEngine {
         cGain.gain.exponentialRampToValueAtTime(0.0008, ct + 0.09);
         cOsc.connect(cGain);
         cGain.connect(out);
+        this._disconnectOnEnded(cOsc, [cGain]);
         cOsc.start(ct);
         cOsc.stop(ct + 0.1);
       }
@@ -1516,6 +1539,7 @@ export class SoundEngine {
         gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
         osc.connect(gain);
         gain.connect(out);
+        this._disconnectOnEnded(osc, [gain]);
         osc.start(t);
         osc.stop(t + 0.24);
       });
@@ -1542,6 +1566,7 @@ export class SoundEngine {
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
       osc.connect(gain);
       gain.connect(this._getOutputNode());
+      this._disconnectOnEnded(osc, [gain]);
       osc.start(now);
       osc.stop(now + 0.035);
     } catch {
@@ -1605,6 +1630,7 @@ export class SoundEngine {
       noise.connect(bandpass);
       bandpass.connect(noiseGain);
       noiseGain.connect(master);
+      this._disconnectOnEnded(noise, [bandpass, noiseGain, master, panner]);
       noise.start(now);
       noise.stop(now + duration);
 
@@ -1623,6 +1649,7 @@ export class SoundEngine {
         thumpGain.gain.exponentialRampToValueAtTime(0.001, now + t + 0.052);
         osc.connect(thumpGain);
         thumpGain.connect(master);
+        this._disconnectOnEnded(osc, [thumpGain]);
         osc.start(now + t);
         osc.stop(now + t + 0.058);
       }
@@ -1640,6 +1667,7 @@ export class SoundEngine {
         sg.gain.exponentialRampToValueAtTime(0.001, st + 0.34);
         synth.connect(sg);
         sg.connect(dest);
+        this._disconnectOnEnded(synth, [sg]);
         synth.start(st);
         synth.stop(st + 0.36);
       });
@@ -2567,6 +2595,7 @@ export class SoundEngine {
         gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
         osc.connect(gain);
         gain.connect(out);
+        this._disconnectOnEnded(osc, [gain]);
         osc.start(t);
         osc.stop(t + dur + 0.02);
       };
@@ -2666,6 +2695,7 @@ export class SoundEngine {
         gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
         osc.connect(gain);
         gain.connect(out);
+        this._disconnectOnEnded(osc, [gain]);
         osc.start(t);
         osc.stop(t + dur + 0.03);
       };
@@ -2687,6 +2717,7 @@ export class SoundEngine {
         src.connect(filter);
         filter.connect(gain);
         gain.connect(out);
+        this._disconnectOnEnded(src, [filter, gain]);
         src.start(t);
         src.stop(t + dur + 0.02);
       };

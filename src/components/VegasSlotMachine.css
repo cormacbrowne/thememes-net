@@ -2045,22 +2045,293 @@
   color: #fde047;
 }
 
+/* ==========================================
+   HIGH-ROLLER 1980s BENT-GLASS NEON CROWN, SIDE-RAILS & VIP CHIPS
+   ========================================== */
+.tm-neon-theme-plasma-cyan {
+  --neon-primary: #00f3ff;
+  --neon-secondary: #ff2a85;
+  --neon-accent: #fde047;
+}
+
+.tm-neon-theme-solar-gold {
+  --neon-primary: #f97316;
+  --neon-secondary: #fde047;
+  --neon-accent: #ff2a85;
+}
+
+.tm-neon-theme-laser-magenta {
+  --neon-primary: #ff2a85;
+  --neon-secondary: #00f3ff;
+  --neon-accent: #c084fc;
+}
+
+.tm-slot-reel-stage,
+.tm-slot-neon-stage {
+  display: flex;
+  align-items: stretch;
+  gap: 5px;
+  width: 100%;
+  min-width: 0;
+}
+
+.tm-slot-reel-stage > .tm-video-reel-bezel,
+.tm-slot-neon-stage > .tm-video-reel-bezel {
+  flex: 1;
+  min-width: 0;
+}
+
+.tm-slot-neon-crown {
+  position: relative;
+  border: 1.5px solid var(--neon-primary, #00f3ff);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(5, 8, 22, 0.96), rgba(15, 23, 42, 0.94));
+  box-shadow:
+    0 0 18px color-mix(in srgb, var(--neon-primary, #00f3ff) 55%, transparent),
+    0 0 28px color-mix(in srgb, var(--neon-secondary, #ff2a85) 35%, transparent),
+    inset 0 0 12px color-mix(in srgb, var(--neon-secondary, #ff2a85) 35%, transparent);
+  overflow: hidden;
+  animation: tmHighRollerNeonPulse 2.6s ease-in-out infinite alternate;
+}
+
+.tm-slot-neon-crown-svg {
+  display: block;
+  width: 100%;
+  height: 48px;
+  filter: drop-shadow(0 0 6px var(--neon-primary, #00f3ff));
+}
+
+.tm-slot-neon-crown-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  padding: 0 34px;
+  text-align: center;
+}
+
+.tm-slot-neon-crown-title {
+  font-size: 10.5px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 0.7px;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-shadow:
+    0 0 6px var(--neon-primary, #00f3ff),
+    0 0 14px var(--neon-secondary, #ff2a85);
+}
+
+.tm-slot-neon-crown-sub {
+  font-size: 7.5px;
+  font-weight: 800;
+  color: var(--neon-accent, #fde047);
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  line-height: 1.15;
+  text-shadow: 0 0 6px rgba(250, 204, 21, 0.65);
+}
+
+.tm-slot-neon-rail {
+  width: 12px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 2px;
+  border-radius: 999px;
+  background: rgba(5, 8, 20, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  position: relative;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--neon-primary, #00f3ff) 45%, transparent);
+}
+
+.tm-neon-tube {
+  width: 3px;
+  border-radius: 999px;
+  background: #ffffff;
+  animation: tmNeonTubeHum 1.8s ease-in-out infinite alternate;
+}
+
+.tm-neon-tube.primary {
+  box-shadow:
+    0 0 6px var(--neon-primary, #00f3ff),
+    0 0 12px var(--neon-primary, #00f3ff);
+  background: linear-gradient(180deg, #ffffff 0%, var(--neon-primary, #00f3ff) 50%, #ffffff 100%);
+}
+
+.tm-neon-tube.secondary {
+  box-shadow:
+    0 0 6px var(--neon-secondary, #ff2a85),
+    0 0 12px var(--neon-secondary, #ff2a85);
+  background: linear-gradient(180deg, var(--neon-secondary, #ff2a85) 0%, #ffffff 50%, var(--neon-secondary, #ff2a85) 100%);
+  animation-delay: 0.45s;
+}
+
+.tm-neon-clamp {
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #475569, #e2e8f0, #475569);
+  z-index: 2;
+}
+
+.tm-neon-clamp.top { top: 10px; }
+.tm-neon-clamp.mid { top: 50%; transform: translateY(-50%); }
+.tm-neon-clamp.bottom { bottom: 10px; }
+
+.tm-cabinet-highroller-neon {
+  border-width: 3px;
+  border-color: var(--neon-primary, #00f3ff);
+  box-shadow:
+    0 16px 42px rgba(0, 0, 0, 0.9),
+    0 0 28px color-mix(in srgb, var(--neon-primary, #00f3ff) 55%, transparent),
+    0 0 48px color-mix(in srgb, var(--neon-secondary, #ff2a85) 35%, transparent),
+    inset 0 0 22px color-mix(in srgb, var(--neon-primary, #00f3ff) 28%, transparent);
+}
+
+.tm-bezel-highroller-neon {
+  border-color: var(--neon-primary, #00f3ff);
+  box-shadow:
+    0 0 16px color-mix(in srgb, var(--neon-primary, #00f3ff) 45%, transparent),
+    inset 0 6px 18px rgba(0, 0, 0, 0.92);
+}
+
+.tm-bandit-chip-btn.vip {
+  background: linear-gradient(135deg, #1e1b4b, #581c87 55%, #0f172a);
+  border: 2px solid #00f3ff;
+  color: #fde047;
+  box-shadow:
+    0 0 10px rgba(0, 243, 255, 0.45),
+    0 0 16px rgba(255, 42, 133, 0.35);
+}
+
+.tm-bandit-chip-btn.vip.active {
+  background: linear-gradient(135deg, #db2777, #7c3aed 55%, #0284c7);
+  border-color: #fde047;
+  color: #ffffff;
+  box-shadow:
+    0 0 14px rgba(250, 204, 21, 0.75),
+    0 0 22px rgba(0, 243, 255, 0.6);
+}
+
+.tm-vip-chip-tag {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: #fde047;
+  color: #0f172a;
+  font-size: 8.5px;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+  vertical-align: middle;
+}
+
+.tm-slot-floor-card.vip-neon {
+  border-color: rgba(0, 243, 255, 0.55);
+  box-shadow:
+    0 0 14px rgba(0, 243, 255, 0.2),
+    inset 0 0 10px rgba(255, 42, 133, 0.14);
+}
+
+.tm-slot-floor-vip-tag {
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: #67e8f9;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(0, 243, 255, 0.4);
+  border-radius: 7px;
+  padding: 2px 6px;
+  text-align: center;
+  text-shadow: 0 0 6px rgba(0, 243, 255, 0.5);
+}
+
+.tm-slot-tab-btn.vip-neon {
+  border-color: rgba(0, 243, 255, 0.45);
+}
+
+.tm-slot-tab-btn.vip-neon.active {
+  box-shadow:
+    0 0 12px color-mix(in srgb, var(--tab-accent, #00f3ff) 60%, transparent),
+    inset 0 0 8px rgba(255, 255, 255, 0.16);
+}
+
+@keyframes tmHighRollerNeonPulse {
+  0% {
+    box-shadow:
+      0 0 14px color-mix(in srgb, var(--neon-primary, #00f3ff) 48%, transparent),
+      0 0 24px color-mix(in srgb, var(--neon-secondary, #ff2a85) 30%, transparent),
+      inset 0 0 10px color-mix(in srgb, var(--neon-secondary, #ff2a85) 30%, transparent);
+  }
+  100% {
+    box-shadow:
+      0 0 22px color-mix(in srgb, var(--neon-primary, #00f3ff) 72%, transparent),
+      0 0 36px color-mix(in srgb, var(--neon-secondary, #ff2a85) 48%, transparent),
+      inset 0 0 16px color-mix(in srgb, var(--neon-secondary, #ff2a85) 42%, transparent);
+  }
+}
+
+@keyframes tmNeonTubeHum {
+  0% { opacity: 0.88; }
+  100% { opacity: 1; }
+}
+
 @media (max-width: 520px) {
   .tm-neon-powerups-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .tm-slot-neon-stage {
+    gap: 3px;
+  }
+  .tm-slot-neon-rail {
+    width: 8px;
+    padding: 4px 1px;
+    gap: 1.5px;
+  }
+  .tm-neon-tube {
+    width: 2px;
+  }
+  .tm-slot-neon-crown-svg {
+    height: 40px;
+  }
+  .tm-slot-neon-crown-text {
+    padding: 0 20px;
+  }
+  .tm-slot-neon-crown-title {
+    font-size: 9px;
+    letter-spacing: 0.35px;
+  }
+  .tm-slot-neon-crown-sub {
+    font-size: 6.8px;
+    letter-spacing: 0.6px;
   }
 }
 
 .tm-lite-perf .tm-cabinet-neon_special,
 .tm-lite-perf .tm-neon-chase-dot,
-.tm-lite-perf .tm-neon-pw-btn.ready {
+.tm-lite-perf .tm-neon-pw-btn.ready,
+.tm-lite-perf .tm-slot-neon-crown,
+.tm-lite-perf .tm-neon-tube {
   animation: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .tm-cabinet-neon_special,
   .tm-neon-chase-dot,
-  .tm-neon-pw-btn.ready {
+  .tm-neon-pw-btn.ready,
+  .tm-slot-neon-crown,
+  .tm-neon-tube {
     animation: none !important;
   }
 }

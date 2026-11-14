@@ -498,7 +498,10 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
   }, [unlockedCosmetics, handleEquipCosmetic, awardXpOnly, setGoblinFortuneToast]);
 
   const handlePayoutGameTokens = useCallback(
-    (rawPayout, { stakedTokens = 0, xp: xpGain = 20, label = '', emoji = '🪙', maxMultiplier = 160 } = {}) => {
+    (
+      rawPayout,
+      { stakedTokens = 0, xp: xpGain = 20, label = '', emoji = '🪙', maxMultiplier = 160, skipCelebration = false } = {}
+    ) => {
       const verified = validateStakedGamePayout({
         stakedTokens,
         rawPayout,
@@ -510,7 +513,7 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
       if (xpGain > 0) {
         awardXpOnly(xpGain, null, emoji, label || `+M$${verified} MemeDollarz`);
       }
-      if (verified >= 2 && !wasCelebrationRecentlyTriggered(500)) {
+      if (!skipCelebration && verified >= 2 && !wasCelebrationRecentlyTriggered(500)) {
         triggerWinCelebration({
           amount: verified,
           unit: 'M$',

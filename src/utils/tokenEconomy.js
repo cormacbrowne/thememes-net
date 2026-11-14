@@ -66,6 +66,7 @@ export const ARCADE_ECONOMY_RULES = {
   },
   ARCADE_STAKES: {
     SLOT_BETS: [5, 10, 25, 50],
+    VIP_SLOT_BETS: [5, 10, 25, 50, 100],
     BLACKJACK_BETS: [5, 10, 25, 50],
     ROULETTE_CHIPS: [1, 5, 10, 25],
     POKER_BUYINS: [10, 25, 50, 100],

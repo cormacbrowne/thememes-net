@@ -487,9 +487,13 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     const walletAfterDemo = await page.locator('.tm-bandit-stat-box strong').first().textContent();
     expect(walletAfterDemo).toBe(walletBeforeDemo);
 
-    // Switch to Lightning Vault 5000 via top tab bar and test Ante +25%
+    // Switch to Lightning Vault 5000 via top tab bar and test Ante +25% + VIP High-Roller Neons
     await page.getByRole('tab', { name: /Lightning 5000/i }).click();
     await expect(page.locator('.tm-bandit-marquee-title')).toContainText(/NEON LIGHTNING VAULT 5000/i);
+    await expect(page.locator('[data-testid="slot-neon-crown"]')).toBeVisible();
+    await expect(page.locator('[data-testid="slot-neon-rail-left"]')).toBeVisible();
+    await expect(page.locator('[data-testid="slot-neon-rail-right"]')).toBeVisible();
+    await expect(page.locator('.tm-bandit-chip-btn.vip')).toContainText(/100🪙/);
     await expect(page.locator('.tm-slot-jackpot-leds')).toContainText(/GRAND/i);
     await page.getByRole('button', { name: /ANTE \+25%/i }).click();
     await expect(page.getByRole('button', { name: /ANTE \+25% ON/i })).toBeVisible();
@@ -499,17 +503,19 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     );
     expect(overflowPx).toBeLessThanOrEqual(2);
 
-    // Switch to Cyber Buffalo '86 (5x4 grid = 20 cells, 1,024 Ways) and test Staked Spin
+    // Switch to Cyber Buffalo '86 (5x4 grid = 20 cells, 1,024 Ways) and test Staked Spin + Neon Crown
     await page.getByRole('tab', { name: /Buffalo '86/i }).click();
     await expect(page.locator('.tm-bandit-marquee-title')).toContainText(/CYBER BUFFALO STAMPEDE '86/i);
+    await expect(page.locator('[data-testid="slot-neon-crown"]')).toBeVisible();
     await expect(page.locator('.tm-video-cell')).toHaveCount(20);
     await page.getByRole('button', { name: /5🪙|🪙 5\b/ }).first().click();
     await page.locator('.tm-bandit-spin-btn').click();
     await expect(page.locator('.tm-bandit-spin-btn')).toBeEnabled({ timeout: 5000 });
 
-    // Switch to Neon Special '86 (5th flagship cabinet) and verify 6 powerups + chase lights + house edge
+    // Switch to Neon Special '86 (5th flagship cabinet) and verify 6 powerups + chase lights + neons + house edge
     await page.getByRole('tab', { name: /Neon Special/i }).click();
     await expect(page.locator('.tm-bandit-marquee-title')).toContainText(/NEON SUPERNOVA SPECIAL '86/i);
+    await expect(page.locator('[data-testid="slot-neon-crown"]')).toBeVisible();
     await expect(page.locator('.tm-neon-pw-btn')).toHaveCount(6);
     await expect(page.locator('.tm-slot-house-edge-strip')).toContainText(/11\.5% HOUSE EDGE/i);
 
@@ -522,6 +528,7 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     await page.getByRole('tab', { name: /Bandit '85/i }).click();
     await expect(page.locator('.tm-bandit-drum-window')).toHaveCount(3);
     await expect(page.locator('.tm-bandit-arm-ball')).toBeVisible();
+    await expect(page.locator('[data-testid="slot-neon-crown"]')).toHaveCount(0);
 
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.getByRole('button', { name: /ℹ Rules/i }).click();
@@ -532,6 +539,51 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     expect(overflowPx).toBeLessThanOrEqual(2);
 
     expect(pageErrors).toEqual([]);
+  });
+
+  test('Slot Machine survives 12 consecutive pulls including out-of-tokens Demo auto-switch', async ({
+    page
+  }) => {
+    const pageErrors = [];
+    const consoleErrors = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') {
+        consoleErrors.push(msg.text());
+      }
+    });
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/games/slots', { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('.tm-slot-switcher-bar');
+
+    // Select Neon Lightning Vault 5000 (most expensive VIP neon cabinet), enable Turbo, set $2.50 (10🪙) wager
+    await page.getByRole('tab', { name: /Lightning 5000/i }).click();
+    await expect(page.locator('[data-testid="slot-neon-crown"]')).toBeVisible();
+    await page.getByRole('button', { name: /TURBO/i }).click();
+    await page.getByRole('button', { name: /10🪙/i }).first().click();
+
+    // Perform 12 consecutive pulls (will drain initial 20-25 tokens and auto-step down to Demo without locking)
+    for (let i = 0; i < 12; i += 1) {
+      const wheelBtn = page.locator('.tm-wheel-spin-cta');
+      if (await wheelBtn.isVisible().catch(() => false)) {
+        await wheelBtn.click();
+        await expect(wheelBtn).toBeHidden({ timeout: 6000 });
+      } else {
+        const spinBtn = page.locator('.tm-bandit-spin-btn');
+        await expect(spinBtn).toBeEnabled({ timeout: 6000 });
+        await spinBtn.click();
+      }
+      await page.waitForTimeout(80);
+      await expect(page.locator('.tm-bandit-spin-btn')).toBeEnabled({ timeout: 6000 });
+    }
+
+    const overflowPx = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth
+    );
+    expect(overflowPx).toBeLessThanOrEqual(2);
+    expect(pageErrors).toEqual([]);
+    expect(consoleErrors).toEqual([]);
   });
 
   test('Radio button toggles and survives visibility interruption without errors', async ({ page }) => {

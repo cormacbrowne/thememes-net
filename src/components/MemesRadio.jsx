@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import useRadio from '../hooks/useRadio';
+import { useDraggableFloating } from '../hooks/useDraggableFloating';
 import {
   RADIO_STATIONS,
   toggleRadio,
@@ -33,6 +34,7 @@ export function RadioToggleButton({ className = 'tm-btn', onOpenShop }) {
   const wrapRef = useRef(null);
   const longPressTimerRef = useRef(null);
   const longPressFiredRef = useRef(false);
+  const popoverDrag = useDraggableFloating('tm_drag_radio_popover_v1');
 
   const station = RADIO_STATIONS.find((s) => s.id === radio.activeStation) || RADIO_STATIONS[0];
 
@@ -131,8 +133,19 @@ export function RadioToggleButton({ className = 'tm-btn', onOpenShop }) {
       </div>
 
       {isPopoverOpen && (
-        <div className="tm-radio-popover" role="dialog" aria-label="THE MEMES FM Station Picker">
-          <div className="tm-radio-pop-head">
+        <div
+          ref={popoverDrag.boxRef}
+          style={popoverDrag.containerStyle}
+          className={`tm-radio-popover ${popoverDrag.isDragging ? 'is-dragging' : ''}`}
+          role="dialog"
+          aria-label="THE MEMES FM Station Picker"
+        >
+          <div
+            className="tm-radio-pop-head tm-radio-drag-head"
+            {...popoverDrag.dragHandleProps}
+            title="Drag to move radio controls anywhere • Double-click to reset"
+          >
+            <span className="tm-radio-drag-grip" aria-hidden="true">⠿</span>
             <div className="tm-radio-pop-now">
               <span className="tm-radio-pop-kicker">
                 {station.icon} {station.name}
@@ -192,6 +205,18 @@ export function RadioToggleButton({ className = 'tm-btn', onOpenShop }) {
                 title="Open Fullscreen Equalizer"
               >
                 🎛️
+              </button>
+              <button
+                type="button"
+                className="tm-radio-pop-icon-btn"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('tm-show-floating-radio-pill'));
+                  setOpen(false);
+                }}
+                aria-label="Float moveable mini music bar on screen"
+                title="Float moveable mini music deck on screen"
+              >
+                📌
               </button>
             </div>
           </div>
@@ -350,64 +375,108 @@ export function RadioStationStrip({ autoStart = false, compact = false }) {
   );
 }
 
-function MobileNowPlayingInner({ radio, isGameLayout }) {
-  const [dismissed, setDismissed] = useState(false);
-  if (dismissed) return null;
-
+function MobileNowPlayingInner({ radio, isGameLayout, onHide }) {
+  const drag = useDraggableFloating('tm_drag_music_pill_v1');
   const station = RADIO_STATIONS.find((s) => s.id === radio.activeStation) || RADIO_STATIONS[0];
-  const label = radio.track || station.name;
+  const label = radio.on ? (radio.track || station.name) : `${station.name} (Paused)`;
 
   return (
-    <div
-      className={`tm-mobile-now-playing ${isGameLayout ? 'in-game' : ''}`}
-      role="region"
-      aria-label="Now playing on THE MEMES FM"
-    >
-      <button
-        type="button"
-        className="tm-now-playing-label"
-        onClick={toggleRadio}
-        title="Tap to pause THE MEMES FM"
+    <div className={`tm-mobile-now-playing-slot ${isGameLayout ? 'in-game' : ''}`}>
+      <div
+        ref={drag.boxRef}
+        style={drag.containerStyle}
+        className={`tm-mobile-now-playing ${drag.isDragging ? 'is-dragging' : ''}`}
+        role="region"
+        aria-label="Moveable floating music controls"
       >
-        <span aria-hidden="true">📼</span>
-        <span>{label}</span>
-      </button>
-      <button
-        type="button"
-        className="tm-now-playing-btn"
-        onClick={() => openFullscreenEq({ autoStart: true })}
-        aria-label="Open Fullscreen Music Equalizer"
-        title="Fullscreen Equalizer"
-      >
-        🎛️
-      </button>
-      <button
-        type="button"
-        className="tm-now-playing-btn"
-        onClick={skipRadioTrack}
-        aria-label="Next track"
-        title="Skip track"
-      >
-        ⏭
-      </button>
-      <button
-        type="button"
-        className="tm-now-playing-btn"
-        onClick={() => setDismissed(true)}
-        aria-label="Hide now playing pill"
-        title="Hide"
-      >
-        ✕
-      </button>
+        <span
+          className="tm-now-playing-grip"
+          {...drag.dragHandleProps}
+          title="Drag music controls anywhere on screen • Double-tap to reset"
+          aria-label="Drag handle"
+        >
+          ⠿
+        </span>
+        <button
+          type="button"
+          className="tm-now-playing-label"
+          onClick={() => {
+            if (drag.wasDraggedRef.current) return;
+            toggleRadio();
+          }}
+          title={radio.on ? 'Tap to pause THE MEMES FM' : 'Tap to play THE MEMES FM'}
+        >
+          <span aria-hidden="true">{radio.on ? '⏸' : '▶'}</span>
+          <span>{label}</span>
+        </button>
+        <button
+          type="button"
+          className="tm-now-playing-btn"
+          onClick={cycleRadioStation}
+          aria-label="Next radio station"
+          title={`Station: ${station.name} (Tap to switch)`}
+        >
+          📻
+        </button>
+        <button
+          type="button"
+          className="tm-now-playing-btn"
+          onClick={() => openFullscreenEq({ autoStart: true })}
+          aria-label="Open Fullscreen Music Equalizer"
+          title="Fullscreen Equalizer"
+        >
+          🎛️
+        </button>
+        <button
+          type="button"
+          className="tm-now-playing-btn"
+          onClick={skipRadioTrack}
+          aria-label="Next track"
+          title="Skip track"
+        >
+          ⏭
+        </button>
+        <button
+          type="button"
+          className="tm-now-playing-btn"
+          onClick={onHide}
+          aria-label="Hide floating music bar"
+          title="Hide"
+        >
+          ✕
+        </button>
+      </div>
     </div>
   );
 }
 
-/** Tiny dismissible mobile "now playing" pill while music plays (Phase 29.4). */
+/** Universal draggable/moveable floating music controls (PC & iPhone). */
 export function MobileNowPlayingPill({ isGameLayout = false }) {
   const radio = useRadio();
-  if (!radio.on) return null;
-  return <MobileNowPlayingInner radio={radio} isGameLayout={isGameLayout} />;
+  const [dismissed, setDismissed] = useState(false);
+  const [pinned, setPinned] = useState(false);
+
+  useEffect(() => {
+    const onShow = () => {
+      setDismissed(false);
+      setPinned(true);
+    };
+    window.addEventListener('tm-show-floating-radio-pill', onShow);
+    return () => window.removeEventListener('tm-show-floating-radio-pill', onShow);
+  }, []);
+
+  if (dismissed) return null;
+  if (!radio.on && !pinned) return null;
+  return (
+    <MobileNowPlayingInner
+      radio={radio}
+      isGameLayout={isGameLayout}
+      onHide={() => {
+        setDismissed(true);
+        setPinned(false);
+      }}
+    />
+  );
 }
 
 /** Full cassette deck, shown inside the 🕹️ Extras drawer. */

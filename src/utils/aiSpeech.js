@@ -4,6 +4,23 @@ import { sfx } from './soundEngine';
 const NOVELTY_VOICE_RE =
   /Fred|Albert|Ralph|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Deranged|Good News|Hysterical|Pipe Organ|Trinoids|Whisper|Zarvox|Junior|Kathy|Eddy|Flo|Grandma|Grandpa|Reed|Rocko|Sandy|Shelley|Superstar|Organ|Bells/i;
 
+// Exclude regional accents (e.g. Jamaican en-JM, Nigerian en-NG, etc.) from auto 1980s US/UK voice selection
+const EXCLUDED_AUTO_LOCALE_RE = /^en[-_](jm|ng|ke|tz|za|in|ph|sg|hk|cb|tt|bz|bb|bs|gy|ie)\b/i;
+const PREFERRED_80S_LOCALE_RE = /^en[-_](us|gb|uk|ca|au)\b/i;
+const MALE_VOICE_NAME_RE = /\b(David|Mark|Guy|Christopher|Eric|Roger|Steffan|Ryan|George|Arthur|Daniel|Oliver|Alex|Aaron|Fred|Tom|Brian|Andrew|Gordon|Male)\b/i;
+const FEMALE_VOICE_NAME_RE = /\b(Samantha|Zira|Jenny|Aria|Sonia|Libby|Michelle|Ana|Victoria|Karen|Moira|Tessa|Serena|Allison|Ava|Susan|Nicky|Kate|Hazel|Female)\b/i;
+
+export function isValkyrieMode(mode) {
+  return mode === 'valkyrie' || mode === 'female80s' || mode === 'female';
+}
+
+export function isPreferredRetroEnglishLocale(lang) {
+  const norm = String(lang || '').trim();
+  if (!norm) return false;
+  if (EXCLUDED_AUTO_LOCALE_RE.test(norm)) return false;
+  return PREFERRED_80S_LOCALE_RE.test(norm);
+}
+
 const SPEECH_ENGINE_KEY = 'tm_ai_speech_engine'; // 'auto' | 'system' | 'synth'
 
 // Safari WebKit garbage-collects SpeechSynthesisUtterance objects mid-speech unless retained at module scope
@@ -72,6 +89,9 @@ export function getEnglishVoices(voicesCache = null) {
         return true;
       })
       .sort((a, b) => {
+        const aPref = isPreferredRetroEnglishLocale(a.lang) ? 0 : 1;
+        const bPref = isPreferredRetroEnglishLocale(b.lang) ? 0 : 1;
+        if (aPref !== bPref) return aPref - bPref;
         const aLocal = a.localService !== false ? 0 : 1;
         const bLocal = b.localService !== false ? 0 : 1;
         if (aLocal !== bLocal) return aLocal - bLocal;
@@ -82,7 +102,7 @@ export function getEnglishVoices(voicesCache = null) {
   }
 }
 
-export function pickPreferredVoice(mode = 'kitt', preferredUri = 'auto', voicesCache = null) {
+export function pickPreferredVoice(mode = 'valkyrie', preferredUri = 'auto', voicesCache = null) {
   const enVoices = getEnglishVoices(voicesCache);
   if (enVoices.length === 0) return null;
 
@@ -92,21 +112,58 @@ export function pickPreferredVoice(mode = 'kitt', preferredUri = 'auto', voicesC
   }
 
   const isIOS = isIOSDevice();
-  const localEnVoices = enVoices.filter((v) => v.localService !== false);
-  const pool = isIOS ? localEnVoices : enVoices;
+  // Filter to authentic 80s US/UK/CA/AU voices first (never en-JM / Jamaican)
+  const retroLocales = enVoices.filter((v) => isPreferredRetroEnglishLocale(v.lang));
+  const candidatePool = retroLocales.length > 0 ? retroLocales : enVoices;
+  const localPool = candidatePool.filter((v) => v.localService !== false);
+  const pool = isIOS ? localPool : candidatePool;
 
   // On iPhone, if no verified local clear voice is loaded, returning null lets iOS use its crisp default Siri/System voice
   if (pool.length === 0) return null;
 
-  // Prefer natural neural/system voices first (including clear iPhone local Apple voices)
+  if (isValkyrieMode(mode)) {
+    const femalePool = pool.filter((v) => !MALE_VOICE_NAME_RE.test(v.name || ''));
+    const searchPool = femalePool.length > 0 ? femalePool : pool;
+    const femalePatterns = isIOS
+      ? [/Samantha/i, /Allison/i, /Ava/i, /Victoria/i, /Serena/i, /Karen/i, /Nicky/i, /Kate/i, /en[-_]US/i, /en[-_]GB/i]
+      : [
+          /Microsoft (Aria|Jenny|Zira|Sonia|Libby|Michelle|Ana).*Online/i,
+          /Microsoft (Aria|Jenny|Zira|Sonia|Libby|Michelle|Ana)/i,
+          /Google UK English Female/i,
+          /Samantha/i,
+          /Google US English/i,
+          FEMALE_VOICE_NAME_RE,
+          /en[-_]US/i,
+          /en[-_]GB/i
+        ];
+    for (const pat of femalePatterns) {
+      const match = searchPool.find((v) => pat.test(`${v.name} ${v.voiceURI} ${v.lang}`));
+      if (match) return match;
+    }
+    return searchPool[0] || pool[0] || null;
+  }
+
   const wantedPatterns =
     mode === 'hal'
       ? isIOS
-        ? [/Arthur/i, /Daniel/i, /Gordon/i, /Aaron/i, /Samantha/i, /Karen/i, /en[-_]GB/i]
-        : [/Natural/i, /Online/i, /Daniel/i, /Arthur/i, /Ryan/i, /George/i, /Google UK English Male/i, /Guy/i, /en[-_]GB/i]
+        ? [/Arthur/i, /Daniel/i, /Gordon/i, /Oliver/i, /Aaron/i, /en[-_]GB/i]
+        : [
+            /Microsoft (Ryan|George|Christopher|Mark|David|Guy).*Online/i,
+            /Microsoft (Ryan|George|Christopher|Mark|David)/i,
+            /Google UK English Male/i,
+            /\b(Arthur|Daniel|Oliver|Ryan|George|Alex)\b/i,
+            /en[-_]GB/i
+          ]
       : isIOS
-        ? [/Aaron/i, /Samantha/i, /Nicky/i, /Daniel/i, /Moira/i, /Tessa/i, /Karen/i, /en[-_]US/i]
-        : [/Natural/i, /Online/i, /Aaron/i, /Samantha/i, /Arthur/i, /Guy/i, /Google US English/i, /Microsoft David/i, /Alex/i, /en[-_]US/i];
+        ? [/Aaron/i, /Arthur/i, /Daniel/i, /Alex/i, /Nicky/i, /en[-_]US/i]
+        : [
+            /Microsoft (Guy|Christopher|Eric|Roger|Steffan|Andrew|Brian|David).*Online/i,
+            /Microsoft (Guy|Christopher|Eric|Roger|Steffan|Andrew|Brian|David)/i,
+            /Google UK English Male/i,
+            /\b(Aaron|Alex|Daniel|Guy|David|Christopher)\b/i,
+            /Google US English/i,
+            /en[-_]US/i
+          ];
 
   for (const pat of wantedPatterns) {
     const match = pool.find((v) => pat.test(`${v.name} ${v.voiceURI} ${v.lang}`));
@@ -117,7 +174,7 @@ export function pickPreferredVoice(mode = 'kitt', preferredUri = 'auto', voicesC
     return pool.find((v) => (v.lang || '').toLowerCase().startsWith(mode === 'hal' ? 'en-gb' : 'en-us')) || pool[0] || null;
   }
 
-  return pool[0] || enVoices[0] || null;
+  return pool.find((v) => /^en[-_]US/i.test(v.lang || '')) || pool[0] || enVoices[0] || null;
 }
 
 function splitSpeechChunks(text, isIOS = false) {
@@ -286,11 +343,14 @@ export function speakUtteranceChain({
 
     // Keep iPhone rate/pitch near 1.0 to avoid Apple TTS pitch/timbre artifacts
     if (mode === 'hal') {
-      utter.rate = isIOS ? 0.93 : 0.88;
-      utter.pitch = isIOS ? 0.92 : 0.84;
+      utter.rate = isIOS ? 0.92 : 0.88;
+      utter.pitch = isIOS ? 0.9 : 0.82;
+    } else if (isValkyrieMode(mode)) {
+      utter.rate = isIOS ? 1.02 : 1.05;
+      utter.pitch = isIOS ? 1.06 : 1.14;
     } else {
       utter.rate = isIOS ? 1.02 : 1.04;
-      utter.pitch = isIOS ? 1.0 : 0.96;
+      utter.pitch = isIOS ? 0.98 : 0.94;
     }
     utter.volume = 1.0;
 
@@ -395,4 +455,25 @@ export function speakUtteranceChain({
   }, isIOS ? 2500 : 1600);
 
   return { stop };
+}
+
+/**
+ * Convenience helper for one-shot 80s spoken announcements (Bingo, TV Newsflash, 80s Icons).
+ */
+export function speakWithPersona(text, options = {}) {
+  const {
+    mode = 'valkyrie',
+    voiceUri = 'auto',
+    fromGesture = true,
+    onStart = null,
+    onEnd = null
+  } = options || {};
+  return speakUtteranceChain({
+    text,
+    mode,
+    voiceUri,
+    fromGesture,
+    onStart,
+    onEnd
+  });
 }

@@ -3522,6 +3522,122 @@ export class SoundEngine {
   }
 
   /**
+   * ⚠️ RIVAL BINGO ALERT! Dramatic 80s game-show chime when another player claims a row or House
+   */
+  playRivalBingoAlert() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic([35, 30, 50]);
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+      const notes = [880, 698.46, 880, 587.33];
+      notes.forEach((freq, i) => {
+        const t = now + i * 0.11;
+        const osc = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, t);
+        g.gain.setValueAtTime(0.001, t);
+        g.gain.linearRampToValueAtTime(0.14, t + 0.015);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+        osc.connect(g);
+        g.connect(out);
+        osc.start(t);
+        osc.stop(t + 0.17);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 👑 FULL HOUSE CHAMPIONSHIP GRAND FANFARE (Multi-horn 80s brass + arpeggio + crowd roar + coins!)
+   */
+  playBingoGrandFanfare() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      this.triggerHaptic([60, 40, 80, 40, 120, 40, 160]);
+      const now = this.ctx.currentTime;
+      const out = this._getOutputNode();
+
+      // 1. Stadium roar swell
+      const roarDur = 2.2;
+      const bufSize = Math.floor(this.ctx.sampleRate * roarDur);
+      const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buf;
+      const bp = this.ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.setValueAtTime(950, now);
+      bp.frequency.linearRampToValueAtTime(2200, now + 0.8);
+      bp.Q.setValueAtTime(0.75, now);
+      const ng = this.ctx.createGain();
+      ng.gain.setValueAtTime(0.001, now);
+      ng.gain.linearRampToValueAtTime(0.16, now + 0.2);
+      ng.gain.exponentialRampToValueAtTime(0.001, now + roarDur);
+      noise.connect(bp);
+      bp.connect(ng);
+      ng.connect(out);
+      noise.start(now);
+      noise.stop(now + roarDur);
+
+      // 2. Triumphant 80s brass fanfare melody: C5-C5-C5-G5-E5-G5-C6!
+      const fanfareNotes = [
+        { f: 523.25, t: 0.0, d: 0.14 },
+        { f: 523.25, t: 0.16, d: 0.14 },
+        { f: 523.25, t: 0.32, d: 0.14 },
+        { f: 783.99, t: 0.48, d: 0.38 },
+        { f: 659.25, t: 0.88, d: 0.18 },
+        { f: 783.99, t: 1.08, d: 0.22 },
+        { f: 1046.5, t: 1.32, d: 1.1 }
+      ];
+      fanfareNotes.forEach(({ f, t, d }) => {
+        const start = now + t;
+        [f, f * 0.5, f * 1.498].forEach((partFreq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const lp = this.ctx.createBiquadFilter();
+          const g = this.ctx.createGain();
+          osc.type = idx === 1 ? 'triangle' : 'sawtooth';
+          osc.frequency.setValueAtTime(partFreq, start);
+          lp.type = 'lowpass';
+          lp.frequency.setValueAtTime(2800, start);
+          g.gain.setValueAtTime(0.001, start);
+          g.gain.linearRampToValueAtTime(idx === 0 ? 0.11 : 0.055, start + 0.025);
+          g.gain.exponentialRampToValueAtTime(0.001, start + d);
+          osc.connect(lp);
+          lp.connect(g);
+          g.connect(out);
+          osc.start(start);
+          osc.stop(start + d + 0.04);
+        });
+      });
+
+      // 3. Sparkling coin cascade tail
+      [1318.5, 1567.98, 2093.0, 2637.02, 2093.0, 3135.96].forEach((freq, i) => {
+        const t = now + 1.45 + i * 0.09;
+        const osc = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, t);
+        g.gain.setValueAtTime(0.09, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.24);
+        osc.connect(g);
+        g.connect(out);
+        osc.start(t);
+        osc.stop(t + 0.26);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
    * 🍅 FALSE BINGO CALL! CROWD "BOOOOOO!" + SAD TROMBONE + TOMATO SPLAT
    */
   playBingoCrowdBoo() {

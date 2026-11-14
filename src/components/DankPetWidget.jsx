@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { sfx } from '../utils/soundEngine';
+import { useDraggableFloating } from '../hooks/useDraggableFloating';
 import './DankPetWidget.css';
 
 const CHAOS_EVENTS = ['pinata', 'boss', 'ufo', 'police', 'jackpot'];
@@ -118,6 +119,8 @@ export default function DankPetWidget({
     if (typeof window === 'undefined') return false;
     return window.innerWidth <= 1024;
   });
+  const dockDrag = useDraggableFloating('tm_drag_payphone_dock_v1');
+  const launcherDrag = useDraggableFloating('tm_drag_pet_launcher_v1');
   const [eventIdx, setEventIdx] = useState(0);
   const [activeEvent, setActiveEvent] = useState(null); // null | 'pinata' | 'boss' | 'ufo' | 'police' | 'jackpot'
   const [internalPayphoneOpen, setInternalPayphoneOpen] = useState(false);
@@ -374,14 +377,20 @@ export default function DankPetWidget({
     }
     return (
       <button
+        ref={launcherDrag.boxRef}
+        style={{ ...launcherDrag.containerStyle, ...launcherDrag.dragHandleProps.style }}
         type="button"
         className="tm-dank-pet-launcher"
+        onPointerDown={launcherDrag.dragHandleProps.onPointerDown}
+        onDoubleClick={launcherDrag.dragHandleProps.onDoubleClick}
         onClick={() => {
+          if (launcherDrag.wasDraggedRef.current) return;
           sfx.playToggle();
           setMinimized(false);
         }}
-        title="Restore the 🚨 DO NOT PRESS Button & 1986 Payphone!"
+        title="Restore 🚨 DO NOT PRESS & 1986 Payphone • Drag anywhere on screen!"
       >
+        <span aria-hidden="true" style={{ opacity: 0.7 }}>⠿</span>
         <span>🚨☎️</span>
         <span>Chaos</span>
       </button>
@@ -734,13 +743,26 @@ export default function DankPetWidget({
         </div>
       )}
 
-      {/* CORNER BIG RED "DO NOT PRESS" CHAOS BUTTON + 1986 NEON PAYPHONE HOTLINE (PROGRESSIVELY UNLOCKED ON FEED VIEW) */}
+      {/* CORNER BIG RED "DO NOT PRESS" CHAOS BUTTON + 1986 NEON PAYPHONE HOTLINE (DRAGGABLE!) */}
       {unlocked && isFeedMode && !minimized && (
-        <div className="tm-donotpress-dock">
+        <div
+          ref={dockDrag.boxRef}
+          style={dockDrag.containerStyle}
+          className={`tm-donotpress-dock ${dockDrag.isDragging ? 'is-dragging' : ''}`}
+        >
+          <span
+            className="tm-donotpress-grip"
+            {...dockDrag.dragHandleProps}
+            title="Drag Payphone & Chaos button anywhere on screen • Double-click to reset"
+            aria-label="Drag handle"
+          >
+            ⠿
+          </span>
           <button
             type="button"
             className="tm-payphone-dock-btn"
             onClick={() => {
+              if (dockDrag.wasDraggedRef.current) return;
               playDtmfTone('5');
               setShowPayphone(true);
             }}
@@ -754,7 +776,10 @@ export default function DankPetWidget({
           <button
             type="button"
             className="tm-donotpress-btn"
-            onClick={handlePressChaosButton}
+            onClick={() => {
+              if (dockDrag.wasDraggedRef.current) return;
+              handlePressChaosButton();
+            }}
             title={memes && memes.length > 0 ? `Latest Feed Drop: "${memes[0].title}" by @${memes[0].author_name}` : 'Trigger a dodging Meme Piñata challenge, Boss Fight, UFO or 80s Arcade Alert!'}
           >
             <span className="tm-donotpress-led">🚨</span>

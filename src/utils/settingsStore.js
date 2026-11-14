@@ -27,6 +27,7 @@ export const DEFAULT_SETTINGS = {
   musicStation: 'synthwave',
   musicVolume: 0.6,
   aiVoiceOn: true,
+  aiVoiceValkyrie: 'auto',
   aiVoiceKitt: 'auto',
   aiVoiceHal: 'auto',
   hapticsOn: true,
@@ -65,6 +66,7 @@ function readInitialSettings() {
       musicStation: radio.station || DEFAULT_SETTINGS.musicStation,
       musicVolume: clampUnit(radio.volume, DEFAULT_SETTINGS.musicVolume),
       aiVoiceOn: localStorage.getItem('tm_ai_voice_muted') !== '1',
+      aiVoiceValkyrie: localStorage.getItem('tm_ai_voice_valkyrie') || 'auto',
       aiVoiceKitt: localStorage.getItem('tm_ai_voice_kitt') || 'auto',
       aiVoiceHal: localStorage.getItem('tm_ai_voice_hal') || 'auto',
       crtOn: localStorage.getItem('tm_crt') === 'true',
@@ -101,6 +103,7 @@ export function applySettingsToRuntime(settings) {
   try {
     localStorage.setItem('tm_sound_on', settings.sfxOn ? 'true' : 'false');
     localStorage.setItem('tm_ai_voice_muted', settings.aiVoiceOn ? '0' : '1');
+    localStorage.setItem('tm_ai_voice_valkyrie', settings.aiVoiceValkyrie || 'auto');
     localStorage.setItem('tm_ai_voice_kitt', settings.aiVoiceKitt || 'auto');
     localStorage.setItem('tm_ai_voice_hal', settings.aiVoiceHal || 'auto');
     localStorage.setItem('tm_crt', String(Boolean(settings.crtOn)));

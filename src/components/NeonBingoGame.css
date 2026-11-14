@@ -386,6 +386,17 @@
   color: #86efac;
 }
 
+.tm-bingo-prize-pill.is-rival-claimed {
+  border-color: rgba(251, 146, 60, 0.72);
+  background: rgba(124, 45, 18, 0.52);
+  color: #fed7aa;
+}
+
+.tm-bingo-prize-pill.is-rival-claimed strong {
+  color: #fb923c;
+  font-size: 0.68rem;
+}
+
 .tm-bingo-prize-pill.is-ready {
   border-color: #facc15;
   background: rgba(250, 204, 21, 0.22);
@@ -482,6 +493,12 @@
   background: linear-gradient(90deg, rgba(127, 29, 29, 0.88), rgba(15, 23, 42, 0.95));
 }
 
+.tm-bingo-crowd-banner.is-rival {
+  border-color: #fb923c;
+  background: linear-gradient(90deg, rgba(154, 52, 18, 0.9), rgba(30, 12, 46, 0.96));
+  box-shadow: 0 0 22px rgba(251, 146, 60, 0.45);
+}
+
 .tm-crowd-emoji {
   font-size: 1.7rem;
   flex-shrink: 0;
@@ -523,8 +540,248 @@
   min-width: 0;
 }
 
+.tm-bingo-tickets-grid.count-2,
+.tm-bingo-tickets-grid.count-3,
 .tm-bingo-tickets-grid.count-4 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* PROMINENT LIVE HALL RIVALS BOARD (TOP OF ARENA) */
+.tm-bingo-live-hall-board {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 7px 10px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(74, 222, 128, 0.45);
+  background: linear-gradient(135deg, rgba(8, 22, 34, 0.94), rgba(20, 12, 38, 0.94));
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+.tm-hall-board-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 0.72rem;
+}
+
+.tm-hall-live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #4ade80;
+  letter-spacing: 0.04em;
+}
+
+.tm-hall-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 10px #4ade80;
+  animation: tmPrizePulse 1.1s infinite;
+}
+
+.tm-hall-feed-ticker {
+  color: #fde047;
+  font-weight: 800;
+  font-size: 0.71rem;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tm-hall-rivals-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.tm-hall-rival-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 5px 7px;
+  border-radius: 9px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.86);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.tm-hall-rival-card.just-hit {
+  border-color: #00f3ff;
+  box-shadow: 0 0 12px rgba(0, 243, 255, 0.35);
+}
+
+.tm-hall-rival-card.is-sweating {
+  border-color: #f97316;
+  background: rgba(67, 20, 7, 0.78);
+}
+
+.tm-hall-rival-card.has-won {
+  border-color: #facc15;
+}
+
+.tm-hall-rival-top {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: #f8fafc;
+}
+
+.tm-hall-rival-avatar {
+  font-size: 0.92rem;
+}
+
+.tm-hall-rival-name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tm-hall-rival-badge {
+  font-size: 0.65rem;
+  font-weight: 900;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.18);
+  color: #7dd3fc;
+}
+
+.tm-hall-rival-badge.hot {
+  background: #f97316;
+  color: #ffffff;
+  animation: tmPrizePulse 0.8s infinite;
+}
+
+.tm-hall-rival-bar-track {
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.2);
+  overflow: hidden;
+}
+
+.tm-hall-rival-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #00f3ff, #ff2a85);
+  transition: width 0.25s ease;
+}
+
+.tm-hall-rival-sub {
+  font-size: 0.64rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* GAME OVER BANNER (PLAYER FANFARE CHAMPIONSHIP OR RIVAL FULL HOUSE) */
+.tm-bingo-gameover-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 2px solid #facc15;
+  animation: tmBingoBallPop 0.35s ease;
+}
+
+.tm-bingo-gameover-banner.is-player-win {
+  background: linear-gradient(135deg, rgba(20, 83, 45, 0.92), rgba(113, 63, 18, 0.92), rgba(88, 28, 135, 0.92));
+  box-shadow: 0 0 34px rgba(250, 204, 21, 0.55);
+}
+
+.tm-bingo-gameover-banner.is-rival-win {
+  border-color: #fb923c;
+  background: linear-gradient(135deg, rgba(127, 29, 29, 0.92), rgba(30, 27, 75, 0.94));
+  box-shadow: 0 0 26px rgba(251, 146, 60, 0.45);
+}
+
+.tm-gameover-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.tm-gameover-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.tm-gameover-eyebrow {
+  font-size: 0.66rem;
+  font-weight: 950;
+  color: #fde047;
+  letter-spacing: 0.06em;
+}
+
+.tm-gameover-copy h3 {
+  margin: 2px 0 6px;
+  font-size: 1rem;
+  font-weight: 950;
+  color: #ffffff;
+}
+
+.tm-gameover-claims-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.tm-gameover-claim-chip {
+  font-size: 0.68rem;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.72);
+  color: #cbd5e1;
+}
+
+.tm-gameover-claim-chip.you {
+  border-color: #4ade80;
+  color: #86efac;
+}
+
+.tm-gameover-claim-chip.rival {
+  border-color: #fb923c;
+  color: #fed7aa;
+}
+
+.tm-gameover-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.tm-bingo-voice-picker {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tm-buy-card-btn {
+  border-color: #facc15 !important;
+  color: #fde047 !important;
+  background: rgba(250, 204, 21, 0.14) !important;
+}
+
+/* MOBILE MULTI-CARD SWITCHER */
+.tm-mobile-card-tabs {
+  display: none;
 }
 
 .tm-bingo-ticket {
@@ -932,6 +1189,59 @@
 }
 
 @media (max-width: 860px) {
+  .tm-hall-rivals-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .tm-hall-rival-sub {
+    display: none;
+  }
+
+  .tm-mobile-card-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .tm-mobile-card-tab {
+    flex: 1 1 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 30px;
+    padding: 3px 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: rgba(15, 23, 42, 0.9);
+    color: #cbd5e1;
+    font-size: 0.7rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .tm-mobile-card-tab.active {
+    border-color: #00f3ff;
+    background: rgba(0, 243, 255, 0.18);
+    color: #ffffff;
+  }
+
+  .tm-mobile-card-tab.is-hot {
+    border-color: #facc15;
+    color: #fde047;
+  }
+
+  .tm-bingo-ticket.tm-mobile-card-hidden {
+    display: none;
+  }
+
+  .tm-bingo-tickets-grid.count-2,
+  .tm-bingo-tickets-grid.count-3,
+  .tm-bingo-tickets-grid.count-4 {
+    grid-template-columns: 1fr;
+  }
+
   .tm-bingo-shell .tm-gs-live {
     display: none;
   }
@@ -965,8 +1275,8 @@
     height: 13px;
   }
 
-  .tm-card-count-chip.is-desktop-extra {
-    display: none;
+  .tm-card-count-chip {
+    min-height: 27px;
   }
 
   .tm-bingo-caller-col {

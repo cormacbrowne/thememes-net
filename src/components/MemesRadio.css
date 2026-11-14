@@ -368,7 +368,7 @@
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  width: min(292px, calc(100vw - 16px));
+  width: min(304px, calc(100vw - 16px));
   z-index: 1250;
   background: linear-gradient(165deg, rgba(11, 15, 34, 0.98), rgba(24, 11, 44, 0.98));
   border: 1.5px solid #00f3ff;
@@ -381,11 +381,29 @@
   gap: 8px;
 }
 
+.tm-radio-popover.is-dragging {
+  box-shadow: 0 24px 52px rgba(0, 0, 0, 0.96), 0 0 32px rgba(236, 72, 153, 0.45);
+  border-color: #ec4899;
+}
+
+.tm-radio-drag-head {
+  user-select: none;
+}
+
+.tm-radio-drag-grip {
+  color: #67e8f9;
+  opacity: 0.75;
+  font-size: 14px;
+  cursor: grab;
+  padding: 0 2px;
+  flex-shrink: 0;
+}
+
 .tm-radio-pop-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
 }
 
 .tm-radio-pop-now {
@@ -536,31 +554,54 @@
   color: #ffffff;
 }
 
-/* ---------- Dismissible Mobile Now-Playing Pill ---------- */
-.tm-mobile-now-playing {
+/* ---------- Moveable Floating Music Deck (PC & Mobile) ---------- */
+.tm-mobile-now-playing-slot {
   position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
   top: calc(62px + env(safe-area-inset-top, 0px));
   bottom: auto;
   z-index: 940;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.tm-mobile-now-playing-slot.in-game {
+  top: 50px;
+}
+
+.tm-mobile-now-playing {
+  pointer-events: auto;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  max-width: calc(100vw - 24px);
+  max-width: calc(100vw - 18px);
   padding: 4px 8px;
   border-radius: 999px;
-  background: rgba(10, 14, 30, 0.94);
-  border: 1px solid rgba(236, 72, 153, 0.65);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7), 0 0 14px rgba(236, 72, 153, 0.28);
+  background: rgba(10, 14, 30, 0.95);
+  border: 1.5px solid rgba(236, 72, 153, 0.72);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.78), 0 0 16px rgba(236, 72, 153, 0.34);
   color: #f8fafc;
   font-size: 11px;
   font-weight: 800;
 }
 
-.tm-mobile-now-playing.in-game {
-  top: 50px;
-  bottom: auto;
+.tm-mobile-now-playing.is-dragging {
+  border-color: #00f3ff;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.9), 0 0 24px rgba(0, 243, 255, 0.55);
+}
+
+.tm-now-playing-grip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 5px;
+  color: #f472b6;
+  font-size: 14px;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
 }
 
 .tm-now-playing-label {
@@ -573,7 +614,7 @@
   font: inherit;
   padding: 2px 4px;
   cursor: pointer;
-  max-width: 200px;
+  max-width: 185px;
   touch-action: manipulation;
 }
 
@@ -588,19 +629,13 @@
   border: 1.5px solid rgba(255, 255, 255, 0.28);
   color: #ffffff;
   border-radius: 999px;
-  min-width: 38px;
-  min-height: 38px;
-  padding: 4px 8px;
-  font-size: 13px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 4px 7px;
+  font-size: 12.5px;
   font-weight: 900;
   cursor: pointer;
   touch-action: manipulation;
-}
-
-@media (min-width: 861px) {
-  .tm-mobile-now-playing {
-    display: none;
-  }
 }
 
 @media (max-width: 860px) {

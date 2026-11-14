@@ -100,16 +100,12 @@ export default function NeonDerbyGame({
     (line) => {
       if (!voiceCommentary || !soundOn || typeof window === 'undefined') return;
       const voices = getEnglishVoices();
-      const voice = pickPreferredVoice(voices, 'kitt');
+      const voice = pickPreferredVoice('kitt', 'auto', voices);
       speakUtteranceChain({
         text: line,
         mode: 'kitt',
-        voice,
-        rate: 1.06,
-        pitch: 1.02,
-        volume: 0.9,
-        soundOn: true,
-        maxSentences: 1,
+        voiceUri: voice?.voiceURI || 'auto',
+        voicesCache: voices,
         fromGesture: false
       });
     },

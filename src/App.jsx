@@ -36,6 +36,7 @@ import {
 import { DELOREAN_ERAS, EIGHTIES_CARS } from './data/deloreanEras';
 import DualDirectionHero from './components/DualDirectionHero';
 import EightiesIconsStrip from './components/EightiesIconsStrip';
+import VintageCrtNewsTv from './components/VintageCrtNewsTv';
 import MemeSkeletonGrid from './components/MemeSkeletonGrid';
 import MobileArcadeDock from './components/MobileArcadeDock';
 import SeoDiscoveryFooter from './components/SeoDiscoveryFooter';
@@ -1143,7 +1144,12 @@ export default function App() {
             />
           )}
 
-          {viewMode === 'feed' && <EightiesIconsStrip />}
+          {viewMode === 'feed' && (
+            <div className="tm-80s-companion-row">
+              <EightiesIconsStrip />
+              <VintageCrtNewsTv />
+            </div>
+          )}
 
           {/* PHASE 28.3: STREAMLINED FEED FILTER BAR (Visible only on grid feed; button count halved) */}
           {viewMode === 'feed' && (

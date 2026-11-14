@@ -256,15 +256,17 @@ function getNoiseBuffer(ctx) {
  * Speak English text using a multi-formant Web Audio synthesizer.
  * Works reliably on iOS Safari even when Web Speech TTS fails or voices are missing.
  */
-export function speakWithWebAudioFormants(ctx, destination, text, mode = 'kitt') {
+export function speakWithWebAudioFormants(ctx, destination, text, mode = 'valkyrie') {
   if (!ctx || !destination) {
     return { stop: () => {}, durationMs: 0 };
   }
 
   const phonemes = textToPhonemes(text);
   const isHal = mode === 'hal';
-  const basePitch = isHal ? 98 : 128;
-  const speedScale = isHal ? 1.14 : 0.94;
+  const isValkyrie = mode === 'valkyrie' || mode === 'female80s' || mode === 'female';
+  const basePitch = isHal ? 98 : isValkyrie ? 218 : 128;
+  const formantScale = isValkyrie ? 1.14 : 1.0;
+  const speedScale = isHal ? 1.14 : isValkyrie ? 0.92 : 0.94;
   const now = ctx.currentTime + 0.02;
 
   const master = ctx.createGain();
@@ -276,17 +278,33 @@ export function speakWithWebAudioFormants(ctx, destination, text, mode = 'kitt')
   voiceOsc.type = 'sawtooth';
   voiceOsc.frequency.setValueAtTime(basePitch, now);
 
+  // Subtle 80s chorus oscillator for Valkyrie female vocal warmth
+  const chorusOsc = isValkyrie ? ctx.createOscillator() : null;
+  const chorusGain = isValkyrie ? ctx.createGain() : null;
+  if (chorusOsc && chorusGain) {
+    chorusOsc.type = 'triangle';
+    chorusOsc.frequency.setValueAtTime(basePitch * 1.003, now);
+    chorusGain.gain.setValueAtTime(0.38, now);
+  }
+
   // Subtle vibrato / prosody
   const vibOsc = ctx.createOscillator();
   const vibGain = ctx.createGain();
-  vibOsc.frequency.setValueAtTime(isHal ? 3.2 : 4.8, now);
-  vibGain.gain.setValueAtTime(isHal ? 0.8 : 1.6, now);
+  vibOsc.frequency.setValueAtTime(isHal ? 3.2 : isValkyrie ? 5.5 : 4.8, now);
+  vibGain.gain.setValueAtTime(isHal ? 0.8 : isValkyrie ? 3.4 : 1.6, now);
   vibOsc.connect(vibGain);
   vibGain.connect(voiceOsc.frequency);
+  if (chorusOsc) {
+    vibGain.connect(chorusOsc.frequency);
+  }
 
   const voiceGain = ctx.createGain();
   voiceGain.gain.setValueAtTime(0.0001, now);
   voiceOsc.connect(voiceGain);
+  if (chorusOsc && chorusGain) {
+    chorusOsc.connect(chorusGain);
+    chorusGain.connect(voiceGain);
+  }
 
   // 3 parallel vocal tract formant bandpass filters
   const f1 = ctx.createBiquadFilter();
@@ -350,19 +368,22 @@ export function speakWithWebAudioFormants(ctx, destination, text, mode = 'kitt')
       return;
     }
 
-    // Coarticulated formant transition
+    // Coarticulated formant transition (scaled for female/80s synth vs male)
     const glide = Math.min(0.022, dur * 0.35);
-    f1.frequency.linearRampToValueAtTime(spec.f1, t + glide);
-    f2.frequency.linearRampToValueAtTime(spec.f2, t + glide);
-    f3.frequency.linearRampToValueAtTime(spec.f3, t + glide);
+    f1.frequency.linearRampToValueAtTime(spec.f1 * formantScale, t + glide);
+    f2.frequency.linearRampToValueAtTime(spec.f2 * formantScale, t + glide);
+    f3.frequency.linearRampToValueAtTime(Math.min(4200, spec.f3 * formantScale), t + glide);
 
     if (spec.glideTo) {
-      f1.frequency.linearRampToValueAtTime(spec.glideTo[0], t + dur * 0.85);
-      f2.frequency.linearRampToValueAtTime(spec.glideTo[1], t + dur * 0.85);
-      f3.frequency.linearRampToValueAtTime(spec.glideTo[2], t + dur * 0.85);
+      f1.frequency.linearRampToValueAtTime(spec.glideTo[0] * formantScale, t + dur * 0.85);
+      f2.frequency.linearRampToValueAtTime(spec.glideTo[1] * formantScale, t + dur * 0.85);
+      f3.frequency.linearRampToValueAtTime(Math.min(4200, spec.glideTo[2] * formantScale), t + dur * 0.85);
     }
 
     voiceOsc.frequency.linearRampToValueAtTime(declPitch, t + glide);
+    if (chorusOsc) {
+      chorusOsc.frequency.linearRampToValueAtTime(declPitch * 1.003, t + glide);
+    }
 
     if (spec.voiced > 0) {
       voiceGain.gain.linearRampToValueAtTime(0.32 * spec.voiced, t + 0.014);
@@ -393,9 +414,11 @@ export function speakWithWebAudioFormants(ctx, destination, text, mode = 'kitt')
   master.gain.setTargetAtTime(0.0001, t, 0.02);
 
   voiceOsc.start(now);
+  if (chorusOsc) chorusOsc.start(now);
   vibOsc.start(now);
   noiseSrc.start(now);
   voiceOsc.stop(end + 0.05);
+  if (chorusOsc) chorusOsc.stop(end + 0.05);
   vibOsc.stop(end + 0.05);
   noiseSrc.stop(end + 0.05);
 
@@ -408,6 +431,7 @@ export function speakWithWebAudioFormants(ctx, destination, text, mode = 'kitt')
       master.gain.cancelScheduledValues(cut);
       master.gain.setTargetAtTime(0.0001, cut, 0.015);
       voiceOsc.stop(cut + 0.05);
+      if (chorusOsc) chorusOsc.stop(cut + 0.05);
       vibOsc.stop(cut + 0.05);
       noiseSrc.stop(cut + 0.05);
     } catch {

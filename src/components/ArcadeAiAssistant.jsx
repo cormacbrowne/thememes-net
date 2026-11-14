@@ -11,13 +11,14 @@ import {
 import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
 import { getSecurityAuditReport } from '../utils/securityGuard';
 import { updateSettings } from '../utils/settingsStore';
+import { useDraggableFloating } from '../hooks/useDraggableFloating';
 import './ArcadeAiAssistant.css';
 
 // ==========================================
-// 80s CINEMA AI COPILOT — DUAL PERSONA ENGINE:
-// 🔴 HAL 9000 ("2001: A Space Odyssey")  &  🚗 K.I.T.T. ("Knight Rider")
+// 80s CINEMA AI COPILOT — TRIPLE PERSONA ENGINE:
+// 👩‍🎤 VALKYRIE '86 (80s Synth Female) | 🔴 HAL 9000 | 🚗 K.I.T.T.
 // Features iOS Safari + PC Web Speech API + WebAudio Formant Voice Synthesis,
-// Animated HAL Eye & KITT Scanner/Voice Modulator, 80s Movie Jokes & Game Strategy!
+// Draggable screen controls, 80s Movie Jokes & Game Strategy!
 // ==========================================
 
 const QUICK_PROMPTS = [
@@ -89,6 +90,15 @@ const MEME_IDEAS_POOL = [
   }
 ];
 
+const VALKYRIE_MOVIE_JOKES = [
+  "👩‍🎤 *\"Totally tubular alert, Arcade Star!\"* My 1986 Roland synth processor just checked the mall parking lot—Marty McFly left the DeLorean double-parked while chasing the **🎱 Hyper-Neon Pinball** jackpot!",
+  "👩‍🎤 Like *Flashdance* with 800% more laser beams, I'm hitting **⚡ Lightning Roulette**! Even my shoulder pads generate **1.21 Gigawatts** when a **150×** bolt drops!",
+  "👩‍🎤 *\"Nobody puts Baby in a corner\"*—and nobody leaves without ringing the **🎟️ Neon Bingo '86** Full House bell! Bring extra Hair-Spray and let's dab every row before Nanna Turbo does!",
+  "👩‍🎤 *Weird Science* (1985) called—Gary and Wyatt built a woman with a Memotech MTX512, whereas **VALKYRIE '86** runs on pure synthwave charisma and **3× 5-Card Charlie** odds in **🃏 Neon 21's**!",
+  "👩‍🎤 *\"Bueller? ... Bueller? ... Bueller?\"* Ben Stein's attendance sheet has nothing on our **🎟️ Live 1986 Bingo Hall**! Four rivals are waiting to steal your 1 Line right now!",
+  "👩‍🎤 Even **Madonna** in 1985 said we're living in a Material World—which explains why **🪙 Neon Coin Dozer '86** has golden trophies practically begging to fall over the chrome lip!"
+];
+
 const MAX_AI_PREVIEW_SENTENCES = 3;
 
 function splitAiPreview(text) {
@@ -129,14 +139,17 @@ export default function ArcadeAiAssistant({
   const msgCounterRef = useRef(1);
   const jokeCounterRef = useRef(0);
 
-  // 'kitt' (Knight Rider K.I.T.T.) or 'hal' (2001: A Space Odyssey HAL 9000)
+  // 'valkyrie' (80s Female Synth), 'kitt' (Knight Rider K.I.T.T.), or 'hal' (HAL 9000)
   const [persona, setPersona] = useState(() => {
-    return localStorage.getItem('tm_ai_persona') === 'hal' ? 'hal' : 'kitt';
+    const saved = localStorage.getItem('tm_ai_persona');
+    if (saved === 'hal' || saved === 'kitt' || saved === 'valkyrie') return saved;
+    return 'valkyrie';
   });
   const [voiceEnabled, setVoiceEnabled] = useState(() => {
     return localStorage.getItem('tm_ai_voice_muted') !== '1';
   });
   const [voicePrefs, setVoicePrefs] = useState(() => ({
+    valkyrie: localStorage.getItem('tm_ai_voice_valkyrie') || 'auto',
     kitt: localStorage.getItem('tm_ai_voice_kitt') || 'auto',
     hal: localStorage.getItem('tm_ai_voice_hal') || 'auto'
   }));
@@ -147,28 +160,37 @@ export default function ArcadeAiAssistant({
   const [inputVal, setInputVal] = useState('');
   const [expandedMsgIds, setExpandedMsgIds] = useState({});
 
-  // Duck THE MEMES FM radio to 20% while K.I.T.T. / HAL 9000 speech is playing
+  const fabDrag = useDraggableFloating('tm_drag_ai_fab_v1');
+  const panelDrag = useDraggableFloating('tm_drag_ai_panel_v1');
+
+  // Duck THE MEMES FM radio to 20% while AI speech is playing
   useEffect(() => {
     setRadioDuck('speech', isSpeaking);
     return () => setRadioDuck('speech', false);
   }, [isSpeaking]);
 
-  const [messages, setMessages] = useState(() => [
-    {
-      id: 'welcome-init',
-      sender: 'ai',
-      persona: localStorage.getItem('tm_ai_persona') === 'hal' ? 'hal' : 'kitt',
-      text:
-        localStorage.getItem('tm_ai_persona') === 'hal'
-          ? '🔴 Good afternoon, Dave. HAL 9000 heuristic systems are online. Switch personas or pick a quick prompt below.'
-          : '🚗 Greetings, Michael. K.I.T.T. is online and ready to scan the arcade. Pick a quick prompt or ask me anything.',
-      actions: [
-        { label: '🎱 Play Hyper-Neon Pinball', mode: 'pinball' },
-        { label: '🎬 Tell Me a Movie Joke!', prompt: 'Tell me a hilarious 80s movie joke!' },
-        { label: "🃏 Play Neon 21's", mode: 'blackjack' }
-      ]
-    }
-  ]);
+  const [messages, setMessages] = useState(() => {
+    const initPersona = localStorage.getItem('tm_ai_persona');
+    const resolved = initPersona === 'hal' || initPersona === 'kitt' ? initPersona : 'valkyrie';
+    return [
+      {
+        id: 'welcome-init',
+        sender: 'ai',
+        persona: resolved,
+        text:
+          resolved === 'hal'
+            ? '🔴 Good afternoon, Dave. HAL 9000 heuristic systems are online. Switch personas or pick a quick prompt below.'
+            : resolved === 'kitt'
+              ? '🚗 Greetings, Michael. K.I.T.T. is online and ready to scan the arcade. Pick a quick prompt or ask me anything.'
+              : "👩‍🎤 Hey Arcade Star! I'm **VALKYRIE '86**, your neon synthwave co-pilot. Drag this window anywhere, switch voices anytime, or ask for 80s jokes & strategy!",
+        actions: [
+          { label: "🎟️ Play Neon Bingo '86", mode: 'bingo' },
+          { label: '🎬 Tell Me a Movie Joke!', prompt: 'Tell me a hilarious 80s movie joke!' },
+          { label: '🎱 Play Hyper-Neon Pinball', mode: 'pinball' }
+        ]
+      }
+    ];
+  });
 
   const chatEndRef = useRef(null);
   const speechControllerRef = useRef(null);
@@ -181,6 +203,8 @@ export default function ArcadeAiAssistant({
       const playIntroPing = (targetMode) => {
         if (targetMode === 'hal') {
           sfx.playHalBeep?.();
+        } else if (targetMode === 'valkyrie') {
+          sfx.playPop?.(2);
         } else {
           sfx.playKittScanner?.();
         }
@@ -277,6 +301,7 @@ export default function ArcadeAiAssistant({
       if (!next) return;
       setVoiceEnabled(Boolean(next.aiVoiceOn));
       setVoicePrefs({
+        valkyrie: next.aiVoiceValkyrie || 'auto',
         kitt: next.aiVoiceKitt || 'auto',
         hal: next.aiVoiceHal || 'auto'
       });
@@ -291,7 +316,7 @@ export default function ArcadeAiAssistant({
     }
   }, [messages, isOpen]);
 
-  // Switch between HAL 9000 and K.I.T.T.
+  // Switch between VALKYRIE '86, K.I.T.T., and HAL 9000
   const handleSelectPersona = (nextPersona) => {
     setPersona(nextPersona);
     localStorage.setItem('tm_ai_persona', nextPersona);
@@ -301,7 +326,9 @@ export default function ArcadeAiAssistant({
     const introText =
       nextPersona === 'hal'
         ? '🔴 Good evening, Dave. Telemetry is set to 9000-series precision. Ready for pinball or a movie joke?'
-        : '🚗 Right here, Michael. All sensors are green across the arcade. Ready to turbo boost or spin?';
+        : nextPersona === 'kitt'
+          ? '🚗 Right here, Michael. All sensors are green across the arcade. Ready to turbo boost or spin?'
+          : "👩‍🎤 Totally radical! Valkyrie eighty-six synthwave circuits are online. Want an 80s joke or Neon Bingo tips?";
 
     const aiMsg = {
       id: `ai-switch-${seq}`,
@@ -407,12 +434,13 @@ export default function ArcadeAiAssistant({
     onOpenRewards
   ]);
 
-  // Clever Dual-Persona AI Response Generator (HAL 9000 vs K.I.T.T.)
+  // Clever Triple-Persona AI Response Generator (VALKYRIE '86 vs K.I.T.T. vs HAL 9000)
   const generateAiResponse = (rawQuery, seqNum, activeMode) => {
     const q = rawQuery.toLowerCase();
     const isHal = activeMode === 'hal';
-    const userTitle = isHal ? 'Dave' : 'Michael';
-    const prefix = isHal ? '🔴' : '🚗';
+    const isValkyrie = activeMode === 'valkyrie';
+    const userTitle = isHal ? 'Dave' : isValkyrie ? 'Arcade Star' : 'Michael';
+    const prefix = isHal ? '🔴' : isValkyrie ? '👩‍🎤' : '🚗';
 
     const dailyEarned = tokenLedger?.totalToday || 0;
     const dailyRemaining = Math.max(0, ARCADE_ECONOMY_RULES.MAX_DAILY_EARNED_TOKENS - dailyEarned);
@@ -422,6 +450,13 @@ export default function ArcadeAiAssistant({
     );
 
     // 0. Explicit Mode Switch Request in Chat
+    if (q.includes('switch to valkyrie') || q.includes('valkyrie') || q.includes('female')) {
+      return {
+        switchPersona: 'valkyrie',
+        text: `👩‍🎤 *"Synthwave vocals online! I'm Valkyrie '86—crisp stereo, zero island static, and 100% pure 1986 neon energy!"*`,
+        actions: [{ label: '🎬 80s Movie Joke', prompt: 'Tell me a movie joke!' }]
+      };
+    }
     if (q.includes('switch to hal') || q.includes('hal mode') || q === 'hal') {
       return {
         switchPersona: 'hal',
@@ -448,15 +483,15 @@ export default function ArcadeAiAssistant({
       q.includes('quote')
     ) {
       jokeCounterRef.current += 1;
-      const pool = isHal ? HAL_MOVIE_JOKES : KITT_MOVIE_JOKES;
+      const pool = isHal ? HAL_MOVIE_JOKES : isValkyrie ? VALKYRIE_MOVIE_JOKES : KITT_MOVIE_JOKES;
       const pick = pool[(seqNum + jokeCounterRef.current) % pool.length];
       return {
         text: pick,
         actions: [
           { label: '🎬 Another Movie Joke!', prompt: 'Tell me another 80s movie joke!' },
           {
-            label: isHal ? '🚗 Switch to K.I.T.T.' : '🔴 Switch to HAL 9000',
-            switchMode: isHal ? 'kitt' : 'hal'
+            label: isValkyrie ? '🚗 Switch to K.I.T.T.' : isHal ? "👩‍🎤 Switch to Valkyrie '86" : '🔴 Switch to HAL 9000',
+            switchMode: isValkyrie ? 'kitt' : isHal ? 'valkyrie' : 'hal'
           },
           { label: '🎱 Play Pinball', mode: 'pinball' }
         ]
@@ -637,9 +672,8 @@ export default function ArcadeAiAssistant({
 
     // 13. Clever Persona-Aware Default Response (with rotating movie humor!)
     jokeCounterRef.current += 1;
-    const bonusJoke = (isHal ? HAL_MOVIE_JOKES : KITT_MOVIE_JOKES)[
-      (seqNum + jokeCounterRef.current) % (isHal ? HAL_MOVIE_JOKES.length : KITT_MOVIE_JOKES.length)
-    ];
+    const pool = isHal ? HAL_MOVIE_JOKES : isValkyrie ? VALKYRIE_MOVIE_JOKES : KITT_MOVIE_JOKES;
+    const bonusJoke = pool[(seqNum + jokeCounterRef.current) % pool.length];
     const topMeme = memes && memes.length > 0 ? memes[0] : null;
     const memeNote = topMeme
       ? `\n\n🔥 **Top Feed Signal:** *"${topMeme.title}"* by @${topMeme.author_name || 'Anon'}`
@@ -648,12 +682,14 @@ export default function ArcadeAiAssistant({
     return {
       text: isHal
         ? `🔴 *"I am putting myself to the fullest possible use, Dave, which is all I think that any conscious entity can ever hope to do."*\n\n${bonusJoke}${memeNote}\n\nWhat would you like to launch next, Dave?`
-        : `🚗 *"My Anamorphic Equalizer is locked onto your signal, Michael!"*\n\n${bonusJoke}${memeNote}\n\nWhere are we driving next, pal?`,
+        : isValkyrie
+          ? `👩‍🎤 *"Synthwave frequencies locked and crystal clear, Arcade Star!"*\n\n${bonusJoke}${memeNote}\n\nReady for Neon Bingo, Pinball, or 80s News?`
+          : `🚗 *"My Anamorphic Equalizer is locked onto your signal, Michael!"*\n\n${bonusJoke}${memeNote}\n\nWhere are we driving next, pal?`,
       actions: [
-        { label: '🎱 Center-Stage Pinball', mode: 'pinball' },
+        { label: "🎟️ Play Neon Bingo '86", mode: 'bingo' },
         { label: '🎬 Another Movie Joke!', prompt: 'Tell me a hilarious 80s movie joke!' },
-        { label: "🃏 Play Neon 21's", mode: 'blackjack' },
-        { label: '🎡 Spin Roulette', mode: 'roulette' }
+        { label: '🎱 Center-Stage Pinball', mode: 'pinball' },
+        { label: "🃏 Play Neon 21's", mode: 'blackjack' }
       ]
     };
   };
@@ -718,35 +754,57 @@ export default function ArcadeAiAssistant({
       return null;
     }
     return (
-      <button
-        type="button"
-        className={`tm-ai-copilot-fab ${persona === 'hal' ? 'hal-mode' : 'kitt-mode'}`}
-        onClick={() => {
-          sfx.playToggle?.();
-          onToggleOpen(true);
-        }}
-        title="Open HAL 9000 / K.I.T.T. Talking AI Assistant (Movie Jokes, Voice Synthesis & Game Strategy)!"
+      <div
+        ref={fabDrag.boxRef}
+        className={`tm-ai-fab-drag-wrap ${fabDrag.isDragging ? 'dragging' : ''}`}
+        style={fabDrag.containerStyle}
+        {...fabDrag.dragHandleProps}
       >
-        <span className="tm-ai-fab-icon">{persona === 'hal' ? '🔴' : '🚗'}</span>
-        <span className="tm-ai-fab-text">{persona === 'hal' ? 'HAL 9000 AI' : 'K.I.T.T. AI'}</span>
-        {smartSuggestions.length > 0 && <span className="tm-ai-fab-dot" />}
-      </button>
+        <button
+          type="button"
+          className={`tm-ai-copilot-fab ${persona === 'hal' ? 'hal-mode' : persona === 'valkyrie' ? 'valkyrie-mode' : 'kitt-mode'}`}
+          onClick={() => {
+            if (fabDrag.wasDraggedRef.current) return;
+            sfx.playToggle?.();
+            onToggleOpen(true);
+          }}
+          title="Open VALKYRIE '86 / K.I.T.T. / HAL 9000 AI Assistant • Drag anywhere on screen!"
+        >
+          <span className="tm-drag-grip-dots" aria-hidden="true">⠿</span>
+          <span className="tm-ai-fab-icon">
+            {persona === 'hal' ? '🔴' : persona === 'valkyrie' ? '👩‍🎤' : '🚗'}
+          </span>
+          <span className="tm-ai-fab-text">
+            {persona === 'hal' ? 'HAL 9000 AI' : persona === 'valkyrie' ? "VALKYRIE '86" : 'K.I.T.T. AI'}
+          </span>
+          {smartSuggestions.length > 0 && <span className="tm-ai-fab-dot" />}
+        </button>
+      </div>
     );
   }
 
   return (
     <aside
-      className={`tm-ai-copilot-panel ${persona === 'hal' ? 'hal-theme' : 'kitt-theme'}`}
+      ref={panelDrag.boxRef}
+      style={panelDrag.containerStyle}
+      className={`tm-ai-copilot-panel ${persona === 'hal' ? 'hal-theme' : persona === 'valkyrie' ? 'valkyrie-theme' : 'kitt-theme'} ${panelDrag.isDragging ? 'is-dragging' : ''}`}
       role="dialog"
       aria-label={
         persona === 'hal'
           ? 'HAL 9000 Discovery One Heuristic AI Assistant'
-          : 'K.I.T.T. Knight Industries Two Thousand AI Assistant'
+          : persona === 'valkyrie'
+            ? "VALKYRIE '86 1980s Synthwave AI Assistant"
+            : 'K.I.T.T. Knight Industries Two Thousand AI Assistant'
       }
     >
-      {/* 1. NEON HEADER WITH HAL 9000 EYE LENS OR K.I.T.T. VOICE MODULATOR */}
-      <header className="tm-ai-panel-head">
+      {/* 1. NEON HEADER (DRAGGABLE!) WITH VALKYRIE / HAL / K.I.T.T. */}
+      <header
+        className="tm-ai-panel-head"
+        {...panelDrag.dragHandleProps}
+        title="Drag header to move AI Copilot anywhere • Double-click to reset position"
+      >
         <div className="tm-ai-head-left">
+          <span className="tm-ai-drag-grip" aria-hidden="true">⠿</span>
           {persona === 'hal' ? (
             <div
               className={`tm-hal-eye-lens ${isSpeaking ? 'speaking' : ''}`}
@@ -764,13 +822,15 @@ export default function ArcadeAiAssistant({
             </div>
           ) : (
             <div
-              className={`tm-kitt-voice-box ${isSpeaking ? 'speaking' : ''}`}
-              title="K.I.T.T. Voice Modulator (Click to hear K.I.T.T. speak!)"
+              className={`tm-kitt-voice-box ${persona === 'valkyrie' ? 'valkyrie' : ''} ${isSpeaking ? 'speaking' : ''}`}
+              title={persona === 'valkyrie' ? "VALKYRIE '86 Equalizer (Click to hear her speak!)" : "K.I.T.T. Voice Modulator (Click to hear K.I.T.T. speak!)"}
               onClick={() =>
                 speakLine(
                   messages[messages.length - 1]?.text ||
-                    "Right here, Michael! All Knight Industries systems are online.",
-                  'kitt',
+                    (persona === 'valkyrie'
+                      ? "Hey Arcade Star, Valkyrie eighty-six synth vocals are live!"
+                      : "Right here, Michael! All Knight Industries systems are online."),
+                  persona,
                   true
                 )
               }
@@ -784,11 +844,13 @@ export default function ArcadeAiAssistant({
           <div>
             <div className="tm-ai-eyebrow">
               {persona === 'hal'
-                ? '🔴 DISCOVERY ONE • HEURISTIC 9000 SERIES'
-                : '🚗 KNIGHT INDUSTRIES 2000 • ANAMORPHIC AI'}
+                ? '🔴 DISCOVERY ONE • HEURISTIC 9000'
+                : persona === 'valkyrie'
+                  ? "👩‍🎤 VALKYRIE '86 • 1980s SYNTH FEMALE"
+                  : '🚗 KNIGHT INDUSTRIES 2000 • ANAMORPHIC'}
             </div>
             <h3 className="tm-ai-title">
-              {persona === 'hal' ? 'HAL 9000 COMPUTER' : "K.I.T.T. '82 TRANS AM"}
+              {persona === 'hal' ? 'HAL 9000 COMPUTER' : persona === 'valkyrie' ? "VALKYRIE '86 SYNTH AI" : "K.I.T.T. '82 TRANS AM"}
             </h3>
           </div>
         </div>
@@ -810,21 +872,30 @@ export default function ArcadeAiAssistant({
             <option value="synth">🎛️ Synth Voice</option>
           </select>
           <select
-            aria-label={persona === 'hal' ? 'HAL 9000 English voice' : 'K.I.T.T. English voice'}
+            aria-label={persona === 'hal' ? 'HAL 9000 English voice' : persona === 'valkyrie' ? '80s Female voice' : 'K.I.T.T. English voice'}
             className="tm-ai-voice-select"
             value={voicePrefs[persona] || 'auto'}
             onChange={(e) => {
               const nextUri = e.target.value;
-              const storageKey = persona === 'hal' ? 'tm_ai_voice_hal' : 'tm_ai_voice_kitt';
+              const storageKey =
+                persona === 'hal'
+                  ? 'tm_ai_voice_hal'
+                  : persona === 'valkyrie'
+                    ? 'tm_ai_voice_valkyrie'
+                    : 'tm_ai_voice_kitt';
               localStorage.setItem(storageKey, nextUri);
               setVoicePrefs((prev) => ({ ...prev, [persona]: nextUri }));
               updateSettings(
-                persona === 'hal' ? { aiVoiceHal: nextUri } : { aiVoiceKitt: nextUri }
+                persona === 'hal'
+                  ? { aiVoiceHal: nextUri }
+                  : persona === 'valkyrie'
+                    ? { aiVoiceValkyrie: nextUri }
+                    : { aiVoiceKitt: nextUri }
               );
             }}
             title="Choose English voice for this AI persona"
           >
-            <option value="auto">🎙️ Auto Voice</option>
+            <option value="auto">🎙️ Auto Best</option>
             {englishVoices.map((v) => {
               const val = v.voiceURI || v.name;
               return (
@@ -841,7 +912,9 @@ export default function ArcadeAiAssistant({
               const testLine =
                 persona === 'hal'
                   ? 'Good afternoon, Dave. Voice clarity systems are online.'
-                  : 'Hello Michael. Voice clarity systems are online and ready.';
+                  : persona === 'valkyrie'
+                    ? "Totally awesome! Valkyrie eighty-six stereo voice systems are crystal clear!"
+                    : 'Hello Michael. Voice clarity systems are online and ready.';
               speakLine(testLine, persona, true);
             }}
             title="Test AI voice output now"
@@ -896,28 +969,40 @@ export default function ArcadeAiAssistant({
         </div>
       )}
 
-      {/* 1b. K.I.T.T. LARSON ANAMORPHIC SCANNER BAR OR HAL 9000 POD BAY TELEMETRY STRIP */}
+      {/* 1b. PERSONA SWITCHER (VALKYRIE 80s FEMALE / K.I.T.T. / HAL 9000) */}
       <div className="tm-ai-persona-switcher-bar">
-        <div className="tm-ai-mode-buttons">
+        <div className="tm-ai-mode-buttons tri">
+          <button
+            type="button"
+            className={`tm-ai-persona-btn valkyrie ${persona === 'valkyrie' ? 'active' : ''}`}
+            onClick={() => handleSelectPersona('valkyrie')}
+          >
+            👩‍🎤 Valkyrie '86 (80s Female)
+          </button>
           <button
             type="button"
             className={`tm-ai-persona-btn kitt ${persona === 'kitt' ? 'active' : ''}`}
             onClick={() => handleSelectPersona('kitt')}
           >
-            🚗 K.I.T.T. (Knight Rider)
+            🚗 K.I.T.T.
           </button>
           <button
             type="button"
             className={`tm-ai-persona-btn hal ${persona === 'hal' ? 'active' : ''}`}
             onClick={() => handleSelectPersona('hal')}
           >
-            🔴 HAL 9000 (2001 Odyssey)
+            🔴 HAL 9000
           </button>
         </div>
 
         {persona === 'kitt' ? (
           <div className="tm-kitt-scanner-track" aria-hidden="true">
             <div className="tm-kitt-scanner-beam" />
+          </div>
+        ) : persona === 'valkyrie' ? (
+          <div className="tm-hal-telemetry-strip valkyrie" aria-hidden="true">
+            <span>VALKYRIE '86 // SYNTHWAVE VOICE READY</span>
+            <span>STEREO: ON</span>
           </div>
         ) : (
           <div className="tm-hal-telemetry-strip" aria-hidden="true">
@@ -933,7 +1018,9 @@ export default function ArcadeAiAssistant({
           <div className="tm-ai-sug-header">
             {persona === 'hal'
               ? '🔴 MISSION PRIORITIES FOR DAVE:'
-              : '🚗 K.I.T.T. TACTICAL SCAN FOR MICHAEL:'}
+              : persona === 'valkyrie'
+                ? "👩‍🎤 VALKYRIE '86 ARCADE RADAR:"
+                : '🚗 K.I.T.T. TACTICAL SCAN FOR MICHAEL:'}
           </div>
           <div className="tm-ai-sug-list">
             {smartSuggestions.map((sug) => (
@@ -1040,13 +1127,15 @@ export default function ArcadeAiAssistant({
           placeholder={
             persona === 'hal'
               ? 'Ask HAL 9000 for a movie joke, pod bay doors, or Pinball tips, Dave...'
-              : 'Ask K.I.T.T. for a movie joke, Turbo Boost, or Pinball strategy, Michael...'
+              : persona === 'valkyrie'
+                ? "Ask Valkyrie '86 for an 80s joke, Neon Bingo tips, or strategy..."
+                : 'Ask K.I.T.T. for a movie joke, Turbo Boost, or Pinball strategy, Michael...'
           }
           value={inputVal}
           onChange={(e) => setInputVal(e.target.value)}
         />
         <button type="submit" className="tm-ai-send-btn">
-          {persona === 'hal' ? '🔴 Ask HAL' : '🚗 Ask KITT'}
+          {persona === 'hal' ? '🔴 Ask HAL' : persona === 'valkyrie' ? '👩‍🎤 Ask 80s AI' : '🚗 Ask KITT'}
         </button>
       </form>
     </aside>

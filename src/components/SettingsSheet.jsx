@@ -191,6 +191,19 @@ export default function SettingsSheet({ compact = false, onResetHints }) {
             </button>
           </div>
           <select
+            aria-label="Valkyrie 80s Female Voice"
+            className="tm-settings-select"
+            value={settings.aiVoiceValkyrie || 'auto'}
+            onChange={(e) => updateSettings({ aiVoiceValkyrie: e.target.value })}
+          >
+            <option value="auto">👩‍🎤 80s Female (Valkyrie): Auto Best</option>
+            {voices.map((v) => (
+              <option key={`v-${v.voiceURI}`} value={v.voiceURI}>
+                👩‍🎤 {v.name} ({v.lang})
+              </option>
+            ))}
+          </select>
+          <select
             aria-label="K.I.T.T. Voice"
             className="tm-settings-select"
             value={settings.aiVoiceKitt || 'auto'}

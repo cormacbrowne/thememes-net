@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
-import { getSupabaseClient } from './supabaseClient';
 import { sfx } from './utils/soundEngine';
 import lazyWithRetry from './utils/lazyWithRetry';
 import {
@@ -328,10 +327,10 @@ export default function App() {
   );
 
   const memesRef = useRef([]);
-  const auth = useAuth({ setShowAuthModal, awardXpAndCombo, memesRef });
+  const auth = useAuth({ setShowAuthModal, awardXpAndCombo });
   const {
     user,
-    setUser,
+    anonHandle,
     authMode,
     setAuthMode,
     authEmail,
@@ -344,7 +343,8 @@ export default function App() {
     handleSocialOAuthLogin,
     handleMagicLinkSubmit,
     handleAuthSubmit,
-    handleQuickGuestLogin
+    handleClaimUsername,
+    handleLogout
   } = auth;
   const { onlineCount, broadcastEmote } = useLivePresence({ username: user?.username });
 
@@ -1075,12 +1075,10 @@ export default function App() {
               setProfileUsername(username);
             }}
             user={user}
+            anonHandle={anonHandle}
             onLogout={() => {
-              const client = getSupabaseClient();
-              client?.auth?.signOut?.().catch(() => {});
-              setUser(null);
+              handleLogout();
               setNotifications([]);
-              localStorage.removeItem('tm_user');
             }}
             onOpenAuthModal={() => {
               closeAllModals();
@@ -1850,7 +1848,7 @@ export default function App() {
             authMessage={authMessage}
             onSocialOAuthLogin={handleSocialOAuthLogin}
             onMagicLinkSubmit={handleMagicLinkSubmit}
-            onQuickGuestLogin={handleQuickGuestLogin}
+            anonHandle={anonHandle}
             onAuthSubmit={handleAuthSubmit}
             onClose={() => setShowAuthModal(false)}
           />
@@ -1885,6 +1883,7 @@ export default function App() {
       {profileUsername && (
         <Suspense fallback={MODAL_SKELETON_FALLBACK}>
           <PlayerProfileModal
+            key={profileUsername}
             username={profileUsername}
             memes={memes}
             currentUser={user}
@@ -1909,6 +1908,13 @@ export default function App() {
             onClose={() => setProfileUsername(null)}
             onSelectMeme={handleOpenTheater}
             onTriggerStudioMutate={handleTriggerStudioMutate}
+            onClaimUsername={async (newName) => {
+              const res = await handleClaimUsername(newName);
+              if (res?.ok && res.username) {
+                setProfileUsername(res.username);
+              }
+              return res;
+            }}
           />
         </Suspense>
       )}

@@ -39,7 +39,7 @@ import {
 import { transcodeImage } from '../_shared/imageCodec.js';
 import { moderateImage, moderateText } from '../_shared/moderation.js';
 import { IMAGE_MODERATION } from '../_shared/moderationConfig.js';
-import { authorNameFor } from '../_shared/identity.js';
+import { authorNameFor, isProfileSuspended } from '../_shared/identity.js';
 
 // The package's main entry is dist/index.js; the 32-bit WASM build sits at dist/x86/magick.wasm.
 const wasmBytes = await Deno.readFile(
@@ -119,6 +119,16 @@ async function logRejection(userId: string, kind: string, detail: string | null)
   }
 }
 
+async function ensureCallerProfile(userId: string) {
+  await admin.from('profiles').upsert({ id: userId }, { onConflict: 'id', ignoreDuplicates: true });
+  const { data } = await admin
+    .from('profiles')
+    .select('id, username, role, strikes, suspended_until')
+    .eq('id', userId)
+    .maybeSingle();
+  return data ?? null;
+}
+
 async function handleSignUpload(req: Request, userId: string, body: Record<string, unknown>) {
   const count = body.count === 2 ? 2 : 1;
   const uploads = [];
@@ -133,8 +143,9 @@ async function handleSignUpload(req: Request, userId: string, body: Record<strin
 
 async function handlePublish(
   req: Request,
-  user: { id: string; is_anonymous?: boolean; user_metadata?: Record<string, unknown> },
-  body: Record<string, unknown>
+  user: { id: string; is_anonymous?: boolean; email?: string; user_metadata?: Record<string, unknown> },
+  body: Record<string, unknown>,
+  profile: { id?: string; username?: string | null; role?: string; suspended_until?: string | null } | null
 ) {
   const parsed = parsePublishRequest(body, user.id);
   if (!parsed.ok) return fail(req, 400, parsed.error);
@@ -249,7 +260,7 @@ async function handlePublish(
       title: input.title,
       category: input.category,
       image_url: imageUrl,
-      author_name: authorNameFor(user),
+      author_name: authorNameFor(user, profile),
       user_id: user.id,
       score: 1,
       parent_meme_id: parentId,
@@ -290,6 +301,15 @@ Deno.serve(async (req: Request) => {
   const user = auth?.user;
   if (!user) return fail(req, 401, PUBLISH_ERRORS.SIGN_IN_REQUIRED);
 
+  const profile = await ensureCallerProfile(user.id);
+  if (isProfileSuspended(profile)) {
+    return json(req, 403, {
+      ok: false,
+      error: 'suspended',
+      suspended_until: profile?.suspended_until ?? null
+    });
+  }
+
   let body: Record<string, unknown>;
   try {
     body = await req.json();
@@ -298,6 +318,6 @@ Deno.serve(async (req: Request) => {
   }
 
   if (body?.action === 'sign-upload') return handleSignUpload(req, user.id, body);
-  if (body?.action === 'publish') return handlePublish(req, user, body);
+  if (body?.action === 'publish') return handlePublish(req, user, body, profile);
   return fail(req, 400, PUBLISH_ERRORS.BAD_REQUEST);
 });

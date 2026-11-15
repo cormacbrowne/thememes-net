@@ -26,7 +26,13 @@ import {
   trackShareClicked
 } from '../utils/analytics';
 import { publishMeme, PENDING_REVIEW_MESSAGE } from '../utils/publishMeme';
-import { postComment, precheckTexts, textRejectionMessage } from '../utils/serverWrites';
+import {
+  postComment,
+  precheckTexts,
+  textRejectionMessage,
+  ensureWriteSession,
+  consumeJustCreatedAnonHandle
+} from '../utils/serverWrites';
 import { submitReport } from '../utils/reports';
 import { PUBLIC_UPLOADS_ENABLED, UPLOADS_PAUSED_ERROR } from '../config/featureFlags';
 import { validateFile, canvasToCompressedBlob, makePoster } from '../utils/mediaPipeline';
@@ -664,15 +670,48 @@ export function useFeed({
 
       const client = getSupabaseClient();
       if (client && !String(memeId).startsWith('seed-') && !String(memeId).startsWith('local-')) {
+        const revertVote = () => {
+          setUserVotes((prev) => ({ ...prev, [memeId]: currentVote }));
+          setMemes((prev) =>
+            prev.map((m) => (m.id === memeId ? { ...m, score: (m.score || 0) - safeDelta } : m))
+          );
+        };
         try {
-          // Task 33.1: no direct `memes` table write fallback — the database refuses it by design.
+          const session = await ensureWriteSession(client);
+          if (!session) {
+            revertVote();
+            setGoblinFortuneToast('🔑 Could not start a session to save your vote. Please try again.');
+            setTimeout(() => setGoblinFortuneToast(''), 5000);
+            return;
+          }
+          // Task 33.1 / 33.6: increment_meme_score requires auth.uid() and blocks suspended profiles.
           // Votes move to a tamper-resistant cast_vote RPC in task 33.8.
-          await client.rpc('increment_meme_score', {
+          const { error: voteError } = await client.rpc('increment_meme_score', {
             row_id: memeId,
             delta: safeDelta
           });
+          if (voteError) {
+            revertVote();
+            const msg = String(voteError.message || '');
+            setGoblinFortuneToast(
+              /suspended/i.test(msg)
+                ? '🚫 Your account is currently suspended from voting.'
+                : /auth_required/i.test(msg)
+                ? '🔑 Please wait a moment and try voting again.'
+                : '📡 Could not save your vote. Please try again.'
+            );
+            setTimeout(() => setGoblinFortuneToast(''), 5000);
+            return;
+          }
+          const newAnon = consumeJustCreatedAnonHandle();
+          if (newAnon && !(direction > 0 && currentVote <= 0 && !petUnlocked && votesCastCount + 1 >= 3)) {
+            setGoblinFortuneToast(
+              `🕶️ You’re browsing & voting as @${newAnon} — sign in anytime to claim your handle.`
+            );
+            setTimeout(() => setGoblinFortuneToast(''), 5500);
+          }
         } catch {
-          // Local state already updated
+          revertVote();
         }
       }
     },
@@ -779,6 +818,13 @@ export function useFeed({
           return;
         }
         newComment = result.comment;
+        const newAnon = consumeJustCreatedAnonHandle();
+        if (newAnon) {
+          setGoblinFortuneToast(
+            `🕶️ Comment posted as @${newAnon} — sign in anytime to claim your handle.`
+          );
+          setTimeout(() => setGoblinFortuneToast(''), 5500);
+        }
       } else {
         const problem = precheckTexts([text]);
         if (problem) {
@@ -1005,10 +1051,19 @@ export function useFeed({
     trackMemePublished(insertedMeme, 'quick_upload');
     recordPublishDailyPerk();
     if (!aiUnlocked) {
+      consumeJustCreatedAnonHandle();
       setAiUnlocked(true);
       localStorage.setItem('tm_first_meme_created', 'true');
       setGoblinFortuneToast('🕹️ First meme created! Arcade Games & Cyber-AI Co-Pilot unlocked!');
       setTimeout(() => setGoblinFortuneToast(''), 5000);
+    } else {
+      const newAnon = consumeJustCreatedAnonHandle();
+      if (newAnon) {
+        setGoblinFortuneToast(
+          `🕶️ Posted as @${newAnon} — sign in anytime to claim your handle.`
+        );
+        setTimeout(() => setGoblinFortuneToast(''), 5500);
+      }
     }
     sfx.playPublishStinger();
     incrementQuest('q-mutate', 1);
@@ -1104,10 +1159,19 @@ export function useFeed({
 
     recordPublishDailyPerk();
     if (!aiUnlocked) {
+      consumeJustCreatedAnonHandle();
       setAiUnlocked(true);
       localStorage.setItem('tm_first_meme_created', 'true');
       setGoblinFortuneToast('🕹️ First meme created! Arcade Games & Cyber-AI Co-Pilot unlocked!');
       setTimeout(() => setGoblinFortuneToast(''), 5000);
+    } else {
+      const newAnon = consumeJustCreatedAnonHandle();
+      if (newAnon) {
+        setGoblinFortuneToast(
+          `🕶️ Posted as @${newAnon} — sign in anytime to claim your handle.`
+        );
+        setTimeout(() => setGoblinFortuneToast(''), 5500);
+      }
     }
     sfx.playPublishStinger();
     incrementQuest('q-mutate', 1);

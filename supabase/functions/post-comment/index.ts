@@ -16,7 +16,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.49.4';
 import { cleanText, isUuid } from '../_shared/publishCore.js';
 import { moderateText } from '../_shared/moderation.js';
-import { authorNameFor } from '../_shared/identity.js';
+import { authorNameFor, isProfileSuspended } from '../_shared/identity.js';
 
 const COMMENT_MAX = 280;
 
@@ -61,6 +61,20 @@ Deno.serve(async (req: Request) => {
   const user = auth?.user;
   if (!user) return json(req, 401, { ok: false, error: 'sign_in_required' });
 
+  await admin.from('profiles').upsert({ id: user.id }, { onConflict: 'id', ignoreDuplicates: true });
+  const { data: profile } = await admin
+    .from('profiles')
+    .select('id, username, role, strikes, suspended_until')
+    .eq('id', user.id)
+    .maybeSingle();
+  if (isProfileSuspended(profile)) {
+    return json(req, 403, {
+      ok: false,
+      error: 'suspended',
+      suspended_until: profile?.suspended_until ?? null
+    });
+  }
+
   let payload: Record<string, unknown>;
   try {
     payload = await req.json();
@@ -87,7 +101,7 @@ Deno.serve(async (req: Request) => {
 
   const { data: comment, error } = await admin
     .from('comments')
-    .insert({ meme_id: memeId, author_name: authorNameFor(user), body, user_id: user.id })
+    .insert({ meme_id: memeId, author_name: authorNameFor(user, profile), body, user_id: user.id })
     .select('id, meme_id, author_name, body, created_at')
     .single();
   if (error || !comment) return json(req, 500, { ok: false, error: 'server_error' });

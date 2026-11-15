@@ -21,6 +21,7 @@ export default function NavbarHud({
   unclaimedRewardsCount = 0,
   onOpenProfile,
   user,
+  anonHandle = '',
   onLogout,
   onOpenAuthModal,
   onResetFeed,
@@ -218,9 +219,13 @@ export default function NavbarHud({
               type="button"
               className="tm-btn tm-auth-cta tm-hide-mobile"
               onClick={onOpenAuthModal}
-              title="Sign in or create your Arcade Profile"
+              title={
+                anonHandle
+                  ? `Anonymous session (@${anonHandle}) — click to sign in and claim your handle`
+                  : 'Sign in or create your verified profile'
+              }
             >
-              👤 Profile
+              {anonHandle ? `🕶️ @${anonHandle} • Sign In` : '👤 Sign In'}
             </button>
           )}
         </div>

@@ -1139,3 +1139,79 @@ test.describe('Phase 33.5 ReportSheet & Moderation Queue layout', () => {
     });
   }
 });
+
+
+test.describe('Phase 33.6 Honest Accounts & Magic Link', () => {
+  for (const vp of [
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+    { width: 1280, height: 800 }
+  ]) {
+    test(`Fake cache purge, no Quick Play, Magic Link stays signed out at ${vp.width}x${vp.height}`, async ({ page }) => {
+      const pageErrors = [];
+      page.on('pageerror', (err) => pageErrors.push(err.message));
+
+      await page.route('**/auth/v1/otp*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({})
+        });
+      });
+
+      await page.setViewportSize(vp);
+      await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+      // Inject a stale fake local user from before 33.6 and reload: boot must purge it.
+      await page.evaluate(() => {
+        localStorage.setItem(
+          'tm_user',
+          JSON.stringify({
+            id: 'arcade-12345',
+            username: 'FakeBoss',
+            verified: true,
+            provider: 'ArcadePass'
+          })
+        );
+      });
+      await page.reload({ waitUntil: 'domcontentloaded' });
+
+      await expect(page.locator('.tm-nav')).toBeVisible({ timeout: 15000 });
+      const purgedUser = await page.evaluate(() => localStorage.getItem('tm_user'));
+      expect(purgedUser).toBeNull();
+
+      // Open AuthModal using desktop Sign In button or mobile bottom dock Profile button
+      const desktopSignIn = page.locator('.tm-auth-cta');
+      if (await desktopSignIn.isVisible()) {
+        await desktopSignIn.click();
+      } else {
+        const mobileProfileBtn = page.locator('.tm-dock-btn', { hasText: 'Profile' });
+        await expect(mobileProfileBtn).toBeVisible({ timeout: 5000 });
+        await mobileProfileBtn.click();
+      }
+
+      const authModal = page.locator('.tm-auth-modal');
+      await expect(authModal).toBeVisible({ timeout: 5000 });
+
+      // Quick Play must no longer exist
+      await expect(authModal.getByRole('button', { name: /Quick Play/i })).toHaveCount(0);
+
+      // Submit Magic Link without clicking emailed link: confirmation appears, user remains signed out
+      await authModal.locator('.tm-auth-tab', { hasText: /Magic Link/i }).click();
+      await authModal.locator('input[type="email"]').fill('honest.check@example.com');
+      await authModal.getByRole('button', { name: /Send Magic Link/i }).click();
+
+      await expect(authModal.locator('.tm-auth-feedback')).toContainText(/Magic Link sent/i, {
+        timeout: 5000
+      });
+      const userAfterMagic = await page.evaluate(() => localStorage.getItem('tm_user'));
+      expect(userAfterMagic).toBeNull();
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(overflow).toBeLessThanOrEqual(2);
+      expect(pageErrors).toEqual([]);
+    });
+  }
+});

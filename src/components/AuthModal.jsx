@@ -89,7 +89,7 @@ export default function AuthModal({
   authMessage,
   onSocialOAuthLogin,
   onMagicLinkSubmit,
-  onQuickGuestLogin,
+  anonHandle = '',
   onAuthSubmit,
   onClose
 }) {
@@ -140,44 +140,21 @@ export default function AuthModal({
           </button>
         </div>
 
-        {/* Security Status Banner */}
+        {/* Honest Session / Upgrade Banner */}
         <div className="tm-auth-security-banner">
-          <span>🔒 Encrypted Session • Instant Arcade Sign-In</span>
-          <span className="tm-verified-pill">🛡️ Protected</span>
-        </div>
-
-        {/* OPTIONAL HANDLE CUSTOMIZER FOR INSTANT LOGIN */}
-        <div style={{ marginBottom: '10px' }}>
-          <label
-            style={{
-              display: 'block',
-              fontSize: '11px',
-              fontWeight: 800,
-              color: '#94a3b8',
-              marginBottom: '5px'
-            }}
-          >
-            🎮 CHOOSE YOUR CREATOR HANDLE (OPTIONAL — AUTO-FILLED IF BLANK):
-          </label>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <input
-              type="text"
-              className="tm-input"
-              placeholder="e.g. CyberStar99, MemeLegend, PixelNinja..."
-              maxLength={20}
-              value={authUsername}
-              onChange={(e) => setAuthUsername(e.target.value)}
-            />
-            <button
-              type="button"
-              className="tm-btn tm-btn-primary"
-              style={{ whiteSpace: 'nowrap' }}
-              onClick={onQuickGuestLogin}
-              title="Instant 1-Click Arcade Login with this handle!"
-            >
-              ⚡ Quick Play
-            </button>
-          </div>
+          {anonHandle ? (
+            <>
+              <span>
+                🕶️ Active session: <strong>@{anonHandle}</strong> — link an account to save your handle
+              </span>
+              <span className="tm-verified-pill">Anonymous</span>
+            </>
+          ) : (
+            <>
+              <span>🔒 Supabase Auth • Sign in with Email, Magic Link, or OAuth</span>
+              <span className="tm-verified-pill">🛡️ Verified Only</span>
+            </>
+          )}
         </div>
 
         {/* 1-CLICK SOCIAL OAUTH BUTTONS (GOOGLE, DISCORD, FACEBOOK) */}
@@ -265,7 +242,7 @@ export default function AuthModal({
               required
               autoComplete="email"
               className="tm-input"
-              placeholder="Enter your email for instant login link..."
+              placeholder="Enter your email to receive a Magic Link..."
               value={authEmail}
               onChange={(e) => setAuthEmail(e.target.value)}
             />
@@ -275,7 +252,7 @@ export default function AuthModal({
               className="tm-btn tm-btn-primary"
               style={{ justifyContent: 'center', padding: '11px' }}
             >
-              ✨ Send Passwordless Magic Link (+100 XP)
+              ✨ Send Magic Link
             </button>
           </form>
         ) : (
@@ -283,6 +260,17 @@ export default function AuthModal({
             onSubmit={onAuthSubmit}
             style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
           >
+            {authMode === 'signup' && (
+              <input
+                type="text"
+                autoComplete="username"
+                className="tm-input"
+                placeholder="Choose @handle (3–20 chars, optional)"
+                maxLength={20}
+                value={authUsername}
+                onChange={(e) => setAuthUsername(e.target.value)}
+              />
+            )}
             <input
               type="email"
               required

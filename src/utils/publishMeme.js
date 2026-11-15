@@ -23,6 +23,7 @@ export const PENDING_REVIEW_MESSAGE =
 /** Friendly copy for every error code publishMeme can throw (err.message is the code). */
 export const PUBLISH_ERROR_MESSAGES = {
   sign_in_required: '🔑 Sign in to post memes to the live feed (you can still download yours).',
+  suspended: '🚫 Your account is currently suspended from posting memes.',
   video_paused: '🎬 Video memes are coming back soon — post a still or a GIF for now.',
   too_large: '⚠️ That file is too big — keep it under 15MB.',
   unsupported_type: '⚠️ Only PNG, JPG, WebP or GIF files can be posted.',

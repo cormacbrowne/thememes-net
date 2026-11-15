@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { RANKS, computePlayerBadges, formatMemeUploadDate } from '../data/starterMemes';
 import { loadLocalMemeViews } from '../utils/notifications';
 import { isUsernameCaptionKing } from '../utils/dailyCaptionBattle';
@@ -24,8 +24,12 @@ export default function PlayerProfileModal({
   konamiUnlocked = false,
   onClose,
   onSelectMeme,
-  onTriggerStudioMutate
+  onTriggerStudioMutate,
+  onClaimUsername
 }) {
+  const [handleInput, setHandleInput] = useState(currentUser?.claimedUsername || '');
+  const [handleStatus, setHandleStatus] = useState(null);
+  const [claimingHandle, setClaimingHandle] = useState(false);
   const isMe =
     currentUser &&
     String(currentUser.username || '').toLowerCase() === String(username || '').toLowerCase();
@@ -150,6 +154,79 @@ export default function PlayerProfileModal({
             ✕ Close
           </button>
         </div>
+
+        {/* Unique Handle Claim / Update (Verified accounts only) */}
+        {isMe && currentUser?.verified && onClaimUsername && (
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (claimingHandle) return;
+              setClaimingHandle(true);
+              setHandleStatus(null);
+              try {
+                const res = await onClaimUsername(handleInput);
+                if (res?.ok) {
+                  setHandleStatus({ ok: true, message: `✅ Handle updated to @${res.username}` });
+                } else {
+                  setHandleStatus({
+                    ok: false,
+                    message: res?.message || 'Could not update handle.'
+                  });
+                }
+              } finally {
+                setClaimingHandle(false);
+              }
+            }}
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              gap: '8px',
+              marginBottom: '12px',
+              padding: '10px 12px',
+              borderRadius: '10px',
+              background: 'rgba(15, 23, 42, 0.72)',
+              border: '1px solid rgba(56, 189, 248, 0.25)'
+            }}
+          >
+            <label
+              htmlFor="tm-claim-handle-input"
+              style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8' }}
+            >
+              @HANDLE:
+            </label>
+            <input
+              id="tm-claim-handle-input"
+              type="text"
+              className="tm-input"
+              style={{ flex: '1 1 180px', minWidth: '140px' }}
+              placeholder="Claim unique handle (3–20 chars)"
+              maxLength={20}
+              value={handleInput}
+              onChange={(e) => setHandleInput(e.target.value)}
+            />
+            <button
+              type="submit"
+              className="tm-btn tm-btn-primary"
+              disabled={claimingHandle}
+              style={{ whiteSpace: 'nowrap' }}
+            >
+              {claimingHandle ? 'Saving...' : 'Save @handle'}
+            </button>
+            {handleStatus && (
+              <div
+                style={{
+                  width: '100%',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  color: handleStatus.ok ? '#4ade80' : '#fca5a5'
+                }}
+              >
+                {handleStatus.message}
+              </div>
+            )}
+          </form>
+        )}
 
         {/* Stat Boxes */}
         <div className="tm-profile-stats-grid">

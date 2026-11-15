@@ -992,7 +992,7 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
 
     // Lobby shows Retro Cabinets + Funny Boss Key & Prank Screens section
     await page.goto('/games', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByText(/20 Retro Cabinets/i).first()).toBeVisible();
+    await expect(page.getByText(/21 Retro Cabinets/i).first()).toBeVisible();
     await expect(page.getByRole('heading', { name: /Funny Boss Key & Prank Screens/i })).toBeVisible();
 
     expect(pageErrors).toEqual([]);
@@ -3153,8 +3153,65 @@ test.describe('Phase 33.23 — Vector Void twin-stick space shooter', () => {
 
       // Lobby lists Vector Void under Skill with accurate count
       await page.goto('/games', { waitUntil: 'domcontentloaded' });
-      await expect(page.getByText(/20 retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText(/\d+\s+retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
       await expect(page.getByText(/Vector Void/i).first()).toBeVisible();
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(overflow).toBeLessThanOrEqual(2);
+      expect(pageErrors).toEqual([]);
+    });
+  }
+});
+
+test.describe('Phase 33.24 — Grid Riders 1P & 2P light-trail arena', () => {
+  for (const vp of [
+    { name: 'mobile', width: 390, height: 844 },
+    { name: 'tablet', width: 768, height: 1024 },
+    { name: 'desktop', width: 1280, height: 800 }
+  ]) {
+    test(`Grid Riders route renders 0-token 1P/2P split-touch duel without overflow on ${vp.name}`, async ({
+      page
+    }) => {
+      const pageErrors = [];
+      page.on('pageerror', (err) => pageErrors.push(err?.message || String(err)));
+
+      await page.setViewportSize(vp);
+      await page.goto('/games/grid-riders', { waitUntil: 'domcontentloaded' });
+
+      await expect(page).toHaveTitle(/Grid Riders/i);
+      const cabinet = page.getByTestId('grid-riders-cabinet');
+      await expect(cabinet).toBeVisible({ timeout: 15000 });
+      await expect(page.getByText(/0 TOKENS/i).first()).toBeVisible();
+
+      const canvas = page.getByTestId('grid-riders-canvas');
+      await expect(canvas).toBeVisible();
+      expect(await canvas.evaluate((el) => getComputedStyle(el).touchAction)).toBe('none');
+
+      // Start 1P VS AI and verify P1 touch D-pad + blur auto-pause
+      await page.getByTestId('riders-start-1p-btn').click();
+      await expect(page.getByTestId('riders-p1-pad')).toBeVisible();
+      await expect(page.getByTestId('riders-p2-pad')).toHaveCount(0);
+
+      await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+      await expect(page.getByTestId('riders-pause-overlay')).toBeVisible({ timeout: 5000 });
+      await page.getByTestId('riders-pause-btn').click();
+      await expect(page.getByTestId('riders-pause-overlay')).toBeHidden();
+
+      // Switch to 2P Local Duel -> rotated top P2 D-pad appears alongside P1 bottom D-pad
+      await page.getByTestId('riders-mode-2p').click();
+      const p2Pad = page.getByTestId('riders-p2-pad');
+      await expect(p2Pad).toBeVisible();
+      const p2Transform = await p2Pad.evaluate((el) => getComputedStyle(el).transform);
+      expect(p2Transform).not.toBe('none');
+
+      await expect(page.getByTestId('riders-leaderboard-btn')).toBeVisible();
+
+      // Lobby lists Grid Riders cleanly
+      await page.goto('/games', { waitUntil: 'domcontentloaded' });
+      await expect(page.getByText(/21 retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText(/Grid Riders/i).first()).toBeVisible();
 
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - window.innerWidth

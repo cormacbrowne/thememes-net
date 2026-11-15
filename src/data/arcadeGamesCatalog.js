@@ -161,6 +161,17 @@ export const ARCADE_GAMES_CATALOG = [
     path: '/games/vector-void'
   },
   {
+    id: 'riders',
+    group: 'skill',
+    icon: '🏍️',
+    label: 'Grid Riders',
+    pitch: 'Neon light-trail arena duel vs. AI or 2-player local split controls (free to play).',
+    badge: '1P / 2P Duel',
+    isNew: true,
+    accent: '#00f3ff',
+    path: '/games/grid-riders'
+  },
+  {
     id: 'pinball',
     group: 'skill',
     icon: '🎱',

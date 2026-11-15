@@ -62,7 +62,10 @@ export const MODE_ALIASES = {
   outrun: 'sunset',
   void: 'void',
   'vector-void': 'void',
-  asteroids: 'void'
+  asteroids: 'void',
+  riders: 'riders',
+  'grid-riders': 'riders',
+  tron: 'riders'
 };
 
 export const CATEGORY_SLUG_TO_ID = {
@@ -87,6 +90,7 @@ export const GAME_VIEW_MODE_TO_PATH = {
   blaster: '/games/brick-blaster',
   sunset: '/games/sunset-sprint',
   void: '/games/vector-void',
+  riders: '/games/grid-riders',
   bingo: '/games/neon-bingo',
   pusher: '/games/coin-pusher',
   pinball: '/games/pinball',
@@ -290,6 +294,24 @@ export const SEO_ROUTES = [
       'Pilot a glowing phosphor vector craft in Vector Void, a free 60fps twin-stick asteroid space shooter built right into your browser with zero downloads, zero token fees, and full global leaderboard rankings. Blast apart geometric rock clusters orbiting a deep synthwave sector where your ship, laser bolts, and drifting debris wrap seamlessly across every edge of the screen.',
       'Take total command across any screen with authentic twin-stick controls: on phones and tablets, slide your left thumb on the thruster pad to dodge in 360 degrees while aiming and auto-firing simultaneously with your right thumb stick. On desktop computers, steer with W-A-S-D keys, aim and fire independently with Arrow keys or your mouse cursor, or plug in a dual-stick USB or Bluetooth gamepad.',
       'Every jagged large vector rock shatters into twin fast-spinning medium fragments before splitting again into erratic mini-shards, escalating tension with each cleared sector wave. Tab switching automatically pauses your flight, and every high score invites you to engrave your 3-letter arcade initials onto the Vector Void cabinet board.'
+    ]
+  },
+  {
+    path: '/games/grid-riders',
+    title: 'Grid Riders — Free Light-Trail Arena Duel (1P & 2P) | THE MEMES.net',
+    description:
+      'Play Grid Riders free online! Battle smart arena AI or challenge a friend in 2-player local light-trail duels on one keyboard or split phone touch controls.',
+    h1: 'Grid Riders — Free 1P & 2P Light-Trail Arena Duel',
+    kicker: '60fps Neon Grid // 1P AI Challenge & 2P Same-Device Duel — 0 Tokens',
+    ogImage: 'https://www.thememes.net/og/games.png',
+    changefreq: 'daily',
+    priority: '0.9',
+    viewMode: 'riders',
+    category: 'all',
+    introParagraphs: [
+      'Race razor-sharp neon lightcycles inside a glowing synthwave containment grid in Grid Riders—a free arcade arena dueler featuring both single-player AI escalations and instant 2-player same-device battles with zero token cost or sign-up. Carve solid plasma trails across the 44x44 circuit, scoop up Hyper-Cell energy pickups for bonus points, and box rivals into fatal barriers before they cut off your lane.',
+      'In 1P vs AI mode, challenge an adaptive pathfinding opponent that evaluates open grid space, intercepts open corridors, and raises round tempo alongside symmetrical laser pylons starting on Round 2. Climb the real global Grid Riders cabinet leaderboard by surviving longer circuits, grabbing pickups, and derezzing the AI across consecutive rounds.',
+      'Ready for couch competition? Flip the cabinet toggle to 2P Local Duel to battle a friend on one keyboard (WASD versus Arrow keys) or place your phone between two players with a rotated face-to-face top touch pad for authentic tabletop arcade duels.'
     ]
   },
   {
@@ -1022,6 +1044,7 @@ export function resolveRouteFromLocation(pathname = '/', search = '') {
     'blaster',
     'sunset',
     'void',
+    'riders',
     'crush',
     'pinball',
     'stocks',

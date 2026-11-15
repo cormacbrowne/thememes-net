@@ -27,6 +27,7 @@ const NeonSerpentGame = lazyWithRetry(() => import('./NeonSerpentGame'));
 const BrickBlasterGame = lazyWithRetry(() => import('./BrickBlasterGame'));
 const SunsetSprintGame = lazyWithRetry(() => import('./SunsetSprintGame'));
 const VectorVoidGame = lazyWithRetry(() => import('./VectorVoidGame'));
+const GridRidersGame = lazyWithRetry(() => import('./GridRidersGame'));
 const VegasPinballGame = lazyWithRetry(() => import('./VegasPinballGame'));
 const VegasSlotMachine = lazyWithRetry(() => import('./VegasSlotMachine'));
 const VegasBlackjackGame = lazyWithRetry(() => import('./VegasBlackjackGame'));
@@ -287,6 +288,16 @@ export function FixedArcadeTopBar({
           }}
         >
           🛸 Vector
+        </button>
+        <button
+          type="button"
+          className={`tm-fixed-game-pill ${viewMode === 'riders' ? 'active' : ''}`}
+          onClick={() => {
+            sfx.playToggle();
+            setViewMode('riders');
+          }}
+        >
+          🏍️ Riders
         </button>
         <button
           type="button"
@@ -1211,6 +1222,26 @@ export default function GameRouter({
             }}
             onRecordHighScore={handleRecordHighScore}
             onOpenLeaderboard={() => onOpenCabinetLeaderboard?.('void')}
+            onBackToFeed={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+            }}
+          />
+        </Suspense>
+      )}
+
+      {viewMode === 'riders' && (
+        <Suspense fallback={<MemeSkeletonGrid count={3} />}>
+          <GridRidersGame
+            soundOn={soundOn}
+            onToggleSound={() => {
+              const nextState = !soundOn;
+              sfx.enabled = nextState;
+              setSoundOn(nextState);
+              if (nextState) sfx.playToggle();
+            }}
+            onRecordHighScore={handleRecordHighScore}
+            onOpenLeaderboard={() => onOpenCabinetLeaderboard?.('riders')}
             onBackToFeed={() => {
               sfx.playToggle();
               setViewMode('feed');

@@ -59,6 +59,12 @@
     },
     {
       "source": "/",
+      "has": [{ "type": "query", "key": "mode", "value": "riders" }],
+      "destination": "/games/grid-riders",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
       "has": [{ "type": "query", "key": "mode", "value": "pinball" }],
       "destination": "/games/pinball",
       "statusCode": 301

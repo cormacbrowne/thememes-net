@@ -202,6 +202,13 @@ export default function SeoDiscoveryFooter({
                 🛸 Vector Void (Twin-Stick Space Shooter)
               </a>
               <a
+                href="/games/grid-riders"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('riders'))}
+              >
+                🏍️ Grid Riders (1P &amp; 2P Light-Trail Duel)
+              </a>
+              <a
                 href="/games/pinball"
                 className="tm-seo-link"
                 onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('pinball'))}

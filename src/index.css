@@ -677,6 +677,22 @@ body {
   line-height: 1.4;
   color: #cbd5e1;
 }
+/* 33.5: small report flag after each comment (min 32px tap target) */
+.tm-comment-report-btn {
+  background: none;
+  border: none;
+  padding: 0 6px;
+  min-width: 32px;
+  min-height: 28px;
+  font-size: 12px;
+  opacity: 0.45;
+  cursor: pointer;
+  vertical-align: middle;
+}
+.tm-comment-report-btn:hover,
+.tm-comment-report-btn:focus-visible {
+  opacity: 1;
+}
 .tm-comment-form {
   display: flex;
   gap: 8px;

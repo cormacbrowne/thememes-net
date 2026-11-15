@@ -100,7 +100,7 @@ async function fetchLiveMeme(memeId) {
   try {
     const endpoint = `${supabaseUrl.replace(/\/+$/, '')}/rest/v1/memes?id=eq.${encodeURIComponent(
       String(memeId)
-    )}&select=id,title,image_url,poster_url,media_type,category,author_name,score,created_at&limit=1`;
+    )}&status=eq.approved&select=id,title,image_url,poster_url,media_type,category,author_name,score,created_at&limit=1`;
     const res = await fetch(endpoint, {
       headers: {
         apikey: supabaseKey,
@@ -119,6 +119,55 @@ async function fetchLiveMeme(memeId) {
   }
 }
 
+// Task 33.5: 'approved' | 'gone' (removed or rejected) | 'missing' (unknown or still pending).
+async function fetchMemePublicState(memeId) {
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL;
+  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(memeId)) return 'missing';
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 1600);
+  try {
+    const res = await fetch(`${supabaseUrl.replace(/\/+$/, '')}/rest/v1/rpc/meme_public_state`, {
+      method: 'POST',
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
+      body: JSON.stringify({ p_id: memeId }),
+      signal: controller.signal
+    });
+    if (!res.ok) return 'missing';
+    const state = await res.json();
+    return typeof state === 'string' ? state : 'missing';
+  } catch {
+    return 'missing';
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function goneHtml() {
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>This meme has been removed | THE MEMES.net</title>
+    <meta name="robots" content="noindex" />
+  </head>
+  <body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#070810;color:#f8fafc;font-family:system-ui,-apple-system,sans-serif;text-align:center;padding:24px;box-sizing:border-box;">
+    <main style="max-width:420px;">
+      <div style="font-size:56px;">🧹</div>
+      <h1 style="font-size:24px;margin:8px 0;">This meme has left the building</h1>
+      <p style="color:#94a3b8;line-height:1.5;">It was removed because it broke the House Rules. Plenty more where that came from.</p>
+      <a href="/" style="display:inline-block;margin-top:12px;padding:12px 20px;border-radius:12px;background:#ff2d78;color:#fff;text-decoration:none;font-weight:700;">Back to the feed</a>
+    </main>
+  </body>
+</html>`;
+}
+
 export default async function handler(req, res) {
   const rawId = Array.isArray(req.query?.id) ? req.query.id[0] : req.query?.id;
   const memeId = String(rawId || '').trim().slice(0, 128);
@@ -128,6 +177,14 @@ export default async function handler(req, res) {
   let meme = STARTER_MEMES.find((m) => String(m.id) === memeId) || null;
   if (!meme && memeId) {
     meme = await fetchLiveMeme(memeId);
+    if (!meme && (await fetchMemePublicState(memeId)) === 'gone') {
+      res.statusCode = 410;
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600');
+      res.setHeader('X-Robots-Tag', 'noindex');
+      res.end(goneHtml());
+      return;
+    }
   }
   if (!meme && /^(?:seed|tpl)-[a-z0-9-]+$/i.test(memeId)) {
     meme = {

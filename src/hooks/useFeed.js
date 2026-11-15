@@ -27,6 +27,7 @@ import {
 } from '../utils/analytics';
 import { publishMeme, PENDING_REVIEW_MESSAGE } from '../utils/publishMeme';
 import { postComment, precheckTexts, textRejectionMessage } from '../utils/serverWrites';
+import { submitReport } from '../utils/reports';
 import { PUBLIC_UPLOADS_ENABLED, UPLOADS_PAUSED_ERROR } from '../config/featureFlags';
 import { validateFile, canvasToCompressedBlob, makePoster } from '../utils/mediaPipeline';
 import { recordPublishDailyPerk } from '../utils/memeFeedBridge';
@@ -136,6 +137,16 @@ export function useFeed({
     }
   });
   const [moderationToast, setModerationToast] = useState('');
+  // 33.5: report sheet target ({ kind: 'meme', meme } | { kind: 'comment', comment, meme })
+  const [reportTarget, setReportTarget] = useState(null);
+  const [hiddenCommentIds, setHiddenCommentIds] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('tm_hidden_comments') || '[]');
+    } catch {
+      return [];
+    }
+  });
+  const hiddenCommentIdsRef = useRef(hiddenCommentIds);
   const lastPublishTimeRef = useRef(0);
   const loadMoreSentinelRef = useRef(null);
 
@@ -210,6 +221,15 @@ export function useFeed({
   }, [reportedMemeIds]);
 
   useEffect(() => {
+    hiddenCommentIdsRef.current = hiddenCommentIds;
+    try {
+      localStorage.setItem('tm_hidden_comments', JSON.stringify(hiddenCommentIds.slice(-500)));
+    } catch {
+      // storage full or blocked: hiding still works for this visit
+    }
+  }, [hiddenCommentIds]);
+
+  useEffect(() => {
     localStorage.setItem('tm_saved_memes', JSON.stringify(bookmarkedIds));
   }, [bookmarkedIds]);
 
@@ -270,7 +290,9 @@ export function useFeed({
             generation: row.generation || 0,
             mutation_count: row.mutation_count || 0,
             reactions: row.reactions || { '🔥': 0, '💀': 0, '😂': 0, '🗿': 0 },
-            comments: Array.isArray(row.comments) ? row.comments : []
+            comments: Array.isArray(row.comments)
+              ? row.comments.filter((c) => c && !hiddenCommentIdsRef.current.includes(String(c.id)))
+              : []
           }))
         : [];
       const liveIds = new Set(normalized.map((m) => String(m.id)));
@@ -312,9 +334,35 @@ export function useFeed({
         .subscribe();
     }
 
+    // 33.5: the database broadcasts { meme_id | comment_id } when an item is auto-hidden by
+    // reports or removed by a moderator, so every open feed drops it within seconds.
+    let modChannel = null;
+    if (client && client.channel) {
+      modChannel = client
+        .channel('moderation')
+        .on('broadcast', { event: 'hidden' }, ({ payload }) => {
+          const memeId = payload?.meme_id ? String(payload.meme_id) : null;
+          const commentId = payload?.comment_id ? String(payload.comment_id) : null;
+          if (!memeId && !commentId) return;
+          setMemes((prev) =>
+            memeId
+              ? prev.filter((m) => String(m.id) !== memeId)
+              : prev.map((m) =>
+                  Array.isArray(m.comments) && m.comments.some((c) => String(c.id) === commentId)
+                    ? { ...m, comments: m.comments.filter((c) => String(c.id) !== commentId) }
+                    : m
+                )
+          );
+        })
+        .subscribe();
+    }
+
     return () => {
       if (channel && client) {
         client.removeChannel(channel);
+      }
+      if (modChannel && client) {
+        client.removeChannel(modChannel);
       }
     };
   }, [fetchSupabaseMemes]);
@@ -1104,19 +1152,81 @@ export function useFeed({
   };
 
   // Moderation, Bookmarks & Sharing
+  // 33.5: the flag button opens the report sheet; "hide for me" is a separate local option.
   const handleReportMeme = useCallback((meme) => {
     if (!meme) return;
-    sfx.playVote(false, 1);
-    setReportedMemeIds((prev) =>
-      prev.includes(String(meme.id)) ? prev : [...prev, String(meme.id)]
-    );
-    setModerationToast(`🚩 Hidden "${(meme.title || 'Meme').slice(0, 26)}..." from your feed.`);
-    setTimeout(() => setModerationToast(''), 4500);
+    sfx.playToggle();
+    setReportTarget({ kind: 'meme', meme });
   }, []);
+
+  const handleReportComment = useCallback((comment, meme) => {
+    if (!comment) return;
+    sfx.playToggle();
+    setReportTarget({ kind: 'comment', comment, meme });
+  }, []);
+
+  const handleCloseReport = useCallback(() => setReportTarget(null), []);
+
+  const hideCommentLocally = useCallback((commentId) => {
+    const idStr = String(commentId);
+    setHiddenCommentIds((prev) => (prev.includes(idStr) ? prev : [...prev, idStr]));
+    setMemes((prev) =>
+      prev.map((m) =>
+        Array.isArray(m.comments) && m.comments.some((c) => String(c.id) === idStr)
+          ? { ...m, comments: m.comments.filter((c) => String(c.id) !== idStr) }
+          : m
+      )
+    );
+  }, []);
+
+  const handleHideForMe = useCallback(
+    (target) => {
+      if (!target) return;
+      sfx.playVote(false, 1);
+      if (target.kind === 'comment') {
+        hideCommentLocally(target.comment?.id);
+        setModerationToast('🙈 Hidden that comment from your view.');
+      } else {
+        const meme = target.meme;
+        setReportedMemeIds((prev) =>
+          prev.includes(String(meme.id)) ? prev : [...prev, String(meme.id)]
+        );
+        setModerationToast(`🙈 Hidden "${(meme.title || 'Meme').slice(0, 26)}..." from your feed.`);
+      }
+      setTimeout(() => setModerationToast(''), 4500);
+    },
+    [hideCommentLocally]
+  );
+
+  const handleSubmitReport = useCallback(
+    async ({ reason, note }) => {
+      const target = reportTarget;
+      if (!target) return { ok: false, message: 'Nothing to report.' };
+      const isComment = target.kind === 'comment';
+      const res = await submitReport(getSupabaseClient(), {
+        memeId: isComment ? null : String(target.meme.id),
+        commentId: isComment ? String(target.comment.id) : null,
+        reason,
+        note
+      });
+      if (!res.ok) return res;
+      // The reporter never has to see it again, whatever the moderators decide.
+      if (isComment) {
+        hideCommentLocally(target.comment.id);
+      } else {
+        const idStr = String(target.meme.id);
+        setReportedMemeIds((prev) => (prev.includes(idStr) ? prev : [...prev, idStr]));
+        if (res.hidden) setMemes((prev) => prev.filter((m) => String(m.id) !== idStr));
+      }
+      return res;
+    },
+    [reportTarget, hideCommentLocally]
+  );
 
   const handleRestoreReportedMemes = useCallback(() => {
     sfx.playToggle();
     setReportedMemeIds([]);
+    setHiddenCommentIds([]);
     setModerationToast('');
   }, []);
 
@@ -1435,6 +1545,11 @@ export function useFeed({
     handleQuickPublishFile,
     handleForgePublish,
     handleReportMeme,
+    handleReportComment,
+    reportTarget,
+    handleCloseReport,
+    handleHideForMe,
+    handleSubmitReport,
     handleRestoreReportedMemes,
     handleToggleBookmark,
     handleShareMeme,

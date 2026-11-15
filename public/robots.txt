@@ -1,10 +1,13 @@
 User-agent: *
 Allow: /
+Disallow: /admin/
 
 User-agent: Googlebot
 Allow: /
+Disallow: /admin/
 
 User-agent: Googlebot-Image
 Allow: /
+Disallow: /admin/
 
 Sitemap: https://www.thememes.net/sitemap.xml

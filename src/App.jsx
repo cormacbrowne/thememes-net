@@ -73,6 +73,7 @@ const PlayerProfileModal = lazyWithRetry(() => import('./components/PlayerProfil
 const ExtrasDrawerModal = lazyWithRetry(() => import('./components/ExtrasDrawerModal'));
 const RewardsModal = lazyWithRetry(() => import('./components/RewardsModal'));
 const AiRoastModal = lazyWithRetry(() => import('./components/AiRoastModal'));
+const ReportSheet = lazyWithRetry(() => import('./components/ReportSheet'));
 const BossKeyOverlay = lazyWithRetry(() => import('./components/BossKeyOverlay'));
 const DankPetWidget = lazyWithRetry(() => import('./components/DankPetWidget'));
 const UnhandledGooseSurprise = lazyWithRetry(() => import('./components/UnhandledGooseSurprise'));
@@ -409,6 +410,11 @@ export default function App() {
     handleQuickPublishFile,
     handleForgePublish,
     handleReportMeme,
+    handleReportComment,
+    reportTarget,
+    handleCloseReport,
+    handleHideForMe,
+    handleSubmitReport,
     handleRestoreReportedMemes,
     handleToggleBookmark,
     handleShareMeme,
@@ -1354,6 +1360,7 @@ export default function App() {
                       setProfileUsername(username);
                     }}
                     onReportMeme={handleReportMeme}
+                    onReportComment={handleReportComment}
                     onOpenAiRoast={handleOpenAiRoast}
                     cardFrame={
                       (user?.username &&
@@ -1985,6 +1992,18 @@ export default function App() {
             onPostRoastComment={handlePostRoastComment}
             onTriggerStudioMutate={handleTriggerStudioMutate}
             onClose={() => setRoastModalMeme(null)}
+          />
+        </Suspense>
+      )}
+
+      {/* MODAL 7b: REPORT SHEET (task 33.5) */}
+      {reportTarget && (
+        <Suspense fallback={MODAL_SKELETON_FALLBACK}>
+          <ReportSheet
+            target={reportTarget}
+            onClose={handleCloseReport}
+            onSubmit={handleSubmitReport}
+            onHideForMe={handleHideForMe}
           />
         </Suspense>
       )}

@@ -20,7 +20,7 @@ async function fetchLiveMemeEntries(limit = 500) {
   if (!supabaseUrl || !supabaseKey) return [];
 
   try {
-    const endpoint = `${supabaseUrl.replace(/\/+$/, '')}/rest/v1/memes?select=id,created_at,score&order=score.desc&limit=${limit}`;
+    const endpoint = `${supabaseUrl.replace(/\/+$/, '')}/rest/v1/memes?status=eq.approved&select=id,created_at,score&order=score.desc&limit=${limit}`;
     const res = await fetch(endpoint, {
       headers: {
         apikey: supabaseKey,

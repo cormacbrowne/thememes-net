@@ -1,0 +1,209 @@
+/* Report sheet (task 33.5): bottom sheet on phones, centred dialog from tablet up. */
+.tm-report-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  background: rgba(3, 4, 12, 0.72);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.tm-report-sheet {
+  width: 100%;
+  max-height: 92dvh;
+  overflow-y: auto;
+  background: #0d0f1c;
+  color: #f8fafc;
+  border: 1px solid rgba(0, 245, 255, 0.35);
+  border-bottom: none;
+  border-radius: 18px 18px 0 0;
+  padding: 10px 16px calc(16px + env(safe-area-inset-bottom));
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.55);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.tm-report-grab {
+  width: 44px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(148, 163, 184, 0.5);
+  margin: 0 auto 10px;
+}
+
+.tm-report-sheet h2 {
+  margin: 0 0 4px;
+  font-size: clamp(17px, 4.6vw, 20px);
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+.tm-report-sub {
+  margin: 0 0 12px;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.tm-report-reasons {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.tm-report-reason {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.7);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.tm-report-reason input {
+  accent-color: #00f5ff;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
+.tm-report-reason.is-on {
+  border-color: #00f5ff;
+  background: rgba(0, 245, 255, 0.1);
+}
+
+.tm-report-warn {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(250, 204, 21, 0.12);
+  border: 1px solid rgba(250, 204, 21, 0.4);
+  color: #fde68a;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.tm-report-note {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 52px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: #070810;
+  color: #f8fafc;
+  font-size: 16px; /* 16px stops iOS zooming on focus */
+  margin-bottom: 10px;
+}
+
+.tm-report-error {
+  color: #fca5a5;
+  font-size: 14px;
+  margin: 0 0 10px;
+}
+
+.tm-report-primary,
+.tm-report-secondary,
+.tm-report-cancel {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.tm-report-primary {
+  border: none;
+  background: linear-gradient(90deg, #ff2d78, #ff7a18);
+  color: #fff;
+}
+
+.tm-report-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.tm-report-secondary {
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: transparent;
+  color: #e2e8f0;
+}
+
+.tm-report-cancel {
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.tm-report-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #64748b;
+  font-size: 12px;
+  margin: 12px 0;
+}
+
+.tm-report-divider::before,
+.tm-report-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(148, 163, 184, 0.25);
+}
+
+.tm-report-done {
+  text-align: center;
+  padding: 8px 4px 4px;
+}
+
+.tm-report-done-emoji {
+  font-size: 44px;
+}
+
+.tm-report-done p {
+  color: #cbd5e1;
+  margin: 6px 0 16px;
+}
+
+@media (min-width: 768px) {
+  .tm-report-backdrop {
+    align-items: center;
+  }
+
+  .tm-report-sheet {
+    max-width: 460px;
+    border-radius: 18px;
+    border-bottom: 1px solid rgba(0, 245, 255, 0.35);
+    padding: 18px 22px 20px;
+  }
+
+  .tm-report-grab {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tm-report-sheet {
+    animation: tm-report-up 0.18s ease-out;
+  }
+
+  @keyframes tm-report-up {
+    from {
+      transform: translateY(24px);
+      opacity: 0;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+}

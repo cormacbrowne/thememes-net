@@ -29,6 +29,7 @@ const MemeCard = memo(function MemeCard({
   onShareMeme,
   onOpenProfile,
   onReportMeme,
+  onReportComment,
   onOpenAiRoast,
   cardFrame = 'default',
   litePerfMode = false
@@ -367,8 +368,8 @@ const MemeCard = memo(function MemeCard({
                 e.stopPropagation();
                 onReportMeme(meme, e);
               }}
-              aria-label="Flag or hide meme"
-              title="Flag / Hide Meme from Feed"
+              aria-label="Report or hide meme"
+              title="Report / Hide Meme"
             >
               🚩
             </button>
@@ -436,6 +437,20 @@ const MemeCard = memo(function MemeCard({
               <div key={c.id} className="tm-comment-item">
                 <strong style={{ color: '#38bdf8' }}>@{c.author_name}: </strong>
                 <span>{c.body}</span>
+                {onReportComment && (
+                  <button
+                    type="button"
+                    className="tm-comment-report-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onReportComment(c, meme);
+                    }}
+                    aria-label={`Report or hide comment by ${c.author_name || 'Anon'}`}
+                    title="Report / Hide comment"
+                  >
+                    🚩
+                  </button>
+                )}
               </div>
             ))
           )}

@@ -110,6 +110,15 @@ async function putPublic(path: string, data: Uint8Array, contentType: string) {
   return publicUrl(path);
 }
 
+// 33.5: count refused uploads for the moderators' daily digest (never blocks the reply).
+async function logRejection(userId: string, kind: string, detail: string | null) {
+  try {
+    await admin.from('upload_rejections').insert({ user_id: userId, kind, detail });
+  } catch {
+    // logging only
+  }
+}
+
 async function handleSignUpload(req: Request, userId: string, body: Record<string, unknown>) {
   const count = body.count === 2 ? 2 : 1;
   const uploads = [];
@@ -165,6 +174,7 @@ async function handlePublish(
       p_max_distance: IMAGE_MODERATION.bannedPhashMaxDistance
     });
     if (banCheck.data === true) {
+      await logRejection(user.id, 'banned_hash', null);
       return json(req, 422, { ok: false, error: PUBLISH_ERRORS.REJECTED, status: 'rejected' });
     }
 
@@ -206,6 +216,7 @@ async function handlePublish(
       // detail tells the uploader what to fix: links | personal_info | impersonation | hate |
       // threat | sexual | spam | rules (OpenAI) | image
       const detail = textVerdict.decision === 'reject' ? textVerdict.category ?? 'rules' : 'image';
+      await logRejection(user.id, detail === 'image' ? 'image' : 'text', detail);
       return json(req, 422, { ok: false, error: PUBLISH_ERRORS.REJECTED, status, detail });
     }
 

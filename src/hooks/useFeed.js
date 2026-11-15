@@ -616,13 +616,12 @@ export function useFeed({
       const client = getSupabaseClient();
       if (client && !String(memeId).startsWith('seed-') && !String(memeId).startsWith('local-')) {
         try {
-          const { error: rpcError } = await client.rpc('increment_meme_score', {
+          // Task 33.1: no direct `memes` table write fallback — the database refuses it by design.
+          // Votes move to a tamper-resistant cast_vote RPC in task 33.8.
+          await client.rpc('increment_meme_score', {
             row_id: memeId,
             delta: safeDelta
           });
-          if (rpcError) {
-            await client.from('memes').update({ score: updatedScore }).eq('id', memeId);
-          }
         } catch {
           // Local state already updated
         }
@@ -695,18 +694,8 @@ export function useFeed({
           message: `${emoji} Someone reacted to your meme "${String(reactedMeme.title || 'Meme').slice(0, 36)}"!`
         });
       }
-      if (
-        client &&
-        !String(memeId).startsWith('seed-') &&
-        !String(memeId).startsWith('local-') &&
-        updatedReactions
-      ) {
-        try {
-          await client.from('memes').update({ reactions: updatedReactions }).eq('id', memeId);
-        } catch {
-          // Local state already updated
-        }
-      }
+      // Task 33.1: reactions are no longer written straight to the `memes` table (the database refuses
+      // public updates). They stay local until the reactions RPC/table lands in task 33.8.
     },
     [userReactionsMap, combo, broadcastEmote, user?.username, awardFairReward, incrementQuest]
   );

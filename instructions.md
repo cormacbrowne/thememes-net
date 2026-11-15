@@ -58,7 +58,7 @@
 
 ### P0 — 🛡️ Safety, moderation & trust (do first, in this order)
 
-- [ ] **33.1 Close the "anyone can edit any meme" hole (hotfix, smallest possible change).**
+- [x] **33.1 Close the "anyone can edit any meme" hole (hotfix, smallest possible change).** _Completion Note (15 Nov 2026): SQL in `supabase/migrations/20261115000001_33_1_lock_meme_updates.sql` (drops all public UPDATE/DELETE policies on `memes`, author-only update policy, `memes_guard_protected_columns` trigger that only blocks `anon`/`authenticated` so `increment_meme_score` keeps working until 33.8); removed both direct `memes` writes in `src/hooks/useFeed.js`. ⚠️ Owner must run the migration in the Supabase SQL editor — not yet applied to the live DB._
   - Drop the policy `"Authors or authenticated creators can update their own memes"` and replace it with `using (auth.uid() = user_id) with check (auth.uid() = user_id)`. Add no delete policy for the public.
   - Remove the two direct-write fallbacks in `src/hooks/useFeed.js` (`.from('memes').update({ score })` and `.update({ reactions })`); they will now fail by design. Votes and reactions move to RPCs in 33.8.
   - Add a column-level guard: a `before update` trigger on `memes` that rejects changes to `image_url`, `poster_url`, `base_image_url`, `author_name`, `user_id`, `score`, `status` unless the caller is the service role.

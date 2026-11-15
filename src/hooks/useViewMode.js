@@ -17,6 +17,7 @@ const FIXED_ARCADE_GAMES = [
   'roulette',
   'pusher',
   'slots',
+  'invaders',
   'crush',
   'pinball',
   'stocks',

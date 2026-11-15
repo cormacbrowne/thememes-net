@@ -48,7 +48,9 @@ export const MODE_ALIASES = {
   coindozer: 'pusher',
   coinpusher: 'pusher',
   bingo: 'bingo',
-  'neon-bingo': 'bingo'
+  'neon-bingo': 'bingo',
+  invaders: 'invaders',
+  'meme-invaders': 'invaders'
 };
 
 export const CATEGORY_SLUG_TO_ID = {
@@ -68,6 +70,7 @@ export const CATEGORY_ID_TO_SLUG = {
 
 export const GAME_VIEW_MODE_TO_PATH = {
   lobby: '/games',
+  invaders: '/games/meme-invaders',
   bingo: '/games/neon-bingo',
   pusher: '/games/coin-pusher',
   pinball: '/games/pinball',
@@ -181,6 +184,24 @@ export const SEO_ROUTES = [
       "Play Neon Coin Dozer '86 free online directly in your browser—no downloads, no real money, and smooth 60fps physics on desktop, iPad, and iPhone. Click or tap across the drop chute to release gleaming gold tokens and silver score medals onto the reciprocating chrome pusher shelf and watch coins teeter dramatically on the front cliffhanger lip before cascading into your collection tray.",
       'Time your coin drops to pass through the moving Skill Gate basket and charge the 3-reel backbox mini-slot! Hitting Skill Gate spins awards 10-coin avalanches, twin neon diamonds, mega pusher super-strokes, and temporary Laser Side-Walls that block gutter losses. Five collectible retro prizes—Diamond, Mystery Box, Gold Joystick, Trophy, and Cyber Crown—stack permanent session score multipliers up to 2.25x.',
       'Need an extra push? Fire a 3-Coin Barrage, toggle Auto-Drop stream mode, or tap Cabinet Nudge to shake loose cliffhanger stacks (watching out for the 3-strike TILT sensor). Switch anytime between unlimited Free Play practice coins and Arcade Token mode using tokens earned from uploading and upvoting memes.'
+    ]
+  },
+  {
+    path: '/games/meme-invaders',
+    title: "Meme Invaders '86 — Free 80s Retro Arcade Shooter | THE MEMES.net",
+    description:
+      "Play Meme Invaders '86 free online! Blast descending emoji waves, defend crumbling shields, shoot bonus saucers, and fight every 5th wave's Top Meme Boss at 60fps.",
+    h1: "Meme Invaders '86 — Free Retro Meme Space Shooter",
+    kicker: '60fps Skill Cabinet // Touch, Keyboard & Gamepad — 0 Tokens to Play',
+    ogImage: 'https://www.thememes.net/og/games.png',
+    changefreq: 'daily',
+    priority: '0.9',
+    viewMode: 'invaders',
+    category: 'all',
+    introParagraphs: [
+      "Defend the neon synthwave grid in Meme Invaders '86, a free 60fps retro Space Invaders arcade shooter built right into your browser—no downloads, no sign-in walls, and zero tokens required to play. Blast through 40 descending emoji and meme-face invaders arranged across five scoring tiers while weaving behind four destructible pixel-block shields that visibly crumble pixel by pixel under enemy and player laser fire.",
+      'Play seamlessly across desktop, tablet, and phone using Arrow or A/D keys and Spacebar, smooth touch-drag steering plus tactile arcade thumb pads on mobile, or any plugged-in USB or Bluetooth gamepad controller. Keep your eyes peeled for the glowing Mystery Bonus Saucer crossing overhead—tagging it awards up to 300 bonus points and unleashes temporary Rapid Laser overdrive.',
+      "Every fifth wave summons a towering Giant Meme Boss constructed directly from today's top-ranked approved community meme thumbnail from the live feed, firing tri-beam plasma spreads that test your shield timing and dodge reflexes. Switching browser tabs pauses your run automatically, and finishing a wave climb lets you stamp your 3-letter initials onto the global Meme Invaders '86 arcade leaderboard."
     ]
   },
   {
@@ -908,6 +929,7 @@ export function resolveRouteFromLocation(pathname = '/', search = '') {
     'roulette',
     'pusher',
     'slots',
+    'invaders',
     'crush',
     'pinball',
     'stocks',

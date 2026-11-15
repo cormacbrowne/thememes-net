@@ -22,6 +22,7 @@ const BattleArena = lazyWithRetry(() => import('./BattleArena'));
 const ArcadeLobby = lazyWithRetry(() => import('./ArcadeLobby'));
 const NeonBingoGame = lazyWithRetry(() => import('./NeonBingoGame'));
 const MemeCrushGame = lazyWithRetry(() => import('./MemeCrushGame'));
+const MemeInvadersGame = lazyWithRetry(() => import('./MemeInvadersGame'));
 const VegasPinballGame = lazyWithRetry(() => import('./VegasPinballGame'));
 const VegasSlotMachine = lazyWithRetry(() => import('./VegasSlotMachine'));
 const VegasBlackjackGame = lazyWithRetry(() => import('./VegasBlackjackGame'));
@@ -232,6 +233,16 @@ export function FixedArcadeTopBar({
           }}
         >
           ⬆️ Hi/Lo
+        </button>
+        <button
+          type="button"
+          className={`tm-fixed-game-pill ${viewMode === 'invaders' ? 'active' : ''}`}
+          onClick={() => {
+            sfx.playToggle();
+            setViewMode('invaders');
+          }}
+        >
+          👾 Invaders
         </button>
         <button
           type="button"
@@ -1053,6 +1064,27 @@ export default function GameRouter({
               setViewMode('feed');
               handleOpenBlankStudio();
             }}
+            onBackToFeed={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+            }}
+          />
+        </Suspense>
+      )}
+
+      {viewMode === 'invaders' && (
+        <Suspense fallback={<MemeSkeletonGrid count={3} />}>
+          <MemeInvadersGame
+            memes={memes}
+            soundOn={soundOn}
+            onToggleSound={() => {
+              const nextState = !soundOn;
+              sfx.enabled = nextState;
+              setSoundOn(nextState);
+              if (nextState) sfx.playToggle();
+            }}
+            onRecordHighScore={handleRecordHighScore}
+            onOpenLeaderboard={() => onOpenCabinetLeaderboard?.('invaders')}
             onBackToFeed={() => {
               sfx.playToggle();
               setViewMode('feed');

@@ -990,9 +990,9 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     await expect(page).toHaveTitle(/Meme Battle Arena/i);
     await expect(page.locator('.tm-gs-right').getByRole('button', { name: /Share/i })).toBeVisible();
 
-    // Lobby shows 15 Retro Cabinets + Funny Boss Key & Prank Screens section
+    // Lobby shows Retro Cabinets + Funny Boss Key & Prank Screens section
     await page.goto('/games', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByText(/15 Retro Cabinets/i).first()).toBeVisible();
+    await expect(page.getByText(/16 Retro Cabinets/i).first()).toBeVisible();
     await expect(page.getByRole('heading', { name: /Funny Boss Key & Prank Screens/i })).toBeVisible();
 
     expect(pageErrors).toEqual([]);
@@ -2807,6 +2807,109 @@ test.describe('Phase 33.18 Real "people here now" & truthful 1h upvote signals',
         '🔥 12 upvotes in the last hour'
       );
 
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(overflow).toBeLessThanOrEqual(2);
+      expect(pageErrors).toEqual([]);
+    });
+  }
+});
+
+test.describe('Phase 33.19 Meme Invaders \'86 skill cabinet', () => {
+  for (const vp of [
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+    { width: 1280, height: 800 }
+  ]) {
+    test(`Renders /games/meme-invaders, touch/keyboard play, tab-hide pause, boss preview & leaderboard button at ${vp.width}x${vp.height}`, async ({
+      page
+    }) => {
+      const pageErrors = [];
+      page.on('pageerror', (err) => pageErrors.push(err.message));
+
+      await page.route('**/rest/v1/memes_feed_view*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([
+            {
+              id: '33190000-0000-4000-8000-000000000999',
+              title: 'Unapproved Pending Meme Must Never Be Boss',
+              category: 'dank',
+              image_url: '/seed/seed-dank-01.webp',
+              author_name: 'BlockedUser',
+              score: 999999,
+              hot_score: 999,
+              comments_count: 0,
+              upvotes_last_hour: 0,
+              reactions: { '🔥': 0, '💀': 0, '😂': 0, '🗿': 0 },
+              media_type: 'image',
+              status: 'pending',
+              mutation_count: 0,
+              created_at: new Date().toISOString()
+            },
+            {
+              id: '33190000-0000-4000-8000-000000000001',
+              title: 'Approved Boss Overlord Meme',
+              category: 'gaming',
+              image_url: '/seed/seed-gaming-01.webp',
+              author_name: 'ArcadeKing86',
+              score: 95000,
+              hot_score: 90,
+              comments_count: 0,
+              upvotes_last_hour: 0,
+              reactions: { '🔥': 0, '💀': 0, '😂': 0, '🗿': 0 },
+              media_type: 'image',
+              status: 'approved',
+              mutation_count: 1,
+              created_at: new Date().toISOString()
+            }
+          ])
+        });
+      });
+
+      await page.route('**/rest/v1/rpc/get_active_caption_kings*', async (route) => {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+      });
+
+      await page.setViewportSize(vp);
+      await page.goto('/games/meme-invaders', { waitUntil: 'domcontentloaded' });
+
+      await expect(page).toHaveTitle(/Meme Invaders '86/i);
+      const stage = page.getByTestId('meme-invaders-stage');
+      await expect(stage).toBeVisible({ timeout: 15000 });
+      await expect(page.getByText(/0 TOKENS/i).first()).toBeVisible();
+
+      const canvas = page.getByTestId('invaders-canvas');
+      await expect(canvas).toBeVisible();
+      const touchAction = await canvas.evaluate((el) => getComputedStyle(el).touchAction);
+      expect(touchAction).toBe('none');
+
+      // Approved top meme shows up as Wave 5 Boss preview (pending higher-score upload ignored)
+      await expect(page.getByTestId('invaders-boss-preview')).toContainText(
+        'Approved Boss Overlord Meme'
+      );
+
+      // Interactive button fire + pause & resume (plus blur auto-pause)
+      await page.getByTestId('invaders-btn-fire').dispatchEvent('pointerdown');
+      await page.waitForTimeout(80);
+      await page.getByTestId('invaders-btn-fire').dispatchEvent('pointerup');
+
+      await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+      await expect(page.getByTestId('invaders-paused-overlay')).toBeVisible({ timeout: 5000 });
+      await page.getByTestId('invaders-pause-btn').click();
+      await expect(page.getByTestId('invaders-paused-overlay')).toBeHidden();
+
+      // Leaderboard button present
+      await expect(page.getByTestId('invaders-leaderboard-btn')).toBeVisible();
+
+      // Lobby lists Meme Invaders '86 under Skill with accurate count
+      await page.goto('/games', { waitUntil: 'domcontentloaded' });
+      await expect(page.getByText(/16 retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText(/Meme Invaders '86/i).first()).toBeVisible();
+
+      // Zero horizontal overflow
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - window.innerWidth
       );

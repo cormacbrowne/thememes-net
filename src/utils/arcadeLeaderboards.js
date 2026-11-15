@@ -15,6 +15,7 @@ export const LEADERBOARD_PERIODS = [
 ];
 
 export const ARCADE_SCORE_LIMITS = {
+  invaders: { baseScore: 6000, perSec: 1500, hardMax: 500000 },
   pinball: { baseScore: 15000, perSec: 3000, hardMax: 1000000 },
   crush: { baseScore: 8000, perSec: 1800, hardMax: 500000 },
   pusher: { baseScore: 6000, perSec: 1500, hardMax: 500000 },
@@ -29,6 +30,7 @@ export const ARCADE_SCORE_LIMITS = {
 };
 
 export const LEADERBOARD_GAMES = [
+  { id: 'invaders', label: "Meme Invaders '86", icon: '👾', unit: 'pts', accent: '#00f3ff' },
   { id: 'pinball', label: "Vegas Neon Pinball '86", icon: '🎱', unit: 'pts', accent: '#c084fc' },
   { id: 'crush', label: "Meme Crush '86", icon: '🍬', unit: 'pts', accent: '#f472b6' },
   { id: 'pusher', label: "Neon Coin Dozer '86", icon: '🪙', unit: 'pts', accent: '#facc15' },

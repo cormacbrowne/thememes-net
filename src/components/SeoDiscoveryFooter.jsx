@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { trackShareClicked } from '../utils/analytics';
+import { ARCADE_GAMES_CATALOG } from '../data/arcadeGamesCatalog';
 
 export default function SeoDiscoveryFooter({
   onSelectCategory,
@@ -149,7 +150,7 @@ export default function SeoDiscoveryFooter({
                 className="tm-seo-link"
                 onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('lobby'))}
               >
-                🕹️ Cyber-Arcade Lobby (All 15 Games)
+                🕹️ Cyber-Arcade Lobby (All {ARCADE_GAMES_CATALOG.length} Games)
               </a>
               <a
                 href="/games/neon-bingo"
@@ -164,6 +165,13 @@ export default function SeoDiscoveryFooter({
                 onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('pusher'))}
               >
                 🪙 Neon Coin Dozer &apos;86 (Coin Pusher Online Free)
+              </a>
+              <a
+                href="/games/meme-invaders"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('invaders'))}
+              >
+                👾 Meme Invaders &apos;86 (Free Space Shooter)
               </a>
               <a
                 href="/games/pinball"

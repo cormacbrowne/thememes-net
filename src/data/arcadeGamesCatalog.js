@@ -106,6 +106,17 @@ export const ARCADE_GAMES_CATALOG = [
 
   // Skill
   {
+    id: 'invaders',
+    group: 'skill',
+    icon: '👾',
+    label: "Meme Invaders '86",
+    pitch: 'Blast descending emoji waves, crumbling shields & Wave-5 Meme Bosses (free to play).',
+    badge: 'Shooter',
+    isNew: true,
+    accent: '#00f3ff',
+    path: '/games/meme-invaders'
+  },
+  {
     id: 'pinball',
     group: 'skill',
     icon: '🎱',

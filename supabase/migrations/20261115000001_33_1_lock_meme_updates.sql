@@ -2,9 +2,10 @@
 -- Migration 20261115000001 — Phase 33 task 33.1
 -- Close the "anyone can edit any meme" hole (hotfix, smallest possible change).
 --
--- Before: update policy was `auth.uid() = user_id or user_id is null`, and the site
--- never sets user_id, so ANY visitor holding the public key could change ANY meme's
--- title, image_url, score, reactions, etc. via the REST API.
+-- Before (live DB, checked 15 Nov 2026): update policy "Anyone can update meme scores"
+-- with `using (true)`, so ANY visitor holding the public key could change ANY meme's
+-- title, image_url, score, reactions, etc. via the REST API. increment_meme_score ran
+-- as the caller with no limit on `delta`.
 --
 -- After:
 --   1. Only a meme's real signed-in author (auth.uid() = user_id) may update it.
@@ -15,11 +16,12 @@
 --      the public API role (anon / authenticated) — even for the author.
 --      The service role, the SQL editor, and SECURITY DEFINER functions
 --      (e.g. increment_meme_score, until task 33.8 replaces it) are not affected.
+--   4. increment_meme_score becomes SECURITY DEFINER (so votes keep saving now that
+--      the public cannot update memes directly) and clamps each call to ±2, the
+--      most the site ever sends. Still not tamper-proof — task 33.8 replaces it.
 --
--- Safe to run more than once.
+-- Safe to run more than once. Runs as one transaction (SQL editor / migration tool).
 -- ============================================================================
-
-begin;
 
 -- 1. Remove every existing UPDATE / DELETE policy on public.memes
 --    (the schema file is not a reliable record of the live DB — see audit F14 —
@@ -54,7 +56,7 @@ create policy "Authors can update their own memes"
 create or replace function public.memes_guard_protected_columns()
 returns trigger
 language plpgsql
-set search_path = public
+set search_path = ''
 as $$
 declare
   col text;
@@ -85,4 +87,18 @@ create trigger memes_guard_protected_columns
   for each row
   execute function public.memes_guard_protected_columns();
 
-commit;
+-- 4. Keep votes working: run as the function owner and clamp the step size.
+create or replace function public.increment_meme_score(row_id uuid, delta integer)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  update public.memes
+  set score = coalesce(score, 0) + greatest(-2, least(2, coalesce(delta, 0)))
+  where id = row_id;
+end;
+$$;
+
+grant execute on function public.increment_meme_score(uuid, integer) to anon, authenticated;

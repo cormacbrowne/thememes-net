@@ -50,7 +50,10 @@ export const MODE_ALIASES = {
   bingo: 'bingo',
   'neon-bingo': 'bingo',
   invaders: 'invaders',
-  'meme-invaders': 'invaders'
+  'meme-invaders': 'invaders',
+  serpent: 'serpent',
+  'neon-serpent': 'serpent',
+  snake: 'serpent'
 };
 
 export const CATEGORY_SLUG_TO_ID = {
@@ -71,6 +74,7 @@ export const CATEGORY_ID_TO_SLUG = {
 export const GAME_VIEW_MODE_TO_PATH = {
   lobby: '/games',
   invaders: '/games/meme-invaders',
+  serpent: '/games/neon-serpent',
   bingo: '/games/neon-bingo',
   pusher: '/games/coin-pusher',
   pinball: '/games/pinball',
@@ -202,6 +206,24 @@ export const SEO_ROUTES = [
       "Defend the neon synthwave grid in Meme Invaders '86, a free 60fps retro Space Invaders arcade shooter built right into your browser—no downloads, no sign-in walls, and zero tokens required to play. Blast through 40 descending emoji and meme-face invaders arranged across five scoring tiers while weaving behind four destructible pixel-block shields that visibly crumble pixel by pixel under enemy and player laser fire.",
       'Play seamlessly across desktop, tablet, and phone using Arrow or A/D keys and Spacebar, smooth touch-drag steering plus tactile arcade thumb pads on mobile, or any plugged-in USB or Bluetooth gamepad controller. Keep your eyes peeled for the glowing Mystery Bonus Saucer crossing overhead—tagging it awards up to 300 bonus points and unleashes temporary Rapid Laser overdrive.',
       "Every fifth wave summons a towering Giant Meme Boss constructed directly from today's top-ranked approved community meme thumbnail from the live feed, firing tri-beam plasma spreads that test your shield timing and dodge reflexes. Switching browser tabs pauses your run automatically, and finishing a wave climb lets you stamp your 3-letter initials onto the global Meme Invaders '86 arcade leaderboard."
+    ]
+  },
+  {
+    path: '/games/neon-serpent',
+    title: 'Neon Serpent — Free Synthwave Reaction Snake Arcade | THE MEMES.net',
+    description:
+      'Play Neon Serpent free online! Swipe through a 60fps neon grid eating reaction emojis: Fire speeds up & doubles points, Moai triggers slow-mo, and Skull shrinks your tail.',
+    h1: 'Neon Serpent — Free Synthwave Reaction Snake Game',
+    kicker: '60fps Skill Cabinet // Swipe, Keyboard & Gamepad — 0 Tokens to Play',
+    ogImage: 'https://www.thememes.net/og/games.png',
+    changefreq: 'daily',
+    priority: '0.9',
+    viewMode: 'serpent',
+    category: 'all',
+    introParagraphs: [
+      'Slither through the cyber-grid in Neon Serpent, a free 60fps synthwave reaction-snake arcade cabinet playable directly in your browser with zero downloads, zero token fees, and instant leaderboard competition. Steer your glowing serpent across a 20x20 neon matrix while snatching meme reaction emojis that transform the pace and strategy of every single run.',
+      'Unlike ordinary classic snake clones, every emoji flavor packs a distinct tactical power-up: grab laughing bites for crisp score growth, chase viral crowns for mega bonus points, hit fire emojis to ignite double-point speed overdrive, tap stoic moai heads to activate calming slow-motion control around cramped walls, or devour skulls to shed three tail segments and escape tight corners.',
+      'Built mobile-first with continuous swipe detection across the touch-protected canvas and tactile D-pad buttons underneath, Neon Serpent plays effortlessly with one thumb on phones, Arrow or WASD keys on desktop keyboards, or any connected USB and Bluetooth gamepad controller. Switching browser tabs pauses your run automatically, and every high score invites you to stamp your 3-letter arcade initials onto the global cabinet board.'
     ]
   },
   {
@@ -930,6 +952,7 @@ export function resolveRouteFromLocation(pathname = '/', search = '') {
     'pusher',
     'slots',
     'invaders',
+    'serpent',
     'crush',
     'pinball',
     'stocks',

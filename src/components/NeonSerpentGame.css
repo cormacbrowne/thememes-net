@@ -1,0 +1,227 @@
+.tm-serpent-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 480px);
+  justify-content: center;
+  gap: 12px;
+  padding: 6px 0 18px;
+}
+
+.tm-serpent-hud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(8, 17, 29, 0.95), rgba(15, 36, 40, 0.88));
+  border: 1px solid rgba(74, 222, 128, 0.38);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+}
+
+.tm-serpent-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 58px;
+}
+
+.tm-serpent-stat-label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #94a3b8;
+}
+
+.tm-serpent-stat-val {
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  font-weight: 900;
+  color: #f8fafc;
+}
+
+.tm-serpent-stat-val.green {
+  color: #4ade80;
+}
+
+.tm-serpent-stat-val.gold {
+  color: #facc15;
+}
+
+.tm-serpent-status-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(10, 18, 32, 0.88);
+  border: 1px solid rgba(74, 222, 128, 0.28);
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+.tm-serpent-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-weight: 700;
+}
+
+.tm-serpent-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+}
+
+.tm-serpent-pill.speed {
+  border-color: rgba(251, 146, 60, 0.7);
+  color: #fdba74;
+  background: rgba(251, 146, 60, 0.16);
+}
+
+.tm-serpent-pill.slowmo {
+  border-color: rgba(56, 189, 248, 0.7);
+  color: #7dd3fc;
+  background: rgba(56, 189, 248, 0.16);
+}
+
+.tm-serpent-pill.shrink {
+  border-color: rgba(192, 132, 252, 0.7);
+  color: #e9d5ff;
+  background: rgba(192, 132, 252, 0.16);
+}
+
+.tm-serpent-canvas-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 1 / 1;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid rgba(74, 222, 128, 0.52);
+  background: #060b14;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 28px rgba(74, 222, 128, 0.16);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.tm-serpent-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: grab;
+}
+
+.tm-serpent-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 11, 20, 0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  gap: 12px;
+  z-index: 5;
+}
+
+.tm-serpent-overlay h3 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 900;
+  color: #4ade80;
+  text-shadow: 0 0 14px rgba(74, 222, 128, 0.55);
+}
+
+.tm-serpent-overlay p {
+  margin: 0;
+  max-width: 340px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #cbd5e1;
+}
+
+.tm-serpent-overlay-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.tm-serpent-dpad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 96px));
+  grid-template-rows: repeat(2, 48px);
+  justify-content: center;
+  gap: 8px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.tm-serpent-pad-btn {
+  border-radius: 12px;
+  border: 1.5px solid rgba(74, 222, 128, 0.45);
+  background: linear-gradient(180deg, rgba(12, 23, 36, 0.96), rgba(19, 36, 48, 0.92));
+  color: #f8fafc;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.tm-serpent-pad-btn:active {
+  transform: translateY(1px);
+  background: rgba(74, 222, 128, 0.24);
+}
+
+.tm-serpent-pad-btn.up {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.tm-serpent-pad-btn.left {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.tm-serpent-pad-btn.down {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.tm-serpent-pad-btn.right {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+@media (max-width: 480px) {
+  .tm-serpent-hud {
+    padding: 8px 10px;
+  }
+
+  .tm-serpent-stat-val {
+    font-size: 14px;
+  }
+
+  .tm-serpent-dpad {
+    grid-template-columns: repeat(3, minmax(0, 86px));
+    grid-template-rows: repeat(2, 46px);
+  }
+}

@@ -117,6 +117,17 @@ export const ARCADE_GAMES_CATALOG = [
     path: '/games/meme-invaders'
   },
   {
+    id: 'serpent',
+    group: 'skill',
+    icon: '🐍',
+    label: 'Neon Serpent',
+    pitch: 'Swipe through a neon reaction grid—eat 🔥 Speed, 🗿 Slow-Mo & 💀 Shrink emojis (free to play).',
+    badge: 'Snake',
+    isNew: true,
+    accent: '#4ade80',
+    path: '/games/neon-serpent'
+  },
+  {
     id: 'pinball',
     group: 'skill',
     icon: '🎱',

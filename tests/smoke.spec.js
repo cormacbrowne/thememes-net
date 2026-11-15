@@ -992,7 +992,7 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
 
     // Lobby shows Retro Cabinets + Funny Boss Key & Prank Screens section
     await page.goto('/games', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByText(/16 Retro Cabinets/i).first()).toBeVisible();
+    await expect(page.getByText(/17 Retro Cabinets/i).first()).toBeVisible();
     await expect(page.getByRole('heading', { name: /Funny Boss Key & Prank Screens/i })).toBeVisible();
 
     expect(pageErrors).toEqual([]);
@@ -2906,10 +2906,72 @@ test.describe('Phase 33.19 Meme Invaders \'86 skill cabinet', () => {
 
       // Lobby lists Meme Invaders '86 under Skill with accurate count
       await page.goto('/games', { waitUntil: 'domcontentloaded' });
-      await expect(page.getByText(/16 retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText(/\d+\s+retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
       await expect(page.getByText(/Meme Invaders '86/i).first()).toBeVisible();
 
       // Zero horizontal overflow
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(overflow).toBeLessThanOrEqual(2);
+      expect(pageErrors).toEqual([]);
+    });
+  }
+});
+
+test.describe('Phase 33.20 — Neon Serpent skill cabinet & swipe controls', () => {
+  for (const vp of [
+    { name: 'mobile', width: 390, height: 844 },
+    { name: 'tablet', width: 768, height: 1024 },
+    { name: 'desktop', width: 1280, height: 800 }
+  ]) {
+    test(`Neon Serpent route renders 0-token touch/swipe cabinet without overflow on ${vp.name}`, async ({
+      page
+    }) => {
+      const pageErrors = [];
+      page.on('pageerror', (err) => pageErrors.push(err?.message || String(err)));
+
+      await page.setViewportSize(vp);
+      await page.goto('/games/neon-serpent', { waitUntil: 'domcontentloaded' });
+
+      await expect(page).toHaveTitle(/Neon Serpent/i);
+      const stage = page.getByTestId('neon-serpent-stage');
+      await expect(stage).toBeVisible({ timeout: 15000 });
+      await expect(page.getByText(/0 TOKENS/i).first()).toBeVisible();
+
+      const canvas = page.getByTestId('serpent-canvas');
+      await expect(canvas).toBeVisible();
+      const touchAction = await canvas.evaluate((el) => getComputedStyle(el).touchAction);
+      expect(touchAction).toBe('none');
+
+      // Reaction emoji pills visible
+      await expect(page.getByTestId('serpent-status-strip')).toContainText('🔥');
+      await expect(page.getByTestId('serpent-status-strip')).toContainText('🗿');
+      await expect(page.getByTestId('serpent-status-strip')).toContainText('💀');
+
+      // Swipe gesture across canvas + D-pad steering + blur auto-pause
+      const box = await canvas.boundingBox();
+      if (box) {
+        await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.5);
+        await page.mouse.down();
+        await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.25, { steps: 4 });
+        await page.mouse.up();
+      }
+      await page.getByTestId('serpent-btn-left').dispatchEvent('pointerdown');
+
+      await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+      await expect(page.getByTestId('serpent-paused-overlay')).toBeVisible({ timeout: 5000 });
+      await page.getByTestId('serpent-pause-btn').click();
+      await expect(page.getByTestId('serpent-paused-overlay')).toBeHidden();
+
+      // Leaderboard button present
+      await expect(page.getByTestId('serpent-leaderboard-btn')).toBeVisible();
+
+      // Lobby lists Neon Serpent under Skill with accurate count
+      await page.goto('/games', { waitUntil: 'domcontentloaded' });
+      await expect(page.getByText(/17 retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText(/Neon Serpent/i).first()).toBeVisible();
+
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - window.innerWidth
       );

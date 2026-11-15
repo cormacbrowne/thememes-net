@@ -174,6 +174,13 @@ export default function SeoDiscoveryFooter({
                 👾 Meme Invaders &apos;86 (Free Space Shooter)
               </a>
               <a
+                href="/games/neon-serpent"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('serpent'))}
+              >
+                🐍 Neon Serpent (Synthwave Reaction Snake)
+              </a>
+              <a
                 href="/games/pinball"
                 className="tm-seo-link"
                 onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('pinball'))}

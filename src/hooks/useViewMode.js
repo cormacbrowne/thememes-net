@@ -18,6 +18,7 @@ const FIXED_ARCADE_GAMES = [
   'pusher',
   'slots',
   'invaders',
+  'serpent',
   'crush',
   'pinball',
   'stocks',

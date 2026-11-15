@@ -837,9 +837,19 @@ export function useFeed({
             return;
           }
           setUserVotes((prev) => ({ ...prev, [memeId]: result.userVote }));
-          if (typeof result.score === 'number') {
+          if (typeof result.score === 'number' || typeof result.upvotesLastHour === 'number') {
             setMemes((prev) =>
-              prev.map((m) => (m.id === memeId ? { ...m, score: result.score } : m))
+              prev.map((m) =>
+                m.id === memeId
+                  ? {
+                      ...m,
+                      ...(typeof result.score === 'number' ? { score: result.score } : {}),
+                      ...(typeof result.upvotesLastHour === 'number'
+                        ? { upvotes_last_hour: result.upvotesLastHour }
+                        : {})
+                    }
+                  : m
+              )
             );
           }
           const newAnon = consumeJustCreatedAnonHandle();

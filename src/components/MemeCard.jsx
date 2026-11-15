@@ -7,6 +7,7 @@ import {
   QUICK_REACTION_COMMENTS,
   formatMemeUploadDate
 } from '../data/starterMemes';
+import { formatUpvotesLastHourSignal } from '../utils/liveSignals';
 import { exportMemeWithWatermark, triggerBlobDownload } from './forge/forgeEngine';
 
 const MemeCard = memo(function MemeCard({
@@ -49,6 +50,7 @@ const MemeCard = memo(function MemeCard({
   const rarity = getMemeRarityTier(meme);
   const isBlurred = Boolean(meme.is_spoiler) && !spoilerRevealed;
   const uploadInfo = formatMemeUploadDate(meme.created_at);
+  const hourlyUpvotesSignal = formatUpvotesLastHourSignal(meme);
 
   const triggerComicPop = (customWord = null) => {
     const word =
@@ -268,6 +270,18 @@ const MemeCard = memo(function MemeCard({
         <MemeLiveEmotes memeId={meme.id} litePerfMode={litePerfMode} />
         <span className="tm-dbl-hint">⚡ Double-tap to Upvote</span>
       </div>
+
+      {hourlyUpvotesSignal && (
+        <div className="tm-hourly-upvotes-row">
+          <span
+            className="tm-hourly-upvotes-pill"
+            data-testid={`meme-hourly-signal-${meme.id}`}
+            title="Verified positive upvotes cast in the last 60 minutes"
+          >
+            {hourlyUpvotesSignal}
+          </span>
+        </div>
+      )}
 
       <div className="tm-card-actions">
         {/* Upvote / Downvote Pill */}

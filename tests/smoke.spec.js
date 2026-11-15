@@ -2725,3 +2725,93 @@ test.describe('Phase 33.17 Creator Profile Pages (/u/<handle>), Built-in Pixel A
     });
   }
 });
+
+test.describe('Phase 33.18 Real "people here now" & truthful 1h upvote signals', () => {
+  for (const vp of [
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+    { width: 1280, height: 800 }
+  ]) {
+    test(`Hides <2 online presence and shows truthful hourly upvote card signals at ${vp.width}x${vp.height}`, async ({
+      page
+    }) => {
+      const pageErrors = [];
+      page.on('pageerror', (err) => pageErrors.push(err.message));
+
+      const memeHotId = '33180000-0000-4000-8000-000000000001';
+      const memeQuietId = '33180000-0000-4000-8000-000000000002';
+
+      await page.route('**/rest/v1/memes_feed_view*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([
+            {
+              id: memeHotId,
+              title: 'Live Signal Hot Meme',
+              category: 'dank',
+              image_url: '/seed/seed-dank-01.webp',
+              author_name: 'SignalTester',
+              score: 140,
+              hot_score: 99,
+              comments_count: 0,
+              upvotes_last_hour: 12,
+              reactions: { '🔥': 3, '💀': 0, '😂': 1, '🗿': 0 },
+              media_type: 'image',
+              status: 'approved',
+              mutation_count: 0,
+              created_at: new Date().toISOString()
+            },
+            {
+              id: memeQuietId,
+              title: 'High Score But Quiet Hour Meme',
+              category: 'gaming',
+              image_url: '/seed/seed-gaming-01.webp',
+              author_name: 'QuietLegend',
+              score: 9999,
+              hot_score: 50,
+              comments_count: 0,
+              upvotes_last_hour: 0,
+              reactions: { '🔥': 88, '💀': 12, '😂': 4, '🗿': 7 },
+              media_type: 'image',
+              status: 'approved',
+              mutation_count: 0,
+              created_at: new Date(Date.now() - 86400000 * 14).toISOString()
+            }
+          ])
+        });
+      });
+
+      await page.route('**/rest/v1/rpc/get_active_caption_kings*', async (route) => {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+      });
+
+      await page.setViewportSize(vp);
+      await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+      // 1. Existing rule: live presence pill stays hidden when fewer than 2 real peers are online
+      await expect(page.getByText('Live Signal Hot Meme')).toBeVisible({ timeout: 15000 });
+      await expect(page.getByTestId('live-presence-pill')).toHaveCount(0);
+      await expect(page.getByText(/\d+\s+memers online/i)).toHaveCount(0);
+
+      // 2. Truthful 1h upvote signal renders on the 12-upvote meme and NOT on the 0-upvote quiet meme
+      const hotSignal = page.getByTestId(`meme-hourly-signal-${memeHotId}`);
+      await expect(hotSignal).toBeVisible();
+      await expect(hotSignal).toHaveText('🔥 12 upvotes in the last hour');
+      await expect(page.getByTestId(`meme-hourly-signal-${memeQuietId}`)).toHaveCount(0);
+
+      // 3. Opening the meme in Theater Mode shows the same truthful signal cleanly without overflow
+      await page.getByText('Live Signal Hot Meme').click();
+      await expect(page.locator('.tm-theater-modal')).toBeVisible({ timeout: 5000 });
+      await expect(page.getByTestId('theater-hourly-signal')).toHaveText(
+        '🔥 12 upvotes in the last hour'
+      );
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(overflow).toBeLessThanOrEqual(2);
+      expect(pageErrors).toEqual([]);
+    });
+  }
+});

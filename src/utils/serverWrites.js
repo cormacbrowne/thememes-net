@@ -254,6 +254,8 @@ export async function castVote(client, memeId, direction) {
       memeId: data.meme_id || memeId,
       userVote: normalizeVoteDirection(data.user_vote),
       score: typeof data.score === 'number' ? data.score : null,
+      upvotesLastHour:
+        typeof data.upvotes_last_hour === 'number' ? data.upvotes_last_hour : null,
       changed: Boolean(data.changed)
     };
   }

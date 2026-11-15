@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import MemeMedia from './MemeMedia';
 import MemeLiveEmotes from './MemeLiveEmotes';
 import { getMemeRarityTier, formatMemeUploadDate } from '../data/starterMemes';
+import { formatUpvotesLastHourSignal } from '../utils/liveSignals';
 import { exportMemeWithWatermark, triggerBlobDownload } from './forge/forgeEngine';
 import './MemeTheaterModal.css';
 
@@ -166,6 +167,11 @@ export default function MemeTheaterModal({
               📅 Uploaded {uploadInfo.dateTime} ({uploadInfo.relative})
             </span>
             {uploadInfo.isNewToday && <span className="tm-upload-new-pill">🆕 NEW</span>}
+            {formatUpvotesLastHourSignal(meme) && (
+              <span className="tm-hourly-upvotes-pill" data-testid="theater-hourly-signal">
+                {formatUpvotesLastHourSignal(meme)}
+              </span>
+            )}
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>

@@ -4599,6 +4599,29 @@ html[data-device="iphone-duo"] button {
   color: #bbf7d0 !important;
 }
 
+.tm-hourly-upvotes-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.tm-hourly-upvotes-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(249, 115, 22, 0.16);
+  border: 1px solid rgba(251, 146, 60, 0.55);
+  color: #fdba74;
+  letter-spacing: 0.2px;
+  line-height: 1.2;
+}
+
 .tm-theater-media {
   position: relative;
 }

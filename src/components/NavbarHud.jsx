@@ -1,5 +1,6 @@
 import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
 import { ARCADE_GAMES_CATALOG } from '../data/arcadeGamesCatalog';
+import { formatLivePresenceLabel } from '../utils/liveSignals';
 import { RadioToggleButton } from './MemesRadio';
 
 export default function NavbarHud({
@@ -71,10 +72,14 @@ export default function NavbarHud({
               />
             </div>
             <div className="tm-logo-badge">THE MEMES.net</div>
-            {onlineCount >= 2 ? (
-              <div className="tm-status-pill tm-live-presence-pill" title="Real connected memers currently browsing">
+            {formatLivePresenceLabel(onlineCount) ? (
+              <div
+                className="tm-status-pill tm-live-presence-pill"
+                title="Real connected memers currently browsing"
+                data-testid="live-presence-pill"
+              >
                 <span className="tm-dot live" />
-                <span className="tm-status-text">🟢 {onlineCount} memers online</span>
+                <span className="tm-status-text">{formatLivePresenceLabel(onlineCount)}</span>
               </div>
             ) : (
               <div className="tm-status-pill tm-hide-mobile" title="Live Community Feed Connected">

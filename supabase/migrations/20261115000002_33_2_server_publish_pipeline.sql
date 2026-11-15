@@ -14,8 +14,7 @@
 -- 'pending'.
 --
 -- Safe to run more than once. Run AFTER 20261115000001.
--- Deploy the function too (see instructions.md task 33.2), otherwise posting fails
--- (uploads are also switched off by PUBLIC_UPLOADS_ENABLED until 33.3 is live).
+-- Applied to the live project 15 Nov 2026, together with the publish-meme function deploy.
 -- ============================================================================
 
 -- 1. Columns --------------------------------------------------------------------

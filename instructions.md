@@ -149,7 +149,7 @@
 2. **Legal check before promoting the site.** You run a site where the public can post content, from the UK. Check what the UK Online Safety Act requires of a small user-to-user service (Ofcom publishes guidance and a risk-assessment process), plus UK GDPR for accounts and analytics. If you want US visitors' copyright complaints handled the standard way, look at registering a DMCA agent. This file is not legal advice; a short session with a solicitor is worth it.
 3. **Supabase dashboard:** enable Anonymous sign-ins, confirm which OAuth providers are really configured, turn on leaked-password protection, set yourself as `moderator`, create a separate staging project for tests.
 4. **Decide the age position** (e.g. 13+ with content kept at a "teen-safe" level) so 33.3/33.4 thresholds and the `/rules` page match.
-5. **Until 33.1–33.3 are live:** consider switching public uploads off (a single feature flag) so nothing harmful can be posted in the meantime.
+5. **Until 33.1–33.3 are live:** consider switching public uploads off (a single feature flag) so nothing harmful can be posted in the meantime. ✅ **Done 15 Nov 2026:** `PUBLIC_UPLOADS_ENABLED` in `src/config/featureFlags.js` is `false` — Post to Feed and Forge Publish show a "paused" message and nothing is sent to Supabase (guards in `publishMeme.js`, `mediaPipeline.js`, `useFeed.js`, `QuickUploadBar.jsx`, `MemeForge.jsx`). Set it to `true` only after 33.1–33.3 are live.
 
 ---
 

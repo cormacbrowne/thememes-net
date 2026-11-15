@@ -29,6 +29,11 @@ import {
 } from '../../utils/mediaPipeline';
 import { VIRAL_CAPTIONS } from '../../data/starterMemes';
 import { sfx } from '../../utils/soundEngine';
+import {
+  PUBLIC_UPLOADS_ENABLED,
+  UPLOADS_PAUSED_MESSAGE,
+  UPLOADS_PAUSED_ERROR
+} from '../../config/featureFlags';
 
 const CATEGORIES = [
   ['dank', '#DANK / FUNNY'],
@@ -534,6 +539,11 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
       setError('📸 Upload, drop, or paste (Ctrl+V) an image or GIF first!');
       return;
     }
+    if (!PUBLIC_UPLOADS_ENABLED) {
+      setError('');
+      setStatus(UPLOADS_PAUSED_MESSAGE);
+      return;
+    }
     setBusy(true);
     setError('');
     try {
@@ -619,7 +629,9 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
       onClose();
     } catch (err) {
       setError(
-        err?.message === 'OFFLINE_VIDEO'
+        err?.message === UPLOADS_PAUSED_ERROR
+          ? UPLOADS_PAUSED_MESSAGE
+          : err?.message === 'OFFLINE_VIDEO'
           ? '📡 Connect to publish video — video & GIF memes need the live server. Try again when online.'
           : err?.message === 'COOLDOWN'
             ? '⏳ Arcade Cooldown: wait a few seconds between publishes.'

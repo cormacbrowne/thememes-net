@@ -3,6 +3,7 @@
 // Videos + GIFs are NEVER re-encoded through canvas. Stills become WebP/JPEG.
 // ==========================================
 import { verifySafeMediaFile, sanitizeMediaUrl } from './securityGuard';
+import { PUBLIC_UPLOADS_ENABLED, UPLOADS_PAUSED_ERROR } from '../config/featureFlags';
 
 export const MEDIA_LIMITS = {
   IMAGE_MAX_BYTES: 15 * 1024 * 1024,
@@ -197,6 +198,7 @@ export async function makePoster(file, kind = getMediaKind(file)) {
 
 /** Upload to the public 'memes' bucket. Returns public URL or throws. */
 export async function uploadToStorage(client, blob, path, contentType) {
+  if (!PUBLIC_UPLOADS_ENABLED) throw new Error(UPLOADS_PAUSED_ERROR);
   const { error } = await client.storage
     .from('memes')
     .upload(path, blob, { contentType, cacheControl: '31536000', upsert: false });

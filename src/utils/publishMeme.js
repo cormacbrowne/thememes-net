@@ -13,6 +13,7 @@ import {
   sanitizeUserText,
   sanitizeOverlayPayload
 } from './securityGuard';
+import { PUBLIC_UPLOADS_ENABLED, UPLOADS_PAUSED_ERROR } from '../config/featureFlags';
 
 const DEFAULT_REACTIONS = { '🔥': 1, '💀': 0, '😂': 0, '🗿': 0 };
 
@@ -46,6 +47,11 @@ const isUuidLike = (id) =>
  * Returns { meme, savedToDb }. Throws Error('OFFLINE_VIDEO') for video/gif uploads without Supabase.
  */
 export async function publishMeme({ media, overlay = null, meta = {}, client = null }) {
+  // Kill switch (src/config/featureFlags.js): nothing reaches Supabase and no local-only
+  // meme is added to the feed while public uploads are paused.
+  if (!PUBLIC_UPLOADS_ENABLED) {
+    throw new Error(UPLOADS_PAUSED_ERROR);
+  }
   const kind = media?.kind || 'image';
   const isMotion = kind === 'video' || kind === 'gif';
   const nowIso = new Date().toISOString();

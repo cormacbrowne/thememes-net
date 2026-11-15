@@ -26,6 +26,7 @@ import {
   trackShareClicked
 } from '../utils/analytics';
 import { publishMeme } from '../utils/publishMeme';
+import { PUBLIC_UPLOADS_ENABLED, UPLOADS_PAUSED_ERROR } from '../config/featureFlags';
 import { validateFile, canvasToCompressedBlob, makePoster } from '../utils/mediaPipeline';
 import { recordPublishDailyPerk } from '../utils/memeFeedBridge';
 import {
@@ -811,6 +812,9 @@ export function useFeed({
     category: quickCat = 'dank',
     event = null
   }) => {
+    if (!PUBLIC_UPLOADS_ENABLED) {
+      throw new Error(UPLOADS_PAUSED_ERROR);
+    }
     const now = Date.now();
     if (now - lastPublishTimeRef.current < 3500) {
       throw new Error('Cooldown active');
@@ -971,6 +975,9 @@ export function useFeed({
   };
 
   const handleForgePublish = async ({ media, overlay, meta, intent }) => {
+    if (!PUBLIC_UPLOADS_ENABLED) {
+      throw new Error(UPLOADS_PAUSED_ERROR);
+    }
     const now = Date.now();
     if (now - lastPublishTimeRef.current < 3500) {
       throw new Error('COOLDOWN');

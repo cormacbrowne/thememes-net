@@ -3,6 +3,11 @@ import { sfx } from '../utils/soundEngine';
 import { VIRAL_CAPTIONS } from '../data/starterMemes';
 import { ACCEPT_MEDIA, validateFile } from '../utils/mediaPipeline';
 import {
+  PUBLIC_UPLOADS_ENABLED,
+  UPLOADS_PAUSED_MESSAGE,
+  UPLOADS_PAUSED_ERROR
+} from '../config/featureFlags';
+import {
   makeTextLayer,
   buildFallbackCaptionLayers,
   hasVisibleOverlayContent,
@@ -191,6 +196,10 @@ export default function QuickUploadBar({
   const handleQuickSubmit = async (e) => {
     e.preventDefault();
     if (!selectedFile || isSubmitting) return;
+    if (!PUBLIC_UPLOADS_ENABLED) {
+      setStatusMsg(UPLOADS_PAUSED_MESSAGE);
+      return;
+    }
     setIsSubmitting(true);
     setStatusMsg('');
     try {
@@ -205,8 +214,12 @@ export default function QuickUploadBar({
       handleClearPreview();
       setStatusMsg('✅ Meme posted to the live feed!');
       setTimeout(() => setStatusMsg(''), 3500);
-    } catch {
-      setStatusMsg('⚠️ Upload failed. Please try again.');
+    } catch (err) {
+      setStatusMsg(
+        err?.message === UPLOADS_PAUSED_ERROR
+          ? UPLOADS_PAUSED_MESSAGE
+          : '⚠️ Upload failed. Please try again.'
+      );
     } finally {
       setIsSubmitting(false);
     }

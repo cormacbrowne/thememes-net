@@ -53,7 +53,6 @@ function sanitizeMemeUrls(meme) {
 import { recordPublishDailyPerk } from '../utils/memeFeedBridge';
 import {
   getDailyCaptionBattle,
-  getYesterdayCaptionKing,
   getBattleEntriesForBattle
 } from '../utils/dailyCaptionBattle';
 import {
@@ -271,7 +270,6 @@ export function useFeed({
   }, [memes]);
 
   const dailyBattle = useMemo(() => getDailyCaptionBattle(), []);
-  const yesterdayCaptionKing = useMemo(() => getYesterdayCaptionKing(memes), [memes]);
   const battleEntriesCount = useMemo(
     () => getBattleEntriesForBattle(memes, dailyBattle).length,
     [memes, dailyBattle]
@@ -1239,7 +1237,8 @@ export function useFeed({
         rootId,
         generation,
         isBounty,
-        bountyId: activeBounty?.id || intent?.bounty?.id || null
+        bountyId: activeBounty?.id || intent?.bounty?.id || null,
+        templateId: activeBounty?.template?.id || intent?.bounty?.template?.id || null
       },
       client
     });
@@ -1707,7 +1706,6 @@ export function useFeed({
     championWins,
     crowdAgreement,
     dailyBattle,
-    yesterdayCaptionKing,
     battleEntriesCount,
     filteredMemes,
     visibleMemes,

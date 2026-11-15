@@ -234,6 +234,11 @@ export function parsePublishRequest(body, userId) {
   const { overlay, texts } = sanitizeOverlay(body.overlay);
   const parentId = isUuid(body.parentId) ? body.parentId.toLowerCase() : null;
   const rootId = isUuid(body.rootId) ? body.rootId.toLowerCase() : parentId;
+  const rawBountyId = cleanText(body.bountyId, 64);
+  const bountyId = /^(?:battle-\d{4}-\d{2}-\d{2}|bounty-[a-z0-9-]+)$/i.test(rawBountyId)
+    ? rawBountyId
+    : null;
+  const isBounty = Boolean(body.isBounty && bountyId);
   return {
     ok: true,
     value: {
@@ -244,7 +249,9 @@ export function parsePublishRequest(body, userId) {
       overlay,
       texts: [title, ...texts],
       parentId,
-      rootId
+      rootId,
+      isBounty,
+      bountyId
     }
   };
 }

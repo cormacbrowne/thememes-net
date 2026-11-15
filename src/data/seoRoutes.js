@@ -714,6 +714,22 @@ export const SEO_ROUTES = [
       'If your message is about removing an image, GIF, or comment for copyright reasons, harassment, personal contact details, or a photo of you posted without permission, please submit it directly on our Takedown page rather than sending a plain email, as takedown notices write straight into the high-priority moderator queue with tracking IDs.',
       'For owner review, press inquiries, partnership questions, accessibility feedback, or reproducible software bug reports affecting mobile Safari or desktop browsers, please use the site maintainer contact address published once signed off alongside a link to the page route or shared meme identifier where the problem appeared.'
     ]
+  },
+  {
+    path: '/hall-of-fame',
+    category: null,
+    tag: null,
+    sortBy: 'top',
+    pageTitle: 'Caption Battle Hall of Fame | TheMemes.net',
+    metaDescription:
+      'Permanent archive of Daily Caption Battle winners on TheMemes.net, featuring yesterday’s Caption King, 24-hour crown holders, and top-voted captions.',
+    ogImage: 'https://www.thememes.net/og-card.png',
+    h1: 'Caption Battle Hall of Fame',
+    introParagraphs: [
+      'Every day at 00:00 UTC, TheMemes.net launches a fresh Daily Caption Battle built around a featured template and prompt. Players submit original one-line captions or full visual meme remixes directly from the feed or the Caption Battle arena, and the community votes on the sharpest punchlines throughout the 24-hour window.',
+      'Once the daily timer turns over, the highest-voted entry claims the crown and is permanently enshrined in the Hall of Fame archive. Every winning caption, total vote count, battle date, and winning creator handle is stored in Postgres so historic victories remain verifiable and browsable anytime.',
+      'Reigning daily champions also receive the glowing 24-hour Caption King card frame across their memes and creator profile modal for the full following UTC day. All submissions pass automated text moderation and duplicate checks so every crown represents genuine community comedy. Dive into the archive to study winning comedy timings, inspect past prompts, or jump straight back into today’s open arena.'
+    ]
   }
 ];
 

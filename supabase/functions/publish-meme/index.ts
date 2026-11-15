@@ -31,6 +31,7 @@ import {
   QUARANTINE_BUCKET,
   PUBLIC_BUCKET,
   buildQuarantinePath,
+  cleanText,
   parsePublishRequest,
   sniffImageType,
   isVideoBytes,
@@ -346,6 +347,8 @@ async function handlePublish(
       height: clean.height,
       overlay: input.overlay,
       base_image_url: baseImageUrl ?? (clean.kind === 'gif' ? imageUrl : null),
+      is_bounty: Boolean(input.isBounty),
+      bounty_id: input.bountyId,
       status,
       sha256,
       phash: clean.phash,
@@ -357,6 +360,26 @@ async function handlePublish(
         .from(PUBLIC_BUCKET)
         .remove([`u/${id}.${clean.ext}`, `posters/${id}.webp`, `bases/${id}.webp`]);
       return fail(req, 500, PUBLISH_ERRORS.SERVER);
+    }
+
+    if (input.isBounty && input.bountyId && input.bountyId.startsWith('battle-')) {
+      const battleDate = input.bountyId.slice('battle-'.length);
+      const layerTexts = (input.overlay?.layers || [])
+        .map((l: Record<string, unknown>) => String(l?.text || '').trim())
+        .filter(Boolean);
+      const topText = layerTexts[0] || input.title;
+      const bottomText = layerTexts.length > 1 ? layerTexts.slice(1).join(' / ') : '';
+      await admin.from('caption_battle_entries').insert({
+        battle_date: battleDate,
+        template_id: cleanText(body.templateId || 'tpl-drake-compare', 64) || 'tpl-drake-compare',
+        user_id: user.id,
+        author_name: inserted.author_name,
+        top_text: topText.slice(0, 140),
+        bottom_text: bottomText.slice(0, 140),
+        meme_id: inserted.id,
+        status: inserted.status,
+        moderation
+      });
     }
     return json(req, 200, { ok: true, status, meme: inserted });
   } catch {

@@ -2011,3 +2011,262 @@ test.describe('Phase 33.14 Real Global Leaderboards & Initials', () => {
     });
   }
 });
+
+test.describe('Phase 33.15 Real Daily Caption Battle & Hall of Fame', () => {
+  const viewports = [
+    { name: 'mobile', width: 390, height: 844 },
+    { name: 'tablet', width: 768, height: 1024 },
+    { name: 'desktop', width: 1280, height: 800 }
+  ];
+
+  for (const vp of viewports) {
+    test(`runs real Daily Caption Battle flow, 24h Caption King frame, and /hall-of-fame on ${vp.name} (${vp.width}x${vp.height})`, async ({
+      page
+    }) => {
+      const pageErrors = [];
+      page.on('pageerror', (e) => pageErrors.push(e.message));
+
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const yesterdayStr = new Date(Date.now() - 86400 * 1000).toISOString().slice(0, 10);
+      const crownUntil = new Date(Date.now() + 20 * 3600 * 1000).toISOString();
+      const activeKings = [
+        {
+          battle_date: yesterdayStr,
+          author_name: 'KingMemer86',
+          crowned_until: crownUntil
+        }
+      ];
+      const yesterdayWinner = {
+        battle_date: yesterdayStr,
+        entry_id: 'e-win-yesterday',
+        template_id: 'tpl-drake-compare',
+        author_name: 'KingMemer86',
+        top_text: 'TESTING IN PROD',
+        bottom_text: 'PASSING IN CI',
+        winning_score: 42,
+        crowned_until: crownUntil
+      };
+      const entriesStore = [
+        {
+          id: '11111111-1111-4111-8111-111111111111',
+          battle_date: todayStr,
+          template_id: 'tpl-drake-compare',
+          author_name: 'RivalMemer',
+          top_text: 'OLD CAPTION',
+          bottom_text: 'STILL FUNNY',
+          score: 3,
+          status: 'approved',
+          created_at: new Date().toISOString()
+        }
+      ];
+      const votedIds = new Set();
+      let submittedEntryCount = 0;
+      let votedEntryCount = 0;
+
+      await page.setViewportSize(vp);
+
+      await page.route('**/rest/v1/memes*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([
+            {
+              id: '00000000-0000-4000-8000-000000000101',
+              title: 'Reigning King Meme',
+              author_name: 'KingMemer86',
+              category: 'dank',
+              score: 42,
+              image_url: '/seed/seed-dank-01.webp',
+              media_type: 'image',
+              status: 'approved',
+              created_at: new Date().toISOString(),
+              comments: []
+            },
+            {
+              id: '00000000-0000-4000-8000-000000000102',
+              title: 'Challenger Meme',
+              author_name: 'RivalMemer',
+              category: 'dank',
+              score: 5,
+              image_url: '/seed/seed-relatable-01.webp',
+              media_type: 'image',
+              status: 'approved',
+              created_at: new Date().toISOString(),
+              comments: []
+            }
+          ])
+        });
+      });
+
+      await page.route('**/auth/v1/signup*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            access_token: 'mock-anon-jwt-3315',
+            token_type: 'bearer',
+            expires_in: 3600,
+            refresh_token: 'mock-refresh-3315',
+            user: {
+              id: '00000000-0000-4000-8000-000000003315',
+              aud: 'authenticated',
+              role: 'authenticated',
+              is_anonymous: true
+            }
+          })
+        });
+      });
+
+      await page.route('**/rest/v1/rpc/get_active_caption_kings*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ ok: true, active_kings: activeKings })
+        });
+      });
+
+      await page.route('**/rest/v1/rpc/get_daily_caption_battle*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            ok: true,
+            date_str: todayStr,
+            yesterday_date_str: yesterdayStr,
+            entries: entriesStore.slice().sort((a, b) => b.score - a.score),
+            yesterday_winner: yesterdayWinner,
+            my_voted_entry_ids: Array.from(votedIds),
+            active_kings: activeKings
+          })
+        });
+      });
+
+      await page.route('**/functions/v1/submit-caption-entry*', async (route) => {
+        const body = route.request().postDataJSON();
+        submittedEntryCount += 1;
+        const created = {
+          id: '22222222-2222-4222-8222-222222222222',
+          battle_date: body?.battleDate || todayStr,
+          template_id: body?.templateId || 'tpl-drake-compare',
+          author_name: 'AnonMemer',
+          top_text: body?.topText || '',
+          bottom_text: body?.bottomText || '',
+          score: 0,
+          status: 'approved',
+          created_at: new Date().toISOString()
+        };
+        entriesStore.push(created);
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ ok: true, status: 'approved', entry: created })
+        });
+      });
+
+      await page.route('**/rest/v1/rpc/vote_caption_battle_entry*', async (route) => {
+        const body = route.request().postDataJSON();
+        votedEntryCount += 1;
+        const entryId = String(body?.p_entry_id || '');
+        const entry = entriesStore.find((item) => item.id === entryId);
+        if (entry) {
+          if (body?.p_active) {
+            votedIds.add(entryId);
+            entry.score += 1;
+          } else {
+            votedIds.delete(entryId);
+            entry.score = Math.max(0, entry.score - 1);
+          }
+        }
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            ok: true,
+            entry_id: entryId,
+            voted: Boolean(body?.p_active),
+            score: entry?.score ?? 0
+          })
+        });
+      });
+
+      await page.route('**/rest/v1/rpc/get_caption_hall_of_fame*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            ok: true,
+            winners: [
+              yesterdayWinner,
+              {
+                battle_date: '2026-11-10',
+                entry_id: 'e-old-win',
+                template_id: 'tpl-distracted-bf',
+                author_name: 'RetroLegend',
+                top_text: 'CLASSIC WIN',
+                bottom_text: 'ARCHIVE KING',
+                winning_score: 29,
+                crowned_until: '2026-11-12T00:00:00Z'
+              }
+            ],
+            active_kings: activeKings
+          })
+        });
+      });
+
+      await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+      // 1. 24h Caption King frame renders on winning creator's feed cards (and not on others)
+      const kingCard = page.locator('.tm-card.tm-frame-caption-king');
+      await expect(kingCard).toHaveCount(1, { timeout: 15000 });
+      await expect(kingCard.getByTestId('caption-king-frame-badge')).toContainText('👑 CAPTION KING (24h)');
+
+      // Clicking winning creator opens profile with 24h Reigning Caption King Frame
+      await kingCard.locator('.tm-author-handle').click();
+      await expect(page.getByTestId('profile-caption-king-badge')).toContainText(
+        '👑 Reigning Caption King (24h Frame)',
+        { timeout: 10000 }
+      );
+      await expect(page.locator('.tm-creator-stats-card.tm-frame-caption-king')).toBeVisible();
+      await page.locator('.tm-profile-modal button', { hasText: 'Close' }).click();
+
+      // 2. Open Daily Caption Battle modal -> verify yesterday's Supabase winner + submit + vote
+      await page.getByTestId('hero-caption-battle-btn').click();
+      const battleModal = page.getByTestId('daily-caption-battle-modal');
+      await expect(battleModal).toBeVisible({ timeout: 10000 });
+
+      await expect(page.getByTestId('yesterday-caption-king-banner')).toContainText('@KingMemer86');
+      await expect(page.getByTestId('yesterday-caption-king-banner')).toContainText('42');
+
+      await page.getByTestId('battle-top-input').fill('SHIPPING PHASE 33');
+      await page.getByTestId('battle-bottom-input').fill('REAL SUPABASE KING');
+      await page.getByTestId('battle-submit-btn').click();
+      await expect
+        .poll(() => submittedEntryCount, { timeout: 5000 })
+        .toBe(1);
+      await expect(battleModal).toContainText('SHIPPING PHASE 33 / REAL SUPABASE KING');
+
+      await page.getByTestId('battle-vote-btn-11111111-1111-4111-8111-111111111111').click();
+      await expect
+        .poll(() => votedEntryCount, { timeout: 5000 })
+        .toBe(1);
+      await expect(
+        page.getByTestId('battle-vote-btn-11111111-1111-4111-8111-111111111111')
+      ).toContainText('4');
+
+      // 3. Visit /hall-of-fame permanent archive
+      await page.getByTestId('hall-of-fame-link').click();
+      await expect(page.getByRole('heading', { name: /Caption King Hall of Fame/i })).toBeVisible({
+        timeout: 15000
+      });
+      await expect(page.getByTestId(`hof-winner-${yesterdayStr}`)).toContainText('@KingMemer86');
+      await expect(page.getByTestId(`hof-winner-${yesterdayStr}`)).toContainText('REIGNING 24H KING');
+      await expect(page.getByTestId('hof-winner-2026-11-10')).toContainText('@RetroLegend');
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(overflow).toBeLessThanOrEqual(2);
+      expect(pageErrors).toEqual([]);
+    });
+  }
+});

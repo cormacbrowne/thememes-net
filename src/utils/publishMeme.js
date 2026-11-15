@@ -198,7 +198,10 @@ export async function publishMeme({ media, overlay = null, meta = {}, client = n
     category,
     overlay: safeOverlay,
     parentId: meta.parentId || null,
-    rootId: meta.rootId || null
+    rootId: meta.rootId || null,
+    isBounty: Boolean(meta.isBounty),
+    bountyId: meta.bountyId || null,
+    templateId: meta.templateId || null
   });
   if (!result?.meme) throw publishError(result?.error || 'server_error');
 

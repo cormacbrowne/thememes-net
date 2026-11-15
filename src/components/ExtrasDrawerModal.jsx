@@ -30,6 +30,7 @@ export default function ExtrasDrawerModal({
   onToggleAiAssistant,
   aiPersonaId,
   onOpenLeaderboard,
+  onOpenCaptionBattle,
   onRandomMeme,
   savedOnly,
   savedIdsCount,
@@ -207,6 +208,20 @@ export default function ExtrasDrawerModal({
                 Arcade Vault {unclaimedRewardsCount > 0 ? `(${unclaimedRewardsCount})` : ''}
               </span>
               <span className="tm-extras-tile-desc">Daily Wheel &amp; Bounties</span>
+            </button>
+
+            <button
+              type="button"
+              className="tm-extras-tile"
+              data-testid="extras-caption-battle-btn"
+              onClick={() => {
+                onClose();
+                if (onOpenCaptionBattle) onOpenCaptionBattle();
+              }}
+            >
+              <span className="tm-extras-tile-icon">👑</span>
+              <span className="tm-extras-tile-name">Caption Battle</span>
+              <span className="tm-extras-tile-desc">Daily Prompt &amp; 24h Crown</span>
             </button>
 
             <button

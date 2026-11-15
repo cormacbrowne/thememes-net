@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { RANKS, computePlayerBadges, formatMemeUploadDate } from '../data/starterMemes';
 import { loadLocalMemeViews } from '../utils/notifications';
-import { isUsernameCaptionKing } from '../utils/dailyCaptionBattle';
+import { isActiveCaptionKing, isUsernameCaptionKing } from '../utils/dailyCaptionBattle';
 import SettingsSheet from './SettingsSheet';
 import './PlayerProfileModal.css';
 
@@ -16,6 +16,7 @@ export default function PlayerProfileModal({
   unlockedFlairs = [],
   equippedFlair = '',
   equippedFrame = 'default',
+  activeCaptionKings = [],
   notifications = [],
   onMarkNotificationsRead,
   onOpenShop,
@@ -66,9 +67,14 @@ export default function PlayerProfileModal({
     };
   }, [authoredMemes, totalRemixesSpawned]);
 
+  const isReigningKing = useMemo(
+    () => isActiveCaptionKing(username, activeCaptionKings),
+    [username, activeCaptionKings]
+  );
+
   const isCaptionKing = useMemo(
-    () => isUsernameCaptionKing(memes, username),
-    [memes, username]
+    () => isUsernameCaptionKing(memes, username, activeCaptionKings),
+    [memes, username, activeCaptionKings]
   );
 
   const royaltyBonus = Number(royaltiesMap?.[username] || 0) + totalRemixesSpawned * 50;
@@ -137,6 +143,11 @@ export default function PlayerProfileModal({
                 {isMe && currentUser?.verified && (
                   <span className="tm-verified-pill">
                     🛡️ Verified ({currentUser.provider || 'OAuth'})
+                  </span>
+                )}
+                {isReigningKing && (
+                  <span className="tm-rarity-badge supernova" data-testid="profile-caption-king-badge">
+                    👑 Reigning Caption King (24h Frame)
                   </span>
                 )}
                 <span className="tm-tag" style={{ background: 'rgba(250,204,21,0.2)', color: '#facc15' }}>
@@ -248,8 +259,16 @@ export default function PlayerProfileModal({
           </div>
         </div>
 
-        {/* Phase 28.13: Creator Stats Card (Views, Upvotes, Remixes) */}
-        <div className={`tm-creator-stats-card ${isMe && equippedFrame !== 'default' ? `tm-frame-${equippedFrame}` : ''}`}>
+        {/* Phase 28.13 / 33.15: Creator Stats Card (Views, Upvotes, Remixes, 24h Caption King Frame) */}
+        <div
+          className={`tm-creator-stats-card ${
+            isReigningKing
+              ? 'tm-frame-caption-king'
+              : isMe && equippedFrame !== 'default'
+                ? `tm-frame-${equippedFrame}`
+                : ''
+          }`}
+        >
           <div className="tm-creator-stats-head">
             <span>📊 CREATOR IMPACT STATS</span>
             {isMe && onOpenShop && (

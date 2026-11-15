@@ -1,21 +1,24 @@
 // ==========================================
-// PHASE 28.15: DAILY CAPTION BATTLE
-// Repurposes Daily Bounty into a daily 1-template caption contest:
-//   - Deterministic template per calendar day from STUDIO_TEMPLATES
-//   - End-of-day countdown until local midnight
-//   - Day-one clearly-labelled @TheMemesHQ sample captions
-//   - Yesterday's top community caption earns tomorrow's "👑 Caption King" banner & badge
+// PHASE 28.15 + PHASE 33.15: REAL DAILY CAPTION BATTLE
+//   - Deterministic template per UTC calendar day from STUDIO_TEMPLATES
+//   - Entries, votes, and yesterday's winner stored in Supabase (through 33.2–33.4)
+//   - Winner earns the 👑 Caption King frame for 24 h + permanent entry on /hall-of-fame
 // ==========================================
 import { STUDIO_TEMPLATES, isSeedMeme } from '../data/starterMemes';
-import { getTodayDateString } from './tokenEconomy';
+import { supabase } from '../supabaseClient';
+import { ensureWriteSession, precheckTexts, textRejectionMessage } from './serverWrites';
+import { getTurnstileToken } from './turnstile';
+import { formatRateLimitMessage } from '../../supabase/functions/_shared/rateLimitAndBot.js';
 
-export function getYesterdayDateString() {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+export const CAPTION_BATTLE_FUNCTION = 'submit-caption-entry';
+
+export function getUtcDateString(now = new Date()) {
+  return now.toISOString().slice(0, 10);
+}
+
+export function getYesterdayUtcDateString(now = new Date()) {
+  const d = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  return d.toISOString().slice(0, 10);
 }
 
 function hashDateToIndex(dateStr, length) {
@@ -27,7 +30,11 @@ function hashDateToIndex(dateStr, length) {
   return hash % length;
 }
 
-export function getDailyCaptionBattle(dateStr = getTodayDateString()) {
+export function getTemplateById(templateId) {
+  return STUDIO_TEMPLATES.find((t) => t.id === templateId) || STUDIO_TEMPLATES[0];
+}
+
+export function getDailyCaptionBattle(dateStr = getUtcDateString()) {
   const idx = hashDateToIndex(dateStr, STUDIO_TEMPLATES.length);
   const template = STUDIO_TEMPLATES[idx] || STUDIO_TEMPLATES[0];
   return {
@@ -35,7 +42,7 @@ export function getDailyCaptionBattle(dateStr = getTodayDateString()) {
     battleId: `battle-${dateStr}`,
     dateStr,
     tag: (template?.category || 'dank').toUpperCase(),
-    prompt: `Caption today's template (${template?.name || 'Daily Format'}) — top score wins tomorrow's 👑 Caption King crown!`,
+    prompt: `Caption today's template (${template?.name || 'Daily Format'}) — top score wins tomorrow's 👑 Caption King 24h frame & permanent /hall-of-fame crown!`,
     template,
     category: template?.category || 'dank',
     defaultTop: template?.defaultTop || 'WHEN THE DAILY BATTLE DROPS',
@@ -52,125 +59,102 @@ export function getDailyCaptionBattle(dateStr = getTodayDateString()) {
 }
 
 export function getYesterdayCaptionBattle() {
-  return getDailyCaptionBattle(getYesterdayDateString());
+  return getDailyCaptionBattle(getYesterdayUtcDateString());
 }
 
 /**
- * Day-one sample captions by @TheMemesHQ (clearly labelled as sample seed captions).
+ * Day-one visual inspiration samples by @TheMemesHQ (strictly preview-only; never counted as entries or winners).
  */
 export function getDayOneSampleCaptions(battle) {
   if (!battle?.template) return [];
   const tpl = battle.template;
-  const baseTime = new Date(`${battle.dateStr}T08:00:00`).getTime() || Date.now() - 3600000;
   return [
     {
       id: `seed-battle-${battle.dateStr}-1`,
-      title: `${tpl.defaultTop} / ${tpl.defaultBottom}`,
-      category: battle.category,
       author_name: 'TheMemesHQ',
       is_seed: true,
       is_sample_caption: true,
-      is_bounty: true,
-      bounty_id: battle.battleId,
-      score: 42,
-      media_type: 'image',
-      image_url: tpl.src,
-      base_image_url: tpl.src,
-      overlay: {
-        v: 1,
-        layers: [
-          { id: 't1', type: 'text', text: tpl.defaultTop, font: 'Anton', align: 'center', fill: '#ffffff', stroke: 0.08, strokeColor: '#000000', x: 0.5, y: 0.12, w: 0.9, h: 0.18 },
-          { id: 'b1', type: 'text', text: tpl.defaultBottom, font: 'Anton', align: 'center', fill: '#facc15', stroke: 0.08, strokeColor: '#000000', x: 0.5, y: 0.88, w: 0.9, h: 0.18 }
-        ]
-      },
-      created_at: new Date(baseTime).toISOString(),
-      reactions: { '🔥': 4, '💀': 2, '😂': 5, '🗿': 1 },
-      comments: []
+      template_id: tpl.id,
+      top_text: tpl.defaultTop,
+      bottom_text: tpl.defaultBottom
     },
     {
       id: `seed-battle-${battle.dateStr}-2`,
-      title: 'OPENING THE APP FOR 1 MINUTE / STILL HERE 2 HOURS LATER',
-      category: battle.category,
       author_name: 'TheMemesHQ',
       is_seed: true,
       is_sample_caption: true,
-      is_bounty: true,
-      bounty_id: battle.battleId,
-      score: 28,
-      media_type: 'image',
-      image_url: tpl.src,
-      base_image_url: tpl.src,
-      overlay: {
-        v: 1,
-        layers: [
-          { id: 't2', type: 'text', text: 'JUST CHECKING ONE MEME', font: 'Anton', align: 'center', fill: '#ffffff', stroke: 0.08, strokeColor: '#000000', x: 0.5, y: 0.12, w: 0.9, h: 0.18 },
-          { id: 'b2', type: 'text', text: 'IT IS NOW 3:14 AM', font: 'Anton', align: 'center', fill: '#00f3ff', stroke: 0.08, strokeColor: '#000000', x: 0.5, y: 0.88, w: 0.9, h: 0.18 }
-        ]
-      },
-      created_at: new Date(baseTime + 600000).toISOString(),
-      reactions: { '🔥': 3, '💀': 1, '😂': 3, '🗿': 0 },
-      comments: []
+      template_id: tpl.id,
+      top_text: 'JUST CHECKING ONE MEME',
+      bottom_text: 'IT IS NOW 3:14 AM'
     }
   ];
 }
 
 export function getBattleEntriesForBattle(memes = [], battle) {
   if (!battle) return [];
-  const realEntries = memes.filter((m) => {
-    if (!m || isSeedMeme(m)) return false;
-    if (m.bounty_id === battle.battleId) return true;
-    if (m.is_bounty && String(m.created_at || '').slice(0, 10) === battle.dateStr) return true;
-    return false;
-  });
-  const samples = getDayOneSampleCaptions(battle).map((sample) => {
-    const liveMatch = memes.find((m) => String(m.id) === String(sample.id));
-    return liveMatch || sample;
-  });
-  const combined = [...realEntries, ...samples];
-  return combined.sort((a, b) => {
-    const aSeed = isSeedMeme(a);
-    const bSeed = isSeedMeme(b);
-    if (aSeed !== bSeed) return aSeed ? 1 : -1;
-    return (b.score || 0) - (a.score || 0);
-  });
-}
-
-/**
- * Computes yesterday's real Caption King winner (never faked — only real user/community entries win).
- */
-export function getYesterdayCaptionKing(memes = []) {
-  const yesterday = getYesterdayCaptionBattle();
-  const candidates = memes
+  return memes
     .filter((m) => {
       if (!m || isSeedMeme(m)) return false;
-      if (m.bounty_id === yesterday.battleId) return true;
-      return Boolean(m.is_bounty) && String(m.created_at || '').slice(0, 10) === yesterday.dateStr;
+      if (m.bounty_id === battle.battleId) return true;
+      return Boolean(m.is_bounty) && String(m.created_at || '').slice(0, 10) === battle.dateStr;
     })
     .sort((a, b) => (b.score || 0) - (a.score || 0));
-
-  if (candidates.length === 0) return null;
-  const winner = candidates[0];
-  return {
-    author_name: winner.author_name || 'AnonMemer',
-    meme: winner,
-    battleId: yesterday.battleId,
-    dateStr: yesterday.dateStr,
-    score: winner.score || 0
-  };
 }
 
-/**
- * Checks if a given username has ever won a Daily Caption Battle (from yesterday or prior days in feed).
- */
-export function isUsernameCaptionKing(memes = [], username = '') {
+export function buildCaptionOverlay(topText = '', bottomText = '') {
+  const layers = [];
+  if (topText) {
+    layers.push({
+      id: 'cap-top',
+      type: 'text',
+      text: topText,
+      font: 'Anton',
+      align: 'center',
+      fill: '#ffffff',
+      stroke: 0.08,
+      strokeColor: '#000000',
+      x: 0.5,
+      y: 0.12,
+      w: 0.9,
+      h: 0.2
+    });
+  }
+  if (bottomText) {
+    layers.push({
+      id: 'cap-bottom',
+      type: 'text',
+      text: bottomText,
+      font: 'Anton',
+      align: 'center',
+      fill: '#facc15',
+      stroke: 0.08,
+      strokeColor: '#000000',
+      x: 0.5,
+      y: 0.88,
+      w: 0.9,
+      h: 0.2
+    });
+  }
+  return { v: 1, layers };
+}
+
+export function isActiveCaptionKing(username = '', activeKings = [], fallbackDateMs = Date.now()) {
+  if (!username || !Array.isArray(activeKings)) return false;
+  const target = String(username).trim().toLowerCase();
+  return activeKings.some((k) => {
+    if (!k?.author_name) return false;
+    if (String(k.author_name).trim().toLowerCase() !== target) return false;
+    if (!k.crowned_until) return true;
+    const until = Date.parse(k.crowned_until);
+    return Number.isFinite(until) ? until > fallbackDateMs : true;
+  });
+}
+
+export function isUsernameCaptionKing(memes = [], username = '', activeKings = []) {
+  if (isActiveCaptionKing(username, activeKings)) return true;
   if (!username) return false;
   const target = String(username).toLowerCase();
-  const yesterdayKing = getYesterdayCaptionKing(memes);
-  if (yesterdayKing && String(yesterdayKing.author_name || '').toLowerCase() === target) {
-    return true;
-  }
-  const todayStr = getTodayDateString();
-  // Group past bounty entries by date and see if this user topped any closed day
+  const todayStr = getUtcDateString();
   const byDay = new Map();
   memes.forEach((m) => {
     if (!m || isSeedMeme(m) || !m.is_bounty) return;
@@ -191,14 +175,195 @@ export function isUsernameCaptionKing(memes = [], username = '') {
   return false;
 }
 
-export function getTimeUntilEndOfDay() {
-  const now = new Date();
-  const midnight = new Date(now);
-  midnight.setHours(24, 0, 0, 0);
-  const diffMs = Math.max(0, midnight.getTime() - now.getTime());
+export function getTimeUntilEndOfDay(now = new Date()) {
+  const nextUtcMidnight = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() + 1,
+    0,
+    0,
+    0
+  );
+  const diffMs = Math.max(0, nextUtcMidnight - now.getTime());
   const totalSec = Math.floor(diffMs / 1000);
   const h = String(Math.floor(totalSec / 3600)).padStart(2, '0');
   const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
   const s = String(totalSec % 60).padStart(2, '0');
   return `${h}:${m}:${s}`;
+}
+
+export async function fetchDailyCaptionBattle(client = supabase) {
+  if (!client?.rpc) {
+    return {
+      ok: false,
+      dateStr: getUtcDateString(),
+      entries: [],
+      yesterdayWinner: null,
+      myVotedEntryIds: [],
+      activeKings: []
+    };
+  }
+  try {
+    const { data, error } = await client.rpc('get_daily_caption_battle');
+    if (error || !data?.ok) {
+      return {
+        ok: false,
+        dateStr: getUtcDateString(),
+        entries: [],
+        yesterdayWinner: null,
+        myVotedEntryIds: [],
+        activeKings: [],
+        error: error?.message || data?.error || 'fetch_failed'
+      };
+    }
+    return {
+      ok: true,
+      dateStr: data.date_str || getUtcDateString(),
+      yesterdayDateStr: data.yesterday_date_str || getYesterdayUtcDateString(),
+      entries: Array.isArray(data.entries) ? data.entries : [],
+      yesterdayWinner: data.yesterday_winner || null,
+      myVotedEntryIds: Array.isArray(data.my_voted_entry_ids) ? data.my_voted_entry_ids : [],
+      activeKings: Array.isArray(data.active_kings) ? data.active_kings : []
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      dateStr: getUtcDateString(),
+      entries: [],
+      yesterdayWinner: null,
+      myVotedEntryIds: [],
+      activeKings: [],
+      error: err?.message || 'network'
+    };
+  }
+}
+
+export async function submitCaptionBattleEntry(
+  { battleDate, templateId, topText, bottomText },
+  client = supabase
+) {
+  const cleanTop = String(topText || '').trim();
+  const cleanBottom = String(bottomText || '').trim();
+  if (!cleanTop && !cleanBottom) {
+    return { ok: false, error: 'empty_caption', message: '✏️ Enter a Top or Bottom caption first!' };
+  }
+
+  const problem = precheckTexts([cleanTop, cleanBottom]);
+  if (problem) {
+    return { ok: false, error: 'rejected', detail: problem, message: textRejectionMessage(problem) };
+  }
+
+  if (!client?.functions?.invoke) {
+    return { ok: false, error: 'network', message: '📡 Server unavailable right now.' };
+  }
+
+  const sess = await ensureWriteSession(client);
+  if (!sess) {
+    return { ok: false, error: 'sign_in_required', message: '🔑 Could not start player session.' };
+  }
+
+  const turnstileToken = await getTurnstileToken('upload');
+  const { data, error } = await client.functions.invoke(CAPTION_BATTLE_FUNCTION, {
+    body: {
+      battleDate: battleDate || getUtcDateString(),
+      templateId,
+      topText: cleanTop,
+      bottomText: cleanBottom,
+      ...(turnstileToken ? { turnstileToken } : {})
+    }
+  });
+
+  if (error) {
+    let payload;
+    try {
+      payload = (await error.context?.json?.()) || {};
+    } catch {
+      payload = {};
+    }
+    const errCode = payload.error || 'network';
+    if (errCode === 'rejected') {
+      return {
+        ok: false,
+        error: 'rejected',
+        detail: payload.detail || 'rules',
+        message: textRejectionMessage(payload.detail)
+      };
+    }
+    if (errCode === 'rate_limited') {
+      return {
+        ok: false,
+        error: 'rate_limited',
+        message: payload.message || formatRateLimitMessage(payload.retry_after_seconds)
+      };
+    }
+    return {
+      ok: false,
+      error: errCode,
+      message: payload.message || '📡 Could not submit caption right now.'
+    };
+  }
+
+  if (!data?.ok) {
+    return {
+      ok: false,
+      error: data?.error || 'submit_failed',
+      message: data?.detail ? textRejectionMessage(data.detail) : '📡 Could not submit caption.'
+    };
+  }
+
+  return data;
+}
+
+export async function voteCaptionBattleEntry(entryId, active = true, client = supabase) {
+  if (!entryId || !client?.rpc) return { ok: false, error: 'bad_request' };
+  const sess = await ensureWriteSession(client);
+  if (!sess) {
+    return { ok: false, error: 'sign_in_required', message: '🔑 Could not start player session.' };
+  }
+  const { data, error } = await client.rpc('vote_caption_battle_entry', {
+    p_entry_id: entryId,
+    p_active: Boolean(active)
+  });
+  if (error) {
+    return { ok: false, error: error.message || 'vote_failed', message: '📡 Vote failed right now.' };
+  }
+  if (!data?.ok) {
+    return {
+      ok: false,
+      error: data?.error || 'vote_rejected',
+      message:
+        data?.error === 'rate_limited'
+          ? data.message || formatRateLimitMessage(data.retry_after_seconds)
+          : '⚠️ Could not record vote.'
+    };
+  }
+  return data;
+}
+
+export async function fetchCaptionHallOfFame(limit = 50, client = supabase) {
+  if (!client?.rpc) return { ok: false, winners: [], activeKings: [] };
+  try {
+    const { data, error } = await client.rpc('get_caption_hall_of_fame', { p_limit: limit });
+    if (error || !data?.ok) {
+      return { ok: false, winners: [], activeKings: [], error: error?.message || data?.error };
+    }
+    return {
+      ok: true,
+      winners: Array.isArray(data.winners) ? data.winners : [],
+      activeKings: Array.isArray(data.active_kings) ? data.active_kings : []
+    };
+  } catch (err) {
+    return { ok: false, winners: [], activeKings: [], error: err?.message || 'network' };
+  }
+}
+
+export async function fetchActiveCaptionKings(client = supabase) {
+  if (!client?.rpc) return [];
+  try {
+    const { data, error } = await client.rpc('get_active_caption_kings');
+    if (error || !data?.ok) return [];
+    return Array.isArray(data.active_kings) ? data.active_kings : [];
+  } catch {
+    return [];
+  }
 }

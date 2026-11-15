@@ -1,0 +1,128 @@
+.tm-hof-page {
+  min-height: 100dvh;
+  background: radial-gradient(circle at top, #17153b, #070810 62%);
+  color: #f8fafc;
+  padding: 20px 14px 48px;
+}
+
+.tm-hof-shell {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.tm-hof-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.tm-hof-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  background: rgba(15, 23, 42, 0.85);
+  color: #7df9ff;
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.tm-hof-hero {
+  padding: 20px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.14), rgba(168, 85, 247, 0.12));
+  border: 1.5px solid rgba(250, 204, 21, 0.55);
+  margin-bottom: 20px;
+}
+
+.tm-hof-hero h1 {
+  margin: 0 0 6px;
+  font-size: clamp(22px, 4vw, 30px);
+  color: #facc15;
+}
+
+.tm-hof-hero p {
+  margin: 0;
+  font-size: 14px;
+  color: #cbd5e1;
+  line-height: 1.55;
+}
+
+.tm-hof-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+  gap: 16px;
+}
+
+.tm-hof-card {
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tm-hof-card.reigning {
+  border: 2px solid #facc15;
+  box-shadow: 0 0 24px rgba(250, 204, 21, 0.35), 0 0 12px rgba(168, 85, 247, 0.25);
+}
+
+.tm-hof-media {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #020617;
+}
+
+.tm-hof-media img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.tm-hof-cap {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  text-align: center;
+  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  font-size: 15px;
+  font-weight: 900;
+  text-transform: uppercase;
+  text-shadow: 0 2px 3px #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}
+
+.tm-hof-cap.top {
+  top: 8px;
+  color: #fff;
+}
+
+.tm-hof-cap.bottom {
+  bottom: 8px;
+  color: #facc15;
+}
+
+.tm-hof-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.tm-hof-empty {
+  padding: 28px 18px;
+  border-radius: 16px;
+  border: 1px dashed rgba(250, 204, 21, 0.4);
+  background: rgba(15, 23, 42, 0.72);
+  text-align: center;
+  color: #cbd5e1;
+}

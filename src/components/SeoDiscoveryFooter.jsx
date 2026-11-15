@@ -336,6 +336,7 @@ export default function SeoDiscoveryFooter({
           <span>© 2026 THE MEMES.net // Community Memes &amp; 80s Cyber-Arcade</span>
           <span>💵 MemeDollarz (M$) &amp; MemeCentz (¢) are free pretend tokens, just for fun — cannot be bought or cashed out.</span>
           <span style={{ display: 'inline-flex', gap: '10px', flexWrap: 'wrap' }}>
+            <a href="/hall-of-fame" style={{ color: '#facc15', textDecoration: 'none' }}>👑 Hall of Fame</a>
             <a href="/rules" style={{ color: '#7df9ff', textDecoration: 'none' }}>📜 House Rules</a>
             <a href="/terms" style={{ color: '#94a3b8', textDecoration: 'none' }}>⚖️ Terms</a>
             <a href="/privacy" style={{ color: '#94a3b8', textDecoration: 'none' }}>🔐 Privacy</a>

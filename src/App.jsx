@@ -13,6 +13,7 @@ import { useTokenEconomy } from './hooks/useTokenEconomy';
 import { useAuth } from './hooks/useAuth';
 import { useFeed } from './hooks/useFeed';
 import { PRANK_DISGUISE_TO_PATH } from './data/seoRoutes';
+import { fetchActiveCaptionKings, isActiveCaptionKing } from './utils/dailyCaptionBattle';
 import { useViewMode, useViewModeEffects } from './hooks/useViewMode';
 import NavbarHud from './components/NavbarHud';
 import QuickUploadBar from './components/QuickUploadBar';
@@ -208,6 +209,7 @@ export default function App() {
   );
   const [deloreanModalOpen, setDeloreanModalOpen] = useState(false);
   const [deloreanFlyby, setDeloreanFlyby] = useState(null);
+  const [activeCaptionKings, setActiveCaptionKings] = useState([]);
   const logoTapRef = useRef({ count: 0, lastTap: 0 });
   const lastTrailTimeRef = useRef(0);
 
@@ -486,6 +488,18 @@ export default function App() {
       prevFsEqRef.current = nextOpen;
     });
   }, [setExtrasDrawerOpen, setExtrasFocus, setShowRewardsModal, setShowLeaderboard, setProfileUsername]);
+
+  useEffect(() => {
+    let active = true;
+    fetchActiveCaptionKings().then((kings) => {
+      if (active && Array.isArray(kings)) {
+        setActiveCaptionKings(kings);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     const onRadioKeyDown = (e) => {
@@ -1143,6 +1157,11 @@ export default function App() {
                 closeAllModals();
                 handleOpenBlankStudio();
               }}
+              onOpenCaptionBattle={() => {
+                sfx.playToggle?.();
+                closeAllModals();
+                setBattleModalOpen(true);
+              }}
               onOpenSoundboard={() => {
                 sfx.playToggle?.();
                 closeAllModals();
@@ -1377,13 +1396,15 @@ export default function App() {
                     currentUserId={feedUserId || authUserId}
                     onOpenAiRoast={handleOpenAiRoast}
                     cardFrame={
-                      (user?.username &&
-                        meme.author_name &&
-                        String(meme.author_name).toLowerCase() ===
-                          String(user.username).toLowerCase()) ||
-                      String(meme.id).startsWith('local-')
-                        ? equippedFrame
-                        : 'default'
+                      isActiveCaptionKing(meme.author_name, activeCaptionKings)
+                        ? 'caption-king'
+                        : (user?.username &&
+                            meme.author_name &&
+                            String(meme.author_name).toLowerCase() ===
+                              String(user.username).toLowerCase()) ||
+                          String(meme.id).startsWith('local-')
+                          ? equippedFrame
+                          : 'default'
                     }
                     litePerfMode={litePerfMode}
                   />
@@ -1920,6 +1941,7 @@ export default function App() {
             unlockedFlairs={unlockedFlairs}
             equippedFlair={equippedFlair}
             equippedFrame={equippedFrame}
+            activeCaptionKings={activeCaptionKings}
             notifications={notifications}
             onMarkNotificationsRead={handleMarkNotificationsRead}
             onOpenShop={() => {
@@ -2138,6 +2160,11 @@ export default function App() {
               sfx.playToggle();
               setShowLeaderboard(true);
             }}
+            onOpenCaptionBattle={() => {
+              sfx.playToggle?.();
+              closeAllModals();
+              setBattleModalOpen(true);
+            }}
             onRandomMeme={() => {
               if (filteredMemes.length > 0) {
                 const pick = filteredMemes[Math.floor(Math.random() * filteredMemes.length)];
@@ -2192,14 +2219,11 @@ export default function App() {
         </Suspense>
       )}
 
-      {/* MODAL 11 (PHASE 28.15): DAILY CAPTION BATTLE & YESTERDAY'S CAPTION KING */}
+      {/* MODAL 11 (PHASE 28.15 / 33.15): DAILY CAPTION BATTLE & YESTERDAY'S CAPTION KING */}
       {battleModalOpen && (
         <Suspense fallback={MODAL_SKELETON_FALLBACK}>
           <DailyCaptionBattleModal
             battle={dailyBattle}
-            memes={memes}
-            userVotes={userVotes}
-            onVote={handleVote}
             onEnterBattle={(battle) => {
               setBattleModalOpen(false);
               handleAcceptBounty(battle);
@@ -2208,10 +2232,7 @@ export default function App() {
               setBattleModalOpen(false);
               setProfileUsername(username);
             }}
-            onOpenTheater={(meme) => {
-              setBattleModalOpen(false);
-              handleOpenTheater(meme);
-            }}
+            onKingsUpdated={setActiveCaptionKings}
             onClose={() => setBattleModalOpen(false)}
           />
         </Suspense>

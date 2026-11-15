@@ -163,7 +163,9 @@
 
 - [x] **33.14 Real global leaderboards with arcade initials.** Table `scores (game, user_id, score, initials, period, created_at)`. Delete every hard-coded rival in `LeaderboardModal.jsx`. Classic 3-letter initials entry screen after a top-10 run (joystick-style letter picker, touch and keyboard), initials checked against a blocklist. Boards: Today / This Week / All-time, per game. Scores are submitted through an RPC with basic sanity limits per game (max plausible score per second of play, session token issued at game start); label boards "for fun" because browser games cannot be made cheat-proof. Empty board copy: "No scores yet. Be the first name on the cabinet."
   - *Completion Note (15 Nov 2026):* Applied migration `supabase/migrations/20261115000013_33_14_arcade_leaderboards.sql` (`public.scores`, server-only `public.score_sessions`, `check_initials_allowed()`, `arcade_game_limits()`, `start_game_session()`, `submit_arcade_score()`, `get_game_leaderboard()`). Deleted all hard-coded fake rivals from `src/components/LeaderboardModal.jsx`, added **Today / This Week / All-time** cabinet leaderboards, added exact empty copy `"No scores yet. Be the first name on the cabinet."` and `"for fun"` disclaimer, created `src/utils/arcadeLeaderboards.js` and `src/components/ArcadeInitialsModal.jsx` (touch + keyboard 3-letter drum picker with blocklist check), wired session tokens and `onRecordHighScore` across `GameRouter.jsx`, `App.jsx`, and the arcade game components, and verified via `npm run lint`, `npm run test:unit` (252 node:test + 14 Vitest), `npm run build`, and Playwright (`24 passed (1.4m)` across `390x844`, `768x1024`, `1280x800`).
-- [ ] **33.15 Real Daily Caption Battle.** Entries, votes and yesterday's winner stored in Supabase (through 33.2–33.4). Winner gets the 👑 Caption King frame for 24 h and a permanent entry in a `/hall-of-fame` page.
+- [x] **33.15 Real Daily Caption Battle.** Entries, votes and yesterday's winner stored in Supabase (through 33.2–33.4). Winner gets the 👑 Caption King frame for 24 h and a permanent entry in a `/hall-of-fame` page.
+  - *Completion Note (15 Nov 2026):* Applied migration `supabase/migrations/20261115000014_33_15_daily_caption_battle.sql` (`public.caption_battle_entries`, `public.caption_battle_votes`, `public.caption_battle_winners`, `memes.is_bounty`/`bounty_id`, `finalize_caption_battle_day()`, `get_daily_caption_battle()`, `vote_caption_battle_entry()`, `get_caption_hall_of_fame()`, `get_active_caption_kings()`). Added `supabase/functions/submit-caption-entry/index.ts` and `_shared/captionBattleCore.js` (JWT auth, Turnstile, rate limit, `moderateText` from 33.4) plus `publish-meme`/`publishCore.js` battle mirroring (33.2–33.4). Rebuilt `src/components/DailyCaptionBattleModal.jsx` around live Supabase entries/votes/yesterday's winner and inline composer, wired the 24h `👑 Caption King` frame (`tm-frame-caption-king`) across `App.jsx`, `MemeCard.jsx`, and `PlayerProfileModal.jsx`, mounted `/hall-of-fame` (`HallOfFamePage.jsx` + `seoRoutes.js` + `SeoDiscoveryFooter.jsx`), and verified via `npm run lint`, `npm run test:unit` (256 `node:test` + 16 Vitest), `npm run build` (36 SEO routes + 64 meme pages), and Playwright (`27 passed (1.7m)` across `390x844`, `768x1024`, `1280x800`).
+  - *Deploy Note:* `submit-caption-entry` Edge Function (with `--no-verify-jwt`) and updated `publish-meme` need `supabase functions deploy` by owner.
 - [ ] **33.16 Feed that goes all the way back.** Cursor pagination (`created_at`, `id`) replacing `.limit(50)`; tabs Hot (time-decayed score) / New / Top (day, week, all-time) computed by a SQL view; stop fetching `comments(*)` with the feed (load on open); list virtualisation so 500+ cards stay smooth on older iPads.
 - [ ] **33.17 Creator profile pages** at `/u/<handle>`: avatar picked from a built-in set of original pixel-art avatars (no avatar uploads, which removes a moderation surface), memes posted, badges, high scores, follow button. Prerender basic metadata for SEO.
 - [ ] **33.18 Real "people here now".** Keep the existing rule (hide below 2). Add small truthful signals: "🔥 12 upvotes in the last hour" on a card only when true.
@@ -413,7 +415,7 @@ thememes-net/
    - `score` (`integer`, default `1`), `base_score` (`integer`, default `1`), `reactions` (`jsonb`), `base_reactions` (`jsonb`)
    - `parent_meme_id` (`uuid` FK → `memes.id`), `root_meme_id` (`uuid` FK → `memes.id`), `generation` (`integer`, default `0`), `mutation_count` (`integer`, default `0`)
    - `media_type` (`text`: `'image' | 'gif' | 'video'`), `poster_url` (`text`), `base_image_url` (`text`), `duration_sec` (`numeric`), `width` (`integer`), `height` (`integer`), `overlay` (`jsonb`)
-   - `sha256` (`text`), `phash` (`text`), `moderation` (`jsonb`), `removed_reason` (`text`), `status` (`text`: `'pending' | 'approved' | 'rejected' | 'removed'`, default `'pending'`), `created_at` (`timestamptz`)
+   - `sha256` (`text`), `phash` (`text`), `moderation` (`jsonb`), `removed_reason` (`text`), `status` (`text`: `'pending' | 'approved' | 'rejected' | 'removed'`, default `'pending'`), `is_bounty` (`boolean`), `bounty_id` (`text`), `created_at` (`timestamptz`)
 2. **`public.comments`** (public SELECT for `status = 'visible'`, author `user_id = auth.uid()`, or `is_moderator()`; created via `post-comment` Edge Function only; authors can DELETE non-suspended):
    - `id` (`uuid` PK), `meme_id` (`uuid` FK → `memes.id` CASCADE), `user_id` (`uuid` FK → `auth.users` SET NULL), `author_name` (`text`), `body` (`text`, 1..280 chars), `status` (`text`: `'visible' | 'pending' | 'removed'`), `created_at` (`timestamptz`)
 3. **`public.profiles`** (users can SELECT only their own row; server writes via service role / Edge Functions; claimed `username` enforced unique case-insensitively and checked against reserved words):
@@ -431,7 +433,11 @@ thememes-net/
 9. **`public.moderation_actions`** (moderators SELECT): `id`, `moderator_id`, `action`, `meme_id`, `comment_id`, `target_user_id`, `reason`, `note`, `created_at`.
 10. **`public.scores`** (public SELECT; written only via `submit_arcade_score()` RPC with 3-char blocklist check and server session timing bounds; `score_sessions` is server-only):
     - `id` (`uuid` PK), `game` (`text`), `user_id` (`uuid` FK → `auth.users` CASCADE), `score` (`integer` `1..10000000`), `initials` (`text` `^[A-Z0-9]{3}$`), `period` (`text` default `'all_time'`), `created_at` (`timestamptz`)
-11. **Service-role-only safety/ops tables** (RLS enabled, zero public policies):
+11. **Daily Caption Battle & Hall of Fame tables (`public`, RLS enabled):**
+    - `public.caption_battle_entries` (public SELECT for `'approved'` or owner/`is_moderator()`; inserted via `submit-caption-entry` or `publish-meme`): `id`, `battle_date`, `template_id`, `user_id`, `author_name`, `top_text`, `bottom_text`, `score`, `meme_id`, `status`, `moderation`, `created_at`
+    - `public.caption_battle_votes` (own SELECT; written via `vote_caption_battle_entry()` RPC with score sync trigger): `id`, `entry_id`, `user_id`, `direction`, `created_at`, `updated_at`
+    - `public.caption_battle_winners` (public SELECT; written by `finalize_caption_battle_day()`): `battle_date` PK, `entry_id`, `meme_id`, `template_id`, `user_id`, `author_name`, `top_text`, `bottom_text`, `winning_score`, `crowned_until`, `created_at`
+12. **Service-role-only safety/ops tables** (RLS enabled, zero public policies):
     - `public.score_sessions` (`id`, `user_id`, `game`, `issued_at`, `consumed_at`, `submitted_score`)
     - `public.banned_hashes` (`id`, `sha256`, `phash`, `reason`, `source`, `meme_id`, `created_at`)
     - `public.moderation_incidents` (`id`, `kind`, `user_id`, `sha256`, `phash`, `provider`, `categories`, `status`, `created_at`)
@@ -446,7 +452,7 @@ thememes-net/
 - **`meme-images`** (`public: true`, legacy read-only bucket): Public SELECT policy only; no public writes.
 
 ### Edge Functions (`supabase/functions/`) & RPCs (`public.*`)
-- **Edge Functions:** `publish-meme`, `post-comment`, `moderate`, `claim-username`, `delete-account` (plus shared helpers `_shared/textModeration.js`, `_shared/imageModeration.js`, `_shared/accountCleanup.js`).
+- **Edge Functions:** `publish-meme`, `post-comment`, `submit-caption-entry`, `moderate`, `claim-username`, `delete-account` (plus shared helpers `_shared/textModeration.js`, `_shared/imageModeration.js`, `_shared/captionBattleCore.js`, `_shared/accountCleanup.js`).
 - **Client-Callable RPCs:**
   - `cast_vote(p_meme_id, p_direction)` & `toggle_reaction(p_meme_id, p_emoji, p_active)` (authenticated, non-suspended, rate-limited)
   - `mark_notifications_read(p_ids)` & `get_my_profile()` (authenticated)
@@ -455,6 +461,7 @@ thememes-net/
   - `mod_queue()` (authenticated moderator/admin only)
   - `meme_public_state(p_id)` & `get_meme_evolution_tree(target_meme_id)` (`anon`/`authenticated`; `approved` lineage ordered by generation/score)
   - `start_game_session(p_game)`, `submit_arcade_score(p_session_id, p_game, p_score, p_initials)`, `get_game_leaderboard(p_game, p_period, p_limit)`, `check_initials_allowed(p_initials)` (Task 33.14 cabinet scores)
+  - `get_daily_caption_battle()`, `vote_caption_battle_entry(p_entry_id, p_active)`, `get_caption_hall_of_fame(p_limit)`, `get_active_caption_kings()` (Task 33.15 daily battle & `/hall-of-fame`)
   - `is_moderator()`, `is_suspended(p_uid)`, `format_rate_limit_message(p_seconds)`
 - **Service-Role / Cron Functions:** `mod_apply_decision(...)`, `moderation_digest_send()` (daily `08:00 UTC` via `pg_cron`), `check_and_record_rate_limit(...)`, `request_ip_hash()`, `is_established_account(p_user_id)`, `is_banned_image(p_sha256, p_phash, p_max_distance)`, `increment_meme_score(...)` (legacy, revoked from `anon`/`authenticated`).
 

@@ -4671,6 +4671,14 @@ html[data-device="iphone-duo"] button {
   box-shadow: 0 0 24px rgba(250, 204, 21, 0.42), inset 0 0 14px rgba(250, 204, 21, 0.14) !important;
 }
 
+.tm-frame-caption-king {
+  border: 2px solid #fbbf24 !important;
+  box-shadow:
+    0 0 28px rgba(251, 191, 36, 0.52),
+    0 0 46px rgba(255, 0, 127, 0.2),
+    inset 0 0 16px rgba(251, 191, 36, 0.18) !important;
+}
+
 /* 28.17 Micro-Delight Screen Punch, Golden Meme Drop & End of Internet */
 .tm-app.tm-screen-punch {
   animation: tmScreenPunch 0.14s cubic-bezier(0.22, 1, 0.36, 1);

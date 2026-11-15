@@ -189,6 +189,11 @@ const MemeCard = memo(function MemeCard({
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+          {cardFrame === 'caption-king' && (
+            <span className="tm-rarity-badge supernova" data-testid="caption-king-frame-badge">
+              👑 CAPTION KING (24h)
+            </span>
+          )}
           {meme.is_spoiler && (
             <span className="tm-rarity-badge heating">🌶️ SPICY</span>
           )}

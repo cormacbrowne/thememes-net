@@ -20,6 +20,7 @@ export default function DualDirectionHero({
   memeCentz = 25,
   onSelectViewMode,
   onOpenBlankStudio,
+  onOpenCaptionBattle,
   onOpenSoundboard,
   onOpenInstallModal,
   onScrollToMemes
@@ -149,6 +150,17 @@ export default function DualDirectionHero({
                 }}
               >
                 🎬 Fullscreen Reels
+              </button>
+              <button
+                type="button"
+                className="tm-portal-quick-pill"
+                data-testid="hero-caption-battle-btn"
+                onClick={() => {
+                  sfx.playToggle?.();
+                  onOpenCaptionBattle?.();
+                }}
+              >
+                👑 Daily Caption Battle
               </button>
               <button
                 type="button"

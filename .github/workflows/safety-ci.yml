@@ -1,0 +1,38 @@
+name: Safety CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests (node:test + Vitest)
+        run: npm run test:unit
+
+      - name: Production build & SEO prerender
+        run: npm run build
+
+      - name: Staging Supabase security spec
+        env:
+          STAGING_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          STAGING_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+          STAGING_TEST_MEME_ID: ${{ secrets.STAGING_TEST_MEME_ID }}
+          SECURITY_SPEC_REQUIRED: ${{ secrets.STAGING_SUPABASE_URL != '' && '1' || '0' }}
+        run: npm run test:security

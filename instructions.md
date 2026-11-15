@@ -143,10 +143,11 @@
   - Update Section 4 of this file ("Supabase Backend Contract") to match.
   - *Completion Note:* Audited all live `public.*` tables, constraints, indexes, triggers, storage buckets/policies, cron jobs, and RPCs. Added baseline migration `20260101000000_00_initial_schema.sql` so `supabase/migrations/` (`00` through `33_12`) is a complete, ordered single source of truth from an empty database; applied `20261115000012_33_12_evolution_tree_and_schema_sync.sql` to fix `get_meme_evolution_tree()` (referenced nonexistent `m.upvotes`, now reads `m.score`, enforces `status = 'approved'`, runs `SECURITY DEFINER`); removed stale `supabase-schema.sql` (eliminating the triplicated Phase 26 block); updated Section 4 ("Supabase Backend Contract") below to match live DB (`follows` noted as not yet provisioned until `33.17`).
 
-- [ ] **33.13 Safety test suite (must pass before each deploy).**
+- [x] **33.13 Safety test suite (must pass before each deploy).**
   - Add Vitest for unit tests (text filter, URL allow-list, rate-limit maths, `validateStakedGamePayout`, `pokerEngine`).
   - Add `tests/security.spec.js` (plain `fetch` against a staging Supabase project, publishable key only) asserting: cannot update/delete others' memes; cannot insert into `memes` directly; cannot upload to storage directly; cannot read others' notifications; vote replay is idempotent; non-moderator cannot read `reports`.
   - Add a GitHub Actions workflow running lint, build, unit tests and the security spec on every push.
+  - *Completion Note:* Installed `vitest` (`vitest.config.js`) and added `tests/vitest/safetyAndEconomy.test.js` covering text moderation filter, own-storage/seed URL allow-list, rate-limit tiers/IP hashing maths, `validateStakedGamePayout` + daily token caps, `pokerEngine`, and mock-HTTP execution of `tests/security.spec.js`. Added `tests/security.spec.js` (plain `fetch` using staging publishable key only, `SECURITY_SPEC_REQUIRED=1` strict mode), updated `playwright.config.js` `testIgnore` and `package.json` scripts (`test:unit`, `test:vitest`, `test:security`), and created the workflow in `.github/workflows/safety-ci.yml` locally + mirrored in `docs/ci/safety-ci.yml` (GitHub remote push rejected `.github/workflows/` because current PAT lacks `workflow` scope; owner can push `.github/workflows/safety-ci.yml` directly with `workflow` scope).
 
 #### 🙋 Owner actions for P0 (agents cannot do these)
 

@@ -17,6 +17,7 @@ const launchOptions =
 
 export default defineConfig({
   testDir: './tests',
+  testIgnore: ['**/security.spec.js', '**/vitest/**'],
   reporter: 'list',
   timeout: 30000,
   retries: 0,

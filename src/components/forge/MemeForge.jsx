@@ -28,7 +28,7 @@ import {
   makePoster
 } from '../../utils/mediaPipeline';
 import { VIRAL_CAPTIONS } from '../../data/starterMemes';
-import { publishErrorMessage } from '../../utils/publishMeme';
+import { publishErrorMessage, CHECKING_MESSAGE, RULES_PATH } from '../../utils/publishMeme';
 import { sfx } from '../../utils/soundEngine';
 import {
   PUBLIC_UPLOADS_ENABLED,
@@ -547,6 +547,7 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
     }
     setBusy(true);
     setError('');
+    setStatus(CHECKING_MESSAGE);
     try {
       const rawCleanLayers = doc.layers.map((l) => {
         const rest = { ...l };
@@ -776,7 +777,17 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
                 }}
               />
             )}
-            {(error || status) && <div className={`tm-forge-msg ${error ? 'err' : ''}`}>{error || status}</div>}
+            {(error || status) && (
+              <div className={`tm-forge-msg ${error ? 'err' : ''}`} role="status" aria-live="polite">
+                {error || status}
+                {error && error === publishErrorMessage({ message: 'rejected' }) && (
+                  <>
+                    {' '}
+                    <a href={RULES_PATH}>Read the House Rules</a>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           <ForgeToolPanel

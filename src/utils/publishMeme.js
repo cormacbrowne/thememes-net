@@ -10,6 +10,15 @@ import { PUBLIC_UPLOADS_ENABLED, UPLOADS_PAUSED_ERROR } from '../config/featureF
 
 export const PUBLISH_FUNCTION = 'publish-meme';
 
+/** Where "House Rules" links point (page arrives in task 33.11). */
+export const RULES_PATH = '/rules';
+
+/** Uploader-facing states while and after the server checks a meme (task 33.3). */
+export const CHECKING_MESSAGE = '🕵️ Checking your meme… usually a few seconds';
+export const LIVE_MESSAGE = '✅ Live! Your meme is on the feed.';
+export const PENDING_REVIEW_MESSAGE =
+  '⏳ Our robots want a second look. Only you can see it until a moderator approves it.';
+
 /** Friendly copy for every error code publishMeme can throw (err.message is the code). */
 export const PUBLISH_ERROR_MESSAGES = {
   sign_in_required: '🔑 Sign in to post memes to the live feed (you can still download yours).',

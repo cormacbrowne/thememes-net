@@ -82,7 +82,16 @@ export function transcodeImage(m, bytes, sniffedType) {
         checkPixels(image.width, image.height);
         const phash = perceptualHash(m, image);
         const out = encodeStill(m, image);
-        return { kind: 'image', contentType: 'image/webp', ext: 'webp', frames: 1, phash, ...out };
+        return {
+          kind: 'image',
+          contentType: 'image/webp',
+          ext: 'webp',
+          frames: 1,
+          phash,
+          ...out,
+          // What moderation (33.3) looks at: exactly the bytes that will be published.
+          samples: [{ data: out.data, contentType: 'image/webp' }]
+        };
       });
     }
 
@@ -103,6 +112,13 @@ export function transcodeImage(m, bytes, sniffedType) {
       }
       const data = frames.write(m.MagickFormat.Gif, (d) => new Uint8Array(d));
       const poster = frames[0].clone((p) => encodeStill(m, p));
+      // Moderation samples: first, middle and last frame (33.3), as WebP stills.
+      const sampleIdx = [...new Set([0, Math.floor((frames.length - 1) / 2), frames.length - 1])];
+      const samples = sampleIdx.map((i) =>
+        i === 0
+          ? { data: poster.data, contentType: 'image/webp' }
+          : { data: frames[i].clone((f) => encodeStill(m, f)).data, contentType: 'image/webp' }
+      );
       return {
         kind: 'gif',
         contentType: 'image/gif',
@@ -112,7 +128,8 @@ export function transcodeImage(m, bytes, sniffedType) {
         height: fit.height,
         frames: frames.length,
         phash,
-        poster: { ...poster, contentType: 'image/webp', ext: 'webp' }
+        poster: { ...poster, contentType: 'image/webp', ext: 'webp' },
+        samples
       };
     });
   } catch (err) {

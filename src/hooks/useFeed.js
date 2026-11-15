@@ -25,7 +25,7 @@ import {
   trackMemePublished,
   trackShareClicked
 } from '../utils/analytics';
-import { publishMeme } from '../utils/publishMeme';
+import { publishMeme, PENDING_REVIEW_MESSAGE } from '../utils/publishMeme';
 import { PUBLIC_UPLOADS_ENABLED, UPLOADS_PAUSED_ERROR } from '../config/featureFlags';
 import { validateFile, canvasToCompressedBlob, makePoster } from '../utils/mediaPipeline';
 import { recordPublishDailyPerk } from '../utils/memeFeedBridge';
@@ -925,7 +925,7 @@ export function useFeed({
     const finalTitle = title || fallbackCaption || `Fresh Upload by @${author}`;
 
     const client = getSupabaseClient();
-    const { meme: insertedMeme } = await publishMeme({
+    const { meme: insertedMeme, status: publishStatus } = await publishMeme({
       media,
       overlay,
       meta: {
@@ -938,6 +938,11 @@ export function useFeed({
     });
 
     setMemes((prev) => [insertedMeme, ...prev]);
+    // 33.3: a meme waiting for review is only visible to its uploader and earns nothing yet.
+    if (publishStatus === 'pending') {
+      setSortBy('latest');
+      return { status: 'pending' };
+    }
     trackMemePublished(insertedMeme, 'quick_upload');
     recordPublishDailyPerk();
     if (!aiUnlocked) {
@@ -961,6 +966,7 @@ export function useFeed({
       rewardSummary: `+${ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens} 🪙 & +${ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.xp} XP`
     });
     setSortBy('latest');
+    return { status: publishStatus };
   };
 
   const handleForgePublish = async ({ media, overlay, meta, intent }) => {
@@ -980,7 +986,7 @@ export function useFeed({
     const generation = parent && !isBounty ? (parent.generation || 0) + 1 : 0;
 
     const client = getSupabaseClient();
-    const { meme: insertedMeme } = await publishMeme({
+    const { meme: insertedMeme, status: publishStatus } = await publishMeme({
       media,
       overlay,
       meta: {
@@ -995,6 +1001,19 @@ export function useFeed({
       client
     });
 
+    if (publishStatus === 'pending') {
+      // 33.3: waiting for review — only the uploader sees it; no rewards, remix credit or
+      // notifications until it is approved.
+      setMemes((prev) => [insertedMeme, ...prev]);
+      setShowStudio(false);
+      setForgeIntent(null);
+      setMutatingParentMeme(null);
+      setActiveBounty(null);
+      setSortBy('latest');
+      setGoblinFortuneToast(PENDING_REVIEW_MESSAGE);
+      setTimeout(() => setGoblinFortuneToast(''), 6000);
+      return { status: 'pending' };
+    }
     setMemes((prev) => [
       insertedMeme,
       ...prev.map((m) =>
@@ -1070,6 +1089,7 @@ export function useFeed({
         : `+${ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens} 🪙 & +${ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.xp} XP`
     });
     setSortBy('latest');
+    return { status: publishStatus };
   };
 
   // Moderation, Bookmarks & Sharing

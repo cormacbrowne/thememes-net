@@ -18,6 +18,8 @@
 //
 // Env (set automatically by Supabase): SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
 // Optional: PUBLISH_ALLOWED_ORIGINS (comma-separated) to override the CORS allow-list.
+// Image moderation (33.3, secrets — see _shared/moderation.js): IMAGE_MODERATION_PROVIDER,
+//   SIGHTENGINE_API_USER + SIGHTENGINE_API_SECRET, or OPENAI_API_KEY. Unset = everything pending.
 // Deploy: supabase functions deploy publish-meme
 // ==========================================
 import { createClient } from 'npm:@supabase/supabase-js@2.49.4';
@@ -36,6 +38,7 @@ import {
 } from '../_shared/publishCore.js';
 import { transcodeImage } from '../_shared/imageCodec.js';
 import { moderateImage, moderateText } from '../_shared/moderation.js';
+import { IMAGE_MODERATION } from '../_shared/moderationConfig.js';
 
 // The package's main entry is dist/index.js; the 32-bit WASM build sits at dist/x86/magick.wasm.
 const wasmBytes = await Deno.readFile(
@@ -158,14 +161,52 @@ async function handlePublish(req: Request, user: { id: string; user_metadata?: R
       }
     }
 
-    const [imageVerdict, textVerdict] = await Promise.all([
-      moderateImage({ bytes: clean.data, contentType: clean.contentType, frames: clean.frames, env: Deno.env }),
+    // 33.3: known-bad images (exact SHA-256 or near-identical dHash) are refused instantly,
+    // without calling the moderation API. A failed lookup can never lead to approval.
+    const banCheck = await admin.rpc('is_banned_image', {
+      p_sha256: sha256,
+      p_phash: clean.phash,
+      p_max_distance: IMAGE_MODERATION.bannedPhashMaxDistance
+    });
+    if (banCheck.data === true) {
+      return json(req, 422, { ok: false, error: PUBLISH_ERRORS.REJECTED, status: 'rejected' });
+    }
+
+    // The published file AND the optional Remix base are both public, so both are moderated.
+    const samples = [...(clean.samples ?? []), ...(base?.samples ?? [])];
+    const [rawImageVerdict, textVerdict] = await Promise.all([
+      moderateImage({ samples, env: Deno.env }),
       moderateText({ texts: input.texts, env: Deno.env })
     ]);
+    const imageVerdict =
+      banCheck.error && rawImageVerdict.decision === 'approve'
+        ? { ...rawImageVerdict, decision: 'review', reason: 'ban_check_failed' }
+        : rawImageVerdict;
     const status = decideStatus(imageVerdict, textVerdict);
     const moderation = { image: imageVerdict, text: textVerdict, checked_at: new Date().toISOString() };
 
     if (status === 'rejected') {
+      if (imageVerdict.decision === 'reject') {
+        // Remember the image so re-uploads are refused instantly. No image bytes are kept.
+        await admin
+          .from('banned_hashes')
+          .upsert(
+            { sha256, phash: clean.phash, reason: `auto_reject:${(imageVerdict.flagged ?? []).join(',')}`, source: 'publish-meme' },
+            { onConflict: 'sha256', ignoreDuplicates: true }
+          );
+        if (imageVerdict.zeroTolerance) {
+          // Suspected sexual content involving a minor: never published, never copied out of
+          // quarantine (deleted in `finally`), logged for the owner's legal reporting procedure.
+          await admin.from('moderation_incidents').insert({
+            kind: 'suspected_csam',
+            user_id: user.id,
+            sha256,
+            phash: clean.phash,
+            provider: imageVerdict.provider,
+            categories: imageVerdict.categories ?? null
+          });
+        }
+      }
       return json(req, 422, { ok: false, error: PUBLISH_ERRORS.REJECTED, status });
     }
 

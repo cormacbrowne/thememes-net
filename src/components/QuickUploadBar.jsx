@@ -2,7 +2,13 @@ import { useState, useRef } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { VIRAL_CAPTIONS } from '../data/starterMemes';
 import { ACCEPT_MEDIA, validateFile } from '../utils/mediaPipeline';
-import { publishErrorMessage } from '../utils/publishMeme';
+import {
+  publishErrorMessage,
+  CHECKING_MESSAGE,
+  LIVE_MESSAGE,
+  PENDING_REVIEW_MESSAGE,
+  RULES_PATH
+} from '../utils/publishMeme';
 import {
   PUBLIC_UPLOADS_ENABLED,
   UPLOADS_PAUSED_MESSAGE,
@@ -202,9 +208,9 @@ export default function QuickUploadBar({
       return;
     }
     setIsSubmitting(true);
-    setStatusMsg('');
+    setStatusMsg(CHECKING_MESSAGE);
     try {
-      await onQuickPublishFile({
+      const result = await onQuickPublishFile({
         file: selectedFile,
         title: quickTitle.trim(),
         topText: quickTopCaption.trim(),
@@ -213,8 +219,9 @@ export default function QuickUploadBar({
         event: e
       });
       handleClearPreview();
-      setStatusMsg('✅ Meme posted to the live feed!');
-      setTimeout(() => setStatusMsg(''), 3500);
+      const pending = result?.status === 'pending';
+      setStatusMsg(pending ? PENDING_REVIEW_MESSAGE : LIVE_MESSAGE);
+      setTimeout(() => setStatusMsg(''), pending ? 7000 : 3500);
     } catch (err) {
       setStatusMsg(
         err?.message === UPLOADS_PAUSED_ERROR
@@ -468,7 +475,17 @@ export default function QuickUploadBar({
         </form>
       )}
 
-      {statusMsg && <div className="tm-quick-status-msg">{statusMsg}</div>}
+      {statusMsg && (
+        <div className="tm-quick-status-msg" role="status" aria-live="polite">
+          {statusMsg}
+          {statusMsg === publishErrorMessage({ message: 'rejected' }) && (
+            <>
+              {' '}
+              <a href={RULES_PATH}>Read the House Rules</a>
+            </>
+          )}
+        </div>
+      )}
     </section>
   );
 }

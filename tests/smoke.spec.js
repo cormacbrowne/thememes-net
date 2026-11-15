@@ -992,7 +992,7 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
 
     // Lobby shows Retro Cabinets + Funny Boss Key & Prank Screens section
     await page.goto('/games', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByText(/18 Retro Cabinets/i).first()).toBeVisible();
+    await expect(page.getByText(/19 Retro Cabinets/i).first()).toBeVisible();
     await expect(page.getByRole('heading', { name: /Funny Boss Key & Prank Screens/i })).toBeVisible();
 
     expect(pageErrors).toEqual([]);
@@ -2741,6 +2741,10 @@ test.describe('Phase 33.18 Real "people here now" & truthful 1h upvote signals',
       const memeHotId = '33180000-0000-4000-8000-000000000001';
       const memeQuietId = '33180000-0000-4000-8000-000000000002';
 
+      await page.route('**/realtime/v1/**', async (route) => {
+        await route.abort();
+      });
+
       await page.route('**/rest/v1/memes_feed_view*', async (route) => {
         await route.fulfill({
           status: 200,
@@ -3030,8 +3034,63 @@ test.describe('Phase 33.21 — Brick Blaster skill cabinet & word/face levels', 
 
       // Lobby lists Brick Blaster under Skill with accurate count
       await page.goto('/games', { waitUntil: 'domcontentloaded' });
-      await expect(page.getByText(/18 retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText(/\d+\s+retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
       await expect(page.getByText(/Brick Blaster/i).first()).toBeVisible();
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(overflow).toBeLessThanOrEqual(2);
+      expect(pageErrors).toEqual([]);
+    });
+  }
+});
+
+test.describe('Phase 33.22 — Sunset Sprint synthwave racer & FM cassettes', () => {
+  for (const vp of [
+    { name: 'mobile', width: 390, height: 844 },
+    { name: 'tablet', width: 768, height: 1024 },
+    { name: 'desktop', width: 1280, height: 800 }
+  ]) {
+    test(`Sunset Sprint route renders 0-token racer, 80s garage cars & FM bar without overflow on ${vp.name}`, async ({
+      page
+    }) => {
+      const pageErrors = [];
+      page.on('pageerror', (err) => pageErrors.push(err?.message || String(err)));
+
+      await page.setViewportSize(vp);
+      await page.goto('/games/sunset-sprint', { waitUntil: 'domcontentloaded' });
+
+      await expect(page).toHaveTitle(/Sunset Sprint/i);
+      const stage = page.getByTestId('sunset-sprint-stage');
+      await expect(stage).toBeVisible({ timeout: 15000 });
+      await expect(page.getByText(/0 TOKENS/i).first()).toBeVisible();
+
+      const canvas = page.getByTestId('sunset-canvas');
+      await expect(canvas).toBeVisible();
+      const touchAction = await canvas.evaluate((el) => getComputedStyle(el).touchAction);
+      expect(touchAction).toBe('none');
+
+      // Countdown checkpoint timer, speed, 80s car selector & FM bar visible
+      await expect(page.getByTestId('sunset-timer')).toBeVisible();
+      await expect(page.getByTestId('sunset-speed')).toContainText(/MPH/i);
+      await expect(page.getByTestId('sunset-garage-strip')).toContainText('Cosworth');
+      await expect(page.getByTestId('sunset-radio-bar')).toContainText(/FM:/i);
+
+      // Switch 80s ride + drag steer across canvas + blur auto-pause
+      await page.getByTestId('sunset-garage-strip').getByRole('button', { name: 'Cosworth' }).click();
+      await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+      await expect(page.getByTestId('sunset-paused-overlay')).toBeVisible({ timeout: 5000 });
+      await page.getByTestId('sunset-pause-btn').click();
+      await expect(page.getByTestId('sunset-paused-overlay')).toBeHidden();
+
+      // Leaderboard button present
+      await expect(page.getByTestId('sunset-leaderboard-btn')).toBeVisible();
+
+      // Lobby lists Sunset Sprint under Skill with accurate count
+      await page.goto('/games', { waitUntil: 'domcontentloaded' });
+      await expect(page.getByText(/19 retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText(/Sunset Sprint/i).first()).toBeVisible();
 
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - window.innerWidth

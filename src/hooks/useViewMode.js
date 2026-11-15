@@ -20,6 +20,7 @@ const FIXED_ARCADE_GAMES = [
   'invaders',
   'serpent',
   'blaster',
+  'sunset',
   'crush',
   'pinball',
   'stocks',

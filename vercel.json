@@ -47,6 +47,12 @@
     },
     {
       "source": "/",
+      "has": [{ "type": "query", "key": "mode", "value": "sunset" }],
+      "destination": "/games/sunset-sprint",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
       "has": [{ "type": "query", "key": "mode", "value": "pinball" }],
       "destination": "/games/pinball",
       "statusCode": 301

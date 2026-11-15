@@ -1,0 +1,231 @@
+.tm-sunset-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 480px);
+  justify-content: center;
+  gap: 10px;
+  padding: 6px 0 18px;
+}
+
+.tm-sunset-hud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(24, 10, 42, 0.96), rgba(59, 18, 56, 0.9));
+  border: 1px solid rgba(251, 146, 60, 0.45);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+}
+
+.tm-sunset-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 54px;
+}
+
+.tm-sunset-stat-label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #cbd5e1;
+}
+
+.tm-sunset-stat-val {
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  font-weight: 900;
+  color: #f8fafc;
+}
+
+.tm-sunset-stat-val.orange {
+  color: #fb923c;
+}
+
+.tm-sunset-stat-val.gold {
+  color: #fde047;
+}
+
+.tm-sunset-stat-val.urgent {
+  color: #f87171;
+}
+
+.tm-sunset-garage-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: rgba(15, 10, 28, 0.9);
+  border: 1px solid rgba(0, 243, 255, 0.3);
+}
+
+.tm-sunset-car-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.tm-sunset-car-svg {
+  width: 68px;
+  height: auto;
+  flex-shrink: 0;
+}
+
+.tm-sunset-car-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tm-sunset-car-pill {
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.85);
+  color: #e2e8f0;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tm-sunset-car-pill.active {
+  border-color: #00f3ff;
+  background: rgba(0, 243, 255, 0.18);
+  color: #67e8f9;
+}
+
+.tm-sunset-radio-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(249, 115, 22, 0.14), rgba(236, 72, 153, 0.16));
+  border: 1px solid rgba(251, 146, 60, 0.42);
+  font-size: 12px;
+  color: #fde68a;
+}
+
+.tm-sunset-radio-btn {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(250, 204, 21, 0.55);
+  background: rgba(15, 23, 42, 0.9);
+  color: #fde047;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tm-sunset-canvas-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 4 / 5;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid rgba(251, 146, 60, 0.55);
+  background: #140826;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 28px rgba(249, 115, 22, 0.18);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.tm-sunset-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: ew-resize;
+}
+
+.tm-sunset-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 6, 26, 0.86);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  gap: 12px;
+  z-index: 5;
+}
+
+.tm-sunset-overlay h3 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 900;
+  color: #fb923c;
+  text-shadow: 0 0 14px rgba(251, 146, 60, 0.55);
+}
+
+.tm-sunset-overlay p {
+  margin: 0;
+  max-width: 340px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #cbd5e1;
+}
+
+.tm-sunset-overlay-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.tm-sunset-controls {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr 1fr;
+  gap: 10px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.tm-sunset-pad-btn {
+  min-height: 50px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(251, 146, 60, 0.45);
+  background: linear-gradient(180deg, rgba(28, 13, 44, 0.96), rgba(45, 16, 48, 0.92));
+  color: #f8fafc;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.tm-sunset-pad-btn:active {
+  transform: translateY(1px);
+  background: rgba(251, 146, 60, 0.25);
+}
+
+.tm-sunset-pad-btn.nitro {
+  border-color: rgba(0, 243, 255, 0.65);
+  color: #67e8f9;
+}
+
+@media (max-width: 480px) {
+  .tm-sunset-hud {
+    padding: 8px 10px;
+  }
+
+  .tm-sunset-stat-val {
+    font-size: 14px;
+  }
+}

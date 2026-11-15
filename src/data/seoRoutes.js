@@ -56,7 +56,10 @@ export const MODE_ALIASES = {
   snake: 'serpent',
   blaster: 'blaster',
   'brick-blaster': 'blaster',
-  breakout: 'blaster'
+  breakout: 'blaster',
+  sunset: 'sunset',
+  'sunset-sprint': 'sunset',
+  outrun: 'sunset'
 };
 
 export const CATEGORY_SLUG_TO_ID = {
@@ -79,6 +82,7 @@ export const GAME_VIEW_MODE_TO_PATH = {
   invaders: '/games/meme-invaders',
   serpent: '/games/neon-serpent',
   blaster: '/games/brick-blaster',
+  sunset: '/games/sunset-sprint',
   bingo: '/games/neon-bingo',
   pusher: '/games/coin-pusher',
   pinball: '/games/pinball',
@@ -246,6 +250,24 @@ export const SEO_ROUTES = [
       'Smash through retro pixel-art formations in Brick Blaster, a free 60fps arcade brick-breaker game running directly in your browser with zero downloads, zero token fees, and full global leaderboard support. Each stage arranges colorful neon, armored, and mystery bricks into unmistakable word art and pixel faces—starting with glowing LOL blocks before advancing into Smiley Face, MEME word art, and Cyber Frog levels.',
       'Steer your energy paddle cleanly by dragging anywhere across the screen on phones and tablets, tapping the on-screen control buttons, holding Left or Right Arrow and A/D keys on desktop keyboards, or connecting a USB or Bluetooth gamepad controller. Aim bank shots off the curved paddle edges to slice behind multi-hit titanium rows and crack glowing star bricks.',
       'Every cracked mystery block releases falling power-up orbs that transform the arena: catch ⚡ Multi-Ball to split shots up to four simultaneous balls, grab 🔫 Twin Laser to arm deck-mounted plasma cannons that vaporize stubborn bricks, or trigger ↔️ Wide Paddle for extra defense against high-speed rebounds. Switching tabs auto-pauses your match, and finishing a run lets you lock your 3-letter initials onto the leaderboard.'
+    ]
+  },
+  {
+    path: '/games/sunset-sprint',
+    title: 'Sunset Sprint — Free Synthwave OutRun Highway Racer | THE MEMES.net',
+    description:
+      'Play Sunset Sprint free online! Race 80s garage cars down a pseudo-3D synthwave highway, dodge traffic, beat checkpoint timers & grab cassettes that switch THE MEMES FM.',
+    h1: 'Sunset Sprint — Free Retro Synthwave Highway Racer',
+    kicker: 'Pseudo-3D 80s Racer // Drag Steer, Keyboard & Gamepad — 0 Tokens to Play',
+    ogImage: 'https://www.thememes.net/og/games.png',
+    changefreq: 'daily',
+    priority: '0.9',
+    viewMode: 'sunset',
+    category: 'all',
+    introParagraphs: [
+      'Hit the endless neon highway in Sunset Sprint, a free pseudo-3D synthwave OutRun racer built directly into your browser with zero downloads, zero token fees, and global cabinet leaderboard competition. Choose any of our four iconic 1980s garage rides—the brushed stainless DeLorean DMC-12, Aston Martin Lagonda, Sierra RS Cosworth, or Porsche 911 SC—and blast toward the glowing retro horizon.',
+      'Weave around oncoming highway traffic across winding perspective bends using smooth finger dragging on touchscreens, tactile steer and nitro buttons on mobile, Arrow or A/D keys on desktop keyboards, or any connected gamepad controller. Every stage challenges you to cross illuminated highway Checkpoints before the countdown clock hits zero, awarding eighteen bonus seconds and ascending stage multipliers.',
+      'Keep your eyes open for glowing cassette tapes spinning along the asphalt: snagging a tape scores 250 bonus points, fires dual exhaust nitro flames past 155 MPH, and automatically switches your THE MEMES FM radio station to a fresh synthwave or chiptune track. Switching tabs pauses your run automatically, and every finish saves to the Sunset Sprint leaderboard.'
     ]
   },
   {
@@ -976,6 +998,7 @@ export function resolveRouteFromLocation(pathname = '/', search = '') {
     'invaders',
     'serpent',
     'blaster',
+    'sunset',
     'crush',
     'pinball',
     'stocks',

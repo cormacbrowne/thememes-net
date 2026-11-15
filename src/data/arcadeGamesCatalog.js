@@ -139,6 +139,17 @@ export const ARCADE_GAMES_CATALOG = [
     path: '/games/brick-blaster'
   },
   {
+    id: 'sunset',
+    group: 'skill',
+    icon: '🌅',
+    label: 'Sunset Sprint',
+    pitch: 'Pseudo-3D synthwave highway racer—dodge traffic, hit checkpoints & grab 📼 FM cassettes (0 tokens).',
+    badge: 'Racer',
+    isNew: true,
+    accent: '#fb923c',
+    path: '/games/sunset-sprint'
+  },
+  {
     id: 'pinball',
     group: 'skill',
     icon: '🎱',

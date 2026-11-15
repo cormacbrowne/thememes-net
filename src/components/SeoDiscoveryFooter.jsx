@@ -188,6 +188,13 @@ export default function SeoDiscoveryFooter({
                 🧱 Brick Blaster (Word &amp; Pixel-Face Breaker)
               </a>
               <a
+                href="/games/sunset-sprint"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('sunset'))}
+              >
+                🌅 Sunset Sprint (80s OutRun Highway Racer)
+              </a>
+              <a
                 href="/games/pinball"
                 className="tm-seo-link"
                 onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('pinball'))}

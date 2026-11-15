@@ -25,6 +25,7 @@ const MemeCrushGame = lazyWithRetry(() => import('./MemeCrushGame'));
 const MemeInvadersGame = lazyWithRetry(() => import('./MemeInvadersGame'));
 const NeonSerpentGame = lazyWithRetry(() => import('./NeonSerpentGame'));
 const BrickBlasterGame = lazyWithRetry(() => import('./BrickBlasterGame'));
+const SunsetSprintGame = lazyWithRetry(() => import('./SunsetSprintGame'));
 const VegasPinballGame = lazyWithRetry(() => import('./VegasPinballGame'));
 const VegasSlotMachine = lazyWithRetry(() => import('./VegasSlotMachine'));
 const VegasBlackjackGame = lazyWithRetry(() => import('./VegasBlackjackGame'));
@@ -265,6 +266,16 @@ export function FixedArcadeTopBar({
           }}
         >
           🧱 Blaster
+        </button>
+        <button
+          type="button"
+          className={`tm-fixed-game-pill ${viewMode === 'sunset' ? 'active' : ''}`}
+          onClick={() => {
+            sfx.playToggle();
+            setViewMode('sunset');
+          }}
+        >
+          🌅 Sunset
         </button>
         <button
           type="button"
@@ -1147,6 +1158,28 @@ export default function GameRouter({
             }}
             onRecordHighScore={handleRecordHighScore}
             onOpenLeaderboard={() => onOpenCabinetLeaderboard?.('blaster')}
+            onBackToFeed={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+            }}
+          />
+        </Suspense>
+      )}
+
+      {viewMode === 'sunset' && (
+        <Suspense fallback={<MemeSkeletonGrid count={3} />}>
+          <SunsetSprintGame
+            activeCarId={activeCarId}
+            onSelectCar={onSelectCar}
+            soundOn={soundOn}
+            onToggleSound={() => {
+              const nextState = !soundOn;
+              sfx.enabled = nextState;
+              setSoundOn(nextState);
+              if (nextState) sfx.playToggle();
+            }}
+            onRecordHighScore={handleRecordHighScore}
+            onOpenLeaderboard={() => onOpenCabinetLeaderboard?.('sunset')}
             onBackToFeed={() => {
               sfx.playToggle();
               setViewMode('feed');

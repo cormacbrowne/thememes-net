@@ -638,7 +638,7 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
           : err?.message === 'OFFLINE_VIDEO'
           ? '📡 Connect to publish video — video & GIF memes need the live server. Try again when online.'
           : err?.message === 'COOLDOWN'
-            ? '⏳ Arcade Cooldown: wait a few seconds between publishes.'
+            ? '⏳ Cool your jets, speed racer. Try again in a few sec.'
             : `⚠️ Publish failed: ${err?.message || 'unknown error'}`
       );
     } finally {

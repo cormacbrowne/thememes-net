@@ -103,7 +103,7 @@ export function removedArchivePath(memeId, path) {
 /** Friendly copy for report_item() errors. */
 export const REPORT_ERROR_MESSAGES = {
   sign_in_required: '🔑 Could not start a session to send your report. Please try again.',
-  rate_limited: '⏳ Whoa, lots of reports! Please wait a moment before sending another.',
+  rate_limited: '⏳ Cool your jets, speed racer. Try again in a few min.',
   suspended: '🚫 Your account is suspended, so reports are paused.',
   not_found: '👻 That one is already gone or being reviewed.',
   bad_reason: '❓ Please pick a reason.',

@@ -40,6 +40,7 @@ import { transcodeImage } from '../_shared/imageCodec.js';
 import { moderateImage, moderateText } from '../_shared/moderation.js';
 import { IMAGE_MODERATION } from '../_shared/moderationConfig.js';
 import { authorNameFor, isProfileSuspended } from '../_shared/identity.js';
+import { verifyTurnstile, extractClientIp, ipHashFor, BOT_ERROR_MESSAGES } from '../_shared/rateLimitAndBot.js';
 
 // The package's main entry is dist/index.js; the 32-bit WASM build sits at dist/x86/magick.wasm.
 const wasmBytes = await Deno.readFile(
@@ -73,14 +74,15 @@ function corsHeaders(req: Request): Record<string, string> {
     'Access-Control-Allow-Origin': ORIGINS.includes(origin) ? origin : ORIGINS[0],
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Expose-Headers': 'Retry-After',
     Vary: 'Origin'
   };
 }
 
-function json(req: Request, status: number, body: unknown): Response {
+function json(req: Request, status: number, body: unknown, extraHeaders: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders(req), 'Content-Type': 'application/json' }
+    headers: { ...corsHeaders(req), 'Content-Type': 'application/json', ...extraHeaders }
   });
 }
 
@@ -130,6 +132,46 @@ async function ensureCallerProfile(userId: string) {
 }
 
 async function handleSignUpload(req: Request, userId: string, body: Record<string, unknown>) {
+  const bot = await verifyTurnstile({
+    token: typeof body?.turnstileToken === 'string' ? body.turnstileToken : '',
+    remoteIp: extractClientIp(req.headers),
+    env: Deno.env
+  });
+  if (!bot.ok) {
+    return json(req, bot.error === 'bot_check_unavailable' ? 503 : 403, {
+      ok: false,
+      error: bot.error,
+      message: BOT_ERROR_MESSAGES[bot.error] || BOT_ERROR_MESSAGES.bot_check_failed
+    });
+  }
+
+  const ipHash = await ipHashFor(req.headers);
+  const { data: uploadQuota, error: uqErr } = await admin.rpc('check_and_record_rate_limit', {
+    p_user_id: userId,
+    p_action: 'upload',
+    p_ip_hash: ipHash,
+    p_record: false
+  });
+  if (uqErr) return fail(req, 500, PUBLISH_ERRORS.SERVER);
+  if (!uploadQuota?.ok) {
+    return json(req, 429, uploadQuota, {
+      'Retry-After': String(uploadQuota?.retry_after_seconds || 60)
+    });
+  }
+
+  const { data: signRl, error: signRlErr } = await admin.rpc('check_and_record_rate_limit', {
+    p_user_id: userId,
+    p_action: 'upload_sign',
+    p_ip_hash: ipHash,
+    p_record: true
+  });
+  if (signRlErr) return fail(req, 500, PUBLISH_ERRORS.SERVER);
+  if (!signRl?.ok) {
+    return json(req, 429, signRl, {
+      'Retry-After': String(signRl?.retry_after_seconds || 60)
+    });
+  }
+
   const count = body.count === 2 ? 2 : 1;
   const uploads = [];
   for (let i = 0; i < count; i += 1) {
@@ -153,6 +195,20 @@ async function handlePublish(
   const toDelete = [input.path, input.basePath].filter(Boolean) as string[];
 
   try {
+    const ipHash = await ipHashFor(req.headers);
+    const { data: pubRl, error: pubRlErr } = await admin.rpc('check_and_record_rate_limit', {
+      p_user_id: user.id,
+      p_action: 'upload',
+      p_ip_hash: ipHash,
+      p_record: true
+    });
+    if (pubRlErr) return fail(req, 500, PUBLISH_ERRORS.SERVER);
+    if (!pubRl?.ok) {
+      return json(req, 429, pubRl, {
+        'Retry-After': String(pubRl?.retry_after_seconds || 60)
+      });
+    }
+
     const main = await readQuarantine(input.path);
     if (main.error) return fail(req, main.error === PUBLISH_ERRORS.TOO_LARGE ? 413 : 415, main.error);
 

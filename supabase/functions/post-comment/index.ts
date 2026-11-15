@@ -17,6 +17,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2.49.4';
 import { cleanText, isUuid } from '../_shared/publishCore.js';
 import { moderateText } from '../_shared/moderation.js';
 import { authorNameFor, isProfileSuspended } from '../_shared/identity.js';
+import { verifyTurnstile, extractClientIp, ipHashFor, BOT_ERROR_MESSAGES } from '../_shared/rateLimitAndBot.js';
 
 const COMMENT_MAX = 280;
 
@@ -44,12 +45,16 @@ function cors(req: Request): Record<string, string> {
     'Access-Control-Allow-Origin': ORIGINS.includes(origin) ? origin : ORIGINS[0],
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Expose-Headers': 'Retry-After',
     Vary: 'Origin'
   };
 }
 
-function json(req: Request, status: number, body: unknown): Response {
-  return new Response(JSON.stringify(body), { status, headers: { ...cors(req), 'Content-Type': 'application/json' } });
+function json(req: Request, status: number, body: unknown, extraHeaders: Record<string, string> = {}): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...cors(req), 'Content-Type': 'application/json', ...extraHeaders }
+  });
 }
 
 Deno.serve(async (req: Request) => {
@@ -90,6 +95,33 @@ Deno.serve(async (req: Request) => {
 
   const { data: meme } = await admin.from('memes').select('id, status').eq('id', memeId).maybeSingle();
   if (!meme || meme.status !== 'approved') return json(req, 404, { ok: false, error: 'meme_not_found' });
+
+  const bot = await verifyTurnstile({
+    token: typeof payload?.turnstileToken === 'string' ? payload.turnstileToken : '',
+    remoteIp: extractClientIp(req.headers),
+    env: Deno.env
+  });
+  if (!bot.ok) {
+    return json(req, bot.error === 'bot_check_unavailable' ? 503 : 403, {
+      ok: false,
+      error: bot.error,
+      message: BOT_ERROR_MESSAGES[bot.error] || BOT_ERROR_MESSAGES.bot_check_failed
+    });
+  }
+
+  const ipHash = await ipHashFor(req.headers);
+  const { data: rl, error: rlErr } = await admin.rpc('check_and_record_rate_limit', {
+    p_user_id: user.id,
+    p_action: 'comment',
+    p_ip_hash: ipHash,
+    p_record: true
+  });
+  if (rlErr) return json(req, 500, { ok: false, error: 'server_error' });
+  if (!rl?.ok) {
+    return json(req, 429, rl, {
+      'Retry-After': String(rl?.retry_after_seconds || 10)
+    });
+  }
 
   const verdict = await moderateText({ texts: [body], env: Deno.env });
   if (verdict.decision === 'reject') {

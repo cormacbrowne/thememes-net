@@ -8,6 +8,8 @@ import { guessContentType } from './mediaPipeline';
 import { sanitizeUserText, sanitizeOverlayPayload } from './securityGuard';
 import { PUBLIC_UPLOADS_ENABLED, UPLOADS_PAUSED_ERROR } from '../config/featureFlags';
 import { ensureWriteSession, precheckTexts, TEXT_REJECTION_MESSAGES } from './serverWrites';
+import { getTurnstileToken } from './turnstile';
+import { BOT_ERROR_MESSAGES, formatRateLimitMessage } from '../../supabase/functions/_shared/rateLimitAndBot.js';
 
 export const PUBLISH_FUNCTION = 'publish-meme';
 
@@ -24,6 +26,8 @@ export const PENDING_REVIEW_MESSAGE =
 export const PUBLISH_ERROR_MESSAGES = {
   sign_in_required: '🔑 Sign in to post memes to the live feed (you can still download yours).',
   suspended: '🚫 Your account is currently suspended from posting memes.',
+  rate_limited: '⏳ Cool your jets, speed racer. Try again in a moment.',
+  ...BOT_ERROR_MESSAGES,
   video_paused: '🎬 Video memes are coming back soon — post a still or a GIF for now.',
   too_large: '⚠️ That file is too big — keep it under 15MB.',
   unsupported_type: '⚠️ Only PNG, JPG, WebP or GIF files can be posted.',
@@ -42,12 +46,13 @@ export const PUBLISH_ERROR_MESSAGES = {
 };
 
 export function publishErrorMessage(err) {
-  return PUBLISH_ERROR_MESSAGES[err?.message] || null;
+  return err?.friendlyMessage || PUBLISH_ERROR_MESSAGES[err?.message] || null;
 }
 
-function publishError(code) {
+function publishError(code, friendlyMessage = null) {
   const err = new Error(code);
   err.code = code;
+  if (friendlyMessage) err.friendlyMessage = friendlyMessage;
   return err;
 }
 
@@ -64,16 +69,22 @@ async function invokePublishFunction(client, body) {
   const { data, error } = await client.functions.invoke(PUBLISH_FUNCTION, { body });
   if (!error) return data;
   let code = 'network';
+  let friendlyMessage = null;
   try {
     const payload = await error.context?.json?.();
     if (payload?.error) code = payload.error;
+    if (payload?.error === 'rate_limited') {
+      friendlyMessage = payload.message || formatRateLimitMessage(payload.retry_after_seconds);
+    } else if (payload?.error?.startsWith?.('bot_check_') && payload?.message) {
+      friendlyMessage = payload.message;
+    }
     if (payload?.error === 'rejected' && payload.detail && payload.detail !== 'image') {
       code = rejectionCode(payload.detail);
     }
   } catch {
     // keep 'network'
   }
-  throw publishError(code);
+  throw publishError(code, friendlyMessage);
 }
 
 /** Map a text-moderation `detail` (33.4) to a publish error code. */
@@ -149,9 +160,11 @@ export async function publishMeme({ media, overlay = null, meta = {}, client = n
   if (!mainBlob) throw publishError('bad_request');
   const baseBlob = !isGif && media.baseBlob ? media.baseBlob : null;
 
+  const turnstileToken = await getTurnstileToken('upload');
   const signed = await invokePublishFunction(client, {
     action: 'sign-upload',
-    count: baseBlob ? 2 : 1
+    count: baseBlob ? 2 : 1,
+    ...(turnstileToken ? { turnstileToken } : {})
   });
   const uploads = signed?.uploads || [];
   if (!uploads[0]) throw publishError('server_error');

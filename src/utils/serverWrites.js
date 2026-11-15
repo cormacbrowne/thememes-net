@@ -3,6 +3,10 @@
 // ==========================================
 import { checkTexts } from '../../supabase/functions/_shared/textFilter.js';
 import { anonymousHandleFor, validateUsername } from '../../supabase/functions/_shared/identity.js';
+import { BOT_ERROR_MESSAGES, formatRateLimitMessage } from '../../supabase/functions/_shared/rateLimitAndBot.js';
+import { getTurnstileToken } from './turnstile';
+
+export { formatRateLimitMessage };
 
 /** Friendly copy for text-moderation refusals (task 33.4), keyed by the server's `detail`. */
 export const TEXT_REJECTION_MESSAGES = {
@@ -68,6 +72,8 @@ export async function functionErrorPayload(error) {
 export const COMMENT_ERROR_MESSAGES = {
   sign_in_required: '🔑 Could not start a session to post your comment. Please try again.',
   suspended: '🚫 Your account is currently suspended from commenting.',
+  rate_limited: '⏳ Cool your jets, speed racer. Try again in a few sec.',
+  ...BOT_ERROR_MESSAGES,
   comment_check_unavailable: '⏳ Our comment checker is busy. Your comment was not posted, try again in a moment.',
   too_long: '✂️ Comments can be up to 280 characters.',
   meme_not_found: '👻 That meme is not available for comments.',
@@ -82,10 +88,25 @@ export async function postComment(client, memeId, body) {
   const local = precheckTexts([body]);
   if (local) return { ok: false, message: textRejectionMessage(local) };
   if (!(await ensureWriteSession(client))) return { ok: false, message: COMMENT_ERROR_MESSAGES.sign_in_required };
-  const { data, error } = await client.functions.invoke('post-comment', { body: { memeId, body } });
+  const turnstileToken = await getTurnstileToken('comment');
+  const { data, error } = await client.functions.invoke('post-comment', {
+    body: { memeId, body, ...(turnstileToken ? { turnstileToken } : {}) }
+  });
   if (!error && data?.comment) return { ok: true, comment: data.comment };
   const payload = await functionErrorPayload(error);
   if (payload.error === 'rejected') return { ok: false, message: textRejectionMessage(payload.detail) };
+  if (payload.error === 'rate_limited') {
+    return {
+      ok: false,
+      message: payload.message || formatRateLimitMessage(payload.retry_after_seconds)
+    };
+  }
+  if (payload.error && String(payload.error).startsWith('bot_check_')) {
+    return {
+      ok: false,
+      message: payload.message || BOT_ERROR_MESSAGES[payload.error] || BOT_ERROR_MESSAGES.bot_check_failed
+    };
+  }
   return { ok: false, message: COMMENT_ERROR_MESSAGES[payload.error] || COMMENT_ERROR_MESSAGES.network };
 }
 

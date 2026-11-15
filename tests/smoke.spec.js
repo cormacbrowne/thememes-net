@@ -1215,3 +1215,119 @@ test.describe('Phase 33.6 Honest Accounts & Magic Link', () => {
     });
   }
 });
+
+test.describe('Phase 33.7 Rate Limits & Arcade Cooldown Copy', () => {
+  for (const vp of [
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+    { width: 1280, height: 800 }
+  ]) {
+    test(`Vote and comment 429 cooldowns render friendly arcade toast at ${vp.width}x${vp.height}`, async ({
+      page
+    }) => {
+      const pageErrors = [];
+      page.on('pageerror', (err) => pageErrors.push(err.message));
+
+      // Mock feed with one deterministic approved server meme so vote/comment hit the mocked RPC/Edge paths
+      await page.route('**/rest/v1/memes*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([
+            {
+              id: '00000000-0000-4000-8000-000000000999',
+              title: 'Rate Limit Check Meme',
+              category: 'dank',
+              image_url: '/og/seed-dank-01.png',
+              author_name: 'NeonOtter_337',
+              score: 5,
+              reactions: { '🔥': 1, '💀': 0, '😂': 0, '🗿': 0 },
+              media_type: 'image',
+              status: 'approved',
+              created_at: new Date().toISOString(),
+              comments: []
+            }
+          ])
+        });
+      });
+
+      // Mock anonymous session creation & vote/comment rate-limit responses
+      await page.route('**/auth/v1/signup*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            access_token: 'mock-anon-jwt',
+            token_type: 'bearer',
+            expires_in: 3600,
+            refresh_token: 'mock-refresh',
+            user: {
+              id: '00000000-0000-4000-8000-000000000337',
+              is_anonymous: true,
+              aud: 'authenticated',
+              role: 'authenticated'
+            }
+          })
+        });
+      });
+      await page.route('**/rest/v1/rpc/get_my_profile*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ ok: true, id: '00000000-0000-4000-8000-000000000337', role: 'user' })
+        });
+      });
+      await page.route('**/rest/v1/rpc/increment_meme_score*', async (route) => {
+        await route.fulfill({
+          status: 400,
+          contentType: 'application/json',
+          body: JSON.stringify({ code: 'P0001', message: 'rate_limited:240' })
+        });
+      });
+      await page.route('**/functions/v1/post-comment*', async (route) => {
+        await route.fulfill({
+          status: 429,
+          contentType: 'application/json',
+          headers: { 'Retry-After': '9' },
+          body: JSON.stringify({
+            ok: false,
+            error: 'rate_limited',
+            retry_after_seconds: 9,
+            message: '⏳ Cool your jets, speed racer. Try again in 9 sec.'
+          })
+        });
+      });
+
+      await page.setViewportSize(vp);
+      await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+      const firstCard = page.locator('.tm-card').first();
+      await expect(firstCard).toBeVisible({ timeout: 15000 });
+      await expect(firstCard).toContainText(/Rate Limit Check Meme/i);
+
+      // Trigger upvote -> hits mocked rate_limited:240 -> 4 min arcade toast
+      await firstCard.locator('.tm-vote-btn.up').click();
+      await expect(page.locator('.tm-goblin-toast')).toContainText(
+        /Cool your jets, speed racer\. Try again in 4 min\./i,
+        { timeout: 5000 }
+      );
+
+      // Open comments on first card and post -> hits mocked 429 -> 9 sec arcade toast
+      await firstCard.locator('button[title="Toggle Comments"]').click();
+      const commentInput = firstCard.locator('.tm-comment-form input');
+      await expect(commentInput).toBeVisible({ timeout: 5000 });
+      await commentInput.fill('testing rate limit toast');
+      await firstCard.locator('.tm-comment-form button[type="submit"]').click();
+      await expect(page.locator('.tm-goblin-toast')).toContainText(
+        /Cool your jets, speed racer\. Try again in 9 sec\./i,
+        { timeout: 5000 }
+      );
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(overflow).toBeLessThanOrEqual(2);
+      expect(pageErrors).toEqual([]);
+    });
+  }
+});

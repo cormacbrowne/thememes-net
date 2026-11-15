@@ -26,7 +26,12 @@ export async function submitReport(client, { memeId = null, commentId = null, re
       p_note: String(note || '').slice(0, REPORT_NOTE_MAX) || null
     });
     if (error || !data) return { ok: false, message: reportErrorMessage('network') };
-    if (!data.ok) return { ok: false, message: reportErrorMessage(data.error) };
+    if (!data.ok) {
+      if (data.error === 'rate_limited' && data.message) {
+        return { ok: false, message: data.message };
+      }
+      return { ok: false, message: reportErrorMessage(data.error) };
+    }
     return { ok: true, hidden: Boolean(data.hidden), alreadyReported: Boolean(data.already_reported) };
   } catch {
     return { ok: false, message: reportErrorMessage('network') };

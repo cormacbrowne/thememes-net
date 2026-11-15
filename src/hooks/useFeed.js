@@ -31,7 +31,8 @@ import {
   precheckTexts,
   textRejectionMessage,
   ensureWriteSession,
-  consumeJustCreatedAnonHandle
+  consumeJustCreatedAnonHandle,
+  formatRateLimitMessage
 } from '../utils/serverWrites';
 import { submitReport } from '../utils/reports';
 import { PUBLIC_UPLOADS_ENABLED, UPLOADS_PAUSED_ERROR } from '../config/featureFlags';
@@ -693,10 +694,13 @@ export function useFeed({
           if (voteError) {
             revertVote();
             const msg = String(voteError.message || '');
+            const rlMatch = msg.match(/rate_limited:(\d+)/i);
             setGoblinFortuneToast(
-              /suspended/i.test(msg)
+              rlMatch
+                ? formatRateLimitMessage(Number(rlMatch[1]))
+                : /suspended/i.test(msg)
                 ? '🚫 Your account is currently suspended from voting.'
-                : /auth_required/i.test(msg)
+                : /auth(?:entication)?_required/i.test(msg)
                 ? '🔑 Please wait a moment and try voting again.'
                 : '📡 Could not save your vote. Please try again.'
             );

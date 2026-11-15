@@ -7,6 +7,10 @@
 export const PUBLISH_LIMITS = {
   /** Largest file accepted into the quarantine bucket (matches the bucket's file_size_limit). */
   MAX_UPLOAD_BYTES: 15 * 1024 * 1024,
+  /** GIF uploads are tightened to 8 MB, 10 s, and 300 frames. */
+  MAX_GIF_BYTES: 8 * 1024 * 1024,
+  MAX_GIF_FRAMES: 300,
+  MAX_GIF_SEC: 10,
   /** Stills (and GIF frames) are scaled down so the longest side is at most this. */
   MAX_DIM: 1600,
   /** Refuse to even decode absurd canvases (decompression bombs). */
@@ -42,6 +46,91 @@ export function sniffImageType(bytes) {
     return 'gif';
   }
   return null;
+}
+
+/**
+ * Detect common video container signatures (MP4/MOV ftyp, WebM/MKV EBML, AVI)
+ * so paused video uploads get a friendly video_paused error instead of unsupported_type.
+ */
+export function isVideoBytes(bytes) {
+  if (!bytes || bytes.length < 12) return false;
+  const b = bytes;
+  // ISO BMFF (MP4 / MOV): offset 4..7 is "ftyp"
+  if (b[4] === 0x66 && b[5] === 0x74 && b[6] === 0x79 && b[7] === 0x70) return true;
+  // EBML (WebM / Matroska): 0x1A 0x45 0xDF 0xA3
+  if (b[0] === 0x1a && b[1] === 0x45 && b[2] === 0xdf && b[3] === 0xa3) return true;
+  // AVI: "RIFF" .... "AVI "
+  if (b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 && b[8] === 0x41 && b[9] === 0x56 && b[10] === 0x49 && b[11] === 0x20) return true;
+  return false;
+}
+
+/**
+ * Lightweight GIF binary walker returning { valid, frames, durationSec }.
+ * Avoids decoding pixels while strictly bounding frame count and total playback time.
+ */
+export function inspectGif(bytes) {
+  if (!bytes || bytes.length < 14 || sniffImageType(bytes) !== 'gif') {
+    return { valid: false, frames: 0, durationSec: 0 };
+  }
+  const len = bytes.length;
+  const packed = bytes[10];
+  let pos = 13;
+  if (packed & 0x80) {
+    pos += 3 * (1 << ((packed & 0x07) + 1));
+  }
+
+  let frames = 0;
+  let totalCs = 0; // centiseconds (1/100 s)
+  let pendingDelayCs = 0;
+
+  const skipSubBlocks = () => {
+    while (pos < len) {
+      const sz = bytes[pos++];
+      if (sz === 0) break;
+      pos += sz;
+    }
+  };
+
+  while (pos < len) {
+    const marker = bytes[pos++];
+    if (marker === 0x3b) break; // Trailer
+    if (marker === 0x21) {
+      // Extension block
+      if (pos >= len) break;
+      const label = bytes[pos++];
+      if (label === 0xf9 && pos + 5 <= len && bytes[pos] === 4) {
+        // Graphic Control Extension: delay at offset +2..+3 (little-endian centiseconds)
+        const delay = bytes[pos + 2] | (bytes[pos + 3] << 8);
+        pendingDelayCs = delay > 0 ? delay : 10; // Browsers clamp 0/1cs delays to ~10cs (100ms)
+        pos += 6; // blockSize(1=4) + 4 payload bytes + terminator(0)
+      } else {
+        skipSubBlocks();
+      }
+    } else if (marker === 0x2c) {
+      // Image Descriptor (9 bytes after 0x2C)
+      if (pos + 9 > len) break;
+      const imgPacked = bytes[pos + 8];
+      pos += 9;
+      if (imgPacked & 0x80) {
+        pos += 3 * (1 << ((imgPacked & 0x07) + 1));
+      }
+      if (pos >= len) break;
+      pos += 1; // LZW minimum code size
+      skipSubBlocks();
+      frames += 1;
+      totalCs += pendingDelayCs > 0 ? pendingDelayCs : 10;
+      pendingDelayCs = 0;
+      if (frames > PUBLISH_LIMITS.MAX_GIF_FRAMES + 1) break;
+    } else {
+      break;
+    }
+  }
+
+  return {
+    valid: frames > 0,
+    frames,
+    durationSec: Number((totalCs / 100).toFixed(2))
+  };
 }
 
 /**
@@ -225,6 +314,9 @@ export const PUBLISH_ERRORS = {
   BAD_PATH: 'bad_path',
   NOT_FOUND: 'upload_not_found',
   TOO_LARGE: 'too_large',
+  GIF_TOO_LARGE: 'gif_too_large',
+  GIF_TOO_LONG: 'gif_too_long',
+  VIDEO_PAUSED: 'video_paused',
   UNSUPPORTED: 'unsupported_type',
   UNDECODABLE: 'undecodable',
   TOO_MANY_PIXELS: 'too_many_pixels',

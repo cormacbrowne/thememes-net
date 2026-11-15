@@ -129,7 +129,7 @@ export async function verifySafeMediaFile(file) {
   if (type.includes('svg') || name.endsWith('.svg') || name.endsWith('.svgz') || name.endsWith('.html') || name.endsWith('.htm')) {
     return {
       safe: false,
-      reason: '🛡️ Security Firewall: SVG and HTML files are blocked to prevent embedded script execution. Please use PNG, JPG, WebP, GIF, or MP4.'
+      reason: '🛡️ Security Firewall: SVG and HTML files are blocked to prevent embedded script execution. Please use PNG, JPG, WebP, or GIF.'
     };
   }
 

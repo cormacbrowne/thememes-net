@@ -33,6 +33,8 @@ import {
   buildQuarantinePath,
   parsePublishRequest,
   sniffImageType,
+  isVideoBytes,
+  inspectGif,
   sha256Hex,
   decideStatus
 } from '../_shared/publishCore.js';
@@ -99,8 +101,17 @@ async function readQuarantine(path: string) {
   if (error || !data) return { error: PUBLISH_ERRORS.NOT_FOUND };
   if (data.size > PUBLISH_LIMITS.MAX_UPLOAD_BYTES) return { error: PUBLISH_ERRORS.TOO_LARGE };
   const bytes = new Uint8Array(await data.arrayBuffer());
+  if (isVideoBytes(bytes)) return { error: PUBLISH_ERRORS.VIDEO_PAUSED };
   const type = sniffImageType(bytes);
   if (!type) return { error: PUBLISH_ERRORS.UNSUPPORTED };
+  if (type === 'gif') {
+    if (bytes.length > PUBLISH_LIMITS.MAX_GIF_BYTES) return { error: PUBLISH_ERRORS.GIF_TOO_LARGE };
+    const gifInfo = inspectGif(bytes);
+    if (!gifInfo.valid) return { error: PUBLISH_ERRORS.UNDECODABLE };
+    if (gifInfo.frames > PUBLISH_LIMITS.MAX_GIF_FRAMES || gifInfo.durationSec > PUBLISH_LIMITS.MAX_GIF_SEC) {
+      return { error: PUBLISH_ERRORS.GIF_TOO_LONG };
+    }
+  }
   return { bytes, type };
 }
 
@@ -132,6 +143,9 @@ async function ensureCallerProfile(userId: string) {
 }
 
 async function handleSignUpload(req: Request, userId: string, body: Record<string, unknown>) {
+  if (typeof body?.mimeType === 'string' && body.mimeType.toLowerCase().startsWith('video/')) {
+    return fail(req, 415, PUBLISH_ERRORS.VIDEO_PAUSED);
+  }
   const bot = await verifyTurnstile({
     token: typeof body?.turnstileToken === 'string' ? body.turnstileToken : '',
     remoteIp: extractClientIp(req.headers),
@@ -210,13 +224,17 @@ async function handlePublish(
     }
 
     const main = await readQuarantine(input.path);
-    if (main.error) return fail(req, main.error === PUBLISH_ERRORS.TOO_LARGE ? 413 : 415, main.error);
+    if (main.error) {
+      const tooLarge = main.error === PUBLISH_ERRORS.TOO_LARGE || main.error === PUBLISH_ERRORS.GIF_TOO_LARGE;
+      return fail(req, tooLarge ? 413 : 415, main.error);
+    }
 
     let clean;
     try {
       clean = transcodeImage(Magick, main.bytes, main.type);
     } catch (err) {
-      return fail(req, 415, (err as { code?: string }).code ?? PUBLISH_ERRORS.UNDECODABLE);
+      const code = (err as { code?: string }).code ?? PUBLISH_ERRORS.UNDECODABLE;
+      return fail(req, code === PUBLISH_ERRORS.GIF_TOO_LARGE ? 413 : 415, code);
     }
     const sha256 = await sha256Hex(main.bytes);
 

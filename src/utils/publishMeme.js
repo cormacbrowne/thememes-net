@@ -4,11 +4,11 @@
 // signed upload URLs into the PRIVATE `quarantine` bucket, uploads there, then asks the
 // function to check, re-encode, moderate and publish. See supabase/functions/publish-meme.
 // ==========================================
-import { guessContentType } from './mediaPipeline';
-import { sanitizeUserText, sanitizeOverlayPayload } from './securityGuard';
-import { PUBLIC_UPLOADS_ENABLED, UPLOADS_PAUSED_ERROR } from '../config/featureFlags';
-import { ensureWriteSession, precheckTexts, TEXT_REJECTION_MESSAGES } from './serverWrites';
-import { getTurnstileToken } from './turnstile';
+import { guessContentType } from './mediaPipeline.js';
+import { sanitizeUserText, sanitizeOverlayPayload } from './securityGuard.js';
+import { PUBLIC_UPLOADS_ENABLED, UPLOADS_PAUSED_ERROR } from '../config/featureFlags.js';
+import { ensureWriteSession, precheckTexts, TEXT_REJECTION_MESSAGES } from './serverWrites.js';
+import { getTurnstileToken } from './turnstile.js';
 import { BOT_ERROR_MESSAGES, formatRateLimitMessage } from '../../supabase/functions/_shared/rateLimitAndBot.js';
 
 export const PUBLISH_FUNCTION = 'publish-meme';
@@ -30,6 +30,8 @@ export const PUBLISH_ERROR_MESSAGES = {
   ...BOT_ERROR_MESSAGES,
   video_paused: '🎬 Video memes are coming back soon — post a still or a GIF for now.',
   too_large: '⚠️ That file is too big — keep it under 15MB.',
+  gif_too_large: '⚠️ GIFs must be 8MB or smaller.',
+  gif_too_long: '⚠️ GIFs must be 10 seconds or shorter (max 300 frames).',
   unsupported_type: '⚠️ Only PNG, JPG, WebP or GIF files can be posted.',
   undecodable: '⚠️ We could not read that image. Try saving it as PNG or JPG.',
   too_many_pixels: '⚠️ That image is enormous — try a smaller one.',
@@ -158,12 +160,14 @@ export async function publishMeme({ media, overlay = null, meta = {}, client = n
   let mainBlob = isGif ? media.file || null : media.blob || null;
   if (!mainBlob && isGif && media.url) mainBlob = await fetchAsBlob(media.url);
   if (!mainBlob) throw publishError('bad_request');
+  if (isGif && mainBlob.size > 8 * 1024 * 1024) throw publishError('gif_too_large');
   const baseBlob = !isGif && media.baseBlob ? media.baseBlob : null;
 
   const turnstileToken = await getTurnstileToken('upload');
   const signed = await invokePublishFunction(client, {
     action: 'sign-upload',
     count: baseBlob ? 2 : 1,
+    mimeType: mainBlob.type || (isGif ? 'image/gif' : 'image/webp'),
     ...(turnstileToken ? { turnstileToken } : {})
   });
   const uploads = signed?.uploads || [];

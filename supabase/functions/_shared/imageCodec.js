@@ -10,10 +10,10 @@
 // The decoder is always told the format we sniffed from the magic bytes, so ImageMagick
 // never auto-detects a dangerous coder (SVG, MVG, MSL, PS, …) from file contents.
 // ==========================================
-import { PUBLISH_LIMITS, PUBLISH_ERRORS, fitWithin, dHashFromRgb } from './publishCore.js';
+import { PUBLISH_LIMITS, PUBLISH_ERRORS, fitWithin, dHashFromRgb, inspectGif } from './publishCore.js';
 
 const STILL_QUALITY = 82;
-export const GIF_MAX_FRAMES = 300;
+export const GIF_MAX_FRAMES = PUBLISH_LIMITS.MAX_GIF_FRAMES;
 
 class CodecError extends Error {
   constructor(code) {
@@ -95,9 +95,18 @@ export function transcodeImage(m, bytes, sniffedType) {
       });
     }
 
+    if (bytes.length > PUBLISH_LIMITS.MAX_GIF_BYTES) {
+      throw new CodecError(PUBLISH_ERRORS.GIF_TOO_LARGE);
+    }
+    const gifInfo = inspectGif(bytes);
+    if (!gifInfo.valid) throw new CodecError(PUBLISH_ERRORS.UNDECODABLE);
+    if (gifInfo.frames > GIF_MAX_FRAMES || gifInfo.durationSec > PUBLISH_LIMITS.MAX_GIF_SEC) {
+      throw new CodecError(PUBLISH_ERRORS.GIF_TOO_LONG);
+    }
+
     return ImageMagick.readCollection(bytes, format, (frames) => {
       if (!frames.length) throw new CodecError(PUBLISH_ERRORS.UNDECODABLE);
-      if (frames.length > GIF_MAX_FRAMES) throw new CodecError(PUBLISH_ERRORS.TOO_MANY_PIXELS);
+      if (frames.length > GIF_MAX_FRAMES) throw new CodecError(PUBLISH_ERRORS.GIF_TOO_LONG);
       frames.coalesce();
       const first = frames[0];
       checkPixels(first.width, first.height);

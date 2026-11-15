@@ -1500,16 +1500,20 @@ test.describe('Phase 33.8 Tamper-Resistant Votes, Reactions, Comments & Notifica
       // Upvote calls cast_vote (never increment_meme_score) and moves score 5 -> 6
       await firstCard.locator('.tm-vote-btn.up').click();
       await expect(firstCard.locator('.tm-score')).toHaveText('6', { timeout: 5000 });
+      await expect
+        .poll(() => castVoteBodies.some((b) => b?.p_direction === 1), { timeout: 5000 })
+        .toBe(true);
       expect(legacyScoreCalls).toBe(0);
-      expect(castVoteBodies.some((b) => b?.p_direction === 1)).toBe(true);
 
       // Reaction calls toggle_reaction and updates 🔥 to 2 without bumping score above 6
       await firstCard.locator('.tm-react-group .tm-react-btn').first().click();
       await expect(firstCard.locator('.tm-react-group .tm-react-btn').first()).toContainText('2', {
         timeout: 5000
       });
+      await expect
+        .poll(() => toggleReactionBodies.some((b) => b?.p_emoji === '🔥' && b?.p_active === true), { timeout: 5000 })
+        .toBe(true);
       await expect(firstCard.locator('.tm-score')).toHaveText('6');
-      expect(toggleReactionBodies.some((b) => b?.p_emoji === '🔥' && b?.p_active === true)).toBe(true);
 
       // Open comments: only caller's own comment should get the delete button, not other user's comment
       await firstCard.locator('button[title="Toggle Comments"]').click();
@@ -1525,6 +1529,81 @@ test.describe('Phase 33.8 Tamper-Resistant Votes, Reactions, Comments & Notifica
       await deleteBtn.click();
       await expect(firstCard).not.toContainText('My own server comment', { timeout: 5000 });
       expect(deleteCommentCalled).toBe(true);
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(overflow).toBeLessThanOrEqual(2);
+      expect(pageErrors).toEqual([]);
+    });
+  }
+});
+
+function buildOver10SecGifBuffer() {
+  const out = [0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 1, 0, 1, 0, 0x00, 0, 0];
+  for (let i = 0; i < 12; i += 1) {
+    // 100 centiseconds = 1s per frame -> 12s total
+    out.push(0x21, 0xf9, 0x04, 0x00, 100, 0, 0x00, 0x00);
+    out.push(0x2c, 0, 0, 0, 0, 1, 0, 1, 0, 0x80);
+    out.push(0, 0, 0, 255, 255, 255);
+    out.push(0x02, 0x02, 0x44, 0x01, 0x00);
+  }
+  out.push(0x3b);
+  return Buffer.from(out);
+}
+
+test.describe('Phase 33.9 Video Paused & GIF Limits', () => {
+  const viewports = [
+    { name: 'mobile', width: 390, height: 844 },
+    { name: 'tablet', width: 768, height: 1024 },
+    { name: 'desktop', width: 1280, height: 800 }
+  ];
+
+  for (const vp of viewports) {
+    test(`rejects video uploads cleanly and enforces GIF limits on ${vp.name} (${vp.width}x${vp.height})`, async ({
+      page
+    }) => {
+      const pageErrors = [];
+      page.on('pageerror', (e) => pageErrors.push(e.message));
+
+      await page.setViewportSize(vp);
+      await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+      const uploadShell = page.locator('.tm-quick-upload-shell');
+      await expect(uploadShell).toBeVisible({ timeout: 15000 });
+
+      const acceptValues = await page
+        .locator('input[type="file"][accept]')
+        .evaluateAll((els) => els.map((el) => el.getAttribute('accept') || ''));
+      expect(acceptValues.length).toBeGreaterThan(0);
+      for (const acc of acceptValues) {
+        expect(acc.toLowerCase()).not.toContain('video/');
+        expect(acc.toLowerCase()).not.toContain('.mp4');
+        expect(acc.toLowerCase()).not.toContain('.mov');
+        expect(acc.toLowerCase()).not.toContain('.webm');
+        expect(acc.toLowerCase()).toContain('image/gif');
+      }
+
+      const quickInput = uploadShell.locator('input[type="file"]').first();
+      await quickInput.setInputFiles({
+        name: 'clip.mp4',
+        mimeType: 'video/mp4',
+        buffer: Buffer.from([0, 0, 0, 24, 0x66, 0x74, 0x79, 0x70, 0x6d, 0x70, 0x34, 0x32])
+      });
+      await expect(uploadShell.locator('.tm-quick-status-msg')).toContainText(
+        '🎬 Video memes are coming back soon',
+        { timeout: 5000 }
+      );
+
+      await quickInput.setInputFiles({
+        name: 'too-long.gif',
+        mimeType: 'image/gif',
+        buffer: buildOver10SecGifBuffer()
+      });
+      await expect(uploadShell.locator('.tm-quick-status-msg')).toContainText(
+        /GIFs must be 10 seconds or shorter/i,
+        { timeout: 5000 }
+      );
 
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - window.innerWidth

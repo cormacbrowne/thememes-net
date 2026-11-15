@@ -2,19 +2,23 @@
 // PHASE 26 & 27: MEDIA PIPELINE (validate / security-firewall / probe / poster / compress / upload)
 // Videos + GIFs are NEVER re-encoded through canvas. Stills become WebP/JPEG.
 // ==========================================
-import { verifySafeMediaFile, sanitizeMediaUrl } from './securityGuard';
+import { verifySafeMediaFile, sanitizeMediaUrl } from './securityGuard.js';
+import { inspectGif, isVideoBytes, PUBLISH_LIMITS } from '../../supabase/functions/_shared/publishCore.js';
 
 export const MEDIA_LIMITS = {
   IMAGE_MAX_BYTES: 15 * 1024 * 1024,
-  VIDEO_MAX_BYTES: 50 * 1024 * 1024,
-  VIDEO_MAX_SEC: 60,
+  GIF_MAX_BYTES: PUBLISH_LIMITS.MAX_GIF_BYTES,
+  GIF_MAX_SEC: PUBLISH_LIMITS.MAX_GIF_SEC,
+  GIF_MAX_FRAMES: PUBLISH_LIMITS.MAX_GIF_FRAMES,
   STILL_MAX_DIM: 1600
 };
 
 export const ACCEPT_MEDIA =
-  'image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm,video/quicktime,.png,.jpg,.jpeg,.webp,.gif,.mov,.mp4,.webm';
+  'image/png,image/jpeg,image/webp,image/gif,.png,.jpg,.jpeg,.webp,.gif';
 
-export const VIDEO_TIP = '💡 For best results, upload MP4 — iPhone .mov (HEVC) may not play on Chrome/Android.';
+export const VIDEO_PAUSED_ERROR = '🎬 Video memes are coming back soon — post a still or a GIF for now.';
+
+export const VIDEO_TIP = VIDEO_PAUSED_ERROR;
 
 const VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
 
@@ -102,26 +106,53 @@ export async function validateFile(file) {
     return { ok: false, error: securityCheck.reason };
   }
   const kind = getMediaKind(file);
+  if (kind === 'video') {
+    return { ok: false, kind, error: VIDEO_PAUSED_ERROR };
+  }
+  try {
+    if (typeof file?.slice === 'function') {
+      const head = new Uint8Array(await file.slice(0, 16).arrayBuffer());
+      if (isVideoBytes(head)) {
+        return { ok: false, kind: 'video', error: VIDEO_PAUSED_ERROR };
+      }
+    }
+  } catch {
+    // ignore slice errors and rely on MIME/extension + probe
+  }
   if (!kind) {
-    return { ok: false, error: '⚠️ Unsupported file. Use PNG, JPG, WebP, GIF, MP4, WebM or MOV.' };
+    return { ok: false, error: '⚠️ Unsupported file. Use PNG, JPG, WebP or GIF.' };
   }
-  if (kind !== 'video' && file.size > MEDIA_LIMITS.IMAGE_MAX_BYTES) {
-    return { ok: false, kind, error: '⚠️ Images & GIFs must be under 15MB.' };
-  }
-  if (kind === 'video' && file.size > MEDIA_LIMITS.VIDEO_MAX_BYTES) {
-    return { ok: false, kind, error: '⚠️ Videos must be under 50MB.' };
+  if (kind === 'gif') {
+    if (file.size > MEDIA_LIMITS.GIF_MAX_BYTES) {
+      return { ok: false, kind, error: '⚠️ GIFs must be 8MB or smaller.' };
+    }
+    try {
+      if (typeof file.arrayBuffer === 'function') {
+        const gifBytes = new Uint8Array(await file.arrayBuffer());
+        const gifInfo = inspectGif(gifBytes);
+        if (!gifInfo.valid) {
+          return { ok: false, kind, error: '⚠️ Could not read that GIF. Try another GIF or convert to a still image.' };
+        }
+        if (gifInfo.frames > MEDIA_LIMITS.GIF_MAX_FRAMES) {
+          return { ok: false, kind, error: `⚠️ GIFs must have 300 frames or fewer (yours has ${gifInfo.frames}).` };
+        }
+        if (gifInfo.durationSec > MEDIA_LIMITS.GIF_MAX_SEC) {
+          return { ok: false, kind, error: `⚠️ GIFs must be 10 seconds or shorter (yours is ${gifInfo.durationSec}s).` };
+        }
+      }
+    } catch {
+      return { ok: false, kind, error: '⚠️ Could not read that GIF. Try PNG, JPG, or another GIF.' };
+    }
+  } else if (file.size > MEDIA_LIMITS.IMAGE_MAX_BYTES) {
+    return { ok: false, kind, error: '⚠️ Images must be under 15MB.' };
   }
   let probe;
   try {
     probe = await probeMedia(file);
   } catch {
-    return { ok: false, kind, error: '⚠️ Could not read that file. Try PNG, JPG, GIF, or MP4.' };
+    return { ok: false, kind, error: '⚠️ Could not read that file. Try PNG, JPG, or GIF.' };
   }
-  if (kind === 'video' && probe.duration > MEDIA_LIMITS.VIDEO_MAX_SEC + 0.5) {
-    return { ok: false, kind, error: `⚠️ Videos must be 60 seconds or less (yours is ${Math.round(probe.duration)}s).` };
-  }
-  const isMov = /quicktime/.test(file.type) || /\.mov$/i.test(file.name || '');
-  return { ok: true, kind, probe, tip: kind === 'video' && (isMov || !probe.playable) ? VIDEO_TIP : '' };
+  return { ok: true, kind, probe, tip: '' };
 }
 
 function canvasToBlob(canvas, type, quality) {

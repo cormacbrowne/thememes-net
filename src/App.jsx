@@ -25,6 +25,7 @@ import {
   updateSettings
 } from './utils/settingsStore';
 import { getSecurityAuditReport } from './utils/securityGuard';
+import { ACCEPT_MEDIA } from './utils/mediaPipeline';
 import ParticleOverlay from './components/ParticleOverlay';
 import WinCelebrationOverlay from './components/WinCelebrationOverlay';
 import ArcadeErrorBoundary from './components/ArcadeErrorBoundary';
@@ -1286,7 +1287,7 @@ export default function App() {
                 <input
                   ref={quickUploadInputRef}
                   type="file"
-                  accept="image/*,image/gif,video/mp4,video/webm,video/quicktime"
+                  accept={ACCEPT_MEDIA}
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) loadFileIntoStudio(file);

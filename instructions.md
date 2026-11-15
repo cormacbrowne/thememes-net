@@ -138,9 +138,10 @@
   - Wording: the games use pretend tokens. Remove "gambling-ready" / "gamble" phrasing from code comments and UI copy (`tokenEconomy.js` header, `App.jsx` ~line 1302) and keep the "free, just for fun, can't be bought or cashed out" line. Do not add any way to buy tokens (see 33.38).
   - *Completion Note:* Added `/rules`, `/terms`, `/privacy`, `/takedown`, `/contact` (`legalPages.js`, `LegalInfoPage.jsx`, `seoRoutes.js`, prerender/sitemap, footer links) marked `DRAFT – owner to review`; live migration `20261115000011_33_11_legal_takedowns.sql` (`takedown_requests` + `submit_takedown_request` RPC), `delete-account` Edge Function + `accountCleanup.js` + "Delete my account and memes" in `SettingsSheet.jsx`; House Rules line above Post/Publish in `QuickUploadBar.jsx` & `MemeForge.jsx`; replaced hardcoded `100/100` in `getSecurityAuditReport()` & UI with live checks; removed "gamble"/"gambling-ready" phrasing while preserving free pretend-tokens copy. (Edge function `delete-account` added to repo for owner deploy alongside `post-comment`/`publish-meme`).
 
-- [ ] **33.12 One source of truth for the database.**
+- [x] **33.12 One source of truth for the database.**
   - Create `supabase/migrations/` and rebuild the full schema from the live project (`supabase db pull` or dashboard export, done with the owner): `memes`, `comments`, `votes`, `reactions`, `profiles`, `follows`, `notifications`, `reports`, `banned_hashes`, `moderation_actions`, storage buckets and policies, every RPC. Delete the triplicated Phase 26 block. Keep `supabase-schema.sql` only as a generated snapshot or remove it.
   - Update Section 4 of this file ("Supabase Backend Contract") to match.
+  - *Completion Note:* Audited all live `public.*` tables, constraints, indexes, triggers, storage buckets/policies, cron jobs, and RPCs. Added baseline migration `20260101000000_00_initial_schema.sql` so `supabase/migrations/` (`00` through `33_12`) is a complete, ordered single source of truth from an empty database; applied `20261115000012_33_12_evolution_tree_and_schema_sync.sql` to fix `get_meme_evolution_tree()` (referenced nonexistent `m.upvotes`, now reads `m.score`, enforces `status = 'approved'`, runs `SECURITY DEFINER`); removed stale `supabase-schema.sql` (eliminating the triplicated Phase 26 block); updated Section 4 ("Supabase Backend Contract") below to match live DB (`follows` noted as not yet provisioned until `33.17`).
 
 - [ ] **33.13 Safety test suite (must pass before each deploy).**
   - Add Vitest for unit tests (text filter, URL allow-list, rate-limit maths, `validateStakedGamePayout`, `pokerEngine`).
@@ -401,41 +402,55 @@ thememes-net/
 
 ### Environment & Client Setup
 - **Supabase Project ID**: `otvvphmjojqyjaznjzyo` (`https://otvvphmjojqyjaznjzyo.supabase.co`)
+- **Single Source of Truth**: `supabase/migrations/` (`20260101000000_00_initial_schema.sql` through `20261115000012_33_12_evolution_tree_and_schema_sync.sql`). The legacy `supabase-schema.sql` file was removed in Task 33.12.
 - **Client Module**: `src/supabaseClient.js` exports `supabase` and `getSupabaseClient()`, reading `import.meta.env.VITE_SUPABASE_URL` and `import.meta.env.VITE_SUPABASE_ANON_KEY` with fallback constants.
 
-### Database Tables & Columns
-1. **`public.memes`**:
-   - `id` (`uuid`, primary key)
-   - `title` (`text`)
-   - `category` (`text` — `'dank' | 'tech' | 'gaming' | 'relatable'`)
-   - `image_url` (`text`)
-   - `author_name` (`text`)
-   - `score` (`integer`, default `1`)
-   - `reactions` (`jsonb` — `{ "🔥": number, "💀": number, "😂": number, "🗿": number }`)
-   - `generation` (`integer`, default `0`)
-   - `mutation_count` (`integer`, default `0`)
-   - `parent_meme_id` (`uuid`, nullable foreign key to `memes.id`)
-   - `root_meme_id` (`uuid`, nullable foreign key to `memes.id`)
-   - `media_type` (`text` — `'image' | 'gif' | 'video'`, default `'image'`)
-   - `poster_url` (`text`, nullable JPEG preview for video/gif)
-   - `duration_sec` (`numeric`, nullable video duration)
-   - `width` (`integer`, nullable original media width)
-   - `height` (`integer`, nullable original media height)
-   - `overlay` (`jsonb`, nullable non-destructive caption/sticker layer state)
-   - `base_image_url` (`text`, nullable clean base without baked text for "Caption This" remixing)
-   - `created_at` (`timestamptz`)
-2. **`public.comments`**:
-   - `id` (`uuid`, primary key)
-   - `meme_id` (`uuid`, foreign key to `memes.id`)
-   - `author_name` (`text`)
-   - `body` (`text`)
-   - `created_at` (`timestamptz`)
+### Database Tables (`public`, RLS enabled on every table)
+1. **`public.memes`** (public SELECT for `status = 'approved'`, owner `user_id = auth.uid()`, or `is_moderator()`; no public INSERT/DELETE — created only by `publish-meme` Edge Function; owner UPDATE guarded by `memes_guard_protected_columns` trigger; media URLs restricted by CHECK constraints to `/seed/` or `https://otvvphmjojqyjaznjzyo.supabase.co/storage/v1/object/public/memes/...`):
+   - `id` (`uuid` PK), `title` (`text`), `category` (`text`), `image_url` (`text`), `author_name` (`text`), `user_id` (`uuid` FK → `auth.users`)
+   - `score` (`integer`, default `1`), `base_score` (`integer`, default `1`), `reactions` (`jsonb`), `base_reactions` (`jsonb`)
+   - `parent_meme_id` (`uuid` FK → `memes.id`), `root_meme_id` (`uuid` FK → `memes.id`), `generation` (`integer`, default `0`), `mutation_count` (`integer`, default `0`)
+   - `media_type` (`text`: `'image' | 'gif' | 'video'`), `poster_url` (`text`), `base_image_url` (`text`), `duration_sec` (`numeric`), `width` (`integer`), `height` (`integer`), `overlay` (`jsonb`)
+   - `sha256` (`text`), `phash` (`text`), `moderation` (`jsonb`), `removed_reason` (`text`), `status` (`text`: `'pending' | 'approved' | 'rejected' | 'removed'`, default `'pending'`), `created_at` (`timestamptz`)
+2. **`public.comments`** (public SELECT for `status = 'visible'`, author `user_id = auth.uid()`, or `is_moderator()`; created via `post-comment` Edge Function only; authors can DELETE non-suspended):
+   - `id` (`uuid` PK), `meme_id` (`uuid` FK → `memes.id` CASCADE), `user_id` (`uuid` FK → `auth.users` SET NULL), `author_name` (`text`), `body` (`text`, 1..280 chars), `status` (`text`: `'visible' | 'pending' | 'removed'`), `created_at` (`timestamptz`)
+3. **`public.profiles`** (users can SELECT only their own row; server writes via service role / Edge Functions; claimed `username` enforced unique case-insensitively and checked against reserved words):
+   - `id` (`uuid` PK FK → `auth.users` CASCADE), `username` (`text`), `role` (`text`: `'user' | 'moderator' | 'admin'`), `suspended_until` (`timestamptz`), `strikes` (`integer`), `created_at` (`timestamptz`)
+4. **`public.votes`** (users can SELECT only their own rows; writes via `cast_vote` RPC only; 1 row per `(user_id, meme_id)`):
+   - `id` (`uuid` PK), `user_id` (`uuid` FK → `auth.users` CASCADE), `meme_id` (`uuid` FK → `memes.id` CASCADE), `direction` (`integer` ∈ `{-1, 0, 1}`), `created_at`, `updated_at`
+5. **`public.reactions`** (users can SELECT only their own rows; writes via `toggle_reaction` RPC; trigger `trg_reactions_sync_meme_counts` keeps `memes.reactions` in sync):
+   - `id` (`uuid` PK), `meme_id` (`uuid` FK → `memes.id` CASCADE), `user_id` (`uuid` FK → `auth.users` CASCADE), `emoji` (`text` ∈ `{'🔥','💀','😂','🗿'}`), `active` (`boolean`), `created_at`, `updated_at`
+6. **`public.notifications`** (users can SELECT `recipient_id = auth.uid()`; inserted only by triggers/RPCs):
+   - `id` (`uuid` PK), `recipient_id` (`uuid` FK → `auth.users` CASCADE), `recipient_username` (`text`), `actor_id` (`uuid` FK → `auth.users` SET NULL), `actor_name` (`text`), `type` (`text` ∈ `{'remix','upvote','reaction','comment','bounty','royalty'}`), `meme_id` (`uuid` FK → `memes.id` CASCADE), `message` (`text`), `read` (`boolean`), `created_at`
+7. **`public.reports`** (moderators SELECT; inserted only via `report_item` / `submit_takedown_request` RPCs; unique per `(reporter_id, meme_id)` or `(reporter_id, comment_id)`):
+   - `id` (`bigint` identity PK), `meme_id` (`uuid`), `comment_id` (`uuid`), `reporter_id` (`uuid`), `reason` (`text` ∈ `{'sexual','violence','hate','child','spam','copyright','other'}`), `note` (`text` ≤ 300), `status` (`text` ∈ `{'open','actioned','dismissed'}`), `created_at`
+8. **`public.takedown_requests`** (moderators SELECT; created via `submit_takedown_request` RPC):
+   - `id` (`uuid` PK), `reporter_id` (`uuid`), `meme_id` (`uuid` FK → `memes.id` SET NULL), `kind` (`text` ∈ `{'copyright','photo_of_me','privacy','other'}`), `target_url` (`text` 1..500), `requester_email` (`text` ≤ 200), `details` (`text` 5..1000), `priority` (`integer` default `95`), `status` (`text`), `created_at`
+9. **`public.moderation_actions`** (moderators SELECT): `id`, `moderator_id`, `action`, `meme_id`, `comment_id`, `target_user_id`, `reason`, `note`, `created_at`.
+10. **Service-role-only safety/ops tables** (RLS enabled, zero public policies):
+    - `public.banned_hashes` (`id`, `sha256`, `phash`, `reason`, `source`, `meme_id`, `created_at`)
+    - `public.moderation_incidents` (`id`, `kind`, `user_id`, `sha256`, `phash`, `provider`, `categories`, `status`, `created_at`)
+    - `public.moderation_digests` (`id`, `counts`, `sent`, `created_at`)
+    - `public.upload_rejections` (`id`, `user_id`, `kind`, `detail`, `created_at`)
+    - `public.rate_limit_events` (`id`, `action` ∈ `{'upload','upload_sign','comment','vote','report'}`, `user_id`, `ip_hash`, `created_at`)
+- *Note:* `public.follows` is planned for P1 Task 33.17 (creator profiles) and is not yet provisioned in the database.
 
-### Storage & RPC Functions
-- **Storage Bucket**: `memes` (public bucket storing exported PNGs named `meme-<timestamp>-gen<N>-<hash>.png`).
-- **RPC Functions**:
-  - `increment_meme_score(row_id, delta)`: Atomically increments/decrements a meme's score.
-  - `get_meme_evolution_tree(target_meme_id)`: Recursively fetches the origin and descendant mutation lineage for a given meme.
+### Storage Buckets & Policies (`storage.buckets` / `storage.objects`)
+- **`memes`** (`public: true`, 15 MB limit, `allowed_mime_types`: `['image/webp', 'image/gif']`): Public SELECT only; writes exclusively by service role (`publish-meme` Edge Function).
+- **`quarantine`** (`public: false`, 15 MB limit, `allowed_mime_types`: `['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'application/octet-stream']`): Private staging bucket written via server-signed URLs before moderation/transcode; no public SELECT/INSERT/UPDATE/DELETE policies.
+- **`meme-images`** (`public: true`, legacy read-only bucket): Public SELECT policy only; no public writes.
+
+### Edge Functions (`supabase/functions/`) & RPCs (`public.*`)
+- **Edge Functions:** `publish-meme`, `post-comment`, `moderate`, `claim-username`, `delete-account` (plus shared helpers `_shared/textModeration.js`, `_shared/imageModeration.js`, `_shared/accountCleanup.js`).
+- **Client-Callable RPCs:**
+  - `cast_vote(p_meme_id, p_direction)` & `toggle_reaction(p_meme_id, p_emoji, p_active)` (authenticated, non-suspended, rate-limited)
+  - `mark_notifications_read(p_ids)` & `get_my_profile()` (authenticated)
+  - `report_item(p_meme_id, p_comment_id, p_reason, p_note)` (authenticated, non-suspended, auto-hides at 3 distinct reporters or `'child'`)
+  - `submit_takedown_request(p_target_url, p_kind, p_requester_email, p_details)` (`anon`/`authenticated`, rate-limited)
+  - `mod_queue()` (authenticated moderator/admin only)
+  - `meme_public_state(p_id)` & `get_meme_evolution_tree(target_meme_id)` (`anon`/`authenticated`; `approved` lineage ordered by generation/score)
+  - `is_moderator()`, `is_suspended(p_uid)`, `format_rate_limit_message(p_seconds)`
+- **Service-Role / Cron Functions:** `mod_apply_decision(...)`, `moderation_digest_send()` (daily `08:00 UTC` via `pg_cron`), `check_and_record_rate_limit(...)`, `request_ip_hash()`, `is_established_account(p_user_id)`, `is_banned_image(p_sha256, p_phash, p_max_distance)`, `increment_meme_score(...)` (legacy, revoked from `anon`/`authenticated`).
 
 ---
 

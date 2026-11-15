@@ -193,22 +193,36 @@ export async function verifySafeMediaFile(file) {
 }
 
 /**
- * Returns live security posture telemetry for the Cyber-Shield audit check.
+ * Inspects real runtime browser protections observable on the current document.
+ * Does NOT fabricate a numeric score; server-side RLS & moderation live in Supabase.
  */
 export function getSecurityAuditReport() {
-  const isHttps =
-    typeof window !== 'undefined' &&
-    (window.location.protocol === 'https:' || window.location.hostname === 'localhost');
+  const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
+  const isSecureContext = Boolean(isBrowser && (window.isSecureContext || window.location.hostname === 'localhost'));
+  const cspMeta = isBrowser
+    ? document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content') || ''
+    : '';
+  const hasCsp = Boolean(cspMeta);
+  const scriptSrcMatch = cspMeta.match(/script-src\s+([^;]+)/i);
+  const noUnsafeInlineScript = Boolean(scriptSrcMatch && !/unsafe-inline/i.test(scriptSrcMatch[1]));
+  const imgSrcMatch = cspMeta.match(/img-src\s+([^;]+)/i);
+  const lockedMediaSrc = Boolean(
+    imgSrcMatch && !/(^|\s)https:(\s|$)/i.test(imgSrcMatch[1]) && imgSrcMatch[1].includes('supabase.co')
+  );
+
+  const checks = [
+    { id: 'tls', label: 'Secure context (HTTPS or localhost)', ok: isSecureContext },
+    { id: 'csp', label: 'Document Content-Security-Policy present', ok: hasCsp },
+    { id: 'script', label: "Strict script-src (no 'unsafe-inline')", ok: noUnsafeInlineScript },
+    { id: 'img', label: 'img-src locked to self + own storage bucket', ok: lockedMediaSrc }
+  ];
+  const passedCount = checks.filter((c) => c.ok).length;
+
   return {
-    status: 'HARDENED',
-    score: '100/100',
-    checks: [
-      { id: 'csp', label: 'Content-Security-Policy & Frame-Ancestors Guard', ok: true },
-      { id: 'xss', label: 'URI Scheme & Bidi Text Sanitizer (Blocks javascript:/data:svg)', ok: true },
-      { id: 'polyglot', label: 'Binary Media Header Firewall (Blocks SVG/HTML Polyglots)', ok: true },
-      { id: 'proto', label: 'JSON Prototype Pollution Guard (__proto__ / constructor filter)', ok: true },
-      { id: 'tls', label: isHttps ? 'TLS / Secure Origin Active' : 'Local Dev Origin', ok: true },
-      { id: 'rls', label: 'Supabase Publishable Key + Scoped Storage Upload Guard', ok: true }
-    ]
+    status: `${passedCount}/${checks.length} Browser Checks Active`,
+    score: null,
+    passedCount,
+    totalChecks: checks.length,
+    checks
   };
 }

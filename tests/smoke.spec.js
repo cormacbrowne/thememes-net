@@ -1705,3 +1705,99 @@ test.describe('Phase 33.10 Tight CSP & Own-Storage Media', () => {
     });
   }
 });
+
+test.describe('Phase 33.11 Legal, Takedowns & Settings Account Deletion', () => {
+  const viewports = [
+    { name: 'mobile', width: 390, height: 844 },
+    { name: 'tablet', width: 768, height: 1024 },
+    { name: 'desktop', width: 1280, height: 800 }
+  ];
+
+  // Minimal 1x1 transparent PNG
+  const TINY_PNG = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+    'base64'
+  );
+
+  for (const vp of viewports) {
+    test(`renders legal routes, takedown form, footer links, house-rules upload notice, and settings delete button on ${vp.name} (${vp.width}x${vp.height})`, async ({
+      page
+    }) => {
+      const pageErrors = [];
+      page.on('pageerror', (e) => pageErrors.push(e.message));
+      await page.setViewportSize(vp);
+
+      for (const route of ['/rules', '/terms', '/privacy', '/contact', '/takedown']) {
+        await page.goto(route, { waitUntil: 'domcontentloaded' });
+        await expect(page.locator('.tm-legal-draft')).toContainText('DRAFT – owner to review');
+        await expect(page.locator('.tm-legal-card h1')).toBeVisible();
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - window.innerWidth
+        );
+        expect(overflow).toBeLessThanOrEqual(2);
+      }
+
+      // Test /takedown submission via mocked Supabase RPC
+      let takedownPayload = null;
+      await page.route('**/rest/v1/rpc/submit_takedown_request', async (route) => {
+        takedownPayload = route.request().postDataJSON();
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            ok: true,
+            id: '12345678-1111-2222-3333-444444444444',
+            meme_id: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+            priority: 95
+          })
+        });
+      });
+
+      await page.goto('/takedown', { waitUntil: 'domcontentloaded' });
+      await page.locator('.tm-legal-form input[type="text"]').fill(
+        'https://www.thememes.net/m/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
+      );
+      await page.locator('.tm-legal-form input[type="email"]').fill('owner@example.com');
+      await page.locator('.tm-legal-form textarea').fill('This is a photo of me shared without consent.');
+      await page.locator('.tm-legal-submit').click();
+
+      await expect(page.locator('.tm-legal-form-msg')).toContainText('High-priority takedown logged');
+      expect(takedownPayload?.p_kind).toBe('photo_of_me');
+
+      // Check home page footer links, House Rules agreement on upload, and Settings account delete button
+      await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+      const footer = page.locator('.tm-seo-footer');
+      await expect(footer).toBeVisible({ timeout: 15000 });
+      for (const href of ['/rules', '/terms', '/privacy', '/takedown', '/contact']) {
+        await expect(footer.locator(`a[href="${href}"]`)).toBeVisible();
+      }
+
+      const uploadShell = page.locator('.tm-quick-upload-shell');
+      await expect(uploadShell).toBeVisible();
+      await uploadShell.locator('input[type="file"]').first().setInputFiles({
+        name: 'tiny.png',
+        mimeType: 'image/png',
+        buffer: TINY_PNG
+      });
+      const rulesLine = uploadShell.locator('.tm-house-rules-line');
+      await expect(rulesLine).toBeVisible({ timeout: 5000 });
+      await expect(rulesLine).toContainText('By posting you agree to the House Rules');
+      await expect(rulesLine.locator('a[href="/rules"]')).toBeVisible();
+
+      const extrasBtn = page.locator('.tm-extras-hud-btn');
+      await expect(extrasBtn).toBeVisible();
+      await extrasBtn.click();
+      await expect(page.getByRole('button', { name: /Delete my account and memes/i })).toBeVisible({
+        timeout: 5000
+      });
+      await expect(page.locator('.tm-extras-drawer-card')).not.toContainText('100/100');
+
+      const homeOverflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(homeOverflow).toBeLessThanOrEqual(2);
+      expect(pageErrors).toEqual([]);
+    });
+  }
+});

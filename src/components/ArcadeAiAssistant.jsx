@@ -592,9 +592,9 @@ export default function ArcadeAiAssistant({
     if (q.includes('security') || q.includes('safe') || q.includes('cyber') || q.includes('threat') || q.includes('hack') || q.includes('audit')) {
       const report = getSecurityAuditReport();
       return {
-        text: `${prefix} **${isHal ? 'DISCOVERY ONE CYBER-SECURITY SHIELD REPORT' : 'KNIGHT INDUSTRIES MOLECULAR FIREWALL SCAN'} (${report.score} — ${report.status}):**\n${report.checks.map((c) => `✅ **${c.label}**`).join('\n')}\n\n*${isHal ? '"Rest assured, Dave. No unauthorized entity can inject scripts or breach the pod bay firewall."' : '"My Molecular Bonded Firewall blocks XSS, SVG polyglots, and prototype pollution at the perimeter, Michael!"'}*`,
+        text: `${prefix} **${isHal ? 'DISCOVERY ONE RUNTIME BROWSER CHECK' : 'RUNTIME SECURITY CHECK'} (${report.status}):**\n${report.checks.map((c) => `${c.ok ? '✅' : '⚠️'} **${c.label}**`).join('\n')}\n\nServer-side upload validation, rate limits, and moderation live on Supabase.`,
         actions: [
-          { label: "🪙 Play Coin Dozer '86", mode: 'pusher' },
+          { label: '📜 Read House Rules', mode: 'feed' },
           { label: '🎱 Launch Pinball', mode: 'pinball' }
         ]
       };

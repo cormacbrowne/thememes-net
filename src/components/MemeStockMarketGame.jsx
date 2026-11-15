@@ -7,7 +7,7 @@ import './MemeStockMarketGame.css';
 
 // ==========================================
 // MEMEDAQ '86 — 80s NEON WALL STREET MEME STOCK MARKET SIMULATOR
-// Spend & Gamble Real Meme Tokens Buying Low & Selling High!
+// Play With Free Pretend Meme Tokens Buying Low & Selling High (Just for Fun)!
 // ==========================================
 
 const MEME_COMPANIES = [

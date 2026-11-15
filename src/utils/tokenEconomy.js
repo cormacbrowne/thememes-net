@@ -1,9 +1,9 @@
 // ==========================================
-// HARDENED, MEME-FIRST & GAMBLING-READY ARCADE TOKEN ECONOMY (PHASE 25 AUDIT)
+// HARDENED, MEME-FIRST ARCADE PRETEND-TOKEN ECONOMY (PHASE 25 AUDIT)
 // Principles:
 // 1. MEMES ARE THE PRIMARY TOKEN GENERATOR (Original uploads, Daily Bounties, Remixes, Pioneer Bonus)
 // 2. MODEST, STRICTLY CAPPED TOKENS FOR VISITS & GENUINE ENGAGEMENT (Zero click-farming routes)
-// 3. GAMES CONSUME & GAMBLE TOKENS (One-Arm Bandit Wagers, Meme Stock Market Trading, Coin-Op Prize Runs)
+// 3. GAMES USE PRETEND TOKENS: free, just for fun, can't be bought or cashed out
 // 4. ZERO FREE-TOKEN LOOPHOLES (Free Practice / Demo modes award 0 tokens; Piñata requires 8 moving hits)
 // ==========================================
 
@@ -332,8 +332,8 @@ export function evaluateTokenAward({
 }
 
 /**
- * Validates a gambling / arcade game payout so free practice rounds can NEVER mint tokens
- * and payouts stay bounded by maximum house odds.
+ * Validates an arcade mini-game payout so free practice rounds can NEVER mint tokens
+ * and pretend-token payouts stay bounded by maximum house odds.
  */
 export function validateStakedGamePayout({ stakedTokens = 0, rawPayout = 0, maxMultiplier = 55 }) {
   const stake = Math.max(0, Math.floor(Number(stakedTokens) || 0));

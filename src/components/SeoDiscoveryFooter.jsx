@@ -334,8 +334,14 @@ export default function SeoDiscoveryFooter({
 
         <div className="tm-seo-copyright">
           <span>© 2026 THE MEMES.net // Community Memes &amp; 80s Cyber-Arcade</span>
-          <span>💵 MemeDollarz (M$) &amp; MemeCentz (¢) are 100% free arcade fun — cannot be bought or cashed out.</span>
-          <span>🔒 Secured with OAuth 2.0 (Google • Discord • Facebook)</span>
+          <span>💵 MemeDollarz (M$) &amp; MemeCentz (¢) are free pretend tokens, just for fun — cannot be bought or cashed out.</span>
+          <span style={{ display: 'inline-flex', gap: '10px', flexWrap: 'wrap' }}>
+            <a href="/rules" style={{ color: '#7df9ff', textDecoration: 'none' }}>📜 House Rules</a>
+            <a href="/terms" style={{ color: '#94a3b8', textDecoration: 'none' }}>⚖️ Terms</a>
+            <a href="/privacy" style={{ color: '#94a3b8', textDecoration: 'none' }}>🔐 Privacy</a>
+            <a href="/takedown" style={{ color: '#fda4af', textDecoration: 'none' }}>🚩 Takedown</a>
+            <a href="/contact" style={{ color: '#94a3b8', textDecoration: 'none' }}>✉️ Contact</a>
+          </span>
         </div>
       </div>
     </footer>

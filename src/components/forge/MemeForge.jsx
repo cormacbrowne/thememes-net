@@ -800,6 +800,11 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
           />
         </div>
 
+        <p className="tm-house-rules-line" style={{ padding: '6px 14px 0' }}>
+          By posting you agree to the <a href={RULES_PATH}>House Rules</a>. No nudity, no hate, no
+          personal info, nothing you don&apos;t have the right to share.
+        </p>
+
         <form className="tm-forge-publish" onSubmit={handlePublish}>
           <input className="tm-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title (optional)" />
           <select className="tm-input" value={category} onChange={(e) => setCategory(e.target.value)}>

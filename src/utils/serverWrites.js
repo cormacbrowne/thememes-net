@@ -324,3 +324,81 @@ export async function deleteComment(client, commentId) {
   return { ok: true, id: data[0].id };
 }
 
+/**
+ * Submit a high-priority copyright / photo-of-me / privacy takedown request (task 33.11).
+ */
+export async function submitTakedownRequest(
+  client,
+  { targetUrl, kind = 'copyright', requesterEmail = '', details = '' }
+) {
+  if (!client) {
+    return { ok: false, error: 'network', message: '⚠️ Offline right now — please try again shortly or use /contact.' };
+  }
+  if (!(await ensureWriteSession(client))) {
+    return { ok: false, error: 'sign_in_required', message: '🔑 Could not open a session to record this report.' };
+  }
+  const { data, error } = await client.rpc('submit_takedown_request', {
+    p_target_url: String(targetUrl || '').trim().slice(0, 500),
+    p_kind: kind,
+    p_requester_email: String(requesterEmail || '').trim().slice(0, 200) || null,
+    p_details: String(details || '').trim().slice(0, 1000)
+  });
+  if (!error && data?.ok) {
+    return { ok: true, id: data.id, memeId: data.meme_id || null, priority: data.priority || 95 };
+  }
+  const messages = {
+    missing_fields: '⚠️ Please include the URL or meme ID and at least a few words explaining the request.',
+    invalid_kind: '⚠️ Pick one of the listed takedown reasons.',
+    sign_in_required: '🔑 Please sign in or refresh and try again.',
+    network: '⚠️ Could not reach the server. Please try again in a moment.'
+  };
+  return {
+    ok: false,
+    error: data?.error || 'rpc_error',
+    message: mapRpcFailure(data, error, messages)
+  };
+}
+
+/**
+ * Permanently remove the signed-in caller's account, memes, comments, and uploaded media (task 33.11).
+ */
+export async function deleteMyAccountAndMemes(client) {
+  if (!client) {
+    return { ok: false, error: 'network', message: '⚠️ Offline right now — cannot delete server data without a connection.' };
+  }
+  const { data: sessionData } = await client.auth.getSession();
+  const session = sessionData?.session;
+  if (!session?.user) {
+    return { ok: false, error: 'sign_in_required', message: '🔑 Please sign in first to delete a server account.' };
+  }
+  const { data, error } = await client.functions.invoke('delete-account', {
+    body: { confirm: true }
+  });
+  if (error || !data?.ok) {
+    return {
+      ok: false,
+      error: data?.error || 'server_error',
+      message: '⚠️ Could not delete your account automatically right now. You can submit a /takedown privacy request as backup.'
+    };
+  }
+  try {
+    await client.auth.signOut();
+  } catch {
+    // account already deleted on auth server
+  }
+  if (typeof localStorage !== 'undefined') {
+    for (const key of ['tm_user', 'tm_user_memes', 'tm_votes', 'tm_saved_memes', 'tm_notifications']) {
+      try {
+        localStorage.removeItem(key);
+      } catch {
+        // ignore storage errors
+      }
+    }
+  }
+  return {
+    ok: true,
+    deletedMemes: data.deletedMemes ?? 0,
+    removedFiles: data.removedFiles ?? 0
+  };
+}
+

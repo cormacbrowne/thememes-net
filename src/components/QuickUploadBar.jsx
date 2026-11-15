@@ -400,6 +400,11 @@ export default function QuickUploadBar({
               </div>
             )}
 
+            <p className="tm-house-rules-line">
+              By posting you agree to the <a href={RULES_PATH}>House Rules</a>. No nudity, no hate,
+              no personal info, nothing you don&apos;t have the right to share.
+            </p>
+
             <div className="tm-quick-composer-btns">
               <button
                 type="button"

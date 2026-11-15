@@ -275,7 +275,7 @@ export default function ExtrasDrawerModal({
               className="tm-extras-toggle-pill"
               onClick={onCheckSecurityStatus}
             >
-              <span>🛡️ Security: Active</span>
+              <span>🛡️ Runtime Checks</span>
             </button>
           </div>
         </div>

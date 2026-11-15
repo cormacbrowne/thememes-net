@@ -1309,7 +1309,7 @@ export default function App() {
                     ? 'Tap the ⭐ button on any meme card to save your favorites here for quick access.'
                     : `Use the 1-Click Quick-Upload Bar above, drop an image anywhere on screen, or paste (Ctrl+V) to post your meme and earn ${
                         pioneerBonusAvailable ? '+75 🪙 First-Upload Pioneer Bonus' : '+45 🪙 Arcade Tokens'
-                      } & +120 XP — then gamble or invest your tokens in the 80s Arcade!`}
+                      } & +120 XP to play for fun in the 80s Arcade! (Free pretend tokens — can't be bought or cashed out.)`}
                 </p>
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
                   <button
@@ -2111,10 +2111,9 @@ export default function App() {
               sfx.playAiAssistantChime?.();
               setExtrasDrawerOpen(false);
               setExtrasFocus(null);
-              setGoblinFortuneToast(
-                `🛡️ Cyber-Shield ${rep.status} (${rep.score}): CSP + XSS URI Guard + Binary Media Firewall + Prototype Guard Active!`
-              );
-              setTimeout(() => setGoblinFortuneToast(''), 4500);
+              const detail = rep.checks.map((c) => `${c.ok ? '✓' : '✕'} ${c.label}`).join(' · ');
+              setGoblinFortuneToast(`🛡️ ${rep.status}: ${detail}`);
+              setTimeout(() => setGoblinFortuneToast(''), 5000);
             }}
             onToggleAiAssistant={() => {
               sfx.playAiAssistantChime();

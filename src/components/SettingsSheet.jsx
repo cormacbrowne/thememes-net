@@ -16,6 +16,8 @@ import {
   subscribeSettings,
   resetFirstVisitHints
 } from '../utils/settingsStore';
+import { getSupabaseClient } from '../supabaseClient';
+import { deleteMyAccountAndMemes } from '../utils/serverWrites';
 import './SettingsSheet.css';
 
 export default function SettingsSheet({ compact = false, onResetHints }) {
@@ -23,6 +25,9 @@ export default function SettingsSheet({ compact = false, onResetHints }) {
   const [radio, setRadio] = useState(() => getRadioState());
   const [voices, setVoices] = useState(() => getEnglishVoices());
   const [hintsResetDone, setHintsResetDone] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteStatusMsg, setDeleteStatusMsg] = useState('');
 
   useEffect(() => {
     const unsubSettings = subscribeSettings((next) => setSettings({ ...next }));
@@ -316,6 +321,60 @@ export default function SettingsSheet({ compact = false, onResetHints }) {
         {hintsResetDone && (
           <span className="tm-settings-reset-note" role="status">
             ✓ First-visit hints cleared for your next visit.
+          </span>
+        )}
+        {!confirmDeleteOpen ? (
+          <button
+            type="button"
+            className="tm-settings-reset-btn"
+            style={{ borderColor: 'rgba(248, 113, 113, 0.45)', color: '#fca5a5' }}
+            onClick={() => {
+              setDeleteStatusMsg('');
+              setConfirmDeleteOpen(true);
+            }}
+          >
+            🗑️ Delete my account and memes
+          </button>
+        ) : (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+            <span style={{ fontSize: '12px', color: '#fecaca' }}>
+              Permanently erase your account, memes, comments, and files?
+            </span>
+            <button
+              type="button"
+              className="tm-settings-reset-btn"
+              style={{ borderColor: '#ef4444', color: '#fecaca', background: 'rgba(239, 68, 68, 0.2)' }}
+              disabled={deletingAccount}
+              onClick={async () => {
+                setDeletingAccount(true);
+                setDeleteStatusMsg('');
+                const res = await deleteMyAccountAndMemes(getSupabaseClient());
+                setDeletingAccount(false);
+                if (!res.ok) {
+                  setDeleteStatusMsg(res.message);
+                  return;
+                }
+                setConfirmDeleteOpen(false);
+                setDeleteStatusMsg(
+                  `✓ Removed account, ${res.deletedMemes} meme(s), and ${res.removedFiles} file(s).`
+                );
+              }}
+            >
+              {deletingAccount ? '⏳ Deleting…' : '⚠️ Yes, delete permanently'}
+            </button>
+            <button
+              type="button"
+              className="tm-settings-reset-btn"
+              disabled={deletingAccount}
+              onClick={() => setConfirmDeleteOpen(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+        {deleteStatusMsg && (
+          <span className="tm-settings-reset-note" role="status" aria-live="polite">
+            {deleteStatusMsg}
           </span>
         )}
       </div>

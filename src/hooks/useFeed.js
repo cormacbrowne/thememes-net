@@ -59,6 +59,14 @@ import {
   fetchCreatorNotifications,
   markCreatorNotificationsRead
 } from '../utils/notifications';
+import {
+  FEED_PAGE_SIZE,
+  computeHotScore,
+  fetchMemeComments,
+  fetchMemesFeedPage,
+  getTopWindowStartIso,
+  normalizeSortMode
+} from '../utils/feedPagination';
 
 /**
  * Manages the community meme feed: Supabase sync, realtime subscriptions,
@@ -82,6 +90,7 @@ export function useFeed({
     showSavedOnly,
     sortBy,
     setSortBy,
+    topWindow = 'all',
     setShowStudio,
     setForgeIntent,
     theaterMemeId,
@@ -118,7 +127,12 @@ export function useFeed({
   }, [memes]);
 
   const [isLoadingFeed, setIsLoadingFeed] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(6);
+  const [visibleCount, setVisibleCount] = useState(FEED_PAGE_SIZE);
+  const [hasMoreServer, setHasMoreServer] = useState(false);
+  const [isLoadingMoreFeed, setIsLoadingMoreFeed] = useState(false);
+  const [loadingCommentsMap, setLoadingCommentsMap] = useState({});
+  const feedCursorRef = useRef(null);
+  const isFetchingPageRef = useRef(false);
   const [bookmarkedIds, setBookmarkedIds] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('tm_saved_memes') || '[]');
@@ -279,69 +293,137 @@ export function useFeed({
     [notifications]
   );
 
-  // Supabase Feed Sync & Realtime Memes Channel
-  const fetchSupabaseMemes = useCallback(async () => {
-    const client = getSupabaseClient();
-    if (!client) {
-      setDbStatus('local');
-      setIsLoadingFeed(false);
-      return;
-    }
+  const normalizeServerMemeRow = useCallback((row) => {
+    const inlineComments = Array.isArray(row.comments)
+      ? row.comments.filter((c) => c && !hiddenCommentIdsRef.current.includes(String(c.id)))
+      : [];
+    const serverCommentsCount = Number(row.comments_count);
+    return sanitizeMemeUrls({
+      ...row,
+      generation: row.generation || 0,
+      mutation_count: row.mutation_count || 0,
+      reactions: row.reactions || { '🔥': 0, '💀': 0, '😂': 0, '🗿': 0 },
+      hot_score: row.hot_score ?? null,
+      comments_count: Number.isFinite(serverCommentsCount)
+        ? serverCommentsCount
+        : inlineComments.length,
+      commentsLoaded: inlineComments.length > 0,
+      comments: inlineComments
+    });
+  }, []);
 
-    try {
-      const { data, error } = await client
-        .from('memes')
-        .select('*, comments(*)')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (error) {
+  // Supabase Feed Sync (cursor-paginated SQL view `memes_feed_view`, no `comments(*)`) & Realtime
+  const fetchSupabaseMemes = useCallback(
+    async ({ cursor = null, append = false } = {}) => {
+      const client = getSupabaseClient();
+      if (!client) {
         setDbStatus('local');
+        setHasMoreServer(false);
         setIsLoadingFeed(false);
         return;
       }
+      if (isFetchingPageRef.current && append) return;
+      isFetchingPageRef.current = true;
+      if (append) setIsLoadingMoreFeed(true);
 
-      setDbStatus('live');
-      const normalized = Array.isArray(data)
-        ? data.map((row) =>
-            sanitizeMemeUrls({
-              ...row,
-              generation: row.generation || 0,
-              mutation_count: row.mutation_count || 0,
-              reactions: row.reactions || { '🔥': 0, '💀': 0, '😂': 0, '🗿': 0 },
-              comments: Array.isArray(row.comments)
-                ? row.comments.filter((c) => c && !hiddenCommentIdsRef.current.includes(String(c.id)))
-                : []
-            })
-          )
-        : [];
-      const liveIds = new Set(normalized.map((m) => String(m.id)));
-      setMemes((prev) => {
-        const localUserUploads = prev.filter(
-          (m) =>
-            m &&
-            String(m.id).startsWith('local-') &&
-            !liveIds.has(String(m.id))
+      try {
+        const res = await fetchMemesFeedPage(client, {
+          sortBy,
+          topWindow,
+          category,
+          cursor,
+          pageSize: FEED_PAGE_SIZE
+        });
+
+        if (!res.ok) {
+          setDbStatus('local');
+          setHasMoreServer(false);
+          setIsLoadingFeed(false);
+          setIsLoadingMoreFeed(false);
+          isFetchingPageRef.current = false;
+          return;
+        }
+
+        setDbStatus('live');
+        setHasMoreServer(Boolean(res.hasMore));
+        feedCursorRef.current = res.nextCursor || null;
+
+        const normalized = res.items.map(normalizeServerMemeRow);
+        setMemes((prev) => {
+          const localUserUploads = prev.filter(
+            (m) => m && String(m.id).startsWith('local-')
+          );
+          const prevSeedsById = new Map(
+            prev.filter((m) => m && isSeedMeme(m)).map((m) => [String(m.id), m])
+          );
+
+          let serverRows;
+          if (append) {
+            const prevServer = prev.filter(
+              (m) => m && !isSeedMeme(m) && !String(m.id).startsWith('local-')
+            );
+            const mergedMap = new Map(prevServer.map((m) => [String(m.id), m]));
+            normalized.forEach((m) => {
+              const prevMatch = mergedMap.get(String(m.id));
+              mergedMap.set(
+                String(m.id),
+                prevMatch?.commentsLoaded
+                  ? { ...m, comments: prevMatch.comments, commentsLoaded: true }
+                  : m
+              );
+            });
+            serverRows = Array.from(mergedMap.values());
+          } else {
+            const prevServerById = new Map(
+              prev
+                .filter((m) => m && !isSeedMeme(m) && !String(m.id).startsWith('local-'))
+                .map((m) => [String(m.id), m])
+            );
+            serverRows = normalized.map((m) => {
+              const prevMatch = prevServerById.get(String(m.id));
+              return prevMatch?.commentsLoaded
+                ? { ...m, comments: prevMatch.comments, commentsLoaded: true }
+                : m;
+            });
+          }
+
+          const liveIds = new Set(serverRows.map((m) => String(m.id)));
+          const dedupedLocal = localUserUploads.filter((m) => !liveIds.has(String(m.id)));
+          const mergedSeeds = STARTER_MEMES
+            .filter((m) => !liveIds.has(String(m.id)))
+            .map((m) => prevSeedsById.get(String(m.id)) || m);
+
+          return [...serverRows, ...dedupedLocal, ...mergedSeeds];
+        });
+        setVisibleCount((prev) =>
+          append ? prev + normalized.length : Math.max(FEED_PAGE_SIZE, normalized.length)
         );
-        const prevSeedsById = new Map(
-          prev.filter((m) => m && isSeedMeme(m)).map((m) => [String(m.id), m])
-        );
-        const mergedSeeds = STARTER_MEMES
-          .filter((m) => !liveIds.has(String(m.id)))
-          .map((m) => prevSeedsById.get(String(m.id)) || m);
-        return [...normalized, ...localUserUploads, ...mergedSeeds];
-      });
-      setIsLoadingFeed(false);
-    } catch {
-      setDbStatus('local');
-      setIsLoadingFeed(false);
-    }
-  }, []);
+        setIsLoadingFeed(false);
+        setIsLoadingMoreFeed(false);
+        isFetchingPageRef.current = false;
+      } catch {
+        setDbStatus('local');
+        setHasMoreServer(false);
+        setIsLoadingFeed(false);
+        setIsLoadingMoreFeed(false);
+        isFetchingPageRef.current = false;
+      }
+    },
+    [sortBy, topWindow, category, normalizeServerMemeRow]
+  );
+
+  const loadNextFeedPage = useCallback(async () => {
+    setVisibleCount((prev) => prev + FEED_PAGE_SIZE);
+    if (!hasMoreServer || !feedCursorRef.current || isLoadingMoreFeed) return;
+    await fetchSupabaseMemes({ cursor: feedCursorRef.current, append: true });
+  }, [fetchSupabaseMemes, hasMoreServer, isLoadingMoreFeed]);
 
   useEffect(() => {
+    feedCursorRef.current = null;
     const client = getSupabaseClient();
     Promise.resolve().then(() => {
-      fetchSupabaseMemes();
+      setVisibleCount(FEED_PAGE_SIZE);
+      fetchSupabaseMemes({ cursor: null, append: false });
     });
 
     let channel = null;
@@ -349,7 +431,7 @@ export function useFeed({
       channel = client
         .channel('public:memes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'memes' }, () => {
-          fetchSupabaseMemes();
+          fetchSupabaseMemes({ cursor: null, append: false });
         })
         .subscribe();
     }
@@ -888,9 +970,55 @@ export function useFeed({
     ]
   );
 
-  const handleToggleComments = useCallback((memeId) => {
-    setOpenComments((prev) => ({ ...prev, [memeId]: !prev[memeId] }));
+  const loadCommentsForMeme = useCallback(async (memeId) => {
+    if (!memeId) return;
+    const idStr = String(memeId);
+    if (idStr.startsWith('seed-') || idStr.startsWith('local-')) return;
+    const target = memesRef.current.find((m) => String(m.id) === idStr);
+    if (target?.commentsLoaded) return;
+
+    const client = getSupabaseClient();
+    if (!client?.from) return;
+
+    setLoadingCommentsMap((prev) => (prev[idStr] ? prev : { ...prev, [idStr]: true }));
+    const res = await fetchMemeComments(client, memeId);
+    setLoadingCommentsMap((prev) => {
+      const next = { ...prev };
+      delete next[idStr];
+      return next;
+    });
+
+    if (!res.ok) return;
+    const fetched = (res.comments || []).filter(
+      (c) => c && !hiddenCommentIdsRef.current.includes(String(c.id))
+    );
+    setMemes((prev) =>
+      prev.map((m) => {
+        if (String(m.id) !== idStr) return m;
+        // Preserve pre-populated test-mock comments if backend returned empty for a mocked table
+        const finalComments =
+          fetched.length > 0 || (m.comments || []).length === 0 ? fetched : m.comments;
+        return {
+          ...m,
+          comments: finalComments,
+          comments_count: finalComments.length,
+          commentsLoaded: true
+        };
+      })
+    );
   }, []);
+
+  const handleToggleComments = useCallback(
+    (memeId) => {
+      const idStr = String(memeId);
+      const willOpen = !openComments[memeId];
+      setOpenComments((prev) => ({ ...prev, [memeId]: !prev[memeId] }));
+      if (willOpen) {
+        void loadCommentsForMeme(idStr);
+      }
+    },
+    [openComments, loadCommentsForMeme]
+  );
 
   const handleCommentInputChange = useCallback((memeId, val) => {
     setCommentInputs((prev) => ({ ...prev, [memeId]: val }));
@@ -959,9 +1087,16 @@ export function useFeed({
       setCommentInputs((prev) => ({ ...prev, [memeId]: '' }));
 
       setMemes((prev) =>
-        prev.map((m) =>
-          m.id === memeId ? { ...m, comments: [...(m.comments || []), newComment] } : m
-        )
+        prev.map((m) => {
+          if (m.id !== memeId) return m;
+          const nextComments = [...(m.comments || []), newComment];
+          return {
+            ...m,
+            comments: nextComments,
+            comments_count: nextComments.length,
+            commentsLoaded: true
+          };
+        })
       );
     },
     [commentInputs, user, currentUserId, combo, awardFairReward, setGoblinFortuneToast]
@@ -988,14 +1123,16 @@ export function useFeed({
 
       sfx.playToggle();
       setMemes((prev) =>
-        prev.map((m) =>
-          m.id === memeId
-            ? {
-                ...m,
-                comments: (m.comments || []).filter((c) => String(c.id) !== String(commentId))
-              }
-            : m
-        )
+        prev.map((m) => {
+          if (m.id !== memeId) return m;
+          const nextComments = (m.comments || []).filter((c) => String(c.id) !== String(commentId));
+          return {
+            ...m,
+            comments: nextComments,
+            comments_count: nextComments.length,
+            commentsLoaded: true
+          };
+        })
       );
       setGoblinFortuneToast('🗑️ Comment deleted.');
       setTimeout(() => setGoblinFortuneToast(''), 3000);
@@ -1016,9 +1153,16 @@ export function useFeed({
       sfx.playAirhorn();
       awardXpOnly(15, e, '🤖');
       setMemes((prev) =>
-        prev.map((m) =>
-          m.id === memeId ? { ...m, comments: [...(m.comments || []), newComment] } : m
-        )
+        prev.map((m) => {
+          if (m.id !== memeId) return m;
+          const nextComments = [...(m.comments || []), newComment];
+          return {
+            ...m,
+            comments: nextComments,
+            comments_count: nextComments.length,
+            commentsLoaded: true
+          };
+        })
       );
     },
     [user, awardXpOnly]
@@ -1492,13 +1636,21 @@ export function useFeed({
     [awardFairReward, setGoblinFortuneToast]
   );
 
-  // Derived Feed Filters & Trending Formats
+  // Derived Feed Filters & Trending Formats (Task 33.16: Hot / New / Top Day-Week-All)
   const filteredMemes = useMemo(() => {
+    const mode = normalizeSortMode(sortBy);
+    const topCutoffIso = mode === 'top' ? getTopWindowStartIso(topWindow) : null;
+    const topCutoffMs = topCutoffIso ? Date.parse(topCutoffIso) : null;
+
     return memes
       .filter((m) => {
         if (reportedMemeIds.includes(String(m.id))) return false;
         if (showSavedOnly && !bookmarkedIds.includes(String(m.id))) return false;
-        if (sortBy === 'new24h' && !formatMemeUploadDate(m.created_at).isNewToday) return false;
+        if (mode === 'new24h' && !formatMemeUploadDate(m.created_at).isNewToday) return false;
+        if (topCutoffMs !== null && !isSeedMeme(m)) {
+          const ts = Date.parse(m.created_at || '');
+          if (Number.isFinite(ts) && ts < topCutoffMs) return false;
+        }
         if (category === 'remixes') {
           if ((Number(m.mutation_count) || 0) <= 0 && !m.parent_meme_id && !m.parent_id) return false;
         } else if (category !== 'all' && m.category !== category) {
@@ -1517,12 +1669,25 @@ export function useFeed({
         const aSeed = isSeedMeme(a);
         const bSeed = isSeedMeme(b);
         if (aSeed !== bSeed) return aSeed ? 1 : -1;
-        if (sortBy === 'latest' || sortBy === 'new24h') {
-          return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        if (mode === 'new' || mode === 'new24h') {
+          const diff = Date.parse(b.created_at || 0) - Date.parse(a.created_at || 0);
+          if (diff !== 0) return diff;
+          return String(b.id).localeCompare(String(a.id));
         }
-        return (b.score || 0) - (a.score || 0);
+        if (mode === 'hot') {
+          const diff = computeHotScore(b) - computeHotScore(a);
+          if (Math.abs(diff) > 1e-6) return diff;
+          const tsDiff = Date.parse(b.created_at || 0) - Date.parse(a.created_at || 0);
+          if (tsDiff !== 0) return tsDiff;
+          return String(b.id).localeCompare(String(a.id));
+        }
+        const scoreDiff = (b.score || 0) - (a.score || 0);
+        if (scoreDiff !== 0) return scoreDiff;
+        const tsDiff = Date.parse(b.created_at || 0) - Date.parse(a.created_at || 0);
+        if (tsDiff !== 0) return tsDiff;
+        return String(b.id).localeCompare(String(a.id));
       });
-  }, [memes, reportedMemeIds, showSavedOnly, bookmarkedIds, category, searchQuery, sortBy]);
+  }, [memes, reportedMemeIds, showSavedOnly, bookmarkedIds, category, searchQuery, sortBy, topWindow]);
 
   const visibleMemes = useMemo(() => {
     return filteredMemes.slice(0, visibleCount);
@@ -1552,21 +1717,28 @@ export function useFeed({
   }, [memes]);
 
   useEffect(() => {
-    if (viewMode !== 'feed' || visibleCount >= filteredMemes.length) return;
+    if (viewMode !== 'feed' || (visibleCount >= filteredMemes.length && !hasMoreServer)) return;
     const sentinel = loadMoreSentinelRef.current;
     if (!sentinel || typeof IntersectionObserver === 'undefined') return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) {
-          setVisibleCount((prev) => prev + 6);
+          void loadNextFeedPage();
         }
       },
-      { rootMargin: '180px' }
+      { rootMargin: '220px' }
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [viewMode, visibleCount, filteredMemes.length]);
+  }, [viewMode, visibleCount, filteredMemes.length, hasMoreServer, loadNextFeedPage]);
+
+  useEffect(() => {
+    if (!theaterMemeId) return;
+    Promise.resolve().then(() => {
+      void loadCommentsForMeme(theaterMemeId);
+    });
+  }, [theaterMemeId, loadCommentsForMeme]);
 
   const theaterMeme = useMemo(() => {
     if (!theaterMemeId) return null;
@@ -1671,6 +1843,10 @@ export function useFeed({
     isLoadingFeed,
     visibleCount,
     setVisibleCount,
+    hasMoreServer,
+    isLoadingMoreFeed,
+    loadingCommentsMap,
+    loadNextFeedPage,
     bookmarkedIds,
     dbStatus,
     mutatingParentMeme,

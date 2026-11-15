@@ -73,7 +73,8 @@ export function useViewMode() {
   const [viewMode, setViewMode] = useState(initialRoute.viewMode);
   const [searchQuery, setSearchQuery] = useState(initialRoute.searchQuery);
   const [showSavedOnly, setShowSavedOnly] = useState(false);
-  const [sortBy, setSortBy] = useState('latest');
+  const [sortBy, setSortBy] = useState('hot');
+  const [topWindow, setTopWindow] = useState('all');
 
   const [showStudio, setShowStudio] = useState(initialRoute.showStudio);
   const [forgeIntent, setForgeIntent] = useState(initialRoute.forgeIntent);
@@ -278,6 +279,8 @@ export function useViewMode() {
     setShowSavedOnly,
     sortBy,
     setSortBy,
+    topWindow,
+    setTopWindow,
     showStudio,
     setShowStudio,
     forgeIntent,

@@ -1690,7 +1690,10 @@ test.describe('Phase 33.10 Tight CSP & Own-Storage Media', () => {
       await page.goto('/', { waitUntil: 'domcontentloaded' });
 
       await expect(page.locator('.tm-card').first()).toBeVisible({ timeout: 15000 });
-      await expect(page.locator('.tm-card').first()).toContainText('Valid Own Storage Meme');
+      await expect(
+        page.locator('.tm-card', { hasText: 'Valid Own Storage Meme' }).first()
+      ).toBeVisible();
+      await expect(page.locator('img[src*="evil.example.com"]')).toHaveCount(0);
 
       const violations = await page.evaluate(() => window.__cspViolations || []);
       expect(violations).toEqual([]);
@@ -2261,6 +2264,200 @@ test.describe('Phase 33.15 Real Daily Caption Battle & Hall of Fame', () => {
       await expect(page.getByTestId(`hof-winner-${yesterdayStr}`)).toContainText('@KingMemer86');
       await expect(page.getByTestId(`hof-winner-${yesterdayStr}`)).toContainText('REIGNING 24H KING');
       await expect(page.getByTestId('hof-winner-2026-11-10')).toContainText('@RetroLegend');
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(overflow).toBeLessThanOrEqual(2);
+      expect(pageErrors).toEqual([]);
+    });
+  }
+});
+
+test.describe('Phase 33.16 Infinite Cursor Feed, SQL View Tabs, Lazy Comments & Virtualization', () => {
+  const viewports = [
+    { name: 'mobile', width: 390, height: 844 },
+    { name: 'tablet', width: 768, height: 1024 },
+    { name: 'desktop', width: 1280, height: 800 }
+  ];
+
+  for (const vp of viewports) {
+    test(`paginates with (created_at, id) cursor, switches Hot/New/Top tabs, lazy-loads comments, and virtualizes 520 cards on ${vp.name} (${vp.width}x${vp.height})`, async ({
+      page
+    }) => {
+      const pageErrors = [];
+      page.on('pageerror', (e) => pageErrors.push(e.message));
+
+      const feedUrls = [];
+      const commentFetchUrls = [];
+      const nowMs = Date.now();
+
+      const makeMockRow = (idx, extra = {}) => ({
+        id: `33160000-0000-4000-8000-${String(idx).padStart(12, '0')}`,
+        title: `Archive Meme #${idx}`,
+        category: 'dank',
+        image_url: '/seed/seed-dank-01.webp',
+        author_name: 'DeepArchiver',
+        score: 600 - idx,
+        hot_score: 50 - idx * 0.05,
+        comments_count: idx === 1 ? 1 : 0,
+        reactions: { '🔥': 1, '💀': 0, '😂': 0, '🗿': 0 },
+        media_type: 'image',
+        status: 'approved',
+        created_at: new Date(nowMs - idx * 60_000).toISOString(),
+        ...extra
+      });
+
+      const page1Rows = Array.from({ length: 25 }, (_, i) => makeMockRow(i + 1)); // 24 + 1 -> hasMore = true
+      const archive520Rows = Array.from({ length: 520 }, (_, i) =>
+        makeMockRow(i + 100, {
+          title: `Top Archive #${i + 1}`,
+          score: 1000 - i
+        })
+      );
+
+      await page.setViewportSize(vp);
+
+      await page.route('**/rest/v1/memes_feed_view*', async (route) => {
+        const url = route.request().url();
+        feedUrls.push(url);
+        expect(url).not.toContain('comments(');
+
+        // Return 520 rows when testing Top -> All-Time to exercise full virtualized grid
+        if (url.includes('order=score.desc')) {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify(archive520Rows)
+          });
+          return;
+        }
+
+        // Cursor page 2 returns an older archive meme + hasMore false
+        if (url.includes('or=')) {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify([
+              makeMockRow(99, { title: 'Deep Cursor Page 2 Meme' })
+            ])
+          });
+          return;
+        }
+
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(page1Rows)
+        });
+      });
+
+      await page.route('**/rest/v1/comments*', async (route) => {
+        const url = route.request().url();
+        commentFetchUrls.push(url);
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([
+            {
+              id: 'c3316000-0000-4000-8000-000000000001',
+              meme_id: '33160000-0000-4000-8000-000000000001',
+              author_name: 'LazyReader',
+              body: 'Loaded only when opened!',
+              user_id: '00000000-0000-4000-8000-000000000123',
+              status: 'visible',
+              created_at: new Date().toISOString()
+            }
+          ])
+        });
+      });
+
+      await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+      const feedGrid = page.getByTestId('meme-feed-grid');
+      await expect(feedGrid).toBeVisible({ timeout: 15000 });
+      await expect(page.getByText('Archive Meme #1', { exact: true }).first()).toBeVisible({
+        timeout: 10000
+      });
+
+      // Comments NOT fetched until card comments drawer is opened
+      expect(commentFetchUrls.length).toBe(0);
+      await page.getByTestId('meme-comments-toggle-33160000-0000-4000-8000-000000000001').click();
+      await expect
+        .poll(() => commentFetchUrls.length, { timeout: 5000 })
+        .toBe(1);
+      await expect(page.getByText('Loaded only when opened!')).toBeVisible({ timeout: 5000 });
+
+      // Load More triggers cursor page 2 (keyset or= filter) and appends older meme
+      const loadMoreBtn = page.getByTestId('load-more-memes-btn');
+      await loadMoreBtn.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+      if (await loadMoreBtn.isVisible().catch(() => false)) {
+        await loadMoreBtn.click().catch(() => {});
+      }
+      await expect
+        .poll(() => feedUrls.some((u) => u.includes('or=')), { timeout: 5000 })
+        .toBe(true);
+
+      // Jump to the row range of card index 24 (Page 2 meme) and scan within view so virtualizer mounts it
+      let scanRowOffset = 0;
+      await page.evaluate((width) => {
+        const cols = width >= 1100 ? 3 : width >= 720 ? 2 : 1;
+        const grid = document.querySelector('[data-testid="meme-feed-grid"]');
+        const top = grid ? grid.getBoundingClientRect().top + window.scrollY : 0;
+        window.scrollTo(0, Math.max(0, top + Math.floor(24 / cols) * 460 - 250));
+      }, vp.width);
+      await expect
+        .poll(
+          async () => {
+            const visible = await page.getByText('Deep Cursor Page 2 Meme').isVisible().catch(() => false);
+            if (!visible) {
+              scanRowOffset += 1;
+              await page.evaluate((step) => {
+                const delta = step % 2 === 1 ? step * 320 : -step * 320;
+                window.scrollBy(0, delta);
+              }, scanRowOffset);
+            }
+            return visible;
+          },
+          { timeout: 10000, intervals: [150, 200, 250] }
+        )
+        .toBe(true);
+
+      // Scroll back to top so Hot/New/Top tabs are accessible cleanly without dock interception
+      await page.evaluate(() => window.scrollTo(0, 0));
+
+      // Switch tabs: New -> Top (reveals 24h / 7d / All-Time sub-pills)
+      await page.getByTestId('feed-tab-new').click();
+      await expect
+        .poll(() => feedUrls.some((u) => u.includes('order=created_at.desc')), { timeout: 5000 })
+        .toBe(true);
+
+      await page.getByTestId('feed-tab-top').click();
+      await expect(page.getByTestId('top-window-day')).toBeVisible({ timeout: 5000 });
+      await expect(page.getByTestId('top-window-week')).toBeVisible();
+      await expect(page.getByTestId('top-window-all')).toBeVisible();
+
+      await page.getByTestId('top-window-day').click();
+      await expect
+        .poll(() => feedUrls.some((u) => u.includes('order=score.desc') && u.includes('created_at=gte.')), {
+          timeout: 5000
+        })
+        .toBe(true);
+
+      // Virtualization check: 520+ items loaded, yet mounted .tm-card DOM stays bounded while scrolling midway
+      await page.getByTestId('top-window-all').click();
+      await expect
+        .poll(async () => Number(await feedGrid.getAttribute('data-total-items')), { timeout: 10000 })
+        .toBeGreaterThanOrEqual(520);
+
+      const initialDomCards = await page.locator('.tm-card').count();
+      expect(initialDomCards).toBeLessThan(48);
+
+      await page.evaluate(() => window.scrollTo(0, Math.floor(document.body.scrollHeight * 0.5)));
+      await expect(page.getByTestId('virtual-top-spacer')).toBeAttached({ timeout: 5000 });
+      const midDomCards = await page.locator('.tm-card').count();
+      expect(midDomCards).toBeLessThan(48);
+      expect(midDomCards).toBeGreaterThan(0);
 
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - window.innerWidth

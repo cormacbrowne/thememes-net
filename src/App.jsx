@@ -18,6 +18,7 @@ import { useViewMode, useViewModeEffects } from './hooks/useViewMode';
 import NavbarHud from './components/NavbarHud';
 import QuickUploadBar from './components/QuickUploadBar';
 import MemeCard from './components/MemeCard';
+import VirtualizedMemeGrid from './components/VirtualizedMemeGrid';
 import { useDeviceProfile, DEVICE_PROFILES } from './utils/deviceProfile';
 import {
   getSettings,
@@ -108,6 +109,8 @@ export default function App() {
     setShowSavedOnly,
     sortBy,
     setSortBy,
+    topWindow,
+    setTopWindow,
     showStudio,
     setShowStudio,
     forgeIntent,
@@ -406,7 +409,10 @@ export default function App() {
     filteredMemes,
     visibleMemes,
     visibleCount,
-    setVisibleCount,
+    hasMoreServer,
+    isLoadingMoreFeed,
+    loadingCommentsMap,
+    loadNextFeedPage,
     theaterMeme,
     handleMarkNotificationsRead,
     handleOpenBlankStudio,
@@ -1194,24 +1200,56 @@ export default function App() {
               <div className="tm-tabs">
                 <button
                   type="button"
-                  className={`tm-tab ${sortBy === 'latest' && !showSavedOnly ? 'active' : ''}`}
+                  data-testid="feed-tab-hot"
+                  className={`tm-tab ${sortBy === 'hot' && !showSavedOnly ? 'active' : ''}`}
+                  onClick={() => {
+                    setShowSavedOnly(false);
+                    setSortBy('hot');
+                  }}
+                >
+                  🔥 Hot
+                </button>
+                <button
+                  type="button"
+                  data-testid="feed-tab-new"
+                  className={`tm-tab ${(sortBy === 'latest' || sortBy === 'new') && !showSavedOnly ? 'active' : ''}`}
                   onClick={() => {
                     setShowSavedOnly(false);
                     setSortBy('latest');
                   }}
                 >
-                  ⚡ Latest
+                  ⚡ New
                 </button>
                 <button
                   type="button"
+                  data-testid="feed-tab-top"
                   className={`tm-tab ${sortBy === 'top' && !showSavedOnly ? 'active' : ''}`}
                   onClick={() => {
                     setShowSavedOnly(false);
                     setSortBy('top');
                   }}
                 >
-                  🔥 Top
+                  🏆 Top
                 </button>
+                {sortBy === 'top' && !showSavedOnly && (
+                  <div className="tm-top-window-pills" role="group" aria-label="Top time window" style={{ display: 'inline-flex', gap: '4px' }}>
+                    {[
+                      { id: 'day', label: '24h' },
+                      { id: 'week', label: '7d' },
+                      { id: 'all', label: 'All-Time' }
+                    ].map((win) => (
+                      <button
+                        key={win.id}
+                        type="button"
+                        data-testid={`top-window-${win.id}`}
+                        className={`tm-tab ${topWindow === win.id ? 'active' : ''}`}
+                        onClick={() => setTopWindow(win.id)}
+                      >
+                        {win.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {['all', 'dank', 'tech', 'gaming', 'relatable'].map((cat) => (
                   <button
                     key={cat}
@@ -1346,13 +1384,14 @@ export default function App() {
                   >
                     📥 Select Photo / Screenshot ({pioneerBonusAvailable ? '+75 🪙 First Upload!' : '+45 🪙 & +120 XP'})
                   </button>
-                  {(showSavedOnly || sortBy === 'new24h' || category !== 'all' || searchQuery.trim()) && (
+                  {(showSavedOnly || sortBy === 'new24h' || (sortBy === 'top' && topWindow !== 'all') || category !== 'all' || searchQuery.trim()) && (
                     <button
                       type="button"
                       className="tm-btn"
                       onClick={() => {
                         setShowSavedOnly(false);
-                        setSortBy('latest');
+                        setTopWindow('all');
+                        setSortBy('hot');
                         setCategory('all');
                         setSearchQuery('');
                       }}
@@ -1364,178 +1403,182 @@ export default function App() {
               </div>
             </section>
           ) : (
-            <>
-              <main className="tm-grid">
-              {visibleMemes.map((meme, idx) => (
-                <div key={meme.id} style={{ display: 'contents' }}>
-                  <MemeCard
-                    meme={meme}
-                    priority={idx < 2}
-                    myVote={userVotes[meme.id] || 0}
-                    isBookmarked={bookmarkedIds.includes(String(meme.id))}
-                    onToggleBookmark={handleToggleBookmark}
-                    isCommentsOpen={!!openComments[meme.id]}
-                    commentInput={commentInputs[meme.id] || ''}
-                    onVote={handleVote}
-                    onReaction={handleReaction}
-                    onToggleComments={handleToggleComments}
-                    onCommentInputChange={handleCommentInputChange}
-                    onAddComment={handleAddComment}
-                    onOpenEvolutionTree={handleOpenEvolutionTree}
-                    onTriggerStudioMutate={handleTriggerStudioMutate}
-                    onCaptionThis={handleCaptionThis}
-                    onOpenTheater={handleOpenTheater}
-                    onShareMeme={handleShareMeme}
-                    onOpenProfile={(username) => {
-                      sfx.playToggle();
-                      setProfileUsername(username);
-                    }}
-                    onReportMeme={handleReportMeme}
-                    onReportComment={handleReportComment}
-                    onDeleteComment={handleDeleteComment}
-                    currentUserId={feedUserId || authUserId}
-                    onOpenAiRoast={handleOpenAiRoast}
-                    cardFrame={
-                      isActiveCaptionKing(meme.author_name, activeCaptionKings)
-                        ? 'caption-king'
-                        : (user?.username &&
-                            meme.author_name &&
-                            String(meme.author_name).toLowerCase() ===
-                              String(user.username).toLowerCase()) ||
-                          String(meme.id).startsWith('local-')
-                          ? equippedFrame
-                          : 'default'
-                    }
-                    litePerfMode={litePerfMode}
-                  />
-                  {idx === 3 && (
-                    <article className="tm-card tm-infeed-arcade-card" aria-label="Side Entertainment Arcade Break">
-                      <div className="tm-infeed-arcade-badge">🕹️ 80s NEON TOKEN ARCADE &amp; CASINO</div>
-                      <div style={{ fontSize: '34px', margin: '6px 0' }}>🃏🎡🎰📈🍬🎱</div>
-                      <h3 style={{ margin: '0 0 6px', fontSize: '18px', color: '#facc15' }}>
-                        READY FOR NEON BINGO &apos;86, COIN DOZER, ROULETTE &amp; ARCADE CABINETS?
-                      </h3>
-                      <p style={{ margin: '0 0 12px', fontSize: '12.5px', color: '#cbd5e1', lineHeight: 1.5 }}>
-                        Dab all 90 classic comedy calls in <strong>🎱 Neon Bingo &apos;86</strong>, drop coins in{' '}
-                        <strong>🪙 Coin Dozer &apos;86</strong>, spin <strong>🎡 Lightning Roulette (150×)</strong>, pull the{' '}
-                        <strong>🎰 One-Arm Bandit</strong>, or fire up <strong>🎱 Upgraded 80s Pinball</strong>!
-                      </p>
-                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                        <button
-                          type="button"
-                          className="tm-btn tm-btn-primary"
-                          onClick={() => {
-                            sfx.playBingoBallPop?.();
-                            setViewMode('bingo');
-                          }}
-                        >
-                          🎱 Neon Bingo &apos;86
-                        </button>
-                        <button
-                          type="button"
-                          className="tm-btn tm-btn-primary"
-                          onClick={() => {
-                            sfx.playCoinDrop?.();
-                            setViewMode('pusher');
-                          }}
-                        >
-                          🪙 Coin Dozer &apos;86
-                        </button>
-                        <button
-                          type="button"
-                          className="tm-btn tm-btn-primary"
-                          onClick={() => {
-                            sfx.playCardDeal();
-                            setViewMode('blackjack');
-                          }}
-                        >
-                          🃏 Neon 21&apos;s
-                        </button>
-                        <button
-                          type="button"
-                          className="tm-btn tm-btn-primary"
-                          onClick={() => {
-                            sfx.playPokerChip?.(2);
-                            setViewMode('poker');
-                          }}
-                        >
-                          🟡 Texas Poker
-                        </button>
-                        <button
-                          type="button"
-                          className="tm-btn tm-btn-primary"
-                          onClick={() => {
-                            sfx.playRouletteSpin();
-                            setViewMode('roulette');
-                          }}
-                        >
-                          🎡 Lightning Roulette
-                        </button>
-                        <button
-                          type="button"
-                          className="tm-btn tm-btn-primary"
-                          onClick={() => {
-                            sfx.playSlotLeverPull();
-                            setViewMode('slots');
-                          }}
-                        >
-                          🎰 One-Arm Bandit
-                        </button>
-                        <button
-                          type="button"
-                          className="tm-btn tm-btn-primary"
-                          onClick={() => {
-                            sfx.playStockBell?.(true);
-                            setViewMode('stocks');
-                          }}
-                        >
-                          📈 Meme Stocks
-                        </button>
-                        <button
-                          type="button"
-                          className="tm-btn tm-btn-primary"
-                          onClick={() => {
-                            sfx.playCandyMatch(3);
-                            setViewMode('crush');
-                          }}
-                        >
-                          🍬 Meme Crush
-                        </button>
-                        <button
-                          type="button"
-                          className="tm-btn tm-btn-primary"
-                          onClick={() => {
-                            sfx.playPinballBumper(0);
-                            setViewMode('pinball');
-                          }}
-                        >
-                          🎱 80s Pinball
-                        </button>
-                      </div>
-                    </article>
-                  )}
-                </div>
-              ))}
-            </main>
-          </>
+            <VirtualizedMemeGrid
+              items={visibleMemes}
+              renderMemeCard={(meme, idx) => (
+                <MemeCard
+                  meme={meme}
+                  priority={idx < 2}
+                  myVote={userVotes[meme.id] || 0}
+                  isBookmarked={bookmarkedIds.includes(String(meme.id))}
+                  onToggleBookmark={handleToggleBookmark}
+                  isCommentsOpen={!!openComments[meme.id]}
+                  loadingComments={Boolean(loadingCommentsMap[meme.id])}
+                  commentInput={commentInputs[meme.id] || ''}
+                  onVote={handleVote}
+                  onReaction={handleReaction}
+                  onToggleComments={handleToggleComments}
+                  onCommentInputChange={handleCommentInputChange}
+                  onAddComment={handleAddComment}
+                  onOpenEvolutionTree={handleOpenEvolutionTree}
+                  onTriggerStudioMutate={handleTriggerStudioMutate}
+                  onCaptionThis={handleCaptionThis}
+                  onOpenTheater={handleOpenTheater}
+                  onShareMeme={handleShareMeme}
+                  onOpenProfile={(username) => {
+                    sfx.playToggle();
+                    setProfileUsername(username);
+                  }}
+                  onReportMeme={handleReportMeme}
+                  onReportComment={handleReportComment}
+                  onDeleteComment={handleDeleteComment}
+                  currentUserId={feedUserId || authUserId}
+                  onOpenAiRoast={handleOpenAiRoast}
+                  cardFrame={
+                    isActiveCaptionKing(meme.author_name, activeCaptionKings)
+                      ? 'caption-king'
+                      : (user?.username &&
+                          meme.author_name &&
+                          String(meme.author_name).toLowerCase() ===
+                            String(user.username).toLowerCase()) ||
+                        String(meme.id).startsWith('local-')
+                        ? equippedFrame
+                        : 'default'
+                  }
+                  litePerfMode={litePerfMode}
+                />
+              )}
+              inFeedArcadeCard={
+                <article className="tm-card tm-infeed-arcade-card" aria-label="Side Entertainment Arcade Break">
+                  <div className="tm-infeed-arcade-badge">🕹️ 80s NEON TOKEN ARCADE &amp; CASINO</div>
+                  <div style={{ fontSize: '34px', margin: '6px 0' }}>🃏🎡🎰📈🍬🎱</div>
+                  <h3 style={{ margin: '0 0 6px', fontSize: '18px', color: '#facc15' }}>
+                    READY FOR NEON BINGO &apos;86, COIN DOZER, ROULETTE &amp; ARCADE CABINETS?
+                  </h3>
+                  <p style={{ margin: '0 0 12px', fontSize: '12.5px', color: '#cbd5e1', lineHeight: 1.5 }}>
+                    Dab all 90 classic comedy calls in <strong>🎱 Neon Bingo &apos;86</strong>, drop coins in{' '}
+                    <strong>🪙 Coin Dozer &apos;86</strong>, spin <strong>🎡 Lightning Roulette (150×)</strong>, pull the{' '}
+                    <strong>🎰 One-Arm Bandit</strong>, or fire up <strong>🎱 Upgraded 80s Pinball</strong>!
+                  </p>
+                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      className="tm-btn tm-btn-primary"
+                      onClick={() => {
+                        sfx.playBingoBallPop?.();
+                        setViewMode('bingo');
+                      }}
+                    >
+                      🎱 Neon Bingo &apos;86
+                    </button>
+                    <button
+                      type="button"
+                      className="tm-btn tm-btn-primary"
+                      onClick={() => {
+                        sfx.playCoinDrop?.();
+                        setViewMode('pusher');
+                      }}
+                    >
+                      🪙 Coin Dozer &apos;86
+                    </button>
+                    <button
+                      type="button"
+                      className="tm-btn tm-btn-primary"
+                      onClick={() => {
+                        sfx.playCardDeal();
+                        setViewMode('blackjack');
+                      }}
+                    >
+                      🃏 Neon 21&apos;s
+                    </button>
+                    <button
+                      type="button"
+                      className="tm-btn tm-btn-primary"
+                      onClick={() => {
+                        sfx.playPokerChip?.(2);
+                        setViewMode('poker');
+                      }}
+                    >
+                      🟡 Texas Poker
+                    </button>
+                    <button
+                      type="button"
+                      className="tm-btn tm-btn-primary"
+                      onClick={() => {
+                        sfx.playRouletteSpin();
+                        setViewMode('roulette');
+                      }}
+                    >
+                      🎡 Lightning Roulette
+                    </button>
+                    <button
+                      type="button"
+                      className="tm-btn tm-btn-primary"
+                      onClick={() => {
+                        sfx.playSlotLeverPull();
+                        setViewMode('slots');
+                      }}
+                    >
+                      🎰 One-Arm Bandit
+                    </button>
+                    <button
+                      type="button"
+                      className="tm-btn tm-btn-primary"
+                      onClick={() => {
+                        sfx.playStockBell?.(true);
+                        setViewMode('stocks');
+                      }}
+                    >
+                      📈 Meme Stocks
+                    </button>
+                    <button
+                      type="button"
+                      className="tm-btn tm-btn-primary"
+                      onClick={() => {
+                        sfx.playCandyMatch(3);
+                        setViewMode('crush');
+                      }}
+                    >
+                      🍬 Meme Crush
+                    </button>
+                    <button
+                      type="button"
+                      className="tm-btn tm-btn-primary"
+                      onClick={() => {
+                        sfx.playPinballBumper(0);
+                        setViewMode('pinball');
+                      }}
+                    >
+                      🎱 80s Pinball
+                    </button>
+                  </div>
+                </article>
+              }
+            />
           )}
 
-          {!isLoadingFeed && visibleCount < filteredMemes.length && (
+          {!isLoadingFeed && (visibleCount < filteredMemes.length || hasMoreServer) && (
             <div ref={loadMoreSentinelRef} className="tm-load-more-bar">
               <button
                 type="button"
                 className="tm-btn tm-btn-primary"
+                disabled={isLoadingMoreFeed}
+                data-testid="load-more-memes-btn"
                 onClick={() => {
                   sfx.playToggle();
-                  setVisibleCount((prev) => prev + 6);
+                  void loadNextFeedPage();
                 }}
               >
-                ⚡ Load More Memes ({filteredMemes.length - visibleCount} remaining)
+                {isLoadingMoreFeed
+                  ? '⏳ Loading Deeper Archive...'
+                  : hasMoreServer
+                    ? '⚡ Load More Memes'
+                    : `⚡ Load More Memes (${filteredMemes.length - visibleCount} remaining)`}
               </button>
             </div>
           )}
 
-          {!isLoadingFeed && filteredMemes.length > 0 && visibleCount >= filteredMemes.length && (
+          {!isLoadingFeed && filteredMemes.length > 0 && visibleCount >= filteredMemes.length && !hasMoreServer && (
             <section className="tm-end-of-internet-wrap" aria-label="End of feed">
               <div className="tm-end-of-internet-card">
                 <div style={{ fontSize: '42px', marginBottom: '6px' }}>🫠</div>

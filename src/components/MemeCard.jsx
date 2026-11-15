@@ -31,6 +31,7 @@ const MemeCard = memo(function MemeCard({
   onReportMeme,
   onReportComment,
   onDeleteComment,
+  loadingComments = false,
   currentUserId = null,
   onOpenAiRoast,
   cardFrame = 'default',
@@ -326,8 +327,12 @@ const MemeCard = memo(function MemeCard({
             className="tm-react-btn"
             onClick={() => onToggleComments(meme.id)}
             title="Toggle Comments"
+            data-testid={`meme-comments-toggle-${meme.id}`}
           >
-            💬 {(meme.comments || []).length}
+            💬{' '}
+            {meme.commentsLoaded
+              ? (meme.comments || []).length
+              : Math.max((meme.comments || []).length, Number(meme.comments_count || 0))}
           </button>
           {onToggleBookmark && (
             <button
@@ -435,7 +440,11 @@ const MemeCard = memo(function MemeCard({
       {/* Inline Comments Drawer */}
       {isCommentsOpen && (
         <div className="tm-comments">
-          {(meme.comments || []).length === 0 ? (
+          {loadingComments && (meme.comments || []).length === 0 ? (
+            <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '8px' }}>
+              ⏳ Loading comments...
+            </div>
+          ) : (meme.comments || []).length === 0 ? (
             <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '8px' }}>
               No comments yet — be the first to comment (+25 XP)!
             </div>

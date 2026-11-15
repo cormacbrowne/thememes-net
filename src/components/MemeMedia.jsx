@@ -2,6 +2,7 @@ import { memo, useEffect, useRef, useState } from 'react';
 import MemeOverlay from './MemeOverlay';
 import { registerAutoplay, hasUserGestured } from '../utils/videoAutoplay';
 import { formatDuration } from '../utils/mediaPipeline';
+import { sanitizeMediaUrl } from '../utils/securityGuard';
 
 /**
  * PHASE 26: unified meme media renderer (image | gif | video) + non-destructive overlay.
@@ -47,22 +48,26 @@ const MemeMedia = memo(function MemeMedia({
   }, [active, isVideo, mode]);
 
   if (!meme) return null;
+  const safeImageUrl = sanitizeMediaUrl(meme.image_url, '');
+  const safePosterUrl = sanitizeMediaUrl(meme.poster_url, '');
   const boxStyle = meme.width && meme.height ? { aspectRatio: `${meme.width} / ${meme.height}` } : undefined;
   const effectiveLoading = priority ? 'eager' : imgLoading;
 
   if (!isVideo) {
     return (
       <div className={`tm-media-box ${className}`} style={boxStyle}>
-        <img
-          src={meme.image_url}
-          alt={meme.title}
-          width={meme.width || 540}
-          height={meme.height || 480}
-          loading={effectiveLoading}
-          fetchPriority={priority ? 'high' : undefined}
-          decoding={priority ? 'sync' : 'async'}
-          draggable={false}
-        />
+        {safeImageUrl && (
+          <img
+            src={safeImageUrl}
+            alt={meme.title}
+            width={meme.width || 540}
+            height={meme.height || 480}
+            loading={effectiveLoading}
+            fetchPriority={priority ? 'high' : undefined}
+            decoding={priority ? 'sync' : 'async'}
+            draggable={false}
+          />
+        )}
         <MemeOverlay overlay={meme.overlay} />
         {meme.media_type === 'gif' && <span className="tm-media-badge">GIF</span>}
       </div>
@@ -72,15 +77,17 @@ const MemeMedia = memo(function MemeMedia({
   if (showPosterOnly) {
     return (
       <div className={`tm-media-box ${className}`} style={boxStyle}>
-        <img
-          src={meme.poster_url || ''}
-          alt={meme.title}
-          width={meme.width || 540}
-          height={meme.height || 480}
-          loading={effectiveLoading}
-          fetchPriority={priority ? 'high' : undefined}
-          decoding={priority ? 'sync' : 'async'}
-        />
+        {safePosterUrl && (
+          <img
+            src={safePosterUrl}
+            alt={meme.title}
+            width={meme.width || 540}
+            height={meme.height || 480}
+            loading={effectiveLoading}
+            fetchPriority={priority ? 'high' : undefined}
+            decoding={priority ? 'sync' : 'async'}
+          />
+        )}
         <MemeOverlay overlay={meme.overlay} />
         <button
           type="button"
@@ -102,8 +109,8 @@ const MemeMedia = memo(function MemeMedia({
     <div className={`tm-media-box ${className}`} style={boxStyle}>
       <video
         ref={videoRef}
-        src={meme.image_url}
-        poster={meme.poster_url || undefined}
+        src={safeImageUrl}
+        poster={safePosterUrl || undefined}
         muted={mode === 'theater' ? false : muted}
         loop={mode !== 'theater'}
         playsInline

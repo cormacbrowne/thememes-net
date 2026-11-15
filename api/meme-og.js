@@ -13,11 +13,28 @@ function escapeHtml(value = '') {
     .replaceAll("'", '&#39;');
 }
 
-function toAbsoluteUrl(rawUrl) {
+const DEFAULT_SUPABASE_URL = 'https://otvvphmjojqyjaznjzyo.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY = 'sb_publishable_IcrXK6kDdGaWZo9rU0GFRg_ZxtaY-wB';
+
+function getStoragePublicPrefix() {
+  const base = (process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/+$/, '');
+  return `${base}/storage/v1/object/public/memes/`;
+}
+
+export function toAbsoluteUrl(rawUrl) {
   if (!rawUrl || typeof rawUrl !== 'string') return DEFAULT_OG_IMAGE;
   const trimmed = rawUrl.trim();
-  if (trimmed.startsWith('/')) return `${SITE_ORIGIN}${trimmed}`;
-  if (trimmed.startsWith('https://')) return trimmed;
+  if (!trimmed || trimmed.includes('..') || /\s/.test(trimmed)) return DEFAULT_OG_IMAGE;
+  const storagePrefix = getStoragePublicPrefix();
+  if (trimmed.startsWith('/seed/') && trimmed.length > '/seed/'.length) {
+    return `${SITE_ORIGIN}${trimmed}`;
+  }
+  if (trimmed.startsWith(storagePrefix) && trimmed.length > storagePrefix.length) {
+    return trimmed;
+  }
+  if (trimmed.startsWith(`${SITE_ORIGIN}/seed/`) && trimmed.length > `${SITE_ORIGIN}/seed/`.length) {
+    return trimmed;
+  }
   return DEFAULT_OG_IMAGE;
 }
 
@@ -86,9 +103,6 @@ async function loadBaseIndexHtml() {
   </body>
 </html>`;
 }
-
-const DEFAULT_SUPABASE_URL = 'https://otvvphmjojqyjaznjzyo.supabase.co';
-const DEFAULT_SUPABASE_ANON_KEY = 'sb_publishable_IcrXK6kDdGaWZo9rU0GFRg_ZxtaY-wB';
 
 async function fetchLiveMeme(memeId) {
   const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL;

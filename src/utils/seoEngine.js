@@ -10,6 +10,7 @@ import {
   getSeoRouteForState,
   getCanonicalPathForState
 } from '../data/seoRoutes.js';
+import { sanitizeMediaUrl } from './securityGuard.js';
 
 const NON_PATH_VIEW_MODES = {
   reels: {
@@ -101,14 +102,9 @@ export function updateDynamicSeo({
     pageTitle = `${activeMeme.title} — Meme by @${author} | THE MEMES.net`;
     pageDesc = `View, upvote (${activeMeme.score || 1} pts), roast with AI, or remix "${activeMeme.title}" by @${author} on THE MEMES.net.`;
     canonicalUrl = `${SITE_ORIGIN}/m/${encodeURIComponent(String(activeMeme.id))}`;
-    if (
-      activeMeme.media_type !== 'video' &&
-      typeof activeMeme.image_url === 'string' &&
-      (activeMeme.image_url.startsWith('https://') || activeMeme.image_url.startsWith('/'))
-    ) {
-      ogImageUrl = activeMeme.image_url.startsWith('/')
-        ? `${SITE_ORIGIN}${activeMeme.image_url}`
-        : activeMeme.image_url;
+    const safeOg = sanitizeMediaUrl(activeMeme.image_url, '');
+    if (activeMeme.media_type !== 'video' && safeOg && !safeOg.startsWith('data:') && !safeOg.startsWith('blob:')) {
+      ogImageUrl = safeOg.startsWith('/') ? `${SITE_ORIGIN}${safeOg}` : safeOg;
     }
   }
 
@@ -128,7 +124,12 @@ export function updateDynamicSeo({
   upsertMeta('meta[name="twitter:image"]', 'name', 'twitter:image', ogImageUrl);
 
   if (activeMeme?.media_type === 'video') {
-    upsertMeta('meta[property="og:video"]', 'property', 'og:video', activeMeme.image_url);
+    const safeVid = sanitizeMediaUrl(activeMeme.image_url, '');
+    if (safeVid) {
+      upsertMeta('meta[property="og:video"]', 'property', 'og:video', safeVid);
+    } else {
+      document.querySelector('meta[property="og:video"]')?.remove();
+    }
   } else {
     document.querySelector('meta[property="og:video"]')?.remove();
   }

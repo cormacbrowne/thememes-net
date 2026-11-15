@@ -1613,3 +1613,95 @@ test.describe('Phase 33.9 Video Paused & GIF Limits', () => {
     });
   }
 });
+
+test.describe('Phase 33.10 Tight CSP & Own-Storage Media', () => {
+  const viewports = [
+    { name: 'mobile', width: 390, height: 844 },
+    { name: 'tablet', width: 768, height: 1024 },
+    { name: 'desktop', width: 1280, height: 800 }
+  ];
+
+  for (const vp of viewports) {
+    test(`renders cleanly with strict CSP and blocks off-origin meme URLs on ${vp.name} (${vp.width}x${vp.height})`, async ({
+      page
+    }) => {
+      const pageErrors = [];
+      const cspConsoleErrors = [];
+      let blockedOriginRequests = 0;
+
+      page.on('pageerror', (e) => pageErrors.push(e.message));
+      page.on('console', (msg) => {
+        if (msg.type() === 'error' && /Content Security Policy|securitypolicyviolation|Refused to/i.test(msg.text())) {
+          cspConsoleErrors.push(msg.text());
+        }
+      });
+
+      await page.addInitScript(() => {
+        window.__cspViolations = [];
+        document.addEventListener('securitypolicyviolation', (e) => {
+          window.__cspViolations.push({
+            directive: e.violatedDirective,
+            blockedURI: e.blockedURI
+          });
+        });
+      });
+
+      await page.route('https://evil.example.com/**', async (route) => {
+        blockedOriginRequests += 1;
+        await route.abort();
+      });
+
+      await page.route('**/rest/v1/memes*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([
+            {
+              id: '55555555-5555-4555-8555-555555555501',
+              title: 'Valid Own Storage Meme',
+              author_name: 'AnonMemer',
+              category: 'dank',
+              image_url: '/seed/seed-tech-01.webp',
+              media_type: 'image',
+              status: 'approved',
+              score: 12,
+              reactions: { '🔥': 1, '💀': 0, '😂': 0, '🗿': 0 },
+              comments: [],
+              created_at: new Date().toISOString()
+            },
+            {
+              id: '55555555-5555-4555-8555-555555555502',
+              title: 'Attacker External Image Meme',
+              author_name: 'BadActor',
+              category: 'dank',
+              image_url: 'https://evil.example.com/tracker.png',
+              media_type: 'image',
+              status: 'approved',
+              score: 99,
+              reactions: { '🔥': 0, '💀': 0, '😂': 0, '🗿': 0 },
+              comments: [],
+              created_at: new Date().toISOString()
+            }
+          ])
+        });
+      });
+
+      await page.setViewportSize(vp);
+      await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+      await expect(page.locator('.tm-card').first()).toBeVisible({ timeout: 15000 });
+      await expect(page.locator('.tm-card').first()).toContainText('Valid Own Storage Meme');
+
+      const violations = await page.evaluate(() => window.__cspViolations || []);
+      expect(violations).toEqual([]);
+      expect(cspConsoleErrors).toEqual([]);
+      expect(blockedOriginRequests).toBe(0);
+      expect(pageErrors).toEqual([]);
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(overflow).toBeLessThanOrEqual(2);
+    });
+  }
+});

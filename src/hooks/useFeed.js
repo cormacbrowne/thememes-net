@@ -39,6 +39,17 @@ import {
 import { submitReport } from '../utils/reports';
 import { PUBLIC_UPLOADS_ENABLED, UPLOADS_PAUSED_ERROR } from '../config/featureFlags';
 import { validateFile, canvasToCompressedBlob, makePoster } from '../utils/mediaPipeline';
+import { sanitizeMediaUrl } from '../utils/securityGuard';
+
+function sanitizeMemeUrls(meme) {
+  if (!meme || typeof meme !== 'object') return meme;
+  return {
+    ...meme,
+    image_url: sanitizeMediaUrl(meme.image_url, ''),
+    poster_url: meme.poster_url ? sanitizeMediaUrl(meme.poster_url, '') || null : null,
+    base_image_url: meme.base_image_url ? sanitizeMediaUrl(meme.base_image_url, '') || null : null
+  };
+}
 import { recordPublishDailyPerk } from '../utils/memeFeedBridge';
 import {
   getDailyCaptionBattle,
@@ -94,7 +105,7 @@ export function useFeed({
     try {
       const saved = JSON.parse(localStorage.getItem('tm_user_memes') || '[]');
       const userUploads = Array.isArray(saved)
-        ? saved.filter((m) => m && !isSeedMeme(m))
+        ? saved.filter((m) => m && !isSeedMeme(m)).map(sanitizeMemeUrls).filter((m) => m.image_url)
         : [];
       const seen = new Set(userUploads.map((m) => String(m.id)));
       return [...userUploads, ...STARTER_MEMES.filter((m) => !seen.has(String(m.id)))];
@@ -294,15 +305,17 @@ export function useFeed({
 
       setDbStatus('live');
       const normalized = Array.isArray(data)
-        ? data.map((row) => ({
-            ...row,
-            generation: row.generation || 0,
-            mutation_count: row.mutation_count || 0,
-            reactions: row.reactions || { '🔥': 0, '💀': 0, '😂': 0, '🗿': 0 },
-            comments: Array.isArray(row.comments)
-              ? row.comments.filter((c) => c && !hiddenCommentIdsRef.current.includes(String(c.id)))
-              : []
-          }))
+        ? data.map((row) =>
+            sanitizeMemeUrls({
+              ...row,
+              generation: row.generation || 0,
+              mutation_count: row.mutation_count || 0,
+              reactions: row.reactions || { '🔥': 0, '💀': 0, '😂': 0, '🗿': 0 },
+              comments: Array.isArray(row.comments)
+                ? row.comments.filter((c) => c && !hiddenCommentIdsRef.current.includes(String(c.id)))
+                : []
+            })
+          )
         : [];
       const liveIds = new Set(normalized.map((m) => String(m.id)));
       setMemes((prev) => {

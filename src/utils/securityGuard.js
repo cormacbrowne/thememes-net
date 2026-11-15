@@ -7,6 +7,53 @@
 const SAFE_DATA_IMAGE_RE = /^data:image\/(png|jpeg|jpg|webp|gif);base64,[a-z0-9+/=\s]+$/i;
 const BIDI_SPOOF_RE = /[\u202A-\u202E\u2066-\u2069]/g;
 const DANGEROUS_PROTO_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+const DEFAULT_SUPABASE_URL = 'https://otvvphmjojqyjaznjzyo.supabase.co';
+const SITE_ORIGINS = new Set(['https://www.thememes.net', 'https://thememes.net']);
+
+function resolveStoragePrefix() {
+  const configured =
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) ||
+    globalThis?.process?.env?.VITE_SUPABASE_URL ||
+    DEFAULT_SUPABASE_URL;
+  const origin = String(configured || DEFAULT_SUPABASE_URL).replace(/\/+$/, '');
+  return `${origin}/storage/v1/object/public/memes/`;
+}
+
+export const OWN_MEDIA_STORAGE_PREFIX = resolveStoragePrefix();
+
+/**
+ * Returns true if rawUrl points strictly to our own Supabase public `memes` bucket,
+ * our bundled `/seed/` assets (relative or same-origin), a local `blob:`, or safe raster `data:image/`.
+ */
+export function isAllowedMediaUrl(rawUrl) {
+  if (!rawUrl || typeof rawUrl !== 'string') return false;
+  const trimmed = rawUrl.trim();
+  if (!trimmed || trimmed.includes('..') || /\s/.test(trimmed)) return false;
+
+  if (trimmed.startsWith('/seed/') && trimmed.length > '/seed/'.length) {
+    return true;
+  }
+  if (trimmed.startsWith('blob:')) {
+    return true;
+  }
+  if (trimmed.slice(0, 5).toLowerCase() === 'data:') {
+    return SAFE_DATA_IMAGE_RE.test(trimmed);
+  }
+  try {
+    const base = typeof window !== 'undefined' ? window.location.origin : 'https://www.thememes.net';
+    const parsed = new URL(trimmed, base);
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return false;
+    if (parsed.href.startsWith(OWN_MEDIA_STORAGE_PREFIX)) {
+      return parsed.href.length > OWN_MEDIA_STORAGE_PREFIX.length;
+    }
+    const isSameHost =
+      SITE_ORIGINS.has(parsed.origin) ||
+      (typeof window !== 'undefined' && parsed.origin === window.location.origin);
+    return isSameHost && parsed.pathname.startsWith('/seed/') && parsed.pathname.length > '/seed/'.length;
+  } catch {
+    return false;
+  }
+}
 
 function stripControlChars(str) {
   let out = '';
@@ -22,35 +69,20 @@ function stripControlChars(str) {
 
 /**
  * Sanitizes any user-supplied or database-sourced media URL.
- * Blocks javascript:, vbscript:, data:text/html, and data:image/svg+xml (which can carry XSS).
+ * Only permits `/seed/` assets, our own Supabase public `memes` bucket, local `blob:` URLs,
+ * and safe raster `data:image/` URLs. Blocks external origins and `javascript:`/`data:image/svg+xml`.
  */
 export function sanitizeMediaUrl(rawUrl, fallback = '') {
   if (!rawUrl || typeof rawUrl !== 'string') return fallback;
   const trimmed = rawUrl.trim();
   if (!trimmed) return fallback;
+  if (!isAllowedMediaUrl(trimmed)) return fallback;
 
-  // Allow relative local asset paths
-  if (trimmed.startsWith('/') && !trimmed.startsWith('//')) {
-    return trimmed;
-  }
-
-  // Allow blob: URLs generated within the current origin
-  if (trimmed.startsWith('blob:')) {
-    return trimmed;
-  }
-
-  // Allow only raster base64 data URLs (never SVG or HTML data URLs)
-  if (trimmed.slice(0, 5).toLowerCase() === 'data:') {
-    return SAFE_DATA_IMAGE_RE.test(trimmed) ? trimmed : fallback;
-  }
+  if (trimmed.startsWith('/seed/')) return trimmed;
+  if (trimmed.startsWith('blob:') || trimmed.slice(0, 5).toLowerCase() === 'data:') return trimmed;
 
   try {
     const parsed = new URL(trimmed, typeof window !== 'undefined' ? window.location.origin : 'https://www.thememes.net');
-    const protocol = parsed.protocol.toLowerCase();
-    if (protocol !== 'https:' && protocol !== 'http:') {
-      return fallback;
-    }
-    // Block SVG query/path script injection vectors if untrusted
     return parsed.href;
   } catch {
     return fallback;

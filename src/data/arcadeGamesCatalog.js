@@ -128,6 +128,17 @@ export const ARCADE_GAMES_CATALOG = [
     path: '/games/neon-serpent'
   },
   {
+    id: 'blaster',
+    group: 'skill',
+    icon: '🧱',
+    label: 'Brick Blaster',
+    pitch: 'Break word-art & pixel-face levels with Multi-Ball, Twin Laser & Wide Paddle orbs (free to play).',
+    badge: 'Breaker',
+    isNew: true,
+    accent: '#f472b6',
+    path: '/games/brick-blaster'
+  },
+  {
     id: 'pinball',
     group: 'skill',
     icon: '🎱',

@@ -53,7 +53,10 @@ export const MODE_ALIASES = {
   'meme-invaders': 'invaders',
   serpent: 'serpent',
   'neon-serpent': 'serpent',
-  snake: 'serpent'
+  snake: 'serpent',
+  blaster: 'blaster',
+  'brick-blaster': 'blaster',
+  breakout: 'blaster'
 };
 
 export const CATEGORY_SLUG_TO_ID = {
@@ -75,6 +78,7 @@ export const GAME_VIEW_MODE_TO_PATH = {
   lobby: '/games',
   invaders: '/games/meme-invaders',
   serpent: '/games/neon-serpent',
+  blaster: '/games/brick-blaster',
   bingo: '/games/neon-bingo',
   pusher: '/games/coin-pusher',
   pinball: '/games/pinball',
@@ -224,6 +228,24 @@ export const SEO_ROUTES = [
       'Slither through the cyber-grid in Neon Serpent, a free 60fps synthwave reaction-snake arcade cabinet playable directly in your browser with zero downloads, zero token fees, and instant leaderboard competition. Steer your glowing serpent across a 20x20 neon matrix while snatching meme reaction emojis that transform the pace and strategy of every single run.',
       'Unlike ordinary classic snake clones, every emoji flavor packs a distinct tactical power-up: grab laughing bites for crisp score growth, chase viral crowns for mega bonus points, hit fire emojis to ignite double-point speed overdrive, tap stoic moai heads to activate calming slow-motion control around cramped walls, or devour skulls to shed three tail segments and escape tight corners.',
       'Built mobile-first with continuous swipe detection across the touch-protected canvas and tactile D-pad buttons underneath, Neon Serpent plays effortlessly with one thumb on phones, Arrow or WASD keys on desktop keyboards, or any connected USB and Bluetooth gamepad controller. Switching browser tabs pauses your run automatically, and every high score invites you to stamp your 3-letter arcade initials onto the global cabinet board.'
+    ]
+  },
+  {
+    path: '/games/brick-blaster',
+    title: 'Brick Blaster — Free Retro Word & Pixel Face Breaker | THE MEMES.net',
+    description:
+      'Play Brick Blaster free online! Smash word-art and pixel-face brick levels with Multi-Ball, Twin Laser, and Wide Paddle power-ups. Drag anywhere to steer at 60fps.',
+    h1: 'Brick Blaster — Free Retro Pixel-Face Brick Breaker',
+    kicker: '60fps Skill Cabinet // Drag, Keyboard & Gamepad — 0 Tokens to Play',
+    ogImage: 'https://www.thememes.net/og/games.png',
+    changefreq: 'daily',
+    priority: '0.9',
+    viewMode: 'blaster',
+    category: 'all',
+    introParagraphs: [
+      'Smash through retro pixel-art formations in Brick Blaster, a free 60fps arcade brick-breaker game running directly in your browser with zero downloads, zero token fees, and full global leaderboard support. Each stage arranges colorful neon, armored, and mystery bricks into unmistakable word art and pixel faces—starting with glowing LOL blocks before advancing into Smiley Face, MEME word art, and Cyber Frog levels.',
+      'Steer your energy paddle cleanly by dragging anywhere across the screen on phones and tablets, tapping the on-screen control buttons, holding Left or Right Arrow and A/D keys on desktop keyboards, or connecting a USB or Bluetooth gamepad controller. Aim bank shots off the curved paddle edges to slice behind multi-hit titanium rows and crack glowing star bricks.',
+      'Every cracked mystery block releases falling power-up orbs that transform the arena: catch ⚡ Multi-Ball to split shots up to four simultaneous balls, grab 🔫 Twin Laser to arm deck-mounted plasma cannons that vaporize stubborn bricks, or trigger ↔️ Wide Paddle for extra defense against high-speed rebounds. Switching tabs auto-pauses your match, and finishing a run lets you lock your 3-letter initials onto the leaderboard.'
     ]
   },
   {
@@ -953,6 +975,7 @@ export function resolveRouteFromLocation(pathname = '/', search = '') {
     'slots',
     'invaders',
     'serpent',
+    'blaster',
     'crush',
     'pinball',
     'stocks',

@@ -181,6 +181,13 @@ export default function SeoDiscoveryFooter({
                 🐍 Neon Serpent (Synthwave Reaction Snake)
               </a>
               <a
+                href="/games/brick-blaster"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('blaster'))}
+              >
+                🧱 Brick Blaster (Word &amp; Pixel-Face Breaker)
+              </a>
+              <a
                 href="/games/pinball"
                 className="tm-seo-link"
                 onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('pinball'))}

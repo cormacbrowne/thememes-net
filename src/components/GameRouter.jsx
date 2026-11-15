@@ -24,6 +24,7 @@ const NeonBingoGame = lazyWithRetry(() => import('./NeonBingoGame'));
 const MemeCrushGame = lazyWithRetry(() => import('./MemeCrushGame'));
 const MemeInvadersGame = lazyWithRetry(() => import('./MemeInvadersGame'));
 const NeonSerpentGame = lazyWithRetry(() => import('./NeonSerpentGame'));
+const BrickBlasterGame = lazyWithRetry(() => import('./BrickBlasterGame'));
 const VegasPinballGame = lazyWithRetry(() => import('./VegasPinballGame'));
 const VegasSlotMachine = lazyWithRetry(() => import('./VegasSlotMachine'));
 const VegasBlackjackGame = lazyWithRetry(() => import('./VegasBlackjackGame'));
@@ -254,6 +255,16 @@ export function FixedArcadeTopBar({
           }}
         >
           🐍 Serpent
+        </button>
+        <button
+          type="button"
+          className={`tm-fixed-game-pill ${viewMode === 'blaster' ? 'active' : ''}`}
+          onClick={() => {
+            sfx.playToggle();
+            setViewMode('blaster');
+          }}
+        >
+          🧱 Blaster
         </button>
         <button
           type="button"
@@ -1116,6 +1127,26 @@ export default function GameRouter({
             }}
             onRecordHighScore={handleRecordHighScore}
             onOpenLeaderboard={() => onOpenCabinetLeaderboard?.('serpent')}
+            onBackToFeed={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+            }}
+          />
+        </Suspense>
+      )}
+
+      {viewMode === 'blaster' && (
+        <Suspense fallback={<MemeSkeletonGrid count={3} />}>
+          <BrickBlasterGame
+            soundOn={soundOn}
+            onToggleSound={() => {
+              const nextState = !soundOn;
+              sfx.enabled = nextState;
+              setSoundOn(nextState);
+              if (nextState) sfx.playToggle();
+            }}
+            onRecordHighScore={handleRecordHighScore}
+            onOpenLeaderboard={() => onOpenCabinetLeaderboard?.('blaster')}
             onBackToFeed={() => {
               sfx.playToggle();
               setViewMode('feed');

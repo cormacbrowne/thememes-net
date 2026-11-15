@@ -992,7 +992,7 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
 
     // Lobby shows Retro Cabinets + Funny Boss Key & Prank Screens section
     await page.goto('/games', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByText(/17 Retro Cabinets/i).first()).toBeVisible();
+    await expect(page.getByText(/18 Retro Cabinets/i).first()).toBeVisible();
     await expect(page.getByRole('heading', { name: /Funny Boss Key & Prank Screens/i })).toBeVisible();
 
     expect(pageErrors).toEqual([]);
@@ -2969,8 +2969,69 @@ test.describe('Phase 33.20 — Neon Serpent skill cabinet & swipe controls', () 
 
       // Lobby lists Neon Serpent under Skill with accurate count
       await page.goto('/games', { waitUntil: 'domcontentloaded' });
-      await expect(page.getByText(/17 retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText(/\d+\s+retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
       await expect(page.getByText(/Neon Serpent/i).first()).toBeVisible();
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(overflow).toBeLessThanOrEqual(2);
+      expect(pageErrors).toEqual([]);
+    });
+  }
+});
+
+test.describe('Phase 33.21 — Brick Blaster skill cabinet & word/face levels', () => {
+  for (const vp of [
+    { name: 'mobile', width: 390, height: 844 },
+    { name: 'tablet', width: 768, height: 1024 },
+    { name: 'desktop', width: 1280, height: 800 }
+  ]) {
+    test(`Brick Blaster route renders 0-token drag breaker without overflow on ${vp.name}`, async ({
+      page
+    }) => {
+      const pageErrors = [];
+      page.on('pageerror', (err) => pageErrors.push(err?.message || String(err)));
+
+      await page.setViewportSize(vp);
+      await page.goto('/games/brick-blaster', { waitUntil: 'domcontentloaded' });
+
+      await expect(page).toHaveTitle(/Brick Blaster/i);
+      const stage = page.getByTestId('brick-blaster-stage');
+      await expect(stage).toBeVisible({ timeout: 15000 });
+      await expect(page.getByText(/0 TOKENS/i).first()).toBeVisible();
+
+      const canvas = page.getByTestId('blaster-canvas');
+      await expect(canvas).toBeVisible();
+      const touchAction = await canvas.evaluate((el) => getComputedStyle(el).touchAction);
+      expect(touchAction).toBe('none');
+
+      // Level pattern & powerup pills visible
+      await expect(page.getByTestId('blaster-level-strip')).toContainText('LOL WORD');
+      await expect(page.getByTestId('blaster-level-strip')).toContainText('Laser');
+      await expect(page.getByTestId('blaster-level-strip')).toContainText('Wide');
+
+      // Drag anywhere across canvas + blur auto-pause
+      const box = await canvas.boundingBox();
+      if (box) {
+        await page.mouse.move(box.x + box.width * 0.35, box.y + box.height * 0.6);
+        await page.mouse.down();
+        await page.mouse.move(box.x + box.width * 0.72, box.y + box.height * 0.6, { steps: 4 });
+        await page.mouse.up();
+      }
+
+      await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+      await expect(page.getByTestId('blaster-paused-overlay')).toBeVisible({ timeout: 5000 });
+      await page.getByTestId('blaster-pause-btn').click();
+      await expect(page.getByTestId('blaster-paused-overlay')).toBeHidden();
+
+      // Leaderboard button present
+      await expect(page.getByTestId('blaster-leaderboard-btn')).toBeVisible();
+
+      // Lobby lists Brick Blaster under Skill with accurate count
+      await page.goto('/games', { waitUntil: 'domcontentloaded' });
+      await expect(page.getByText(/18 retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText(/Brick Blaster/i).first()).toBeVisible();
 
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - window.innerWidth

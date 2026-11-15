@@ -3,7 +3,8 @@
 //   33.3 images: provider adapters (Sightengine, OpenAI omni-moderation) chosen by env vars,
 //                thresholds in moderationConfig.js. FAIL CLOSED: no provider, no key, timeout,
 //                HTTP error, quota or an unreadable reply → 'review' (meme stays `pending`).
-//   33.4 text:   still a fail-closed placeholder (every verdict is 'review').
+//   33.4 text:   local blocklist (textFilter.js) + OpenAI omni-moderation, thresholds in
+//                textModerationConfig.js; same fail-closed rules.
 //
 // Verdict shape:
 //   { decision: 'approve' | 'review' | 'reject', provider, reason,
@@ -15,6 +16,8 @@
 //   OPENAI_API_KEY                                    (for openai)
 // ==========================================
 import { IMAGE_MODERATION } from './moderationConfig.js';
+import { TEXT_MODERATION } from './textModerationConfig.js';
+import { checkTexts } from './textFilter.js';
 
 const ORDER = { approve: 0, review: 1, reject: 2 };
 const worst = (a, b) => (ORDER[b] > ORDER[a] ? b : a);
@@ -80,7 +83,8 @@ export function scoresToVerdict(provider, scores, config = IMAGE_MODERATION) {
     else if (score >= t.reject) d = 'reject';
     else if (score >= t.review) d = 'review';
     else d = 'approve';
-    if (config.zeroToleranceCategories.includes(cat) && d !== 'approve') {
+    // Missing data stays 'review'; only a real score is escalated to reject.
+    if (config.zeroToleranceCategories.includes(cat) && score !== null && d !== 'approve') {
       d = 'reject';
       zeroTolerance = true;
     }
@@ -178,6 +182,89 @@ export async function moderateImage({ samples = [], env, fetchImpl = globalThis.
   return { ...result, reason: result.decision === 'approve' ? 'clear' : `flagged:${result.flagged.join(',')}`, samples: samples.length };
 }
 
-export async function moderateText(/* { texts, env } */) {
-  return { decision: 'review', provider: 'none', reason: 'text_moderation_not_configured' };
+/** Apply TEXT_MODERATION thresholds to one OpenAI result's category_scores. */
+export function textScoresToVerdict(scores, config = TEXT_MODERATION) {
+  const categories = {};
+  const flagged = [];
+  let decision = 'approve';
+  let zeroTolerance = false;
+  for (const [cat, t] of Object.entries(config.thresholds)) {
+    const score = num(scores?.[cat]);
+    categories[cat] = score;
+    let d;
+    if (score === null) d = 'review';
+    else if (score >= t.reject) d = 'reject';
+    else if (score >= t.review) d = 'review';
+    else d = 'approve';
+    // Missing data stays 'review'; only a real score is escalated to reject.
+    if (config.zeroToleranceCategories.includes(cat) && score !== null && d !== 'approve') {
+      d = 'reject';
+      zeroTolerance = true;
+    }
+    if (d !== 'approve') flagged.push(cat);
+    decision = worst(decision, d);
+  }
+  return { decision, categories, flagged, zeroTolerance };
+}
+
+/**
+ * moderateText({ texts, env, fetchImpl? })  — task 33.4
+ * Layer 1: local blocklist / links / personal info / impersonation (textFilter.js): a hit is
+ *          an instant 'reject' with a `category` the UI can explain.
+ * Layer 2: OpenAI omni-moderation on all texts in one request; worst result wins.
+ * Fail closed: no provider / key, timeout, HTTP error or odd reply → 'review'.
+ */
+export async function moderateText({ texts = [], env, fetchImpl = globalThis.fetch, config = TEXT_MODERATION } = {}) {
+  const list = (texts || []).map((t) => String(t ?? '').trim()).filter(Boolean);
+  if (!list.length) return { decision: 'approve', provider: 'none', reason: 'no_text' };
+
+  const local = checkTexts(list, config);
+  if (local.decision === 'reject') {
+    return { decision: 'reject', provider: 'blocklist', reason: `local:${local.category}`, category: local.category };
+  }
+
+  const provider = (env?.get?.('TEXT_MODERATION_PROVIDER') || config.defaultProvider || 'none').toLowerCase();
+  if (provider !== 'openai') return { decision: 'review', provider: 'none', reason: 'text_moderation_not_configured' };
+  const key = env?.get?.('OPENAI_API_KEY');
+  if (!key) return { decision: 'review', provider, reason: 'provider_unavailable:missing_api_key' };
+
+  let json;
+  try {
+    const res = await withTimeout(
+      fetchImpl,
+      'https://api.openai.com/v1/moderations',
+      {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'omni-moderation-latest', input: list })
+      },
+      config.timeoutMs
+    );
+    json = await res.json().catch(() => null);
+    if (!res.ok) return { decision: 'review', provider, reason: `provider_unavailable:http_${res.status}` };
+  } catch (err) {
+    return { decision: 'review', provider, reason: `provider_unavailable:${err?.name === 'AbortError' ? 'timeout' : 'network'}` };
+  }
+  const results = json?.results;
+  if (!Array.isArray(results) || results.length !== list.length) {
+    return { decision: 'review', provider, reason: 'provider_unavailable:bad_reply' };
+  }
+  let out = { decision: 'approve', categories: {}, flagged: [], zeroTolerance: false };
+  for (const r of results) {
+    const v = textScoresToVerdict(r?.category_scores, config);
+    out = {
+      decision: worst(out.decision, v.decision),
+      flagged: [...new Set([...out.flagged, ...v.flagged])],
+      zeroTolerance: out.zeroTolerance || v.zeroTolerance,
+      categories: Object.fromEntries(
+        Object.keys(v.categories).map((k) => [k, maxOf(out.categories[k], v.categories[k])])
+      )
+    };
+  }
+  return {
+    ...out,
+    provider,
+    category: out.decision === 'reject' ? 'rules' : undefined,
+    reason: out.decision === 'approve' ? 'clear' : `flagged:${out.flagged.join(',')}`
+  };
 }

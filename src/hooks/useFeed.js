@@ -26,6 +26,7 @@ import {
   trackShareClicked
 } from '../utils/analytics';
 import { publishMeme, PENDING_REVIEW_MESSAGE } from '../utils/publishMeme';
+import { postComment, precheckTexts, textRejectionMessage } from '../utils/serverWrites';
 import { PUBLIC_UPLOADS_ENABLED, UPLOADS_PAUSED_ERROR } from '../config/featureFlags';
 import { validateFile, canvasToCompressedBlob, makePoster } from '../utils/mediaPipeline';
 import { recordPublishDailyPerk } from '../utils/memeFeedBridge';
@@ -714,14 +715,38 @@ export function useFeed({
       const text = String(overrideText ?? commentInputs[memeId] ?? '').trim();
       if (!text) return;
 
-      const author = user?.username || 'AnonMemer';
-      const newComment = {
-        id: `local-${Date.now()}`,
-        meme_id: memeId,
-        author_name: author,
-        body: text,
-        created_at: new Date().toISOString()
-      };
+      const client = getSupabaseClient();
+      const isServerMeme =
+        client && !String(memeId).startsWith('seed-') && !String(memeId).startsWith('local-');
+
+      // Task 33.4: comments are checked before they appear. Real memes go through the
+      // post-comment server function (text moderation, server-set author name); sample and
+      // local-only memes get the same rules in the browser.
+      let newComment;
+      if (isServerMeme) {
+        const result = await postComment(client, memeId, text);
+        if (!result.ok) {
+          setGoblinFortuneToast(result.message);
+          setTimeout(() => setGoblinFortuneToast(''), 5000);
+          return;
+        }
+        newComment = result.comment;
+      } else {
+        const problem = precheckTexts([text]);
+        if (problem) {
+          setGoblinFortuneToast(textRejectionMessage(problem));
+          setTimeout(() => setGoblinFortuneToast(''), 5000);
+          return;
+        }
+        newComment = {
+          id: `local-${Date.now()}`,
+          meme_id: memeId,
+          author_name: user?.username || 'AnonMemer',
+          body: text,
+          created_at: new Date().toISOString()
+        };
+      }
+      const author = newComment.author_name;
 
       sfx.playPop(combo);
       if (text.length >= 6) {
@@ -742,7 +767,6 @@ export function useFeed({
         )
       );
 
-      const client = getSupabaseClient();
       const commentedMeme = memesRef.current.find((m) => String(m.id) === String(memeId));
       if (client && commentedMeme?.author_name) {
         sendCreatorNotification({
@@ -754,21 +778,8 @@ export function useFeed({
           message: `💬 @${author} commented on "${String(commentedMeme.title || 'Meme').slice(0, 36)}"!`
         });
       }
-      if (client && !String(memeId).startsWith('seed-') && !String(memeId).startsWith('local-')) {
-        try {
-          await client.from('comments').insert([
-            {
-              meme_id: memeId,
-              author_name: author,
-              body: text
-            }
-          ]);
-        } catch {
-          // Local state already updated
-        }
-      }
     },
-    [commentInputs, user, combo, awardFairReward]
+    [commentInputs, user, combo, awardFairReward, setGoblinFortuneToast]
   );
 
   const handlePostRoastComment = useCallback(

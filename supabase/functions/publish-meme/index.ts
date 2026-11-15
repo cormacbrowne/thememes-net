@@ -18,8 +18,9 @@
 //
 // Env (set automatically by Supabase): SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
 // Optional: PUBLISH_ALLOWED_ORIGINS (comma-separated) to override the CORS allow-list.
-// Image moderation (33.3, secrets — see _shared/moderation.js): IMAGE_MODERATION_PROVIDER,
-//   SIGHTENGINE_API_USER + SIGHTENGINE_API_SECRET, or OPENAI_API_KEY. Unset = everything pending.
+// Moderation (33.3 images, 33.4 text; see _shared/moderation.js): OPENAI_API_KEY secret.
+//   Optional overrides: IMAGE_MODERATION_PROVIDER, TEXT_MODERATION_PROVIDER, SIGHTENGINE_*.
+//   No key = everything pending (fail closed).
 // Deploy: supabase functions deploy publish-meme
 // ==========================================
 import { createClient } from 'npm:@supabase/supabase-js@2.49.4';
@@ -33,12 +34,12 @@ import {
   parsePublishRequest,
   sniffImageType,
   sha256Hex,
-  decideStatus,
-  cleanText
+  decideStatus
 } from '../_shared/publishCore.js';
 import { transcodeImage } from '../_shared/imageCodec.js';
 import { moderateImage, moderateText } from '../_shared/moderation.js';
 import { IMAGE_MODERATION } from '../_shared/moderationConfig.js';
+import { authorNameFor } from '../_shared/identity.js';
 
 // The package's main entry is dist/index.js; the 32-bit WASM build sits at dist/x86/magick.wasm.
 const wasmBytes = await Deno.readFile(
@@ -66,8 +67,6 @@ const ALLOWED_ORIGINS = (Deno.env.get('PUBLISH_ALLOWED_ORIGINS') ?? '')
   .filter(Boolean);
 const ORIGINS = ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS : DEFAULT_ORIGINS;
 
-const RESERVED_NAMES = new Set(['thememeshq', 'admin', 'administrator', 'moderator', 'mod', 'support', 'staff', 'official', 'system']);
-
 function corsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get('origin') ?? '';
   return {
@@ -87,13 +86,6 @@ function json(req: Request, status: number, body: unknown): Response {
 
 function fail(req: Request, status: number, error: string): Response {
   return json(req, status, { ok: false, error });
-}
-
-/** Display name comes from the server-side account, never from the request body. */
-function authorNameFor(user: { user_metadata?: Record<string, unknown> }): string {
-  const raw = cleanText(user.user_metadata?.username ?? '', 24);
-  if (!raw || raw.length < 3 || RESERVED_NAMES.has(raw.toLowerCase())) return 'AnonMemer';
-  return raw;
 }
 
 function publicUrl(path: string): string {
@@ -130,7 +122,11 @@ async function handleSignUpload(req: Request, userId: string, body: Record<strin
   return json(req, 200, { ok: true, uploads, maxBytes: PUBLISH_LIMITS.MAX_UPLOAD_BYTES });
 }
 
-async function handlePublish(req: Request, user: { id: string; user_metadata?: Record<string, unknown> }, body: Record<string, unknown>) {
+async function handlePublish(
+  req: Request,
+  user: { id: string; is_anonymous?: boolean; user_metadata?: Record<string, unknown> },
+  body: Record<string, unknown>
+) {
   const parsed = parsePublishRequest(body, user.id);
   if (!parsed.ok) return fail(req, 400, parsed.error);
   const input = parsed.value;
@@ -207,7 +203,10 @@ async function handlePublish(req: Request, user: { id: string; user_metadata?: R
           });
         }
       }
-      return json(req, 422, { ok: false, error: PUBLISH_ERRORS.REJECTED, status });
+      // detail tells the uploader what to fix: links | personal_info | impersonation | hate |
+      // threat | sexual | spam | rules (OpenAI) | image
+      const detail = textVerdict.decision === 'reject' ? textVerdict.category ?? 'rules' : 'image';
+      return json(req, 422, { ok: false, error: PUBLISH_ERRORS.REJECTED, status, detail });
     }
 
     // Lineage: generation and root come from the (approved) parent row, not the request.

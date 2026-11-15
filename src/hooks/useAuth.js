@@ -29,7 +29,9 @@ export function useAuth({ setShowAuthModal, awardXpAndCombo, memesRef }) {
     let authSub = null;
     if (client && client.auth) {
       const syncAuthSession = (sessionUser) => {
-        if (!sessionUser) return;
+        // Anonymous sessions (created on a visitor's first comment/post, task 33.4) are not a
+        // signed-in account: never show them as a verified user.
+        if (!sessionUser || sessionUser.is_anonymous) return;
         const email = sessionUser.email || 'Memer';
         const provider =
           sessionUser.app_metadata?.provider ||

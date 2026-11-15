@@ -7,6 +7,7 @@
 import { guessContentType } from './mediaPipeline';
 import { sanitizeUserText, sanitizeOverlayPayload } from './securityGuard';
 import { PUBLIC_UPLOADS_ENABLED, UPLOADS_PAUSED_ERROR } from '../config/featureFlags';
+import { ensureWriteSession, precheckTexts, TEXT_REJECTION_MESSAGES } from './serverWrites';
 
 export const PUBLISH_FUNCTION = 'publish-meme';
 
@@ -28,6 +29,10 @@ export const PUBLISH_ERROR_MESSAGES = {
   undecodable: '⚠️ We could not read that image. Try saving it as PNG or JPG.',
   too_many_pixels: '⚠️ That image is enormous — try a smaller one.',
   rejected: '🚫 That one breaks the House Rules, so it was not posted.',
+  rejected_links: TEXT_REJECTION_MESSAGES.links,
+  rejected_personal_info: TEXT_REJECTION_MESSAGES.personal_info,
+  rejected_impersonation: TEXT_REJECTION_MESSAGES.impersonation,
+  rejected_text: TEXT_REJECTION_MESSAGES.default,
   upload_not_found: '⚠️ Upload went missing on the way. Please try again.',
   bad_request: '⚠️ Upload failed. Please try again.',
   bad_path: '⚠️ Upload failed. Please try again.',
@@ -61,10 +66,18 @@ async function invokePublishFunction(client, body) {
   try {
     const payload = await error.context?.json?.();
     if (payload?.error) code = payload.error;
+    if (payload?.error === 'rejected' && payload.detail && payload.detail !== 'image') {
+      code = rejectionCode(payload.detail);
+    }
   } catch {
     // keep 'network'
   }
   throw publishError(code);
+}
+
+/** Map a text-moderation `detail` (33.4) to a publish error code. */
+function rejectionCode(detail) {
+  return ['links', 'personal_info', 'impersonation'].includes(detail) ? `rejected_${detail}` : 'rejected_text';
 }
 
 async function fetchAsBlob(url) {
@@ -122,8 +135,12 @@ export async function publishMeme({ media, overlay = null, meta = {}, client = n
     };
   }
 
-  const { data: sessionData } = await client.auth.getSession();
-  if (!sessionData?.session) throw publishError('sign_in_required');
+  // 33.4: instant feedback on the title and caption text (the server checks again).
+  const textProblem = precheckTexts([title, ...(safeOverlay?.layers || []).map((l) => l?.text || '')]);
+  if (textProblem) throw publishError(rejectionCode(textProblem));
+
+  // Visitors who have not signed in get an anonymous session for their first write.
+  if (!(await ensureWriteSession(client))) throw publishError('sign_in_required');
 
   // Main file: the composed still, or the GIF (fetched from its URL when remixing).
   let mainBlob = isGif ? media.file || null : media.blob || null;

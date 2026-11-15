@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { VIRAL_CAPTIONS } from '../data/starterMemes';
 import { ACCEPT_MEDIA, validateFile } from '../utils/mediaPipeline';
+import { publishErrorMessage } from '../utils/publishMeme';
 import {
   PUBLIC_UPLOADS_ENABLED,
   UPLOADS_PAUSED_MESSAGE,
@@ -218,7 +219,7 @@ export default function QuickUploadBar({
       setStatusMsg(
         err?.message === UPLOADS_PAUSED_ERROR
           ? UPLOADS_PAUSED_MESSAGE
-          : '⚠️ Upload failed. Please try again.'
+          : publishErrorMessage(err) || '⚠️ Upload failed. Please try again.'
       );
     } finally {
       setIsSubmitting(false);

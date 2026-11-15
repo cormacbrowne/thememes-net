@@ -28,6 +28,7 @@ import {
   makePoster
 } from '../../utils/mediaPipeline';
 import { VIRAL_CAPTIONS } from '../../data/starterMemes';
+import { publishErrorMessage } from '../../utils/publishMeme';
 import { sfx } from '../../utils/soundEngine';
 import {
   PUBLIC_UPLOADS_ENABLED,
@@ -631,6 +632,8 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
       setError(
         err?.message === UPLOADS_PAUSED_ERROR
           ? UPLOADS_PAUSED_MESSAGE
+          : publishErrorMessage(err)
+          ? publishErrorMessage(err)
           : err?.message === 'OFFLINE_VIDEO'
           ? '📡 Connect to publish video — video & GIF memes need the live server. Try again when online.'
           : err?.message === 'COOLDOWN'

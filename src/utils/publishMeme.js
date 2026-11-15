@@ -1,31 +1,40 @@
 // ==========================================
-// PHASE 26: SINGLE PUBLISH PATH (replaces the two duplicate App.jsx publishers)
+// SINGLE PUBLISH PATH — Phase 33 task 33.2: thin client for the `publish-meme` Edge Function.
+// The browser can no longer write to Storage or insert into `memes`. It asks the function for
+// signed upload URLs into the PRIVATE `quarantine` bucket, uploads there, then asks the
+// function to check, re-encode, moderate and publish. See supabase/functions/publish-meme.
 // ==========================================
-import {
-  uploadToStorage,
-  randomId,
-  extFor,
-  guessContentType,
-  makePoster
-} from './mediaPipeline';
-import {
-  sanitizeMediaUrl,
-  sanitizeUserText,
-  sanitizeOverlayPayload
-} from './securityGuard';
+import { guessContentType } from './mediaPipeline';
+import { sanitizeUserText, sanitizeOverlayPayload } from './securityGuard';
 import { PUBLIC_UPLOADS_ENABLED, UPLOADS_PAUSED_ERROR } from '../config/featureFlags';
 
-const DEFAULT_REACTIONS = { '🔥': 1, '💀': 0, '😂': 0, '🗿': 0 };
+export const PUBLISH_FUNCTION = 'publish-meme';
 
-const PHASE26_COLUMNS = [
-  'media_type',
-  'poster_url',
-  'duration_sec',
-  'width',
-  'height',
-  'overlay',
-  'base_image_url'
-];
+/** Friendly copy for every error code publishMeme can throw (err.message is the code). */
+export const PUBLISH_ERROR_MESSAGES = {
+  sign_in_required: '🔑 Sign in to post memes to the live feed (you can still download yours).',
+  video_paused: '🎬 Video memes are coming back soon — post a still or a GIF for now.',
+  too_large: '⚠️ That file is too big — keep it under 15MB.',
+  unsupported_type: '⚠️ Only PNG, JPG, WebP or GIF files can be posted.',
+  undecodable: '⚠️ We could not read that image. Try saving it as PNG or JPG.',
+  too_many_pixels: '⚠️ That image is enormous — try a smaller one.',
+  rejected: '🚫 That one breaks the House Rules, so it was not posted.',
+  upload_not_found: '⚠️ Upload went missing on the way. Please try again.',
+  bad_request: '⚠️ Upload failed. Please try again.',
+  bad_path: '⚠️ Upload failed. Please try again.',
+  server_error: '⚠️ The meme server hiccuped. Please try again in a moment.',
+  network: '📡 Could not reach the meme server. Check your connection and try again.'
+};
+
+export function publishErrorMessage(err) {
+  return PUBLISH_ERROR_MESSAGES[err?.message] || null;
+}
+
+function publishError(code) {
+  const err = new Error(code);
+  err.code = code;
+  return err;
+}
 
 function blobToDataUrl(blob) {
   return new Promise((resolve) => {
@@ -36,146 +45,127 @@ function blobToDataUrl(blob) {
   });
 }
 
-const isUuidLike = (id) =>
-  id && !String(id).startsWith('seed-') && !String(id).startsWith('local-');
+async function invokePublishFunction(client, body) {
+  const { data, error } = await client.functions.invoke(PUBLISH_FUNCTION, { body });
+  if (!error) return data;
+  let code = 'network';
+  try {
+    const payload = await error.context?.json?.();
+    if (payload?.error) code = payload.error;
+  } catch {
+    // keep 'network'
+  }
+  throw publishError(code);
+}
+
+async function fetchAsBlob(url) {
+  const res = await fetch(url, { credentials: 'omit' });
+  if (!res.ok) throw publishError('upload_not_found');
+  return res.blob();
+}
 
 /**
  * publishMeme({ media, overlay, meta, client })
  *  media: { kind:'image', blob, baseBlob?, width, height }
- *       | { kind:'gif'|'video', file?, url?, posterBlob?, posterUrl?, width, height, duration }
- *  meta:  { title, category, author, parentId, rootId, generation, isBounty, bountyId, isSpoiler, baseImageUrl }
- * Returns { meme, savedToDb }. Throws Error('OFFLINE_VIDEO') for video/gif uploads without Supabase.
+ *       | { kind:'gif', file?, url?, width, height }
+ *  meta:  { title, category, parentId, rootId, generation, isSpoiler }
+ *         (author is ignored by the server — it uses the signed-in account)
+ * Returns { meme, savedToDb, status }. Throws Error(code) — see PUBLISH_ERROR_MESSAGES.
+ *
+ * Without a Supabase client (offline) a still image becomes a local draft that only exists in
+ * this browser tab; it is never sent anywhere and never appears in anyone else's feed.
  */
 export async function publishMeme({ media, overlay = null, meta = {}, client = null }) {
-  // Kill switch (src/config/featureFlags.js): nothing reaches Supabase and no local-only
-  // meme is added to the feed while public uploads are paused.
+  // Kill switch (src/config/featureFlags.js).
   if (!PUBLIC_UPLOADS_ENABLED) {
     throw new Error(UPLOADS_PAUSED_ERROR);
   }
   const kind = media?.kind || 'image';
-  const isMotion = kind === 'video' || kind === 'gif';
-  const nowIso = new Date().toISOString();
-  const id = randomId();
-
-  if (isMotion && !client && !media.url) {
-    throw new Error('OFFLINE_VIDEO');
-  }
-
-  let imageUrl = media.url || '';
-  let posterUrl = media.posterUrl || null;
-  let baseImageUrl = meta.baseImageUrl || null;
-
-  if (client) {
-    if (isMotion && media.file && !media.url) {
-      const contentType = guessContentType(media.file, kind);
-      const folder = kind === 'video' ? 'videos' : 'gifs';
-      imageUrl = await uploadToStorage(
-        client,
-        media.file,
-        `${folder}/meme-${id}.${extFor(contentType)}`,
-        contentType
-      );
-      const posterBlob = media.posterBlob || (await makePoster(media.file, kind));
-      if (posterBlob) {
-        try {
-          posterUrl = await uploadToStorage(client, posterBlob, `posters/poster-${id}.jpg`, 'image/jpeg');
-        } catch {
-          posterUrl = null;
-        }
-      }
-      if (!baseImageUrl) baseImageUrl = imageUrl;
-    } else if (!isMotion && media.blob) {
-      const ct = media.blob.type || 'image/webp';
-      imageUrl = await uploadToStorage(client, media.blob, `meme-${id}-gen${meta.generation || 0}.${extFor(ct)}`, ct);
-      if (media.baseBlob && !baseImageUrl) {
-        try {
-          const bct = media.baseBlob.type || 'image/webp';
-          baseImageUrl = await uploadToStorage(client, media.baseBlob, `bases/base-${id}.${extFor(bct)}`, bct);
-        } catch {
-          baseImageUrl = null;
-        }
-      }
-    }
-  } else if (!isMotion && media.blob) {
-    imageUrl = await blobToDataUrl(media.blob);
-  }
-
-  const lineage = {
-    generation: meta.generation || 0,
-    mutation_count: 0,
-    parent_meme_id: meta.parentId || null,
-    root_meme_id: meta.rootId || null,
-    is_bounty: Boolean(meta.isBounty),
-    bounty_id: meta.bountyId || null,
-    is_spoiler: Boolean(meta.isSpoiler),
-    comments: []
-  };
-
+  if (kind === 'video') throw publishError('video_paused');
+  const isGif = kind === 'gif';
   const safeOverlay = sanitizeOverlayPayload(overlay);
-  const safeImageUrl = sanitizeMediaUrl(imageUrl);
-  const safePosterUrl = posterUrl ? sanitizeMediaUrl(posterUrl) : null;
-  const safeBaseImageUrl = baseImageUrl ? sanitizeMediaUrl(baseImageUrl) : null;
+  const title = sanitizeUserText(meta.title || 'Untitled Meme', 140);
+  const category = sanitizeUserText(meta.category || 'dank', 32);
 
-  const phase26 = {
-    media_type: kind,
-    poster_url: safePosterUrl,
-    duration_sec: media.duration ? Number(media.duration.toFixed(2)) : null,
-    width: media.width ? Math.round(media.width) : null,
-    height: media.height ? Math.round(media.height) : null,
-    overlay: safeOverlay,
-    base_image_url: safeBaseImageUrl
-  };
-
-  const baseRow = {
-    title: sanitizeUserText(meta.title || 'Untitled Meme', 140),
-    category: sanitizeUserText(meta.category || 'dank', 32),
-    image_url: safeImageUrl,
-    author_name: sanitizeUserText(meta.author || 'AnonMemer', 48),
-    score: 1,
-    reactions: DEFAULT_REACTIONS,
-    ...(isUuidLike(meta.parentId) ? { parent_meme_id: meta.parentId } : {})
-  };
-
-  if (client) {
-    try {
-      let { data, error } = await client
-        .from('memes')
-        .insert([{ ...baseRow, ...phase26 }])
-        .select()
-        .single();
-      if (error && /column|schema/i.test(error.message || '')) {
-        // Phase 26 migration not run yet — retry without the new columns.
-        ({ data, error } = await client.from('memes').insert([baseRow]).select().single());
+  if (!client) {
+    if (isGif || !media?.blob) throw new Error('OFFLINE_VIDEO');
+    return {
+      savedToDb: false,
+      status: 'local',
+      meme: {
+        id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        title,
+        category,
+        image_url: await blobToDataUrl(media.blob),
+        author_name: sanitizeUserText(meta.author || 'AnonMemer', 48),
+        score: 1,
+        reactions: { '🔥': 1, '💀': 0, '😂': 0, '🗿': 0 },
+        media_type: 'image',
+        overlay: safeOverlay,
+        width: media.width || null,
+        height: media.height || null,
+        generation: meta.generation || 0,
+        is_spoiler: Boolean(meta.isSpoiler),
+        status: 'local',
+        comments: [],
+        created_at: new Date().toISOString()
       }
-      if (!error && data) {
-        const merged = { ...lineage, ...phase26, ...data };
-        PHASE26_COLUMNS.forEach((k) => {
-          if (merged[k] == null && phase26[k] != null) merged[k] = phase26[k];
-        });
-        return {
-          savedToDb: true,
-          meme: {
-            ...merged,
-            generation: data.generation ?? lineage.generation,
-            root_meme_id: lineage.root_meme_id || data.root_meme_id || data.id,
-            comments: []
-          }
-        };
-      }
-    } catch {
-      // fall through to local
-    }
-    if (isMotion && !media.url) throw new Error('OFFLINE_VIDEO');
+    };
   }
+
+  const { data: sessionData } = await client.auth.getSession();
+  if (!sessionData?.session) throw publishError('sign_in_required');
+
+  // Main file: the composed still, or the GIF (fetched from its URL when remixing).
+  let mainBlob = isGif ? media.file || null : media.blob || null;
+  if (!mainBlob && isGif && media.url) mainBlob = await fetchAsBlob(media.url);
+  if (!mainBlob) throw publishError('bad_request');
+  const baseBlob = !isGif && media.baseBlob ? media.baseBlob : null;
+
+  const signed = await invokePublishFunction(client, {
+    action: 'sign-upload',
+    count: baseBlob ? 2 : 1
+  });
+  const uploads = signed?.uploads || [];
+  if (!uploads[0]) throw publishError('server_error');
+
+  const put = async (slot, blob, contentType) => {
+    const { error } = await client.storage
+      .from('quarantine')
+      .uploadToSignedUrl(slot.path, slot.token, blob, { contentType });
+    if (error) throw publishError(/size|large/i.test(error.message || '') ? 'too_large' : 'network');
+  };
+  await put(uploads[0], mainBlob, isGif ? 'image/gif' : guessContentType(mainBlob, kind));
+  let basePath = null;
+  if (baseBlob && uploads[1]) {
+    try {
+      await put(uploads[1], baseBlob, baseBlob.type || 'image/webp');
+      basePath = uploads[1].path;
+    } catch {
+      basePath = null; // the base image is optional (used by Remix)
+    }
+  }
+
+  const result = await invokePublishFunction(client, {
+    action: 'publish',
+    path: uploads[0].path,
+    basePath,
+    title,
+    category,
+    overlay: safeOverlay,
+    parentId: meta.parentId || null,
+    rootId: meta.rootId || null
+  });
+  if (!result?.meme) throw publishError(result?.error || 'server_error');
 
   return {
-    savedToDb: false,
+    savedToDb: true,
+    status: result.status,
     meme: {
-      id: `local-${id}`,
-      ...baseRow,
-      ...lineage,
-      ...phase26,
-      created_at: nowIso
+      ...result.meme,
+      is_spoiler: Boolean(meta.isSpoiler),
+      root_meme_id: result.meme.root_meme_id || result.meme.id,
+      comments: []
     }
   };
 }

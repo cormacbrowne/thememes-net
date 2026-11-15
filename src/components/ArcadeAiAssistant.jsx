@@ -755,7 +755,7 @@ export default function ArcadeAiAssistant({
     }
     return (
       <div
-        ref={fabDrag.boxRef}
+        data-drag-box="true"
         className={`tm-ai-fab-drag-wrap ${fabDrag.isDragging ? 'dragging' : ''}`}
         style={fabDrag.containerStyle}
         {...fabDrag.dragHandleProps}
@@ -764,7 +764,7 @@ export default function ArcadeAiAssistant({
           type="button"
           className={`tm-ai-copilot-fab ${persona === 'hal' ? 'hal-mode' : persona === 'valkyrie' ? 'valkyrie-mode' : 'kitt-mode'}`}
           onClick={() => {
-            if (fabDrag.wasDraggedRef.current) return;
+            if (fabDrag.wasDragged()) return;
             sfx.playToggle?.();
             onToggleOpen(true);
           }}
@@ -785,7 +785,7 @@ export default function ArcadeAiAssistant({
 
   return (
     <aside
-      ref={panelDrag.boxRef}
+      data-drag-box="true"
       style={panelDrag.containerStyle}
       className={`tm-ai-copilot-panel ${persona === 'hal' ? 'hal-theme' : persona === 'valkyrie' ? 'valkyrie-theme' : 'kitt-theme'} ${panelDrag.isDragging ? 'is-dragging' : ''}`}
       role="dialog"

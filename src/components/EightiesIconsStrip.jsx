@@ -6,7 +6,7 @@ import { speakWithPersona } from '../utils/aiSpeech';
 import { getSettings } from '../utils/settingsStore';
 import './EightiesIconsStrip.css';
 
-export const EIGHTIES_ICON_CAST = [
+const EIGHTIES_ICON_CAST = [
   {
     id: 'ferris',
     name: 'Ferris',

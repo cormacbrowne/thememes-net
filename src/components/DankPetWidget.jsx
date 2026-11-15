@@ -377,14 +377,14 @@ export default function DankPetWidget({
     }
     return (
       <button
-        ref={launcherDrag.boxRef}
+        data-drag-box="true"
         style={{ ...launcherDrag.containerStyle, ...launcherDrag.dragHandleProps.style }}
         type="button"
         className="tm-dank-pet-launcher"
         onPointerDown={launcherDrag.dragHandleProps.onPointerDown}
         onDoubleClick={launcherDrag.dragHandleProps.onDoubleClick}
         onClick={() => {
-          if (launcherDrag.wasDraggedRef.current) return;
+          if (launcherDrag.wasDragged()) return;
           sfx.playToggle();
           setMinimized(false);
         }}
@@ -746,7 +746,7 @@ export default function DankPetWidget({
       {/* CORNER BIG RED "DO NOT PRESS" CHAOS BUTTON + 1986 NEON PAYPHONE HOTLINE (DRAGGABLE!) */}
       {unlocked && isFeedMode && !minimized && (
         <div
-          ref={dockDrag.boxRef}
+          data-drag-box="true"
           style={dockDrag.containerStyle}
           className={`tm-donotpress-dock ${dockDrag.isDragging ? 'is-dragging' : ''}`}
         >
@@ -762,7 +762,7 @@ export default function DankPetWidget({
             type="button"
             className="tm-payphone-dock-btn"
             onClick={() => {
-              if (dockDrag.wasDraggedRef.current) return;
+              if (dockDrag.wasDragged()) return;
               playDtmfTone('5');
               setShowPayphone(true);
             }}
@@ -777,7 +777,7 @@ export default function DankPetWidget({
             type="button"
             className="tm-donotpress-btn"
             onClick={() => {
-              if (dockDrag.wasDraggedRef.current) return;
+              if (dockDrag.wasDragged()) return;
               handlePressChaosButton();
             }}
             title={memes && memes.length > 0 ? `Latest Feed Drop: "${memes[0].title}" by @${memes[0].author_name}` : 'Trigger a dodging Meme Piñata challenge, Boss Fight, UFO or 80s Arcade Alert!'}

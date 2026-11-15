@@ -20,13 +20,12 @@ function readStoredOffset(storageKey, fallback) {
 /**
  * Pointer-based drag hook for floating widgets, music bars, TV sets, and Copilot dialogs.
  * Persists translation offset in localStorage, clamps to viewport bounds, and separates
- * clicks (< 6px movement) from drags via `wasDraggedRef`.
+ * clicks (< 6px movement) from drags via `wasDragged()`.
  */
 export function useDraggableFloating(storageKey, defaultOffset = { x: 0, y: 0 }) {
   const [offset, setOffset] = useState(() => readStoredOffset(storageKey, defaultOffset));
   const [isDragging, setIsDragging] = useState(false);
 
-  const boxRef = useRef(null);
   const wasDraggedRef = useRef(false);
   const offsetRef = useRef(offset);
   const boundsRef = useRef({
@@ -105,7 +104,8 @@ export function useDraggableFloating(storageKey, defaultOffset = { x: 0, y: 0 })
 
     // Compute dynamic viewport bounds from the element's current bounding box
     if (typeof window !== 'undefined') {
-      const targetEl = boxRef.current || e.currentTarget;
+      // The draggable container is marked with `data-drag-box="true"` (no ref needed, so render stays ref-free)
+      const targetEl = e.currentTarget?.closest?.('[data-drag-box="true"]') || e.currentTarget;
       const rect = targetEl?.getBoundingClientRect?.();
       if (rect && rect.width > 0 && rect.height > 0) {
         const vw = window.innerWidth;
@@ -208,6 +208,9 @@ export function useDraggableFloating(storageKey, defaultOffset = { x: 0, y: 0 })
     return () => window.removeEventListener('resize', onResize);
   }, [persistOffset]);
 
+  // Read from event handlers (not during render) to tell a click apart from the end of a drag.
+  const wasDragged = useCallback(() => wasDraggedRef.current, []);
+
   const containerStyle =
     offset.x !== 0 || offset.y !== 0
       ? { transform: `translate3d(${offset.x}px, ${offset.y}px, 0)` }
@@ -226,11 +229,12 @@ export function useDraggableFloating(storageKey, defaultOffset = { x: 0, y: 0 })
     }
   };
 
+  // `wasDragged` is a getter (not the ref itself) so components can read it in click handlers
+  // without the React Compiler `react-hooks/refs` rule treating the whole result as a ref.
   return {
-    boxRef,
     offset,
     isDragging,
-    wasDraggedRef,
+    wasDragged,
     dragHandleProps,
     containerStyle,
     resetPosition

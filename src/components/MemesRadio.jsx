@@ -134,7 +134,7 @@ export function RadioToggleButton({ className = 'tm-btn', onOpenShop }) {
 
       {isPopoverOpen && (
         <div
-          ref={popoverDrag.boxRef}
+          data-drag-box="true"
           style={popoverDrag.containerStyle}
           className={`tm-radio-popover ${popoverDrag.isDragging ? 'is-dragging' : ''}`}
           role="dialog"
@@ -383,7 +383,7 @@ function MobileNowPlayingInner({ radio, isGameLayout, onHide }) {
   return (
     <div className={`tm-mobile-now-playing-slot ${isGameLayout ? 'in-game' : ''}`}>
       <div
-        ref={drag.boxRef}
+        data-drag-box="true"
         style={drag.containerStyle}
         className={`tm-mobile-now-playing ${drag.isDragging ? 'is-dragging' : ''}`}
         role="region"
@@ -401,7 +401,7 @@ function MobileNowPlayingInner({ radio, isGameLayout, onHide }) {
           type="button"
           className="tm-now-playing-label"
           onClick={() => {
-            if (drag.wasDraggedRef.current) return;
+            if (drag.wasDragged()) return;
             toggleRadio();
           }}
           title={radio.on ? 'Tap to pause THE MEMES FM' : 'Tap to play THE MEMES FM'}

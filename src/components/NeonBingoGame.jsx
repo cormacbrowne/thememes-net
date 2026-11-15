@@ -205,18 +205,17 @@ export default function NeonBingoGame({
   const calledSet = useMemo(() => new Set(calledNumbers), [calledNumbers]);
   const dabbedSet = useMemo(() => new Set(dabbedNumbers), [dabbedNumbers]);
 
-  const cardEvaluations = useMemo(() => {
-    const evals = tickets.map((card) => evaluateCardStatus(card, calledSet, dabbedSet));
-    cardEvaluationsRef.current = evals;
-    return evals;
-  }, [tickets, calledSet, dabbedSet]);
+  const cardEvaluations = useMemo(
+    () => tickets.map((card) => evaluateCardStatus(card, calledSet, dabbedSet)),
+    [tickets, calledSet, dabbedSet]
+  );
 
-  // Keep mobile active card index valid if cardCount changes
   useEffect(() => {
-    if (activeMobileCardIdx >= cardCount) {
-      setActiveMobileCardIdx(0);
-    }
-  }, [activeMobileCardIdx, cardCount]);
+    cardEvaluationsRef.current = cardEvaluations;
+  }, [cardEvaluations]);
+
+  // Keep mobile active card index valid if cardCount shrinks (derived, no extra render)
+  const visibleMobileCardIdx = activeMobileCardIdx >= cardCount ? 0 : activeMobileCardIdx;
 
   // Stop any playing voice when unmounting
   useEffect(() => {
@@ -1526,9 +1525,9 @@ export default function NeonBingoGame({
                       key={t.id}
                       type="button"
                       role="tab"
-                      aria-selected={!showAllMobileCards && activeMobileCardIdx === idx}
+                      aria-selected={!showAllMobileCards && visibleMobileCardIdx === idx}
                       className={`tm-mobile-card-tab ${
-                        !showAllMobileCards && activeMobileCardIdx === idx ? 'active' : ''
+                        !showAllMobileCards && visibleMobileCardIdx === idx ? 'active' : ''
                       } ${hasReady ? 'is-hot' : ''}`}
                       onClick={() => {
                         sfx.playToggle?.();
@@ -1562,7 +1561,7 @@ export default function NeonBingoGame({
               {tickets.map((ticket, tIdx) => {
                 const evalInfo = cardEvaluations[tIdx];
                 const isHiddenOnMobile =
-                  cardCount > 1 && !showAllMobileCards && tIdx !== activeMobileCardIdx;
+                  cardCount > 1 && !showAllMobileCards && tIdx !== visibleMobileCardIdx;
                 return (
                   <article
                     key={ticket.id}

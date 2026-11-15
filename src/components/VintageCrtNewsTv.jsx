@@ -303,7 +303,7 @@ const VintageCrtNewsTv = memo(function VintageCrtNewsTv({ compact = false }) {
 
   const tvCabinet = (
     <aside
-      ref={poppedOut ? dragTv.boxRef : undefined}
+      data-drag-box={poppedOut ? 'true' : undefined}
       style={poppedOut ? dragTv.containerStyle : undefined}
       className={`tm-crt-tv-shell ${compact ? 'is-compact' : ''} ${poppedOut ? 'is-popped-out' : ''} ${dragTv.isDragging ? 'is-dragging' : ''}`}
       aria-label="1980s Vintage CRT Breaking News Television"

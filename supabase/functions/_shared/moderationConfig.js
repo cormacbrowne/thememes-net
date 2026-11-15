@@ -11,8 +11,12 @@
 // ==========================================
 
 export const IMAGE_MODERATION = {
-  /** 'sightengine' | 'openai' | 'none'. Overridden by the IMAGE_MODERATION_PROVIDER env var. */
-  defaultProvider: 'none',
+  /**
+   * 'sightengine' | 'openai' | 'none'. Overridden by the IMAGE_MODERATION_PROVIDER env var.
+   * Owner chose OpenAI omni-moderation (free) on 15 Nov 2026. It needs the OPENAI_API_KEY
+   * secret in Supabase; without it every upload stays `pending` (fail closed).
+   */
+  defaultProvider: 'openai',
   /** Give up on the provider after this long and fail closed (pending). */
   timeoutMs: 8000,
   /** GIFs: how many frames are sent (first, middle, last). */

@@ -150,6 +150,17 @@ export const ARCADE_GAMES_CATALOG = [
     path: '/games/sunset-sprint'
   },
   {
+    id: 'void',
+    group: 'skill',
+    icon: '🛸',
+    label: 'Vector Void',
+    pitch: 'Twin-stick vector space shooter with wrap-around edges & splitting rocks (free to play).',
+    badge: 'Twin-Stick',
+    isNew: true,
+    accent: '#38bdf8',
+    path: '/games/vector-void'
+  },
+  {
     id: 'pinball',
     group: 'skill',
     icon: '🎱',

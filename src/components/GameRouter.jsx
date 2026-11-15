@@ -26,6 +26,7 @@ const MemeInvadersGame = lazyWithRetry(() => import('./MemeInvadersGame'));
 const NeonSerpentGame = lazyWithRetry(() => import('./NeonSerpentGame'));
 const BrickBlasterGame = lazyWithRetry(() => import('./BrickBlasterGame'));
 const SunsetSprintGame = lazyWithRetry(() => import('./SunsetSprintGame'));
+const VectorVoidGame = lazyWithRetry(() => import('./VectorVoidGame'));
 const VegasPinballGame = lazyWithRetry(() => import('./VegasPinballGame'));
 const VegasSlotMachine = lazyWithRetry(() => import('./VegasSlotMachine'));
 const VegasBlackjackGame = lazyWithRetry(() => import('./VegasBlackjackGame'));
@@ -276,6 +277,16 @@ export function FixedArcadeTopBar({
           }}
         >
           🌅 Sunset
+        </button>
+        <button
+          type="button"
+          className={`tm-fixed-game-pill ${viewMode === 'void' ? 'active' : ''}`}
+          onClick={() => {
+            sfx.playToggle();
+            setViewMode('void');
+          }}
+        >
+          🛸 Vector
         </button>
         <button
           type="button"
@@ -1180,6 +1191,26 @@ export default function GameRouter({
             }}
             onRecordHighScore={handleRecordHighScore}
             onOpenLeaderboard={() => onOpenCabinetLeaderboard?.('sunset')}
+            onBackToFeed={() => {
+              sfx.playToggle();
+              setViewMode('feed');
+            }}
+          />
+        </Suspense>
+      )}
+
+      {viewMode === 'void' && (
+        <Suspense fallback={<MemeSkeletonGrid count={3} />}>
+          <VectorVoidGame
+            soundOn={soundOn}
+            onToggleSound={() => {
+              const nextState = !soundOn;
+              sfx.enabled = nextState;
+              setSoundOn(nextState);
+              if (nextState) sfx.playToggle();
+            }}
+            onRecordHighScore={handleRecordHighScore}
+            onOpenLeaderboard={() => onOpenCabinetLeaderboard?.('void')}
             onBackToFeed={() => {
               sfx.playToggle();
               setViewMode('feed');

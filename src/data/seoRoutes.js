@@ -59,7 +59,10 @@ export const MODE_ALIASES = {
   breakout: 'blaster',
   sunset: 'sunset',
   'sunset-sprint': 'sunset',
-  outrun: 'sunset'
+  outrun: 'sunset',
+  void: 'void',
+  'vector-void': 'void',
+  asteroids: 'void'
 };
 
 export const CATEGORY_SLUG_TO_ID = {
@@ -83,6 +86,7 @@ export const GAME_VIEW_MODE_TO_PATH = {
   serpent: '/games/neon-serpent',
   blaster: '/games/brick-blaster',
   sunset: '/games/sunset-sprint',
+  void: '/games/vector-void',
   bingo: '/games/neon-bingo',
   pusher: '/games/coin-pusher',
   pinball: '/games/pinball',
@@ -268,6 +272,24 @@ export const SEO_ROUTES = [
       'Hit the endless neon highway in Sunset Sprint, a free pseudo-3D synthwave OutRun racer built directly into your browser with zero downloads, zero token fees, and global cabinet leaderboard competition. Choose any of our four iconic 1980s garage rides—the brushed stainless DeLorean DMC-12, Aston Martin Lagonda, Sierra RS Cosworth, or Porsche 911 SC—and blast toward the glowing retro horizon.',
       'Weave around oncoming highway traffic across winding perspective bends using smooth finger dragging on touchscreens, tactile steer and nitro buttons on mobile, Arrow or A/D keys on desktop keyboards, or any connected gamepad controller. Every stage challenges you to cross illuminated highway Checkpoints before the countdown clock hits zero, awarding eighteen bonus seconds and ascending stage multipliers.',
       'Keep your eyes open for glowing cassette tapes spinning along the asphalt: snagging a tape scores 250 bonus points, fires dual exhaust nitro flames past 155 MPH, and automatically switches your THE MEMES FM radio station to a fresh synthwave or chiptune track. Switching tabs pauses your run automatically, and every finish saves to the Sunset Sprint leaderboard.'
+    ]
+  },
+  {
+    path: '/games/vector-void',
+    title: 'Vector Void — Free Twin-Stick Vector Space Shooter | THE MEMES.net',
+    description:
+      'Play Vector Void free online! Blast splitting phosphor vector rocks across a wrap-around cyber-space grid with touch twin-sticks, WASD + Arrows, or gamepad.',
+    h1: 'Vector Void — Free Twin-Stick Vector Space Shooter',
+    kicker: '60fps Phosphor Shooter // Twin-Stick Touch, Keyboard & Gamepad — 0 Tokens',
+    ogImage: 'https://www.thememes.net/og/games.png',
+    changefreq: 'daily',
+    priority: '0.9',
+    viewMode: 'void',
+    category: 'all',
+    introParagraphs: [
+      'Pilot a glowing phosphor vector craft in Vector Void, a free 60fps twin-stick asteroid space shooter built right into your browser with zero downloads, zero token fees, and full global leaderboard rankings. Blast apart geometric rock clusters orbiting a deep synthwave sector where your ship, laser bolts, and drifting debris wrap seamlessly across every edge of the screen.',
+      'Take total command across any screen with authentic twin-stick controls: on phones and tablets, slide your left thumb on the thruster pad to dodge in 360 degrees while aiming and auto-firing simultaneously with your right thumb stick. On desktop computers, steer with W-A-S-D keys, aim and fire independently with Arrow keys or your mouse cursor, or plug in a dual-stick USB or Bluetooth gamepad.',
+      'Every jagged large vector rock shatters into twin fast-spinning medium fragments before splitting again into erratic mini-shards, escalating tension with each cleared sector wave. Tab switching automatically pauses your flight, and every high score invites you to engrave your 3-letter arcade initials onto the Vector Void cabinet board.'
     ]
   },
   {
@@ -999,6 +1021,7 @@ export function resolveRouteFromLocation(pathname = '/', search = '') {
     'serpent',
     'blaster',
     'sunset',
+    'void',
     'crush',
     'pinball',
     'stocks',

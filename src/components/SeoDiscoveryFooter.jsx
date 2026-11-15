@@ -195,6 +195,13 @@ export default function SeoDiscoveryFooter({
                 🌅 Sunset Sprint (80s OutRun Highway Racer)
               </a>
               <a
+                href="/games/vector-void"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('void'))}
+              >
+                🛸 Vector Void (Twin-Stick Space Shooter)
+              </a>
+              <a
                 href="/games/pinball"
                 className="tm-seo-link"
                 onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('pinball'))}

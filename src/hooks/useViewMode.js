@@ -21,6 +21,7 @@ const FIXED_ARCADE_GAMES = [
   'serpent',
   'blaster',
   'sunset',
+  'void',
   'crush',
   'pinball',
   'stocks',

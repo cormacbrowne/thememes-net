@@ -992,7 +992,7 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
 
     // Lobby shows Retro Cabinets + Funny Boss Key & Prank Screens section
     await page.goto('/games', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByText(/19 Retro Cabinets/i).first()).toBeVisible();
+    await expect(page.getByText(/20 Retro Cabinets/i).first()).toBeVisible();
     await expect(page.getByRole('heading', { name: /Funny Boss Key & Prank Screens/i })).toBeVisible();
 
     expect(pageErrors).toEqual([]);
@@ -3089,8 +3089,72 @@ test.describe('Phase 33.22 — Sunset Sprint synthwave racer & FM cassettes', ()
 
       // Lobby lists Sunset Sprint under Skill with accurate count
       await page.goto('/games', { waitUntil: 'domcontentloaded' });
-      await expect(page.getByText(/19 retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText(/\d+\s+retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
       await expect(page.getByText(/Sunset Sprint/i).first()).toBeVisible();
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(overflow).toBeLessThanOrEqual(2);
+      expect(pageErrors).toEqual([]);
+    });
+  }
+});
+
+test.describe('Phase 33.23 — Vector Void twin-stick space shooter', () => {
+  for (const vp of [
+    { name: 'mobile', width: 390, height: 844 },
+    { name: 'tablet', width: 768, height: 1024 },
+    { name: 'desktop', width: 1280, height: 800 }
+  ]) {
+    test(`Vector Void route renders 0-token twin-stick shooter without overflow on ${vp.name}`, async ({
+      page
+    }) => {
+      const pageErrors = [];
+      page.on('pageerror', (err) => pageErrors.push(err?.message || String(err)));
+
+      await page.setViewportSize(vp);
+      await page.goto('/games/vector-void', { waitUntil: 'domcontentloaded' });
+
+      await expect(page).toHaveTitle(/Vector Void/i);
+      const stage = page.getByTestId('vector-void-stage');
+      await expect(stage).toBeVisible({ timeout: 15000 });
+      await expect(page.getByText(/0 TOKENS/i).first()).toBeVisible();
+
+      const canvas = page.getByTestId('void-canvas');
+      await expect(canvas).toBeVisible();
+      const canvasTouch = await canvas.evaluate((el) => getComputedStyle(el).touchAction);
+      expect(canvasTouch).toBe('none');
+
+      // Left & right touch twin-sticks visible with touch-action: none
+      const leftStick = page.getByTestId('void-left-stick');
+      const rightStick = page.getByTestId('void-right-stick');
+      await expect(leftStick).toBeVisible();
+      await expect(rightStick).toBeVisible();
+      expect(await leftStick.evaluate((el) => getComputedStyle(el).touchAction)).toBe('none');
+      expect(await rightStick.evaluate((el) => getComputedStyle(el).touchAction)).toBe('none');
+
+      // Drag right stick & blur auto-pause
+      const rBox = await rightStick.boundingBox();
+      if (rBox) {
+        await page.mouse.move(rBox.x + rBox.width / 2, rBox.y + rBox.height / 2);
+        await page.mouse.down();
+        await page.mouse.move(rBox.x + rBox.width * 0.85, rBox.y + rBox.height / 2, { steps: 3 });
+        await page.mouse.up();
+      }
+
+      await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+      await expect(page.getByTestId('void-paused-overlay')).toBeVisible({ timeout: 5000 });
+      await page.getByTestId('void-pause-btn').click();
+      await expect(page.getByTestId('void-paused-overlay')).toBeHidden();
+
+      // Leaderboard button present
+      await expect(page.getByTestId('void-leaderboard-btn')).toBeVisible();
+
+      // Lobby lists Vector Void under Skill with accurate count
+      await page.goto('/games', { waitUntil: 'domcontentloaded' });
+      await expect(page.getByText(/20 retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText(/Vector Void/i).first()).toBeVisible();
 
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - window.innerWidth

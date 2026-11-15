@@ -1,7 +1,16 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { RANKS, computePlayerBadges, formatMemeUploadDate } from '../data/starterMemes';
 import { loadLocalMemeViews } from '../utils/notifications';
 import { isActiveCaptionKing, isUsernameCaptionKing } from '../utils/dailyCaptionBattle';
+import { getSupabaseClient } from '../supabaseClient';
+import {
+  fetchCreatorProfile,
+  getCreatorProfilePath,
+  saveMyPixelAvatar,
+  toggleFollowCreator
+} from '../utils/creatorProfiles';
+import PixelAvatar from './PixelAvatar';
+import PixelAvatarPicker from './PixelAvatarPicker';
 import SettingsSheet from './SettingsSheet';
 import './PlayerProfileModal.css';
 
@@ -24,6 +33,9 @@ export default function PlayerProfileModal({
   goblinsCaught = 0,
   konamiUnlocked = false,
   onClose,
+  onOpenCreatorPage,
+  onAvatarUpdated,
+  onRequireAuth,
   onSelectMeme,
   onTriggerStudioMutate,
   onClaimUsername
@@ -31,9 +43,32 @@ export default function PlayerProfileModal({
   const [handleInput, setHandleInput] = useState(currentUser?.claimedUsername || '');
   const [handleStatus, setHandleStatus] = useState(null);
   const [claimingHandle, setClaimingHandle] = useState(false);
+  const [serverSummary, setServerSummary] = useState(null);
+  const [avatarBusy, setAvatarBusy] = useState(false);
+  const [avatarMsg, setAvatarMsg] = useState('');
+  const [followBusy, setFollowBusy] = useState(false);
+  const [followMsg, setFollowMsg] = useState('');
   const isMe =
     currentUser &&
     String(currentUser.username || '').toLowerCase() === String(username || '').toLowerCase();
+
+  useEffect(() => {
+    let active = true;
+    const client = getSupabaseClient();
+    if (!username) return undefined;
+    fetchCreatorProfile(client, username, {
+      localMemes: memes,
+      currentUser,
+      activeCaptionKings
+    }).then((res) => {
+      if (active && res?.ok) {
+        setServerSummary(res);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [username, memes, currentUser, activeCaptionKings]);
 
   const authoredMemes = useMemo(() => {
     if (!username) return [];
@@ -136,7 +171,12 @@ export default function PlayerProfileModal({
             <button type="button" className="tm-btn tm-back-pill" onClick={onClose}>
               ← Back
             </button>
-            <div className="tm-profile-avatar">👾</div>
+            <PixelAvatar
+              avatarId={(isMe && currentUser?.avatarId) || serverSummary?.avatarId}
+              handle={username}
+              size={58}
+              frame={isReigningKing ? 'caption-king' : ''}
+            />
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <h2 style={{ margin: 0, fontSize: '20px', color: '#00f3ff' }}>@{username}</h2>
@@ -157,14 +197,95 @@ export default function PlayerProfileModal({
               <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
                 ⚡ <strong>{playerXp} XP</strong> • 🔥 <strong>{totalScore}</strong> Score • 🧬{' '}
                 <strong style={{ color: '#a3e635' }}>+{royaltyBonus} XP</strong> Royalties
+                {serverSummary && (
+                  <>
+                    {' '}• 👥 <strong>{serverSummary.followerCount}</strong> Followers
+                  </>
+                )}
               </div>
             </div>
           </div>
 
-          <button type="button" className="tm-btn" onClick={onClose}>
-            ✕ Close
-          </button>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+            {!isMe && (
+              <button
+                type="button"
+                className="tm-btn"
+                disabled={followBusy}
+                data-testid="modal-follow-creator-btn"
+                onClick={async () => {
+                  if (!currentUser?.verified) {
+                    setFollowMsg('Sign in to follow creators.');
+                    onRequireAuth?.();
+                    return;
+                  }
+                  setFollowBusy(true);
+                  setFollowMsg('');
+                  const res = await toggleFollowCreator(
+                    getSupabaseClient(),
+                    username,
+                    !(serverSummary?.isFollowing)
+                  );
+                  setFollowBusy(false);
+                  if (!res.ok) {
+                    setFollowMsg(res.message || 'Could not update follow.');
+                    return;
+                  }
+                  setServerSummary((prev) =>
+                    prev
+                      ? { ...prev, isFollowing: res.following, followerCount: res.followerCount }
+                      : prev
+                  );
+                }}
+              >
+                {serverSummary?.isFollowing ? '✓ Following' : '+ Follow'}
+              </button>
+            )}
+            <a
+              href={getCreatorProfilePath(username)}
+              className="tm-btn tm-btn-primary"
+              data-testid="open-creator-page-btn"
+              onClick={(e) => {
+                if (onOpenCreatorPage) {
+                  e.preventDefault();
+                  onClose();
+                  onOpenCreatorPage(username);
+                }
+              }}
+            >
+              🔗 /u/{username}
+            </a>
+            <button type="button" className="tm-btn" onClick={onClose}>
+              ✕ Close
+            </button>
+          </div>
         </div>
+        {followMsg && (
+          <div style={{ fontSize: '12px', color: '#facc15', marginBottom: '10px' }}>{followMsg}</div>
+        )}
+
+        {isMe && currentUser?.verified && (
+          <PixelAvatarPicker
+            selectedAvatarId={
+              currentUser?.avatarId || serverSummary?.avatarId || 'pixel-alien'
+            }
+            saving={avatarBusy}
+            statusMessage={avatarMsg}
+            onSelectAvatar={async (avatarId) => {
+              setAvatarBusy(true);
+              setAvatarMsg('');
+              const res = await saveMyPixelAvatar(getSupabaseClient(), avatarId);
+              setAvatarBusy(false);
+              if (!res.ok) {
+                setAvatarMsg(res.message || 'Could not save pixel avatar.');
+                return;
+              }
+              onAvatarUpdated?.(res.avatarId);
+              setServerSummary((prev) => (prev ? { ...prev, avatarId: res.avatarId } : prev));
+              setAvatarMsg('✅ Saved built-in pixel avatar!');
+            }}
+          />
+        )}
 
         {/* Unique Handle Claim / Update (Verified accounts only) */}
         {isMe && currentUser?.verified && onClaimUsername && (

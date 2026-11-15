@@ -2392,7 +2392,7 @@ test.describe('Phase 33.16 Infinite Cursor Feed, SQL View Tabs, Lazy Comments & 
       const loadMoreBtn = page.getByTestId('load-more-memes-btn');
       await loadMoreBtn.evaluate((el) => el.scrollIntoView({ block: 'center' }));
       if (await loadMoreBtn.isVisible().catch(() => false)) {
-        await loadMoreBtn.click().catch(() => {});
+        await loadMoreBtn.click({ timeout: 1500 }).catch(() => {});
       }
       await expect
         .poll(() => feedUrls.some((u) => u.includes('or=')), { timeout: 5000 })
@@ -2458,6 +2458,264 @@ test.describe('Phase 33.16 Infinite Cursor Feed, SQL View Tabs, Lazy Comments & 
       const midDomCards = await page.locator('.tm-card').count();
       expect(midDomCards).toBeLessThan(48);
       expect(midDomCards).toBeGreaterThan(0);
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(overflow).toBeLessThanOrEqual(2);
+      expect(pageErrors).toEqual([]);
+    });
+  }
+});
+
+test.describe('Phase 33.17 Creator Profile Pages (/u/<handle>), Built-in Pixel Avatars & Follow', () => {
+  const viewports = [
+    { name: 'mobile', width: 390, height: 844 },
+    { name: 'tablet', width: 768, height: 1024 },
+    { name: 'desktop', width: 1280, height: 800 }
+  ];
+
+  for (const vp of viewports) {
+    test(`renders /u/<handle> SEO metadata, pixel avatars, badges, high scores, follow toggle, and built-in avatar picker on ${vp.name} (${vp.width}x${vp.height})`, async ({
+      page
+    }) => {
+      const pageErrors = [];
+      page.on('pageerror', (e) => pageErrors.push(e.message));
+
+      const myUid = '33170000-0000-4000-8000-000000000001';
+      let myAvatarId = 'pixel-alien';
+      let isFollowingPixelMemer = false;
+      let pixelMemerFollowers = 7;
+      const setAvatarCalls = [];
+      const followCalls = [];
+
+      await page.setViewportSize(vp);
+
+      await page.route('**/rest/v1/memes_feed_view*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([
+            {
+              id: '33170000-0000-4000-8000-000000000101',
+              title: 'CRT Synth Meme',
+              category: 'dank',
+              image_url: '/seed/seed-dank-01.webp',
+              author_name: 'PixelMemer86',
+              score: 210,
+              hot_score: 40,
+              comments_count: 0,
+              reactions: { '🔥': 3, '💀': 0, '😂': 1, '🗿': 0 },
+              media_type: 'image',
+              status: 'approved',
+              mutation_count: 2,
+              created_at: new Date().toISOString()
+            }
+          ])
+        });
+      });
+
+      await page.route('**/auth/v1/token*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            access_token: 'mock-verified-jwt-3317',
+            token_type: 'bearer',
+            expires_in: 3600,
+            refresh_token: 'mock-refresh-3317',
+            user: {
+              id: myUid,
+              email: 'creator@example.com',
+              is_anonymous: false,
+              aud: 'authenticated',
+              role: 'authenticated',
+              app_metadata: { provider: 'email' },
+              user_metadata: {}
+            }
+          })
+        });
+      });
+
+      await page.route('**/auth/v1/user*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            id: myUid,
+            email: 'creator@example.com',
+            is_anonymous: false,
+            aud: 'authenticated',
+            role: 'authenticated'
+          })
+        });
+      });
+
+      await page.route('**/rest/v1/rpc/get_my_profile*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            ok: true,
+            id: myUid,
+            username: 'MyCreator86',
+            avatar_id: myAvatarId,
+            role: 'user',
+            strikes: 0,
+            suspended_until: null
+          })
+        });
+      });
+
+      await page.route('**/rest/v1/rpc/get_creator_profile*', async (route) => {
+        const body = route.request().postDataJSON() || {};
+        const handle = String(body.p_handle || '').toLowerCase();
+        if (handle === 'pixelmemer86') {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              ok: true,
+              handle: 'PixelMemer86',
+              normalized_handle: 'pixelmemer86',
+              found: true,
+              verified: true,
+              avatar_id: 'neon-cat',
+              follower_count: pixelMemerFollowers,
+              is_following: isFollowingPixelMemer,
+              is_caption_king: false,
+              caption_wins: 1,
+              stats: { memes_count: 1, total_score: 210, total_remixes: 2 },
+              memes: [
+                {
+                  id: '33170000-0000-4000-8000-000000000101',
+                  title: 'CRT Synth Meme',
+                  category: 'dank',
+                  image_url: '/seed/seed-dank-01.webp',
+                  author_name: 'PixelMemer86',
+                  score: 210,
+                  mutation_count: 2,
+                  created_at: new Date().toISOString()
+                }
+              ],
+              high_scores: [
+                {
+                  game: 'pinball',
+                  high_score: 94200,
+                  initials: 'PIX',
+                  achieved_at: new Date().toISOString()
+                }
+              ]
+            })
+          });
+          return;
+        }
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            ok: true,
+            handle: 'MyCreator86',
+            normalized_handle: 'mycreator86',
+            found: true,
+            verified: true,
+            avatar_id: myAvatarId,
+            follower_count: 2,
+            is_following: false,
+            is_caption_king: false,
+            caption_wins: 0,
+            stats: { memes_count: 0, total_score: 0, total_remixes: 0 },
+            memes: [],
+            high_scores: [
+              {
+                game: 'slots',
+                high_score: 12500,
+                initials: 'MYC',
+                achieved_at: new Date().toISOString()
+              }
+            ]
+          })
+        });
+      });
+
+      await page.route('**/rest/v1/rpc/toggle_follow_creator*', async (route) => {
+        const body = route.request().postDataJSON() || {};
+        followCalls.push(body);
+        const active =
+          body.p_active !== null && body.p_active !== undefined
+            ? Boolean(body.p_active)
+            : !isFollowingPixelMemer;
+        isFollowingPixelMemer = active;
+        pixelMemerFollowers = active ? 8 : 7;
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            ok: true,
+            handle: 'pixelmemer86',
+            following: isFollowingPixelMemer,
+            follower_count: pixelMemerFollowers
+          })
+        });
+      });
+
+      await page.route('**/rest/v1/rpc/set_my_avatar*', async (route) => {
+        const body = route.request().postDataJSON() || {};
+        setAvatarCalls.push(body.p_avatar_id);
+        myAvatarId = body.p_avatar_id;
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ ok: true, avatar_id: myAvatarId })
+        });
+      });
+
+      // 1. Direct deep-link to /u/PixelMemer86
+      await page.goto('/u/PixelMemer86', { waitUntil: 'domcontentloaded' });
+      const creatorPage = page.getByTestId('creator-profile-page');
+      await expect(creatorPage).toBeVisible({ timeout: 15000 });
+      await expect(page.getByTestId('creator-profile-handle')).toHaveText('@PixelMemer86');
+      await expect(creatorPage.locator('[data-avatar-id="neon-cat"] svg')).toBeVisible();
+      await expect(page.getByTestId('creator-memes-section')).toContainText('CRT Synth Meme');
+      await expect(page.getByTestId('creator-badges-section')).toBeVisible();
+      await expect(page.getByTestId('creator-highscores-section')).toContainText('94,200');
+      await expect(page.getByTestId('creator-follower-count')).toHaveText('7');
+
+      // Verify SEO title, canonical URL & ProfilePage JSON-LD
+      await expect.poll(() => page.title(), { timeout: 5000 }).toContain('@PixelMemer86');
+      const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
+      expect(canonical).toContain('/u/PixelMemer86');
+      const jsonLd = await page.locator('#tm-dynamic-jsonld').textContent();
+      expect(jsonLd).toContain('"ProfilePage"');
+
+      // 2. Clicking Follow while signed out opens AuthModal; sign in as verified creator -> follow succeeds
+      await page.getByTestId('creator-follow-btn').click();
+      await expect(page.getByPlaceholder(/email/i)).toBeVisible({ timeout: 5000 });
+      await page.getByPlaceholder(/email/i).fill('creator@example.com');
+      await page.getByPlaceholder(/password/i).fill('Password123!');
+      await page.locator('.tm-auth-modal button[type="submit"]').click();
+      await expect(page.locator('.tm-auth-modal')).toBeHidden({ timeout: 10000 });
+
+      await page.getByTestId('creator-follow-btn').click();
+      await expect
+        .poll(() => followCalls.length, { timeout: 5000 })
+        .toBe(1);
+      await expect(page.getByTestId('creator-follow-btn')).toContainText('✓ Following');
+      await expect(page.getByTestId('creator-follower-count')).toHaveText('8');
+
+      // 3. Visit own creator profile (/u/MyCreator86) -> pick built-in 8-bit avatar (zero upload inputs)
+      await page.goto('/u/MyCreator86', { waitUntil: 'domcontentloaded' });
+      const picker = page.getByTestId('pixel-avatar-picker');
+      await expect(picker).toBeVisible({ timeout: 15000 });
+      await expect(picker.locator('input[type="file"]')).toHaveCount(0);
+
+      await page.getByTestId('pixel-avatar-option-turbo-shiba').click();
+      await expect
+        .poll(() => setAvatarCalls[setAvatarCalls.length - 1], { timeout: 5000 })
+        .toBe('turbo-shiba');
+      await expect(
+        page.getByTestId('creator-profile-page').locator('[data-avatar-id="turbo-shiba"]').first()
+      ).toBeVisible();
 
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - window.innerWidth

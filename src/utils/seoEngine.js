@@ -55,6 +55,7 @@ export function updateDynamicSeo({
   theaterMemeId = null,
   category = 'all',
   viewMode = 'feed',
+  creatorHandle = null,
   showStudio = false,
   forgeIntent = null,
   extrasDrawerOpen = false,
@@ -67,6 +68,7 @@ export function updateDynamicSeo({
   const routeMeta = getSeoRouteForState({
     category,
     viewMode,
+    creatorHandle,
     showStudio,
     forgeIntent,
     extrasDrawerOpen,
@@ -78,6 +80,7 @@ export function updateDynamicSeo({
   const canonicalPath = getCanonicalPathForState({
     viewMode,
     category,
+    creatorHandle,
     showStudio,
     forgeIntent,
     extrasDrawerOpen,
@@ -92,7 +95,12 @@ export function updateDynamicSeo({
   let canonicalUrl = `${SITE_ORIGIN}${canonicalPath === '/' ? '/' : canonicalPath}`;
   let ogImageUrl = routeMeta.ogImage || DEFAULT_OG_IMAGE;
 
-  if (!showStudio && !extrasDrawerOpen && !(bossKeyActive && prankDisguise) && NON_PATH_VIEW_MODES[viewMode]) {
+  if (!activeMeme && viewMode === 'creator' && creatorHandle) {
+    const clean = String(creatorHandle).trim().replace(/^@+/, '');
+    pageTitle = `@${clean} — Creator Profile, Memes & High Scores | THE MEMES.net`;
+    pageDesc = `Browse @${clean}'s memes, 8-bit pixel avatar, earned badges, followers, and 80s Cyber-Arcade high scores on THE MEMES.net.`;
+    canonicalUrl = `${SITE_ORIGIN}/u/${encodeURIComponent(clean)}`;
+  } else if (!showStudio && !extrasDrawerOpen && !(bossKeyActive && prankDisguise) && NON_PATH_VIEW_MODES[viewMode]) {
     pageTitle = NON_PATH_VIEW_MODES[viewMode].title;
     pageDesc = NON_PATH_VIEW_MODES[viewMode].description;
   }
@@ -179,6 +187,21 @@ export function updateDynamicSeo({
         : {})
     };
     ldScript.textContent = JSON.stringify(schema);
+  } else if (viewMode === 'creator' && creatorHandle) {
+    const clean = String(creatorHandle).trim().replace(/^@+/, '');
+    ldScript.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'ProfilePage',
+      name: `@${clean} Creator Profile`,
+      description: pageDesc,
+      url: canonicalUrl,
+      mainEntity: {
+        '@type': 'Person',
+        name: clean,
+        alternateName: `@${clean}`,
+        url: canonicalUrl
+      }
+    });
   } else {
     ldScript.textContent = JSON.stringify(buildRouteJsonLd(routeMeta, canonicalUrl, ogImageUrl));
   }

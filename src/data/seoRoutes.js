@@ -782,6 +782,36 @@ export function resolveRouteFromLocation(pathname = '/', search = '') {
   const normPath = normalizeRoutePath(pathname);
   const params = new URLSearchParams(search || '');
 
+  // Creator profile deep links (/u/<handle>)
+  const pathCreatorMatch = (pathname || '').match(/^\/u\/([^/?#]+)/i);
+  if (pathCreatorMatch && pathCreatorMatch[1]) {
+    let rawHandle = pathCreatorMatch[1];
+    try {
+      rawHandle = decodeURIComponent(rawHandle);
+    } catch {
+      // keep raw path segment
+    }
+    const cleanHandle = String(rawHandle).trim().replace(/^@+/, '');
+    if (/^[a-zA-Z0-9_-]{2,32}$/.test(cleanHandle)) {
+      return {
+        matchedPath: `/u/${encodeURIComponent(cleanHandle)}`,
+        isDedicatedLanding: true,
+        viewMode: 'creator',
+        creatorHandle: cleanHandle,
+        category: 'all',
+        searchQuery: '',
+        showStudio: false,
+        forgeIntent: null,
+        extrasDrawerOpen: false,
+        extrasFocus: null,
+        bossKeyActive: false,
+        prankDisguise: null,
+        surpriseOpen: false,
+        theaterMemeId: null
+      };
+    }
+  }
+
   // Shared meme deep links (/m/<id> or ?m=<id> / ?meme=<id>)
   const pathMemeMatch = (pathname || '').match(/^\/m\/([^/?#]+)/i);
   let theaterMemeId;
@@ -934,6 +964,7 @@ export function resolveRouteFromLocation(pathname = '/', search = '') {
 export function getCanonicalPathForState({
   viewMode = 'feed',
   category = 'all',
+  creatorHandle = null,
   showStudio = false,
   forgeIntent = null,
   extrasDrawerOpen = false,
@@ -944,6 +975,10 @@ export function getCanonicalPathForState({
 } = {}) {
   if (theaterMemeId) {
     return `/m/${encodeURIComponent(String(theaterMemeId))}`;
+  }
+  if (viewMode === 'creator' && creatorHandle) {
+    const clean = String(creatorHandle).trim().replace(/^@+/, '');
+    if (clean) return `/u/${encodeURIComponent(clean)}`;
   }
   if (bossKeyActive && prankDisguise && PRANK_DISGUISE_TO_PATH[prankDisguise]) {
     return PRANK_DISGUISE_TO_PATH[prankDisguise];

@@ -71,6 +71,7 @@ export function useViewMode() {
 
   const [category, setCategory] = useState(initialRoute.category);
   const [viewMode, setViewMode] = useState(initialRoute.viewMode);
+  const [creatorHandle, setCreatorHandle] = useState(initialRoute.creatorHandle || null);
   const [searchQuery, setSearchQuery] = useState(initialRoute.searchQuery);
   const [showSavedOnly, setShowSavedOnly] = useState(false);
   const [sortBy, setSortBy] = useState('hot');
@@ -110,6 +111,7 @@ export function useViewMode() {
       getCanonicalPathForState({
         viewMode,
         category,
+        creatorHandle,
         showStudio,
         forgeIntent,
         extrasDrawerOpen,
@@ -121,6 +123,7 @@ export function useViewMode() {
     [
       viewMode,
       category,
+      creatorHandle,
       showStudio,
       forgeIntent,
       extrasDrawerOpen,
@@ -130,6 +133,19 @@ export function useViewMode() {
       theaterMemeId
     ]
   );
+
+  const openCreatorProfile = useCallback((rawHandle) => {
+    const clean = String(rawHandle || '').trim().replace(/^@+/, '');
+    if (!clean) return;
+    sfx.playToggle();
+    setCreatorHandle(clean);
+    setViewMode('creator');
+    setProfileUsername(null);
+    setTheaterMemeId(null);
+    setShowStudio(false);
+    setShowLeaderboard(false);
+    setShowRewardsModal(false);
+  }, []);
 
   const hasCanonicalSubpath = canonicalPath !== '/';
 
@@ -270,6 +286,9 @@ export function useViewMode() {
   return {
     initialRoute,
     category,
+    creatorHandle,
+    setCreatorHandle,
+    openCreatorProfile,
     setCategory,
     viewMode,
     setViewMode,
@@ -343,6 +362,7 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
   const {
     initialRoute,
     viewMode,
+    creatorHandle,
     category,
     searchQuery,
     showStudio,
@@ -359,6 +379,7 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
     activeNavDepth,
     handleNavigateBack,
     setCategory,
+    setCreatorHandle,
     setViewMode,
     setSearchQuery,
     setShowStudio,
@@ -383,6 +404,7 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
       theaterMemeId,
       category,
       viewMode,
+      creatorHandle,
       showStudio,
       forgeIntent,
       extrasDrawerOpen,
@@ -396,6 +418,7 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
     roastModalMeme,
     category,
     viewMode,
+    creatorHandle,
     showStudio,
     forgeIntent,
     extrasDrawerOpen,
@@ -437,7 +460,7 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
       url.searchParams.delete('q');
     }
 
-    if (canonicalPath !== currentNorm) {
+    if (canonicalPath.toLowerCase() !== currentNorm) {
       url.pathname = canonicalPath;
       const useReplace =
         !hasMountedPathSyncRef.current || skipNextPushRef.current || hadLegacyParams;
@@ -477,6 +500,7 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
         );
         lastSyncedPathRef.current = resolved.matchedPath;
         setCategory(resolved.category);
+        setCreatorHandle(resolved.creatorHandle || null);
         setViewMode(resolved.viewMode);
         setSearchQuery(resolved.searchQuery);
         setShowStudio(resolved.showStudio);
@@ -498,6 +522,7 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
     handleNavigateBack,
     setBossKeyActive,
     setCategory,
+    setCreatorHandle,
     setExtrasDrawerOpen,
     setExtrasFocus,
     setForgeIntent,

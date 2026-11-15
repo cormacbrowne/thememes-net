@@ -167,6 +167,9 @@
   "functions": {
     "api/meme-og.js": {
       "includeFiles": "dist/index.html"
+    },
+    "api/creator-og.js": {
+      "includeFiles": "dist/index.html"
     }
   },
   "rewrites": [
@@ -177,6 +180,10 @@
     {
       "source": "/m/:id",
       "destination": "/api/meme-og?id=:id"
+    },
+    {
+      "source": "/u/:handle",
+      "destination": "/api/creator-og?handle=:handle"
     },
     {
       "source": "/((?!_vercel/|api/|assets/|seed/|favicon|logo-|apple-touch-icon|manifest\\.webmanifest|BingSiteAuth\\.xml).*)",

@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { SEO_ROUTES, SITE_ORIGIN, DEFAULT_OG_IMAGE, getTemplateRoutePath } from '../src/data/seoRoutes.js';
 import { STARTER_MEMES, STUDIO_TEMPLATES } from '../src/data/starterMemes.js';
 import { buildRouteJsonLd } from '../src/utils/seoEngine.js';
+import { extractUniqueCreatorHandles } from '../src/utils/creatorProfiles.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -289,7 +290,17 @@ function generateSitemapXml(lastmod) {
   </url>`;
   });
 
-  const urlsXml = [...routeUrlsXml, ...seedMemeUrlsXml].join('\n');
+  const creatorUrlsXml = extractUniqueCreatorHandles(STARTER_MEMES).map((c) => {
+    const loc = `${SITE_ORIGIN}/u/${encodeURIComponent(c.handle)}`;
+    return `  <url>
+    <loc>${escapeHtml(loc)}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>`;
+  });
+
+  const urlsXml = [...routeUrlsXml, ...creatorUrlsXml, ...seedMemeUrlsXml].join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -374,6 +385,63 @@ function renderMemeHtml(baseHtml, meme) {
   return html.replace(/<div\s+id="root"><\/div>/i, `<div id="root">${prerenderMain}</div>`);
 }
 
+function renderCreatorHtml(baseHtml, creator) {
+  const safeHandle = encodeURIComponent(creator.handle);
+  const canonicalUrl = `${SITE_ORIGIN}/u/${safeHandle}`;
+  const titleText = `@${creator.handle} — Creator Profile, Memes & High Scores | THE MEMES.net`;
+  const descText = `Browse @${creator.handle}'s creator profile on THE MEMES.net: ${creator.memesCount} memes posted (${creator.totalScore} score), built-in pixel avatar, badges, and arcade high scores.`;
+
+  let html = baseHtml;
+  const safeTitle = escapeHtml(titleText);
+  const safeDesc = escapeHtml(descText);
+  const safeUrl = escapeHtml(canonicalUrl);
+  const safeImg = escapeHtml(DEFAULT_OG_IMAGE);
+
+  html = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>${safeTitle}</title>`);
+  html = html.replace(/<meta\s+name="description"\s+content="[^"]*"\s*\/?>/i, `<meta name="description" content="${safeDesc}" />`);
+  html = html.replace(/<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${safeUrl}" />`);
+  html = html.replace(/<meta\s+property="og:title"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${safeTitle}" />`);
+  html = html.replace(/<meta\s+property="og:description"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${safeDesc}" />`);
+  html = html.replace(/<meta\s+property="og:url"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${safeUrl}" />`);
+  html = html.replace(/<meta\s+property="og:image"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${safeImg}" />`);
+  html = html.replace(/<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${safeTitle}" />`);
+  html = html.replace(/<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${safeDesc}" />`);
+  html = html.replace(/<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${safeImg}" />`);
+
+  const profileJsonLd = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'ProfilePage',
+    name: `@${creator.handle} Creator Profile`,
+    description: descText,
+    url: canonicalUrl,
+    mainEntity: {
+      '@type': 'Person',
+      name: creator.handle,
+      alternateName: `@${creator.handle}`,
+      url: canonicalUrl
+    }
+  }).replaceAll('<', '\\u003c');
+  html = html.replace(/\s*<script[^>]*id="tm-dynamic-jsonld"[^>]*>[\s\S]*?<\/script>/i, '');
+  html = html.replace(
+    /<\/head>/i,
+    `  <script id="tm-dynamic-jsonld" type="application/ld+json">${profileJsonLd}</script>\n  </head>`
+  );
+
+  const prerenderMain = `<main class="tm-seo-prerender" data-seo-route="/u/${escapeHtml(creator.handle)}" style="min-height:100vh;background:#070810;color:#f8fafc;padding:32px 18px 64px;font-family:system-ui,-apple-system,sans-serif;">
+      <article style="max-width:740px;margin:0 auto;background:#11131c;border:1px solid #26293d;border-radius:16px;padding:24px;">
+        <div style="font-size:12px;color:#38bdf8;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;">THE MEMES.net // CREATOR PROFILE</div>
+        <h1 style="margin:8px 0 10px;font-size:28px;color:#00f3ff;">@${escapeHtml(creator.handle)}</h1>
+        <p style="margin:0 0 16px;color:#cbd5e1;line-height:1.6;">${safeDesc}</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <a href="/" style="color:#00f5ff;text-decoration:none;font-weight:700;">🔥 Browse Meme Feed</a>
+          <a href="/games" style="color:#facc15;text-decoration:none;font-weight:700;">🕹️ 80s Cyber-Arcade</a>
+        </div>
+      </article>
+    </main>`;
+
+  return html.replace(/<div\s+id="root"><\/div>/i, `<div id="root">${prerenderMain}</div>`);
+}
+
 function writeDualCleanUrlFiles(relativeRoutePath, renderedHtml) {
   const cleanRel = relativeRoutePath.replace(/^\/+/, '');
   if (!cleanRel) return;
@@ -408,12 +476,18 @@ function main() {
     writeDualCleanUrlFiles(`/m/${encodeURIComponent(String(meme.id))}`, renderedMeme);
   }
 
+  const creators = extractUniqueCreatorHandles(STARTER_MEMES);
+  for (const creator of creators) {
+    const renderedCreator = renderCreatorHtml(baseHtml, creator);
+    writeDualCleanUrlFiles(`/u/${encodeURIComponent(creator.handle)}`, renderedCreator);
+  }
+
   const sitemapXml = generateSitemapXml(todayIso);
   fs.writeFileSync(path.join(PUBLIC_DIR, 'sitemap.xml'), sitemapXml, 'utf8');
   fs.writeFileSync(path.join(DIST_DIR, 'sitemap.xml'), sitemapXml, 'utf8');
 
   console.log(
-    `[prerender-seo] Generated ${SEO_ROUTES.length} static SEO routes + ${STARTER_MEMES.length} static meme pages in dist/ + updated sitemaps (${todayIso}).`
+    `[prerender-seo] Generated ${SEO_ROUTES.length} static SEO routes + ${creators.length} creator profiles + ${STARTER_MEMES.length} static meme pages in dist/ + updated sitemaps (${todayIso}).`
   );
 }
 

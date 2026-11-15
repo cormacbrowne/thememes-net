@@ -1,0 +1,224 @@
+.tm-creator-page {
+  max-width: 1120px;
+  margin: 16px auto 96px;
+  padding: 0 18px;
+}
+
+.tm-creator-top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.tm-creator-hero-card {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(24, 14, 42, 0.92));
+  border: 1.5px solid rgba(0, 243, 255, 0.38);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+}
+
+.tm-creator-hero-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.tm-creator-identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.tm-creator-handle-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tm-creator-handle-row h1 {
+  margin: 0;
+  font-size: clamp(22px, 3.2vw, 30px);
+  color: #00f3ff;
+  word-break: break-word;
+}
+
+.tm-creator-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tm-follow-btn {
+  border-radius: 999px;
+  padding: 9px 18px;
+  font-weight: 800;
+  cursor: pointer;
+  border: 1.5px solid #00f3ff;
+  background: rgba(0, 243, 255, 0.14);
+  color: #e0f2fe;
+  transition: all 0.16s ease;
+}
+
+.tm-follow-btn.following {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.18);
+  color: #bbf7d0;
+}
+
+.tm-creator-stats-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.tm-creator-kpi {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.tm-creator-kpi strong {
+  display: block;
+  font-size: 20px;
+  color: #ffffff;
+}
+
+.tm-creator-kpi span {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.tm-creator-section {
+  margin-top: 22px;
+  background: rgba(11, 13, 24, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 16px 18px;
+}
+
+.tm-creator-section h2 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  color: #facc15;
+  letter-spacing: 0.03em;
+}
+
+.tm-avatar-picker-box {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(8, 12, 26, 0.85);
+  border: 1px solid rgba(0, 243, 255, 0.3);
+}
+
+.tm-avatar-picker-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  font-weight: 800;
+  color: #00f3ff;
+  margin-bottom: 10px;
+}
+
+.tm-avatar-picker-hint {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.tm-avatar-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+  gap: 8px;
+}
+
+.tm-avatar-choice-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 6px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tm-avatar-choice-btn.active {
+  border-color: #00f3ff;
+  background: rgba(0, 243, 255, 0.16);
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(0, 243, 255, 0.32);
+}
+
+.tm-avatar-picker-status {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #a3e635;
+  font-weight: 700;
+}
+
+.tm-creator-scores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 10px;
+}
+
+.tm-creator-score-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(250, 204, 21, 0.25);
+}
+
+.tm-creator-memes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.tm-creator-meme-card {
+  background: rgba(15, 18, 32, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tm-creator-meme-card img {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+  display: block;
+  cursor: pointer;
+}
+
+.tm-creator-meme-meta {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}

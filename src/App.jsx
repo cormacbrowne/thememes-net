@@ -72,6 +72,7 @@ const AuthModal = lazyWithRetry(() => import('./components/AuthModal'));
 const MemeTheaterModal = lazyWithRetry(() => import('./components/MemeTheaterModal'));
 const LeaderboardModal = lazyWithRetry(() => import('./components/LeaderboardModal'));
 const PlayerProfileModal = lazyWithRetry(() => import('./components/PlayerProfileModal'));
+const CreatorProfilePage = lazyWithRetry(() => import('./components/CreatorProfilePage'));
 const ExtrasDrawerModal = lazyWithRetry(() => import('./components/ExtrasDrawerModal'));
 const RewardsModal = lazyWithRetry(() => import('./components/RewardsModal'));
 const AiRoastModal = lazyWithRetry(() => import('./components/AiRoastModal'));
@@ -103,6 +104,9 @@ export default function App() {
     setCategory,
     viewMode,
     setViewMode,
+    creatorHandle,
+    setCreatorHandle,
+    openCreatorProfile,
     searchQuery,
     setSearchQuery,
     showSavedOnly,
@@ -358,6 +362,7 @@ export default function App() {
     handleMagicLinkSubmit,
     handleAuthSubmit,
     handleClaimUsername,
+    setUserAvatarId,
     handleLogout
   } = auth;
   const authUserId = profileStatus?.id || user?.id || null;
@@ -1639,6 +1644,27 @@ export default function App() {
         </>
       )}
 
+      {/* CREATOR PROFILE PAGE (/u/<handle>) */}
+      {viewMode === 'creator' && creatorHandle && (
+        <Suspense fallback={<div style={{ padding: '18px' }}><MemeSkeletonGrid count={3} /></div>}>
+          <CreatorProfilePage
+            handle={creatorHandle}
+            memes={memes}
+            currentUser={user}
+            activeCaptionKings={activeCaptionKings}
+            onBackToFeed={() => {
+              sfx.playToggle();
+              setCreatorHandle(null);
+              setViewMode('feed');
+            }}
+            onSelectMeme={handleOpenTheater}
+            onRemixMeme={handleTriggerStudioMutate}
+            onRequireAuth={() => setShowAuthModal(true)}
+            onAvatarUpdated={setUserAvatarId}
+          />
+        </Suspense>
+      )}
+
       {/* ARCADE GAMES & INTERACTIVE MODES ROUTER */}
       <ArcadeErrorBoundary
         resetKey={viewMode}
@@ -1997,6 +2023,9 @@ export default function App() {
             goblinsCaught={goblinsCaught}
             konamiUnlocked={konamiUnlocked}
             onClose={() => setProfileUsername(null)}
+            onOpenCreatorPage={(targetHandle) => openCreatorProfile(targetHandle)}
+            onAvatarUpdated={setUserAvatarId}
+            onRequireAuth={() => setShowAuthModal(true)}
             onSelectMeme={handleOpenTheater}
             onTriggerStudioMutate={handleTriggerStudioMutate}
             onClaimUsername={async (newName) => {

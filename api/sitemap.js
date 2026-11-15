@@ -1,6 +1,7 @@
 import process from 'node:process';
 import { SEO_ROUTES, SITE_ORIGIN } from '../src/data/seoRoutes.js';
 import { STARTER_MEMES } from '../src/data/starterMemes.js';
+import { extractUniqueCreatorHandles } from '../src/utils/creatorProfiles.js';
 
 function escapeXml(value = '') {
   return String(value)
@@ -78,9 +79,18 @@ export default async function handler(req, res) {
   </url>`);
   }
 
+  const creatorUrlsXml = extractUniqueCreatorHandles(STARTER_MEMES).map(
+    (c) => `  <url>
+    <loc>${escapeXml(`${SITE_ORIGIN}/u/${encodeURIComponent(c.handle)}`)}</loc>
+    <lastmod>${todayIso}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>`
+  );
+
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${[...staticRouteXml, ...memeUrlXml].join('\n')}
+${[...staticRouteXml, ...creatorUrlsXml, ...memeUrlXml].join('\n')}
 </urlset>
 `;
 

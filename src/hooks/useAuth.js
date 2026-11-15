@@ -118,6 +118,7 @@ export function useAuth({ setShowAuthModal, awardXpAndCombo }) {
       id: sessionUser.id,
       username: handle,
       claimedUsername: claimedUsername || null,
+      avatarId: profile?.avatar_id || null,
       email,
       provider,
       verified: true,
@@ -458,6 +459,19 @@ export function useAuth({ setShowAuthModal, awardXpAndCombo }) {
     return res;
   };
 
+  const setUserAvatarId = useCallback((avatarId) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, avatarId };
+      try {
+        localStorage.setItem('tm_user', JSON.stringify(updated));
+      } catch {
+        // Ignore storage errors
+      }
+      return updated;
+    });
+  }, []);
+
   const handleLogout = async () => {
     const client = getSupabaseClient();
     try {
@@ -489,6 +503,7 @@ export function useAuth({ setShowAuthModal, awardXpAndCombo }) {
     handleMagicLinkSubmit,
     handleAuthSubmit,
     handleClaimUsername,
+    setUserAvatarId,
     handleLogout
   };
 }

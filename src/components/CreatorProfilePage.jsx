@@ -1,0 +1,314 @@
+import { useEffect, useState } from 'react';
+import { getSupabaseClient } from '../supabaseClient';
+import { RANKS, formatMemeUploadDate } from '../data/starterMemes';
+import {
+  fetchCreatorProfile,
+  getCreatorProfilePath,
+  saveMyPixelAvatar,
+  toggleFollowCreator
+} from '../utils/creatorProfiles';
+import PixelAvatar from './PixelAvatar';
+import PixelAvatarPicker from './PixelAvatarPicker';
+import './CreatorProfilePage.css';
+
+export default function CreatorProfilePage({
+  handle,
+  memes = [],
+  currentUser = null,
+  activeCaptionKings = [],
+  localHighScores = {},
+  onBackToFeed,
+  onSelectMeme,
+  onRemixMeme,
+  onRequireAuth,
+  onAvatarUpdated
+}) {
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [followBusy, setFollowBusy] = useState(false);
+  const [followMessage, setFollowMessage] = useState('');
+  const [avatarBusy, setAvatarBusy] = useState(false);
+  const [avatarMessage, setAvatarMessage] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    const client = getSupabaseClient();
+    Promise.resolve().then(() => {
+      if (active) setLoading(true);
+    });
+    fetchCreatorProfile(client, handle, {
+      localMemes: memes,
+      currentUser,
+      activeCaptionKings,
+      localHighScores
+    }).then((res) => {
+      if (!active) return;
+      setProfile(res?.ok ? res : null);
+      setLoading(false);
+    });
+    return () => {
+      active = false;
+    };
+  }, [handle, memes, currentUser, activeCaptionKings, localHighScores]);
+
+  const playerXp = profile?.stats?.playerXp || 0;
+  let rankObj = RANKS[0];
+  for (const r of RANKS) {
+    if (playerXp >= r.minXp) rankObj = r;
+  }
+
+  const handleFollowClick = async () => {
+    if (!profile || followBusy) return;
+    if (!currentUser?.verified) {
+      setFollowMessage('Sign in first to follow creators.');
+      onRequireAuth?.();
+      return;
+    }
+    setFollowBusy(true);
+    setFollowMessage('');
+    const client = getSupabaseClient();
+    const res = await toggleFollowCreator(client, profile.normalizedHandle, !profile.isFollowing);
+    setFollowBusy(false);
+    if (!res.ok) {
+      setFollowMessage(res.message || 'Could not update follow.');
+      return;
+    }
+    setProfile((prev) =>
+      prev
+        ? {
+            ...prev,
+            isFollowing: res.following,
+            followerCount: res.followerCount
+          }
+        : prev
+    );
+  };
+
+  const handlePickAvatar = async (avatarId) => {
+    if (!profile || avatarBusy) return;
+    setAvatarBusy(true);
+    setAvatarMessage('');
+    const client = getSupabaseClient();
+    const res = await saveMyPixelAvatar(client, avatarId);
+    setAvatarBusy(false);
+    if (!res.ok) {
+      setAvatarMessage(res.message || 'Could not save pixel avatar.');
+      return;
+    }
+    setProfile((prev) => (prev ? { ...prev, avatarId: res.avatarId } : prev));
+    onAvatarUpdated?.(res.avatarId);
+    setAvatarMessage('✅ Saved built-in pixel avatar!');
+  };
+
+  return (
+    <section
+      className="tm-creator-page"
+      data-testid="creator-profile-page"
+      aria-label={`Creator profile for @${profile?.handle || handle}`}
+    >
+      <div className="tm-creator-top-nav">
+        <button
+          type="button"
+          className="tm-btn tm-back-pill"
+          data-testid="creator-back-to-feed"
+          onClick={onBackToFeed}
+        >
+          ← Back to Feed
+        </button>
+        <div style={{ fontSize: '12px', color: '#94a3b8' }}>
+          {getCreatorProfilePath(profile?.handle || handle)}
+        </div>
+      </div>
+
+      {loading && !profile ? (
+        <div className="tm-creator-hero-card">⏳ Loading creator profile...</div>
+      ) : !profile ? (
+        <div className="tm-creator-hero-card">
+          <h1>Creator handle not found</h1>
+          <p style={{ color: '#94a3b8' }}>
+            Handles may contain letters, numbers, underscores, or hyphens (2–32 chars).
+          </p>
+        </div>
+      ) : (
+        <>
+          <div
+            className={`tm-creator-hero-card ${
+              profile.isCaptionKing ? 'tm-frame-caption-king' : ''
+            }`}
+          >
+            <div className="tm-creator-hero-main">
+              <div className="tm-creator-identity">
+                <PixelAvatar
+                  avatarId={profile.avatarId}
+                  handle={profile.handle}
+                  size={74}
+                  frame={profile.isCaptionKing ? 'caption-king' : ''}
+                />
+                <div>
+                  <div className="tm-creator-handle-row">
+                    <h1 data-testid="creator-profile-handle">@{profile.handle}</h1>
+                    {profile.verified && (
+                      <span className="tm-verified-pill">🛡️ Verified Creator</span>
+                    )}
+                    {profile.isCaptionKing && (
+                      <span className="tm-rarity-badge supernova">👑 Caption King (24h)</span>
+                    )}
+                    <span
+                      className="tm-tag"
+                      style={{ background: 'rgba(250,204,21,0.18)', color: '#facc15' }}
+                    >
+                      Lv.{rankObj.level} {rankObj.title}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '6px' }}>
+                    <strong data-testid="creator-follower-count">
+                      {profile.followerCount.toLocaleString()}
+                    </strong>{' '}
+                    Followers • {profile.stats.memesCount} Memes • {profile.stats.totalScore.toLocaleString()} Upvote Score
+                  </div>
+                </div>
+              </div>
+
+              <div className="tm-creator-actions">
+                {!profile.isMe && (
+                  <button
+                    type="button"
+                    disabled={followBusy}
+                    data-testid="creator-follow-btn"
+                    className={`tm-follow-btn ${profile.isFollowing ? 'following' : ''}`}
+                    onClick={handleFollowClick}
+                  >
+                    {profile.isFollowing ? '✓ Following' : '+ Follow'}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {followMessage && (
+              <div style={{ marginTop: '10px', fontSize: '12px', color: '#facc15' }}>
+                {followMessage}
+              </div>
+            )}
+
+            <div className="tm-creator-stats-strip">
+              <div className="tm-creator-kpi">
+                <strong>{profile.stats.memesCount}</strong>
+                <span>Memes Posted</span>
+              </div>
+              <div className="tm-creator-kpi">
+                <strong style={{ color: '#facc15' }}>{profile.stats.totalScore.toLocaleString()}</strong>
+                <span>Total Score</span>
+              </div>
+              <div className="tm-creator-kpi">
+                <strong style={{ color: '#ec4899' }}>{profile.stats.totalRemixes}</strong>
+                <span>Remixes Spawned</span>
+              </div>
+              <div className="tm-creator-kpi">
+                <strong style={{ color: '#00f3ff' }}>{profile.highScores.length}</strong>
+                <span>Arcade Records</span>
+              </div>
+            </div>
+
+            {profile.isMe && (
+              <PixelAvatarPicker
+                selectedAvatarId={profile.avatarId}
+                saving={avatarBusy}
+                statusMessage={avatarMessage}
+                onSelectAvatar={handlePickAvatar}
+              />
+            )}
+          </div>
+
+          {/* Badges */}
+          <div className="tm-creator-section" data-testid="creator-badges-section">
+            <h2>🏅 CREATOR BADGES</h2>
+            <div className="tm-badges-grid">
+              {profile.badges.map((b) => (
+                <div key={b.id} className={`tm-badge-card ${b.unlocked ? 'unlocked' : 'locked'}`}>
+                  <span style={{ fontSize: '24px' }}>{b.icon}</span>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: '13px' }}>{b.name || b.title}</div>
+                    <div style={{ fontSize: '11px', color: '#94a3b8' }}>{b.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Arcade High Scores */}
+          <div className="tm-creator-section" data-testid="creator-highscores-section">
+            <h2>🕹️ ARCADE HIGH SCORES</h2>
+            {profile.highScores.length === 0 ? (
+              <div style={{ fontSize: '13px', color: '#94a3b8' }}>
+                No cabinet high scores logged yet for @{profile.handle}.
+              </div>
+            ) : (
+              <div className="tm-creator-scores-grid">
+                {profile.highScores.map((s) => (
+                  <div key={s.game} className="tm-creator-score-card">
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: '13px', color: '#f8fafc' }}>
+                        {s.emoji} {s.title}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                        Initials: <strong>{s.initials}</strong>
+                      </div>
+                    </div>
+                    <div style={{ fontWeight: 900, fontSize: '18px', color: '#00f3ff' }}>
+                      {s.highScore.toLocaleString()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Memes Posted */}
+          <div className="tm-creator-section" data-testid="creator-memes-section">
+            <h2>🖼️ MEMES POSTED ({profile.memes.length})</h2>
+            {profile.memes.length === 0 ? (
+              <div style={{ fontSize: '13px', color: '#94a3b8' }}>
+                @{profile.handle} has not posted any memes yet.
+              </div>
+            ) : (
+              <div className="tm-creator-memes-grid">
+                {profile.memes.map((meme) => (
+                  <article key={meme.id} className="tm-creator-meme-card">
+                    <img
+                      src={meme.image_url}
+                      alt={meme.title}
+                      loading="lazy"
+                      onClick={() => onSelectMeme?.(meme)}
+                    />
+                    <div className="tm-creator-meme-meta">
+                      <strong style={{ fontSize: '13px', color: '#ffffff' }}>{meme.title}</strong>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          fontSize: '11px',
+                          color: '#94a3b8'
+                        }}
+                      >
+                        <span>🔥 {Number(meme.score || 0).toLocaleString()}</span>
+                        <span>{formatMemeUploadDate(meme.created_at).relative}</span>
+                      </div>
+                      <button
+                        type="button"
+                        className="tm-btn"
+                        style={{ fontSize: '11px', padding: '5px 8px' }}
+                        onClick={() => onRemixMeme?.(meme)}
+                      >
+                        🎨 Remix
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </section>
+  );
+}

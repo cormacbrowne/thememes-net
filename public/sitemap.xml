@@ -217,6 +217,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://www.thememes.net/u/TheMemesHQ</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.thememes.net/m/seed-tech-01</loc>
     <lastmod>2026-11-15</lastmod>
     <changefreq>weekly</changefreq>

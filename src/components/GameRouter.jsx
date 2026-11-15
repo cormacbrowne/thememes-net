@@ -703,6 +703,8 @@ export default function GameRouter({
   handleVote,
   handleReaction,
   handleAddComment,
+  handleDeleteComment,
+  currentUserId = null,
   handleToggleBookmark,
   handleTriggerStudioMutate,
   handleCaptionThis,
@@ -1029,6 +1031,8 @@ export default function GameRouter({
           onVote={handleVote}
           onReaction={handleReaction}
           onAddComment={handleAddComment}
+          onDeleteComment={handleDeleteComment}
+          currentUserId={currentUserId}
           onToggleBookmark={handleToggleBookmark}
           onTriggerStudioMutate={handleTriggerStudioMutate}
           onCaptionThis={handleCaptionThis}

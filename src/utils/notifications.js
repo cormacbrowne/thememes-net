@@ -1,17 +1,15 @@
 // ==========================================
-// PHASE 28.13: REAL CREATOR NOTIFICATIONS & GENUINE VIEW COUNTS
-// Uses the existing `public.notifications` Supabase table & Realtime.
-// Never fakes notifications or views.
+// PHASE 28.13 + 33.8: CREATOR NOTIFICATIONS & LOCAL VIEW COUNTS
+// Notifications are created strictly on the server (triggers / RPCs) and read
+// per-user via `recipient_id = auth.uid()` RLS.
 // ==========================================
-import { sanitizeUserText } from './securityGuard';
+import { sanitizeUserText } from './securityGuard.js';
 
 const VIEWS_STORAGE_KEY = 'tm_meme_views_v1';
 
 const isUuid = (id) =>
   Boolean(id) &&
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-    String(id)
-  );
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id));
 
 export function loadLocalMemeViews() {
   if (typeof window === 'undefined') return {};
@@ -43,50 +41,15 @@ export function recordLocalMemeView(memeId) {
 }
 
 /**
- * Inserts a real notification row in `public.notifications` when a real user
- * upvotes, reacts, comments, or remixes another creator's Supabase meme.
+ * Fetch the signed-in creator's recent notifications (filtered strictly by auth user UUID).
  */
-export async function sendCreatorNotification({
-  client,
-  recipientUsername,
-  actorName,
-  type,
-  memeId,
-  message
-}) {
-  if (!client || !recipientUsername || !actorName || !isUuid(memeId)) return;
-  const recipient = sanitizeUserText(recipientUsername, 48);
-  const actor = sanitizeUserText(actorName, 48);
-  if (!recipient || !actor) return;
-  if (recipient.toLowerCase() === actor.toLowerCase()) return;
-  if (recipient.toLowerCase() === 'thememeshq') return;
-
-  const cleanMsg = sanitizeUserText(message, 220);
-  if (!cleanMsg) return;
-
-  try {
-    await client.from('notifications').insert([
-      {
-        recipient_username: recipient,
-        actor_name: actor,
-        type,
-        meme_id: memeId,
-        message: cleanMsg,
-        read: false
-      }
-    ]);
-  } catch {
-    // Non-blocking: ignore if table/network unavailable
-  }
-}
-
-export async function fetchCreatorNotifications(client, username) {
-  if (!client || !username) return [];
+export async function fetchCreatorNotifications(client, recipientId) {
+  if (!client || !isUuid(recipientId)) return [];
   try {
     const { data, error } = await client
       .from('notifications')
       .select('*')
-      .ilike('recipient_username', sanitizeUserText(username, 48))
+      .eq('recipient_id', recipientId)
       .order('created_at', { ascending: false })
       .limit(25);
     if (error || !Array.isArray(data)) return [];
@@ -100,12 +63,17 @@ export async function fetchCreatorNotifications(client, username) {
   }
 }
 
+/**
+ * Mark unread notifications read for the current caller via the server-side RPC.
+ * Passing an empty array marks all unread notifications for the caller read.
+ */
 export async function markCreatorNotificationsRead(client, ids = []) {
-  if (!client || !Array.isArray(ids) || ids.length === 0) return;
-  const validIds = ids.filter((id) => isUuid(id));
-  if (validIds.length === 0) return;
+  if (!client) return;
+  const validIds = Array.isArray(ids) ? ids.filter((id) => isUuid(id)) : [];
   try {
-    await client.from('notifications').update({ read: true }).in('id', validIds);
+    await client.rpc('mark_notifications_read', {
+      p_ids: validIds.length > 0 ? validIds : null
+    });
   } catch {
     // ignore
   }

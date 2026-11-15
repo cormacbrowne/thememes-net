@@ -1277,11 +1277,16 @@ test.describe('Phase 33.7 Rate Limits & Arcade Cooldown Copy', () => {
           body: JSON.stringify({ ok: true, id: '00000000-0000-4000-8000-000000000337', role: 'user' })
         });
       });
-      await page.route('**/rest/v1/rpc/increment_meme_score*', async (route) => {
+      await page.route('**/rest/v1/rpc/cast_vote*', async (route) => {
         await route.fulfill({
-          status: 400,
+          status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ code: 'P0001', message: 'rate_limited:240' })
+          body: JSON.stringify({
+            ok: false,
+            error: 'rate_limited',
+            retry_after_seconds: 240,
+            message: '⏳ Cool your jets, speed racer. Try again in 4 min.'
+          })
         });
       });
       await page.route('**/functions/v1/post-comment*', async (route) => {
@@ -1322,6 +1327,204 @@ test.describe('Phase 33.7 Rate Limits & Arcade Cooldown Copy', () => {
         /Cool your jets, speed racer\. Try again in 9 sec\./i,
         { timeout: 5000 }
       );
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(overflow).toBeLessThanOrEqual(2);
+      expect(pageErrors).toEqual([]);
+    });
+  }
+});
+
+test.describe('Phase 33.8 Tamper-Resistant Votes, Reactions, Comments & Notifications', () => {
+  for (const vp of [
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+    { width: 1280, height: 800 }
+  ]) {
+    test(`Votes, reactions, and author comment delete use server RPCs/RLS cleanly at ${vp.width}x${vp.height}`, async ({
+      page
+    }) => {
+      const pageErrors = [];
+      page.on('pageerror', (err) => pageErrors.push(err.message));
+
+      const callerId = '00000000-0000-4000-8000-000000000338';
+      const otherId = '00000000-0000-4000-8000-000000000999';
+      const memeId = '00000000-0000-4000-8000-000000000888';
+      const otherCommentId = '00000000-0000-4000-8000-000000000701';
+      const ownCommentId = '00000000-0000-4000-8000-000000000702';
+
+      let legacyScoreCalls = 0;
+      const castVoteBodies = [];
+      const toggleReactionBodies = [];
+      let deleteCommentCalled = false;
+
+      await page.route('**/rest/v1/memes*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([
+            {
+              id: memeId,
+              title: 'Tamper Resistant Engagement Meme',
+              category: 'dank',
+              image_url: '/og/seed-dank-01.png',
+              author_name: 'NeonOtter_338',
+              score: 5,
+              reactions: { '🔥': 1, '💀': 0, '😂': 0, '🗿': 0 },
+              media_type: 'image',
+              status: 'approved',
+              created_at: new Date().toISOString(),
+              comments: [
+                {
+                  id: otherCommentId,
+                  meme_id: memeId,
+                  author_name: 'OtherMemer',
+                  body: 'Someone else comment',
+                  user_id: otherId,
+                  created_at: new Date().toISOString()
+                }
+              ]
+            }
+          ])
+        });
+      });
+
+      await page.route('**/auth/v1/signup*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            access_token: 'mock-anon-jwt-338',
+            token_type: 'bearer',
+            expires_in: 3600,
+            refresh_token: 'mock-refresh-338',
+            user: {
+              id: callerId,
+              is_anonymous: true,
+              aud: 'authenticated',
+              role: 'authenticated'
+            }
+          })
+        });
+      });
+      await page.route('**/rest/v1/rpc/get_my_profile*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ ok: true, id: callerId, role: 'user' })
+        });
+      });
+      await page.route('**/rest/v1/votes*', async (route) => {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+      });
+      await page.route('**/rest/v1/reactions*', async (route) => {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+      });
+      await page.route('**/rest/v1/notifications*', async (route) => {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+      });
+      await page.route('**/rest/v1/rpc/increment_meme_score*', async (route) => {
+        legacyScoreCalls += 1;
+        await route.fulfill({ status: 403, contentType: 'application/json', body: '{}' });
+      });
+      await page.route('**/rest/v1/rpc/cast_vote*', async (route) => {
+        const body = route.request().postDataJSON();
+        castVoteBodies.push(body);
+        const dir = Number(body?.p_direction || 0);
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            ok: true,
+            meme_id: memeId,
+            user_vote: dir,
+            score: 5 + dir,
+            changed: true
+          })
+        });
+      });
+      await page.route('**/rest/v1/rpc/toggle_reaction*', async (route) => {
+        const body = route.request().postDataJSON();
+        toggleReactionBodies.push(body);
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            ok: true,
+            meme_id: memeId,
+            emoji: body?.p_emoji || '🔥',
+            active: Boolean(body?.p_active),
+            reactions: { '🔥': body?.p_active ? 2 : 1, '💀': 0, '😂': 0, '🗿': 0 }
+          })
+        });
+      });
+      await page.route('**/functions/v1/post-comment*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            ok: true,
+            comment: {
+              id: ownCommentId,
+              meme_id: memeId,
+              author_name: 'AnonMemer',
+              body: 'My own server comment',
+              user_id: callerId,
+              created_at: new Date().toISOString()
+            }
+          })
+        });
+      });
+      await page.route('**/rest/v1/comments*', async (route) => {
+        if (route.request().method() === 'DELETE') {
+          deleteCommentCalled = true;
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify([{ id: ownCommentId }])
+          });
+          return;
+        }
+        await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+      });
+
+      await page.setViewportSize(vp);
+      await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+      const firstCard = page.locator('.tm-card').first();
+      await expect(firstCard).toBeVisible({ timeout: 15000 });
+      await expect(firstCard).toContainText(/Tamper Resistant Engagement Meme/i);
+
+      // Upvote calls cast_vote (never increment_meme_score) and moves score 5 -> 6
+      await firstCard.locator('.tm-vote-btn.up').click();
+      await expect(firstCard.locator('.tm-score')).toHaveText('6', { timeout: 5000 });
+      expect(legacyScoreCalls).toBe(0);
+      expect(castVoteBodies.some((b) => b?.p_direction === 1)).toBe(true);
+
+      // Reaction calls toggle_reaction and updates 🔥 to 2 without bumping score above 6
+      await firstCard.locator('.tm-react-group .tm-react-btn').first().click();
+      await expect(firstCard.locator('.tm-react-group .tm-react-btn').first()).toContainText('2', {
+        timeout: 5000
+      });
+      await expect(firstCard.locator('.tm-score')).toHaveText('6');
+      expect(toggleReactionBodies.some((b) => b?.p_emoji === '🔥' && b?.p_active === true)).toBe(true);
+
+      // Open comments: only caller's own comment should get the delete button, not other user's comment
+      await firstCard.locator('button[title="Toggle Comments"]').click();
+      await expect(firstCard).toContainText('Someone else comment');
+      await expect(firstCard.locator('button[aria-label="Delete your comment"]')).toHaveCount(0);
+
+      await firstCard.locator('.tm-comment-form input').fill('My own server comment');
+      await firstCard.locator('.tm-comment-form button[type="submit"]').click();
+      await expect(firstCard).toContainText('My own server comment', { timeout: 5000 });
+
+      const deleteBtn = firstCard.locator('button[aria-label="Delete your comment"]');
+      await expect(deleteBtn).toHaveCount(1);
+      await deleteBtn.click();
+      await expect(firstCard).not.toContainText('My own server comment', { timeout: 5000 });
+      expect(deleteCommentCalled).toBe(true);
 
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - window.innerWidth

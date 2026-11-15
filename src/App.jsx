@@ -331,6 +331,7 @@ export default function App() {
   const {
     user,
     anonHandle,
+    profileStatus,
     authMode,
     setAuthMode,
     authEmail,
@@ -346,12 +347,14 @@ export default function App() {
     handleClaimUsername,
     handleLogout
   } = auth;
+  const authUserId = profileStatus?.id || user?.id || null;
   const { onlineCount, broadcastEmote } = useLivePresence({ username: user?.username });
 
   const feed = useFeed({
     router,
     economy,
     user,
+    authUserId,
     litePerfMode,
     broadcastEmote,
     setGoblinFortuneToast,
@@ -406,7 +409,9 @@ export default function App() {
     handleToggleComments,
     handleCommentInputChange,
     handleAddComment,
+    handleDeleteComment,
     handlePostRoastComment,
+    currentUserId: feedUserId,
     handleQuickPublishFile,
     handleForgePublish,
     handleReportMeme,
@@ -1359,6 +1364,8 @@ export default function App() {
                     }}
                     onReportMeme={handleReportMeme}
                     onReportComment={handleReportComment}
+                    onDeleteComment={handleDeleteComment}
+                    currentUserId={feedUserId || authUserId}
                     onOpenAiRoast={handleOpenAiRoast}
                     cardFrame={
                       (user?.username &&
@@ -1588,6 +1595,8 @@ export default function App() {
         handleVote={handleVote}
         handleReaction={handleReaction}
         handleAddComment={handleAddComment}
+        handleDeleteComment={handleDeleteComment}
+        currentUserId={feedUserId || authUserId}
         handleToggleBookmark={handleToggleBookmark}
         handleTriggerStudioMutate={handleTriggerStudioMutate}
         handleCaptionThis={handleCaptionThis}
@@ -1792,6 +1801,8 @@ export default function App() {
             commentInput={commentInputs[theaterMeme.id] || ''}
             onCommentInputChange={handleCommentInputChange}
             onAddComment={handleAddComment}
+            onDeleteComment={handleDeleteComment}
+            currentUserId={feedUserId || authUserId}
             onVote={handleVote}
             onReaction={handleReaction}
             onTriggerStudioMutate={handleTriggerStudioMutate}

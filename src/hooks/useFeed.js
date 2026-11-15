@@ -30,9 +30,11 @@ import {
   postComment,
   precheckTexts,
   textRejectionMessage,
-  ensureWriteSession,
   consumeJustCreatedAnonHandle,
-  formatRateLimitMessage
+  nextVoteState,
+  castVote as castVoteRpc,
+  toggleReaction as toggleReactionRpc,
+  deleteComment as deleteCommentRpc
 } from '../utils/serverWrites';
 import { submitReport } from '../utils/reports';
 import { PUBLIC_UPLOADS_ENABLED, UPLOADS_PAUSED_ERROR } from '../config/featureFlags';
@@ -44,7 +46,6 @@ import {
   getBattleEntriesForBattle
 } from '../utils/dailyCaptionBattle';
 import {
-  sendCreatorNotification,
   fetchCreatorNotifications,
   markCreatorNotificationsRead
 } from '../utils/notifications';
@@ -58,6 +59,7 @@ export function useFeed({
   router,
   economy,
   user,
+  authUserId = null,
   litePerfMode,
   broadcastEmote,
   setGoblinFortuneToast,
@@ -374,16 +376,91 @@ export function useFeed({
     };
   }, [fetchSupabaseMemes]);
 
-  // Creator Notifications Subscription
+  const [sessionAuthUserId, setSessionAuthUserId] = useState(null);
+  const currentUserId = authUserId || sessionAuthUserId;
+
   useEffect(() => {
     const client = getSupabaseClient();
-    const myName = user?.username;
-    if (!client || !myName || String(myName).toLowerCase() === 'anonmemer') {
+    if (!client?.auth) return undefined;
+    let active = true;
+    client.auth
+      .getSession()
+      .then(({ data }) => {
+        if (active && data?.session?.user?.id) {
+          setSessionAuthUserId(data.session.user.id);
+        }
+      })
+      .catch(() => {});
+
+    const { data: authListener } = client.auth.onAuthStateChange((_event, session) => {
+      setSessionAuthUserId(session?.user?.id || null);
+    });
+
+    const onAnonCreated = (evt) => {
+      const uid = evt?.detail?.user?.id;
+      if (uid) setSessionAuthUserId(uid);
+    };
+    window.addEventListener('tm-anon-session', onAnonCreated);
+
+    return () => {
+      active = false;
+      window.removeEventListener('tm-anon-session', onAnonCreated);
+      authListener?.subscription?.unsubscribe?.();
+    };
+  }, []);
+
+  // Hydrate caller's server-authoritative votes and reactions when signed in (anon or linked)
+  useEffect(() => {
+    const client = getSupabaseClient();
+    if (!client || !currentUserId) return undefined;
+    let cancelled = false;
+
+    Promise.all([
+      client.from('votes').select('meme_id, direction').eq('user_id', currentUserId),
+      client.from('reactions').select('meme_id, emoji').eq('user_id', currentUserId).eq('active', true)
+    ])
+      .then(([votesRes, reactionsRes]) => {
+        if (cancelled) return;
+        if (!votesRes?.error && Array.isArray(votesRes.data)) {
+          setUserVotes((prev) => {
+            const next = { ...prev };
+            votesRes.data.forEach((row) => {
+              if (row?.meme_id != null) {
+                next[row.meme_id] = Number(row.direction) || 0;
+              }
+            });
+            return next;
+          });
+        }
+        if (!reactionsRes?.error && Array.isArray(reactionsRes.data)) {
+          const grouped = {};
+          reactionsRes.data.forEach((row) => {
+            if (row?.meme_id && row?.emoji) {
+              grouped[row.meme_id] = grouped[row.meme_id] || [];
+              if (!grouped[row.meme_id].includes(row.emoji)) {
+                grouped[row.meme_id].push(row.emoji);
+              }
+            }
+          });
+          setUserReactionsMap((prev) => ({ ...prev, ...grouped }));
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUserId]);
+
+  // Creator Notifications Subscription (strictly recipient_id = auth.uid())
+  useEffect(() => {
+    const client = getSupabaseClient();
+    if (!client || !currentUserId) {
       return undefined;
     }
 
     let cancelled = false;
-    fetchCreatorNotifications(client, myName).then((rows) => {
+    fetchCreatorNotifications(client, currentUserId).then((rows) => {
       if (!cancelled) {
         setNotifications(rows);
       }
@@ -391,14 +468,19 @@ export function useFeed({
 
     const notifChannel = client.channel
       ? client
-          .channel(`public:notifications:${myName}`)
+          .channel(`public:notifications:${currentUserId}`)
           .on(
             'postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'notifications' },
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'notifications',
+              filter: `recipient_id=eq.${currentUserId}`
+            },
             (payload) => {
               const row = payload?.new;
               if (!row) return;
-              if (String(row.recipient_username || '').toLowerCase() !== String(myName).toLowerCase()) {
+              if (String(row.recipient_id || '') !== String(currentUserId)) {
                 return;
               }
               setNotifications((prev) => {
@@ -418,15 +500,16 @@ export function useFeed({
         client.removeChannel(notifChannel);
       }
     };
-  }, [user?.username, setGoblinFortuneToast]);
+  }, [currentUserId, setGoblinFortuneToast]);
 
   const handleMarkNotificationsRead = useCallback(async () => {
+    const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id);
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     const client = getSupabaseClient();
-    if (client && user?.username) {
-      await markCreatorNotificationsRead(client, user.username);
+    if (client && currentUserId) {
+      await markCreatorNotificationsRead(client, unreadIds);
     }
-  }, [user]);
+  }, [notifications, currentUserId]);
 
   // Global Drag-Drop & Ctrl+V Paste
   const loadFileIntoStudio = useCallback(
@@ -592,19 +675,13 @@ export function useFeed({
   const handleVote = useCallback(
     async (memeId, direction, event) => {
       const currentVote = userVotes[memeId] || 0;
-      let delta;
-      if (currentVote === direction) {
-        delta = -direction;
-        setUserVotes((prev) => ({ ...prev, [memeId]: 0 }));
-      } else {
-        delta = direction - currentVote;
-        setUserVotes((prev) => ({ ...prev, [memeId]: direction }));
-      }
+      const { nextDirection, delta } = nextVoteState(currentVote, direction);
+      if (delta === 0) return;
 
-      const safeDelta = Math.max(-2, Math.min(2, delta));
-      sfx.playVote(direction > 0, combo);
+      setUserVotes((prev) => ({ ...prev, [memeId]: nextDirection }));
+      sfx.playVote(nextDirection > 0, combo);
 
-      if (direction > 0) {
+      if (nextDirection > 0) {
         if (!litePerfMode) {
           setScreenPunch(true);
           setTimeout(() => setScreenPunch(false), 140);
@@ -619,21 +696,7 @@ export function useFeed({
         broadcastEmote(memeId, '🔥');
         if (currentVote <= 0) {
           const votedMeme = memesRef.current.find((m) => String(m.id) === String(memeId));
-          trackUpvote(memeId, votedMeme?.category || 'unknown', Math.max(1, safeDelta));
-          if (votedMeme?.author_name) {
-            const clientForNotif = getSupabaseClient();
-            if (clientForNotif) {
-              const actorName = user?.username || 'Someone';
-              sendCreatorNotification({
-                client: clientForNotif,
-                recipientUsername: votedMeme.author_name,
-                actorName,
-                type: 'upvote',
-                memeId,
-                message: `🔥 Someone upvoted your meme "${String(votedMeme.title || 'Meme').slice(0, 36)}"!`
-              });
-            }
-          }
+          trackUpvote(memeId, votedMeme?.category || 'unknown', 1);
           const nextVotes = votesCastCount + 1;
           setVotesCastCount(nextVotes);
           localStorage.setItem('tm_votes_cast_count', String(nextVotes));
@@ -658,15 +721,10 @@ export function useFeed({
         claimStarterPackIfFirst(event);
       }
 
-      let updatedScore = 1;
       setMemes((prev) =>
-        prev.map((m) => {
-          if (m.id === memeId) {
-            updatedScore = (m.score || 0) + safeDelta;
-            return { ...m, score: updatedScore };
-          }
-          return m;
-        })
+        prev.map((m) =>
+          m.id === memeId ? { ...m, score: (m.score || 0) + delta } : m
+        )
       );
 
       const client = getSupabaseClient();
@@ -674,41 +732,25 @@ export function useFeed({
         const revertVote = () => {
           setUserVotes((prev) => ({ ...prev, [memeId]: currentVote }));
           setMemes((prev) =>
-            prev.map((m) => (m.id === memeId ? { ...m, score: (m.score || 0) - safeDelta } : m))
+            prev.map((m) => (m.id === memeId ? { ...m, score: (m.score || 0) - delta } : m))
           );
         };
         try {
-          const session = await ensureWriteSession(client);
-          if (!session) {
+          const result = await castVoteRpc(client, memeId, nextDirection);
+          if (!result.ok) {
             revertVote();
-            setGoblinFortuneToast('🔑 Could not start a session to save your vote. Please try again.');
+            setGoblinFortuneToast(result.message);
             setTimeout(() => setGoblinFortuneToast(''), 5000);
             return;
           }
-          // Task 33.1 / 33.6: increment_meme_score requires auth.uid() and blocks suspended profiles.
-          // Votes move to a tamper-resistant cast_vote RPC in task 33.8.
-          const { error: voteError } = await client.rpc('increment_meme_score', {
-            row_id: memeId,
-            delta: safeDelta
-          });
-          if (voteError) {
-            revertVote();
-            const msg = String(voteError.message || '');
-            const rlMatch = msg.match(/rate_limited:(\d+)/i);
-            setGoblinFortuneToast(
-              rlMatch
-                ? formatRateLimitMessage(Number(rlMatch[1]))
-                : /suspended/i.test(msg)
-                ? '🚫 Your account is currently suspended from voting.'
-                : /auth(?:entication)?_required/i.test(msg)
-                ? '🔑 Please wait a moment and try voting again.'
-                : '📡 Could not save your vote. Please try again.'
+          setUserVotes((prev) => ({ ...prev, [memeId]: result.userVote }));
+          if (typeof result.score === 'number') {
+            setMemes((prev) =>
+              prev.map((m) => (m.id === memeId ? { ...m, score: result.score } : m))
             );
-            setTimeout(() => setGoblinFortuneToast(''), 5000);
-            return;
           }
           const newAnon = consumeJustCreatedAnonHandle();
-          if (newAnon && !(direction > 0 && currentVote <= 0 && !petUnlocked && votesCastCount + 1 >= 3)) {
+          if (newAnon && !(nextDirection > 0 && currentVote <= 0 && !petUnlocked && votesCastCount + 1 >= 3)) {
             setGoblinFortuneToast(
               `🕶️ You’re browsing & voting as @${newAnon} — sign in anytime to claim your handle.`
             );
@@ -724,7 +766,6 @@ export function useFeed({
       combo,
       litePerfMode,
       broadcastEmote,
-      user?.username,
       awardFairReward,
       incrementQuest,
       votesCastCount,
@@ -738,58 +779,102 @@ export function useFeed({
   const handleReaction = useCallback(
     async (memeId, emoji, event) => {
       const existingForMeme = userReactionsMap[memeId] || [];
-      if (existingForMeme.includes(emoji)) {
-        sfx.playToggle();
-        return;
-      }
+      const alreadyActive = existingForMeme.includes(emoji);
+      const nextActive = !alreadyActive;
 
-      setUserReactionsMap((prev) => ({
-        ...prev,
-        [memeId]: [...(prev[memeId] || []), emoji]
-      }));
-
-      sfx.playReaction(emoji, combo);
-      broadcastEmote(memeId, emoji);
-      const res = awardFairReward({
-        category: 'engagement',
-        requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.REACT_UNIQUE_MEME.tokens,
-        xpGain: ARCADE_ECONOMY_RULES.REWARDS.REACT_UNIQUE_MEME.xp,
-        actionKey: `react:${memeId}`,
-        event,
-        emoji
+      setUserReactionsMap((prev) => {
+        const currentList = prev[memeId] || [];
+        const updatedList = nextActive
+          ? currentList.includes(emoji)
+            ? currentList
+            : [...currentList, emoji]
+          : currentList.filter((item) => item !== emoji);
+        return { ...prev, [memeId]: updatedList };
       });
-      if (res.allowed) {
-        incrementQuest('q-react', 1);
+
+      if (nextActive) {
+        sfx.playReaction(emoji, combo);
+        broadcastEmote(memeId, emoji);
+        const res = awardFairReward({
+          category: 'engagement',
+          requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.REACT_UNIQUE_MEME.tokens,
+          xpGain: ARCADE_ECONOMY_RULES.REWARDS.REACT_UNIQUE_MEME.xp,
+          actionKey: `react:${memeId}`,
+          event,
+          emoji
+        });
+        if (res.allowed) {
+          incrementQuest('q-react', 1);
+        }
+      } else {
+        sfx.playToggle();
       }
 
-      let updatedReactions = null;
+      const previousReactions =
+        memesRef.current.find((m) => String(m.id) === String(memeId))?.reactions || {
+          '🔥': 0,
+          '💀': 0,
+          '😂': 0,
+          '🗿': 0
+        };
+
       setMemes((prev) =>
         prev.map((m) => {
           if (m.id === memeId) {
             const current = m.reactions || { '🔥': 0, '💀': 0, '😂': 0, '🗿': 0 };
-            updatedReactions = { ...current, [emoji]: (current[emoji] || 0) + 1 };
-            return { ...m, reactions: updatedReactions, score: (m.score || 0) + 1 };
+            const nextCount = nextActive
+              ? (current[emoji] || 0) + 1
+              : Math.max(0, (current[emoji] || 0) - 1);
+            return {
+              ...m,
+              reactions: { ...current, [emoji]: nextCount }
+            };
           }
           return m;
         })
       );
 
-      const reactedMeme = memesRef.current.find((m) => String(m.id) === String(memeId));
       const client = getSupabaseClient();
-      if (client && reactedMeme?.author_name) {
-        sendCreatorNotification({
-          client,
-          recipientUsername: reactedMeme.author_name,
-          actorName: user?.username || 'Someone',
-          type: 'upvote',
-          memeId,
-          message: `${emoji} Someone reacted to your meme "${String(reactedMeme.title || 'Meme').slice(0, 36)}"!`
-        });
+      if (client && !String(memeId).startsWith('seed-') && !String(memeId).startsWith('local-')) {
+        const revertReaction = () => {
+          setUserReactionsMap((prev) => ({ ...prev, [memeId]: existingForMeme }));
+          setMemes((prev) =>
+            prev.map((m) => (m.id === memeId ? { ...m, reactions: previousReactions } : m))
+          );
+        };
+        try {
+          const result = await toggleReactionRpc(client, memeId, emoji, nextActive);
+          if (!result.ok) {
+            revertReaction();
+            setGoblinFortuneToast(result.message);
+            setTimeout(() => setGoblinFortuneToast(''), 5000);
+            return;
+          }
+          if (result.reactions) {
+            setMemes((prev) =>
+              prev.map((m) => (m.id === memeId ? { ...m, reactions: result.reactions } : m))
+            );
+          }
+          const newAnon = consumeJustCreatedAnonHandle();
+          if (newAnon) {
+            setGoblinFortuneToast(
+              `🕶️ Reacting as @${newAnon} — sign in anytime to claim your handle.`
+            );
+            setTimeout(() => setGoblinFortuneToast(''), 5500);
+          }
+        } catch {
+          revertReaction();
+        }
       }
-      // Task 33.1: reactions are no longer written straight to the `memes` table (the database refuses
-      // public updates). They stay local until the reactions RPC/table lands in task 33.8.
     },
-    [userReactionsMap, combo, broadcastEmote, user?.username, awardFairReward, incrementQuest]
+    [
+      userReactionsMap,
+      combo,
+      broadcastEmote,
+      awardFairReward,
+      incrementQuest,
+      setGoblinFortuneToast
+    ]
   );
 
   const handleToggleComments = useCallback((memeId) => {
@@ -821,7 +906,10 @@ export function useFeed({
           setTimeout(() => setGoblinFortuneToast(''), 5000);
           return;
         }
-        newComment = result.comment;
+        newComment = {
+          ...result.comment,
+          user_id: result.comment.user_id || currentUserId || null
+        };
         const newAnon = consumeJustCreatedAnonHandle();
         if (newAnon) {
           setGoblinFortuneToast(
@@ -841,10 +929,10 @@ export function useFeed({
           meme_id: memeId,
           author_name: user?.username || 'AnonMemer',
           body: text,
+          user_id: currentUserId || 'local',
           created_at: new Date().toISOString()
         };
       }
-      const author = newComment.author_name;
 
       sfx.playPop(combo);
       if (text.length >= 6) {
@@ -864,20 +952,44 @@ export function useFeed({
           m.id === memeId ? { ...m, comments: [...(m.comments || []), newComment] } : m
         )
       );
-
-      const commentedMeme = memesRef.current.find((m) => String(m.id) === String(memeId));
-      if (client && commentedMeme?.author_name) {
-        sendCreatorNotification({
-          client,
-          recipientUsername: commentedMeme.author_name,
-          actorName: author,
-          type: 'comment',
-          memeId,
-          message: `💬 @${author} commented on "${String(commentedMeme.title || 'Meme').slice(0, 36)}"!`
-        });
-      }
     },
-    [commentInputs, user, combo, awardFairReward, setGoblinFortuneToast]
+    [commentInputs, user, currentUserId, combo, awardFairReward, setGoblinFortuneToast]
+  );
+
+  const handleDeleteComment = useCallback(
+    async (memeId, commentId) => {
+      if (!memeId || !commentId) return;
+      const client = getSupabaseClient();
+      const isServerComment =
+        client &&
+        !String(commentId).startsWith('local-') &&
+        !String(memeId).startsWith('seed-') &&
+        !String(memeId).startsWith('local-');
+
+      if (isServerComment) {
+        const result = await deleteCommentRpc(client, commentId);
+        if (!result.ok) {
+          setGoblinFortuneToast(result.message);
+          setTimeout(() => setGoblinFortuneToast(''), 5000);
+          return;
+        }
+      }
+
+      sfx.playToggle();
+      setMemes((prev) =>
+        prev.map((m) =>
+          m.id === memeId
+            ? {
+                ...m,
+                comments: (m.comments || []).filter((c) => String(c.id) !== String(commentId))
+              }
+            : m
+        )
+      );
+      setGoblinFortuneToast('🗑️ Comment deleted.');
+      setTimeout(() => setGoblinFortuneToast(''), 3000);
+    },
+    [setGoblinFortuneToast]
   );
 
   const handlePostRoastComment = useCallback(
@@ -1148,16 +1260,6 @@ export function useFeed({
       }));
       if (user?.username && parentAuthor.toLowerCase() === user.username.toLowerCase()) {
         setXp((prevXp) => prevXp + 50);
-      }
-      if (client) {
-        sendCreatorNotification({
-          client,
-          recipientUsername: parentAuthor,
-          actorName: user?.username || 'Someone',
-          type: 'remix',
-          memeId: insertedMeme.id,
-          message: `🧬 @${user?.username || 'Someone'} remixed your meme "${String(parent.title || 'Meme').slice(0, 32)}"!`
-        });
       }
     }
 
@@ -1609,7 +1711,9 @@ export function useFeed({
     handleToggleComments,
     handleCommentInputChange,
     handleAddComment,
+    handleDeleteComment,
     handlePostRoastComment,
+    currentUserId,
     handleQuickPublishFile,
     handleForgePublish,
     handleReportMeme,

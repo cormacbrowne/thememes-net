@@ -30,6 +30,8 @@ const MemeCard = memo(function MemeCard({
   onOpenProfile,
   onReportMeme,
   onReportComment,
+  onDeleteComment,
+  currentUserId = null,
   onOpenAiRoast,
   cardFrame = 'default',
   litePerfMode = false
@@ -437,6 +439,20 @@ const MemeCard = memo(function MemeCard({
               <div key={c.id} className="tm-comment-item">
                 <strong style={{ color: '#38bdf8' }}>@{c.author_name}: </strong>
                 <span>{c.body}</span>
+                {onDeleteComment && c.user_id && currentUserId && String(c.user_id) === String(currentUserId) && (
+                  <button
+                    type="button"
+                    className="tm-comment-report-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteComment(meme.id, c.id);
+                    }}
+                    aria-label="Delete your comment"
+                    title="Delete your comment"
+                  >
+                    🗑️
+                  </button>
+                )}
                 {onReportComment && (
                   <button
                     type="button"

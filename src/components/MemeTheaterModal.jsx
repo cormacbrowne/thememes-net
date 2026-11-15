@@ -13,6 +13,8 @@ export default function MemeTheaterModal({
   commentInput,
   onCommentInputChange,
   onAddComment,
+  onDeleteComment,
+  currentUserId = null,
   onVote,
   onReaction,
   onTriggerStudioMutate,
@@ -416,6 +418,20 @@ export default function MemeTheaterModal({
                     <div key={c.id} className="tm-comment-item">
                       <strong style={{ color: '#38bdf8' }}>@{c.author_name}: </strong>
                       <span>{c.body}</span>
+                      {onDeleteComment && c.user_id && currentUserId && String(c.user_id) === String(currentUserId) && (
+                        <button
+                          type="button"
+                          className="tm-comment-report-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteComment(meme.id, c.id);
+                          }}
+                          aria-label="Delete your comment"
+                          title="Delete your comment"
+                        >
+                          🗑️
+                        </button>
+                      )}
                     </div>
                   ))
                 )}

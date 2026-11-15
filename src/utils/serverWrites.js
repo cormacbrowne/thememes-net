@@ -4,7 +4,7 @@
 import { checkTexts } from '../../supabase/functions/_shared/textFilter.js';
 import { anonymousHandleFor, validateUsername } from '../../supabase/functions/_shared/identity.js';
 import { BOT_ERROR_MESSAGES, formatRateLimitMessage } from '../../supabase/functions/_shared/rateLimitAndBot.js';
-import { getTurnstileToken } from './turnstile';
+import { getTurnstileToken } from './turnstile.js';
 
 export { formatRateLimitMessage };
 
@@ -182,3 +182,145 @@ export async function claimUsername(client, rawUsername) {
     message: USERNAME_ERROR_MESSAGES[payload.error] || USERNAME_ERROR_MESSAGES.network
   };
 }
+
+/** Clamp any vote input strictly to -1, 0, or 1 so combo multipliers never affect DB score. */
+export function normalizeVoteDirection(direction) {
+  const n = Number(direction);
+  if (!Number.isFinite(n) || n === 0) return 0;
+  return n > 0 ? 1 : -1;
+}
+
+/** Compute the next per-user vote (-1 | 0 | 1) and local delta when toggling or switching. */
+export function nextVoteState(currentVote, requestedDirection) {
+  const cur = normalizeVoteDirection(currentVote);
+  const req = normalizeVoteDirection(requestedDirection);
+  if (req === 0) return { nextDirection: 0, delta: -cur };
+  const nextDirection = cur === req ? 0 : req;
+  return { nextDirection, delta: nextDirection - cur };
+}
+
+export const VOTE_ERROR_MESSAGES = {
+  sign_in_required: '🔑 Could not start a session to save your vote. Please try again.',
+  suspended: '🚫 Your account is currently suspended from voting.',
+  not_found: '👻 That meme is no longer available.',
+  invalid_direction: '⚠️ Invalid vote.',
+  network: '📡 Could not save your vote. Please try again.'
+};
+
+export const REACTION_ERROR_MESSAGES = {
+  sign_in_required: '🔑 Could not start a session to save your reaction. Please try again.',
+  suspended: '🚫 Your account is currently suspended from reacting.',
+  not_found: '👻 That meme is no longer available.',
+  invalid_reaction: '⚠️ Unsupported reaction.',
+  network: '📡 Could not save your reaction. Please try again.'
+};
+
+export const DELETE_COMMENT_ERROR_MESSAGES = {
+  sign_in_required: '🔑 Could not verify your session to delete this comment.',
+  suspended: '🚫 Your account is currently suspended.',
+  not_found: '👻 Could not delete that comment (you can only delete your own comments).',
+  network: '📡 Could not reach the server. Your comment was not deleted.'
+};
+
+function mapRpcFailure(data, error, messages) {
+  if (data && data.ok === false) {
+    if (data.error === 'rate_limited') {
+      return data.message || formatRateLimitMessage(data.retry_after_seconds);
+    }
+    return messages[data.error] || messages.network;
+  }
+  const msg = String(error?.message || '');
+  const rlMatch = msg.match(/rate_limited:(\d+)/i);
+  if (rlMatch) return formatRateLimitMessage(Number(rlMatch[1]));
+  if (/suspended/i.test(msg)) return messages.suspended;
+  if (/auth(?:entication)?_required|sign_in_required/i.test(msg)) return messages.sign_in_required;
+  return messages.network;
+}
+
+/**
+ * Cast or clear the caller's single vote (-1, 0, or 1) via the tamper-resistant `cast_vote` RPC.
+ */
+export async function castVote(client, memeId, direction) {
+  if (!(await ensureWriteSession(client))) {
+    return { ok: false, error: 'sign_in_required', message: VOTE_ERROR_MESSAGES.sign_in_required };
+  }
+  const { data, error } = await client.rpc('cast_vote', {
+    p_meme_id: memeId,
+    p_direction: normalizeVoteDirection(direction)
+  });
+  if (!error && data?.ok) {
+    return {
+      ok: true,
+      memeId: data.meme_id || memeId,
+      userVote: normalizeVoteDirection(data.user_vote),
+      score: typeof data.score === 'number' ? data.score : null,
+      changed: Boolean(data.changed)
+    };
+  }
+  return {
+    ok: false,
+    error: data?.error || 'rpc_error',
+    message: mapRpcFailure(data, error, VOTE_ERROR_MESSAGES)
+  };
+}
+
+/**
+ * Toggle one emoji reaction on a meme via the tamper-resistant `toggle_reaction` RPC.
+ */
+export async function toggleReaction(client, memeId, emoji, active = true) {
+  if (!(await ensureWriteSession(client))) {
+    return { ok: false, error: 'sign_in_required', message: REACTION_ERROR_MESSAGES.sign_in_required };
+  }
+  const { data, error } = await client.rpc('toggle_reaction', {
+    p_meme_id: memeId,
+    p_emoji: emoji,
+    p_active: Boolean(active)
+  });
+  if (!error && data?.ok) {
+    return {
+      ok: true,
+      memeId: data.meme_id || memeId,
+      emoji: data.emoji || emoji,
+      active: Boolean(data.active),
+      reactions: data.reactions && typeof data.reactions === 'object' ? data.reactions : null
+    };
+  }
+  return {
+    ok: false,
+    error: data?.error || 'rpc_error',
+    message: mapRpcFailure(data, error, REACTION_ERROR_MESSAGES)
+  };
+}
+
+/**
+ * Delete the caller's own comment via RLS-protected DELETE on `public.comments`.
+ */
+export async function deleteComment(client, commentId) {
+  if (!client || !commentId) {
+    return { ok: false, error: 'not_found', message: DELETE_COMMENT_ERROR_MESSAGES.not_found };
+  }
+  const { data: sessionData } = await client.auth.getSession();
+  if (!sessionData?.session?.user) {
+    return { ok: false, error: 'sign_in_required', message: DELETE_COMMENT_ERROR_MESSAGES.sign_in_required };
+  }
+  const { data, error } = await client
+    .from('comments')
+    .delete()
+    .eq('id', commentId)
+    .select('id');
+  if (error) {
+    const msg = String(error.message || '');
+    return {
+      ok: false,
+      error: 'delete_failed',
+      message: /suspended|rls|permission/i.test(msg)
+        ? DELETE_COMMENT_ERROR_MESSAGES.not_found
+        : DELETE_COMMENT_ERROR_MESSAGES.network
+    };
+  }
+  if (!Array.isArray(data) || data.length === 0) {
+    return { ok: false, error: 'not_found', message: DELETE_COMMENT_ERROR_MESSAGES.not_found };
+  }
+  return { ok: true, id: data[0].id };
+}
+

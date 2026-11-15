@@ -134,7 +134,7 @@ Deno.serve(async (req: Request) => {
   const { data: comment, error } = await admin
     .from('comments')
     .insert({ meme_id: memeId, author_name: authorNameFor(user, profile), body, user_id: user.id })
-    .select('id, meme_id, author_name, body, created_at')
+    .select('id, meme_id, author_name, body, created_at, user_id')
     .single();
   if (error || !comment) return json(req, 500, { ok: false, error: 'server_error' });
   return json(req, 200, { ok: true, comment });

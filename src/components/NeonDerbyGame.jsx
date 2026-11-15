@@ -38,6 +38,7 @@ export default function NeonDerbyGame({
   onToggleSound,
   onSpendTokens,
   onPayoutTokens,
+  onRecordHighScore,
   onBackToFeed,
   litePerfMode = false,
   prefersReducedMotion = false
@@ -236,6 +237,9 @@ export default function NeonDerbyGame({
           label: `🏇 ${board.horses[first].short} Wins!`,
           emoji: '🏆'
         });
+      }
+      if (!practiceMode && verifiedWin > 0) {
+        onRecordHighScore?.('derby', verifiedWin);
       }
 
       const winner = board.horses[first];

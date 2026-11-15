@@ -1,8 +1,9 @@
 /* Hall of Fame Leaderboard Modal */
 .tm-leaderboard-modal {
-  max-width: 780px;
+  max-width: 820px;
   border-color: rgba(250, 204, 21, 0.45);
 }
+
 .tm-leaderboard-row {
   display: flex;
   align-items: center;
@@ -14,25 +15,112 @@
   border: 1px solid rgba(255, 255, 255, 0.09);
   transition: transform 0.15s ease, border-color 0.15s ease;
 }
+
 .tm-leaderboard-row:hover {
   transform: translateX(3px);
   border-color: rgba(0, 243, 255, 0.4);
 }
+
 .tm-leaderboard-row.podium-1 {
   background: linear-gradient(90deg, rgba(250, 204, 21, 0.16), rgba(255, 255, 255, 0.04));
   border-color: rgba(250, 204, 21, 0.6);
 }
+
 .tm-leaderboard-row.podium-2 {
   background: linear-gradient(90deg, rgba(203, 213, 225, 0.14), rgba(255, 255, 255, 0.04));
   border-color: rgba(203, 213, 225, 0.5);
 }
+
 .tm-leaderboard-row.podium-3 {
   background: linear-gradient(90deg, rgba(249, 115, 22, 0.15), rgba(255, 255, 255, 0.04));
   border-color: rgba(249, 115, 22, 0.5);
 }
+
 .tm-medal-badge {
   font-size: 20px;
   font-weight: 900;
   min-width: 32px;
   text-align: center;
+}
+
+.tm-cabinet-for-fun-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(250, 204, 21, 0.08);
+  border: 1px solid rgba(250, 204, 21, 0.28);
+  font-size: 12px;
+  color: #e2e8f0;
+  margin-bottom: 12px;
+}
+
+.tm-cabinet-pill-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.tm-cabinet-pill {
+  padding: 7px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.85);
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tm-cabinet-pill.active {
+  border-color: #facc15;
+  color: #facc15;
+  background: rgba(250, 204, 21, 0.12);
+}
+
+.tm-cabinet-board-card {
+  border-radius: 16px;
+  padding: 14px;
+  background: rgba(15, 23, 42, 0.82);
+  border: 1.5px solid rgba(56, 189, 248, 0.35);
+}
+
+.tm-cabinet-board-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.tm-period-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tm-arcade-initials {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  color: #facc15;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.85);
+  border: 1px solid rgba(250, 204, 21, 0.4);
+}
+
+.tm-cabinet-empty {
+  text-align: center;
+  padding: 26px 14px;
+  border-radius: 12px;
+  background: rgba(2, 6, 23, 0.55);
+  border: 1px dashed rgba(148, 163, 184, 0.35);
+  color: #cbd5e1;
 }

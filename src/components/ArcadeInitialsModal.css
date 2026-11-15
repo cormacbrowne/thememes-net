@@ -1,0 +1,133 @@
+.tm-initials-modal {
+  max-width: 460px;
+  width: min(94vw, 460px);
+  border-color: rgba(250, 204, 21, 0.72);
+  background: radial-gradient(circle at top, rgba(30, 41, 59, 0.98), rgba(9, 13, 28, 0.99));
+  box-shadow: 0 0 36px rgba(250, 204, 21, 0.22), 0 0 60px rgba(0, 243, 255, 0.14);
+}
+
+.tm-initials-score-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.86);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  text-align: center;
+}
+
+.tm-initials-score-value {
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: #facc15;
+  text-shadow: 0 0 14px rgba(250, 204, 21, 0.45);
+}
+
+.tm-initials-drums {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  max-width: 290px;
+  margin: 0 auto 14px;
+}
+
+.tm-initials-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1.5px solid rgba(148, 163, 184, 0.28);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tm-initials-slot.active {
+  border-color: #38bdf8;
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.35);
+}
+
+.tm-initials-slot.blocked {
+  border-color: #fb7185;
+  box-shadow: 0 0 16px rgba(251, 113, 133, 0.3);
+}
+
+.tm-initials-step-btn {
+  width: 100%;
+  min-height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: rgba(30, 41, 59, 0.9);
+  color: #e2e8f0;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.tm-initials-step-btn:hover,
+.tm-initials-step-btn:focus-visible {
+  background: rgba(56, 189, 248, 0.22);
+  border-color: #38bdf8;
+  color: #fff;
+}
+
+.tm-initials-letter-btn {
+  width: 100%;
+  min-height: 62px;
+  border-radius: 12px;
+  border: 2px solid rgba(250, 204, 21, 0.45);
+  background: linear-gradient(180deg, rgba(2, 6, 23, 0.98), rgba(15, 23, 42, 0.95));
+  color: #facc15;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  text-shadow: 0 0 12px rgba(250, 204, 21, 0.5);
+}
+
+.tm-initials-hint {
+  font-size: 11px;
+  color: #94a3b8;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.tm-initials-for-fun {
+  font-size: 11px;
+  color: #cbd5e1;
+  background: rgba(250, 204, 21, 0.08);
+  border: 1px solid rgba(250, 204, 21, 0.26);
+  border-radius: 10px;
+  padding: 8px 10px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.tm-initials-error {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fda4af;
+  background: rgba(244, 63, 94, 0.14);
+  border: 1px solid rgba(244, 63, 94, 0.45);
+  border-radius: 10px;
+  padding: 8px 10px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.tm-initials-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tm-initials-actions > button {
+  flex: 1 1 130px;
+  min-height: 44px;
+}

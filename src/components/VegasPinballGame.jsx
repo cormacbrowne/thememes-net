@@ -738,8 +738,8 @@ export default function VegasPinballGame({
       if (finalScore > prevBest) {
         localStorage.setItem('tm_pinball_highscore', String(finalScore));
         setBestScore(finalScore);
-        if (onRecordHighScore) onRecordHighScore('pinball', finalScore);
       }
+      if (finalScore > 0 && onRecordHighScore) onRecordHighScore('pinball', finalScore);
 
       const activeStake = stakedRef.current;
       const payout = computePinballTokenPayout(finalScore, activeStake, activeStake > 0);

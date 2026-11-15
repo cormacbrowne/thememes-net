@@ -1,11 +1,21 @@
-import { useState, Suspense } from 'react';
+import { useCallback, useEffect, useRef, useState, Suspense } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { GAME_VIEW_MODE_TO_PATH, SITE_ORIGIN } from '../data/seoRoutes';
 import { getArcadeGameById } from '../data/arcadeGamesCatalog';
+import {
+  fetchGameLeaderboard,
+  getActiveGameSession,
+  isContinuousLeaderboardGame,
+  isLeaderboardGame,
+  qualifiesForTop10,
+  startGameSession
+} from '../utils/arcadeLeaderboards';
 import lazyWithRetry from '../utils/lazyWithRetry';
 import MemeSkeletonGrid from './MemeSkeletonGrid';
 import VerticalReelsView from './VerticalReelsView';
 import { RadioToggleButton } from './MemesRadio';
+
+const ArcadeInitialsModal = lazyWithRetry(() => import('./ArcadeInitialsModal'));
 
 const SwipeDeck = lazyWithRetry(() => import('./SwipeDeck'));
 const BattleArena = lazyWithRetry(() => import('./BattleArena'));
@@ -42,7 +52,8 @@ export function FixedArcadeTopBar({
   memeCentz = 0,
   setShowRewardsModal,
   setExtrasFocus,
-  setExtrasDrawerOpen
+  setExtrasDrawerOpen,
+  onOpenCabinetLeaderboard
 }) {
   const [sharedGame, setSharedGame] = useState(false);
 
@@ -235,6 +246,20 @@ export function FixedArcadeTopBar({
       </nav>
 
       <div className="tm-fixed-bar-right">
+        {isLeaderboardGame(viewMode) && onOpenCabinetLeaderboard && (
+          <button
+            type="button"
+            className="tm-fixed-icon-btn"
+            onClick={() => {
+              sfx.playToggle();
+              onOpenCabinetLeaderboard(viewMode);
+            }}
+            aria-label="Open Cabinet High Scores"
+            title="Open Cabinet High Scores (Today / Week / All-time)"
+          >
+            🏆
+          </button>
+        )}
         <button
           type="button"
           className="tm-fixed-icon-btn"
@@ -716,6 +741,7 @@ export default function GameRouter({
   setExtrasFocus,
   setExtrasDrawerOpen,
   setShowLeaderboard,
+  onOpenCabinetLeaderboard,
   setAiUnlocked,
   setAiAssistantOpen,
   swipeIndex,
@@ -736,6 +762,49 @@ export default function GameRouter({
   onTriggerDeLoreanWarp,
   onOpenPrankDisguise
 }) {
+  const [initialsPrompt, setInitialsPrompt] = useState(null);
+  const [continuousPeak, setContinuousPeak] = useState(null);
+  const sessionLoggedPeakRef = useRef({});
+
+  useEffect(() => {
+    if (isLeaderboardGame(viewMode)) {
+      void startGameSession(viewMode);
+    }
+  }, [viewMode]);
+
+  const openInitialsForScore = useCallback(async (gameId, rawScore) => {
+    const cleanScore = Math.floor(Number(rawScore) || 0);
+    if (!isLeaderboardGame(gameId) || cleanScore < 1) return;
+    const board = await fetchGameLeaderboard(gameId, 'all_time', 10);
+    if (!board.ok || !qualifiesForTop10(board.entries, cleanScore)) return;
+    sessionLoggedPeakRef.current[gameId] = cleanScore;
+    setInitialsPrompt({
+      gameId,
+      score: cleanScore,
+      sessionId: getActiveGameSession(gameId)?.sessionId || null
+    });
+  }, []);
+
+  const handleRecordHighScore = useCallback(
+    async (gameId, rawScore) => {
+      const cleanScore = Math.floor(Number(rawScore) || 0);
+      if (!isLeaderboardGame(gameId) || cleanScore < 1) return;
+
+      if (isContinuousLeaderboardGame(gameId)) {
+        setContinuousPeak((prev) =>
+          !prev || prev.gameId !== gameId || cleanScore > prev.score
+            ? { gameId, score: cleanScore }
+            : prev
+        );
+        return;
+      }
+
+      if (cleanScore <= (sessionLoggedPeakRef.current[gameId] || 0)) return;
+      await openInitialsForScore(gameId, cleanScore);
+    },
+    [openInitialsForScore]
+  );
+
   return (
     <>
       {viewMode === 'bingo' && (
@@ -752,6 +821,7 @@ export default function GameRouter({
             onSpendTokens={handleSpendTokens}
             onPayoutTokens={handlePayoutGameTokens}
             onEarnMemeCentz={handleEarnMemeCentz}
+            onRecordHighScore={handleRecordHighScore}
             onBackToFeed={() => {
               sfx.playToggle();
               setViewMode('feed');
@@ -774,6 +844,7 @@ export default function GameRouter({
               });
             }}
             onEarnXp={(xpAmt) => awardXpOnly(xpAmt, null, '🪙', `+${xpAmt} XP`)}
+            onRecordHighScore={handleRecordHighScore}
             onOpenBlankStudio={() => {
               sfx.playToggle();
               setViewMode('feed');
@@ -793,6 +864,7 @@ export default function GameRouter({
             tokens={tokens}
             onSpendTokens={handleSpendTokens}
             onPayoutTokens={handlePayoutGameTokens}
+            onRecordHighScore={handleRecordHighScore}
             onOpenUpload={() => {
               sfx.playToggle();
               setViewMode('feed');
@@ -819,6 +891,7 @@ export default function GameRouter({
             }}
             onSpendTokens={handleSpendTokens}
             onPayoutTokens={handlePayoutGameTokens}
+            onRecordHighScore={handleRecordHighScore}
             onBackToFeed={() => {
               sfx.playToggle();
               setViewMode('feed');
@@ -845,6 +918,7 @@ export default function GameRouter({
             }}
             onSpendTokens={handleSpendTokens}
             onPayoutTokens={handlePayoutGameTokens}
+            onRecordHighScore={handleRecordHighScore}
             onBackToFeed={() => {
               sfx.playToggle();
               setViewMode('feed');
@@ -907,6 +981,7 @@ export default function GameRouter({
             onInspectMeme={(meme) => {
               if (meme?.id) setTheaterMemeId(meme.id);
             }}
+            onRecordHighScore={handleRecordHighScore}
             onBackToFeed={() => {
               sfx.playToggle();
               setViewMode('feed');
@@ -921,6 +996,7 @@ export default function GameRouter({
             tokens={tokens}
             onSpendTokens={handleSpendTokens}
             onPayoutTokens={handlePayoutGameTokens}
+            onRecordHighScore={handleRecordHighScore}
             onOpenUpload={() => {
               sfx.playToggle();
               setViewMode('feed');
@@ -941,6 +1017,7 @@ export default function GameRouter({
             tokens={tokens}
             onSpendTokens={handleSpendTokens}
             onPayoutTokens={handlePayoutGameTokens}
+            onRecordHighScore={handleRecordHighScore}
             memes={memes}
             onCreditCreator={(creatorAuthor) => {
               if (creatorAuthor) {
@@ -969,6 +1046,7 @@ export default function GameRouter({
             tokens={tokens}
             onSpendTokens={handleSpendTokens}
             onPayoutTokens={handlePayoutGameTokens}
+            onRecordHighScore={handleRecordHighScore}
             memes={memes}
             onOpenUpload={() => {
               sfx.playToggle();
@@ -989,6 +1067,7 @@ export default function GameRouter({
             tokens={tokens}
             onSpendTokens={handleSpendTokens}
             onPayoutTokens={handlePayoutGameTokens}
+            onRecordHighScore={handleRecordHighScore}
             memes={memes}
             onOpenTheater={handleOpenTheater}
             onOpenUpload={() => {
@@ -1010,6 +1089,7 @@ export default function GameRouter({
             tokens={tokens}
             onSpendTokens={handleSpendTokens}
             onPayoutTokens={handlePayoutGameTokens}
+            onRecordHighScore={handleRecordHighScore}
             onOpenUpload={() => {
               sfx.playToggle();
               setViewMode('feed');
@@ -1018,6 +1098,40 @@ export default function GameRouter({
             onBackToFeed={() => {
               sfx.playToggle();
               setViewMode('feed');
+            }}
+          />
+        </Suspense>
+      )}
+
+      {continuousPeak && continuousPeak.gameId === viewMode && !initialsPrompt && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '16px',
+            right: '16px',
+            zIndex: 820
+          }}
+        >
+          <button
+            type="button"
+            className="tm-btn tm-btn-primary"
+            onClick={() => void openInitialsForScore(continuousPeak.gameId, continuousPeak.score)}
+          >
+            🏆 Post Peak ({continuousPeak.score.toLocaleString()}) to Cabinet
+          </button>
+        </div>
+      )}
+
+      {initialsPrompt && (
+        <Suspense fallback={null}>
+          <ArcadeInitialsModal
+            gameId={initialsPrompt.gameId}
+            score={initialsPrompt.score}
+            sessionId={initialsPrompt.sessionId}
+            onClose={() => setInitialsPrompt(null)}
+            onOpenLeaderboard={(gId) => {
+              setInitialsPrompt(null);
+              onOpenCabinetLeaderboard?.(gId);
             }}
           />
         </Suspense>

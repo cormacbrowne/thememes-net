@@ -639,8 +639,8 @@ export default function MemeCrushGame({
         const prevBest = Number(localStorage.getItem('tm_crush_highscore') || 0);
         if (finalScore > prevBest) {
           localStorage.setItem('tm_crush_highscore', String(finalScore));
-          if (onRecordHighScore) onRecordHighScore('crush', finalScore);
         }
+        if (finalScore > 0 && onRecordHighScore) onRecordHighScore('crush', finalScore);
 
         const rawPrize = activeStakeTokens > 0 ? starPayouts[stars] || 12 : 0;
         const verifiedPayout = validateStakedGamePayout({

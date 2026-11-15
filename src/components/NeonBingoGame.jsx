@@ -122,6 +122,7 @@ export default function NeonBingoGame({
   onSpendTokens,
   onPayoutTokens,
   onEarnMemeCentz,
+  onRecordHighScore,
   onBackToFeed
 }) {
   const cardBuyin = ARCADE_ECONOMY_RULES.ARCADE_STAKES?.BINGO_CARD_BUYIN || 10;
@@ -753,6 +754,7 @@ export default function NeonBingoGame({
             maxMultiplier: 150
           });
         }
+        onRecordHighScore?.('bingo', roundStaked > 0 ? totalPayout : 250);
 
         triggerWinCelebration({
           amount: roundStaked > 0 ? totalPayout : 250,

@@ -53,6 +53,7 @@ export default function HigherOrLowerGame({
   soundOn = true,
   onToggleSound,
   onInspectMeme,
+  onRecordHighScore,
   onBackToFeed
 }) {
   const pool = useMemo(() => buildMemePool(memes), [memes]);
@@ -128,6 +129,7 @@ export default function HigherOrLowerGame({
       clearTimeout(advanceTimerRef.current);
       advanceTimerRef.current = setTimeout(() => {
         setGameOver(true);
+        if (streak > 0) onRecordHighScore?.('hilow', streak);
       }, 950);
     }
   };

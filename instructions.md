@@ -161,7 +161,8 @@
 
 ### P1 — 🪞 Make the fake things real
 
-- [ ] **33.14 Real global leaderboards with arcade initials.** Table `scores (game, user_id, score, initials, period, created_at)`. Delete every hard-coded rival in `LeaderboardModal.jsx`. Classic 3-letter initials entry screen after a top-10 run (joystick-style letter picker, touch and keyboard), initials checked against a blocklist. Boards: Today / This Week / All-time, per game. Scores are submitted through an RPC with basic sanity limits per game (max plausible score per second of play, session token issued at game start); label boards "for fun" because browser games cannot be made cheat-proof. Empty board copy: "No scores yet. Be the first name on the cabinet."
+- [x] **33.14 Real global leaderboards with arcade initials.** Table `scores (game, user_id, score, initials, period, created_at)`. Delete every hard-coded rival in `LeaderboardModal.jsx`. Classic 3-letter initials entry screen after a top-10 run (joystick-style letter picker, touch and keyboard), initials checked against a blocklist. Boards: Today / This Week / All-time, per game. Scores are submitted through an RPC with basic sanity limits per game (max plausible score per second of play, session token issued at game start); label boards "for fun" because browser games cannot be made cheat-proof. Empty board copy: "No scores yet. Be the first name on the cabinet."
+  - *Completion Note (15 Nov 2026):* Applied migration `supabase/migrations/20261115000013_33_14_arcade_leaderboards.sql` (`public.scores`, server-only `public.score_sessions`, `check_initials_allowed()`, `arcade_game_limits()`, `start_game_session()`, `submit_arcade_score()`, `get_game_leaderboard()`). Deleted all hard-coded fake rivals from `src/components/LeaderboardModal.jsx`, added **Today / This Week / All-time** cabinet leaderboards, added exact empty copy `"No scores yet. Be the first name on the cabinet."` and `"for fun"` disclaimer, created `src/utils/arcadeLeaderboards.js` and `src/components/ArcadeInitialsModal.jsx` (touch + keyboard 3-letter drum picker with blocklist check), wired session tokens and `onRecordHighScore` across `GameRouter.jsx`, `App.jsx`, and the arcade game components, and verified via `npm run lint`, `npm run test:unit` (252 node:test + 14 Vitest), `npm run build`, and Playwright (`24 passed (1.4m)` across `390x844`, `768x1024`, `1280x800`).
 - [ ] **33.15 Real Daily Caption Battle.** Entries, votes and yesterday's winner stored in Supabase (through 33.2–33.4). Winner gets the 👑 Caption King frame for 24 h and a permanent entry in a `/hall-of-fame` page.
 - [ ] **33.16 Feed that goes all the way back.** Cursor pagination (`created_at`, `id`) replacing `.limit(50)`; tabs Hot (time-decayed score) / New / Top (day, week, all-time) computed by a SQL view; stop fetching `comments(*)` with the feed (load on open); list virtualisation so 500+ cards stay smooth on older iPads.
 - [ ] **33.17 Creator profile pages** at `/u/<handle>`: avatar picked from a built-in set of original pixel-art avatars (no avatar uploads, which removes a moderation surface), memes posted, badges, high scores, follow button. Prerender basic metadata for SEO.
@@ -403,7 +404,7 @@ thememes-net/
 
 ### Environment & Client Setup
 - **Supabase Project ID**: `otvvphmjojqyjaznjzyo` (`https://otvvphmjojqyjaznjzyo.supabase.co`)
-- **Single Source of Truth**: `supabase/migrations/` (`20260101000000_00_initial_schema.sql` through `20261115000012_33_12_evolution_tree_and_schema_sync.sql`). The legacy `supabase-schema.sql` file was removed in Task 33.12.
+- **Single Source of Truth**: `supabase/migrations/` (`20260101000000_00_initial_schema.sql` through `20261115000013_33_14_arcade_leaderboards.sql`). The legacy `supabase-schema.sql` file was removed in Task 33.12.
 - **Client Module**: `src/supabaseClient.js` exports `supabase` and `getSupabaseClient()`, reading `import.meta.env.VITE_SUPABASE_URL` and `import.meta.env.VITE_SUPABASE_ANON_KEY` with fallback constants.
 
 ### Database Tables (`public`, RLS enabled on every table)
@@ -428,7 +429,10 @@ thememes-net/
 8. **`public.takedown_requests`** (moderators SELECT; created via `submit_takedown_request` RPC):
    - `id` (`uuid` PK), `reporter_id` (`uuid`), `meme_id` (`uuid` FK → `memes.id` SET NULL), `kind` (`text` ∈ `{'copyright','photo_of_me','privacy','other'}`), `target_url` (`text` 1..500), `requester_email` (`text` ≤ 200), `details` (`text` 5..1000), `priority` (`integer` default `95`), `status` (`text`), `created_at`
 9. **`public.moderation_actions`** (moderators SELECT): `id`, `moderator_id`, `action`, `meme_id`, `comment_id`, `target_user_id`, `reason`, `note`, `created_at`.
-10. **Service-role-only safety/ops tables** (RLS enabled, zero public policies):
+10. **`public.scores`** (public SELECT; written only via `submit_arcade_score()` RPC with 3-char blocklist check and server session timing bounds; `score_sessions` is server-only):
+    - `id` (`uuid` PK), `game` (`text`), `user_id` (`uuid` FK → `auth.users` CASCADE), `score` (`integer` `1..10000000`), `initials` (`text` `^[A-Z0-9]{3}$`), `period` (`text` default `'all_time'`), `created_at` (`timestamptz`)
+11. **Service-role-only safety/ops tables** (RLS enabled, zero public policies):
+    - `public.score_sessions` (`id`, `user_id`, `game`, `issued_at`, `consumed_at`, `submitted_score`)
     - `public.banned_hashes` (`id`, `sha256`, `phash`, `reason`, `source`, `meme_id`, `created_at`)
     - `public.moderation_incidents` (`id`, `kind`, `user_id`, `sha256`, `phash`, `provider`, `categories`, `status`, `created_at`)
     - `public.moderation_digests` (`id`, `counts`, `sent`, `created_at`)
@@ -450,6 +454,7 @@ thememes-net/
   - `submit_takedown_request(p_target_url, p_kind, p_requester_email, p_details)` (`anon`/`authenticated`, rate-limited)
   - `mod_queue()` (authenticated moderator/admin only)
   - `meme_public_state(p_id)` & `get_meme_evolution_tree(target_meme_id)` (`anon`/`authenticated`; `approved` lineage ordered by generation/score)
+  - `start_game_session(p_game)`, `submit_arcade_score(p_session_id, p_game, p_score, p_initials)`, `get_game_leaderboard(p_game, p_period, p_limit)`, `check_initials_allowed(p_initials)` (Task 33.14 cabinet scores)
   - `is_moderator()`, `is_suspended(p_uid)`, `format_rate_limit_message(p_seconds)`
 - **Service-Role / Cron Functions:** `mod_apply_decision(...)`, `moderation_digest_send()` (daily `08:00 UTC` via `pg_cron`), `check_and_record_rate_limit(...)`, `request_ip_hash()`, `is_established_account(p_user_id)`, `is_banned_image(p_sha256, p_phash, p_max_distance)`, `increment_meme_score(...)` (legacy, revoked from `anon`/`authenticated`).
 

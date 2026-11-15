@@ -180,6 +180,7 @@ export default function VegasCoinPusherGame({
   onSpendTokens,
   onEarnTokens,
   onEarnXp,
+  onRecordHighScore,
   onOpenBlankStudio,
   onSelectViewMode
 }) {
@@ -295,12 +296,26 @@ export default function VegasCoinPusherGame({
     freePlay,
     onEarnTokens,
     onEarnXp,
+    onRecordHighScore,
     highScore,
     prizeMultiplier
   });
   useEffect(() => {
-    callbacksRef.current = { freePlay, onEarnTokens, onEarnXp, highScore, prizeMultiplier };
-  }, [freePlay, onEarnTokens, onEarnXp, highScore, prizeMultiplier]);
+    callbacksRef.current = {
+      freePlay,
+      onEarnTokens,
+      onEarnXp,
+      onRecordHighScore,
+      highScore,
+      prizeMultiplier
+    };
+  }, [freePlay, onEarnTokens, onEarnXp, onRecordHighScore, highScore, prizeMultiplier]);
+
+  useEffect(() => {
+    if (score > 0) {
+      callbacksRef.current.onRecordHighScore?.('pusher', score);
+    }
+  }, [score]);
 
   // Trigger Backbox 3-Reel Mini-Slot Spin after 3 Skill Gate hits!
   const triggerMiniSlotSpin = useCallback(() => {

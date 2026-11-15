@@ -92,6 +92,7 @@ export default function VegasPokerGame({
   onToggleSound,
   onSpendTokens,
   onPayoutTokens,
+  onRecordHighScore,
   onBackToFeed
 }) {
   const buyInOptions = ARCADE_ECONOMY_RULES.ARCADE_STAKES.POKER_BUYINS || [10, 25, 50, 100];
@@ -312,6 +313,9 @@ export default function VegasPokerGame({
           // ignore
         }
       }
+      if (!practiceMode && playerWon && totalPot > 0) {
+        onRecordHighScore?.('poker', totalPot);
+      }
 
       setSeats(nextSeats);
       setPot(0);
@@ -336,7 +340,7 @@ export default function VegasPokerGame({
         });
       }
     },
-    [bestPot, blindBig, practiceMode, syncRealStackStorage]
+    [bestPot, blindBig, onRecordHighScore, practiceMode, syncRealStackStorage]
   );
 
   const advanceStreetOrShowdown = useCallback(

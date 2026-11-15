@@ -180,6 +180,13 @@ export default function App() {
   const [screenPunch, setScreenPunch] = useState(false);
   const particleOverlayRef = useRef(null);
   const [goblinFortuneToast, setGoblinFortuneToast] = useState('');
+  const [leaderboardTarget, setLeaderboardTarget] = useState(null);
+
+  const handleOpenCabinetLeaderboard = (gameId) => {
+    closeAllModals();
+    setLeaderboardTarget({ tab: 'subgames', game: gameId || 'pinball' });
+    setShowLeaderboard(true);
+  };
 
   // Phase 8, 9 & 28.16: AI Roast Run Counter & Toy Widgets
   const [stampedeSprites, setStampedeSprites] = useState([]);
@@ -1035,6 +1042,7 @@ export default function App() {
             setShowRewardsModal={setShowRewardsModal}
             setExtrasFocus={setExtrasFocus}
             setExtrasDrawerOpen={setExtrasDrawerOpen}
+            onOpenCabinetLeaderboard={handleOpenCabinetLeaderboard}
           />
         </Suspense>
       ) : (
@@ -1609,6 +1617,7 @@ export default function App() {
         setExtrasFocus={setExtrasFocus}
         setExtrasDrawerOpen={setExtrasDrawerOpen}
         setShowLeaderboard={setShowLeaderboard}
+        onOpenCabinetLeaderboard={handleOpenCabinetLeaderboard}
         setAiUnlocked={setAiUnlocked}
         setAiAssistantOpen={setAiAssistantOpen}
         swipeIndex={swipeIndex}
@@ -1875,7 +1884,12 @@ export default function App() {
             currentUser={user}
             currentXp={xp}
             royaltiesMap={royaltiesMap}
-            onClose={() => setShowLeaderboard(false)}
+            initialTab={leaderboardTarget?.tab || 'creators'}
+            initialGame={leaderboardTarget?.game || 'pinball'}
+            onClose={() => {
+              setShowLeaderboard(false);
+              setLeaderboardTarget(null);
+            }}
             onOpenProfile={(username) => {
               setShowLeaderboard(false);
               setProfileUsername(username);

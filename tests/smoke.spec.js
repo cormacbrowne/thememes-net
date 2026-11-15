@@ -1801,3 +1801,213 @@ test.describe('Phase 33.11 Legal, Takedowns & Settings Account Deletion', () => 
     });
   }
 });
+
+test.describe('Phase 33.14 Real Global Leaderboards & Initials', () => {
+  const viewports = [
+    { name: 'mobile', width: 390, height: 844 },
+    { name: 'tablet', width: 768, height: 1024 },
+    { name: 'desktop', width: 1280, height: 800 }
+  ];
+
+  for (const vp of viewports) {
+    test(`empty board copy, period filters, no fake rivals, and 3-letter initials submission on ${vp.name} (${vp.width}x${vp.height})`, async ({
+      page
+    }) => {
+      const pageErrors = [];
+      page.on('pageerror', (e) => pageErrors.push(e.message));
+      await page.setViewportSize(vp);
+
+      const scoresStore = [];
+      const seenPeriods = [];
+      const submittedPayloads = [];
+
+      await page.route('**/rest/v1/memes*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([
+            {
+              id: 'hl-meme-1',
+              title: 'Alpha Test Meme',
+              category: 'dank',
+              image_url: '/seed/seed-dank-01.webp',
+              author_name: 'BoardTester',
+              score: 100,
+              reactions: {},
+              media_type: 'image',
+              status: 'approved',
+              created_at: new Date().toISOString(),
+              comments: []
+            },
+            {
+              id: 'hl-meme-2',
+              title: 'Omega Peak Meme',
+              category: 'dank',
+              image_url: '/seed/seed-dank-02.webp',
+              author_name: 'BoardTester',
+              score: 999999,
+              reactions: {},
+              media_type: 'image',
+              status: 'approved',
+              created_at: new Date().toISOString(),
+              comments: []
+            }
+          ])
+        });
+      });
+
+      await page.route('**/auth/v1/signup*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            access_token: 'mock-anon-jwt-3314',
+            token_type: 'bearer',
+            expires_in: 3600,
+            refresh_token: 'mock-refresh-3314',
+            user: {
+              id: '00000000-0000-4000-8000-000000003314',
+              aud: 'authenticated',
+              role: 'authenticated',
+              is_anonymous: true
+            }
+          })
+        });
+      });
+
+      await page.route('**/rest/v1/rpc/start_game_session*', async (route) => {
+        const body = route.request().postDataJSON();
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            ok: true,
+            session_id: '11111111-2222-4333-8444-555555555555',
+            game: body?.p_game || 'hilow'
+          })
+        });
+      });
+
+      await page.route('**/rest/v1/rpc/get_game_leaderboard*', async (route) => {
+        const body = route.request().postDataJSON();
+        seenPeriods.push({ game: body?.p_game, period: body?.p_period });
+        const entries = scoresStore
+          .filter((s) => s.game === body?.p_game)
+          .sort((a, b) => b.score - a.score);
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            ok: true,
+            game: body?.p_game,
+            period: body?.p_period,
+            entries
+          })
+        });
+      });
+
+      await page.route('**/rest/v1/rpc/submit_arcade_score*', async (route) => {
+        const body = route.request().postDataJSON();
+        submittedPayloads.push(body);
+        const rec = {
+          id: `score-${scoresStore.length + 1}`,
+          game: body.p_game,
+          score: body.p_score,
+          initials: body.p_initials,
+          created_at: new Date().toISOString()
+        };
+        scoresStore.push(rec);
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            ok: true,
+            ...rec,
+            rank_today: 1,
+            rank_all_time: 1
+          })
+        });
+      });
+
+      // 1. Open Hall of Fame via Extras drawer -> Arcade Cabinets and assert honest empty state & zero fake rivals
+      await page.goto('/', { waitUntil: 'domcontentloaded' });
+      const extrasBtn = page.locator('.tm-extras-hud-btn');
+      await expect(extrasBtn).toBeVisible({ timeout: 15000 });
+      await extrasBtn.click();
+      const hallBtn = page.getByRole('button', { name: /Hall of Fame/i }).first();
+      await expect(hallBtn).toBeVisible({ timeout: 5000 });
+      await hallBtn.click();
+
+      const cabinetsTab = page.getByTestId('leaderboard-subgames-tab');
+      await expect(cabinetsTab).toBeVisible({ timeout: 5000 });
+      await cabinetsTab.click();
+
+      await expect(page.getByTestId('leaderboard-for-fun-notice')).toContainText(/for fun/i);
+      await expect(page.getByTestId('cabinet-empty-state')).toContainText(
+        'No scores yet. Be the first name on the cabinet.'
+      );
+      const modalText = await page.locator('.tm-leaderboard-modal').innerText();
+      for (const fakeRival of [
+        'PennyFallsKing86',
+        'CyberCardCounter',
+        'LightningZero86',
+        'GordonGeckoFrog',
+        'CandyOverlord_99',
+        'VegasTiltWizard'
+      ]) {
+        expect(modalText).not.toContain(fakeRival);
+      }
+
+      // Period tabs work
+      await page.getByTestId('period-tab-today').click();
+      await page.getByTestId('period-tab-week').click();
+      expect(seenPeriods.some((p) => p.period === 'today')).toBe(true);
+      expect(seenPeriods.some((p) => p.period === 'week')).toBe(true);
+
+      // 2. Navigate to Higher or Lower, score 1 point then lose -> triggers 3-letter initials picker
+      await page.goto('/games/higher-or-lower', { waitUntil: 'domcontentloaded' });
+      await expect(page.getByText('Alpha Test Meme')).toBeVisible({ timeout: 15000 });
+      const higherBtn = page.locator('.tm-hilow-choice.is-higher');
+      await expect(higherBtn).toBeVisible({ timeout: 15000 });
+      await higherBtn.click();
+      await expect(page.locator('.tm-hilow-streak')).toContainText('1', { timeout: 5000 });
+
+      // Wait for Round 2 (Omega Peak Meme = 999,999 is now Card A), click HIGHER to miss -> triggers initials modal
+      await expect(higherBtn).toBeVisible({ timeout: 5000 });
+      await higherBtn.click();
+
+      const initialsModal = page.getByTestId('arcade-initials-modal');
+      await expect(initialsModal).toBeVisible({ timeout: 10000 });
+      await expect(initialsModal).toContainText(/for fun/i);
+
+      // Blocked initials via keyboard ('ASS') disables submit & shows warning
+      await page.keyboard.press('a');
+      await page.keyboard.press('s');
+      await page.keyboard.press('s');
+      await expect(page.getByTestId('initials-submit-btn')).toBeDisabled();
+      await expect(initialsModal).toContainText(/not allowed/i);
+
+      // Move back to slot 0 & spin to 'NEO' via touch/keyboard
+      await page.getByTestId('initials-slot-0').click();
+      await page.keyboard.press('n');
+      await page.keyboard.press('e');
+      await page.keyboard.press('o');
+      await expect(page.getByTestId('initials-submit-btn')).toBeEnabled();
+      await page.getByTestId('initials-submit-btn').click();
+
+      await expect(initialsModal).toContainText('NEO LOCKED ON CABINET!');
+      expect(submittedPayloads[0]?.p_initials).toBe('NEO');
+      expect(submittedPayloads[0]?.p_game).toBe('hilow');
+      expect(submittedPayloads[0]?.p_score).toBe(1);
+
+      await page.getByTestId('initials-view-board-btn').click();
+      await expect(page.getByTestId('cabinet-score-row-0')).toContainText('NEO');
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(overflow).toBeLessThanOrEqual(2);
+      expect(pageErrors).toEqual([]);
+    });
+  }
+});

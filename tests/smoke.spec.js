@@ -1097,3 +1097,45 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     expect(pixelCheck.badgeCyanPixels).toBeGreaterThan(20);
   });
 });
+
+test.describe('Phase 33.5 ReportSheet & Moderation Queue layout', () => {
+  for (const vp of [
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+    { width: 1280, height: 800 }
+  ]) {
+    test(`ReportSheet & /admin/moderation at ${vp.width}x${vp.height}`, async ({ page }) => {
+      const pageErrors = [];
+      page.on('pageerror', (err) => pageErrors.push(err.message));
+
+      await page.setViewportSize(vp);
+      await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+      const reportBtn = page.locator('button[aria-label*="Report" i]').first();
+      await expect(reportBtn).toBeVisible({ timeout: 15000 });
+      await reportBtn.click();
+
+      const sheet = page.locator('.tm-report-sheet');
+      await expect(sheet).toBeVisible({ timeout: 5000 });
+
+      const sheetOverflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(sheetOverflow).toBeLessThanOrEqual(2);
+
+      await page.locator('.tm-report-cancel').click();
+      await expect(sheet).toBeHidden({ timeout: 5000 });
+
+      await page.goto('/admin/moderation', { waitUntil: 'domcontentloaded' });
+      const modPage = page.locator('.tm-mod-page');
+      await expect(modPage).toBeVisible({ timeout: 10000 });
+      await expect(modPage).toContainText(/Moderators only/i);
+
+      const modOverflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(modOverflow).toBeLessThanOrEqual(2);
+      expect(pageErrors).toEqual([]);
+    });
+  }
+});

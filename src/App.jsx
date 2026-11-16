@@ -37,8 +37,7 @@ import {
 } from './components/DeLoreanTimeMachine';
 import { DELOREAN_ERAS, EIGHTIES_CARS } from './data/deloreanEras';
 import DualDirectionHero from './components/DualDirectionHero';
-import EightiesIconsStrip from './components/EightiesIconsStrip';
-import VintageCrtNewsTv from './components/VintageCrtNewsTv';
+import LazyCompanionRow from './components/LazyCompanionRow';
 import MemeSkeletonGrid from './components/MemeSkeletonGrid';
 import MobileArcadeDock from './components/MobileArcadeDock';
 import SeoDiscoveryFooter from './components/SeoDiscoveryFooter';
@@ -99,6 +98,20 @@ const MODAL_SKELETON_FALLBACK = (
 
 export default function App() {
   const router = useViewMode();
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [isWideDesktop, setIsWideDesktop] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia
+      ? window.matchMedia('(min-width: 1181px)').matches
+      : true
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const mq = window.matchMedia('(min-width: 1181px)');
+    const onChange = (e) => setIsWideDesktop(e.matches);
+    mq.addEventListener?.('change', onChange);
+    return () => mq.removeEventListener?.('change', onChange);
+  }, []);
   const {
     category,
     setCategory,
@@ -1195,16 +1208,14 @@ export default function App() {
             />
           )}
 
-          {viewMode === 'feed' && (
-            <div className="tm-80s-companion-row">
-              <EightiesIconsStrip />
-              <VintageCrtNewsTv />
-            </div>
-          )}
+          {viewMode === 'feed' && isWideDesktop && <LazyCompanionRow eager />}
 
           {/* PHASE 28.3: STREAMLINED FEED FILTER BAR (Visible only on grid feed; button count halved) */}
           {viewMode === 'feed' && (
-            <section id="tm-memes-feed-start" className="tm-controls">
+            <section
+              id="tm-memes-feed-start"
+              className={`tm-controls ${mobileFiltersOpen ? 'is-filters-open' : ''}`}
+            >
               <div className="tm-tabs">
                 <button
                   type="button"
@@ -1239,8 +1250,16 @@ export default function App() {
                 >
                   🏆 Top
                 </button>
+                <button
+                  type="button"
+                  className={`tm-tab tm-show-mobile-only ${mobileFiltersOpen ? 'active' : ''}`}
+                  aria-expanded={mobileFiltersOpen}
+                  onClick={() => setMobileFiltersOpen((prev) => !prev)}
+                >
+                  {mobileFiltersOpen ? '✕ Close' : '🔍 Filter'}
+                </button>
                 {sortBy === 'top' && !showSavedOnly && (
-                  <div className="tm-top-window-pills" role="group" aria-label="Top time window" style={{ display: 'inline-flex', gap: '4px' }}>
+                  <div className="tm-top-window-pills tm-mobile-filter-item" role="group" aria-label="Top time window" style={{ display: 'inline-flex', gap: '4px' }}>
                     {[
                       { id: 'day', label: '24h' },
                       { id: 'week', label: '7d' },
@@ -1262,7 +1281,7 @@ export default function App() {
                   <button
                     key={cat}
                     type="button"
-                    className={`tm-tab ${category === cat && !showSavedOnly ? 'active' : ''}`}
+                    className={`tm-tab tm-mobile-filter-item ${category === cat && !showSavedOnly ? 'active' : ''}`}
                     onClick={() => {
                       setShowSavedOnly(false);
                       setCategory(cat);
@@ -1273,7 +1292,7 @@ export default function App() {
                 ))}
                 <button
                   type="button"
-                  className={`tm-tab ${category === 'remixes' && !showSavedOnly ? 'active' : ''}`}
+                  className={`tm-tab tm-mobile-filter-item ${category === 'remixes' && !showSavedOnly ? 'active' : ''}`}
                   onClick={() => {
                     setShowSavedOnly(false);
                     setCategory('remixes');
@@ -1294,7 +1313,7 @@ export default function App() {
                 )}
               </div>
 
-              <div className="tm-controls-right">
+              <div className="tm-controls-right tm-mobile-filter-item">
                 <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', flex: 1 }}>
                   <input
                     type="text"
@@ -1562,6 +1581,7 @@ export default function App() {
                   </div>
                 </article>
               }
+              inFeedCompanionCard={!isWideDesktop ? <LazyCompanionRow /> : null}
             />
           )}
 

@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from 'react';
+import { Menu, Plus } from 'lucide-react';
 import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
 import { ARCADE_GAMES_CATALOG } from '../data/arcadeGamesCatalog';
 import { formatLivePresenceLabel } from '../utils/liveSignals';
@@ -34,6 +36,37 @@ export default function NavbarHud({
 }) {
   const reactorReadyTokens = xpConversionState ? xpConversionState.readyTokens : 0;
   const activeGame = ARCADE_GAMES_CATALOG.find((g) => g.id === viewMode);
+  const [scrollHidden, setScrollHidden] = useState(false);
+  const lastScrollYRef = useRef(0);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    let rafId = 0;
+    const onScroll = () => {
+      if (rafId) return;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = 0;
+        const y = window.scrollY || 0;
+        const isPhone = window.innerWidth <= 860;
+        const reduced =
+          document.documentElement.dataset.reducedMotion === 'on' ||
+          window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+        if (!isPhone || reduced || y < 72) {
+          setScrollHidden(false);
+        } else if (y > lastScrollYRef.current + 10) {
+          setScrollHidden(true);
+        } else if (y < lastScrollYRef.current - 10) {
+          setScrollHidden(false);
+        }
+        lastScrollYRef.current = y;
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (rafId) window.cancelAnimationFrame(rafId);
+    };
+  }, []);
 
   return (
     <>
@@ -45,13 +78,13 @@ export default function NavbarHud({
         />
       </div>
 
-      {/* STREAMLINED TOP NAVIGATION BAR (<= 6 Primary Controls) */}
-      <header className={`tm-nav ${viewMode === 'reels' ? 'tm-nav-reels-mode' : ''}`}>
+      {/* STREAMLINED TOP NAVIGATION BAR */}
+      <header className={`tm-nav ${viewMode === 'reels' ? 'tm-nav-reels-mode' : ''} ${scrollHidden ? 'is-scroll-hidden' : ''}`}>
         <div className="tm-brand-group">
           {canGoBack && (
             <button
               type="button"
-              className="tm-btn tm-back-pill"
+              className="tm-btn tm-back-pill tm-hide-mobile"
               onClick={onNavigateBack}
               title="Navigate Back"
             >
@@ -66,7 +99,7 @@ export default function NavbarHud({
             <NeonSign size="nav" />
             {formatLivePresenceLabel(onlineCount) ? (
               <div
-                className="tm-status-pill tm-live-presence-pill"
+                className="tm-status-pill tm-live-presence-pill tm-hide-mobile"
                 title="Real connected memers currently browsing"
                 data-testid="live-presence-pill"
               >
@@ -89,27 +122,27 @@ export default function NavbarHud({
           <nav className="tm-nav-primary-modes tm-hide-mobile" aria-label="Primary Views">
             <button
               type="button"
-              className={`tm-btn tm-nav-mode-pill ${viewMode === 'feed' ? 'active' : ''}`}
+              className={`ui-tube ui-tube--cyan ui-tube-box tm-nav-mode-pill ${viewMode === 'feed' ? 'active' : 'ui-tube-box--off'}`}
               onClick={() => (onResetFeed ? onResetFeed() : onSelectViewMode('feed'))}
               title="Back to Home Page (Memes + Arcade Portal)"
             >
-              🏠 Home
+              Home
             </button>
             <button
               type="button"
-              className={`tm-btn tm-nav-mode-pill ${viewMode === 'reels' ? 'active' : ''}`}
+              className={`ui-tube ui-tube--cyan ui-tube-box tm-nav-mode-pill ${viewMode === 'reels' ? 'active' : 'ui-tube-box--off'}`}
               onClick={() => onSelectViewMode('reels')}
             >
-              🎬 Reels
+              Reels
             </button>
 
             <button
               type="button"
-              className={`tm-btn tm-nav-mode-pill ${viewMode === 'lobby' || activeGame ? 'active' : ''}`}
+              className={`ui-tube ui-tube--cyan ui-tube-box tm-nav-mode-pill ${viewMode === 'lobby' || activeGame ? 'active' : 'ui-tube-box--off'}`}
               onClick={() => onSelectViewMode('lobby')}
               title="Open Cyber-Arcade Lobby"
             >
-              🕹️ {activeGame ? activeGame.label : 'Games'}
+              {activeGame ? activeGame.label : 'Games'}
             </button>
           </nav>
         )}
@@ -118,17 +151,18 @@ export default function NavbarHud({
           {/* 1. +CREATE PRIMARY BUTTON (Desktop) */}
           <button
             type="button"
-            className="tm-btn tm-btn-primary tm-hide-mobile"
+            className="ui-tube ui-tube--pink ui-tube-box ui-tube-box--solid tm-nav-create-btn tm-hide-mobile"
             onClick={onOpenBlankStudio}
             title="Create or Remix a Meme in the Studio"
           >
-            ➕ Create
+            <Plus size={16} strokeWidth={2.5} aria-hidden="true" />
+            <span>Create</span>
           </button>
 
           {/* 2. UNIFIED MEMEDOLLARZ & MEMECENTZ WALLET PILL */}
           <button
             type="button"
-            className={`tm-token-wallet-pill ${reactorFlash ? 'tm-wallet-mint-flash' : ''}`}
+            className={`ui-tube ui-tube--amber ui-tube-box tm-token-wallet-pill ${reactorFlash ? 'tm-wallet-mint-flash' : ''}`}
             onClick={(e) => {
               if (reactorReadyTokens > 0 && onExchangeXpForTokens) {
                 onExchangeXpForTokens(e);
@@ -143,9 +177,9 @@ export default function NavbarHud({
                 : `MemeDollarz Wallet & Vault: M$${tokens}.${String(memeCentz).padStart(2, '0')} (Lv.${currentRank?.level || 1} • Max M$${ARCADE_ECONOMY_RULES.MAX_DAILY_EARNED_TOKENS}/day)`
             }
           >
-            <span className="tm-token-coin">{reactorReadyTokens > 0 ? '🔥' : '🪙'}</span>
+            <span className="tm-token-coin" aria-hidden="true">M$</span>
             <span className="tm-token-balance">
-              M${tokens}.{String(memeCentz).padStart(2, '0')}
+              {tokens}.{String(memeCentz).padStart(2, '0')}
             </span>
             {(unclaimedRewardsCount > 0 || reactorReadyTokens > 0) && (
               <span className="tm-reward-alert-dot">
@@ -158,28 +192,31 @@ export default function NavbarHud({
           {onOpenInstallModal && (
             <button
               type="button"
-              className="tm-btn tm-hide-mobile"
+              className="ui-tube-box ui-tube-box--off tm-nav-compact-btn tm-hide-mobile"
               onClick={onOpenInstallModal}
               title="Make THE MEMES.net an iPhone / Mobile App"
               aria-label="Make THE MEMES.net an iPhone App"
-              style={{ borderColor: 'rgba(0, 245, 255, 0.45)', color: '#7df9ff' }}
             >
-              📲 App
+              App
             </button>
           )}
 
-          {/* 2.5 THE MEMES FM COMPACT RADIO & EQUALISER CLUSTER */}
-          <RadioToggleButton />
+          {/* 2.5 THE MEMES FM COMPACT RADIO & EQUALISER CLUSTER (Desktop) */}
+          <div className="tm-hide-mobile">
+            <RadioToggleButton />
+          </div>
 
-          {/* 3. UNIFIED EXTRAS DRAWER BUTTON */}
+          {/* 3. UNIFIED EXTRAS DRAWER ("More" on phones) */}
           {onOpenExtras && (
             <button
               type="button"
-              className="tm-btn tm-extras-hud-btn"
+              className="ui-tube-box ui-tube-box--off tm-extras-hud-btn"
               onClick={onOpenExtras}
-              title="Open Extras Drawer: 16-Pad Soundboard, WTF?! Goose, 1-800-MEME Payphone, Boss Key, CRT, Turbo & Device Badge"
+              aria-label="More tools, radio, soundboard, and settings"
+              title="Open Extras Drawer: Radio, Soundboard, Goose, Payphone, Boss Key, CRT & Settings"
             >
-              🎛️ <span className="tm-extras-btn-label">Extras</span>
+              <Menu size={18} strokeWidth={2.1} aria-hidden="true" />
+              <span className="tm-extras-btn-label">More</span>
             </button>
           )}
 
@@ -222,7 +259,7 @@ export default function NavbarHud({
                   : 'Sign in or create your verified profile'
               }
             >
-              {anonHandle ? `🕶️ @${anonHandle} • Sign In` : '👤 Sign In'}
+              Sign In
             </button>
           )}
         </div>

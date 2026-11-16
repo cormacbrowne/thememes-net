@@ -13,6 +13,7 @@ import {
 export default function VirtualizedMemeGrid({
   items = [],
   inFeedArcadeCard = null,
+  inFeedCompanionCard = null,
   renderMemeCard
 }) {
   const gridRef = useRef(null);
@@ -24,7 +25,7 @@ export default function VirtualizedMemeGrid({
     viewportHeight: 900
   });
 
-  // Combine meme cards + the single in-feed arcade promo at index 4 so virtual rows stay column-aligned.
+  // Combine meme cards + in-feed arcade promo (idx 4) + companion card (after 6th meme on mobile/tablet).
   const entries = useMemo(() => {
     const out = items.map((meme, memeIdx) => ({
       kind: 'meme',
@@ -38,8 +39,14 @@ export default function VirtualizedMemeGrid({
         key: 'infeed-arcade-break'
       });
     }
+    if (inFeedCompanionCard && out.length >= 7) {
+      out.splice(7, 0, {
+        kind: 'companion',
+        key: 'infeed-companion-break'
+      });
+    }
     return out;
-  }, [items, inFeedArcadeCard]);
+  }, [items, inFeedArcadeCard, inFeedCompanionCard]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -157,6 +164,10 @@ export default function VirtualizedMemeGrid({
         entry.kind === 'arcade' ? (
           <div key={entry.key} style={{ display: 'contents' }}>
             {inFeedArcadeCard}
+          </div>
+        ) : entry.kind === 'companion' ? (
+          <div key={entry.key} style={{ gridColumn: '1 / -1' }}>
+            {inFeedCompanionCard}
           </div>
         ) : (
           <div key={entry.key} style={{ display: 'contents' }}>

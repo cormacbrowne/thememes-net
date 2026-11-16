@@ -3,28 +3,33 @@ import { sfx } from '../utils/soundEngine';
 import NeonSign from './NeonSign';
 import './DualDirectionHero.css';
 
-const ARCADE_QUICK_LAUNCH = [
-  { id: 'bingo', icon: '🎱', label: "Neon Bingo '86", tag: '90 CALLS' },
-  { id: 'eightball', icon: '🎱', label: 'Magic 8-Ball', tag: '25¢ PLAY' },
-  { id: 'pinball', icon: '🛸', label: '80s Pinball', tag: '5 TABLES' },
-  { id: 'slots', icon: '🎰', label: 'Vegas Slots', tag: '5 SLOTS' },
-  { id: 'blackjack', icon: '🃏', label: 'Blackjack', tag: '25¢ MIN' },
-  { id: 'poker', icon: '🤠', label: "Hold'em Poker" },
-  { id: 'roulette', icon: '🎡', label: 'Roulette' },
-  { id: 'pusher', icon: '🪙', label: 'Coin Dozer', tag: '25¢ DROP' },
-  { id: 'derby', icon: '🏇', label: 'Neon Derby' },
-  { id: 'stocks', icon: '📈', label: 'MEMEDAQ' }
+const MEME_EXPLORE_PILLS = [
+  { id: 'reels', label: '🎬 Reels', type: 'view' },
+  { id: 'caption_battle', label: '👑 Caption Battle', type: 'battle', testId: 'hero-caption-battle-btn' },
+  { id: 'soundboard', label: '🔊 Soundboard', type: 'soundboard' },
+  { id: 'battle', label: '⚔️ 1v1 Battle', type: 'view' },
+  { id: 'guess', label: '🧠 Guess Meme', type: 'view' }
+];
+
+const ARCADE_EXPLORE_PILLS = [
+  { id: 'bingo', label: "🎱 Bingo '86" },
+  { id: 'slots', label: '🎰 Slots' },
+  { id: 'pinball', label: '🛸 Pinball' },
+  { id: 'pusher', label: '🪙 Coin Dozer' },
+  { id: 'blackjack', label: '🃏 Blackjack' },
+  { id: 'poker', label: '🤠 Poker' },
+  { id: 'roulette', label: '🎡 Roulette' },
+  { id: 'derby', label: '🏇 Derby' },
+  { id: 'stocks', label: '📈 MEMEDAQ' },
+  { id: 'eightball', label: '🎱 8-Ball' }
 ];
 
 export default function DualDirectionHero({
-  tokens = 50,
-  memeCentz = 25,
   onSelectViewMode,
   onOpenBlankStudio,
   onOpenCaptionBattle,
   onOpenSoundboard,
-  onOpenInstallModal,
-  onScrollToMemes
+  onOpenInstallModal
 }) {
   const [realmFocus, setRealmFocus] = useState('both'); // 'both' | 'memes' | 'arcade'
   const [isFirstVisit] = useState(() => {
@@ -58,65 +63,106 @@ export default function DualDirectionHero({
           <NeonSign size="hero" powerOn />
         </div>
       )}
+
       <div className="tm-dual-hero-body">
-      <div className="tm-dual-hero-top">
-        <div className="tm-dual-hero-brand">
-          {!isFirstVisit && <NeonSign size="icon" powerOn={false} />}
-          <div>
-            <div className="tm-dual-hero-kicker">
-              ★ WELCOME TO THEMEMES.NET • WALLET M${tokens}.{String(memeCentz || 0).padStart(2, '0')} MEMEDOLLARZ ★
-            </div>
+        <div className="tm-dual-hero-top">
+          <div className="tm-dual-hero-brand">
+            {!isFirstVisit && (
+              <span className="tm-hide-mobile">
+                <NeonSign size="icon" powerOn={false} />
+              </span>
+            )}
             <h1 className="tm-dual-hero-heading">
               TWO 80s WORLDS IN ONE SITE: <span className="is-cyan">MEMES</span> &amp;{' '}
               <span className="is-pink">CYBER-ARCADE</span>
             </h1>
           </div>
-        </div>
 
-        <div className="tm-dual-hero-utils">
-          <div className="tm-dual-focus-tabs" role="tablist" aria-label="Realm Focus View">
+          <div className="tm-dual-hero-actions">
             <button
               type="button"
-              role="tab"
-              aria-selected={realmFocus === 'both'}
-              className={`tm-dual-focus-btn ${realmFocus === 'both' ? 'active' : ''}`}
+              className="ui-tube ui-tube--pink ui-tube-box ui-tube-box--solid tm-hero-cta"
               onClick={() => {
                 sfx.playToggle?.();
-                setRealmFocus('both');
+                onOpenBlankStudio?.();
               }}
             >
-              ⚡ Both
+              Make a meme
             </button>
             <button
               type="button"
-              role="tab"
-              aria-selected={realmFocus === 'memes'}
-              className={`tm-dual-focus-btn ${realmFocus === 'memes' ? 'active' : ''}`}
+              className="ui-tube ui-tube--cyan ui-tube-box tm-hero-cta"
               onClick={() => {
-                sfx.playToggle?.();
-                setRealmFocus('memes');
+                sfx.playJackpot?.();
+                onSelectViewMode?.('lobby');
               }}
             >
-              🔥 Memes
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={realmFocus === 'arcade'}
-              className={`tm-dual-focus-btn ${realmFocus === 'arcade' ? 'active' : ''}`}
-              onClick={() => {
-                sfx.playToggle?.();
-                setRealmFocus('arcade');
-              }}
-            >
-              🕹️ Gaming
+              Play
             </button>
           </div>
+        </div>
+
+        {/* Desktop-only single horizontal Explore strip (hidden on phones so first meme is < 320px) */}
+        <div className="tm-hero-explore-row tm-hide-mobile">
+          <div className="tm-dual-focus-tabs" role="tablist" aria-label="Realm Focus View">
+            {[
+              { id: 'both', label: 'All' },
+              { id: 'memes', label: 'Memes' },
+              { id: 'arcade', label: 'Games' }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={realmFocus === tab.id}
+                className={`tm-dual-focus-btn ${realmFocus === tab.id ? 'active' : ''}`}
+                onClick={() => {
+                  sfx.playToggle?.();
+                  setRealmFocus(tab.id);
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {realmFocus !== 'arcade' &&
+            MEME_EXPLORE_PILLS.map((pill) => (
+              <button
+                key={pill.id}
+                type="button"
+                data-testid={pill.testId}
+                className="tm-portal-quick-pill"
+                onClick={() => {
+                  sfx.playToggle?.();
+                  if (pill.type === 'battle') onOpenCaptionBattle?.();
+                  else if (pill.type === 'soundboard') onOpenSoundboard?.();
+                  else onSelectViewMode?.(pill.id);
+                }}
+              >
+                {pill.label}
+              </button>
+            ))}
+
+          {realmFocus !== 'memes' &&
+            ARCADE_EXPLORE_PILLS.map((g) => (
+              <button
+                key={g.id}
+                type="button"
+                className="tm-portal-quick-pill is-game"
+                onClick={() => {
+                  sfx.playToggle?.();
+                  onSelectViewMode?.(g.id);
+                }}
+              >
+                {g.label}
+              </button>
+            ))}
 
           {onOpenInstallModal && (
             <button
               type="button"
-              className="tm-dual-iphone-btn"
+              className="tm-portal-quick-pill"
               onClick={() => {
                 sfx.playToggle?.();
                 onOpenInstallModal();
@@ -126,157 +172,6 @@ export default function DualDirectionHero({
             </button>
           )}
         </div>
-      </div>
-
-      <div className={`tm-dual-portals focus-${realmFocus}`}>
-        {/* PORTAL A: MEMES & CREATOR STUDIO */}
-        {realmFocus !== 'arcade' && (
-          <article className="tm-portal-card is-memes">
-            <div className="tm-portal-head">
-              <span className="tm-portal-badge">REALM 01 • CREATE &amp; LAUGH</span>
-              <h2>🔥 THE MEMES &amp; STUDIO</h2>
-              <p>
-                Browse viral community uploads, craft instant PNG &amp; animated GIF memes, blast the
-                16-pad soundboard &amp; earn <strong>MemeDollarz ($)</strong> for every upvote.
-              </p>
-            </div>
-
-            <div className="tm-portal-primary-row">
-              <button
-                type="button"
-                className="tm-portal-cta is-cyan"
-                onClick={() => {
-                  sfx.playPop?.(2);
-                  onScrollToMemes?.();
-                }}
-              >
-                🔥 Browse Meme Feed ↓
-              </button>
-              <button
-                type="button"
-                className="tm-portal-cta is-outline"
-                onClick={() => {
-                  sfx.playToggle?.();
-                  onOpenBlankStudio?.();
-                }}
-              >
-                ➕ Make Meme / GIF
-              </button>
-            </div>
-
-            <div className="tm-portal-chip-grid">
-              <button
-                type="button"
-                className="tm-portal-quick-pill"
-                onClick={() => {
-                  sfx.playToggle?.();
-                  onSelectViewMode?.('reels');
-                }}
-              >
-                🎬 Fullscreen Reels
-              </button>
-              <button
-                type="button"
-                className="tm-portal-quick-pill"
-                data-testid="hero-caption-battle-btn"
-                onClick={() => {
-                  sfx.playToggle?.();
-                  onOpenCaptionBattle?.();
-                }}
-              >
-                👑 Daily Caption Battle
-              </button>
-              <button
-                type="button"
-                className="tm-portal-quick-pill"
-                onClick={() => {
-                  sfx.playToggle?.();
-                  onOpenSoundboard?.();
-                }}
-              >
-                🔊 16-Pad Soundboard
-              </button>
-              <button
-                type="button"
-                className="tm-portal-quick-pill"
-                onClick={() => {
-                  sfx.playToggle?.();
-                  onSelectViewMode?.('battle');
-                }}
-              >
-                ⚔️ 1v1 Meme Battle
-              </button>
-              <button
-                type="button"
-                className="tm-portal-quick-pill"
-                onClick={() => {
-                  sfx.playToggle?.();
-                  onSelectViewMode?.('guess');
-                }}
-              >
-                🧠 Guess The Meme
-              </button>
-            </div>
-          </article>
-        )}
-
-        {/* PORTAL B: 80s CYBER-ARCADE & CASINO */}
-        {realmFocus !== 'memes' && (
-          <article className="tm-portal-card is-arcade">
-            <div className="tm-portal-head">
-              <span className="tm-portal-badge is-pink">REALM 02 • PLAY &amp; WIN</span>
-              <h2>🕹️ 80s CYBER-ARCADE &amp; CASINO</h2>
-              <p>
-                Dab <strong>Neon Bingo &apos;86</strong> (90 UK comedy calls!), flip 80s Pinball
-                with Magna-Save, or play Coin Dozer, Slots, Poker &amp; Roulette (pure{' '}
-                <strong>MemeDollarz M$</strong> fun).
-              </p>
-            </div>
-
-            <div className="tm-portal-primary-row">
-              <button
-                type="button"
-                className="tm-portal-cta is-pink"
-                onClick={() => {
-                  sfx.playJackpot?.();
-                  onSelectViewMode?.('lobby');
-                }}
-              >
-                🕹️ Enter Arcade Lobby →
-              </button>
-              <button
-                type="button"
-                className="tm-portal-cta is-outline-pink"
-                onClick={() => {
-                  sfx.playMagic8BallShake?.();
-                  onSelectViewMode?.('eightball');
-                }}
-              >
-                🎱 Shake Magic 8-Ball
-              </button>
-            </div>
-
-            <div className="tm-portal-chip-grid is-games">
-              {ARCADE_QUICK_LAUNCH.map((g) => (
-                <button
-                  key={g.id}
-                  type="button"
-                  className="tm-portal-quick-pill is-game"
-                  onClick={() => {
-                    sfx.playToggle?.();
-                    onSelectViewMode?.(g.id);
-                  }}
-                >
-                  <span>
-                    {g.icon} {g.label}
-                  </span>
-                  {g.tag && <em className="tm-portal-mini-tag">{g.tag}</em>}
-                </button>
-              ))}
-            </div>
-          </article>
-        )}
-      </div>
       </div>
     </section>
   );

@@ -813,6 +813,30 @@ export default function RewardsModal({
             {konamiUnlocked ? '✅ Secret Found!' : '🔒 Hidden'}
           </span>
         </div>
+
+        {/* 8. 1986 PRICE LIST FLAVOUR (35.5e) */}
+        <section
+          aria-label="1986 price list"
+          style={{
+            marginTop: '14px',
+            padding: '12px 14px',
+            borderRadius: '12px',
+            background: 'rgba(17, 13, 34, 0.85)',
+            border: '1px solid var(--tm-night-3, #2c2452)',
+            fontSize: '12px'
+          }}
+        >
+          <div style={{ fontWeight: 900, color: 'var(--tm-amber, #ffb800)', letterSpacing: '0.06em', marginBottom: '8px' }}>
+            🏷️ 1986 PRICE LIST — WHAT YOUR MEMEDOLLARZ BUY IN TOWN
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px', color: 'var(--tm-text-dim, #a59fc4)' }}>
+            <span>Arcade game <strong className="ui-money">25¢</strong></span>
+            <span>Can of cola <strong className="ui-money">50¢</strong></span>
+            <span>Cinema ticket <strong className="ui-money">M$3.50</strong></span>
+            <span>Cassette album <strong className="ui-money">M$8.99</strong></span>
+            <span>Pair of high-tops <strong className="ui-money">M$65</strong></span>
+          </div>
+        </section>
           </>
         )}
       </div>

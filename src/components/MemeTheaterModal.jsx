@@ -160,8 +160,8 @@ export default function MemeTheaterModal({
             {rarity.label && (
               <span className={`tm-rarity-badge ${rarity.tier}`}>{rarity.label}</span>
             )}
-            <span style={{ fontSize: '12px', color: '#94a3b8' }}>
-              by <strong style={{ color: '#38bdf8' }}>@{meme.author_name || 'Anon'}</strong>
+            <span style={{ fontSize: '12px', color: 'var(--tm-text-dim)' }}>
+              by <strong style={{ color: 'var(--tm-cyan)' }}>@{meme.author_name || 'Anon'}</strong>
             </span>
             <span className="tm-upload-date-badge">
               📅 Uploaded {uploadInfo.dateTime} ({uploadInfo.relative})
@@ -270,7 +270,7 @@ export default function MemeTheaterModal({
               <MemeMedia meme={meme} mode="theater" />
               <MemeLiveEmotes memeId={meme.id} />
             </div>
-            <div style={{ fontSize: '11px', color: '#64748b', marginTop: '6px', textAlign: 'center' }}>
+            <div style={{ fontSize: '11px', color: 'var(--tm-text-mute)', marginTop: '6px', textAlign: 'center' }}>
               💡 Tip: Swipe left/right on image for Next/Prev • Double-tap to Upvote
             </div>
 
@@ -341,7 +341,7 @@ export default function MemeTheaterModal({
           <div className="tm-theater-sidebar">
             {/* Mini Evolution Tree */}
             <div className="tm-theater-panel">
-              <div className="tm-studio-label" style={{ color: '#f472b6', marginBottom: '8px' }}>
+              <div className="tm-studio-label" style={{ color: 'var(--tm-pink)', marginBottom: '8px' }}>
                 🧬 Genetic Lineage ({lineageNodes.length}{' '}
                 {lineageNodes.length === 1 ? 'Node' : 'Nodes'})
               </div>
@@ -362,7 +362,7 @@ export default function MemeTheaterModal({
                           ? 'rgba(0, 243, 255, 0.14)'
                           : 'rgba(255, 255, 255, 0.04)',
                         border: isCurrent
-                          ? '1px solid #00f3ff'
+                          ? '1px solid var(--tm-cyan)'
                           : '1px solid rgba(255, 255, 255, 0.08)',
                         display: 'flex',
                         alignItems: 'center',
@@ -384,7 +384,7 @@ export default function MemeTheaterModal({
                           }}
                         />
                         <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: '10px', fontWeight: 900, color: nGen === 0 ? '#a3e635' : '#f472b6' }}>
+                          <div style={{ fontSize: '10px', fontWeight: 900, color: nGen === 0 ? '#a3e635' : 'var(--tm-pink)' }}>
                             {nGen === 0 ? 'GEN-0 ORIGIN' : `GEN-${nGen} REMIX`} • {nodeDate.dateOnly}
                           </div>
                           <div
@@ -400,7 +400,7 @@ export default function MemeTheaterModal({
                           </div>
                         </div>
                       </div>
-                      <span style={{ fontSize: '11px', fontWeight: 800, color: '#facc15', flexShrink: 0 }}>
+                      <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--tm-amber)', flexShrink: 0 }}>
                         🔥 {node.score || 0}
                       </span>
                     </div>
@@ -416,13 +416,13 @@ export default function MemeTheaterModal({
               </div>
               <div style={{ flex: 1, maxHeight: '240px', overflowY: 'auto', marginBottom: '10px' }}>
                 {(meme.comments || []).length === 0 ? (
-                  <div style={{ fontSize: '12px', color: '#64748b' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--tm-text-mute)' }}>
                     No comments yet — drop the first comment (+25 XP)!
                   </div>
                 ) : (
                   (meme.comments || []).map((c) => (
                     <div key={c.id} className="tm-comment-item">
-                      <strong style={{ color: '#38bdf8' }}>@{c.author_name}: </strong>
+                      <strong style={{ color: 'var(--tm-cyan)' }}>@{c.author_name}: </strong>
                       <span>{c.body}</span>
                       {onDeleteComment && c.user_id && currentUserId && String(c.user_id) === String(currentUserId) && (
                         <button

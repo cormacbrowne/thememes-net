@@ -123,7 +123,7 @@ export default function RewardsModal({
             <button type="button" className="tm-btn tm-back-pill" onClick={onClose}>
               ← Back
             </button>
-            <h2 style={{ margin: 0, fontSize: '20px', color: '#facc15' }}>
+            <h2 style={{ margin: 0, fontSize: '20px', color: 'var(--tm-amber)' }}>
               💵 MemeDollarz ($) &amp; MemeCentz (¢) Vault: Quests &amp; Cosmetics
             </h2>
           </div>
@@ -165,20 +165,20 @@ export default function RewardsModal({
             <div className="tm-fair-ledger-card" style={{ marginBottom: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                 <div>
-                  <div style={{ fontSize: '12px', fontWeight: 900, color: '#00f3ff' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 900, color: 'var(--tm-cyan)' }}>
                     🛍️ 1985 MALL ARCADE COSMETICS SHOP (1 QUARTER = 25¢)
                   </div>
-                  <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '2px' }}>
+                  <div style={{ fontSize: '13px', color: 'var(--tm-text-soft)', marginTop: '2px' }}>
                     Authentic 1980s prices! Buy with earned <strong>MemeDollarz</strong> or unlock free at <strong>⚡ XP milestones</strong>.
                   </div>
                 </div>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '15px', fontWeight: 900 }}>
                   <Wallet tokens={tokens} centz={centz} size="inline" /> •{' '}
-                  <span style={{ color: '#00f3ff' }}>{xp} XP</span>
+                  <span style={{ color: 'var(--tm-cyan)' }}>{xp} XP</span>
                 </div>
               </div>
               {shopToast && (
-                <div style={{ marginTop: '8px', fontSize: '12px', fontWeight: 800, color: '#4ade80' }}>
+                <div style={{ marginTop: '8px', fontSize: '12px', fontWeight: 800, color: 'var(--tm-ok)' }}>
                   {shopToast}
                 </div>
               )}
@@ -245,7 +245,7 @@ export default function RewardsModal({
                           </button>
                         ) : (
                           <>
-                            <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 700 }}>
+                            <span style={{ fontSize: '11px', color: 'var(--tm-text-dim)', fontWeight: 700 }}>
                               {xpEligible
                                 ? `⚡ ${item.unlockXp} XP Ready!`
                                 : `${formatMoney(item.tokenCost)} or ${item.unlockXp} XP`}
@@ -287,15 +287,15 @@ export default function RewardsModal({
         <div className="tm-fair-ledger-card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
             <div>
-              <div style={{ fontSize: '12px', fontWeight: 900, color: '#4ade80', letterSpacing: '0.5px' }}>
+              <div style={{ fontSize: '12px', fontWeight: 900, color: 'var(--tm-ok)', letterSpacing: '0.5px' }}>
                 🛡️ FAIR MEMEDOLLARZ ECONOMY (ANTI-EXPLOIT PROTECTED)
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '17px', fontWeight: 900, marginTop: '4px', flexWrap: 'wrap' }}>
                 <span>Wallet:</span> <Wallet tokens={tokens} centz={centz} size="inline" /> •{' '}
-                <span style={{ color: '#00f3ff' }}>{xp} XP</span>
+                <span style={{ color: 'var(--tm-cyan)' }}>{xp} XP</span>
               </div>
             </div>
-            <div className="tm-spin-counter-pill" style={{ borderColor: '#4ade80', color: '#4ade80' }}>
+            <div className="tm-spin-counter-pill" style={{ borderColor: 'var(--tm-ok)', color: 'var(--tm-ok)' }}>
               Daily Earnings: <Money tokens={dailyUsed} zero="balance" /> / {formatMoney(dailyMax, { zero: 'balance' })}
             </div>
           </div>
@@ -363,7 +363,7 @@ export default function RewardsModal({
                     <div style={{ fontSize: '18px', lineHeight: 1 }}>
                       {reactorFlash ? '💰' : xpConversionState.readyTokens > 0 ? '🔥' : '⚡'}
                     </div>
-                    <div style={{ fontSize: '11px', fontWeight: 900, color: '#facc15', marginTop: '2px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 900, color: 'var(--tm-amber)', marginTop: '2px' }}>
                       {xpConversionState.readyTokens > 0
                         ? formatMoney(xpConversionState.readyTokens, { sign: true })
                         : `${xpConversionState.progressPct}%`}
@@ -381,21 +381,21 @@ export default function RewardsModal({
 
                   <div className="tm-xp-fusion-status-text">
                     {xpConversionState.isDailyCapped ? (
-                      <span style={{ color: '#4ade80' }}>
+                      <span style={{ color: 'var(--tm-ok)' }}>
                         ✅ Daily Reactor Cap Reached ({formatMoney(xpConversionState.dailyConvertedTokens, { zero: 'balance' })} /{' '}
                         {formatMoney(xpConversionState.maxDailyTokens, { zero: 'balance' })} minted today)!
                       </span>
                     ) : xpConversionState.readyTokens > 0 ? (
-                      <span style={{ color: '#facc15' }}>
+                      <span style={{ color: 'var(--tm-amber)' }}>
                         🔥 <strong>{xpConversionState.readyUnits * 100} XP</strong> ready to exchange for{' '}
                         <strong>{formatMoney(xpConversionState.readyTokens, { sign: true })}</strong>! (+{' '}
                         {xpConversionState.progressXp}/100 XP toward next batch)
                       </span>
                     ) : (
                       <span>
-                         Reactor Charge: <strong style={{ color: '#00f3ff' }}>{xpConversionState.progressXp} / 100 XP</strong>{' '}
-                        — Only <strong style={{ color: '#facc15' }}>{xpConversionState.xpRemaining} XP</strong> away from{' '}
-                        <strong style={{ color: '#4ade80' }}>{formatMoney(ARCADE_ECONOMY_RULES.XP_CONVERSION.TOKENS_MINTED, { sign: true })}</strong>!
+                         Reactor Charge: <strong style={{ color: 'var(--tm-cyan)' }}>{xpConversionState.progressXp} / 100 XP</strong>{' '}
+                        — Only <strong style={{ color: 'var(--tm-amber)' }}>{xpConversionState.xpRemaining} XP</strong> away from{' '}
+                        <strong style={{ color: 'var(--tm-ok)' }}>{formatMoney(ARCADE_ECONOMY_RULES.XP_CONVERSION.TOKENS_MINTED, { sign: true })}</strong>!
                       </span>
                     )}
                   </div>
@@ -553,7 +553,7 @@ export default function RewardsModal({
             </div>
             <div style={{ fontSize: '18px', fontWeight: 900, marginTop: '2px' }}>
               Day {streakDays} Streak Active!{' '}
-              <span style={{ fontSize: '13px', color: '#cbd5e1', fontWeight: 600 }}>
+              <span style={{ fontSize: '13px', color: 'var(--tm-text-soft)', fontWeight: 600 }}>
                 ({formatMoney(ARCADE_ECONOMY_RULES.REWARDS.DAILY_STREAK.tokens, { sign: true })} + 100 XP + 1 Free Chaos Spin)
               </span>
             </div>
@@ -606,7 +606,7 @@ export default function RewardsModal({
               <div className="tm-studio-label" style={{ margin: 0 }}>
                 🎡 WHEEL OF CHAOS (MYSTERY LOOT CRATES)
               </div>
-              <div style={{ fontSize: '12px', color: '#94a3b8' }}>
+              <div style={{ fontSize: '12px', color: 'var(--tm-text-dim)' }}>
                 Win Neon Title Flairs &amp; XP! (Limit: {ARCADE_RATE_LIMITS.WHEEL_SPINS_PER_WINDOW} spins / hr • Max {ARCADE_RATE_LIMITS.MAX_STORED_WHEEL_SPINS} stored)
               </div>
             </div>
@@ -619,7 +619,7 @@ export default function RewardsModal({
                 style={{
                   borderColor:
                     wheelSpinsLeftInWindow > 0 ? 'rgba(0,243,255,0.45)' : 'rgba(239,68,68,0.5)',
-                  color: wheelSpinsLeftInWindow > 0 ? '#00f3ff' : '#f87171'
+                  color: wheelSpinsLeftInWindow > 0 ? 'var(--tm-cyan)' : '#f87171'
                 }}
               >
                 {wheelSpinsLeftInWindow > 0 ? (
@@ -643,7 +643,7 @@ export default function RewardsModal({
                 <div style={{ fontSize: '13px', fontWeight: 900, color: item.color }}>
                   {item.label}
                 </div>
-                <div style={{ fontSize: '11px', color: '#cbd5e1', marginTop: '3px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--tm-text-soft)', marginTop: '3px' }}>
                   +{item.xpBonus} XP {item.flair ? '• Permanent Title' : '• Instant Boost'}
                 </div>
               </div>
@@ -752,11 +752,11 @@ export default function RewardsModal({
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 800 }}>
                         <span>{q.title}</span>
-                        <span style={{ color: '#facc15' }}>
+                        <span style={{ color: 'var(--tm-amber)' }}>
                           {current}/{q.target} • {formatMoney(ARCADE_ECONOMY_RULES.REWARDS.DAILY_QUEST.tokens, { sign: true })} + {q.rewardXp} XP
                         </span>
                       </div>
-                      <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '6px' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--tm-text-dim)', marginBottom: '6px' }}>
                         {q.desc}
                       </div>
                       <div className="tm-xp-track">
@@ -777,7 +777,7 @@ export default function RewardsModal({
                         🎁 Claim {formatMoney(ARCADE_ECONOMY_RULES.REWARDS.DAILY_QUEST.tokens, { sign: true })}
                       </button>
                     ) : (
-                      <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700 }}>
+                      <span style={{ fontSize: '11px', color: 'var(--tm-text-mute)', fontWeight: 700 }}>
                         In Progress
                       </span>
                     )}
@@ -806,12 +806,12 @@ export default function RewardsModal({
         >
           <div>
             <strong style={{ color: '#d8b4fe' }}>🕹️ Secret 80s Arcade Easter Egg:</strong>{' '}
-            <span style={{ color: '#cbd5e1' }}>
+            <span style={{ color: 'var(--tm-text-soft)' }}>
               Physically type <code>↑↑↓↓←→←→BA</code> on keyboard or rapidly tap the{' '}
               <strong>THE MEMES.net</strong> logo 5× on iPad/iPhone!
             </span>
           </div>
-          <span style={{ color: konamiUnlocked ? '#4ade80' : '#94a3b8', fontWeight: 800 }}>
+          <span style={{ color: konamiUnlocked ? 'var(--tm-ok)' : 'var(--tm-text-dim)', fontWeight: 800 }}>
             {konamiUnlocked ? '✅ Secret Found!' : '🔒 Hidden'}
           </span>
         </div>

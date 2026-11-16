@@ -48,7 +48,7 @@ export default function IphoneAppModal({ onClose }) {
               height="34"
               style={{ borderRadius: '8px' }}
             />
-            <h2 style={{ margin: 0, fontSize: '18px', color: '#00f5ff' }}>
+            <h2 style={{ margin: 0, fontSize: '18px', color: 'var(--tm-cyan)' }}>
               📲 Make THE MEMES an iPhone App
             </h2>
           </div>

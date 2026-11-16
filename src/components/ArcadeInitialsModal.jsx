@@ -150,10 +150,10 @@ export default function ArcadeInitialsModal({
       >
         <div className="tm-modal-sticky-header" style={{ marginBottom: '12px' }}>
           <div>
-            <h2 id="tm-initials-heading" style={{ margin: 0, fontSize: '19px', color: '#facc15' }}>
+            <h2 id="tm-initials-heading" style={{ margin: 0, fontSize: '19px', color: 'var(--tm-amber)' }}>
               🕹️ ENTER YOUR INITIALS
             </h2>
-            <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+            <div style={{ fontSize: '11px', color: 'var(--tm-text-dim)', marginTop: '2px' }}>
               {gameMeta.icon} {gameMeta.label} • Top-10 Cabinet Contender
             </div>
           </div>
@@ -163,7 +163,7 @@ export default function ArcadeInitialsModal({
         </div>
 
         <div className="tm-initials-score-card">
-          <div style={{ fontSize: '11px', fontWeight: 700, color: '#38bdf8', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--tm-cyan)', textTransform: 'uppercase' }}>
             Verified Run Score
           </div>
           <div className="tm-initials-score-value">
@@ -260,7 +260,7 @@ export default function ArcadeInitialsModal({
               <div style={{ fontSize: '20px', fontWeight: 900, color: '#a3e635' }}>
                 {submittedResult.initials} LOCKED ON CABINET!
               </div>
-              <div style={{ fontSize: '13px', color: '#e2e8f0', marginTop: '4px' }}>
+              <div style={{ fontSize: '13px', color: 'var(--tm-text)', marginTop: '4px' }}>
                 #{submittedResult.rank_today || 1} Today • #{submittedResult.rank_all_time || 1} All-time
               </div>
             </div>

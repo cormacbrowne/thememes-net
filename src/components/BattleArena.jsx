@@ -24,7 +24,7 @@ export default function BattleArena({
           <h2 style={{ margin: '0 0 8px', fontSize: '22px' }}>
             1v1 Battle Arena Needs at Least 2 User Memes!
           </h2>
-          <p style={{ color: '#94a3b8', maxWidth: '480px', margin: '0 auto 16px', fontSize: '14px' }}>
+          <p style={{ color: 'var(--tm-text-dim)', maxWidth: '480px', margin: '0 auto 16px', fontSize: '14px' }}>
             Currently <strong>{memes?.length || 0}</strong> user-uploaded meme{memes?.length === 1 ? ' is' : 's are'} in the arena. Upload a meme to start head-to-head King of the Hill battles!
           </p>
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -63,8 +63,8 @@ export default function BattleArena({
               ← Back to Feed
             </button>
           )}
-          <div style={{ fontSize: '13px', fontWeight: 800, color: '#cbd5e1' }}>
-            Vote Streak: <strong style={{ color: '#facc15' }}>{battleStreak}🔥</strong>
+          <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--tm-text-soft)' }}>
+            Vote Streak: <strong style={{ color: 'var(--tm-amber)' }}>{battleStreak}🔥</strong>
           </div>
           <button type="button" className="tm-btn" onClick={onSkipMatchup}>
             🎲 Next Matchup
@@ -74,7 +74,7 @@ export default function BattleArena({
         <h2 style={{ margin: '0 0 4px', fontSize: '21px', fontWeight: 900 }}>
           ⚔️ KING OF THE HILL: 1v1 MEME ARENA
         </h2>
-        <p style={{ margin: 0, color: '#94a3b8', fontSize: '12px' }}>
+        <p style={{ margin: 0, color: 'var(--tm-text-dim)', fontSize: '12px' }}>
           Tap the funnier user-uploaded meme! The winner stays on the throne to defend its crown.
         </p>
 
@@ -84,7 +84,7 @@ export default function BattleArena({
           </div>
         )}
         {checkDailyPerk('arena') && (
-          <div style={{ marginTop: '6px', fontSize: '11px', color: '#facc15', fontWeight: 800 }}>
+          <div style={{ marginTop: '6px', fontSize: '11px', color: 'var(--tm-amber)', fontWeight: 800 }}>
             🎁 2X DAILY ARENA BOOST ACTIVE (Meme Creator Reward)!
           </div>
         )}
@@ -151,7 +151,7 @@ export default function BattleArena({
                   textAlign: 'center',
                   fontWeight: 900,
                   fontSize: '14px',
-                  color: isWin ? '#22c55e' : '#facc15'
+                  color: isWin ? 'var(--tm-ok)' : 'var(--tm-amber)'
                 }}
               >
                 {isWin

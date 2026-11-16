@@ -105,7 +105,7 @@ export default function MemeLiveCelebrationModal({
         <div className="tm-live-celebration-kicker">BROADCASTING LIVE TO COMMUNITY FEED</div>
         <h2 className="tm-live-celebration-title">🚀 YOUR MEME IS LIVE!</h2>
         <p className="tm-live-celebration-sub">
-          You earned <strong style={{ color: '#facc15' }}>{rewardSummary}</strong> — share your link to rack up upvotes &amp; remixes!
+          You earned <strong style={{ color: 'var(--tm-amber)' }}>{rewardSummary}</strong> — share your link to rack up upvotes &amp; remixes!
         </p>
 
         <div className="tm-live-celebration-preview">

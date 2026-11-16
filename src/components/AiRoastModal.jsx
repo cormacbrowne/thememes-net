@@ -48,7 +48,7 @@ export default function AiRoastModal({
             <button type="button" className="tm-btn tm-back-pill" onClick={onClose}>
               ← Back
             </button>
-            <h2 style={{ margin: 0, fontSize: '19px', color: '#00f3ff' }}>
+            <h2 style={{ margin: 0, fontSize: '19px', color: 'var(--tm-cyan)' }}>
               🤖 AI Dank-O-Meter & Roast Scanner
             </h2>
           </div>
@@ -65,20 +65,20 @@ export default function AiRoastModal({
 
           <div className="tm-roast-metrics">
             <div className="tm-roast-score-banner">
-              <div style={{ fontSize: '11px', fontWeight: 900, color: '#00f3ff' }}>
+              <div style={{ fontSize: '11px', fontWeight: 900, color: 'var(--tm-cyan)' }}>
                 NEURAL VIRAL PROBABILITY
               </div>
-              <div style={{ fontSize: '32px', fontWeight: 900, color: '#facc15', lineHeight: 1.1 }}>
+              <div style={{ fontSize: '32px', fontWeight: 900, color: 'var(--tm-amber)', lineHeight: 1.1 }}>
                 {analysis.viralProbability}%
               </div>
-              <div style={{ fontSize: '11px', fontWeight: 800, color: '#f472b6', marginTop: '2px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--tm-pink)', marginTop: '2px' }}>
                 {analysis.tierVerdict}
               </div>
             </div>
 
             <div className="tm-roast-stat-row">
               <span>🧠 Brainrot Index:</span>
-              <strong style={{ color: '#ec4899' }}>{analysis.brainrotLevel}</strong>
+              <strong style={{ color: 'var(--tm-pink)' }}>{analysis.brainrotLevel}</strong>
             </div>
             <div className="tm-roast-stat-row">
               <span>🌶️ Spice Output:</span>
@@ -86,7 +86,7 @@ export default function AiRoastModal({
             </div>
             <div className="tm-roast-stat-row">
               <span>🧬 Lineage Check:</span>
-              <strong style={{ color: '#38bdf8' }}>{analysis.repostRisk}</strong>
+              <strong style={{ color: 'var(--tm-cyan)' }}>{analysis.repostRisk}</strong>
             </div>
           </div>
         </div>
@@ -96,7 +96,7 @@ export default function AiRoastModal({
           <div style={{ fontSize: '11px', fontWeight: 900, color: '#a855f7', marginBottom: '4px' }}>
             🎙️ SAVAGE AI CRITIQUE FOR &ldquo;{meme.title}&rdquo;:
           </div>
-          <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.5, color: '#f8fafc', fontWeight: 600 }}>
+          <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.5, color: 'var(--tm-text)', fontWeight: 600 }}>
             &ldquo;{analysis.verdict}&rdquo;
           </p>
         </div>

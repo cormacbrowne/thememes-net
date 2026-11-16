@@ -48,10 +48,10 @@ export default function SeoDiscoveryFooter({
         {/* Viral Share & Add-to-iPhone-Home-Screen Banner */}
         <div className="tm-seo-viral-strip">
           <div>
-            <strong style={{ color: '#facc15', fontSize: '14px' }}>
+            <strong style={{ color: 'var(--tm-amber)', fontSize: '14px' }}>
               📲 Make THE MEMES.net an iPhone or Mobile App!
             </strong>
-            <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '2px' }}>
+            <div style={{ fontSize: '12px', color: 'var(--tm-text-soft)', marginTop: '2px' }}>
               Tap <strong>Share (⬆️) → Add to Home Screen</strong> in iPhone Safari for full-screen 80s neon icon &amp; app mode!
             </div>
           </div>
@@ -81,7 +81,7 @@ export default function SeoDiscoveryFooter({
             <div style={{ display: 'inline-block', marginBottom: '10px' }}>
               <NeonSign size="nav" powerOn={false} />
             </div>
-            <p style={{ fontSize: '13px', color: '#94a3b8', lineHeight: 1.55, margin: 0 }}>
+            <p style={{ fontSize: '13px', color: 'var(--tm-text-dim)', lineHeight: 1.55, margin: 0 }}>
               <strong>THE MEMES.net</strong> is a simple Image &amp; GIF meme maker (upload media, add
               classic Top &amp; Bottom text, export &amp; share with <code>www.thememes.net</code>),
               community meme feed, 16-pad Vine Boom Soundboard, and retro Cyber-Arcade.
@@ -358,7 +358,7 @@ export default function SeoDiscoveryFooter({
             <details className="tm-faq-item">
               <summary>How do I make or remix a meme for free on THE MEMES.net?</summary>
               <p>
-                Open the <a href="/meme-generator" onClick={(e) => handleSpaLinkClick(e, onOpenBlankStudio)} style={{ color: '#00f3ff' }}>Meme Generator</a> or hit <strong>🧬 REMIX</strong> on any card to launch
+                Open the <a href="/meme-generator" onClick={(e) => handleSpaLinkClick(e, onOpenBlankStudio)} style={{ color: 'var(--tm-cyan)' }}>Meme Generator</a> or hit <strong>🧬 REMIX</strong> on any card to launch
                 the HTML5 Meme Forge 3.0 studio. Pick from 20 blank meme templates, paste from clipboard (Ctrl+V),
                 apply Deep Fry or VHS Glitch filters, and download or publish watermark-free memes.
               </p>
@@ -368,9 +368,9 @@ export default function SeoDiscoveryFooter({
               <p>
                 Yes! Every arcade game on THE MEMES.net uses 100% free Practice Chips and earned in-site
                 Meme Tokens—zero real-money deposits, betting, or cashouts. Play{' '}
-                <a href="/games/coin-pusher" onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('pusher'))} style={{ color: '#00f3ff' }}>Coin Dozer</a>,{' '}
-                <a href="/games/pinball" onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('pinball'))} style={{ color: '#00f3ff' }}>Pinball</a>, or{' '}
-                <a href="/games/meme-crush" onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('crush'))} style={{ color: '#00f3ff' }}>Meme Crush Saga</a> right in your browser.
+                <a href="/games/coin-pusher" onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('pusher'))} style={{ color: 'var(--tm-cyan)' }}>Coin Dozer</a>,{' '}
+                <a href="/games/pinball" onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('pinball'))} style={{ color: 'var(--tm-cyan)' }}>Pinball</a>, or{' '}
+                <a href="/games/meme-crush" onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('crush'))} style={{ color: 'var(--tm-cyan)' }}>Meme Crush Saga</a> right in your browser.
               </p>
             </details>
           </div>
@@ -380,12 +380,12 @@ export default function SeoDiscoveryFooter({
           <span>© 2026 THE MEMES.net // Community Memes &amp; 80s Cyber-Arcade</span>
           <span>💵 MemeDollarz (M$) &amp; MemeCentz (¢) are free pretend tokens, just for fun — cannot be bought or cashed out.</span>
           <span style={{ display: 'inline-flex', gap: '10px', flexWrap: 'wrap' }}>
-            <a href="/hall-of-fame" style={{ color: '#facc15', textDecoration: 'none' }}>👑 Hall of Fame</a>
+            <a href="/hall-of-fame" style={{ color: 'var(--tm-amber)', textDecoration: 'none' }}>👑 Hall of Fame</a>
             <a href="/rules" style={{ color: '#7df9ff', textDecoration: 'none' }}>📜 House Rules</a>
-            <a href="/terms" style={{ color: '#94a3b8', textDecoration: 'none' }}>⚖️ Terms</a>
-            <a href="/privacy" style={{ color: '#94a3b8', textDecoration: 'none' }}>🔐 Privacy</a>
+            <a href="/terms" style={{ color: 'var(--tm-text-dim)', textDecoration: 'none' }}>⚖️ Terms</a>
+            <a href="/privacy" style={{ color: 'var(--tm-text-dim)', textDecoration: 'none' }}>🔐 Privacy</a>
             <a href="/takedown" style={{ color: '#fda4af', textDecoration: 'none' }}>🚩 Takedown</a>
-            <a href="/contact" style={{ color: '#94a3b8', textDecoration: 'none' }}>✉️ Contact</a>
+            <a href="/contact" style={{ color: 'var(--tm-text-dim)', textDecoration: 'none' }}>✉️ Contact</a>
           </span>
         </div>
       </div>

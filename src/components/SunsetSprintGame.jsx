@@ -744,7 +744,7 @@ export default function SunsetSprintGame({
               <p>
                 Reached <strong>Stage {hud.stage}</strong> collecting{' '}
                 <strong>{hud.cassettesCollected} 📼</strong> with{' '}
-                <strong style={{ color: '#fde047' }}>{hud.score.toLocaleString()} pts</strong>!
+                <strong style={{ color: 'var(--tm-amber)' }}>{hud.score.toLocaleString()} pts</strong>!
               </p>
               <div className="tm-sunset-overlay-actions">
                 <button

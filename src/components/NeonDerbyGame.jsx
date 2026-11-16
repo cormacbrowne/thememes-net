@@ -831,7 +831,7 @@ export default function NeonDerbyGame({
                 >
                   <span
                     className="tm-derby-silk"
-                    style={{ background: h.silk, color: '#090d16' }}
+                    style={{ background: h.silk, color: 'var(--tm-night-0)' }}
                   >
                     #{h.lane}
                   </span>

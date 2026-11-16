@@ -293,7 +293,7 @@ export default function MemeStudioModal({
                   ? `🧬 Gen-${(mutatingParentMeme.generation || 0) + 1} Remix (+150 XP)`
                   : '🎨 Meme Forge Studio — Upload & Create (+100 XP)'}
               </h2>
-              <div style={{ fontSize: '11px', color: '#38bdf8', marginTop: '2px', fontWeight: 700 }}>
+              <div style={{ fontSize: '11px', color: 'var(--tm-cyan)', marginTop: '2px', fontWeight: 700 }}>
                 ⚡ 100% User-Uploaded Memes • Drag captions &amp; stickers directly on canvas!
               </div>
             </div>
@@ -305,10 +305,10 @@ export default function MemeStudioModal({
 
         {/* Active Daily Bounty Banner */}
         {activeBounty && (
-          <div className="tm-studio-lineage-banner" style={{ borderColor: '#facc15', background: 'rgba(250, 204, 21, 0.12)' }}>
+          <div className="tm-studio-lineage-banner" style={{ borderColor: 'var(--tm-amber)', background: 'rgba(250, 204, 21, 0.12)' }}>
             <span>
               🎯 <strong>BOUNTY PROMPT:</strong> “{activeBounty.prompt}” — Upload your photo &amp; earn{' '}
-              <strong style={{ color: '#facc15' }}>+{activeBounty.rewardXp} XP + Bounty Badge!</strong>
+              <strong style={{ color: 'var(--tm-amber)' }}>+{activeBounty.rewardXp} XP + Bounty Badge!</strong>
             </span>
           </div>
         )}
@@ -318,7 +318,7 @@ export default function MemeStudioModal({
           <div className="tm-studio-lineage-banner">
             <span>
               🧬 Remixing <strong>{mutatingParentMeme.title}</strong> by{' '}
-              <strong style={{ color: '#00f3ff' }}>@{mutatingParentMeme.author_name}</strong> —
+              <strong style={{ color: 'var(--tm-cyan)' }}>@{mutatingParentMeme.author_name}</strong> —
               Origin creator earns <strong>+50 XP Royalty!</strong>
             </span>
             <button
@@ -359,7 +359,7 @@ export default function MemeStudioModal({
               type="button"
               className="tm-btn tm-show-mobile-only"
               onClick={() => captionsFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-              style={{ justifyContent: 'center', borderColor: 'rgba(0, 243, 255, 0.4)', color: '#00f3ff' }}
+              style={{ justifyContent: 'center', borderColor: 'rgba(0, 243, 255, 0.4)', color: 'var(--tm-cyan)' }}
             >
               ✏️ Jump to Upload, Captions &amp; Publish ↓
             </button>
@@ -467,8 +467,8 @@ export default function MemeStudioModal({
                 style={{
                   flex: 1,
                   justifyContent: 'center',
-                  borderColor: clipboardStatus ? '#22c55e' : undefined,
-                  color: clipboardStatus ? '#22c55e' : undefined
+                  borderColor: clipboardStatus ? 'var(--tm-ok)' : undefined,
+                  color: clipboardStatus ? 'var(--tm-ok)' : undefined
                 }}
                 onClick={(e) => {
                   pulse('forge_export', { method: 'copy' });
@@ -500,7 +500,7 @@ export default function MemeStudioModal({
                     padding: '2px 8px',
                     borderRadius: '999px',
                     background: customUploadImg ? 'rgba(34, 197, 94, 0.2)' : 'rgba(250, 204, 21, 0.18)',
-                    color: customUploadImg ? '#4ade80' : '#facc15'
+                    color: customUploadImg ? 'var(--tm-ok)' : 'var(--tm-amber)'
                   }}
                 >
                   {customUploadImg ? '✅ Image Loaded!' : '📸 Waiting for Photo'}
@@ -544,7 +544,7 @@ export default function MemeStudioModal({
                   type="button"
                   className="tm-btn"
                   onClick={cameraActive ? stopCamera : handleStartCamera}
-                  style={{ borderColor: 'rgba(0, 243, 255, 0.4)', color: '#00f3ff' }}
+                  style={{ borderColor: 'rgba(0, 243, 255, 0.4)', color: 'var(--tm-cyan)' }}
                 >
                   {cameraActive ? '✕ Close Camera' : '📸 Snap Camera Photo'}
                 </button>
@@ -575,7 +575,7 @@ export default function MemeStudioModal({
                     padding: '10px',
                     borderRadius: '12px',
                     background: 'rgba(9, 10, 18, 0.9)',
-                    border: '1px solid #00f3ff',
+                    border: '1px solid var(--tm-cyan)',
                     textAlign: 'center'
                   }}
                 >
@@ -636,7 +636,7 @@ export default function MemeStudioModal({
                   <button
                     type="button"
                     className="tm-link-btn"
-                    style={{ color: '#facc15' }}
+                    style={{ color: 'var(--tm-amber)' }}
                     onClick={() => {
                       const pick =
                         VIRAL_CAPTIONS[Math.floor(Math.random() * VIRAL_CAPTIONS.length)];
@@ -690,7 +690,7 @@ export default function MemeStudioModal({
                   gap: '8px',
                   marginTop: '8px',
                   fontSize: '12px',
-                  color: '#94a3b8'
+                  color: 'var(--tm-text-dim)'
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: '170px' }}>
@@ -720,7 +720,7 @@ export default function MemeStudioModal({
                           background: sw.id,
                           border:
                             studioTextColor === sw.id
-                              ? '2.5px solid #00f3ff'
+                              ? '2.5px solid var(--tm-cyan)'
                               : '1px solid rgba(255,255,255,0.35)',
                           cursor: 'pointer',
                           transform: studioTextColor === sw.id ? 'scale(1.15)' : 'scale(1)'
@@ -748,7 +748,7 @@ export default function MemeStudioModal({
                   className="tm-input"
                   value={studioCategory}
                   onChange={(e) => setStudioCategory(e.target.value)}
-                  style={{ flex: 1, background: '#1e293b' }}
+                  style={{ flex: 1, background: 'var(--tm-night-2)' }}
                 >
                   <option value="dank">#DANK / FUNNY</option>
                   <option value="relatable">#RELATABLE / LIFE</option>

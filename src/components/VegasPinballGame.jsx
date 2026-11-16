@@ -2384,16 +2384,16 @@ export default function VegasPinballGame({
               BALLS <strong>{'🎱'.repeat(Math.max(0, hudBallsLeft)) || '0'}</strong>
             </span>
             <span className="tm-pin2-mini-stat">
-              MULT <strong style={{ color: '#facc15' }}>{hudMultiplier}×{hudFever ? '🔥' : hudCombo > 1 ? ` (${hudCombo}c)` : ''}</strong>
+              MULT <strong style={{ color: 'var(--tm-amber)' }}>{hudMultiplier}×{hudFever ? '🔥' : hudCombo > 1 ? ` (${hudCombo}c)` : ''}</strong>
             </span>
             <span className="tm-pin2-mini-stat hide-xs">
               SHIELD{' '}
-              <strong style={{ color: hudShield || hudFever ? '#00f3ff' : '#94a3b8' }}>
+              <strong style={{ color: hudShield || hudFever ? 'var(--tm-cyan)' : 'var(--tm-text-dim)' }}>
                 {hudShield || hudFever ? '🛡️ON' : 'OFF'}
               </strong>
             </span>
             <span className="tm-pin2-mini-stat hide-xs">
-              BEST <strong style={{ color: '#facc15' }}>{bestScore.toLocaleString()}</strong>
+              BEST <strong style={{ color: 'var(--tm-amber)' }}>{bestScore.toLocaleString()}</strong>
             </span>
           </div>
 
@@ -2436,7 +2436,7 @@ export default function VegasPinballGame({
           <aside className="tm-pin2-side-wing left-wing">
             <div className="tm-pin2-wing-card">
               <div className="tm-pin2-wing-label">🎱 {activeTable.name.toUpperCase()}</div>
-              <div className="tm-pin2-wing-sub" style={{ color: '#67e8f9', fontWeight: 800 }}>
+              <div className="tm-pin2-wing-sub" style={{ color: 'var(--tm-cyan-hot)', fontWeight: 800 }}>
                 {hudBanner}
               </div>
             </div>

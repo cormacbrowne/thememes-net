@@ -1766,7 +1766,7 @@ export default function VegasSlotMachine({
                 <span>⚖️ {activeMachine.houseEdgeLabel || 'HOUSE ALWAYS WINS • VEGAS ODDS'}</span>
               </div>
               {featuredMeme && machineId === 'bandit85' && (
-                <div style={{ fontSize: '10px', color: '#facc15', fontWeight: 800, marginTop: '1px' }}>
+                <div style={{ fontSize: '10px', color: 'var(--tm-amber)', fontWeight: 800, marginTop: '1px' }}>
                   ★ FEATURED CREATOR: @{featuredMeme.author_name} ★
                 </div>
               )}
@@ -2338,7 +2338,7 @@ export default function VegasSlotMachine({
                 </div>
                 <div className="tm-bandit-stat-box">
                   <span>LAST WIN</span>
-                  <strong style={{ color: isWinner ? '#4ade80' : '#94a3b8' }}>
+                  <strong style={{ color: isWinner ? 'var(--tm-ok)' : 'var(--tm-text-dim)' }}>
                     {lastOutcome?.payout
                       ? formatMoney(lastOutcome.payout, { compact: true, sign: true })
                       : '0¢'}
@@ -2346,7 +2346,7 @@ export default function VegasSlotMachine({
                 </div>
                 <div className="tm-bandit-stat-box">
                   <span>RECORD</span>
-                  <strong style={{ color: '#facc15' }}>
+                  <strong style={{ color: 'var(--tm-amber)' }}>
                     🏆 {formatMoney(bestWinTokens, { compact: true, zero: 'balance' })}
                   </strong>
                 </div>

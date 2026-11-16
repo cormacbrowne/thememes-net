@@ -455,17 +455,17 @@ const MemeCard = memo(function MemeCard({
       {isCommentsOpen && (
         <div className="tm-comments">
           {loadingComments && (meme.comments || []).length === 0 ? (
-            <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '8px' }}>
+            <div style={{ fontSize: '12px', color: 'var(--tm-text-dim)', marginBottom: '8px' }}>
               ⏳ Loading comments...
             </div>
           ) : (meme.comments || []).length === 0 ? (
-            <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '8px' }}>
+            <div style={{ fontSize: '12px', color: 'var(--tm-text-mute)', marginBottom: '8px' }}>
               No comments yet — be the first to comment (+25 XP)!
             </div>
           ) : (
             (meme.comments || []).map((c) => (
               <div key={c.id} className="tm-comment-item">
-                <strong style={{ color: '#38bdf8' }}>@{c.author_name}: </strong>
+                <strong style={{ color: 'var(--tm-cyan)' }}>@{c.author_name}: </strong>
                 <span>{c.body}</span>
                 {onDeleteComment && c.user_id && currentUserId && String(c.user_id) === String(currentUserId) && (
                   <button

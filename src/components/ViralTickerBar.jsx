@@ -19,11 +19,11 @@ export default function ViralTickerBar({
               className="tm-ticker-item"
               onClick={() => onSelectCategory && onSelectCategory(item.category)}
             >
-              <strong style={{ color: '#f8fafc' }}>{item.symbol}</strong>
+              <strong style={{ color: 'var(--tm-text)' }}>{item.symbol}</strong>
               <span className={item.up ? 'tm-ticker-up' : 'tm-ticker-down'}>
                 {item.up ? '▲' : '▼'} {item.delta}
               </span>
-              <span style={{ color: '#94a3b8' }}>({item.label})</span>
+              <span style={{ color: 'var(--tm-text-dim)' }}>({item.label})</span>
             </button>
           ))}
         </div>

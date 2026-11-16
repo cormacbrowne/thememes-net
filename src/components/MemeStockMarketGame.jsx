@@ -794,7 +794,7 @@ export default function MemeStockMarketGame({
                 <span
                   className="tm-stocks-sentiment-pill"
                   style={{
-                    color: fearGreedIdx <= 30 ? '#fb7185' : fearGreedIdx >= 68 ? '#4ade80' : '#facc15',
+                    color: fearGreedIdx <= 30 ? '#fb7185' : fearGreedIdx >= 68 ? 'var(--tm-ok)' : 'var(--tm-amber)',
                     fontSize: '10px',
                     fontWeight: 800
                   }}
@@ -813,13 +813,13 @@ export default function MemeStockMarketGame({
             </div>
             <div className="tm-stocks-kpi">
               <span>HOLDINGS</span>
-              <strong style={{ color: '#00f3ff' }}>
+              <strong style={{ color: 'var(--tm-cyan)' }}>
                 <Money tokens={portfolioStats.holdingsLiquidationValue} zero="balance" />
               </strong>
             </div>
             <div className="tm-stocks-kpi">
               <span>NET WORTH</span>
-              <strong style={{ color: '#facc15' }}>
+              <strong style={{ color: 'var(--tm-amber)' }}>
                 <Money tokens={portfolioStats.netWorth} zero="balance" />
               </strong>
             </div>
@@ -829,10 +829,10 @@ export default function MemeStockMarketGame({
                 style={{
                   color:
                     portfolioStats.unrealizedPnl > 0
-                      ? '#4ade80'
+                      ? 'var(--tm-ok)'
                       : portfolioStats.unrealizedPnl < 0
                       ? '#f43f5e'
-                      : '#94a3b8'
+                      : 'var(--tm-text-dim)'
                 }}
               >
                 {formatMoney(portfolioStats.unrealizedPnl, { sign: true, zero: 'balance' })}
@@ -851,7 +851,7 @@ export default function MemeStockMarketGame({
               disabled={hypeCooldown > 0}
               onClick={handleLaunchViralHype}
               title={`Broadcast a viral bullish meme thread for $${activeCompany.ticker}!`}
-              style={{ borderColor: hypeCooldown > 0 ? undefined : '#4ade80', color: hypeCooldown > 0 ? undefined : '#4ade80' }}
+              style={{ borderColor: hypeCooldown > 0 ? undefined : 'var(--tm-ok)', color: hypeCooldown > 0 ? undefined : 'var(--tm-ok)' }}
             >
               {hypeCooldown > 0 ? `📢 Hype (${hypeCooldown}s)` : `📢 Hype $${activeCompany.ticker}`}
             </button>
@@ -873,8 +873,8 @@ export default function MemeStockMarketGame({
               }}
               title="Automatically sell any held stock as soon as it hits +20% profit!"
               style={{
-                borderColor: autoTakeProfit ? '#facc15' : undefined,
-                color: autoTakeProfit ? '#facc15' : undefined
+                borderColor: autoTakeProfit ? 'var(--tm-amber)' : undefined,
+                color: autoTakeProfit ? 'var(--tm-amber)' : undefined
               }}
             >
               {autoTakeProfit ? '🤖 Auto +20%: ON' : '🤖 Auto +20%: OFF'}
@@ -949,7 +949,7 @@ export default function MemeStockMarketGame({
                     style={{
                       marginLeft: '8px',
                       fontSize: '10px',
-                      color: '#94a3b8',
+                      color: 'var(--tm-text-dim)',
                       fontWeight: 700
                     }}
                   >
@@ -964,8 +964,8 @@ export default function MemeStockMarketGame({
                       style={{
                         padding: '2px 7px',
                         fontSize: '10px',
-                        borderColor: chartMode === 'wave' ? '#00f3ff' : undefined,
-                        color: chartMode === 'wave' ? '#00f3ff' : undefined
+                        borderColor: chartMode === 'wave' ? 'var(--tm-cyan)' : undefined,
+                        color: chartMode === 'wave' ? 'var(--tm-cyan)' : undefined
                       }}
                       onClick={() => {
                         sfx.playToggle();
@@ -980,8 +980,8 @@ export default function MemeStockMarketGame({
                       style={{
                         padding: '2px 7px',
                         fontSize: '10px',
-                        borderColor: chartMode === 'candles' ? '#facc15' : undefined,
-                        color: chartMode === 'candles' ? '#facc15' : undefined
+                        borderColor: chartMode === 'candles' ? 'var(--tm-amber)' : undefined,
+                        color: chartMode === 'candles' ? 'var(--tm-amber)' : undefined
                       }}
                       onClick={() => {
                         sfx.playToggle();
@@ -1150,9 +1150,9 @@ export default function MemeStockMarketGame({
                   style={{
                     color:
                       activeHolding.shares === 0
-                        ? '#94a3b8'
+                        ? 'var(--tm-text-dim)'
                         : activePosPnl >= 0
-                        ? '#4ade80'
+                        ? 'var(--tm-ok)'
                         : '#f43f5e'
                   }}
                 >

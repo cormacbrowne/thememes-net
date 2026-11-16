@@ -1015,10 +1015,10 @@ export default function App() {
       {isDraggingFile && (
         <div className="tm-global-dropzone">
           <div style={{ fontSize: '56px' }}>📥</div>
-          <h2 style={{ margin: 0, fontSize: '26px', color: '#00f3ff' }}>
+          <h2 style={{ margin: 0, fontSize: '26px', color: 'var(--tm-cyan)' }}>
             DROP IMAGE TO UPLOAD OR LAUNCH MEME FORGE
           </h2>
-          <p style={{ margin: 0, color: '#f472b6', fontWeight: 800 }}>
+          <p style={{ margin: 0, color: 'var(--tm-pink)', fontWeight: 800 }}>
             Instant Canvas Load ({pioneerBonusAvailable ? `${formatMoney(20, { sign: true })} First Upload Bonus` : `${formatMoney(12, { sign: true })} MemeDollarz`} &amp; +120 XP)
           </p>
         </div>
@@ -1334,7 +1334,7 @@ export default function App() {
                         right: '8px',
                         background: 'none',
                         border: 'none',
-                        color: '#94a3b8',
+                        color: 'var(--tm-text-dim)',
                         cursor: 'pointer',
                         fontSize: '13px',
                         padding: '2px 4px'
@@ -1398,7 +1398,7 @@ export default function App() {
                     ? 'No User Memes Match This Filter Yet!'
                     : '100% Community-Powered Feed — Upload the First Meme!'}
                 </h2>
-                <p style={{ color: '#94a3b8', maxWidth: '540px', margin: '0 auto 18px', fontSize: '14px', lineHeight: 1.55 }}>
+                <p style={{ color: 'var(--tm-text-dim)', maxWidth: '540px', margin: '0 auto 18px', fontSize: '14px', lineHeight: 1.55 }}>
                   {showSavedOnly
                     ? 'Tap the ⭐ button on any meme card to save your favorites here for quick access.'
                     : `Use the 1-Click Quick-Upload Bar above, drop an image anywhere on screen, or paste (Ctrl+V) to post your meme and earn ${
@@ -1481,10 +1481,10 @@ export default function App() {
                 <article className="tm-card tm-infeed-arcade-card" aria-label="Side Entertainment Arcade Break">
                   <div className="tm-infeed-arcade-badge">🕹️ 80s NEON MEMEDOLLARZ ARCADE &amp; CASINO</div>
                   <div style={{ fontSize: '34px', margin: '6px 0' }}>🃏🎡🎰📈🍬🎱</div>
-                  <h3 style={{ margin: '0 0 6px', fontSize: '18px', color: '#facc15' }}>
+                  <h3 style={{ margin: '0 0 6px', fontSize: '18px', color: 'var(--tm-amber)' }}>
                     READY FOR NEON BINGO &apos;86, COIN DOZER, ROULETTE &amp; ARCADE CABINETS?
                   </h3>
-                  <p style={{ margin: '0 0 12px', fontSize: '12.5px', color: '#cbd5e1', lineHeight: 1.5 }}>
+                  <p style={{ margin: '0 0 12px', fontSize: '12.5px', color: 'var(--tm-text-soft)', lineHeight: 1.5 }}>
                     Dab all 90 classic comedy calls in <strong>🎱 Neon Bingo &apos;86</strong>, drop coins in{' '}
                     <strong>🎰 Coin Dozer &apos;86</strong>, spin <strong>🎡 Lightning Roulette (150×)</strong>, pull the{' '}
                     <strong>🎰 One-Arm Bandit</strong>, or fire up <strong>🎱 Upgraded 80s Pinball</strong>!
@@ -1612,10 +1612,10 @@ export default function App() {
             <section className="tm-end-of-internet-wrap" aria-label="End of feed">
               <div className="tm-end-of-internet-card">
                 <div style={{ fontSize: '42px', marginBottom: '6px' }}>🫠</div>
-                <h3 style={{ margin: '0 0 6px', fontSize: '19px', fontWeight: 900, color: '#f8fafc' }}>
+                <h3 style={{ margin: '0 0 6px', fontSize: '19px', fontWeight: 900, color: 'var(--tm-text)' }}>
                   You&apos;ve reached the end of the internet
                 </h3>
-                <p style={{ margin: '0 auto 14px', maxWidth: '460px', fontSize: '13px', color: '#94a3b8' }}>
+                <p style={{ margin: '0 auto 14px', maxWidth: '460px', fontSize: '13px', color: 'var(--tm-text-dim)' }}>
                   You scrolled every meme in this sector. Remix a format or drop into the 80s Neon Arcade!
                 </p>
                 <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -1772,7 +1772,7 @@ export default function App() {
           <button
             type="button"
             className="tm-link-btn"
-            style={{ color: '#facc15' }}
+            style={{ color: 'var(--tm-amber)' }}
             onClick={handleRestoreReportedMemes}
           >
             ↺ Undo

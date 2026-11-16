@@ -354,7 +354,7 @@ export default function SettingsSheet({ compact = false, onResetHints }) {
             <button
               type="button"
               className="tm-settings-reset-btn"
-              style={{ borderColor: '#ef4444', color: '#fecaca', background: 'rgba(239, 68, 68, 0.2)' }}
+              style={{ borderColor: 'var(--tm-danger)', color: '#fecaca', background: 'rgba(239, 68, 68, 0.2)' }}
               disabled={deletingAccount}
               onClick={async () => {
                 setDeletingAccount(true);

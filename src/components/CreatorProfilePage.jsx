@@ -115,7 +115,7 @@ export default function CreatorProfilePage({
         >
           ← Back to Feed
         </button>
-        <div style={{ fontSize: '12px', color: '#94a3b8' }}>
+        <div style={{ fontSize: '12px', color: 'var(--tm-text-dim)' }}>
           {getCreatorProfilePath(profile?.handle || handle)}
         </div>
       </div>
@@ -125,7 +125,7 @@ export default function CreatorProfilePage({
       ) : !profile ? (
         <div className="tm-creator-hero-card">
           <h1>Creator handle not found</h1>
-          <p style={{ color: '#94a3b8' }}>
+          <p style={{ color: 'var(--tm-text-dim)' }}>
             Handles may contain letters, numbers, underscores, or hyphens (2–32 chars).
           </p>
         </div>
@@ -155,12 +155,12 @@ export default function CreatorProfilePage({
                     )}
                     <span
                       className="tm-tag"
-                      style={{ background: 'rgba(250,204,21,0.18)', color: '#facc15' }}
+                      style={{ background: 'rgba(250,204,21,0.18)', color: 'var(--tm-amber)' }}
                     >
                       Lv.{rankObj.level} {rankObj.title}
                     </span>
                   </div>
-                  <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '6px' }}>
+                  <div style={{ fontSize: '13px', color: 'var(--tm-text-soft)', marginTop: '6px' }}>
                     <strong data-testid="creator-follower-count">
                       {profile.followerCount.toLocaleString()}
                     </strong>{' '}
@@ -185,7 +185,7 @@ export default function CreatorProfilePage({
             </div>
 
             {followMessage && (
-              <div style={{ marginTop: '10px', fontSize: '12px', color: '#facc15' }}>
+              <div style={{ marginTop: '10px', fontSize: '12px', color: 'var(--tm-amber)' }}>
                 {followMessage}
               </div>
             )}
@@ -196,15 +196,15 @@ export default function CreatorProfilePage({
                 <span>Memes Posted</span>
               </div>
               <div className="tm-creator-kpi">
-                <strong style={{ color: '#facc15' }}>{profile.stats.totalScore.toLocaleString()}</strong>
+                <strong style={{ color: 'var(--tm-amber)' }}>{profile.stats.totalScore.toLocaleString()}</strong>
                 <span>Total Score</span>
               </div>
               <div className="tm-creator-kpi">
-                <strong style={{ color: '#ec4899' }}>{profile.stats.totalRemixes}</strong>
+                <strong style={{ color: 'var(--tm-pink)' }}>{profile.stats.totalRemixes}</strong>
                 <span>Remixes Spawned</span>
               </div>
               <div className="tm-creator-kpi">
-                <strong style={{ color: '#00f3ff' }}>{profile.highScores.length}</strong>
+                <strong style={{ color: 'var(--tm-cyan)' }}>{profile.highScores.length}</strong>
                 <span>Arcade Records</span>
               </div>
             </div>
@@ -228,7 +228,7 @@ export default function CreatorProfilePage({
                   <span style={{ fontSize: '24px' }}>{b.icon}</span>
                   <div>
                     <div style={{ fontWeight: 800, fontSize: '13px' }}>{b.name || b.title}</div>
-                    <div style={{ fontSize: '11px', color: '#94a3b8' }}>{b.desc}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--tm-text-dim)' }}>{b.desc}</div>
                   </div>
                 </div>
               ))}
@@ -239,7 +239,7 @@ export default function CreatorProfilePage({
           <div className="tm-creator-section" data-testid="creator-highscores-section">
             <h2>🕹️ ARCADE HIGH SCORES</h2>
             {profile.highScores.length === 0 ? (
-              <div style={{ fontSize: '13px', color: '#94a3b8' }}>
+              <div style={{ fontSize: '13px', color: 'var(--tm-text-dim)' }}>
                 No cabinet high scores logged yet for @{profile.handle}.
               </div>
             ) : (
@@ -247,14 +247,14 @@ export default function CreatorProfilePage({
                 {profile.highScores.map((s) => (
                   <div key={s.game} className="tm-creator-score-card">
                     <div>
-                      <div style={{ fontWeight: 800, fontSize: '13px', color: '#f8fafc' }}>
+                      <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--tm-text)' }}>
                         {s.emoji} {s.title}
                       </div>
-                      <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--tm-text-dim)' }}>
                         Initials: <strong>{s.initials}</strong>
                       </div>
                     </div>
-                    <div style={{ fontWeight: 900, fontSize: '18px', color: '#00f3ff' }}>
+                    <div style={{ fontWeight: 900, fontSize: '18px', color: 'var(--tm-cyan)' }}>
                       {s.highScore.toLocaleString()}
                     </div>
                   </div>
@@ -267,7 +267,7 @@ export default function CreatorProfilePage({
           <div className="tm-creator-section" data-testid="creator-memes-section">
             <h2>🖼️ MEMES POSTED ({profile.memes.length})</h2>
             {profile.memes.length === 0 ? (
-              <div style={{ fontSize: '13px', color: '#94a3b8' }}>
+              <div style={{ fontSize: '13px', color: 'var(--tm-text-dim)' }}>
                 @{profile.handle} has not posted any memes yet.
               </div>
             ) : (
@@ -287,7 +287,7 @@ export default function CreatorProfilePage({
                           display: 'flex',
                           justifyContent: 'space-between',
                           fontSize: '11px',
-                          color: '#94a3b8'
+                          color: 'var(--tm-text-dim)'
                         }}
                       >
                         <span>🔥 {Number(meme.score || 0).toLocaleString()}</span>

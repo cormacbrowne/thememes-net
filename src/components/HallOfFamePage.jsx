@@ -46,7 +46,7 @@ export default function HallOfFamePage() {
           <h1>👑 Caption King Hall of Fame</h1>
           <p>
             Permanent archive of every Daily Caption Battle champion. Each daily winner wears the{' '}
-            <strong style={{ color: '#facc15' }}>👑 Caption King frame for 24 hours</strong> across their memes and
+            <strong style={{ color: 'var(--tm-amber)' }}>👑 Caption King frame for 24 hours</strong> across their memes and
             profile card, and stays immortalized here forever.
           </p>
         </header>
@@ -57,7 +57,7 @@ export default function HallOfFamePage() {
           <div className="tm-hof-empty">⚠️ {state.error}</div>
         ) : state.winners.length === 0 ? (
           <div className="tm-hof-empty" data-testid="hof-empty-state">
-            <h2 style={{ margin: '0 0 8px', color: '#facc15' }}>🏆 First Caption King Awaits</h2>
+            <h2 style={{ margin: '0 0 8px', color: 'var(--tm-amber)' }}>🏆 First Caption King Awaits</h2>
             <p style={{ margin: '0 0 14px' }}>
               No Daily Caption Battle days have finalized yet. Enter today&apos;s battle on the homepage to claim the
               first crown!
@@ -78,14 +78,14 @@ export default function HallOfFamePage() {
                   className={`tm-hof-card ${isReigning ? 'reigning' : ''}`}
                 >
                   <div className="tm-hof-meta">
-                    <span style={{ color: '#facc15', fontWeight: 900 }}>📅 {w.battle_date}</span>
+                    <span style={{ color: 'var(--tm-amber)', fontWeight: 900 }}>📅 {w.battle_date}</span>
                     {isReigning ? (
                       <span
                         style={{
                           padding: '2px 8px',
                           borderRadius: '999px',
                           background: 'rgba(250, 204, 21, 0.2)',
-                          color: '#fde047',
+                          color: 'var(--tm-amber)',
                           fontSize: '11px',
                           fontWeight: 900
                         }}
@@ -93,7 +93,7 @@ export default function HallOfFamePage() {
                         👑 REIGNING 24H KING
                       </span>
                     ) : (
-                      <span style={{ color: '#94a3b8', fontSize: '11px' }}>🏛️ Hall Champion</span>
+                      <span style={{ color: 'var(--tm-text-dim)', fontSize: '11px' }}>🏛️ Hall Champion</span>
                     )}
                   </div>
 
@@ -104,7 +104,7 @@ export default function HallOfFamePage() {
                   </div>
 
                   <div className="tm-hof-meta">
-                    <strong style={{ color: '#38bdf8' }}>👑 @{w.author_name}</strong>
+                    <strong style={{ color: 'var(--tm-cyan)' }}>👑 @{w.author_name}</strong>
                     <span style={{ color: '#a3e635', fontWeight: 800 }}>🔥 {w.winning_score} votes</span>
                   </div>
                 </article>

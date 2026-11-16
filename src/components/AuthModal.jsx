@@ -192,7 +192,7 @@ export default function AuthModal({
                     background: isLiveOAuth
                       ? 'rgba(34, 197, 94, 0.25)'
                       : 'rgba(0, 0, 0, 0.28)',
-                    color: isLiveOAuth ? '#4ade80' : 'inherit',
+                    color: isLiveOAuth ? 'var(--tm-ok)' : 'inherit',
                     opacity: 0.9
                   }}
                 >
@@ -301,7 +301,7 @@ export default function AuthModal({
                   right: '10px',
                   background: 'none',
                   border: 'none',
-                  color: '#94a3b8',
+                  color: 'var(--tm-text-dim)',
                   cursor: 'pointer',
                   fontSize: '14px'
                 }}

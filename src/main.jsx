@@ -28,7 +28,7 @@ createRoot(document.getElementById('root')).render(
         <UiKitPage />
       </Suspense>
     ) : isModerationRoute ? (
-      <Suspense fallback={<div style={{ minHeight: '100dvh', background: '#070810' }} />}>
+      <Suspense fallback={<div style={{ minHeight: '100dvh', background: 'var(--tm-night-0)' }} />}>
         <ModerationPage />
       </Suspense>
     ) : isPulseRoute ? (
@@ -36,11 +36,11 @@ createRoot(document.getElementById('root')).render(
         <PulseReportPage />
       </Suspense>
     ) : isLegalRoute ? (
-      <Suspense fallback={<div style={{ minHeight: '100dvh', background: '#070810' }} />}>
+      <Suspense fallback={<div style={{ minHeight: '100dvh', background: 'var(--tm-night-0)' }} />}>
         <LegalInfoPage pathname={pathname} />
       </Suspense>
     ) : isHallOfFameRoute ? (
-      <Suspense fallback={<div style={{ minHeight: '100dvh', background: '#070810' }} />}>
+      <Suspense fallback={<div style={{ minHeight: '100dvh', background: 'var(--tm-night-0)' }} />}>
         <HallOfFamePage />
       </Suspense>
     ) : (

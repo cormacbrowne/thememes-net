@@ -517,7 +517,7 @@ export default function GridRidersGame({
           <button
             type="button"
             className="tm-shell-badge tm-shell-badge-free"
-            style={{ cursor: 'pointer', borderColor: 'rgba(250, 204, 21, 0.5)', color: '#fde047' }}
+            style={{ cursor: 'pointer', borderColor: 'rgba(250, 204, 21, 0.5)', color: 'var(--tm-amber)' }}
             onClick={onOpenLeaderboard}
             title="Open Grid Riders Global Leaderboard"
             data-testid="riders-leaderboard-btn"

@@ -152,10 +152,10 @@ export default function LeaderboardModal({
               ← Back
             </button>
             <div>
-              <h2 style={{ margin: 0, fontSize: '20px', color: '#facc15' }}>
+              <h2 style={{ margin: 0, fontSize: '20px', color: 'var(--tm-amber)' }}>
                 🏆 CYBER-ARCADE HALL OF FAME
               </h2>
-              <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--tm-text-dim)', marginTop: '2px' }}>
                 Real global cabinet initials &amp; verified creators — zero synthetic bots.
               </div>
             </div>
@@ -235,7 +235,7 @@ export default function LeaderboardModal({
                   <h3 style={{ margin: 0, fontSize: '16px', color: activeGameMeta.accent }}>
                     {activeGameMeta.icon} {activeGameMeta.label}
                   </h3>
-                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--tm-text-dim)', marginTop: '2px' }}>
                     Top 10 cabinet initials • Ranked highest score first
                   </div>
                 </div>
@@ -274,7 +274,7 @@ export default function LeaderboardModal({
                 <div className="tm-cabinet-empty">⚠️ {boardState.error}</div>
               ) : boardState.entries.length === 0 ? (
                 <div className="tm-cabinet-empty" data-testid="cabinet-empty-state">
-                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#f8fafc', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--tm-text)', marginBottom: '8px' }}>
                     {EMPTY_LEADERBOARD_COPY}
                   </div>
                   <button
@@ -300,7 +300,7 @@ export default function LeaderboardModal({
                         </span>
                         <span className="tm-arcade-initials">{entry.initials}</span>
                         {entry.created_at && (
-                          <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                          <span style={{ fontSize: '11px', color: 'var(--tm-text-dim)' }}>
                             {formatMemeUploadDate(entry.created_at).dateTime}
                           </span>
                         )}
@@ -333,9 +333,9 @@ export default function LeaderboardModal({
                   <span className="tm-medal-badge">{getMedal(idx)}</span>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <strong style={{ fontSize: '15px', color: '#38bdf8' }}>@{c.username}</strong>
+                      <strong style={{ fontSize: '15px', color: 'var(--tm-cyan)' }}>@{c.username}</strong>
                       {c.isCurrentUser && (
-                        <span className="tm-tag" style={{ background: 'rgba(34,197,94,0.2)', color: '#4ade80' }}>
+                        <span className="tm-tag" style={{ background: 'rgba(34,197,94,0.2)', color: 'var(--tm-ok)' }}>
                           YOU
                         </span>
                       )}
@@ -343,14 +343,14 @@ export default function LeaderboardModal({
                         Lv.{c.rank.level} {c.rank.title}
                       </span>
                     </div>
-                    <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '3px' }}>
+                    <div style={{ fontSize: '12px', color: 'var(--tm-text-dim)', marginTop: '3px' }}>
                       📸 {c.memeCount} drops • 🔥 {c.totalScore} score • 🧬 {c.remixesSpawned} remixes spawned
                     </div>
                   </div>
                 </div>
 
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '16px', fontWeight: 900, color: '#facc15' }}>⚡ {c.xp} XP</div>
+                  <div style={{ fontSize: '16px', fontWeight: 900, color: 'var(--tm-amber)' }}>⚡ {c.xp} XP</div>
                   {(c.remixesSpawned > 0 || c.royaltyXp > 0) && (
                     <div style={{ fontSize: '11px', color: '#a3e635', fontWeight: 700 }}>
                       +{c.remixesSpawned * 50 + c.royaltyXp} XP Royalties
@@ -397,10 +397,10 @@ export default function LeaderboardModal({
                     >
                       {m.title}
                     </div>
-                    <div style={{ fontSize: '12px', color: '#94a3b8' }}>
+                    <div style={{ fontSize: '12px', color: 'var(--tm-text-dim)' }}>
                       by{' '}
                       <strong
-                        style={{ color: '#38bdf8', cursor: 'pointer' }}
+                        style={{ color: 'var(--tm-cyan)', cursor: 'pointer' }}
                         onClick={() => {
                           onClose();
                           onOpenProfile(m.author_name);
@@ -460,10 +460,10 @@ export default function LeaderboardModal({
                   />
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontWeight: 800, fontSize: '14px' }}>{m.title}</div>
-                    <div style={{ fontSize: '12px', color: '#94a3b8' }}>
+                    <div style={{ fontSize: '12px', color: 'var(--tm-text-dim)' }}>
                       Origin by{' '}
                       <strong
-                        style={{ color: '#38bdf8', cursor: 'pointer' }}
+                        style={{ color: 'var(--tm-cyan)', cursor: 'pointer' }}
                         onClick={() => {
                           onClose();
                           onOpenProfile(m.author_name);

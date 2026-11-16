@@ -695,10 +695,10 @@ export default function VegasPokerGame({
         <div className="tm-pk-topbar">
           <div className="tm-pk-stat-group">
             <span className="tm-pk-pill">
-              YOUR CHIPS: <strong style={{ color: '#facc15' }}>{practiceMode ? `${playerChips} FREE` : formatMoney(playerChips, { zero: 'balance' })}</strong>
+              YOUR CHIPS: <strong style={{ color: 'var(--tm-amber)' }}>{practiceMode ? `${playerChips} FREE` : formatMoney(playerChips, { zero: 'balance' })}</strong>
             </span>
             <span className="tm-pk-pill">
-              POT: <strong style={{ color: '#4ade80' }}>{practiceMode ? pot : formatMoney(pot, { zero: 'balance' })}</strong>
+              POT: <strong style={{ color: 'var(--tm-ok)' }}>{practiceMode ? pot : formatMoney(pot, { zero: 'balance' })}</strong>
             </span>
             {bestPot > 0 && (
               <span className="tm-pk-pill">

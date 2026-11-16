@@ -530,7 +530,7 @@ export default function DankPetWidget({
                 : '🚨 DODGING BOSS ENCOUNTER (+25 XP)'}
             </div>
 
-            <h3 style={{ margin: '4px 0 6px', fontSize: '16px', color: '#facc15' }}>
+            <h3 style={{ margin: '4px 0 6px', fontSize: '16px', color: 'var(--tm-amber)' }}>
               {activeEvent === 'pinata'
                 ? 'CLICK THE MOVING PIÑATA 8X BEFORE IT ESCAPES!'
                 : activeEvent === 'ufo'
@@ -546,7 +546,7 @@ export default function DankPetWidget({
                 fontSize: '11px',
                 fontWeight: 800,
                 marginBottom: '4px',
-                color: timeLeftMs < 2200 ? '#f43f5e' : '#38bdf8'
+                color: timeLeftMs < 2200 ? '#f43f5e' : 'var(--tm-cyan)'
               }}
             >
               <span>❤️ HP: {hp}/{MAX_TARGET_HP} HITS</span>
@@ -560,8 +560,8 @@ export default function DankPetWidget({
                   width: `${(timeLeftMs / ESCAPE_DURATION_MS) * 100}%`,
                   background:
                     timeLeftMs < 2200
-                      ? 'linear-gradient(90deg, #ef4444, #f43f5e)'
-                      : 'linear-gradient(90deg, #00f3ff, #facc15, #ec4899)'
+                      ? 'linear-gradient(90deg, var(--tm-danger), #f43f5e)'
+                      : 'linear-gradient(90deg, var(--tm-cyan), var(--tm-amber), var(--tm-pink))'
                 }}
               />
             </div>
@@ -578,7 +578,7 @@ export default function DankPetWidget({
                   ? 'rgba(239, 68, 68, 0.22)'
                   : 'radial-gradient(circle at 50% 50%, rgba(168,85,247,0.22), rgba(7,6,20,0.92))',
                 border: missFlash
-                  ? '2px solid #ef4444'
+                  ? '2px solid var(--tm-danger)'
                   : '1.5px solid rgba(0, 243, 255, 0.45)',
                 overflow: 'hidden',
                 cursor: 'crosshair',
@@ -630,7 +630,7 @@ export default function DankPetWidget({
                     width: '68px',
                     height: '68px',
                     borderRadius: '50%',
-                    border: '2px solid #facc15',
+                    border: '2px solid var(--tm-amber)',
                     background: 'radial-gradient(circle, rgba(250,204,21,0.35), rgba(236,72,153,0.45))',
                     boxShadow: '0 0 18px rgba(250, 204, 21, 0.55)',
                     display: 'flex',
@@ -673,7 +673,7 @@ export default function DankPetWidget({
             {victoryMsg && (
               <div
                 style={{
-                  color: escaped ? '#fda4af' : '#4ade80',
+                  color: escaped ? '#fda4af' : 'var(--tm-ok)',
                   fontWeight: 900,
                   fontSize: '12.5px',
                   marginTop: '10px',
@@ -696,7 +696,7 @@ export default function DankPetWidget({
         >
           <span>
             🚨🚔 <strong>WEE-WOO! MEME POLICE AUDIT:</strong> Verdict:{' '}
-            <strong style={{ color: '#4ade80' }}>80s NEON CERTIFIED!</strong> (Upload memes to earn {formatMoney(12, { sign: true })}!)
+            <strong style={{ color: 'var(--tm-ok)' }}>80s NEON CERTIFIED!</strong> (Upload memes to earn {formatMoney(12, { sign: true })}!)
           </span>
         </div>
       )}
@@ -705,7 +705,7 @@ export default function DankPetWidget({
       {activeEvent === 'jackpot' && (
         <div
           className="tm-police-siren-banner"
-          style={{ borderColor: '#facc15' }}
+          style={{ borderColor: 'var(--tm-amber)' }}
           onClick={() => setActiveEvent(null)}
           role="status"
         >

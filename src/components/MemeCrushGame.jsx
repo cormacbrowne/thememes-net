@@ -1411,7 +1411,7 @@ export default function MemeCrushGame({
         <div className="tm-crush2-hud">
           <div className="tm-crush2-stat">
             <span>MOVES</span>
-            <strong style={{ color: movesLeft <= 4 ? '#f43f5e' : '#00f3ff' }}>{movesLeft}</strong>
+            <strong style={{ color: movesLeft <= 4 ? '#f43f5e' : 'var(--tm-cyan)' }}>{movesLeft}</strong>
           </div>
           <div className="tm-crush2-stat">
             <span>SCORE</span>
@@ -1478,12 +1478,12 @@ export default function MemeCrushGame({
               })}
           </div>
           {backdropMeme && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', margin: '4px 0', fontSize: '11px', color: '#94a3b8' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', margin: '4px 0', fontSize: '11px', color: 'var(--tm-text-dim)' }}>
               <span>🎨 Level Art: @{backdropMeme.author_name}</span>
               {onOpenTheater && (
                 <button
                   type="button"
-                  style={{ background: 'none', border: 'none', color: '#00f3ff', cursor: 'pointer', textDecoration: 'underline', fontSize: '11px', padding: 0 }}
+                  style={{ background: 'none', border: 'none', color: 'var(--tm-cyan)', cursor: 'pointer', textDecoration: 'underline', fontSize: '11px', padding: 0 }}
                   onClick={() => onOpenTheater(backdropMeme)}
                 >
                   View Meme
@@ -1716,7 +1716,7 @@ export default function MemeCrushGame({
               className="tm-crush2-tool-btn"
               onClick={handleRainbowZapBooster}
               title="Zaps all candies of the most frequent color on the board! (+1 earned on Disco Fever!)"
-              style={{ borderColor: rainbowZapCharges > 0 ? '#00f3ff' : undefined, color: rainbowZapCharges > 0 ? '#00f3ff' : undefined }}
+              style={{ borderColor: rainbowZapCharges > 0 ? 'var(--tm-cyan)' : undefined, color: rainbowZapCharges > 0 ? 'var(--tm-cyan)' : undefined }}
             >
               🌈 Zap ({rainbowZapCharges})
             </button>

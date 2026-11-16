@@ -150,7 +150,7 @@ export default function MemeSoundboardBar({
 
           {/* PHASE 18: SILLY ANIMATED SCREEN STAMPEDES & DOPAMINE TOYS LAUNCHER */}
           <div className="tm-mutator-strip tm-stampede-strip">
-            <span className="tm-mutator-label" style={{ color: '#facc15' }}>
+            <span className="tm-mutator-label" style={{ color: 'var(--tm-amber)' }}>
               🎪 SILLY STAMPEDES:
             </span>
             <div className="tm-mutator-pills">

@@ -553,7 +553,7 @@ export default function VectorVoidGame({
               <h3>💥 HULL SHATTERED</h3>
               <p>
                 Cleared up to <strong>Sector {hud.wave}</strong> with{' '}
-                <strong style={{ color: '#fde047' }}>{hud.score.toLocaleString()} pts</strong>!
+                <strong style={{ color: 'var(--tm-amber)' }}>{hud.score.toLocaleString()} pts</strong>!
               </p>
               <div className="tm-void-overlay-actions">
                 <button

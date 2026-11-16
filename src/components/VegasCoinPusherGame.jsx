@@ -1511,13 +1511,13 @@ export default function VegasCoinPusherGame({
               </div>
               <div className="tm-pusher-stat">
                 <span>TRAY WON</span>
-                <strong style={{ color: '#4ade80' }}>
+                <strong style={{ color: 'var(--tm-ok)' }}>
                   {formatMoney(coinsWonSession, { sign: true, zero: 'balance' })}
                 </strong>
               </div>
               <div className="tm-pusher-stat">
                 <span>MINI-SLOT</span>
-                <strong style={{ color: '#facc15' }}>
+                <strong style={{ color: 'var(--tm-amber)' }}>
                   {slotSpinning ? '🎰 SPIN...' : slotReels.join(' ')}
                 </strong>
               </div>
@@ -1562,9 +1562,9 @@ export default function VegasCoinPusherGame({
                   setAutoDrop((prev) => !prev);
                 }}
                 style={{
-                  borderColor: autoDrop ? '#4ade80' : '#00f3ff',
+                  borderColor: autoDrop ? 'var(--tm-ok)' : 'var(--tm-cyan)',
                   background: autoDrop ? 'rgba(34, 197, 94, 0.24)' : undefined,
-                  color: autoDrop ? '#4ade80' : '#67e8f9'
+                  color: autoDrop ? 'var(--tm-ok)' : 'var(--tm-cyan-hot)'
                 }}
               >
                 {autoDrop ? '🔥 AUTO-DROP: ON' : '🔥 AUTO-DROP: OFF'}
@@ -1603,7 +1603,7 @@ export default function VegasCoinPusherGame({
                     key={pr.kind}
                     style={{
                       opacity: won ? 1 : 0.65,
-                      color: won ? '#4ade80' : '#cbd5e1',
+                      color: won ? 'var(--tm-ok)' : 'var(--tm-text-soft)',
                       fontWeight: won ? 900 : 700
                     }}
                     title={`${pr.label}: ${formatMoney(pr.tokens, { sign: true })}`}

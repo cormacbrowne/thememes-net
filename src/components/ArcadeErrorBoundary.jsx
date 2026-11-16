@@ -76,7 +76,7 @@ export default class ArcadeErrorBoundary extends React.Component {
             boxShadow: '0 0 28px rgba(255, 42, 133, 0.28), 0 0 40px rgba(0, 243, 255, 0.16)',
             padding: '22px 20px',
             textAlign: 'center',
-            color: '#f8fafc',
+            color: 'var(--tm-text)',
             fontFamily: 'system-ui, -apple-system, sans-serif'
           }}
         >
@@ -86,14 +86,14 @@ export default class ArcadeErrorBoundary extends React.Component {
               margin: '0 0 8px',
               fontSize: '1.05rem',
               letterSpacing: '0.08em',
-              color: '#00f3ff',
+              color: 'var(--tm-cyan)',
               textTransform: 'uppercase',
               textShadow: '0 0 10px rgba(0, 243, 255, 0.65)'
             }}
           >
             {title}
           </h2>
-          <p style={{ margin: '0 0 16px', fontSize: '0.88rem', color: '#cbd5e1', lineHeight: 1.45 }}>
+          <p style={{ margin: '0 0 16px', fontSize: '0.88rem', color: 'var(--tm-text-soft)', lineHeight: 1.45 }}>
             {this.state.errorMessage}
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
@@ -104,7 +104,7 @@ export default class ArcadeErrorBoundary extends React.Component {
                 minHeight: '44px',
                 padding: '10px 18px',
                 borderRadius: '12px',
-                border: '1.5px solid #00f3ff',
+                border: '1.5px solid var(--tm-cyan)',
                 background: 'linear-gradient(135deg, rgba(0, 243, 255, 0.26), rgba(168, 85, 247, 0.3))',
                 color: '#ffffff',
                 fontWeight: 800,
@@ -124,7 +124,7 @@ export default class ArcadeErrorBoundary extends React.Component {
                   minHeight: '44px',
                   padding: '10px 18px',
                   borderRadius: '12px',
-                  border: '1.5px solid #ff2a85',
+                  border: '1.5px solid var(--tm-pink)',
                   background: 'linear-gradient(135deg, rgba(255, 42, 133, 0.3), rgba(88, 28, 135, 0.35))',
                   color: '#ffffff',
                   fontWeight: 800,

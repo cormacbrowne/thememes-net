@@ -419,9 +419,10 @@
 
 .tm-pk-size-pill.active,
 .tm-pk-chip-btn.active {
-  background: linear-gradient(135deg, var(--tm-cyan), #a855f7);
-  border-color: #ffffff;
-  color: #ffffff;
+  background: color-mix(in srgb, var(--tm-amber) 14%, var(--tm-night-1));
+  border-color: var(--tm-amber);
+  color: var(--tm-amber-hot);
+  box-shadow: 0 0 0 1px var(--tm-amber-off), 0 0 14px -4px var(--tm-amber), inset 0 0 10px -5px var(--tm-amber);
 }
 
 .tm-pk-deal-btn {

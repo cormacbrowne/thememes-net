@@ -549,7 +549,7 @@ export default function NeonSerpentGame({
               <h3>🐍 GRID CRASH</h3>
               <p>
                 Final length <strong>{hud.length}</strong> with{' '}
-                <strong style={{ color: '#4ade80' }}>{hud.score.toLocaleString()} pts</strong>!
+                <strong style={{ color: 'var(--tm-ok)' }}>{hud.score.toLocaleString()} pts</strong>!
               </p>
               <div className="tm-serpent-overlay-actions">
                 <button

@@ -395,7 +395,7 @@ export default function QuickUploadBar({
                   className="tm-input"
                   value={quickCategory}
                   onChange={(e) => setQuickCategory(e.target.value)}
-                  style={{ flex: 1, minWidth: '130px', background: '#1e293b' }}
+                  style={{ flex: 1, minWidth: '130px', background: 'var(--tm-night-2)' }}
                 >
                   <option value="dank">#DANK / FUNNY</option>
                   <option value="relatable">#RELATABLE</option>

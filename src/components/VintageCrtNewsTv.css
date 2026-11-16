@@ -374,8 +374,8 @@
 
 .tm-crt-speak-btn {
   width: 100%;
-  border: 1px solid #7e22ce;
-  background: linear-gradient(135deg, #581c87, #be185d);
+  border: 1px solid var(--tm-pink);
+  background: color-mix(in srgb, var(--tm-pink) 18%, var(--tm-night-0));
   color: #fdf2f8;
   border-radius: 6px;
   padding: 4px 3px;

@@ -179,7 +179,7 @@ export default function PlayerProfileModal({
             />
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <h2 style={{ margin: 0, fontSize: '20px', color: '#00f3ff' }}>@{username}</h2>
+                <h2 style={{ margin: 0, fontSize: '20px', color: 'var(--tm-cyan)' }}>@{username}</h2>
                 {isMe && currentUser?.verified && (
                   <span className="tm-verified-pill">
                     🛡️ Verified ({currentUser.provider || 'OAuth'})
@@ -190,11 +190,11 @@ export default function PlayerProfileModal({
                     👑 Reigning Caption King (24h Frame)
                   </span>
                 )}
-                <span className="tm-tag" style={{ background: 'rgba(250,204,21,0.2)', color: '#facc15' }}>
+                <span className="tm-tag" style={{ background: 'rgba(250,204,21,0.2)', color: 'var(--tm-amber)' }}>
                   Lv.{rankObj.level} {isMe && equippedFlair ? equippedFlair : rankObj.title}
                 </span>
               </div>
-              <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+              <div style={{ fontSize: '12px', color: 'var(--tm-text-dim)', marginTop: '4px' }}>
                 ⚡ <strong>{playerXp} XP</strong> • 🔥 <strong>{totalScore}</strong> Score • 🧬{' '}
                 <strong style={{ color: '#a3e635' }}>+{royaltyBonus} XP</strong> Royalties
                 {serverSummary && (
@@ -261,7 +261,7 @@ export default function PlayerProfileModal({
           </div>
         </div>
         {followMsg && (
-          <div style={{ fontSize: '12px', color: '#facc15', marginBottom: '10px' }}>{followMsg}</div>
+          <div style={{ fontSize: '12px', color: 'var(--tm-amber)', marginBottom: '10px' }}>{followMsg}</div>
         )}
 
         {isMe && currentUser?.verified && (
@@ -323,7 +323,7 @@ export default function PlayerProfileModal({
           >
             <label
               htmlFor="tm-claim-handle-input"
-              style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8' }}
+              style={{ fontSize: '11px', fontWeight: 800, color: 'var(--tm-text-dim)' }}
             >
               @HANDLE:
             </label>
@@ -351,7 +351,7 @@ export default function PlayerProfileModal({
                   width: '100%',
                   fontSize: '12px',
                   fontWeight: 700,
-                  color: handleStatus.ok ? '#4ade80' : '#fca5a5'
+                  color: handleStatus.ok ? 'var(--tm-ok)' : '#fca5a5'
                 }}
               >
                 {handleStatus.message}
@@ -363,15 +363,15 @@ export default function PlayerProfileModal({
         {/* Stat Boxes */}
         <div className="tm-profile-stats-grid">
           <div className="tm-profile-stat-card">
-            <div className="tm-stat-val" style={{ color: '#facc15' }}>{authoredMemes.length}</div>
+            <div className="tm-stat-val" style={{ color: 'var(--tm-amber)' }}>{authoredMemes.length}</div>
             <div className="tm-stat-lbl">Memes Dropped</div>
           </div>
           <div className="tm-profile-stat-card">
-            <div className="tm-stat-val" style={{ color: '#38bdf8' }}>{totalScore}</div>
+            <div className="tm-stat-val" style={{ color: 'var(--tm-cyan)' }}>{totalScore}</div>
             <div className="tm-stat-lbl">Arena Score</div>
           </div>
           <div className="tm-profile-stat-card">
-            <div className="tm-stat-val" style={{ color: '#f472b6' }}>{totalRemixesSpawned}</div>
+            <div className="tm-stat-val" style={{ color: 'var(--tm-pink)' }}>{totalRemixesSpawned}</div>
             <div className="tm-stat-lbl">Remixes Spawned</div>
           </div>
           <div className="tm-profile-stat-card">
@@ -396,7 +396,7 @@ export default function PlayerProfileModal({
               <button
                 type="button"
                 className="tm-link-btn"
-                style={{ fontSize: '11px', color: '#facc15' }}
+                style={{ fontSize: '11px', color: 'var(--tm-amber)' }}
                 onClick={() => {
                   onClose();
                   onOpenShop();
@@ -408,15 +408,15 @@ export default function PlayerProfileModal({
           </div>
           <div className="tm-creator-stats-row">
             <div className="tm-creator-stat-item">
-              <strong style={{ color: '#00f3ff' }}>{creatorStats.views.toLocaleString()}</strong>
+              <strong style={{ color: 'var(--tm-cyan)' }}>{creatorStats.views.toLocaleString()}</strong>
               <span>👁️ Views</span>
             </div>
             <div className="tm-creator-stat-item">
-              <strong style={{ color: '#facc15' }}>{creatorStats.upvotes.toLocaleString()}</strong>
+              <strong style={{ color: 'var(--tm-amber)' }}>{creatorStats.upvotes.toLocaleString()}</strong>
               <span>🔥 Upvotes</span>
             </div>
             <div className="tm-creator-stat-item">
-              <strong style={{ color: '#ec4899' }}>{creatorStats.remixes.toLocaleString()}</strong>
+              <strong style={{ color: 'var(--tm-pink)' }}>{creatorStats.remixes.toLocaleString()}</strong>
               <span>🧬 Remixes</span>
             </div>
           </div>
@@ -439,7 +439,7 @@ export default function PlayerProfileModal({
               )}
             </div>
             {notifications.length === 0 ? (
-              <div style={{ fontSize: '12px', color: '#64748b' }}>
+              <div style={{ fontSize: '12px', color: 'var(--tm-text-mute)' }}>
                 No alerts yet — publish a meme and real upvotes, comments &amp; remixes will appear here live!
               </div>
             ) : (
@@ -459,7 +459,7 @@ export default function PlayerProfileModal({
                       style={{ cursor: linkedMeme ? 'pointer' : 'default' }}
                     >
                       <span>{n.message}</span>
-                      <span style={{ fontSize: '10px', color: '#94a3b8' }}>
+                      <span style={{ fontSize: '10px', color: 'var(--tm-text-dim)' }}>
                         {formatMemeUploadDate(n.created_at).relative}
                       </span>
                     </div>
@@ -494,7 +494,7 @@ export default function PlayerProfileModal({
                   <div style={{ fontSize: '12px', fontWeight: 800 }}>
                     {b.name} {b.unlocked ? '✅' : '🔒'}
                   </div>
-                  <div style={{ fontSize: '10px', color: '#94a3b8' }}>{b.desc}</div>
+                  <div style={{ fontSize: '10px', color: 'var(--tm-text-dim)' }}>{b.desc}</div>
                 </div>
               </div>
             ))}
@@ -507,7 +507,7 @@ export default function PlayerProfileModal({
             📸 Dropped Transmissions ({authoredMemes.length})
           </div>
           {authoredMemes.length === 0 ? (
-            <div style={{ fontSize: '13px', color: '#64748b', padding: '16px 0' }}>
+            <div style={{ fontSize: '13px', color: 'var(--tm-text-mute)', padding: '16px 0' }}>
               No memes published under @{username} yet — hit + Upload / Create to drop your first meme!
             </div>
           ) : (
@@ -534,7 +534,7 @@ export default function PlayerProfileModal({
                     >
                       {m.title}
                     </div>
-                    <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '3px' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--tm-text-dim)', marginTop: '3px' }}>
                       📅 {formatMemeUploadDate(m.created_at).dateTime}
                     </div>
                     <div
@@ -545,7 +545,7 @@ export default function PlayerProfileModal({
                         marginTop: '6px'
                       }}
                     >
-                      <span style={{ fontSize: '11px', color: '#facc15', fontWeight: 800 }}>
+                      <span style={{ fontSize: '11px', color: 'var(--tm-amber)', fontWeight: 800 }}>
                         🔥 {m.score}
                       </span>
                       <button

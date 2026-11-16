@@ -157,7 +157,7 @@ export default function VerticalReelsView({
         <div className="tm-empty-feed-card">
           <div style={{ fontSize: '48px', marginBottom: '8px' }}>🎬📱✨</div>
           <h2 style={{ margin: '0 0 8px', fontSize: '22px' }}>No Memes in Reels Feed Yet!</h2>
-          <p style={{ color: '#94a3b8', maxWidth: '460px', margin: '0 auto 16px', fontSize: '14px' }}>
+          <p style={{ color: 'var(--tm-text-dim)', maxWidth: '460px', margin: '0 auto 16px', fontSize: '14px' }}>
             All memes on THE MEMES.net are 100% community-uploaded. Upload the first meme to launch the full-screen Meme Reels feed!
           </p>
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -408,13 +408,13 @@ export default function VerticalReelsView({
 
                     <div className="tm-reels-drawer-body">
                       {(meme.comments || []).length === 0 ? (
-                        <div style={{ color: '#64748b', fontSize: '13px', padding: '16px 0' }}>
+                        <div style={{ color: 'var(--tm-text-mute)', fontSize: '13px', padding: '16px 0' }}>
                           No comments yet — drop the first comment!
                         </div>
                       ) : (
                         (meme.comments || []).map((c) => (
                           <div key={c.id} className="tm-comment-item">
-                            <strong style={{ color: '#38bdf8' }}>@{c.author_name}: </strong>
+                            <strong style={{ color: 'var(--tm-cyan)' }}>@{c.author_name}: </strong>
                             <span>{c.body}</span>
                             {onDeleteComment && c.user_id && currentUserId && String(c.user_id) === String(currentUserId) && (
                               <button
@@ -474,7 +474,7 @@ export default function VerticalReelsView({
               <h2 style={{ margin: '0 0 8px', fontSize: '21px', fontWeight: 900 }}>
                 You&apos;ve reached the end of the internet
               </h2>
-              <p style={{ margin: '0 auto 16px', maxWidth: '380px', fontSize: '13px', color: '#94a3b8' }}>
+              <p style={{ margin: '0 auto 16px', maxWidth: '380px', fontSize: '13px', color: 'var(--tm-text-dim)' }}>
                 Every meme in this Reels stream has been scrolled. Drop your own banger or hit the Arcade!
               </p>
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>

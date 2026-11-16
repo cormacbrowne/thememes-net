@@ -13,7 +13,7 @@ export default function MemeEvolutionModal({
     <div className="tm-modal-backdrop" onClick={onClose}>
       <div
         className="tm-modal"
-        style={{ maxWidth: '680px', borderColor: '#ec4899' }}
+        style={{ maxWidth: '680px', borderColor: 'var(--tm-pink)' }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="tm-modal-sticky-header" style={{ marginBottom: '14px' }}>
@@ -22,8 +22,8 @@ export default function MemeEvolutionModal({
               ← Back
             </button>
             <div>
-              <h2 style={{ margin: 0, color: '#f472b6', fontSize: '19px' }}>🧬 Meme Evolution Tree</h2>
-              <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+              <h2 style={{ margin: 0, color: 'var(--tm-pink)', fontSize: '19px' }}>🧬 Meme Evolution Tree</h2>
+              <div style={{ fontSize: '11px', color: 'var(--tm-text-dim)', marginTop: '2px' }}>
                 Origin creators earn <strong style={{ color: '#a3e635' }}>+50 XP</strong> per
                 remix &amp; passive royalties
               </div>
@@ -35,7 +35,7 @@ export default function MemeEvolutionModal({
         </div>
 
         {loadingEvolution ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: '#00f3ff' }}>
+          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--tm-cyan)' }}>
             SCANNING GENETIC MEME ARCHIVES...
           </div>
         ) : (
@@ -56,7 +56,7 @@ export default function MemeEvolutionModal({
                       ? 'rgba(0, 243, 255, 0.12)'
                       : 'rgba(255, 255, 255, 0.04)',
                     border: isCurrent
-                      ? '1px solid #00f3ff'
+                      ? '1px solid var(--tm-cyan)'
                       : '1px solid rgba(255, 255, 255, 0.1)',
                     display: 'flex',
                     alignItems: 'center',
@@ -86,7 +86,7 @@ export default function MemeEvolutionModal({
                           padding: '2px 7px',
                           borderRadius: '6px',
                           background: gen === 0 ? 'rgba(163,230,53,0.2)' : 'rgba(236,72,153,0.25)',
-                          color: gen === 0 ? '#a3e635' : '#f472b6'
+                          color: gen === 0 ? '#a3e635' : 'var(--tm-pink)'
                         }}
                       >
                         {gen === 0 ? 'GEN-0 ORIGIN' : `GEN-${gen} REMIX`}
@@ -94,7 +94,7 @@ export default function MemeEvolutionModal({
                       <div style={{ fontWeight: 800, fontSize: '14px', marginTop: '4px', wordBreak: 'break-word' }}>
                         {node.title}
                       </div>
-                      <div style={{ fontSize: '12px', color: '#94a3b8' }}>
+                      <div style={{ fontSize: '12px', color: 'var(--tm-text-dim)' }}>
                         by @{node.author_name || 'Anon'} • 🔥 {node.score || 0} pts • 📅 {uploadInfo.dateTime} ({uploadInfo.relative})
                       </div>
                     </div>

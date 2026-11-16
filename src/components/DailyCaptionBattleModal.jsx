@@ -129,7 +129,7 @@ export default function DailyCaptionBattleModal({
             <button type="button" className="tm-btn tm-back-pill" onClick={onClose}>
               ← Back
             </button>
-            <h2 style={{ margin: 0, fontSize: '19px', color: '#facc15' }}>⚔️ Daily Caption Battle</h2>
+            <h2 style={{ margin: 0, fontSize: '19px', color: 'var(--tm-amber)' }}>⚔️ Daily Caption Battle</h2>
             <BattleCountdown />
           </div>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -170,7 +170,7 @@ export default function DailyCaptionBattleModal({
                     <button
                       type="button"
                       className="tm-link-btn"
-                      style={{ color: '#fde047', fontWeight: 900, fontSize: '15px' }}
+                      style={{ color: 'var(--tm-amber)', fontWeight: 900, fontSize: '15px' }}
                       onClick={() => {
                         onClose();
                         onOpenProfile?.(yesterdayWinner.author_name);
@@ -182,7 +182,7 @@ export default function DailyCaptionBattleModal({
                     <strong>👑 24h Caption King Frame</strong>!
                   </div>
                   {(yesterdayWinner.top_text || yesterdayWinner.bottom_text) && (
-                    <div style={{ fontSize: '11.5px', color: '#cbd5e1', marginTop: '2px' }}>
+                    <div style={{ fontSize: '11.5px', color: 'var(--tm-text-soft)', marginTop: '2px' }}>
                       “{[yesterdayWinner.top_text, yesterdayWinner.bottom_text].filter(Boolean).join(' / ')}”
                     </div>
                   )}
@@ -197,10 +197,10 @@ export default function DailyCaptionBattleModal({
               <span style={{ fontSize: '22px' }}>👑</span>
               <div>
                 <div className="tm-caption-king-kicker">CROWN UP FOR GRABS TODAY</div>
-                <div style={{ fontSize: '13px', color: '#cbd5e1' }}>
+                <div style={{ fontSize: '13px', color: 'var(--tm-text-soft)' }}>
                   Highest-voted moderated caption before UTC midnight wins the{' '}
-                  <strong style={{ color: '#facc15' }}>👑 24h Caption King Frame</strong> &amp; a permanent spot on{' '}
-                  <a href="/hall-of-fame" style={{ color: '#38bdf8' }}>
+                  <strong style={{ color: 'var(--tm-amber)' }}>👑 24h Caption King Frame</strong> &amp; a permanent spot on{' '}
+                  <a href="/hall-of-fame" style={{ color: 'var(--tm-cyan)' }}>
                     /hall-of-fame
                   </a>
                   !
@@ -227,7 +227,7 @@ export default function DailyCaptionBattleModal({
             <h3 style={{ margin: '6px 0 4px', fontSize: '17px', color: '#fff' }}>
               {battle.template?.name}
             </h3>
-            <p style={{ margin: '0 0 10px', fontSize: '12px', color: '#cbd5e1' }}>
+            <p style={{ margin: '0 0 10px', fontSize: '12px', color: 'var(--tm-text-soft)' }}>
               Submit your caption directly below (checked by server text moderation) or remix inside the full
               Meme Forge.
             </p>
@@ -271,8 +271,8 @@ export default function DailyCaptionBattleModal({
                   🎨 Open Full Meme Forge
                 </button>
               </div>
-              <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-                By posting you agree to our <a href="/rules" style={{ color: '#38bdf8' }}>House Rules</a>.
+              <div style={{ fontSize: '11px', color: 'var(--tm-text-dim)' }}>
+                By posting you agree to our <a href="/rules" style={{ color: 'var(--tm-cyan)' }}>House Rules</a>.
               </div>
             </form>
 
@@ -296,7 +296,7 @@ export default function DailyCaptionBattleModal({
           </div>
 
           {loading ? (
-            <div style={{ padding: '16px', color: '#94a3b8', fontSize: '13px' }}>
+            <div style={{ padding: '16px', color: 'var(--tm-text-dim)', fontSize: '13px' }}>
               ⏳ Loading today&apos;s Supabase battle entries…
             </div>
           ) : liveEntries.length === 0 ? (
@@ -308,7 +308,7 @@ export default function DailyCaptionBattleModal({
                   borderRadius: '12px',
                   border: '1px dashed rgba(148, 163, 184, 0.35)',
                   background: 'rgba(15, 23, 42, 0.65)',
-                  color: '#cbd5e1',
+                  color: 'var(--tm-text-soft)',
                   fontSize: '13px',
                   marginBottom: '12px'
                 }}
@@ -340,7 +340,7 @@ export default function DailyCaptionBattleModal({
                         <span className="tm-battle-entry-title">
                           {[sample.top_text, sample.bottom_text].filter(Boolean).join(' / ')}
                         </span>
-                        <span style={{ fontSize: '11px', color: '#94a3b8' }}>Not votable</span>
+                        <span style={{ fontSize: '11px', color: 'var(--tm-text-dim)' }}>Not votable</span>
                       </div>
                     </article>
                   );

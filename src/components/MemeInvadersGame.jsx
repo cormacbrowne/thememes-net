@@ -583,7 +583,7 @@ export default function MemeInvadersGame({
               <h3>👾 GAME OVER</h3>
               <p>
                 Reached <strong>Wave {hud.wave}</strong> with{' '}
-                <strong style={{ color: '#facc15' }}>{hud.score.toLocaleString()} pts</strong>!
+                <strong style={{ color: 'var(--tm-amber)' }}>{hud.score.toLocaleString()} pts</strong>!
               </p>
               <div className="tm-invaders-overlay-actions">
                 <button

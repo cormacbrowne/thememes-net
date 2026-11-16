@@ -509,7 +509,7 @@ export default function BrickBlasterGame({
 
         <div className="tm-blaster-level-strip" data-testid="blaster-level-strip">
           <span>
-            Pattern: <strong style={{ color: '#fde047' }}>{hud.levelName}</strong>
+            Pattern: <strong style={{ color: 'var(--tm-amber)' }}>{hud.levelName}</strong>
           </span>
           <div className="tm-blaster-power-pills">
             <span className={`tm-blaster-pill ${hud.ballCount > 1 ? 'active-multi' : ''}`}>
@@ -557,7 +557,7 @@ export default function BrickBlasterGame({
               <h3>🧱 GAME OVER</h3>
               <p>
                 Cleared up to <strong>Level {hud.level}</strong> with{' '}
-                <strong style={{ color: '#facc15' }}>{hud.score.toLocaleString()} pts</strong>!
+                <strong style={{ color: 'var(--tm-amber)' }}>{hud.score.toLocaleString()} pts</strong>!
               </p>
               <div className="tm-blaster-overlay-actions">
                 <button

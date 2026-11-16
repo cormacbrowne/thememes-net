@@ -25,7 +25,7 @@ export default function SwipeDeck({
         <div className="tm-empty-feed-card">
           <div style={{ fontSize: '48px', marginBottom: '8px' }}>⚡📸</div>
           <h2 style={{ margin: '0 0 8px', fontSize: '22px' }}>No Community Memes in Hyper-Swipe Yet!</h2>
-          <p style={{ color: '#94a3b8', maxWidth: '460px', margin: '0 auto 16px', fontSize: '14px' }}>
+          <p style={{ color: 'var(--tm-text-dim)', maxWidth: '460px', margin: '0 auto 16px', fontSize: '14px' }}>
             All memes on THE MEMES.net are 100% uploaded by real users. Upload the first meme to kick off the Hyper-Swipe deck!
           </p>
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -125,12 +125,12 @@ export default function SwipeDeck({
             Card <strong>{activeIdx + 1}</strong> / <strong>{filteredMemes.length}</strong>
           </span>
         </div>
-        <span style={{ color: '#facc15', fontWeight: 900 }}>
+        <span style={{ color: 'var(--tm-amber)', fontWeight: 900 }}>
           ⚡ Swipes: {sessionSwipes}
         </span>
       </div>
 
-      <p style={{ color: '#94a3b8', fontSize: '12px', margin: '0 0 10px' }}>
+      <p style={{ color: 'var(--tm-text-dim)', fontSize: '12px', margin: '0 0 10px' }}>
         Swipe card left/right or tap buttons: <strong>[← Skip]</strong>{' '}
         <strong>[↑ Super 2x]</strong> <strong>[→ Awesome!]</strong>
       </p>
@@ -196,7 +196,7 @@ export default function SwipeDeck({
           <button
             type="button"
             className="tm-btn"
-            style={{ borderColor: '#38bdf8', color: '#38bdf8' }}
+            style={{ borderColor: 'var(--tm-cyan)', color: 'var(--tm-cyan)' }}
             onClick={(e) => {
               setSessionSwipes((s) => s + 1);
               onTriggerSwipe('up', e);

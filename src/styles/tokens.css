@@ -1,11 +1,27 @@
 /* ==========================================================================
-   Phase 35.2a / 34.1 — Design Tokens
+   Phase 35.2a / 34.1 — Design Tokens & Self-Hosted Fonts (35.2c / 34.2)
    Breakpoints (cannot be used inside @media, documented here for all CSS):
      - Compact phone:    @media (max-width: 480px)
      - Phone & tablet:   @media (max-width: 860px)
      - Desktop:          @media (min-width: 861px)
      - Wide desktop:     @media (min-width: 1181px)
    ========================================================================== */
+
+@font-face {
+  font-family: 'Audiowide';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/audiowide-latin-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Press Start 2P';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/press-start-2p-latin-400.woff2') format('woff2');
+}
 
 :root {
   /* Palette: 4 darks, 3 signal tubes (gas / hot / off), 1 ambient UV, 2 text, 2 status */

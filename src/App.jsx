@@ -903,11 +903,14 @@ export default function App() {
       } tm-mutator-${chaosMutator} tm-era-${deloreanEra} tm-device-${deviceProfile.id}`}
       data-device={deviceProfile.id}
       data-form={deviceProfile.formFactor}
+      data-view={viewMode}
     >
       {/* ACTIVE-BY-DEFAULT SYNTHWAVE PERSPECTIVE GRID & NEON GLOW BACKDROP */}
       <div className="tm-synthwave-bg" aria-hidden="true">
         <div className="tm-synthwave-glow" />
+        <div className="tm-synthwave-sun" />
         <div className="tm-synthwave-grid" />
+        <div className="tm-film-grain" />
       </div>
 
       {/* OPTIONAL CRT SCANLINE & PHOSPHOR SHADER OVERLAY */}

@@ -280,7 +280,9 @@ export default function VegasSlotMachine({
   const [betAmount, setBetAmount] = useState(() => (tokens >= 5 ? 5 : 0));
   const [turboOn, setTurboOn] = useState(false);
   const [autoSpinsLeft, setAutoSpinsLeft] = useState(0);
+  const [autoMenuOpen, setAutoMenuOpen] = useState(false);
   const [leverPulled, setLeverPulled] = useState(false);
+  const [leverDragPx, setLeverDragPx] = useState(0);
   const [sirenActive, setSirenActive] = useState(false);
   const [dougieCallout, setDougieCallout] = useState('');
 
@@ -405,6 +407,8 @@ export default function VegasSlotMachine({
   const sirenTimerRef = useRef(null);
   const leverDragStartYRef = useRef(null);
   const autoTimerRef = useRef(null);
+  const spinHoldTimerRef = useRef(null);
+  const spinHoldTriggeredRef = useRef(false);
 
   const isBanditSpinning = banditSpinning.some(Boolean);
   const isVideoSpinning = videoReelsSpinning.some(Boolean);
@@ -425,6 +429,7 @@ export default function VegasSlotMachine({
       banditController.destroy();
       if (sirenTimerRef.current) clearTimeout(sirenTimerRef.current);
       if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
+      if (spinHoldTimerRef.current) clearTimeout(spinHoldTimerRef.current);
     };
   }, [clearTimers, banditController]);
 
@@ -652,6 +657,9 @@ export default function VegasSlotMachine({
         if (effectiveMult > 0) {
           setBanditFever(0);
           setBanditFeverArmed(false);
+          if (effectiveMult > 10) {
+            setAutoSpinsLeft(0);
+          }
           awardSlotWin({
             activeBet,
             mult: effectiveMult,
@@ -668,6 +676,9 @@ export default function VegasSlotMachine({
           setBanditFever((f) => Math.min(5, f + 1));
           setBanditFeverArmed(false);
           setLastOutcome({ ...result, payout: 0, bet: activeBet });
+          if (outcome.holdAllowed || outcome.nudgesLeft > 0) {
+            setAutoSpinsLeft(0);
+          }
           setHoldAllowed(Boolean(outcome.holdAllowed));
           setHeldReels([false, false, false]);
           setNudgesLeft(outcome.nudgesLeft || 0);
@@ -696,7 +707,7 @@ export default function VegasSlotMachine({
     finalizeBanditOutcome(outcome, activeBet, true, false);
   };
 
-  const triggerBanditSpin = useCallback(() => {
+  const triggerBanditSpin = useCallback(({ windUpScale = 1 } = {}) => {
     let activeBet = betAmount;
     let fallbackBanner = '';
     if (activeBet > 0) {
@@ -752,7 +763,7 @@ export default function VegasSlotMachine({
     setBanditSpinning(nextSpinMask);
     setHoldAllowed(false);
 
-    const baseDelays = turboOn ? [260, 440, 620] : [520, 920, 1320];
+    const baseDelays = turboOn ? [160, 260, 360] : [450, 700, 950];
     let settled = false;
     const remaining = new Set(
       [0, 1, 2].filter((idx) => nextSpinMask[idx])
@@ -787,7 +798,8 @@ export default function VegasSlotMachine({
 
     activeBanditSpinRef.current = {
       targetStops,
-      onReelStop: handleReelSettled
+      onReelStop: handleReelSettled,
+      slamRequested: false
     };
 
     if (remaining.size === 0) {
@@ -800,6 +812,7 @@ export default function VegasSlotMachine({
       targetStops,
       stopDelaysMs: baseDelays,
       turbo: turboOn,
+      windUpScale,
       onReelStop: handleReelSettled
     });
   }, [
@@ -1272,15 +1285,59 @@ export default function VegasSlotMachine({
     videoGrid
   ]);
 
+  const handleSlamStopBandit = useCallback(() => {
+    if (machineId !== 'bandit85' || !isBanditSpinning) return;
+    const active = activeBanditSpinRef.current;
+    if (!active || active.slamRequested) return;
+    active.slamRequested = true;
+    sfx.playToggle();
+    banditController.slamStop({
+      targetStops: active.targetStops,
+      onReelStop: active.onReelStop
+    });
+  }, [banditController, isBanditSpinning, machineId]);
+
   // Master spin dispatcher
-  const handlePullSpin = useCallback(() => {
+  const handlePullSpin = useCallback((opts = {}) => {
+    setAutoMenuOpen(false);
+    if (machineId === 'bandit85' && isBanditSpinning) {
+      handleSlamStopBandit();
+      return;
+    }
     if (isAnySpinning) return;
     if (machineId === 'bandit85') {
-      triggerBanditSpin();
+      triggerBanditSpin(opts);
     } else {
       triggerVideoSpin();
     }
-  }, [isAnySpinning, machineId, triggerBanditSpin, triggerVideoSpin]);
+  }, [handleSlamStopBandit, isAnySpinning, isBanditSpinning, machineId, triggerBanditSpin, triggerVideoSpin]);
+
+  // Space bar or Enter spins; Space while Bandit '85 spins triggers slam stop
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.repeat) return;
+      if (lockItState?.active || bonusWheelState) return;
+      const tag = e.target?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.target?.isContentEditable) return;
+
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (machineId === 'bandit85' && isBanditSpinning) {
+          handleSlamStopBandit();
+        } else if (!isAnySpinning) {
+          handlePullSpin();
+        }
+      } else if (e.code === 'Enter') {
+        if (tag === 'button') return;
+        if (!isAnySpinning) {
+          e.preventDefault();
+          handlePullSpin();
+        }
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [bonusWheelState, handlePullSpin, handleSlamStopBandit, isAnySpinning, isBanditSpinning, lockItState?.active, machineId]);
 
   // Auto-spin scheduler
   useEffect(() => {
@@ -1472,17 +1529,30 @@ export default function VegasSlotMachine({
   const handleLeverPointerDown = (e) => {
     if (isAnySpinning) return;
     leverDragStartYRef.current = e.clientY;
+    setLeverDragPx(0);
+    if (e.currentTarget?.setPointerCapture && e.pointerId !== undefined) {
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {
+        // ignore pointer capture error
+      }
+    }
+  };
+
+  const handleLeverPointerMove = (e) => {
+    if (leverDragStartYRef.current === null || isAnySpinning) return;
+    const dy = Math.max(0, Math.min(72, e.clientY - leverDragStartYRef.current));
+    setLeverDragPx(dy);
   };
 
   const handleLeverPointerUp = (e) => {
     if (isAnySpinning) return;
     const startY = leverDragStartYRef.current;
     leverDragStartYRef.current = null;
-    if (startY !== null && e.clientY - startY > 14) {
-      handlePullSpin();
-    } else {
-      handlePullSpin();
-    }
+    setLeverDragPx(0);
+    const dy = startY !== null ? Math.max(0, e.clientY - startY) : 0;
+    const windUpScale = Math.min(1.6, Math.max(0.95, 0.95 + (dy / 72) * 0.65));
+    handlePullSpin({ windUpScale });
   };
 
   const isWinner = lastOutcome && lastOutcome.mult > 0;
@@ -1837,6 +1907,7 @@ export default function VegasSlotMachine({
                           isWinner={isWinner}
                           isSpinning={spinning}
                           symbolSize={embedded ? 36 : 44}
+                          onTapReel={isBanditSpinning ? handleSlamStopBandit : undefined}
                         />
 
                         <div className="tm-bandit-drum-btns">
@@ -2135,31 +2206,41 @@ export default function VegasSlotMachine({
                 </>
               )}
 
-              {/* Shared Vegas Auto-Spin & Turbo Controls on modern cabinets */}
+              {/* Shared Vegas Auto-Spin & Turbo Controls across cabinets */}
+              <button
+                type="button"
+                className={`tm-slot-power-btn ${turboOn ? 'armed' : ''}`}
+                onClick={() => {
+                  sfx.playToggle();
+                  setTurboOn((v) => !v);
+                }}
+              >
+                ⚡ TURBO {turboOn ? 'ON' : 'OFF'}
+              </button>
               {machineId !== 'bandit85' && (
-                <>
-                  <button
-                    type="button"
-                    className={`tm-slot-power-btn ${turboOn ? 'armed' : ''}`}
-                    onClick={() => {
-                      sfx.playToggle();
-                      setTurboOn((v) => !v);
-                    }}
-                  >
-                    ⚡ TURBO {turboOn ? 'ON' : 'OFF'}
-                  </button>
-                  <button
-                    type="button"
-                    className={`tm-slot-power-btn ${autoSpinsLeft > 0 ? 'armed' : ''}`}
-                    disabled={Boolean(lockItState?.active) || Boolean(bonusWheelState)}
-                    onClick={() => {
-                      sfx.playToggle();
-                      setAutoSpinsLeft((n) => (n > 0 ? 0 : 5));
-                    }}
-                  >
-                    {autoSpinsLeft > 0 ? `⏹ AUTO (${autoSpinsLeft})` : '🔁 AUTO 5×'}
-                  </button>
-                </>
+                <button
+                  type="button"
+                  className={`tm-slot-power-btn ${autoSpinsLeft > 0 ? 'armed' : ''}`}
+                  disabled={Boolean(lockItState?.active) || Boolean(bonusWheelState)}
+                  onClick={() => {
+                    sfx.playToggle();
+                    setAutoSpinsLeft((n) => (n > 0 ? 0 : 5));
+                  }}
+                >
+                  {autoSpinsLeft > 0 ? `⏹ AUTO (${autoSpinsLeft})` : '🔁 AUTO 5×'}
+                </button>
+              )}
+              {machineId === 'bandit85' && autoSpinsLeft > 0 && (
+                <button
+                  type="button"
+                  className="tm-slot-power-btn armed"
+                  onClick={() => {
+                    sfx.playToggle();
+                    setAutoSpinsLeft(0);
+                  }}
+                >
+                  ⏹ AUTO ({autoSpinsLeft})
+                </button>
               )}
             </div>
 
@@ -2272,22 +2353,83 @@ export default function VegasSlotMachine({
                     ⚡ LOCK-IT RESPIN ({lockItState.respinsLeft} LEFT!)
                   </button>
                 ) : (
-                  <button
-                    type="button"
-                    className="tm-bandit-spin-btn"
-                    disabled={isAnySpinning || Boolean(bonusWheelState)}
-                    onClick={handlePullSpin}
-                  >
-                    {isAnySpinning
-                      ? '🎰 SPINNING REELS...'
-                      : neonFreeSpins > 0
-                        ? `🎆 PULL NEON FREE SPIN (${neonFreeSpins} LEFT!)`
-                        : mustangFreeSpins > 0
-                          ? `☕ PULL FREE SPIN (${mustangFreeSpins} LEFT!)`
-                          : actualCost === 0
-                            ? '🕹️ PULL DEMO SPIN (FREE)'
-                            : `🎰 SPIN ${formatMoney(actualCost, { compact: true })} • MAX ${formatMoney(actualCost * activeMachine.maxMult, { compact: true })}`}
-                  </button>
+                  <div className="tm-auto-spin-wrap">
+                    {autoMenuOpen && (
+                      <div className="tm-auto-spin-popover" role="menu" aria-label="Auto Spin Count">
+                        {[10, 25, 50].map((cnt) => (
+                          <button
+                            key={cnt}
+                            type="button"
+                            className="tm-auto-spin-choice"
+                            onClick={() => {
+                              sfx.playToggle();
+                              setAutoMenuOpen(false);
+                              setAutoSpinsLeft(cnt);
+                            }}
+                          >
+                            {cnt}× AUTO
+                          </button>
+                        ))}
+                        <button
+                          type="button"
+                          className="tm-auto-spin-choice"
+                          onClick={() => {
+                            setAutoMenuOpen(false);
+                            setAutoSpinsLeft(0);
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      className="tm-bandit-spin-btn"
+                      disabled={(isAnySpinning && !(machineId === 'bandit85' && isBanditSpinning)) || Boolean(bonusWheelState)}
+                      onPointerDown={() => {
+                        spinHoldTriggeredRef.current = false;
+                        if (isAnySpinning || machineId !== 'bandit85') return;
+                        if (spinHoldTimerRef.current) clearTimeout(spinHoldTimerRef.current);
+                        spinHoldTimerRef.current = setTimeout(() => {
+                          spinHoldTriggeredRef.current = true;
+                          sfx.playToggle();
+                          setAutoMenuOpen(true);
+                        }, 600);
+                      }}
+                      onPointerUp={() => {
+                        if (spinHoldTimerRef.current) {
+                          clearTimeout(spinHoldTimerRef.current);
+                          spinHoldTimerRef.current = null;
+                        }
+                      }}
+                      onPointerLeave={() => {
+                        if (spinHoldTimerRef.current) {
+                          clearTimeout(spinHoldTimerRef.current);
+                          spinHoldTimerRef.current = null;
+                        }
+                      }}
+                      onClick={() => {
+                        if (spinHoldTriggeredRef.current) {
+                          spinHoldTriggeredRef.current = false;
+                          return;
+                        }
+                        handlePullSpin();
+                      }}
+                      title="Space/Enter to spin • Tap while spinning to Slam Stop • Hold 600ms for Auto-Spin"
+                    >
+                      {machineId === 'bandit85' && isBanditSpinning
+                        ? '🛑 SLAM STOP (SPACE)'
+                        : isAnySpinning
+                          ? '🎰 SPINNING REELS...'
+                          : neonFreeSpins > 0
+                            ? `🎆 PULL NEON FREE SPIN (${neonFreeSpins} LEFT!)`
+                            : mustangFreeSpins > 0
+                              ? `☕ PULL FREE SPIN (${mustangFreeSpins} LEFT!)`
+                              : actualCost === 0
+                                ? '🕹️ PULL DEMO SPIN (FREE)'
+                                : `🎰 SPIN ${formatMoney(actualCost, { compact: true })} • MAX ${formatMoney(actualCost * activeMachine.maxMult, { compact: true })}`}
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -2309,15 +2451,19 @@ export default function VegasSlotMachine({
           {/* PHYSICAL RIGHT-SIDE 3D CHROME ONE-ARM LEVER */}
           <div className="tm-bandit-arm-housing" aria-label="One-Arm Bandit Pull Lever">
             <div className="tm-bandit-arm-box" />
-            <div className={`tm-bandit-arm-track ${leverPulled ? 'pulled' : ''}`}>
+            <div
+              className={`tm-bandit-arm-track ${leverPulled ? 'pulled' : ''}`}
+              style={leverDragPx > 0 ? { transform: `translateY(${Math.round(leverDragPx * 0.45)}px)` } : undefined}
+            >
               <div className="tm-bandit-arm-shaft" />
               <button
                 type="button"
                 className="tm-bandit-arm-ball"
                 disabled={isAnySpinning || Boolean(lockItState?.active) || Boolean(bonusWheelState)}
                 onPointerDown={handleLeverPointerDown}
+                onPointerMove={handleLeverPointerMove}
                 onPointerUp={handleLeverPointerUp}
-                title="Pull the One-Arm Bandit Lever!"
+                title="Pull or drag down the One-Arm Bandit Lever! (Drag distance sets wind-up)"
               >
                 <span>PULL</span>
               </button>

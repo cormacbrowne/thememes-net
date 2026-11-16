@@ -104,7 +104,7 @@ export default function IphoneAppModal({ onClose }) {
               <strong>Tap &ldquo;Add to Home Screen&rdquo; (➕)</strong>
               <p>
                 Scroll slightly down the Share menu and tap <strong>Add to Home Screen</strong>.
-                You&apos;ll see our new <strong>80s Neon THE MEMES</strong> crest appear.
+                You&apos;ll see our new <strong>80s Neon THE MEMES</strong> icon appear.
               </p>
             </div>
           </div>

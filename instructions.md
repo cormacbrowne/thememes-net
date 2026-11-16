@@ -618,8 +618,8 @@ thememes-net/
 ├── eslint.config.js                   # Flat ESLint 10 config for JS/JSX + React Hooks/Refresh
 ├── instructions.md                    # This architectural summary, decisions log & phased roadmap
 ├── public/
-│   ├── favicon.svg                    # Custom 512x512 Cyber-Arcade Mascot Vector Icon
-│   ├── logo-512.png                   # High-Res 512x512 Neon Cyber-Jester Skull Logo for Google Search & Schema.org
+│   ├── favicon.svg                    # Pink "M" neon tube + amber zap underline vector icon (from neonSignPaths.js)
+│   ├── logo-512.png                   # High-Res 512x512 Neon "M" Tube Logo for PWA & Schema.org
 │   ├── favicon-192.png                # 192x192 PWA & Android Chrome Icon
 │   ├── favicon-48.png                 # 48x48 Google Search SERP Favicon
 │   ├── apple-touch-icon.png           # 180x180 iPhone / iPad Home Screen Icon

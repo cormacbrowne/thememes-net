@@ -15,6 +15,7 @@ import lazyWithRetry from '../utils/lazyWithRetry';
 import MemeSkeletonGrid from './MemeSkeletonGrid';
 import VerticalReelsView from './VerticalReelsView';
 import { RadioToggleButton } from './MemesRadio';
+import NeonSign from './NeonSign';
 
 const ArcadeInitialsModal = lazyWithRetry(() => import('./ArcadeInitialsModal'));
 
@@ -103,7 +104,8 @@ export function FixedArcadeTopBar({
         }}
         title="Return to Home Page"
       >
-        🏠 Home
+        <NeonSign size="icon" powerOn={false} />
+        <span>Home</span>
       </button>
       <button
         type="button"

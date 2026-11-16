@@ -283,11 +283,6 @@
   transition: opacity 0.22s ease-out;
 }
 
-.tm-radio-on .tm-logo-badge {
-  box-shadow: 0 0 calc(20px + var(--beat, 0) * 18px) rgba(236, 72, 153, calc(0.45 + var(--beat, 0) * 0.35));
-  transition: box-shadow 0.2s ease-out;
-}
-
 .tm-radio-on .tm-reels-slide.active::after {
   content: '';
   position: absolute;
@@ -305,7 +300,6 @@
   }
 
   .tm-radio-on .tm-synthwave-glow,
-  .tm-radio-on .tm-logo-badge,
   .tm-radio-on .tm-reels-slide.active::after {
     transition: none;
   }

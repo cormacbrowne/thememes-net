@@ -2,6 +2,7 @@ import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
 import { ARCADE_GAMES_CATALOG } from '../data/arcadeGamesCatalog';
 import { formatLivePresenceLabel } from '../utils/liveSignals';
 import { RadioToggleButton } from './MemesRadio';
+import NeonSign from './NeonSign';
 
 export default function NavbarHud({
   comboTimer,
@@ -62,16 +63,7 @@ export default function NavbarHud({
             onClick={onResetFeed}
             title="Return to Main Feed (Tip: Tap 5x rapidly for Secret God Mode!)"
           >
-            <div className="tm-mascot-logo-wrap">
-              <img
-                src="/favicon.svg"
-                alt="THE MEMES.net 80s Neon Arcade Crest Logo"
-                className="tm-mascot-logo-img"
-                width="36"
-                height="36"
-              />
-            </div>
-            <div className="tm-logo-badge">THE MEMES.net</div>
+            <NeonSign size="nav" />
             {formatLivePresenceLabel(onlineCount) ? (
               <div
                 className="tm-status-pill tm-live-presence-pill"

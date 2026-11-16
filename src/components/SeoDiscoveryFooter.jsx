@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { trackShareClicked } from '../utils/analytics';
 import { ARCADE_GAMES_CATALOG } from '../data/arcadeGamesCatalog';
+import NeonSign from './NeonSign';
 
 export default function SeoDiscoveryFooter({
   onSelectCategory,
@@ -77,8 +78,8 @@ export default function SeoDiscoveryFooter({
 
         <div className="tm-seo-grid">
           <div>
-            <div className="tm-logo-badge" style={{ display: 'inline-block', marginBottom: '10px' }}>
-              THE MEMES.net
+            <div style={{ display: 'inline-block', marginBottom: '10px' }}>
+              <NeonSign size="nav" powerOn={false} />
             </div>
             <p style={{ fontSize: '13px', color: '#94a3b8', lineHeight: 1.55, margin: 0 }}>
               <strong>THE MEMES.net</strong> is a simple Image &amp; GIF meme maker (upload media, add

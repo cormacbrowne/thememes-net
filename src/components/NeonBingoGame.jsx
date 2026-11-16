@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
-import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
+import { ARCADE_ECONOMY_RULES, formatMoney } from '../utils/tokenEconomy';
 import { triggerWinCelebration } from '../utils/winCelebration';
 import { speakUtteranceChain } from '../utils/aiSpeech';
 import {
@@ -117,6 +117,7 @@ function evaluateRivalList(prevRivals, calledSet, latestBall) {
 
 export default function NeonBingoGame({
   tokens = 0,
+  centz = 0,
   soundOn = true,
   onToggleSound,
   onSpendTokens,
@@ -490,9 +491,9 @@ export default function NeonBingoGame({
         if (!spent) {
           setCrowdBanner({
             type: 'info',
-            title: `Need M$${totalCost} for ${customCount} Card${customCount > 1 ? 's' : ''}!`,
+            title: `Need ${formatMoney(totalCost)} for ${customCount} Card${customCount > 1 ? 's' : ''}!`,
             body: 'Switch to Free Practice mode or play 1 card to jump right in!',
-            emojis: '🪙'
+            emojis: '🎟️'
           });
           return false;
         }
@@ -749,7 +750,7 @@ export default function NeonBingoGame({
           onPayoutTokens?.(totalPayout, {
             stakedTokens: roundStaked,
             xp: 180,
-            label: `FULL HOUSE CHAMPION! (+M$${totalPayout})`,
+            label: `FULL HOUSE CHAMPION! (${formatMoney(totalPayout, { sign: true })})`,
             emoji: '🏆',
             maxMultiplier: 150
           });
@@ -776,7 +777,7 @@ export default function NeonBingoGame({
           title: '👑 BINGO!! FULL HOUSE CHAMPION!! GAME OVER! 🎉🎆',
           body:
             roundStaked > 0
-              ? `🎺 SOUND THE TRUMPETS! You beat all 4 rivals for +M$${totalPayout} MemeDollarz! Game complete — play again anytime!`
+              ? `🎺 SOUND THE TRUMPETS! You beat all 4 rivals for ${formatMoney(totalPayout, { sign: true })} MemeDollarz! Game complete — play again anytime!`
               : '🎺 THE ENTIRE 1986 BINGO HALL ERUPTS! Standing ovation, champagne corks flying — Full House Champion!',
           emojis: '👑🎺🎆🥳'
         });
@@ -794,7 +795,7 @@ export default function NeonBingoGame({
         onPayoutTokens?.(totalPayout, {
           stakedTokens: roundStaked,
           xp: 55,
-          label: `BINGO! ${prizeNames.join(' + ')} (+M$${totalPayout})`,
+          label: `BINGO! ${prizeNames.join(' + ')} (${formatMoney(totalPayout, { sign: true })})`,
           emoji: '🎱',
           maxMultiplier: 120
         });
@@ -813,7 +814,7 @@ export default function NeonBingoGame({
         title: `🎉 VALID BINGO CALL: ${prizeNames.join(' + ')}!`,
         body:
           roundStaked > 0
-            ? `YOU BEAT THE HALL! Won +M$${totalPayout} MemeDollarz! Keep dabbing — Full House ends the game!`
+            ? `YOU BEAT THE HALL! Won ${formatMoney(totalPayout, { sign: true })} MemeDollarz! Keep dabbing — Full House ends the game!`
             : `Nanna Turbo throws her knitting in the air! ${prizeNames.join(' & ')} verified! Keep going for Full House!`,
         emojis: '🎉🥳🎱'
       });
@@ -956,6 +957,7 @@ export default function NeonBingoGame({
       className={`tm-bingo-shell ${ceefaxMode ? 'is-ceefax' : ''}`}
       onBack={onBackToFeed}
       tokens={tokens}
+      centz={centz}
       hasPractice
       practiceMode={practiceMode}
       practiceDisabled={roundActive}
@@ -1032,7 +1034,7 @@ export default function NeonBingoGame({
                   title={`Play ${cnt} Bingo Card${cnt > 1 ? 's' : ''}${cnt === 1 ? ' (Default)' : ''}`}
                 >
                   🎟️{cnt}
-                  {cnt === 1 && !practiceMode ? '' : practiceMode ? '' : `·M$${cnt * cardBuyin}`}
+                  {cnt === 1 && !practiceMode ? '' : practiceMode ? '' : `·${formatMoney(cnt * cardBuyin)}`}
                 </button>
               ))}
 
@@ -1045,10 +1047,10 @@ export default function NeonBingoGame({
                   title={
                     roundActive
                       ? 'Finish current game before buying extra cards'
-                      : `Add Scorecard #${cardCount + 1} (${practiceMode ? 'FREE Practice' : `+M$${cardBuyin}`})`
+                      : `Add Scorecard #${cardCount + 1} (${practiceMode ? 'FREE Practice' : formatMoney(cardBuyin, { sign: true })})`
                   }
                 >
-                  ➕ Buy Card {practiceMode ? '' : `(+M$${cardBuyin})`}
+                  ➕ Buy Card {practiceMode ? '' : `(${formatMoney(cardBuyin, { sign: true })})`}
                 </button>
               )}
             </div>
@@ -1264,8 +1266,8 @@ export default function NeonBingoGame({
                 </div>
                 <h3>
                   {gameOverState.winnerType === 'player'
-                    ? `BINGO!! YOU WON FULL HOUSE! (+${
-                        roundStaked > 0 ? `M$${gameOverState.playerWonTotal}` : 'HALL GLORY'
+                    ? `BINGO!! YOU WON FULL HOUSE! (${
+                        roundStaked > 0 ? formatMoney(gameOverState.playerWonTotal, { sign: true }) : '+HALL GLORY'
                       })`
                     : `${gameOverState.winnerName} got Full House in ${gameOverState.ballsCalled} balls!`}
                 </h3>
@@ -1363,7 +1365,7 @@ export default function NeonBingoGame({
                     className="tm-bingo-primary-btn"
                     onClick={() => handleStartNewRound(ballMode, cardCount, practiceMode)}
                   >
-                    👀 EYES DOWN! {totalBuyinCost > 0 ? `(M$${totalBuyinCost})` : '(FREE)'}
+                    👀 EYES DOWN! {totalBuyinCost > 0 ? `(${formatMoney(totalBuyinCost)})` : '(FREE)'}
                   </button>
                 ) : (
                   <>
@@ -1483,7 +1485,7 @@ export default function NeonBingoGame({
                           : isReadyNow
                             ? '🔔 WIN!'
                             : totalBuyinCost > 0
-                              ? `M$${payAmt}`
+                              ? formatMoney(payAmt)
                               : 'OPEN'}
                     </strong>
                   </div>

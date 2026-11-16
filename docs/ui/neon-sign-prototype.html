@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Neon sign prototype (Phase 35 reference, not shipped)</title>
+<!--
+  REFERENCE ONLY. This file is the working sketch for task 35.2 / 35.3 in instructions.md.
+  It is not imported by the app and is not in the production build.
+  Open it with the dev server running: http://localhost:5173/docs/ui/neon-sign-prototype.html
+-->
+<style>
+  :root {
+    /* The whole palette. Three signal colours, one ambient colour, four darks, two text tones. */
+    --night-0: #07060f;  /* page */
+    --night-1: #110d22;  /* card */
+    --night-2: #1b1536;  /* raised / sheet */
+    --night-3: #2c2452;  /* border, unlit detail */
+    --pink: #ff2e88;   --pink-hot: #ffd9ea;   --pink-off: #3d1028;
+    --cyan: #19f0ff;   --cyan-hot: #e2fdff;   --cyan-off: #0b3440;
+    --amber: #ffb800;  --amber-hot: #fff1c9;  --amber-off: #3d2c05;
+    --uv: #8a3dff;     /* ambient glow only, never text or buttons */
+    --text: #f4f1ff;   --text-dim: #a59fc4;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; color: var(--text);
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background:
+      radial-gradient(ellipse 70% 45% at 50% 0%, rgba(138, 61, 255, 0.22), transparent 70%),
+      var(--night-0);
+    padding: 24px 16px 64px;
+  }
+  main { max-width: 760px; margin: 0 auto; display: grid; gap: 32px; }
+  h2 { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); margin: 0 0 12px; font-weight: 600; }
+
+  /* ---------- the tube ---------- */
+  .neon { display: block; width: 100%; height: auto; overflow: visible; }
+  .neon path, .neon circle { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .t-pink  { --c: var(--pink);  --hot: var(--pink-hot);  --off: var(--pink-off); }
+  .t-cyan  { --c: var(--cyan);  --hot: var(--cyan-hot);  --off: var(--cyan-off); }
+  .t-amber { --c: var(--amber); --hot: var(--amber-hot); --off: var(--amber-off); }
+  .l-glass { stroke: var(--off); }                       /* unlit glass: what you see when the sign is off */
+  .l-glow  { stroke: var(--c); filter: blur(5px); opacity: 0.85; }  /* static blur, never animated */
+  .l-core  { stroke: var(--c); }
+  .l-hot   { stroke: var(--hot); }
+  .l-flow  { stroke: #fff; stroke-dasharray: 5 95; opacity: 0.9; animation: flow var(--flow, 2.8s) linear infinite; }
+  @keyframes flow { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+
+  /* power-on: each tube stutters on, once */
+  .lit { animation: power-on 900ms steps(1, end) both; animation-delay: var(--d, 0ms); }
+  @keyframes power-on {
+    0% { opacity: 0; } 12% { opacity: 1; } 18% { opacity: 0; } 30% { opacity: 1; }
+    36% { opacity: 0.2; } 48% { opacity: 1; } 100% { opacity: 1; }
+  }
+  /* one faulty letter that buzzes now and then */
+  .buzz .lit { animation: power-on 900ms steps(1, end) both, buzz 9s steps(1, end) 3s infinite; }
+  @keyframes buzz {
+    0%, 91%, 93%, 95.5%, 100% { opacity: 1; } 92%, 94%, 95% { opacity: 0.15; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .l-flow { animation: none; opacity: 0; }
+    .lit, .buzz .lit { animation: none; }
+  }
+
+  .stage { background: var(--night-1); border: 1px solid var(--night-3); border-radius: 16px; padding: 28px 20px; }
+  .nav { display: flex; align-items: center; gap: 16px; background: rgba(7, 6, 15, 0.85); border: 1px solid var(--night-3); border-radius: 12px; padding: 8px 14px; }
+  .nav .neon { width: 132px; }
+  .nav span { color: var(--text-dim); font-size: 14px; }
+  .nav .money { margin-left: auto; color: var(--amber); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }
+  .sw { border-radius: 10px; border: 1px solid var(--night-3); padding: 34px 8px 8px; font-size: 11px; line-height: 1.35; }
+  .sw b { display: block; font-size: 12px; }
+
+  .btn-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+  .tube-btn {
+    font: 700 15px/1 system-ui, sans-serif; letter-spacing: 0.04em; color: var(--hot);
+    background: transparent; padding: 14px 22px; border-radius: 999px; cursor: pointer;
+    border: 2px solid var(--c);
+    box-shadow: 0 0 0 1px var(--off), 0 0 14px -2px var(--c), inset 0 0 12px -4px var(--c);
+    text-shadow: 0 0 10px var(--c);
+    transition: transform 120ms ease-out, background-color 120ms ease-out;
+  }
+  .tube-btn:hover { background: color-mix(in srgb, var(--c) 14%, transparent); }
+  .tube-btn:active { transform: scale(0.97); }
+  .tube-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 4px; }
+  .tube-btn.solid { background: var(--c); color: var(--night-0); text-shadow: none; }
+  .tube-btn.off { --c: var(--night-3); color: var(--text-dim); box-shadow: none; text-shadow: none; }
+</style>
+</head>
+<body>
+<main>
+  <section>
+    <h2>1. The sign (hero size)</h2>
+    <div class="stage"><div id="hero"></div></div>
+  </section>
+
+  <section>
+    <h2>2. The sign in the top bar (132 px wide: flow pulse off, glow reduced)</h2>
+    <div class="nav"><div id="small"></div><span>Home</span><span>Reels</span><span>Games</span><span class="money">M$5.25</span></div>
+  </section>
+
+  <section>
+    <h2>3. The whole palette</h2>
+    <div class="swatches" id="swatches"></div>
+  </section>
+
+  <section>
+    <h2>4. Tube buttons: one pink per screen, cyan for navigation, amber for money only</h2>
+    <div class="btn-row">
+      <button class="tube-btn solid t-pink">Make a meme</button>
+      <button class="tube-btn t-cyan">Play</button>
+      <button class="tube-btn t-amber">Collect M$2.50</button>
+      <button class="tube-btn off">Unlit</button>
+    </div>
+  </section>
+</main>
+
+<script>
+  // Every tube is ONE path drawn as a single centre line (never an outlined font glyph).
+  // pathLength="100" lets one dash pattern work on every tube whatever its real length.
+  const S = 'M34 9 C34 -3 0 -3 0 15 C0 33 34 27 34 45 C34 63 0 63 0 51';
+  const M = 'M0 60 V0 L22 34 L44 0 V60';
+  const E = 'M30 0 H0 V60 H30 M0 30 H22';
+  const TUBES = [
+    // [colour, x, y, stroke width, path, extra class]
+    ['cyan', 31, 8, 2.6, 'M0 0 H12 M6 0 V14'],                     // T
+    ['cyan', 49, 8, 2.6, 'M0 0 V14 M0 7 H10 M10 0 V14'],           // H
+    ['cyan', 65, 8, 2.6, 'M10 0 H0 V14 H10 M0 7 H7'],              // E
+    ['pink', 29, 34, 5, M],
+    ['pink', 87, 34, 5, E],
+    ['pink', 131, 34, 5, M, 'buzz'],                                // the faulty letter
+    ['pink', 189, 34, 5, E],
+    ['pink', 233, 34, 5, S],
+    ['amber', 29, 110, 2.6, 'M0 0 H118 l7 -8 l8 16 l7 -8 H166'],   // underline with one "zap"
+    ['cyan', 203, 101, 2.6, 'M0 13.5 v0.01'],                      // dot
+    ['cyan', 210, 101, 2.6, 'M0 14 V4 M0 8 C0 2 10 2 10 8 V14'],   // n
+    ['cyan', 227, 101, 2.6, 'M0 9 H10 C10 1 0 1 0 9 C0 16 8 16 10 12'], // e
+    ['cyan', 244, 101, 2.6, 'M4 0 V11 C4 14 6 14 10 14 M0 5 H9']   // t
+  ];
+
+  function sign({ flow = true, glow = true } = {}) {
+    const tubes = TUBES.map(([colour, x, y, w, d, extra = ''], i) => {
+      const p = (cls, width) => `<path class="${cls}" pathLength="100" stroke-width="${width}" d="${d}"/>`;
+      return `<g class="t-${colour} ${extra}" transform="translate(${x} ${y})" style="--d:${i * 70}ms;--flow:${2.4 + (i % 4) * 0.5}s">
+        ${p('l-glass', w + 1.5)}
+        <g class="lit">
+          ${glow ? p('l-glow', w + 2) : ''}
+          ${p('l-core', w)}
+          ${p('l-hot', w * 0.34)}
+          ${flow ? p('l-flow', w * 0.5) : ''}
+        </g>
+      </g>`;
+    }).join('');
+    return `<svg class="neon" viewBox="0 0 296 124" role="img" aria-label="THE MEMES.net">${tubes}</svg>`;
+  }
+  document.getElementById('hero').innerHTML = sign();
+  document.getElementById('small').innerHTML = sign({ flow: false });
+
+  const css = getComputedStyle(document.documentElement);
+  const names = ['night-0', 'night-1', 'night-2', 'night-3', 'pink', 'cyan', 'amber', 'uv', 'text', 'text-dim'];
+  document.getElementById('swatches').innerHTML = names.map((n) => {
+    const v = css.getPropertyValue('--' + n).trim();
+    const dark = n.startsWith('night') || n === 'uv';
+    return `<div class="sw" style="background:${v};color:${dark ? '#f4f1ff' : '#07060f'}"><b>--${n}</b>${v}</div>`;
+  }).join('');
+</script>
+</body>
+</html>

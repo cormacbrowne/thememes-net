@@ -453,7 +453,7 @@ export function DeLoreanTimeWarpStage({
               <div className="tm-tc-row departed">
                 <span className="tm-tc-tag">FLUX BONUS</span>
                 <span className="tm-tc-led">
-                  {bonusClaimedToday ? 'CHARGED TODAY' : '+M$5 MEMEDOLLARZ'}
+                  {bonusClaimedToday ? 'CHARGED TODAY' : '+M$1.25 MEMEDOLLARZ'}
                 </span>
                 <span className="tm-tc-led">{activeCar.topSpeedMph} MPH</span>
               </div>
@@ -485,7 +485,7 @@ export function DeLoreanTimeWarpStage({
                 onClick={() => onTriggerWarp(activeEra === 'present' ? '1985' : activeEra, activeCar.id)}
               >
                 ⚡ DRIVE {activeCar.shortName.toUpperCase()} TO {activeCar.topSpeedMph} MPH!
-                {!bonusClaimedToday ? ' (+M$5)' : ''}
+                {!bonusClaimedToday ? ' (+M$1.25)' : ''}
               </button>
             </div>
           </div>

@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { sfx } from '../utils/soundEngine';
+import NeonSign from './NeonSign';
 import './DualDirectionHero.css';
 
 const ARCADE_QUICK_LAUNCH = [
@@ -26,18 +27,41 @@ export default function DualDirectionHero({
   onScrollToMemes
 }) {
   const [realmFocus, setRealmFocus] = useState('both'); // 'both' | 'memes' | 'arcade'
+  const [isFirstVisit] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return !localStorage.getItem('tm_intro_seen');
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    if (!isFirstVisit || typeof window === 'undefined') return undefined;
+    const t = window.setTimeout(() => {
+      try {
+        localStorage.setItem('tm_intro_seen', '1');
+      } catch {
+        // ignore storage errors
+      }
+    }, 1500);
+    return () => window.clearTimeout(t);
+  }, [isFirstVisit]);
 
   return (
-    <section className="tm-dual-hero" aria-label="Choose Your Realm: Memes or 80s Cyber-Arcade">
+    <section
+      className={`tm-dual-hero ${isFirstVisit ? 'is-first-visit' : ''}`}
+      aria-label="Choose Your Realm: Memes or 80s Cyber-Arcade"
+    >
+      {isFirstVisit && (
+        <div className="tm-dual-hero-sign-stage">
+          <NeonSign size="hero" powerOn />
+        </div>
+      )}
+      <div className="tm-dual-hero-body">
       <div className="tm-dual-hero-top">
         <div className="tm-dual-hero-brand">
-          <img
-            src="/favicon.svg"
-            alt="THE MEMES.net 80s Neon Crest"
-            className="tm-dual-hero-logo"
-            width="42"
-            height="42"
-          />
+          {!isFirstVisit && <NeonSign size="icon" powerOn={false} />}
           <div>
             <div className="tm-dual-hero-kicker">
               ★ WELCOME TO THEMEMES.NET • WALLET M${tokens}.{String(memeCentz || 0).padStart(2, '0')} MEMEDOLLARZ ★
@@ -252,6 +276,7 @@ export default function DualDirectionHero({
             </div>
           </article>
         )}
+      </div>
       </div>
     </section>
   );

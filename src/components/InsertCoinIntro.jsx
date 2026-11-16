@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { setRadioOn } from '../utils/radioBus';
 import { RadioStationStrip } from './MemesRadio';
+import NeonSign from './NeonSign';
 import './InsertCoinIntro.css';
 
 export const INTRO_SEEN_KEY = 'tm_intro_seen';
@@ -67,7 +68,9 @@ export default function InsertCoinIntro({ onComplete }) {
 
       <div className="tm-intro-cabinet">
         <div className="tm-intro-boot-line">ROM OK • VIDEO OK • SYNTH 86 READY</div>
-        <div className="tm-intro-logo">THE MEMES.net</div>
+        <div className="tm-intro-sign">
+          <NeonSign size="hero" powerOn />
+        </div>
         <div className="tm-intro-sub">CYBER-ARCADE MEME MACHINE</div>
 
         <button

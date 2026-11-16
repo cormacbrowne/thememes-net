@@ -4,10 +4,10 @@ import { pulse } from '../utils/analytics';
 import {
   ARCADE_ECONOMY_RULES,
   validateStakedGamePayout,
-  formatEightiesPrice
+  formatMoney
 } from '../utils/tokenEconomy';
 import { triggerWinCelebration } from '../utils/winCelebration';
-import { Wallet } from './ui/Money';
+import { Money, Wallet } from './ui/Money';
 import SlotSymbolArt from './SlotSymbolArt';
 import EightiesIconsStrip from './EightiesIconsStrip';
 import {
@@ -78,21 +78,21 @@ const NEON_CROWN_PALETTES = {
     primary: '#00f3ff',
     secondary: '#ff2a85',
     accent: '#fde047',
-    label: '⚡ VIP HIGH-ROLLER $25 • PLASMA 5000 ⚡',
+    label: '⚡ VIP HIGH-ROLLER M$25 • PLASMA 5000 ⚡',
     sub: 'BENT-GLASS HIGH-LIMIT CABINET'
   },
   'solar-gold': {
     primary: '#f97316',
     secondary: '#fde047',
     accent: '#ff2a85',
-    label: '🔥 HIGH-ROLLER $25 • CYBER 1024 🔥',
+    label: '🔥 HIGH-ROLLER M$25 • CYBER 1024 🔥',
     sub: 'WIDEBODY NEON SUPER CABINET'
   },
   'laser-magenta': {
     primary: '#ff2a85',
     secondary: '#00f3ff',
     accent: '#c084fc',
-    label: '★ LASER NEON SPECIAL • $25 VIP ★',
+    label: '★ LASER NEON SPECIAL • M$25 VIP ★',
     sub: '1986 SUPERNOVA PLASMA REACTOR'
   }
 };
@@ -508,13 +508,13 @@ export default function VegasSlotMachine({
 
       triggerWinCelebration({
         amount: activeBet > 0 ? verifiedPayout : Number(mult.toFixed(1)),
-        unit: activeBet > 0 ? '🪙' : '× DEMO',
+        unit: activeBet > 0 ? 'M$' : '× DEMO',
         game: activeMachine.name,
         headline: headline || '🎰 REEL WINNER!',
         detail:
           activeBet > 0
-            ? `${detail || `${mult}× Payline Payout!`} (${formatEightiesPrice(verifiedPayout)} Value)`
-            : `Demo hit ${mult}× — Set a 1980s coin bet to win 🪙!`,
+            ? `${detail || `${mult}× Payline Payout!`} (${formatMoney(verifiedPayout)})`
+            : `Demo hit ${mult}× — Set a 1980s coin bet to win MemeDollarz!`,
         multiplier: mult,
         tier: isMega ? 'jackpot' : isBig ? 'big' : 'win',
         chopperFlyby: isMega ? 'both' : isBig ? (Math.random() < 0.55 ? 'airwolf' : 'bluethunder') : null,
@@ -555,7 +555,7 @@ export default function VegasSlotMachine({
 
       setStatusBanner(
         activeBet > 0
-          ? `${headline} — won +${verifiedPayout} 🪙!`
+          ? `${headline} — won ${formatMoney(verifiedPayout, { sign: true })}!`
           : `${headline} (Demo mode — ${mult}×)`
       );
 
@@ -623,8 +623,8 @@ export default function VegasSlotMachine({
     setAutoSpinsLeft(0);
     setStatusBanner(
       nextBet === 0
-        ? 'Demo mode active (0 cost, 0 real token payout).'
-        : `${formatEightiesPrice(nextBet)} (${nextBet} 🪙) wager set — ready to spin!`
+        ? 'Demo mode active (FREE, M$0.00 real payout).'
+        : `${formatMoney(nextBet)} wager set — ready to spin!`
     );
   };
 
@@ -731,8 +731,8 @@ export default function VegasSlotMachine({
         activeBet = affordableBet;
         fallbackBanner =
           affordableBet > 0
-            ? `Auto-stepped bet to ${affordableBet} 🪙 — reels spinning!`
-            : 'Out of 🪙 — auto-switched to 🆓 DEMO mode! Reels rolling!';
+            ? `Auto-stepped bet to ${formatMoney(affordableBet)} — reels spinning!`
+            : 'Out of MemeDollarz — auto-switched to 🆓 DEMO mode! Reels rolling!';
       }
       if (activeBet > 0 && onSpendTokens && !onSpendTokens(activeBet, "One-Arm Bandit '85 Wager")) {
         setBetAmount(0);
@@ -761,7 +761,7 @@ export default function VegasSlotMachine({
         (useFever
           ? '🔥 FEVER 2× HOT SPIN — Reel 1 Locked on 777/Diamond!'
           : activeBet > 0
-            ? `${activeBet} 🪙 wagered — reels spinning.`
+            ? `${formatMoney(activeBet)} wagered — reels spinning.`
             : 'Demo spin — reels rolling.')
     );
 
@@ -1155,8 +1155,8 @@ export default function VegasSlotMachine({
         activeBet = costForBet(affordableBet);
         fallbackBanner =
           affordableBet > 0
-            ? `Auto-stepped bet to ${affordableBet} 🪙 — spinning 5 reels!`
-            : 'Out of 🪙 — auto-switched to 🆓 DEMO mode! Spinning 5 reels!';
+            ? `Auto-stepped bet to ${formatMoney(affordableBet)} — spinning 5 reels!`
+            : 'Out of MemeDollarz — auto-switched to 🆓 DEMO mode! Spinning 5 reels!';
       }
       if (activeBet > 0 && onSpendTokens && !onSpendTokens(activeBet, `${activeMachine.name} Spin`)) {
         setBetAmount(0);
@@ -1286,7 +1286,7 @@ export default function VegasSlotMachine({
           : `☕ FREE SPIN! Golden Orb active (${Math.max(0, mustangFreeSpins - 1)} left after this)`
         : fallbackBanner ||
           (activeBet > 0
-            ? `${activeBet} 🪙 wagered — spinning 5 reels...`
+            ? `${formatMoney(activeBet)} wagered — spinning 5 reels...`
             : 'Demo spin — 5 reels spinning...')
     );
 
@@ -1383,7 +1383,7 @@ export default function VegasSlotMachine({
     if (cost > 0 && tokens < cost) {
       autoTimerRef.current = setTimeout(() => {
         setAutoSpinsLeft(0);
-        setStatusBanner('Auto-spin stopped: not enough 🪙 tokens.');
+        setStatusBanner('Auto-spin stopped: not enough MemeDollarz.');
       }, 0);
       return () => {
         if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
@@ -1733,7 +1733,7 @@ export default function VegasSlotMachine({
                 {activeMachine.payGlassTitle || activeMachine.marqueeSub}
               </div>
               <div className="tm-slot-house-edge-strip">
-                <span>🪙 {activeMachine.coinDenom || '25¢'} COIN-OP ({activeMachine.eraYear || '1985'})</span>
+                <span>🎰 {activeMachine.coinDenom || '25¢'} COIN-OP ({activeMachine.eraYear || '1985'})</span>
                 <span>⚖️ {activeMachine.houseEdgeLabel || 'HOUSE ALWAYS WINS • VEGAS ODDS'}</span>
               </div>
               {featuredMeme && machineId === 'bandit85' && (
@@ -1814,7 +1814,7 @@ export default function VegasSlotMachine({
             {machineId === 'bandit85' && (
               <div className="tm-bandit-payglass-wrap">
                 <div className="tm-bandit-coin-bezel">
-                  <span>🪙 INSERT 25¢ QUARTER • MECHANICAL REEL STEPPER (1985)</span>
+                  <span>🎰 INSERT 25¢ QUARTER • MECHANICAL REEL STEPPER (1985)</span>
                   <span>HOLD / NUDGE • ~88.5% PAYBACK</span>
                 </div>
                 <div className="tm-bandit-payglass" aria-label="Slot Machine Payout Multipliers">
@@ -1863,7 +1863,7 @@ export default function VegasSlotMachine({
                   </div>
                   <div className="tm-slot-meter-pill gold">
                     <span>🏆 MUSTANG POT</span>
-                    <strong>{mustangPot} 🪙</strong>
+                    <strong><Money tokens={mustangPot} compact zero="balance" /></strong>
                   </div>
                   <div className="tm-slot-meter-pill cyan">
                     <span>⚡ CHARGE</span>
@@ -2296,21 +2296,21 @@ export default function VegasSlotMachine({
                   <strong>
                     {actualCost === 0
                       ? '🆓 DEMO'
-                      : `${formatEightiesPrice(actualCost, { compact: true })} (${actualCost}🪙)`}
+                      : formatMoney(actualCost, { compact: true })}
                   </strong>
                 </div>
                 <div className="tm-bandit-stat-box">
                   <span>LAST WIN</span>
                   <strong style={{ color: isWinner ? '#4ade80' : '#94a3b8' }}>
                     {lastOutcome?.payout
-                      ? `+${formatEightiesPrice(lastOutcome.payout, { compact: true })} (${lastOutcome.payout}🪙)`
+                      ? formatMoney(lastOutcome.payout, { compact: true, sign: true })
                       : '0¢'}
                   </strong>
                 </div>
                 <div className="tm-bandit-stat-box">
                   <span>RECORD</span>
                   <strong style={{ color: '#facc15' }}>
-                    🏆 {formatEightiesPrice(bestWinTokens, { compact: true })}
+                    🏆 {formatMoney(bestWinTokens, { compact: true, zero: 'balance' })}
                   </strong>
                 </div>
               </div>
@@ -2331,12 +2331,12 @@ export default function VegasSlotMachine({
                       tokens < amt ? 'short' : ''
                     }`}
                     onClick={() => handleSelectBet(amt)}
-                    title={`${amt} Arcade Tokens = ${formatEightiesPrice(amt)} (${
+                    title={`${formatMoney(amt)} (${
                       amt >= 100 ? 'VIP High-Roller Chip' : '1985 Quarter Standard'
                     })`}
                   >
                     {amt >= 100 && <span className="tm-vip-chip-tag">VIP</span>}
-                    {formatEightiesPrice(amt, { compact: true })} <small>({amt}🪙)</small>
+                    {formatMoney(amt, { compact: true })}
                   </button>
                 ))}
                 <button
@@ -2366,7 +2366,7 @@ export default function VegasSlotMachine({
                   }
                   className={`tm-bandit-chip-btn demo ${betAmount === 0 ? 'active' : ''}`}
                   onClick={() => handleSelectBet(0)}
-                  title="Practice for free (0 tokens staked, 0 tokens paid)"
+                  title="Practice for free (FREE spin, M$0.00 payout)"
                 >
                   🆓 DEMO
                 </button>
@@ -2402,17 +2402,19 @@ export default function VegasSlotMachine({
                           ? `☕ PULL FREE SPIN (${mustangFreeSpins} LEFT!)`
                           : actualCost === 0
                             ? '🕹️ PULL DEMO SPIN (FREE)'
-                            : `🎰 SPIN ${formatEightiesPrice(actualCost, { compact: true })} (${actualCost}🪙 • MAX ${formatEightiesPrice(actualCost * activeMachine.maxMult, { compact: true })})`}
+                            : `🎰 SPIN ${formatMoney(actualCost, { compact: true })} • MAX ${formatMoney(actualCost * activeMachine.maxMult, { compact: true })}`}
                   </button>
                 )}
               </div>
 
               {tokens < 5 && (
                 <div className="tm-bandit-reload-cta">
-                  <span>📸 Out of chips? Upload memes or claim daily rewards (+12 to +20 🪙)!</span>
+                  <span>
+                    📸 Out of MemeDollarz? Upload memes or claim daily rewards ({formatMoney(12, { sign: true })} to {formatMoney(20, { sign: true })})!
+                  </span>
                   {onOpenUpload && (
                     <button type="button" className="tm-btn tm-btn-primary" onClick={onOpenUpload}>
-                      📸 Upload Meme (+12 🪙)
+                      📸 Upload Meme ({formatMoney(12, { sign: true })})
                     </button>
                   )}
                 </div>

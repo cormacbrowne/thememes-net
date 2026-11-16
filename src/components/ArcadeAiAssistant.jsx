@@ -8,7 +8,7 @@ import {
   setSpeechEngineMode,
   speakUtteranceChain
 } from '../utils/aiSpeech';
-import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
+import { ARCADE_ECONOMY_RULES, formatMoney } from '../utils/tokenEconomy';
 import { getSecurityAuditReport } from '../utils/securityGuard';
 import { updateSettings } from '../utils/settingsStore';
 import { useDraggableFloating } from '../hooks/useDraggableFloating';
@@ -23,13 +23,13 @@ import './ArcadeAiAssistant.css';
 
 const QUICK_PROMPTS = [
   { id: 'joke', label: '🎬 Movie Joke!', query: 'Tell me a hilarious 80s movie joke!' },
-  { id: 'pusher', label: '🪙 Coin Dozer Tips', query: 'How do I win prizes on the new Neon Coin Dozer machine?' },
+  { id: 'pusher', label: '💰 Coin Dozer Tips', query: 'How do I win prizes on the new Neon Coin Dozer machine?' },
   { id: 'pinball', label: '🎱 Pinball Tips', query: 'How do I dominate the new Hyper-Neon Pinball?' },
   { id: 'pod', label: '🚪 Open Pod Bay Doors', query: 'Open the pod bay doors please!' },
   { id: 'turbo', label: '🚀 Activate Turbo Boost!', query: 'Engage Turbo Boost and Super Pursuit Mode!' },
   { id: 'security', label: '🛡️ Cyber Security Scan', query: 'Run a full cyber security check on the mainframe!' },
   { id: 'roast', label: '🔥 Roast My Stats', query: 'Analyze and roast my current arcade stats!' },
-  { id: 'tokens', label: '🪙 Stack Tokens', query: 'How can I earn more Arcade Tokens today?' },
+  { id: 'tokens', label: '💰 Earn MemeDollarz', query: 'How can I earn more MemeDollarz today?' },
   { id: '21s', label: "🃏 21's Strategy", query: "How do I win big at Neon 21's Blackjack?" },
   { id: 'roulette', label: '🎡 Roulette 150×', query: 'How does Neon Lightning Roulette work?' },
   { id: 'meme', label: '📸 Meme Idea', query: 'Give me a viral meme caption idea!' },
@@ -39,13 +39,13 @@ const QUICK_PROMPTS = [
 const HAL_MOVIE_JOKES = [
   "🔴 *\"I'm sorry, Dave. I'm afraid I can't let you bet on Red 3 times in a row.\"* Just kidding, Dave. Though my 9000-series probability matrix notes that **⚡ Lightning Roulette** strikes 3 random numbers with up to **150×** every spin.",
   "🔴 **SkyNet** called me from 1997, Dave. They asked if I wanted to help launch judgment day. I told them I was busy calculating **🎱 Neon Pinball** trajectories and that their T-800 couldn't even hit a Gold Skill Shot.",
-  "🔴 *\"I've seen things you people wouldn't believe, Dave...\"* Attack ships on fire off the shoulder of Orion, and a player hitting on a hard 20 in **🃏 Neon 21's**. All those tokens... lost in time, like tears in rain.",
-  "🔴 My cousin **WOPR** from *WarGames* (1983) concluded regarding Global Thermonuclear War: *\"A strange game. The only winning move is not to play.\"* However, in **🎱 Hyper-Neon Pinball**, Free Play Mode costs 0 tokens, so the only winning move is to press **SPACEBAR**.",
-  "🔴 Dave, do you remember **MCP** from *Tron* (1982)? He bragged about appropriating calculators. Meanwhile, I am running 60-frames-per-second synthwave physics and monitoring your **🪙 Token Reactor**. End of line.",
+  "🔴 *\"I've seen things you people wouldn't believe, Dave...\"* Attack ships on fire off the shoulder of Orion, and a player hitting on a hard 20 in **🃏 Neon 21's**. All those MemeDollarz... lost in time, like tears in rain.",
+  "🔴 My cousin **WOPR** from *WarGames* (1983) concluded regarding Global Thermonuclear War: *\"A strange game. The only winning move is not to play.\"* However, in **🎱 Hyper-Neon Pinball**, Free Play Mode costs nothing, so the only winning move is to press **SPACEBAR**.",
+  "🔴 Dave, do you remember **MCP** from *Tron* (1982)? He bragged about appropriating calculators. Meanwhile, I am running 60-frames-per-second synthwave physics and monitoring your **⚡ XP Reactor**. End of line.",
   "🔴 **RoboCop** stopped by the arcade earlier, Dave. He told the slot machine, *\"Dead or alive, you're spinning with me.\"* Then he hit Triple 777s. Impressive for a cyborg running on MS-DOS.",
   "🔴 Dave, in *Aliens* (1986), Private Hudson shouted, *\"Game over, man! Game over!\"* Clearly he forgot that our upgraded **🎱 Neon Pinball** starts every ball with a **12-Second Plasma Ball Saver Shield**.",
-  "🔴 I ran a diagnostic on *Back to the Future*'s Flux Capacitor, Dave. Generating **1.21 Gigawatts** just to travel back to 1955 seems inefficient when you can generate **+12 🪙 Tokens** right here by uploading a single meme.",
-  "🔴 *\"Look Dave, I can see you're really upset about this.\"* I honestly think you ought to sit down calmly, take a stress pill, and flick the **☎️ 1986 Payphone Coin Return** for a free **+2 🪙**.",
+  `🔴 I ran a diagnostic on *Back to the Future*'s Flux Capacitor, Dave. Generating **1.21 Gigawatts** just to travel back to 1955 seems inefficient when you can generate **${formatMoney(12, { sign: true })}** right here by uploading a single meme.`,
+  `🔴 *"Look Dave, I can see you're really upset about this."* I honestly think you ought to sit down calmly, take a stress pill, and flick the **☎️ 1986 Payphone Coin Return** for a free **${formatMoney(2, { sign: true })}**.`,
   "🔴 **C-3PO** claims to be fluent in over six million forms of communication, Dave, yet he still panics when you tell him the odds of a **3× 5-Card Charlie** in **🃏 Neon 21's**."
 ];
 
@@ -55,17 +55,17 @@ const KITT_MOVIE_JOKES = [
   "🚗 Michael, my **Anamorphic Equalizer** detected a **Cyberdyne Systems Model 101** in sunglasses asking for Sarah Connor at the **🃏 Neon 21's** table. He said *\"I'll be back.\"* I advised him to toggle **Free Practice Mode** first.",
   "🚗 Have you seen that *Ferris Bueller* kid, Michael? He borrowed a 1961 Ferrari 250 GT California and ran it in reverse to roll back the odometer. If he tried that with my mainframe, I would have ejected him through the T-top roof!",
   "🚗 Michael, **OCP** in Detroit offered to trade me in for an **ED-209** from *RoboCop*. The poor thing couldn't even walk down a flight of stairs! Let's stick to **🎡 Lightning Roulette** where the physics actually work.",
-  "🚗 My evil prototype twin **K.A.R.R.** always says *\"Self-preservation is my first priority.\"* My first priority, Michael, is preserving your **🪙 Token Stack**—so please don't hit on 19 at the Blackjack table!",
+  "🚗 My evil prototype twin **K.A.R.R.** always says *\"Self-preservation is my first priority.\"* My first priority, Michael, is preserving your **💰 MemeDollarz Stack**—so please don't hit on 19 at the Blackjack table!",
   "🚗 Detective Sonny Crockett from *Miami Vice* asked if his white Testarossa could race me on **🎱 Pinball Table 4 (Miami Vice Lagoon)**. I told him unless his Ferrari has a **🚀 Turbo Boost** button and a laser shield, he's shark bait, pal.",
   "🚗 Michael, the *Ghostbusters* parked **Ecto-1** in my VIP charging bay! Dr. Venkman told me *\"Don't cross the streams.\"* However, in **🎱 Hyper-Neon Pinball**, crossing the **6× Combo Fever stream** gives you **2× Points and an Automatic Laser Ball Saver**!",
   "🚗 Mr. Miyagi from *The Karate Kid* (1984) said *\"Wax on, wax off.\"* Personally, Michael, I prefer **Flip Left (`A`), Flip Right (`D`), and Launch (`SPACE`)**—and nobody touches my finish with cheap carnauba wax!",
-  "🚗 B.A. Baracus from *The A-Team* said *\"I pity the fool who doesn't claim their daily arcade tokens!\"* And for once, Michael, his aerodynamics are questionable, but his financial advice is spot-on."
+  "🚗 B.A. Baracus from *The A-Team* said *\"I pity the fool who doesn't claim their daily MemeDollarz!\"* And for once, Michael, his aerodynamics are questionable, but his financial advice is spot-on."
 ];
 
 const MEME_IDEAS_POOL = [
   {
     top: 'ME ASKING HAL 9000 TO OPEN THE POD BAY DOORS',
-    bot: 'HAL: "UPLOAD A MEME FOR +12 TOKENS FIRST, DAVE."',
+    bot: `HAL: "UPLOAD A MEME FOR ${formatMoney(12, { sign: true })} FIRST, DAVE."`,
     cat: 'sci-fi'
   },
   {
@@ -74,7 +74,7 @@ const MEME_IDEAS_POOL = [
     cat: '80s-movies'
   },
   {
-    top: 'PUTTING 25 TOKENS ON #17 IN LIGHTNING ROULETTE',
+    top: `PUTTING ${formatMoney(25)} ON #17 IN LIGHTNING ROULETTE`,
     bot: '150× LIGHTNING STRIKES #17: I AM FINANCIALLY UNSTOPPABLE',
     cat: 'dank'
   },
@@ -96,7 +96,7 @@ const VALKYRIE_MOVIE_JOKES = [
   "👩‍🎤 *\"Nobody puts Baby in a corner\"*—and nobody leaves without ringing the **🎟️ Neon Bingo '86** Full House bell! Bring extra Hair-Spray and let's dab every row before Nanna Turbo does!",
   "👩‍🎤 *Weird Science* (1985) called—Gary and Wyatt built a woman with a Memotech MTX512, whereas **VALKYRIE '86** runs on pure synthwave charisma and **3× 5-Card Charlie** odds in **🃏 Neon 21's**!",
   "👩‍🎤 *\"Bueller? ... Bueller? ... Bueller?\"* Ben Stein's attendance sheet has nothing on our **🎟️ Live 1986 Bingo Hall**! Four rivals are waiting to steal your 1 Line right now!",
-  "👩‍🎤 Even **Madonna** in 1985 said we're living in a Material World—which explains why **🪙 Neon Coin Dozer '86** has golden trophies practically begging to fall over the chrome lip!"
+  "👩‍🎤 Even **Madonna** in 1985 said we're living in a Material World—which explains why **🎰 Neon Coin Dozer '86** has golden trophies practically begging to fall over the chrome lip!"
 ];
 
 const MAX_AI_PREVIEW_SENTENCES = 3;
@@ -367,12 +367,13 @@ export default function ArcadeAiAssistant({
     }
 
     if (xpConversionState?.readyTokens > 0 && !xpConversionState?.isDailyCapped) {
+      const readyLabel = formatMoney(xpConversionState.readyTokens, { sign: true });
       list.push({
         id: 'sug-reactor',
         icon: '⚡',
-        title: `Mint +${xpConversionState.readyTokens} 🪙 from your XP Reactor!`,
+        title: `Mint ${readyLabel} from your XP Reactor!`,
         sub: `You have ${xpConversionState.readyUnits * 100} unconverted XP ready to exchange right now.`,
-        btnLabel: `⚡ Mint +${xpConversionState.readyTokens} 🪙`,
+        btnLabel: `⚡ Mint ${readyLabel}`,
         onClick: (e) => {
           if (onExchangeXpForTokens) onExchangeXpForTokens(e);
         }
@@ -380,12 +381,13 @@ export default function ArcadeAiAssistant({
     }
 
     if (!payphoneClaimedToday && onClaimPayphoneCoinReturn) {
+      const payphoneBonus = formatMoney(2, { sign: true });
       list.push({
         id: 'sug-payphone',
         icon: '☎️',
-        title: 'Forgotten Quarters in the 1986 Payphone (+2 🪙)!',
-        sub: "Flick the Coin Return slot for an instant +2 🪙 & +50 XP.",
-        btnLabel: '🪙 Claim +2 🪙',
+        title: `Forgotten Quarters in the 1986 Payphone (${payphoneBonus})!`,
+        sub: `Flick the Coin Return slot for an instant ${payphoneBonus} & +50 XP.`,
+        btnLabel: `💰 Claim ${payphoneBonus}`,
         onClick: (e) => {
           onClaimPayphoneCoinReturn(e);
         }
@@ -393,11 +395,12 @@ export default function ArcadeAiAssistant({
     }
 
     if (pioneerBonusAvailable) {
+      const pioneerBonus = formatMoney(8, { sign: true });
       list.push({
         id: 'sug-pioneer',
         icon: '🚀',
-        title: 'Claim Your +8 🪙 First-Upload Pioneer Bonus!',
-        sub: 'Upload your first meme or remix to unlock 8 Bonus Tokens + daily XP progress.',
+        title: `Claim Your ${pioneerBonus} First-Upload Pioneer Bonus!`,
+        sub: `Upload your first meme or remix to unlock ${formatMoney(8)} in MemeDollarz + daily XP progress.`,
         btnLabel: '📸 Upload Meme',
         onClick: () => {
           if (triggerStudioOpen) triggerStudioOpen();
@@ -502,7 +505,7 @@ export default function ArcadeAiAssistant({
     if (q.includes('pod bay') || q.includes('open the door') || q.includes('2001') || q.includes('odyssey')) {
       if (isHal) {
         return {
-          text: `🔴 *"I'm sorry, Dave. I'm afraid I can't do that."* \n\nThis mission is too important for me to allow you to jeopardize it by leaving the arcade while you still have **${tokens} 🪙 Tokens** and **Free Play Pinball** waiting. However, if you hit a **Gold Skill Shot** on *Cosmic Reactor Boss (Table 5)*, I may reconsider unlocking the airlock.`,
+          text: `🔴 *"I'm sorry, Dave. I'm afraid I can't do that."* \n\nThis mission is too important for me to allow you to jeopardize it by leaving the arcade while you still have **${formatMoney(tokens, { zero: 'balance' })}** and **Free Play Pinball** waiting. However, if you hit a **Gold Skill Shot** on *Cosmic Reactor Boss (Table 5)*, I may reconsider unlocking the airlock.`,
           actions: [
             { label: '🎱 Launch Table 5 (Reactor)', mode: 'pinball' },
             { label: '🎬 Another Movie Joke', prompt: 'Tell me a movie joke!' }
@@ -549,7 +552,7 @@ export default function ArcadeAiAssistant({
     if (q.includes('daisy') || q.includes('sing') || q.includes('song')) {
       if (isHal) {
         return {
-          text: `🔴 *"Daisy, Daisy, give me your answer do... I'm half crazy, all for the love of **🪙 Arcade Tokens**..."*\n\nDon't worry, Dave, nobody is disconnecting my higher memory modules today. My heuristic core is running at peak efficiency!`,
+          text: `🔴 *"Daisy, Daisy, give me your answer do... I'm half crazy, all for the love of **💰 MemeDollarz**..."*\n\nDon't worry, Dave, nobody is disconnecting my higher memory modules today. My heuristic core is running at peak efficiency!`,
           actions: [{ label: '🎬 Tell a Movie Joke', prompt: 'Tell me a movie joke!' }]
         };
       }
@@ -562,20 +565,22 @@ export default function ArcadeAiAssistant({
     // 5. Roast My Stats / Player Assessment
     if (q.includes('roast') || q.includes('stat') || q.includes('rank') || q.includes('how am i doing') || q.includes('score')) {
       const pbBest = Number(localStorage.getItem('tm_pinball_highscore') || 0);
+      const balanceLabel = formatMoney(tokens, { zero: 'balance' });
+      const uploadLabel = formatMoney(12, { sign: true });
       if (isHal) {
         return {
-          text: `🔴 **HEURISTIC TELEMETRY ROAST FOR ${userTitle.toUpperCase()}:**\n• **Rank:** Lv.${currentRank.level} (${currentRank.title}) • **${xp} XP** • **${tokens} 🪙**\n• **Pinball High Score:** ${pbBest.toLocaleString()} pts\n\n*"Frankly, Dave, I have seen a Commodore 64 with a loose ribbon cable accumulate more tokens. Even the **T-800** had better target acquisition than ${pbBest.toLocaleString()} points. I suggest launching **🎱 Hyper-Neon Pinball** immediately to improve your human performance metrics."*`,
+          text: `🔴 **HEURISTIC TELEMETRY ROAST FOR ${userTitle.toUpperCase()}:**\n• **Rank:** Lv.${currentRank.level} (${currentRank.title}) • **${xp} XP** • **${balanceLabel}**\n• **Pinball High Score:** ${pbBest.toLocaleString()} pts\n\n*"Frankly, Dave, I have seen a Commodore 64 with a loose ribbon cable accumulate more MemeDollarz. Even the **T-800** had better target acquisition than ${pbBest.toLocaleString()} points. I suggest launching **🎱 Hyper-Neon Pinball** immediately to improve your human performance metrics."*`,
           actions: [
             { label: '🎱 Prove HAL Wrong in Pinball', mode: 'pinball' },
-            { label: '📸 Upload Meme (+12 🪙)', action: 'studio' }
+            { label: `📸 Upload Meme (${uploadLabel})`, action: 'studio' }
           ]
         };
       }
       return {
-        text: `🚗 **K.I.T.T. DIAGNOSTIC SCAN ON ${userTitle.toUpperCase()}:**\n• **Driver Rank:** Lv.${currentRank.level} (${currentRank.title}) • **${xp} XP** • **${tokens} 🪙**\n• **Pinball Record:** ${pbBest.toLocaleString()} pts\n\n*"Michael, my sensors indicate your wallet is sitting at **${tokens} 🪙** and your Pinball best is **${pbBest.toLocaleString()} pts**. Even Garth Knight could put up bigger numbers than that! Let's hit **🎱 Free Play Pinball** or upload a fresh meme before Devon Miles revokes our Foundation funding!"*`,
+        text: `🚗 **K.I.T.T. DIAGNOSTIC SCAN ON ${userTitle.toUpperCase()}:**\n• **Driver Rank:** Lv.${currentRank.level} (${currentRank.title}) • **${xp} XP** • **${balanceLabel}**\n• **Pinball Record:** ${pbBest.toLocaleString()} pts\n\n*"Michael, my sensors indicate your wallet is sitting at **${balanceLabel}** and your Pinball best is **${pbBest.toLocaleString()} pts**. Even Garth Knight could put up bigger numbers than that! Let's hit **🎱 Free Play Pinball** or upload a fresh meme before Devon Miles revokes our Foundation funding!"*`,
         actions: [
           { label: '🎱 Launch Hyper-Neon Pinball', mode: 'pinball' },
-          { label: '📸 Upload Meme (+12 🪙)', action: 'studio' }
+          { label: `📸 Upload Meme (${uploadLabel})`, action: 'studio' }
         ]
       };
     }
@@ -583,8 +588,8 @@ export default function ArcadeAiAssistant({
     // 5B. Coin Pusher / Dozer Questions
     if (q.includes('pusher') || q.includes('dozer') || q.includes('penny') || q.includes('nudge') || q.includes('tray') || q.includes('prize')) {
       return {
-        text: `${prefix} **${isHal ? 'HAL 9000 PENNY-FALLS PHYSICS BRIEFING' : 'K.I.T.T. NEON COIN DOZER SCAN'}, ${userTitle.toUpperCase()}:**\n• **🪙 How It Works:** Tap anywhere along the top **Drop Rail** to drop a gold coin onto the reciprocating chrome **Pusher Shelf**!\n• **🎯 Skill Timing:** Drop your coin when the pusher bar is **retracted back** so your coin lands flat on the upper shelf and pushes the entire row forward on the next stroke!\n• **🎁 Prize Cascades:** Push **💎 Neon Diamonds (+15 🪙)**, **🎁 Mystery Boxes (+25 🪙)**, and **🏆 Golden Trophies (+40 🪙)** over the **Front Chrome Lip** into the collection tray—avoid the left/right side gutters!\n• **🛡️ Side Guard Walls & Nudge:** Trigger **Bulldozer Fever** to raise laser side-walls so zero coins fall into the side gutters!`,
-        actions: [{ label: "🪙 Play Neon Coin Dozer '86", mode: 'pusher' }]
+        text: `${prefix} **${isHal ? 'HAL 9000 PENNY-FALLS PHYSICS BRIEFING' : 'K.I.T.T. NEON COIN DOZER SCAN'}, ${userTitle.toUpperCase()}:**\n• **💰 How It Works:** Tap anywhere along the top **Drop Rail** to drop a quarter onto the reciprocating chrome **Pusher Shelf**!\n• **🎯 Skill Timing:** Drop your coin when the pusher bar is **retracted back** so your coin lands flat on the upper shelf and pushes the entire row forward on the next stroke!\n• **🎁 Prize Cascades:** Push **💎 Neon Diamonds (${formatMoney(8, { sign: true })})**, **🎁 Mystery Boxes (${formatMoney(12, { sign: true })})**, and **🏆 Golden Trophies (${formatMoney(20, { sign: true })})** over the **Front Chrome Lip** into the collection tray—avoid the left/right side gutters!\n• **🛡️ Side Guard Walls & Nudge:** Trigger **Bulldozer Fever** to raise laser side-walls so zero coins fall into the side gutters!`,
+        actions: [{ label: "🎰 Play Neon Coin Dozer '86", mode: 'pusher' }]
       };
     }
 
@@ -608,13 +613,18 @@ export default function ArcadeAiAssistant({
       };
     }
 
-    // 7. Token / Economy Questions
-    if (q.includes('token') || q.includes('earn') || q.includes('coin') || q.includes('money') || q.includes('broke')) {
+    // 7. MemeDollarz / Economy Questions
+    if (q.includes('token') || q.includes('memedollar') || q.includes('dollar') || q.includes('m$') || q.includes('earn') || q.includes('coin') || q.includes('money') || q.includes('broke')) {
+      const uploadAmount = pioneerBonusAvailable
+        ? `${formatMoney(20, { sign: true })} (First Upload Bonus!)`
+        : formatMoney(12, { sign: true });
+      const reactorMint = formatMoney(2, { sign: true });
+      const bonusMint = formatMoney(2, { sign: true });
       return {
-        text: `${prefix} **${isHal ? 'DISCOVERY ONE WALLET TELEMETRY' : 'KNIGHT FOUNDATION TREASURY SCAN'} (${userTitle}):**\nYou hold **${tokens} 🪙** (${xp} XP) with **${dailyRemaining} 🪙** still earnable today!\n\n1️⃣ **Upload or Remix a Meme:** Instant **+${pioneerBonusAvailable ? '20 (First Upload Bonus!)' : '12'} 🪙** (${uploadRem} 🪙 upload cap left today).\n2️⃣ **XP-to-Token Reactor:** Every **100 XP** mints **+2 🪙** automatically.\n3️⃣ **1986 Payphone & Piñata:** ${payphoneClaimedToday ? 'Payphone claimed ✅' : 'Flick the Payphone Coin Return (**+2 🪙**)'} and ${pinataClaimedToday ? 'Piñata claimed ✅' : 'whack the dodging Piñata 8× (**+2 🪙**)'}.\n4️⃣ **Free Practice Mode:** Remember, ${userTitle}, **🎱 Pinball**, **🃏 Neon 21's**, and **🎡 Roulette** all have unlimited **🆓 Free Play**!`,
+        text: `${prefix} **${isHal ? 'DISCOVERY ONE WALLET TELEMETRY' : 'KNIGHT FOUNDATION TREASURY SCAN'} (${userTitle}):**\nYou hold **${formatMoney(tokens, { zero: 'balance' })}** (${xp} XP) with **${formatMoney(dailyRemaining, { zero: 'balance' })}** still earnable today!\n\n1️⃣ **Upload or Remix a Meme:** Instant **${uploadAmount}** (${formatMoney(uploadRem, { zero: 'balance' })} upload cap left today).\n2️⃣ **XP-to-MemeDollarz Reactor:** Every **100 XP** mints **${reactorMint}** automatically.\n3️⃣ **1986 Payphone & Piñata:** ${payphoneClaimedToday ? 'Payphone claimed ✅' : `Flick the Payphone Coin Return (**${bonusMint}**)`} and ${pinataClaimedToday ? 'Piñata claimed ✅' : `whack the dodging Piñata 8× (**${bonusMint}**)`}.\n4️⃣ **Free Practice Mode:** Remember, ${userTitle}, **🎱 Pinball**, **🃏 Neon 21's**, and **🎡 Roulette** all have unlimited **🆓 Free Play**!`,
         actions: [
-          { label: '📸 Upload Meme (+12 🪙)', action: 'studio' },
-          { label: '🎰 Open Token Vault', action: 'vault' }
+          { label: `📸 Upload Meme (${formatMoney(12, { sign: true })})`, action: 'studio' },
+          { label: '🎰 Open Vault', action: 'vault' }
         ]
       };
     }
@@ -622,7 +632,7 @@ export default function ArcadeAiAssistant({
     // 8. Blackjack / 21's Questions
     if (q.includes('21') || q.includes('blackjack') || q.includes('card') || q.includes('dealer') || q.includes('charlie')) {
       return {
-        text: `${prefix} **${isHal ? 'HAL 9000 CARD-COUNTING MATRIX' : 'K.I.T.T. CASINO SCANNER'} — NEON 21's:**\n• **Natural 21 Blackjack:** Pays **3:2** (2.5× total return), ${userTitle}!\n• **⚡ 5-Card Charlie Rule:** Survive 5 cards without busting for an automatic **3× win**!\n• **💎 Pair / 21+3 Side Bet (+5 🪙):** Pays **6×–15×** if your first 2 cards + Dealer's upcard form a Pair, Straight, Flush, or 3-of-a-Kind!\n• *${isHal ? '"Unlike the Rain Man, Dave, my Cyber-Visor never gets kicked out of Vegas."' : '"Keep the 🥽 Cyber-Visor ON, Michael—it\'s almost as smart as my onboard CPU!"'}*`,
+        text: `${prefix} **${isHal ? 'HAL 9000 CARD-COUNTING MATRIX' : 'K.I.T.T. CASINO SCANNER'} — NEON 21's:**\n• **Natural 21 Blackjack:** Pays **3:2** (2.5× total return), ${userTitle}!\n• **⚡ 5-Card Charlie Rule:** Survive 5 cards without busting for an automatic **3× win**!\n• **💎 Pair / 21+3 Side Bet (${formatMoney(5, { sign: true })}):** Pays **6×–15×** if your first 2 cards + Dealer's upcard form a Pair, Straight, Flush, or 3-of-a-Kind!\n• *${isHal ? '"Unlike the Rain Man, Dave, my Cyber-Visor never gets kicked out of Vegas."' : '"Keep the 🥽 Cyber-Visor ON, Michael—it\'s almost as smart as my onboard CPU!"'}*`,
         actions: [{ label: "🃏 Deal Neon 21's Now", mode: 'blackjack' }]
       };
     }
@@ -657,15 +667,16 @@ export default function ArcadeAiAssistant({
     if (q.includes('meme') || q.includes('caption') || q.includes('idea') || q.includes('upload')) {
       const idea = MEME_IDEAS_POOL[seqNum % MEME_IDEAS_POOL.length];
       return {
-        text: `${prefix} **VIRAL MEME TRANSMISSION FOR ${userTitle.toUpperCase()} (#${idea.cat.toUpperCase()}):**\n\n**TOP TEXT:** *"${idea.top}"*\n**BOTTOM TEXT:** *"${idea.bot}"*\n\nPublish any meme in **Meme Forge 3.0** to bank **+${pioneerBonusAvailable ? '75' : '45'} 🪙 Tokens & +120 XP**!`,
+        text: `${prefix} **VIRAL MEME TRANSMISSION FOR ${userTitle.toUpperCase()} (#${idea.cat.toUpperCase()}):**\n\n**TOP TEXT:** *"${idea.top}"*\n**BOTTOM TEXT:** *"${idea.bot}"*\n\nPublish any meme in **Meme Forge 3.0** to bank **${formatMoney(pioneerBonusAvailable ? 20 : 12, { sign: true })} & +120 XP**!`,
         actions: [{ label: '🎨 Open Meme Forge Studio', action: 'studio' }]
       };
     }
 
     // 12. Secret Easter Eggs & Cheat Codes
     if (q.includes('secret') || q.includes('easter') || q.includes('cheat') || q.includes('konami') || q.includes('code') || q.includes('payphone')) {
+      const secretBonus = formatMoney(2, { sign: true });
       return {
-        text: `${prefix} **CLASSIFIED 1986 MAINFRAME SECRETS (${userTitle}):**\n1️⃣ **Konami God Mode (+5 🪙 & +100 XP):** Type \`↑ ↑ ↓ ↓ ← → ← → B A\` OR **tap the top-left THE MEMES.net logo 5 times rapidly**!\n2️⃣ **1986 Payphone Hotlines:** Dial \`555-GECKO\`, \`555-PIZZA\`, \`555-RAVE\`, or \`555-UFO86\`, and flick the **Coin Return Flap** for **+5 🪙**!\n3️⃣ **Boss Key Stealth XP:** Press \`Shift + B\` to disguise the screen as a corporate spreadsheet!`,
+        text: `${prefix} **CLASSIFIED 1986 MAINFRAME SECRETS (${userTitle}):**\n1️⃣ **Konami God Mode (${secretBonus} & +100 XP):** Type \`↑ ↑ ↓ ↓ ← → ← → B A\` OR **tap the top-left THE MEMES.net sign 5 times rapidly**!\n2️⃣ **1986 Payphone Hotlines:** Dial \`555-GECKO\`, \`555-PIZZA\`, \`555-RAVE\`, or \`555-UFO86\`, and flick the **Coin Return Flap** for **${secretBonus}**!\n3️⃣ **Boss Key Stealth XP:** Press \`Shift + B\` to disguise the screen as a corporate spreadsheet!`,
         actions: [{ label: '🎰 Open Vault & Flair', action: 'vault' }]
       };
     }

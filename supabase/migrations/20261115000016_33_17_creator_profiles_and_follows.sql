@@ -153,6 +153,7 @@ END;
 $function$;
 
 REVOKE ALL ON FUNCTION public.set_my_avatar(text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.set_my_avatar(text) FROM anon;
 GRANT EXECUTE ON FUNCTION public.set_my_avatar(text) TO authenticated;
 
 -- Toggle following a creator handle (rate-limited, blocks self-follow when claimed handle matches)
@@ -168,7 +169,7 @@ DECLARE
   v_my_handle text;
   v_exists boolean;
   v_next boolean;
-  v_limit jsonb;
+  v_recent integer := 0;
   v_count integer;
 BEGIN
   IF v_uid IS NULL THEN
@@ -191,15 +192,24 @@ BEGIN
     RETURN jsonb_build_object('ok', false, 'error', 'self_follow', 'message', 'You cannot follow your own creator handle.');
   END IF;
 
-  v_limit := public.check_and_record_rate_limit('follow', v_uid, public.request_ip_hash(), 40, 60);
-  IF COALESCE((v_limit->>'allowed')::boolean, true) = false THEN
+  -- 40 follow toggles per hour per account (self-contained; the shared limiter has no 'follow' tier)
+  SELECT count(*)::integer INTO v_recent
+  FROM public.rate_limit_events e
+  WHERE e.action = 'follow'
+    AND e.user_id = v_uid
+    AND e.created_at > now() - interval '1 hour';
+
+  IF v_recent >= 40 THEN
     RETURN jsonb_build_object(
       'ok', false,
       'error', 'rate_limited',
-      'retry_after_sec', COALESCE((v_limit->>'retry_after_sec')::integer, 30),
-      'message', public.format_rate_limit_message(COALESCE((v_limit->>'retry_after_sec')::integer, 30))
+      'retry_after_seconds', 600,
+      'message', public.format_rate_limit_message(600)
     );
   END IF;
+
+  INSERT INTO public.rate_limit_events (action, user_id, ip_hash)
+  VALUES ('follow', v_uid, public.request_ip_hash());
 
   SELECT EXISTS(
     SELECT 1 FROM public.follows
@@ -231,6 +241,7 @@ END;
 $function$;
 
 REVOKE ALL ON FUNCTION public.toggle_follow_creator(text, boolean) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.toggle_follow_creator(text, boolean) FROM anon;
 GRANT EXECUTE ON FUNCTION public.toggle_follow_creator(text, boolean) TO authenticated;
 
 -- Public creator profile summary for /u/<handle> (no private profile columns exposed)

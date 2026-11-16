@@ -28,7 +28,14 @@ describe('Task 33.15 Real Daily Caption Battle & Hall of Fame', () => {
     expect(isActiveCaptionKing('kingmemer86', activeKings, nowMs)).toBe(true);
     expect(isActiveCaptionKing('ExpiredKing', activeKings, nowMs)).toBe(false);
     expect(isActiveCaptionKing('SomeoneElse', activeKings, nowMs)).toBe(false);
-    expect(isUsernameCaptionKing([], 'KingMemer86', activeKings)).toBe(true);
+    // isUsernameCaptionKing reads the real clock, so pin it (this assertion started failing once 16 Nov 2026 arrived).
+    vi.useFakeTimers();
+    vi.setSystemTime(nowMs);
+    try {
+      expect(isUsernameCaptionKing([], 'KingMemer86', activeKings)).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
 
     const sampleDate = new Date('2026-11-15T10:00:00Z');
     expect(getUtcDateString(sampleDate)).toBe('2026-11-15');

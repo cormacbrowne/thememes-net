@@ -223,7 +223,7 @@
     },
     {
       "source": "/((?!_vercel/|api/|assets/|seed/|favicon|logo-|apple-touch-icon|manifest\\.webmanifest|BingSiteAuth\\.xml).*)",
-      "destination": "/index.html"
+      "destination": "/"
     }
   ],
   "headers": [

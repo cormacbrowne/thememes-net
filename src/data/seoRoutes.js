@@ -851,8 +851,11 @@ export const SEO_ROUTES = [
     category: null,
     tag: null,
     sortBy: 'top',
-    pageTitle: 'Caption Battle Hall of Fame | TheMemes.net',
-    metaDescription:
+    title: 'Caption Battle Hall of Fame — Daily Winners Archive | THE MEMES.net',
+    kicker: 'Daily Caption Battle // Winners Archive',
+    changefreq: 'daily',
+    priority: '0.6',
+    description:
       'Permanent archive of Daily Caption Battle winners on TheMemes.net, featuring yesterday’s Caption King, 24-hour crown holders, and top-voted captions.',
     ogImage: 'https://www.thememes.net/og-card.png',
     h1: 'Caption Battle Hall of Fame',

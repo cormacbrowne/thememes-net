@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
-import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
+import { ARCADE_ECONOMY_RULES, formatMoney, validateStakedGamePayout } from '../utils/tokenEconomy';
 import { checkDailyPerk, consumeDailyPerk } from '../utils/memeFeedBridge';
 import { triggerWinCelebration } from '../utils/winCelebration';
 import { Wallet } from './ui/Money';
@@ -390,19 +390,19 @@ export default function VegasBlackjackGame({
           outcome = 'blackjack';
           // 3:2 Blackjack payout (2.5x total return, rounded up)
           payout = Math.ceil(st * 2.5);
-          badge = `🎰 BLACKJACK 21! (+${payout} 🪙)`;
+          badge = `🎰 BLACKJACK 21! (${formatMoney(payout, { sign: true })})`;
           anyWin = true;
           anyBj = true;
         } else if (pEval.isFiveCardCharlie) {
           outcome = 'charlie';
           payout = Math.round(st * 2.2);
-          badge = `⚡ 5-CARD CHARLIE 2.2×! (+${payout} 🪙)`;
+          badge = `⚡ 5-CARD CHARLIE 2.2×! (${formatMoney(payout, { sign: true })})`;
           anyWin = true;
           anyCharlie = true;
         } else if (dEval.isBust) {
           outcome = 'win';
           payout = st * 2;
-          badge = `🔥 DEALER BUSTS! (+${payout} 🪙)`;
+          badge = `🔥 DEALER BUSTS! (${formatMoney(payout, { sign: true })})`;
           anyWin = true;
         } else if (dEval.isBlackjack && !pEval.isBlackjack) {
           outcome = 'lose';
@@ -412,7 +412,7 @@ export default function VegasBlackjackGame({
         } else if (pEval.total > dEval.total) {
           outcome = 'win';
           payout = st * 2;
-          badge = `🏆 WIN ${pEval.total} vs ${dEval.total}! (+${payout} 🪙)`;
+          badge = `🏆 WIN ${pEval.total} vs ${dEval.total}! (${formatMoney(payout, { sign: true })})`;
           anyWin = true;
         } else if (pEval.total === dEval.total) {
           outcome = 'push';
@@ -459,15 +459,15 @@ export default function VegasBlackjackGame({
             stakedTokens: totalStaked,
             xp: anyBj || anyCharlie ? 55 : 35,
             label: anyCharlie
-              ? `⚡ 5-Card Charlie! +${verified} 🪙`
+              ? `⚡ 5-Card Charlie! ${formatMoney(verified, { sign: true })}`
               : anyBj
-              ? `🃏 Blackjack 21! +${verified} 🪙`
-              : `🃏 Neon 21's Win! +${verified} 🪙`,
+              ? `🃏 Blackjack 21! ${formatMoney(verified, { sign: true })}`
+              : `🃏 Neon 21's Win! ${formatMoney(verified, { sign: true })}`,
             emoji: '🃏'
           });
           triggerWinCelebration({
             amount: verified,
-            unit: '🪙',
+            unit: 'M$',
             game: "Neon 21's Blackjack",
             headline: anyCharlie
               ? '⚡ 5-CARD CHARLIE!'
@@ -490,7 +490,7 @@ export default function VegasBlackjackGame({
               : anyBj
               ? '🃏 BLACKJACK 21!'
               : '🃏 PRACTICE HAND WON!',
-            detail: `${nextStreak}× Win Streak — Switch to Token Mode for real 🪙!`,
+            detail: `${nextStreak}× Win Streak — Switch to MemeDollarz Mode for real payouts!`,
             multiplier: anyCharlie || anyBj ? 4 : 2,
             tier: anyCharlie || anyBj ? 'big' : 'win'
           });
@@ -500,8 +500,8 @@ export default function VegasBlackjackGame({
           face: dEval.isBust ? '🤯' : anyBj ? '🎰' : '😱',
           tag: dEval.isBust ? 'SYSTEM OVERLOAD — DEALER BUST!' : 'PLAYER VICTORY!',
           line: isFreePractice
-            ? `🎉 YOU WON IN PRACTICE! (${nextStreak}× WIN STREAK — Switch to Token Wager to win real 🪙!)`
-            : `🎉 WINNER! PAID +${totalPayout} 🪙 ARCADE TOKENS! (🔥 ${nextStreak}× HOT STREAK!)`
+            ? `🎉 YOU WON IN PRACTICE! (${nextStreak}× WIN STREAK — Switch to MemeDollarz wager to win real M$!)`
+            : `🎉 WINNER! PAID ${formatMoney(totalPayout, { sign: true })}! (🔥 ${nextStreak}× HOT STREAK!)`
         });
       } else if (!anyLoss) {
         // Push only
@@ -517,7 +517,7 @@ export default function VegasBlackjackGame({
           onPayoutTokens(totalPayout, {
             stakedTokens: totalStaked,
             xp: 15,
-            label: `🤝 21's Push — ${totalPayout} 🪙 Returned`,
+            label: `🤝 21's Push — ${formatMoney(totalPayout)} Returned`,
             emoji: '🤝'
           });
         }
@@ -609,8 +609,8 @@ export default function VegasBlackjackGame({
           sfx.playClownHonk();
           setDealerMood({
             face: '⚠️',
-            tag: 'LOW TOKEN STACK!',
-            line: `Need ${totalCost} 🪙 for this wager! Switch to Free Practice or Upload a Meme (+45 🪙)!`
+            tag: 'LOW MEMEDOLLARZ!',
+            line: `Need ${formatMoney(totalCost)} for this wager! Switch to Free Practice or Upload a Meme (${formatMoney(12, { sign: true })})!`
           });
           return;
         }
@@ -642,13 +642,13 @@ export default function VegasBlackjackGame({
       const sbWin = evaluateSideBet(initialPlayerCards, d1);
       if (sbWin) {
         const sbPayout = 5 * sbWin.mult;
-        setSideBetResult({ won: true, text: `${sbWin.name} +${sbPayout} 🪙!` });
+        setSideBetResult({ won: true, text: `${sbWin.name} ${formatMoney(sbPayout, { sign: true })}!` });
         sfx.playLightningStrike();
         if (!practiceMode && onPayoutTokens) {
           onPayoutTokens(sbPayout, {
             stakedTokens: 5,
             xp: 45,
-            label: `${sbWin.name} +${sbPayout} 🪙`,
+            label: `${sbWin.name} ${formatMoney(sbPayout, { sign: true })}`,
             emoji: '💎'
           });
         }
@@ -784,8 +784,8 @@ export default function VegasBlackjackGame({
         sfx.playClownHonk();
         setDealerMood({
           face: '⚠️',
-          tag: 'NEED TOKENS TO DOUBLE',
-          line: `Need ${extraStake} 🪙 more to Double Down!`
+          tag: 'NEED MEMEDOLLARZ TO DOUBLE',
+          line: `Need ${formatMoney(extraStake)} more to Double Down!`
         });
         return;
       }
@@ -834,8 +834,8 @@ export default function VegasBlackjackGame({
         sfx.playClownHonk();
         setDealerMood({
           face: '⚠️',
-          tag: 'NEED TOKENS TO SPLIT',
-          line: `Need ${extraStake} 🪙 to match your stake on Split Hand #2!`
+          tag: 'NEED MEMEDOLLARZ TO SPLIT',
+          line: `Need ${formatMoney(extraStake)} to match your stake on Split Hand #2!`
         });
         return;
       }
@@ -1076,7 +1076,7 @@ export default function VegasBlackjackGame({
                     <div className="tm-bj-zone-head">
                       <span className="tm-bj-zone-label">
                         {hands.length > 1 ? `🕹️ HAND #${hIdx + 1}` : '🕹️ YOUR HAND'}{' '}
-                        {h.stake > 0 ? `(${h.stake} 🪙${h.doubled ? ' 2×' : ''})` : '(FREE)'}
+                        {h.stake > 0 ? `(${formatMoney(h.stake)}${h.doubled ? ' 2×' : ''})` : '(FREE)'}
                       </span>
                       <span
                         className={`tm-bj-score-pill ${
@@ -1191,7 +1191,7 @@ export default function VegasBlackjackGame({
                       setBetAmount(amt);
                     }}
                   >
-                    🪙 {amt}
+                    {formatMoney(amt)}
                   </button>
                 ))}
                 <button
@@ -1201,9 +1201,9 @@ export default function VegasBlackjackGame({
                     sfx.playToggle();
                     setSideBetOn((s) => !s);
                   }}
-                  title="Optional +5 Token Side Bet: Pays up to 15× if your first 2 cards are a Pair or make a 3-Card Poker Flush/Straight with the Dealer's upcard!"
+                  title={`Optional ${formatMoney(5, { sign: true })} Side Bet: Pays up to 15× if your first 2 cards are a Pair or make a 3-Card Poker Flush/Straight with the Dealer's upcard!`}
                 >
-                  💎 Pair / 21+3 (+5 🪙): {sideBetOn ? 'ON' : 'OFF'}
+                  💎 Pair / 21+3 ({formatMoney(5, { sign: true })}): {sideBetOn ? 'ON' : 'OFF'}
                 </button>
               </div>
 
@@ -1216,7 +1216,7 @@ export default function VegasBlackjackGame({
                 >
                   {practiceMode
                     ? '🃏 DEAL FREE PRACTICE HAND'
-                    : `🃏 DEAL NEON 21's HAND (${betAmount + (sideBetOn ? 5 : 0)} 🪙)`}
+                    : `🃏 DEAL NEON 21's HAND (${formatMoney(betAmount + (sideBetOn ? 5 : 0))})`}
                 </button>
                 {!practiceMode && tokens < betAmount && onOpenUpload && (
                   <button
@@ -1224,7 +1224,7 @@ export default function VegasBlackjackGame({
                     className="tm-btn tm-btn-primary"
                     onClick={onOpenUpload}
                   >
-                    📸 Upload Meme (+12 🪙)
+                    📸 Upload Meme ({formatMoney(12, { sign: true })})
                   </button>
                 )}
               </div>

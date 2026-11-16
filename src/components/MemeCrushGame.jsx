@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { sfx } from '../utils/soundEngine';
-import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
+import { ARCADE_ECONOMY_RULES, formatMoney, validateStakedGamePayout } from '../utils/tokenEconomy';
 import { getLevelBackdropMeme } from '../utils/memeFeedBridge';
 import { triggerWinCelebration } from '../utils/winCelebration';
 import { Wallet } from './ui/Money';
@@ -540,7 +540,7 @@ export default function MemeCrushGame({
     setHintState({ boardRef: null, selectedRef: null, cells: [] });
     setComboBanner(
       stakedAmt > 0
-        ? `🪙 ${stakedAmt}-TOKEN PRIZE RUN ACTIVE — CLEAR OBJECTIVES TO WIN UP TO ${starPayouts[3]} 🪙!`
+        ? `🏆 ${formatMoney(stakedAmt)} PRIZE RUN ACTIVE — CLEAR OBJECTIVES TO WIN UP TO ${formatMoney(starPayouts[3])}!`
         : `🆓 PRACTICE MODE — Lv.${def.id} ${def.name}`
     );
     setActiveStakeTokens(stakedAmt);
@@ -553,7 +553,7 @@ export default function MemeCrushGame({
     if (busy) return;
     // Prevent accidental loss of active staked run unless round ended
     if (activeStakeTokens > 0 && !roundResult && roundStarted && movesLeft < levelDef.moves) {
-      if (!window.confirm('Abandon your active 10-Token Prize Run and switch levels?')) {
+      if (!window.confirm(`Abandon your active ${formatMoney(activeStakeTokens)} Prize Run and switch levels?`)) {
         return;
       }
     }
@@ -566,7 +566,7 @@ export default function MemeCrushGame({
     if (tokens < entryCost) {
       sfx.playClownHonk();
       setComboBanner(
-        `⚠️ NEED ${entryCost} 🪙 FOR PRIZE MODE! UPLOAD A MEME (+45 🪙) OR PLAY FREE PRACTICE!`
+        `⚠️ NEED ${formatMoney(entryCost)} FOR PRIZE MODE! UPLOAD A MEME (${formatMoney(12, { sign: true })}) OR PLAY FREE PRACTICE!`
       );
       return;
     }
@@ -662,7 +662,7 @@ export default function MemeCrushGame({
 
         triggerWinCelebration({
           amount: verifiedPayout > 0 ? verifiedPayout : finalScore,
-          unit: verifiedPayout > 0 ? '🪙' : 'PTS',
+          unit: verifiedPayout > 0 ? 'M$' : 'PTS',
           game: 'Meme Crush Saga',
           headline: `🍬 LEVEL ${levelDef.id} CLEARED! (${'⭐'.repeat(stars)})`,
           detail: `${levelDef.name} • Score: ${finalScore.toLocaleString()}`,
@@ -1330,7 +1330,7 @@ export default function MemeCrushGame({
     const cost = ARCADE_ECONOMY_RULES.ARCADE_STAKES.CRUSH_CONTINUE_COST; // 10 tokens
     if (tokens < cost) {
       sfx.playClownHonk();
-      setComboBanner(`Need ${cost} 🪙 for +5 extra moves.`);
+      setComboBanner(`Need ${formatMoney(cost)} for +5 extra moves.`);
       return;
     }
     if (onSpendTokens && onSpendTokens(cost, 'Meme Crush +5 Extra Moves')) {
@@ -1370,16 +1370,16 @@ export default function MemeCrushGame({
             <Wallet tokens={tokens} centz={centz} size="sm" />
             {activeStakeTokens > 0 && !roundResult ? (
               <span className="tm-crush2-stake-active">
-                🏆 PRIZE RUN ({starPayouts[1]}/{starPayouts[2]}/{starPayouts[3]} 🪙)
+                🏆 PRIZE RUN ({formatMoney(starPayouts[1])}/{formatMoney(starPayouts[2])}/{formatMoney(starPayouts[3])})
               </span>
             ) : (
               <button
                 type="button"
                 className="tm-crush2-prize-btn"
                 onClick={handleStartPrizeRun}
-                title={`Stake ${entryCost} Tokens to win ${starPayouts[1]}–${starPayouts[3]} Tokens on clearing this level!`}
+                title={`Stake ${formatMoney(entryCost)} to win ${formatMoney(starPayouts[1])}–${formatMoney(starPayouts[3])} on clearing this level!`}
               >
-                🪙 Stake {entryCost} (Win up to {starPayouts[3]} 🪙)
+                🏆 Stake {formatMoney(entryCost)} (Win up to {formatMoney(starPayouts[3])})
               </button>
             )}
           </div>
@@ -1657,8 +1657,8 @@ export default function MemeCrushGame({
                 <p>
                   {roundResult.won
                     ? roundResult.payout > 0
-                      ? `Final Score: ${roundResult.score.toLocaleString()} • Won +${roundResult.payout} 🪙 Prize!`
-                      : `Final Score: ${roundResult.score.toLocaleString()} (Practice Clear — Stake ${entryCost} 🪙 to win token prizes!)`
+                      ? `Final Score: ${roundResult.score.toLocaleString()} • Won ${formatMoney(roundResult.payout, { sign: true })} Prize!`
+                      : `Final Score: ${roundResult.score.toLocaleString()} (Practice Clear — Stake ${formatMoney(entryCost)} to win MemeDollarz!)`
                     : 'So close! Grab +5 Extra Moves or retry this board!'}
                 </p>
 
@@ -1669,7 +1669,7 @@ export default function MemeCrushGame({
                       className="tm-btn tm-btn-primary"
                       onClick={handleBuyExtraMoves}
                     >
-                      ⚡ +5 Extra Moves ({ARCADE_ECONOMY_RULES.ARCADE_STAKES.CRUSH_CONTINUE_COST} 🪙)
+                      ⚡ +5 Extra Moves ({formatMoney(ARCADE_ECONOMY_RULES.ARCADE_STAKES.CRUSH_CONTINUE_COST)})
                     </button>
                   )}
 
@@ -1697,7 +1697,7 @@ export default function MemeCrushGame({
                       className="tm-btn tm-btn-primary"
                       onClick={handleStartPrizeRun}
                     >
-                      🪙 Play Prize Run ({entryCost} 🪙)
+                      🏆 Play Prize Run ({formatMoney(entryCost)})
                     </button>
                   )}
                 </div>
@@ -1743,7 +1743,7 @@ export default function MemeCrushGame({
                 className="tm-crush2-tool-btn upload"
                 onClick={onOpenUpload}
               >
-                📸 +12 🪙
+                📸 {formatMoney(12, { sign: true })}
               </button>
             )}
           </div>

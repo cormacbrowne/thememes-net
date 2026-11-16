@@ -944,7 +944,7 @@ export default function App() {
           className={`tm-loot-goblin ${activeGoblin.dir}`}
           style={{ top: `${activeGoblin.topPct}%` }}
           onClick={handleCatchGoblin}
-          title="Catch the Wild Golden Loot Goblin (+5 Tokens max 1x/day & +60 XP)!"
+          title={`Catch the Wild Golden Loot Goblin (${formatMoney(ARCADE_ECONOMY_RULES.REWARDS.GOBLIN_CATCH.tokens, { sign: true })} max 1x/day & +60 XP)!`}
         >
           <span className="tm-goblin-icon">👾✨</span>
           <span className="tm-goblin-tag">CATCH ME! WILD LOOT!</span>

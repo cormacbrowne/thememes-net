@@ -339,7 +339,7 @@ function renderScene(scene, cfg) {
           </div>
           <div class="hero-mini-card c2">
             <span class="mini-pill">🎱 NEON BINGO ‘86</span>
-            <span class="mini-pill">🪙 COIN DOZER</span>
+            <span class="mini-pill">🎰 COIN DOZER</span>
             <span class="mini-pill">🔊 VINE BOOM SFX</span>
           </div>
         </div>
@@ -389,10 +389,10 @@ function renderScene(scene, cfg) {
       return `
         <div class="stage game-stage">
           <div class="bezel neon-gold">
-            <div class="bezel-hdr">COINS ON DECK: 148 · JACKPOT: 5,000¢</div>
+            <div class="bezel-hdr">COINS ON DECK: 148 · JACKPOT: M$50.00</div>
             <div class="pusher-well">
               <div class="pusher-ram">PUSH DECK ×5</div>
-              <div class="coin-row">${'🪙💎🪙⭐🪙'.split('').filter((x) => x.trim()).map(() => '').join('')}
+              <div class="coin-row">
                 <span class="tok gold">¢</span><span class="tok cyan">💎</span><span class="tok gold">¢</span><span class="tok pink">★</span><span class="tok gold">¢</span>
               </div>
               <div class="coin-row offset">
@@ -426,7 +426,7 @@ function renderScene(scene, cfg) {
       return `
         <div class="stage game-stage">
           <div class="bezel neon-pink">
-            <div class="bezel-hdr">🔥 MEGA PAYLINE · JACKPOT 8,600¢</div>
+            <div class="bezel-hdr">🔥 MEGA PAYLINE · JACKPOT M$86.00</div>
             <div class="slot-reels">
               <div class="reel"><span>💎</span><span class="win">7️⃣</span><span>🍒</span></div>
               <div class="reel"><span>⚡</span><span class="win">7️⃣</span><span>🔔</span></div>
@@ -447,7 +447,7 @@ function renderScene(scene, cfg) {
               <div class="card red"><span>K</span><strong>♦</strong></div>
             </div>
             <div class="chips-row">
-              <span class="chip c1">$100</span><span class="chip c2">$50</span><span class="chip c3">$25</span>
+              <span class="chip c1">M$25</span><span class="chip c2">M$12.50</span><span class="chip c3">M$6.25</span>
             </div>
           </div>
         </div>
@@ -574,7 +574,7 @@ function renderScene(scene, cfg) {
           <div class="swipe-card">
             <div class="stamp-fire">🔥 UPVOTE ×12</div>
             <div class="sc-title">“JUST ONE MORE MEME”</div>
-            <div class="sc-sub">3:14 AM · +250 ARCADE COINS</div>
+            <div class="sc-sub">3:14 AM · +M$62.50 MEMEDOLLARZ</div>
           </div>
         </div>
       `;
@@ -710,7 +710,7 @@ function renderScene(scene, cfg) {
         <div class="stage tool-stage">
           <div class="hub-grid">
             <div class="hub-cab"><span>🎱</span><strong>NEON BINGO</strong></div>
-            <div class="hub-cab"><span>🪙</span><strong>COIN DOZER</strong></div>
+            <div class="hub-cab"><span>🎰</span><strong>COIN DOZER</strong></div>
             <div class="hub-cab"><span>🎰</span><strong>VEGAS 777</strong></div>
             <div class="hub-cab"><span>📈</span><strong>MEMEDAQ</strong></div>
           </div>

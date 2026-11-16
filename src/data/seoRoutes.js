@@ -185,8 +185,8 @@ export const SEO_ROUTES = [
     category: 'all',
     introParagraphs: [
       "Step inside the Cyber-Arcade Lobby on THE MEMES.net—home to 15 free browser-based arcade cabinets, neon casino tables, skill challenges, and daily meme prediction games with zero downloads, accounts, or real-money deposits required. Filter quickly across Casino, Skill, Meme Games, and Market Sim sections, pin your favorite cabinets with star bookmarks, and pick up immediately from your Continue Playing shelf.",
-      "Choose between fast hits like Neon Bingo '86 (all 90 classic comedy calls, UV dabber pens & Ceefax 888), Neon Coin Dozer '86, Lightning Roulette, Neon 21's, Vegas 777 Slots, 80s Magic 8-Ball Oracle, and Neon Derby '86 meme horse racing, or dive into skill hits like 5-table Neon Pinball and Meme Crush Saga. Need quick token-free rounds? Try daily pixelated Guess The Meme, endless Higher or Lower upvote streaks, Hyper Swipe, or 1v1 Meme Arena.",
-      'Every wager runs purely on free MemeDollarz ($) and MemeCentz (¢) earned by uploading and voting on memes, and practice mode activates automatically so newcomers can play any cabinet risk-free on desktop, iPad, or mobile portrait screens with procedural synthwave radio. Switch smoothly between cabinets or head back to the live meme feed and Meme Forge Studio anytime.'
+      "Choose between fast hits like Neon Bingo '86 (all 90 classic comedy calls, UV dabber pens & Ceefax 888), Neon Coin Dozer '86, Lightning Roulette, Neon 21's, Vegas 777 Slots, 80s Magic 8-Ball Oracle, and Neon Derby '86 meme horse racing, or dive into skill hits like 5-table Neon Pinball and Meme Crush Saga. Need quick free rounds? Try daily pixelated Guess The Meme, endless Higher or Lower upvote streaks, Hyper Swipe, or 1v1 Meme Arena.",
+      'Every wager runs purely on free MemeDollarz (M$) and MemeCentz (¢) earned by uploading and voting on memes, and practice mode activates automatically so newcomers can play any cabinet risk-free on desktop, iPad, or mobile portrait screens with procedural synthwave radio. Switch smoothly between cabinets or head back to the live meme feed and Meme Forge Studio anytime.'
     ]
   },
   {
@@ -195,15 +195,15 @@ export const SEO_ROUTES = [
     description:
       'Play a free 3D coin pusher game online in your browser! Drop coins onto the reciprocating chrome pusher, hit the Skill Gate mini-slot, collect 80s prizes, and trigger Bulldozer Fever.',
     h1: "Neon Coin Dozer '86 — Play Coin Pusher Online Free",
-    kicker: '60fps HTML5 Arcade // Free Play & Token Modes',
+    kicker: '60fps HTML5 Arcade // Free Play & MemeDollarz Modes',
     changefreq: 'daily',
     priority: '0.95',
     viewMode: 'pusher',
     category: 'all',
     introParagraphs: [
-      "Play Neon Coin Dozer '86 free online directly in your browser—no downloads, no real money, and smooth 60fps physics on desktop, iPad, and iPhone. Click or tap across the drop chute to release gleaming gold tokens and silver score medals onto the reciprocating chrome pusher shelf and watch coins teeter dramatically on the front cliffhanger lip before cascading into your collection tray.",
-      'Time your coin drops to pass through the moving Skill Gate basket and charge the 3-reel backbox mini-slot! Hitting Skill Gate spins awards 10-coin avalanches, twin neon diamonds, mega pusher super-strokes, and temporary Laser Side-Walls that block gutter losses. Five collectible retro prizes—Diamond, Mystery Box, Gold Joystick, Trophy, and Cyber Crown—stack permanent session score multipliers up to 2.25x.',
-      'Need an extra push? Fire a 3-Coin Barrage, toggle Auto-Drop stream mode, or tap Cabinet Nudge to shake loose cliffhanger stacks (watching out for the 3-strike TILT sensor). Switch anytime between unlimited Free Play practice coins and Arcade Token mode using tokens earned from uploading and upvoting memes.'
+      "Play Neon Coin Dozer '86 free online directly in your browser—no downloads, no real money, and smooth 60fps physics on desktop, iPad, and iPhone. Click or tap across the drop chute to release gleaming quarters and silver score medals onto the reciprocating chrome pusher shelf and watch coins teeter dramatically on the front cliffhanger lip before cascading into your collection tray.",
+      'Time your coin drops to pass through the moving Skill Gate basket and charge the 3-reel backbox mini-slot! Hitting Skill Gate spins awards coin avalanches, twin neon diamonds, mega pusher super-strokes, and temporary Laser Side-Walls that block gutter losses. Five collectible retro prizes—Diamond, Mystery Box, Gold Joystick, Trophy, and Cyber Crown—stack permanent session score multipliers up to 2.25x.',
+      'Need an extra push? Fire a 3-Coin Barrage, toggle Auto-Drop stream mode, or tap Cabinet Nudge to shake loose cliffhanger stacks (watching out for the 3-strike TILT sensor). Switch anytime between unlimited Free Play practice coins and MemeDollarz mode using MemeDollarz earned from uploading and upvoting memes.'
     ]
   },
   {
@@ -212,14 +212,14 @@ export const SEO_ROUTES = [
     description:
       "Play Meme Invaders '86 free online! Blast descending emoji waves, defend crumbling shields, shoot bonus saucers, and fight every 5th wave's Top Meme Boss at 60fps.",
     h1: "Meme Invaders '86 — Free Retro Meme Space Shooter",
-    kicker: '60fps Skill Cabinet // Touch, Keyboard & Gamepad — 0 Tokens to Play',
+    kicker: '60fps Skill Cabinet // Touch, Keyboard & Gamepad — Free to Play',
     ogImage: 'https://www.thememes.net/og/games.png',
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'invaders',
     category: 'all',
     introParagraphs: [
-      "Defend the neon synthwave grid in Meme Invaders '86, a free 60fps retro Space Invaders arcade shooter built right into your browser—no downloads, no sign-in walls, and zero tokens required to play. Blast through 40 descending emoji and meme-face invaders arranged across five scoring tiers while weaving behind four destructible pixel-block shields that visibly crumble pixel by pixel under enemy and player laser fire.",
+      "Defend the neon synthwave grid in Meme Invaders '86, a free 60fps retro Space Invaders arcade shooter built right into your browser—no downloads, no sign-in walls, and zero MemeDollarz required to play. Blast through 40 descending emoji and meme-face invaders arranged across five scoring tiers while weaving behind four destructible pixel-block shields that visibly crumble pixel by pixel under enemy and player laser fire.",
       'Play seamlessly across desktop, tablet, and phone using Arrow or A/D keys and Spacebar, smooth touch-drag steering plus tactile arcade thumb pads on mobile, or any plugged-in USB or Bluetooth gamepad controller. Keep your eyes peeled for the glowing Mystery Bonus Saucer crossing overhead—tagging it awards up to 300 bonus points and unleashes temporary Rapid Laser overdrive.',
       "Every fifth wave summons a towering Giant Meme Boss constructed directly from today's top-ranked approved community meme thumbnail from the live feed, firing tri-beam plasma spreads that test your shield timing and dodge reflexes. Switching browser tabs pauses your run automatically, and finishing a wave climb lets you stamp your 3-letter initials onto the global Meme Invaders '86 arcade leaderboard."
     ]
@@ -230,14 +230,14 @@ export const SEO_ROUTES = [
     description:
       'Play Neon Serpent free online! Swipe through a 60fps neon grid eating reaction emojis: Fire speeds up & doubles points, Moai triggers slow-mo, and Skull shrinks your tail.',
     h1: 'Neon Serpent — Free Synthwave Reaction Snake Game',
-    kicker: '60fps Skill Cabinet // Swipe, Keyboard & Gamepad — 0 Tokens to Play',
+    kicker: '60fps Skill Cabinet // Swipe, Keyboard & Gamepad — Free to Play',
     ogImage: 'https://www.thememes.net/og/games.png',
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'serpent',
     category: 'all',
     introParagraphs: [
-      'Slither through the cyber-grid in Neon Serpent, a free 60fps synthwave reaction-snake arcade cabinet playable directly in your browser with zero downloads, zero token fees, and instant leaderboard competition. Steer your glowing serpent across a 20x20 neon matrix while snatching meme reaction emojis that transform the pace and strategy of every single run.',
+      'Slither through the cyber-grid in Neon Serpent, a free 60fps synthwave reaction-snake arcade cabinet playable directly in your browser with zero downloads, zero cost, and instant leaderboard competition. Steer your glowing serpent across a 20x20 neon matrix while snatching meme reaction emojis that transform the pace and strategy of every single run.',
       'Unlike ordinary classic snake clones, every emoji flavor packs a distinct tactical power-up: grab laughing bites for crisp score growth, chase viral crowns for mega bonus points, hit fire emojis to ignite double-point speed overdrive, tap stoic moai heads to activate calming slow-motion control around cramped walls, or devour skulls to shed three tail segments and escape tight corners.',
       'Built mobile-first with continuous swipe detection across the touch-protected canvas and tactile D-pad buttons underneath, Neon Serpent plays effortlessly with one thumb on phones, Arrow or WASD keys on desktop keyboards, or any connected USB and Bluetooth gamepad controller. Switching browser tabs pauses your run automatically, and every high score invites you to stamp your 3-letter arcade initials onto the global cabinet board.'
     ]
@@ -248,14 +248,14 @@ export const SEO_ROUTES = [
     description:
       'Play Brick Blaster free online! Smash word-art and pixel-face brick levels with Multi-Ball, Twin Laser, and Wide Paddle power-ups. Drag anywhere to steer at 60fps.',
     h1: 'Brick Blaster — Free Retro Pixel-Face Brick Breaker',
-    kicker: '60fps Skill Cabinet // Drag, Keyboard & Gamepad — 0 Tokens to Play',
+    kicker: '60fps Skill Cabinet // Drag, Keyboard & Gamepad — Free to Play',
     ogImage: 'https://www.thememes.net/og/games.png',
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'blaster',
     category: 'all',
     introParagraphs: [
-      'Smash through retro pixel-art formations in Brick Blaster, a free 60fps arcade brick-breaker game running directly in your browser with zero downloads, zero token fees, and full global leaderboard support. Each stage arranges colorful neon, armored, and mystery bricks into unmistakable word art and pixel faces—starting with glowing LOL blocks before advancing into Smiley Face, MEME word art, and Cyber Frog levels.',
+      'Smash through retro pixel-art formations in Brick Blaster, a free 60fps arcade brick-breaker game running directly in your browser with zero downloads, zero cost, and full global leaderboard support. Each stage arranges colorful neon, armored, and mystery bricks into unmistakable word art and pixel faces—starting with glowing LOL blocks before advancing into Smiley Face, MEME word art, and Cyber Frog levels.',
       'Steer your energy paddle cleanly by dragging anywhere across the screen on phones and tablets, tapping the on-screen control buttons, holding Left or Right Arrow and A/D keys on desktop keyboards, or connecting a USB or Bluetooth gamepad controller. Aim bank shots off the curved paddle edges to slice behind multi-hit titanium rows and crack glowing star bricks.',
       'Every cracked mystery block releases falling power-up orbs that transform the arena: catch ⚡ Multi-Ball to split shots up to four simultaneous balls, grab 🔫 Twin Laser to arm deck-mounted plasma cannons that vaporize stubborn bricks, or trigger ↔️ Wide Paddle for extra defense against high-speed rebounds. Switching tabs auto-pauses your match, and finishing a run lets you lock your 3-letter initials onto the leaderboard.'
     ]
@@ -266,14 +266,14 @@ export const SEO_ROUTES = [
     description:
       'Play Sunset Sprint free online! Race 80s garage cars down a pseudo-3D synthwave highway, dodge traffic, beat checkpoint timers & grab cassettes that switch THE MEMES FM.',
     h1: 'Sunset Sprint — Free Retro Synthwave Highway Racer',
-    kicker: 'Pseudo-3D 80s Racer // Drag Steer, Keyboard & Gamepad — 0 Tokens to Play',
-    ogImage: 'https://www.thememes.net/og/games.png',
+    kicker: 'Pseudo-3D 80s Racer // Drag Steer, Keyboard & Gamepad — Free to Play',
+    ogImage: 'https://www.thememes-net/og/games.png',
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'sunset',
     category: 'all',
     introParagraphs: [
-      'Hit the endless neon highway in Sunset Sprint, a free pseudo-3D synthwave OutRun racer built directly into your browser with zero downloads, zero token fees, and global cabinet leaderboard competition. Choose any of our four iconic 1980s garage rides—the brushed stainless DeLorean DMC-12, Aston Martin Lagonda, Sierra RS Cosworth, or Porsche 911 SC—and blast toward the glowing retro horizon.',
+      'Hit the endless neon highway in Sunset Sprint, a free pseudo-3D synthwave OutRun racer built directly into your browser with zero downloads, zero cost, and global cabinet leaderboard competition. Choose any of our four iconic 1980s garage rides—the brushed stainless DeLorean DMC-12, Aston Martin Lagonda, Sierra RS Cosworth, or Porsche 911 SC—and blast toward the glowing retro horizon.',
       'Weave around oncoming highway traffic across winding perspective bends using smooth finger dragging on touchscreens, tactile steer and nitro buttons on mobile, Arrow or A/D keys on desktop keyboards, or any connected gamepad controller. Every stage challenges you to cross illuminated highway Checkpoints before the countdown clock hits zero, awarding eighteen bonus seconds and ascending stage multipliers.',
       'Keep your eyes open for glowing cassette tapes spinning along the asphalt: snagging a tape scores 250 bonus points, fires dual exhaust nitro flames past 155 MPH, and automatically switches your THE MEMES FM radio station to a fresh synthwave or chiptune track. Switching tabs pauses your run automatically, and every finish saves to the Sunset Sprint leaderboard.'
     ]
@@ -284,14 +284,14 @@ export const SEO_ROUTES = [
     description:
       'Play Vector Void free online! Blast splitting phosphor vector rocks across a wrap-around cyber-space grid with touch twin-sticks, WASD + Arrows, or gamepad.',
     h1: 'Vector Void — Free Twin-Stick Vector Space Shooter',
-    kicker: '60fps Phosphor Shooter // Twin-Stick Touch, Keyboard & Gamepad — 0 Tokens',
+    kicker: '60fps Phosphor Shooter // Twin-Stick Touch, Keyboard & Gamepad — Free',
     ogImage: 'https://www.thememes.net/og/games.png',
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'void',
     category: 'all',
     introParagraphs: [
-      'Pilot a glowing phosphor vector craft in Vector Void, a free 60fps twin-stick asteroid space shooter built right into your browser with zero downloads, zero token fees, and full global leaderboard rankings. Blast apart geometric rock clusters orbiting a deep synthwave sector where your ship, laser bolts, and drifting debris wrap seamlessly across every edge of the screen.',
+      'Pilot a glowing phosphor vector craft in Vector Void, a free 60fps twin-stick asteroid space shooter built right into your browser with zero downloads, zero cost, and full global leaderboard rankings. Blast apart geometric rock clusters orbiting a deep synthwave sector where your ship, laser bolts, and drifting debris wrap seamlessly across every edge of the screen.',
       'Take total command across any screen with authentic twin-stick controls: on phones and tablets, slide your left thumb on the thruster pad to dodge in 360 degrees while aiming and auto-firing simultaneously with your right thumb stick. On desktop computers, steer with W-A-S-D keys, aim and fire independently with Arrow keys or your mouse cursor, or plug in a dual-stick USB or Bluetooth gamepad.',
       'Every jagged large vector rock shatters into twin fast-spinning medium fragments before splitting again into erratic mini-shards, escalating tension with each cleared sector wave. Tab switching automatically pauses your flight, and every high score invites you to engrave your 3-letter arcade initials onto the Vector Void cabinet board.'
     ]
@@ -302,14 +302,14 @@ export const SEO_ROUTES = [
     description:
       'Play Grid Riders free online! Battle smart arena AI or challenge a friend in 2-player local light-trail duels on one keyboard or split phone touch controls.',
     h1: 'Grid Riders — Free 1P & 2P Light-Trail Arena Duel',
-    kicker: '60fps Neon Grid // 1P AI Challenge & 2P Same-Device Duel — 0 Tokens',
+    kicker: '60fps Neon Grid // 1P AI Challenge & 2P Same-Device Duel — Free',
     ogImage: 'https://www.thememes.net/og/games.png',
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'riders',
     category: 'all',
     introParagraphs: [
-      'Race razor-sharp neon lightcycles inside a glowing synthwave containment grid in Grid Riders—a free arcade arena dueler featuring both single-player AI escalations and instant 2-player same-device battles with zero token cost or sign-up. Carve solid plasma trails across the 44x44 circuit, scoop up Hyper-Cell energy pickups for bonus points, and box rivals into fatal barriers before they cut off your lane.',
+      'Race razor-sharp neon lightcycles inside a glowing synthwave containment grid in Grid Riders—a free arcade arena dueler featuring both single-player AI escalations and instant 2-player same-device battles with zero cost or sign-up. Carve solid plasma trails across the 44x44 circuit, scoop up Hyper-Cell energy pickups for bonus points, and box rivals into fatal barriers before they cut off your lane.',
       'In 1P vs AI mode, challenge an adaptive pathfinding opponent that evaluates open grid space, intercepts open corridors, and raises round tempo alongside symmetrical laser pylons starting on Round 2. Climb the real global Grid Riders cabinet leaderboard by surviving longer circuits, grabbing pickups, and derezzing the AI across consecutive rounds.',
       'Ready for couch competition? Flip the cabinet toggle to 2P Local Duel to battle a friend on one keyboard (WASD versus Arrow keys) or place your phone between two players with a rotated face-to-face top touch pad for authentic tabletop arcade duels.'
     ]
@@ -335,9 +335,9 @@ export const SEO_ROUTES = [
     path: '/games/slots',
     title: 'Free Vegas 777 Slot Machine Game Online (No Real Money) | THE MEMES.net',
     description:
-      'Spin the retro Las Vegas 777 one-arm bandit slot machine online for free with no real money. Use strategic Reel HOLD & NUDGE buttons, trigger jackpot drumrolls, and win arcade tokens.',
+      'Spin the retro Las Vegas 777 one-arm bandit slot machine online for free with no real money. Use strategic Reel HOLD & NUDGE buttons, trigger jackpot drumrolls, and win MemeDollarz.',
     h1: 'Las Vegas 777 Neon Slot Machine — Free Arcade Play',
-    kicker: '3-Reel Mechanical Drums // Free Pretend Tokens — Just for Fun',
+    kicker: '3-Reel Mechanical Drums // Free Pretend MemeDollarz — Just for Fun',
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'slots',
@@ -345,7 +345,7 @@ export const SEO_ROUTES = [
     introParagraphs: [
       'Pull the gleaming 3D chrome lever on the THE MEMES.net Las Vegas 777 Neon Slot Machine—a purely free-to-play retro arcade cabinet built with zero real-money wagering or cashouts. Watch three curved ivory mechanical drums spin smoothly with classic vector Flaming 777s, Neon Diamonds, Triple Gold BARs, Golden Liberty Bells, Watermelons, Lemons, and Twin Cherries.',
       'Each spin delivers classic arcade suspense with sequential reel stops and a dramatic third-reel jackpot drumroll whenever the first two symbols line up. Lock strong reels between spins using strategic HOLD toggles or bump a near-miss symbol onto the crimson laser payline with NUDGE controls while watching the progressive VFD jackpot ticker climb and chasing marquee bulbs light up.',
-      'Play in unlimited Free Practice mode whenever you want pure retro sound effects and coin-hopper fountains, or wager free in-site Arcade Tokens earned from creating and voting on community memes. Community meme uploads can even appear as featured jackpot reel symbols, crediting original creators with bonus XP royalties.'
+      'Play in unlimited Free Practice mode whenever you want pure retro sound effects and coin-hopper fountains, or wager free in-site MemeDollarz earned from creating and voting on community memes. Community meme uploads can even appear as featured jackpot reel symbols, crediting original creators with bonus XP royalties.'
     ]
   },
   {
@@ -354,7 +354,7 @@ export const SEO_ROUTES = [
     description:
       "Play free 21 Blackjack online against Dealer Bot '86. Hit, Stand, Double Down, Split Pairs, trigger 5-Card Charlie 3x wins, and use the cyber-visor strategy hint with zero real money.",
     h1: "Neon 21's Blackjack — Play Free 21 Card Game Online",
-    kicker: 'Classic 21 Card Rules // Free Practice & Token Modes',
+    kicker: 'Classic 21 Card Rules // Free Practice & MemeDollarz Modes',
     changefreq: 'daily',
     priority: '0.85',
     viewMode: 'blackjack',
@@ -379,22 +379,22 @@ export const SEO_ROUTES = [
     introParagraphs: [
       "Place your free arcade bets at the glowing starting gate in Neon Derby '86, a retro synthwave meme horse racing cabinet built for desktop and mobile browsers with zero real-money wagering. Watch eight iconic internet champions—Doge Dasher, Stonks Stallion, Nyan Neigh, Pepe Pony, Gigachad Galloper, Rickroll Runner, Sad Keanu Sprinter, and Harambe Hooves—line up in bright neon jockey silks.",
       'Check the live form guide and shifting track conditions across Neon Dry, Acid Rain, and Glitch Track before locking in Win, Place, Show, or Exacta tickets, or roll the Lucky Dip button for an instant random pick. Fractional and decimal odds update cleanly with a transparent 108% overround, while a pre-race seeded draw guarantees fair results untouched by crowd cheers.',
-      'Enjoy 22-second parallax races with galloping trails, live ticker commentary, optional spoken play-by-play voiceover, dramatic slow-motion photo finishes, and confetti podium celebrations. Race right away or catch scheduled posts every two minutes, plus daily 8 PM local Derby Cup events for 3x arcade token rewards or unlimited Free Practice runs.'
+      'Enjoy 22-second parallax races with galloping trails, live ticker commentary, optional spoken play-by-play voiceover, dramatic slow-motion photo finishes, and confetti podium celebrations. Race right away or catch scheduled posts every two minutes, plus daily 8 PM local Derby Cup events for bonus rewards or unlimited Free Practice runs.'
     ]
   },
   {
     path: '/games/guess-the-meme',
     title: 'Guess The Meme Daily — Free Pixelated Meme Trivia Game | THE MEMES.net',
     description:
-      'Play Guess the Meme Daily free online! Unpixelate 5 classic meme templates over 5 steps, build your daily streak, and share your Wordle-style score grid. No tokens required.',
+      'Play Guess the Meme Daily free online! Unpixelate 5 classic meme templates over 5 steps, build your daily streak, and share your Wordle-style score grid. Always free.',
     h1: 'Guess The Meme: Daily — Free Pixelated Format Trivia',
-    kicker: 'Daily Wordle-Style Puzzle // 100% Free, Zero Tokens',
+    kicker: 'Daily Wordle-Style Puzzle // 100% Free to Play',
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'guess',
     category: 'all',
     introParagraphs: [
-      'Test your internet lore every day in Guess the Meme Daily, a completely free visual meme trivia challenge on THE MEMES.net with zero tokens, downloads, or login required. Each daily puzzle presents five classic meme formats—spanning reaction panels, galaxy brain tiers, and internet icons—that start heavily pixelated in crunchy retro blocks and sharpen step by step.',
+      'Test your internet lore every day in Guess the Meme Daily, a completely free visual meme trivia challenge on THE MEMES.net with zero cost, downloads, or login required. Each daily puzzle presents five classic meme formats—spanning reaction panels, galaxy brain tiers, and internet icons—that start heavily pixelated in crunchy retro blocks and sharpen step by step.',
       'Study the silhouette and color layout at Step 1 and pick the matching format name from four choices, or tap Enhance Clarity up to five levels to reveal sharper details. Earlier guesses earn higher point bonuses up to 100 points per round, while everyone around the world plays the exact same date-seeded daily lineup.',
       'Finish all five memes to unlock your Wordle-style emoji score grid, keep your daily solve streak alive in local storage across devices and visits, and copy your shareable results card with a direct link to challenge friends, plus unlock unlimited endless practice sets anytime you want extra rounds.'
     ]
@@ -430,7 +430,7 @@ export const SEO_ROUTES = [
     category: 'all',
     introParagraphs: [
       "Put your meme taste to the test in Higher or Lower: Meme Edition, an endless free-to-play prediction game built right on top of the live THE MEMES.net meme catalog. Two posts appear side by side with the first meme's verified community upvote score revealed, and your job is simply to call whether the next meme has higher or lower upvotes.",
-      'Pulling dynamically from real community uploads alongside classic seed memes across dank, tech, gaming, and relatable categories, every round tests how well you know what makes the internet laugh. Streak along effortlessly on desktop or mobile portrait screens with large one-tap Higher and Lower buttons and zero arcade tokens or login walls required.',
+      'Pulling dynamically from real community uploads alongside classic seed memes across dank, tech, gaming, and relatable categories, every round tests how well you know what makes the internet laugh. Streak along effortlessly on desktop or mobile portrait screens with large one-tap Higher and Lower buttons and zero cost or login walls required.',
       'Beat your personal high score saved in local storage, generate a shareable streak card when a run ends, and click any meme title right inside the matchup to open its theater view, upvote it, or remix your own spin-off directly in Meme Forge.'
     ]
   },
@@ -438,17 +438,17 @@ export const SEO_ROUTES = [
     path: '/games/poker',
     title: "Neon Hold'em '86 Poker — Free Online Texas Hold'em With Chips | THE MEMES.net",
     description:
-      "Play Neon Hold'em '86 Texas Poker free online! Buy in with free site tokens for stacked casino chips, bet Pre-Flop through River vs AI sharks, and cash out winnings back to your wallet.",
+      "Play Neon Hold'em '86 Texas Poker free online! Buy in with free MemeDollarz for stacked casino chips, bet Pre-Flop through River vs AI sharks, and cash out winnings back to your wallet.",
     h1: "Neon Hold'em '86 — Free Texas Hold'em Poker With Chips",
-    kicker: 'No-Limit Texas Hold’em // Stacked Chips & Token Buy-Ins',
+    kicker: 'No-Limit Texas Hold’em // Stacked Chips & MemeDollarz Buy-Ins',
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'poker',
     category: 'all',
     introParagraphs: [
-      "Pull up a chair at Neon Hold'em '86, our fast-paced No-Limit Texas Hold'em poker table right inside THE MEMES.net Cyber-Arcade. Stack real site Arcade Tokens into glowing neon casino chips, rotate the Dealer button automatically against two distinct AI card sharks, and compete across full Pre-Flop, Flop, Turn, River, and Showdown streets without downloads, deposits, or sign-ups.",
-      'Built with a crisp 52-card deck shuffler and complete 7-card best-five hand evaluator spanning High Card through Royal Flush, every hand gives you instant best-hand hints alongside authentic Check, Call, Bet, Raise, Fold, and ALL IN controls. Choose stacked chip buy-ins starting at 10 tokens, track live pot sizes visually in stacked casino chips, and hear crisp felt knocks and chip clinks.',
-      "Cash out your table chip stack back into your Arcade Wallet at any break between hands, or flip effortlessly into risk-free Free Practice mode whenever you want unlimited demo chips to sharpen your Texas Hold'em bluffing, pot-odds sizing, and aggressive showdown strategy on iPhone, iPad, or desktop screens."
+      "Pull up a chair at Neon Hold'em '86, our fast-paced No-Limit Texas Hold'em poker table right inside THE MEMES.net Cyber-Arcade. Stack free MemeDollarz into glowing neon casino chips, rotate the Dealer button automatically against two distinct AI card sharks, and compete across full Pre-Flop, Flop, Turn, River, and Showdown streets without downloads, deposits, or sign-ups.",
+      'Built with a crisp 52-card deck shuffler and complete 7-card best-five hand evaluator spanning High Card through Royal Flush, every hand gives you instant best-hand hints alongside authentic Check, Call, Bet, Raise, Fold, and ALL IN controls. Choose stacked chip buy-ins starting at M$2.50, track live pot sizes visually in stacked casino chips, and hear crisp felt knocks and chip clinks.',
+      "Cash out your table chip stack back into your Wallet at any break between hands, or flip effortlessly into risk-free Free Practice mode whenever you want unlimited demo chips to sharpen your Texas Hold'em bluffing, pot-odds sizing, and aggressive showdown strategy on iPhone, iPad, or desktop screens."
     ]
   },
   {
@@ -465,7 +465,7 @@ export const SEO_ROUTES = [
     introParagraphs: [
       "Spin the high-contrast 480px European single-zero roulette wheel in Neon Lightning Roulette '86—100% free arcade entertainment with zero real-money deposits, accounts, or cashouts. Before every spin locks in, high-voltage lightning bolts strike randomly selected straight-up numbers on the felt, charging them with boosted payout multipliers ranging all the way up to 150x on lucky hits.",
       'Lay arcade chips across an intuitive neon betting table supporting full Straight Up single-number picks, Dozens, Columns, Red/Black, Even/Odd, and 1–18 / 19–36 outside spreads, or use one-tap Quick Presets like Voisins, Lucky 7s, and Red Split to cover your favorite wheel sectors in seconds on desktop, iPad, or mobile touchscreens.',
-      'Watch the ivory ball orbit and drop smoothly into the winning pocket with crisp synthesized wheel clicks, live glowing winning sector highlights, recent spin history beads, and instant Practice vs Arcade Token mode switching so you can test strategies and enjoy retro Vegas excitement completely risk-free.'
+      'Watch the ivory ball orbit and drop smoothly into the winning pocket with crisp synthesized wheel clicks, live glowing winning sector highlights, recent spin history beads, and instant Practice vs MemeDollarz mode switching so you can test strategies and enjoy retro Vegas excitement completely risk-free.'
     ]
   },
   {
@@ -780,7 +780,7 @@ export const SEO_ROUTES = [
     description:
       'Terms of Use for creating memes, browsing community feeds, and playing free arcade games on THE MEMES.net.',
     h1: 'Terms of Use',
-    kicker: 'Legal Terms & Pretend Arcade Tokens',
+    kicker: 'Legal Terms & Pretend MemeDollarz',
     changefreq: 'monthly',
     priority: '0.5',
     viewMode: 'feed',
@@ -788,7 +788,7 @@ export const SEO_ROUTES = [
     ogImage: 'https://www.thememes.net/og-card.png',
     introParagraphs: [
       'These Terms of Use explain the basic rules for visiting THE MEMES.net, creating and remixing memes, posting comments, and playing the retro browser arcade cabinets. By using the site, you confirm that you meet the minimum age required in your region and agree to follow the community House Rules across every upload, remix, username, and comment.',
-      'Every arcade cabinet and mini-game on THE MEMES.net runs strictly on free pretend tokens called MemeDollarz and MemeCentz. These tokens are purely for fun, cannot be bought with real money, cannot be sold or transferred between users, and can never be cashed out for anything of monetary value under any circumstances.',
+      'Every arcade cabinet and mini-game on THE MEMES.net runs strictly on free pretend currency called MemeDollarz (M$) and MemeCentz (¢). MemeDollarz are purely for fun, cannot be bought with real money, cannot be sold or transferred between users, and can never be cashed out for anything of monetary value under any circumstances.',
       'You stay responsible for the memes and captions you choose to upload and must only post content you created yourself or have clear permission to share. Uploading grants THE MEMES.net permission to re-encode, strip metadata, host, display, and enable community caption remixes, while moderators may remove posts or suspend accounts when needed for safety or copyright compliance.'
     ]
   },
@@ -806,7 +806,7 @@ export const SEO_ROUTES = [
     ogImage: 'https://www.thememes.net/og-card.png',
     introParagraphs: [
       'This Privacy Policy describes what limited information THE MEMES.net collects when you browse memes, upload images or GIFs, sign in, or play retro games. If you create an account using Magic Link email or supported OAuth sign-in, Supabase Auth stores your account identifier and chosen handle, while first-time interactions may create an anonymous session ID to track votes and prevent abuse.',
-      'On your own browser, localStorage remembers sound volume, CRT shader toggles, muted categories, saved bookmarks, and pretend arcade token balances without tracking you across unrelated websites. Uploaded images and GIFs are re-encoded on our server to strip EXIF camera location tags before public storage, while temporary rate-limit checks store one-way hashed IP values briefly to block automated spam.',
+      'On your own browser, localStorage remembers sound volume, CRT shader toggles, muted categories, saved bookmarks, and pretend MemeDollarz balances without tracking you across unrelated websites. Uploaded images and GIFs are re-encoded on our server to strip EXIF camera location tags before public storage, while temporary rate-limit checks store one-way hashed IP values briefly to block automated spam.',
       'We use lightweight aggregate page analytics through Vercel Analytics alongside Cloudflare Turnstile bot protection when signing uploads or comments, and we never sell personal data to third parties. Signed-in users can permanently remove their account, memes, comments, and uploaded files anytime via the Delete my account and memes button inside Settings or through the takedown page.'
     ]
   },

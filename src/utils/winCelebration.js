@@ -23,7 +23,7 @@ export const RARE_WIN_THEMES = [
 ];
 
 const THEME_LABELS = {
-  'gold-fountain': ['🪙 COIN SHOWER!', '💰 PURE GOLD!', '🏆 PAYDAY!'],
+  'gold-fountain': ['💰 COIN SHOWER!', '💵 PURE GOLD!', '🏆 PAYDAY!'],
   'lightning-surge': ['⚡ HIGH VOLTAGE!', '⚡ LIGHTNING WIN!', '🌩️ 1.21 GIGAWATTS!'],
   'synth-lasers': ['🌈 NEON LASER WIN!', '🔥 SYNTHWAVE HIT!', '✨ ULTRA COMBO!'],
   'comic-confetti': ['🎉 BOOM! WINNER!', '💥 CERTIFIED W!', '🎊 JACKPOT POP!'],
@@ -78,7 +78,7 @@ export function wasCelebrationRecentlyTriggered(windowMs = 450) {
 }
 
 function resolveRewardTier({ numericAmount, unit, multiplier, tier }) {
-  const isTokenLike = unit === '🪙' || unit === 'CHIPS' || unit === 'FREE 🪙';
+  const isTokenLike = unit === 'M$' || unit === 'CHIPS' || unit === 'FREE' || unit === '🪙' || unit === 'FREE 🪙';
   const scoreAmt = isTokenLike
     ? numericAmount
     : unit.includes('DEMO')
@@ -102,7 +102,7 @@ function resolveRewardTier({ numericAmount, unit, multiplier, tier }) {
 
 export function triggerWinCelebration({
   amount = 0,
-  unit = '🪙',
+  unit = 'M$',
   game = '',
   headline = '',
   detail = '',
@@ -120,7 +120,7 @@ export function triggerWinCelebration({
   const numericAmount = Math.max(0, Math.round(Number(amount) || 0));
   const { rewardTier, rank, label: tierBanner } = resolveRewardTier({
     numericAmount,
-    unit: String(unit || '🪙'),
+    unit: String(unit || 'M$'),
     multiplier: Number(multiplier) || 1,
     tier
   });

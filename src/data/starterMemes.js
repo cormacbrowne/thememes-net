@@ -405,7 +405,7 @@ export const WHEEL_REWARDS = [
   },
   {
     id: 'xp-jackpot',
-    label: '🪙 MEGA JACKPOT +500 XP!',
+    label: '💰 MEGA JACKPOT +500 XP!',
     flair: null,
     xpBonus: 500,
     color: '#facc15'

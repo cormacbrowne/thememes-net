@@ -52,7 +52,7 @@ export const LEGAL_PAGES = {
         heading: '1. Using THE MEMES.net',
         bullets: [
           'By creating memes, commenting, or playing here, you confirm you are at least 13 years old (or older if the law where you live requires it) and will follow the House Rules.',
-          'All arcade cabinets run on pretend tokens (MemeDollarz M$ and MemeCentz ¢) that are 100% free, just for fun, and cannot be bought, sold, or cashed out.'
+          'All arcade cabinets run on pretend currency (MemeDollarz M$ and MemeCentz ¢) that is 100% free, just for fun, and cannot be bought, sold, or cashed out.'
         ]
       },
       {
@@ -83,7 +83,7 @@ export const LEGAL_PAGES = {
         heading: '📦 What We Store',
         bullets: [
           'Account data: if you sign in via Magic Link or OAuth, Supabase stores your email/provider ID and chosen handle. First-time commenters/voters may use an anonymous Supabase session ID.',
-          'Browser localStorage: saves pretend arcade tokens, CRT/sound settings, muted categories, and bookmarked memes locally on your device.',
+          'Browser localStorage: saves pretend MemeDollarz balances, CRT/sound settings, muted categories, and bookmarked memes locally on your device.',
           'Abuse & rate-limit logs: uploads and reports record hashed IPs briefly for spam prevention and strip EXIF/GPS metadata from every uploaded image/GIF.',
           'Automated safety checks: every uploaded image/GIF and the text of titles, captions, comments and usernames is sent to the OpenAI moderation service to be checked against the House Rules before it can appear. We do not send your email address or account details with it.'
         ]

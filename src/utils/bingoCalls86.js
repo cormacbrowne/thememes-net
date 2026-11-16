@@ -61,7 +61,7 @@ export const BINGO_CALLS_86 = {
   40: { call: 'Life Begins at Forty!', chant: 'Time to buy a mid-life leather jacket!', emoji: '🧥', sfxType: 'horn' },
   41: { call: 'Time for Fun', chant: 'Stop working, hit the Neon Arcade — 41!', emoji: '🕹️', sfxType: 'coin' },
   42: { call: 'Winnie the Pooh', chant: 'Meaning of Life, Universe & Dabbers — 42!', emoji: '🍯', sfxType: 'synth' },
-  43: { call: 'Down on Your Knees', chant: 'Check under the pew for dropped pennies!', emoji: '🪙', sfxType: 'boing' },
+  43: { call: 'Down on Your Knees', chant: 'Check under the pew for dropped pennies!', emoji: '💰', sfxType: 'boing' },
   44: { call: 'Droopy Drawers!', chant: '*TWANG!* Somebody buy a belt — 44!', emoji: '🩳', sfxType: 'boing' },
   45: { call: 'Halfway There!', chant: 'Living on a Prayer — Whoa-oh! 45!', emoji: '🎸', sfxType: 'horn' },
   46: { call: 'Up to Tricks', chant: 'Neon Goose on the loose — 46!', emoji: '🪿', sfxType: 'duck' },

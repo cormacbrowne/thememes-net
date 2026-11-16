@@ -19,7 +19,7 @@ export const SOUNDBOARD_PADS = [
   { id: 'whoopee', emoji: '💨', label: 'Reverb Fart', color: '#a3e635' },
   { id: 'trombone', emoji: '🎺', label: 'Sad Trombone', color: '#facc15' },
   { id: 'anime', emoji: '⚡', label: 'NANI?! Impact', color: '#a855f7' },
-  { id: 'jackpot', emoji: '🪙', label: 'Coin Jackpot', color: '#22c55e' },
+  { id: 'jackpot', emoji: '💰', label: 'Coin Jackpot', color: '#22c55e' },
   { id: 'siren', emoji: '🚔', label: 'Dank Police', color: '#3b82f6' },
   { id: 'duck', emoji: '🦆', label: 'Duck Army', color: '#eab308' },
   { id: 'violin', emoji: '🎻', label: 'Tiny Violin', color: '#f43f5e' },

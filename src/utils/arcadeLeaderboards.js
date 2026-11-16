@@ -43,15 +43,15 @@ export const LEADERBOARD_GAMES = [
   { id: 'riders', label: 'Grid Riders', icon: '🏍️', unit: 'pts', accent: '#00f3ff' },
   { id: 'pinball', label: "Vegas Neon Pinball '86", icon: '🎱', unit: 'pts', accent: '#c084fc' },
   { id: 'crush', label: "Meme Crush '86", icon: '🍬', unit: 'pts', accent: '#f472b6' },
-  { id: 'pusher', label: "Neon Coin Dozer '86", icon: '🪙', unit: 'pts', accent: '#facc15' },
+  { id: 'pusher', label: "Neon Coin Dozer '86", icon: '🎰', unit: 'pts', accent: '#facc15' },
   { id: 'hilow', label: 'Higher or Lower', icon: '⬆️', unit: 'streak', accent: '#38bdf8' },
-  { id: 'stocks', label: "Meme Stonks '86", icon: '📈', unit: '🪙', accent: '#a3e635' },
-  { id: 'slots', label: 'Cyber-Vegas Slots', icon: '🎰', unit: '🪙', accent: '#fb7185' },
-  { id: 'blackjack', label: "Neon 21's Blackjack", icon: '🃏', unit: '🪙', accent: '#22d3ee' },
-  { id: 'roulette', label: "Lightning Roulette '86", icon: '🎡', unit: '🪙', accent: '#fb923c' },
+  { id: 'stocks', label: "Meme Stonks '86", icon: '📈', unit: 'M$', accent: '#a3e635' },
+  { id: 'slots', label: 'Cyber-Vegas Slots', icon: '🎰', unit: 'M$', accent: '#fb7185' },
+  { id: 'blackjack', label: "Neon 21's Blackjack", icon: '🃏', unit: 'M$', accent: '#22d3ee' },
+  { id: 'roulette', label: "Lightning Roulette '86", icon: '🎡', unit: 'M$', accent: '#fb923c' },
   { id: 'poker', label: "Neon Hold'em '86", icon: '♠️', unit: 'chips', accent: '#34d399' },
   { id: 'bingo', label: "Neon Bingo '86", icon: '🔮', unit: 'M$', accent: '#e879f9' },
-  { id: 'derby', label: "Neon Derby '86", icon: '🏇', unit: '🪙', accent: '#fbbf24' }
+  { id: 'derby', label: "Neon Derby '86", icon: '🏇', unit: 'M$', accent: '#fbbf24' }
 ];
 
 // Keep exact parity with SQL check_initials_allowed() blocklist.

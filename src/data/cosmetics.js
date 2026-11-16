@@ -273,7 +273,7 @@ export const COSMETIC_CATALOG = [
   }
 ];
 
-import { formatEightiesPrice } from '../utils/tokenEconomy';
+import { formatMoney } from '../utils/tokenEconomy';
 
 const EIGHTIES_COST_REFS = {
   0: '1985 Freeware Promo',
@@ -281,7 +281,7 @@ const EIGHTIES_COST_REFS = {
   10: '1985 Mall Food Court Combo',
   12: '1986 Matinee Cinema Ticket',
   15: '1985 Cassette EP & Poster',
-  18: '1985 Arcade Token Roll',
+  18: '1985 Arcade Quarter Roll',
   20: '1985 Full Cassette Album',
   25: '1986 Neon Concert Tee',
   30: '1985 Blockbuster VHS Night',
@@ -290,7 +290,7 @@ const EIGHTIES_COST_REFS = {
 };
 
 COSMETIC_CATALOG.forEach((item) => {
-  item.price80s = formatEightiesPrice(item.tokenCost);
+  item.price80s = formatMoney(item.tokenCost);
   item.item80sRef = EIGHTIES_COST_REFS[item.tokenCost] || `1985 ${item.price80s} Value`;
 });
 

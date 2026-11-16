@@ -249,14 +249,6 @@ export function formatMoney(
   return `${prefix}${CURRENCY_BRAND.symbol}${whole.toLocaleString('en-US')}.${String(rem).padStart(2, '0')}`;
 }
 
-export function formatMemeCurrency(dollarz = 0, centz = 0, { showCentz = true } = {}) {
-  return formatMoney(Number(dollarz) || 0, {
-    centz: showCentz ? Number(centz) || 0 : 0,
-    compact: !showCentz,
-    zero: 'balance'
-  });
-}
-
 /**
  * Checks whether a 1-time action key (e.g. 'pioneer:first_upload' or 'daily:pinata:2026-10-31')
  * has already been rewarded.
@@ -422,13 +414,4 @@ export function computeXpConversionState(xp = 0, convertedXp = 0, ledger = null)
     dailyRemainingTokens,
     isDailyCapped: dailyRemainingTokens < TOKENS_MINTED
   };
-}
-
-/**
- * Thin wrapper around formatMoney() kept until all callers migrate in 35.5c.
- */
-export function formatEightiesPrice(tokens = 0, { compact = false } = {}) {
-  const n = Math.max(0, Number(tokens) || 0);
-  if (n <= 0) return compact ? 'FREE' : 'FREE (1985 PROMO)';
-  return formatMoney(n, { compact });
 }

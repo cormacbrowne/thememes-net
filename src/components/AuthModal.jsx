@@ -284,11 +284,11 @@ export default function AuthModal({
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
-                minLength={6}
+                minLength={authMode === 'signup' ? 8 : 6}
                 autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'}
                 className="tm-input"
                 style={{ width: '100%', paddingRight: '42px' }}
-                placeholder="Password (6+ chars)"
+                placeholder={authMode === 'signup' ? 'Password (8+ chars, letter + number)' : 'Password'}
                 value={authPassword}
                 onChange={(e) => setAuthPassword(e.target.value)}
               />

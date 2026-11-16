@@ -303,7 +303,14 @@ export function useAuth({ setShowAuthModal, awardXpAndCombo }) {
       return;
     }
 
-    if (authPassword.length < 6) {
+    // New passwords must match the Supabase Auth policy (8+ chars, a letter and a digit).
+    // Sign-in keeps the old 6-char floor so existing accounts are never locked out.
+    if (authMode === 'signup') {
+      if (authPassword.length < 8 || !/[A-Za-z]/.test(authPassword) || !/[0-9]/.test(authPassword)) {
+        setAuthMessage('⚠️ Password needs at least 8 characters, with a letter and a number.');
+        return;
+      }
+    } else if (authPassword.length < 6) {
       setAuthMessage('⚠️ Password must be at least 6 characters.');
       return;
     }

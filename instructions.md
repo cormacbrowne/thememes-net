@@ -22,7 +22,9 @@
 
 > **Where we are (site review, 16 Nov 2026):** the safety work (P0, 33.1–33.13), "make the fake things real" (P1, 33.14–33.18) and the first six skill cabinets (33.19–33.24) are **built, live and verified**. Their full task text and completion notes were moved word for word to [`docs/HISTORY.md`](docs/HISTORY.md) ("Phase 33 — completed tasks"). This file now lists **only what is still to do**.
 >
-> **Order:** owner actions → loose ends below → P2 (fun) → P3 (polish/health) → P4 (growth and money).
+> **Order:** owner actions → loose ends below → **Phase 34 (UI overhaul)** → P2 (fun) → P3 (polish/health) → P4 (growth and money).
+>
+> 🎨 **UI overhaul first (owner confirmed 16 Nov 2026):** the full implementation guide is in [Phase 34](#phase-34---ui-overhaul-implementation-guide) below. Do it straight after the loose ends, before more P2 cabinets. It replaces 33.41 and covers the UI half of 33.31, 33.43 and 33.45.
 
 ### ✅ Review result (16 Nov 2026) — what was checked
 
@@ -99,7 +101,7 @@
 
 ### P3 — ✨ Polish, speed and code health
 
-- [ ] **33.41 First 10 seconds.** New visitors should see, above the fold on a phone: one great meme, one obvious "Make a meme" button, one obvious "Play" button. Audit what currently competes for attention (radio pill, pet, ticker, hero, banners) and defer anything non-essential until after the first interaction. Report before/after screenshots at 390×844.
+- [ ] **33.41 First 10 seconds.** _(Replaced by 34.4; tick this when 34.4 is done.)_ New visitors should see, above the fold on a phone: one great meme, one obvious "Make a meme" button, one obvious "Play" button. Audit what currently competes for attention (radio pill, pet, ticker, hero, banners) and defer anything non-essential until after the first interaction. Report before/after screenshots at 390×844.
 - [ ] **33.42 Do task 28.27 (feature cull) with real analytics.** List every toy/overlay with its usage; propose what moves to Extras. Ask the owner before removing anything.
 - [ ] **33.43 Performance budget, enforced in CI.** Targets on a throttled mid-range phone: LCP < 2.5 s, initial JS < 250 KB gzipped, no long task > 200 ms on load. Lazy-load the Supabase client and `soundEngine` until first needed; split `src/index.css` (105 KB) so game/feature styles live with their lazy components; compress the 29 `public/og/*.png` cards (~450–550 KB each) to < 150 KB.
 - [ ] **33.44 Installable offline arcade (PWA).** Service worker that caches the shell and the skill games so they work with no signal ("plays on the Tube"); update prompt; keep network-first for the feed. Fix `manifest.webmanifest` description (it still advertises AI roasts) and add screenshots and shortcuts (Make a meme / Daily Challenge).
@@ -117,6 +119,134 @@
 - [ ] **33.40 A reason to come back that we own.** Email sign-up for a weekly "Top 5 memes + this week's cheat code + new cabinet" digest (double opt-in, unsubscribe link, stored per `/privacy`); an official Discord link in the footer.
 - [ ] **33.49 Share cards for everything.** Per-score, per-bracket, per-daily-challenge and per-sticker OG images so every shared link shows something specific. Add `?ref=` tagging and a simple "where do visitors come from" view using the existing analytics events.
 - [ ] **33.50 Search-friendly evergreen pages.** `/hall-of-fame`, `/u/<handle>`, each game's "how to play + tips" section, and the daily challenge archive. Keep every page honest and useful; no thin keyword pages.
+
+---
+
+## Phase 34 — 🎨 UI Overhaul: implementation guide
+
+> **Goal in one line:** the meme (or the game) is the brightest thing on every screen, and everything else is quiet, consistent and fast. The 80s neon arcade identity stays; the clutter goes.
+>
+> **How to work:** this is a refactor in small steps, not a rewrite. One task = one commit = one screen or one primitive. The site must look finished after every commit. All rules in "HOW AGENTS MUST WORK" still apply (targeted edits to `App.jsx`, component styles in the component's own CSS file, build + lint + three viewports).
+
+### 34.A Where the UI is today (measured 16 Nov 2026, dev build)
+
+These numbers are the baseline. Re-measure after each task and put the new number in the completion note.
+
+**Home page on a phone (390×844):**
+
+| What | Now | Target |
+|------|-----|--------|
+| Top of the first meme image | **2,160 px** down (2.6 screens) | **< 320 px** (visible without scrolling) |
+| Top bar height (`.tm-nav`) | 108 px (two rows) | ≤ 56 px (one row) |
+| Hero (`.tm-dual-hero`) | 905 px | ≤ 120 px, or gone after first visit |
+| Icons strip + CRT TV (`.tm-80s-companion-row`) | 742 px, above the feed | below the 6th meme, or in Extras |
+| Things you can tap above the fold | 22 (10 smaller than 44×44 px) | ≤ 8, all ≥ 44×44 px |
+| Meme card | 522 px tall, image only 196 px (38%), **16 controls** | image ≥ 60% of the card, ≤ 6 visible controls |
+| Smallest text above the fold | 9.5 px | 12 px minimum (11 px only for all-caps labels) |
+| Total page height | 22,690 px | not a target, but the 4,203 px arcade block and 1,837 px SEO footer should not grow |
+
+**CSS (all of `src/index.css` + component CSS):**
+
+| What | Now | Target at the end of Phase 34 |
+|------|-----|-------------------------------|
+| `src/index.css` | 4,859 lines, 107 KB | < 60 KB (also satisfies part of 33.43) |
+| Design tokens (custom properties) | 5 colours | full set in 34.1 |
+| Different hex colours | 208 | ≤ 40, all defined once in the tokens file |
+| Different `font-size` values | 103 | 8 (the type scale) |
+| Different `border-radius` values | 36 | 5 |
+| Different breakpoints | ~28 (480, 520, 600, 640, 680, 720, 768, 780, 820, 860, 900, 920 …) | 3 |
+| `z-index` values | 40 different, from 15 up to 99999 | 8 named layers |
+| `!important` | 180 | falling every task; none in new code |
+| `box-shadow` / `gradient(` / `@keyframes` | 514 / 429 / 125 | falling every task |
+| Button, pill and chip class names | 201 | 5 primitives + per-game exceptions |
+| `:focus-visible` rules | 3 | every interactive primitive |
+| Fonts | `Inter` and `Press Start 2P` are named in CSS but **never loaded** (no `<link>`, no `@font-face`), so every visitor gets fallbacks | 2 self-hosted families |
+| Icons | emoji everywhere; `lucide-react` is installed but no component imports it | decide in 34.2: use it or remove it |
+
+### 34.B Design direction (decide once, then apply everywhere)
+
+1. **One neon sign in a dark room.** Dark, calm surfaces; neon only where the eye should go. At most **one glowing element per screen region** (the primary button, the active tab, a win). If everything glows, nothing does.
+2. **Colour has a job.** Stop picking colours by taste per component:
+   - **Pink** `--tm-pink` = the main action ("Make a meme", "Play", "Publish"). One pink button per screen.
+   - **Cyan** `--tm-cyan` = navigation, links, selected state, focus ring.
+   - **Gold** `--tm-gold` = money and rewards only (tokens, tickets, wins). Never for ordinary buttons. (Today `#facc15` appears 306 times.)
+   - **Green** = success and upvote. **Red** = danger, report, downvote. **Purple** = background glow only.
+   - Text: `--tm-text` (near white), `--tm-text-dim` (secondary), `--tm-text-mute` (hints). Check every text/background pair for 4.5:1 contrast.
+3. **Three surface levels, not gradients everywhere:** page background → card (`--tm-surface-1`) → raised/sheet (`--tm-surface-2`). One 1 px border colour. Shadows from a set of 3. No `backdrop-filter` on anything that scrolls (slow on older iPads; keep it for the fixed top bar and dock only, and switch it off under `.tm-lite-perf`).
+4. **Type:** a display face for headings and big numbers, the system stack for body text, a pixel face only for tiny arcade labels (score, "INSERT COIN"). Never body text in a pixel or mono font. Sentence case for body and buttons; all-caps only for short labels.
+5. **Emoji are content, not chrome.** Keep emoji in meme reactions, game names and jokes. Navigation and toolbar buttons get one consistent icon set, with a text label wherever space allows.
+6. **Motion gives feedback; it does not decorate.** Things move when the user does something (press, vote, win, change view). At most one ambient loop per screen (the synthwave grid counts as that one).
+7. **Quiet by default, loud on reward.** Screen shake, confetti and full-screen flashes belong to wins and level-ups only, which makes them feel bigger.
+
+### 34.C Foundations (do these first, in this order; no visible redesign yet)
+
+- [ ] **34.0 Baseline screenshots.** Capture feed, a meme page (`/m/<id>`), Meme Forge, `/games`, one skill game, one Vegas game, the profile modal and the settings sheet at 390×844, 768×1024 and 1280×800. Save under `docs/ui/baseline/`. Every later task adds its own before/after pair to `docs/ui/<task>/`.
+- [ ] **34.1 Tokens.** Create `src/styles/tokens.css` and import it at the top of `src/index.css` (after `@import "tailwindcss"`). Plain `:root` custom properties with the `--tm-` prefix (do **not** put them in a Tailwind `@theme` block: that would change the meaning of the ~54 Tailwind utility classes already in the JSX). Contents:
+  - Colours as in 34.B.2, plus `--tm-bg`, `--tm-surface-1`, `--tm-surface-2`, `--tm-border`. Keep the five existing `--tm-neon-*` names as aliases so nothing breaks.
+  - Type scale (8 steps): 11, 12, 14, 16, 18, 22, 28, 40 px as `--tm-text-xs` … `--tm-text-3xl`; headings use `clamp()` so they scale with the viewport.
+  - Spacing (4 px grid): 4, 8, 12, 16, 24, 32, 48.
+  - Radius: 6 (chip), 10 (button/input), 16 (card), 24 (sheet), 999 (pill).
+  - Shadows: `--tm-shadow-1/2/3` and one `--tm-glow-pink`, one `--tm-glow-cyan`.
+  - Motion: `--tm-dur-fast: 120ms`, `--tm-dur: 200ms`, `--tm-dur-slow: 400ms`, `--tm-ease-out`, `--tm-ease-spring`.
+  - Layers: `--tm-z-base: 1`, `--tm-z-sticky: 100`, `--tm-z-dock: 200`, `--tm-z-overlay: 300` (CRT, particles), `--tm-z-sheet: 400`, `--tm-z-modal: 500`, `--tm-z-toast: 600`, `--tm-z-boss: 700` (boss key covers everything).
+  - Layout: `--tm-nav-h`, `--tm-dock-h`, and the safe-area insets, so no component hard-codes `90px` of bottom padding again.
+  - **Breakpoints** (written in a comment, since custom properties do not work in `@media`): compact phone `max-width: 480px`, phone and tablet `max-width: 860px`, desktop `min-width: 861px`, wide `min-width: 1181px`. 861 is kept because rule 5 already depends on it. New CSS uses only these.
+- [ ] **34.2 Fonts and icons.** Self-host two `woff2` families in `public/fonts/` with `@font-face`, `font-display: swap`, and a `<link rel="preload">` for the display face only. The CSP already allows `font-src 'self'`; after this, remove `fonts.googleapis.com` / `fonts.gstatic.com` from the CSP in **both** `index.html` and `vercel.json`. Subset to Latin; budget ≤ 60 KB for both families together. Choose fonts with an open licence (SIL OFL) and commit the licence file. Icons: either import `lucide-react` icons individually in the nav, dock and card toolbar, or remove the dependency; do not leave it installed and unused.
+- [ ] **34.3 Primitives and a kit page.** Create `src/styles/primitives.css` with a **new `ui-` prefix** so nothing collides with the 201 existing class names and no `!important` is needed:
+  - `.ui-btn` with modifiers `--primary` (pink, one per screen), `--secondary`, `--ghost`, `--danger`, sizes `--sm` / `--lg`; `.ui-icon-btn` (44×44 minimum hit area even when the icon is 20 px).
+  - `.ui-chip` (filter and tag), `.ui-badge` (count and status), `.ui-card`, `.ui-input`, `.ui-tabs`, `.ui-toast`, `.ui-skeleton`.
+  - Every one has hover, `:active` (scale to 0.97, 120 ms), `:focus-visible` (2 px cyan ring with offset), `:disabled` and loading states.
+  - One React component `src/components/ui/Sheet.jsx`: bottom sheet on phones (drag handle, swipe down to close, respects the safe area), centred dialog from 861 px. It owns focus trap, `Esc`, scroll lock, `aria-modal` and return of focus. Every modal moves onto it in 34.8.
+  - A dev-only kit page: when `import.meta.env.DEV` and the path is `/__ui`, render every primitive in every state on one screen. This is how a change to a primitive gets checked without clicking through the site. It must not ship in the production bundle.
+
+### 34.D Screens (one task each; highest traffic first)
+
+- [ ] **34.4 The first screen (replaces 33.41).** Above the fold on a phone: one-row top bar, one line of welcome with two buttons (**Make a meme** in pink, **Play** as secondary), then the first meme. How:
+  - `DualDirectionHero` becomes a compact strip (≤ 120 px). Its "Both / Memes / Gaming" switch and the eight shortcut pills move to a single "Explore" row that scrolls sideways, or into the Extras drawer. After the first visit (`tm_intro_seen`), show only the two buttons.
+  - Move `.tm-80s-companion-row` (`EightiesIconsStrip` + `VintageCrtNewsTv`) out of the path to the feed: render it as an in-feed card after the 6th meme on phones, keep it beside the hero only from 1181 px. Lazy-mount it when it scrolls near the viewport.
+  - Keep exactly one `<h1>` and keep the SEO wording that `scripts/prerender-seo.mjs` and `seoEngine.js` expect; shrink it visually rather than deleting it.
+  - Nothing is deleted without asking the owner (rule 9). Moving is fine; list everything moved in the completion note.
+  - Done when: first meme image top < 320 px at 390×844, ≤ 8 tappable items above the fold, and Lighthouse mobile LCP is no worse than the baseline.
+- [ ] **34.5 Top bar and dock.** Phone: one 56 px row = logo, wallet, one "more" button; everything else (install app, cassette/radio, extras, sign in) goes into that menu or the Profile tab. Keep the five-item dock (Home, Reels, Create, Games, Profile) and make the centre Create button the only pink element in it. Desktop: one row with Home / Reels / Games tabs on the left, search in the middle, Create + wallet + account on the right. Hide the top bar on scroll down and show it on scroll up (phones only, not under reduced motion). `FixedArcadeTopBar` uses the same primitives so games and feed feel like one product.
+- [ ] **34.6 Meme card.** The image is the card. Today the card has 16 controls and a header of labels ("Posted by", "Uploaded 14 Nov 2026, 21:45", "1d ago", category, rarity).
+  - Header: one line: avatar, `@handle`, "· 1d", category chip. Full date goes in a `title` attribute.
+  - Image: full card width, real aspect ratio reserved from `width`/`height` (no layout jump), max height about 70% of the viewport. Rarity is shown by the card border only, with one small badge at most. Remove the permanent "Double-tap to upvote" hint from the image; show it once as a coach mark, then never again.
+  - Action row (always visible, 44 px targets): **vote pill** (▲ score ▼), **react** (one button that opens the four emoji as a pop-up; show the top reaction and total count), **comment** with count, **share**, **Remix** (the only filled button).
+  - Everything else (save, download, copy link, evolution tree, AI scan, caption this, report) moves into a **"⋯" sheet** built on `Sheet.jsx`. Report stays reachable in two taps from every card: that is a safety requirement, do not bury it deeper.
+  - Comments stay collapsed behind the comment button, as now.
+  - Keep `MemeCard`'s props and every `data-testid` unchanged; `grep tests/` for any class name before renaming it.
+  - Holo tilt and glare: desktop pointer devices only (`@media (hover: hover) and (pointer: fine)`); off on touch and under `.tm-lite-perf`.
+- [ ] **34.7 Feed controls and quick upload.** One sticky row under the top bar: category chips that scroll sideways, a sort control (Latest / Top), and a search icon that expands to a field. The quick-upload box (122 px) becomes a slim one-line prompt on phones, since the dock already has Create; keep the full drag-and-drop box on desktop.
+- [ ] **34.8 Sheets and modals.** Move one modal per commit onto `Sheet.jsx`, starting with the most inline-styled: `RewardsModal` (66 inline `style={{}}` blocks), `MemeStudioModal` (54), `LeaderboardModal` (46), `PlayerProfileModal` (40), `DailyCaptionBattleModal` (25), `MemeTheaterModal` (21), `AuthModal` (16), then the rest. In each one, replace inline styles with classes built from tokens. Rule: only one sheet open at a time (the existing `closeAllModals()` already does this; keep using it). Leave `BossKeyOverlay` (76 inline styles) alone: it deliberately imitates other apps.
+- [ ] **34.9 Arcade lobby (do together with 33.31, and before 33.26).** On `/games` the game list currently sits under a stack of header rows (wallet row, radio station strip, DeLorean garage, icons strip, filter tabs). New order: title + wallet, "Continue playing", filter chips, then the cabinets. Radio and DeLorean move below the cabinets or into Extras. Cabinet tile = one component with one size: artwork, name, one line of description, best score. Skill cabinets first, then meme games, then one "Vegas Room" tile. The count comes from `arcadeGamesCatalog.js` (33.31).
+- [ ] **34.10 One game frame.** Every game uses `GameShell` for the same header (back, title, score, pause, sound, fullscreen), the same "how to play" card, the same pause screen and the same results screen (score, best, leaderboard position, Play again in pink, Share). Game canvases keep their own art; only the frame is unified. Check each game at 390×844 for anything hidden behind the dock or the notch.
+
+### 34.E Motion and delight (after the screens are calm)
+
+- [ ] **34.11 Motion system.**
+  - Use only the duration and easing tokens. Animate `transform` and `opacity` only; never `width`, `height`, `top`, `left`, `box-shadow` or `filter` in a loop.
+  - Go through the 125 `@keyframes`: delete unused ones, merge near-duplicates into about 12 shared ones (`ui-pop`, `ui-fade-up`, `ui-shake`, `ui-pulse-glow`, …) in `primitives.css`. Game-specific ones stay with their game.
+  - Changing view (feed ↔ reels ↔ lobby ↔ game) uses the View Transitions API where the browser has it (`document.startViewTransition`), wrapped in a feature check, with an instant switch otherwise.
+  - Signature moments, built once and reused: **upvote** (arrow pops, score ticks up, small spark), **publish** (card flies into the feed), **win / level-up** (the existing `WinCelebrationOverlay`), **insert coin / CRT power-on** when a game starts (ties into 33.26).
+  - All of it obeys `prefers-reduced-motion`, the `data-reduced-motion` setting and `.tm-lite-perf`: in those modes, transitions become instant fades and loops stop. No full-screen flash faster than 3 per second (33.45).
+  - No audio added to any of this unless it follows a user gesture (rule 7).
+- [ ] **34.12 States that feel finished.** Skeletons that match the final layout (same image ratio, so nothing jumps); empty states with one sentence and one button; friendly error cards with Retry; an offline banner; toasts in one place (top on desktop, above the dock on phones) with a queue so they never stack on top of each other.
+
+### 34.F Clean-up (last)
+
+- [ ] **34.13 Delete what the new UI replaced.** After each screen task, remove the old rules it made dead; at the end, sweep `src/index.css` for selectors that no longer match anything in `src/` (search each class name before deleting; some are built from strings, e.g. rarity tiers and `data-device`). Replace remaining raw hex values, font sizes, radii and z-indexes with tokens, and fold stray breakpoints into the three in 34.1. Record the final numbers against the 34.A table.
+
+### 34.G Rules for every Phase 34 task
+
+1. **No new runtime dependencies.** No UI kit, no animation library, no CSS-in-JS. Tokens + primitives + the existing Tailwind import are enough.
+2. **Net CSS goes down.** A task that adds more CSS than it removes must say why in its completion note.
+3. **New code uses tokens only:** no raw hex, no raw `px` font size, no raw `z-index` number, no `!important`, no new breakpoint.
+4. **Do not change behaviour.** Same props, same handlers, same routes, same `data-testid`s, same analytics events. If a control moves into a menu, its analytics event still fires.
+5. **Safety UI never gets harder to reach:** report (two taps from any meme or comment), the legal links in the footer, sign-out and delete account.
+6. **SEO text stays in the HTML:** one `<h1>` per page, the prerendered copy and `SeoDiscoveryFooter` stay crawlable. Collapsing with `<details>` is fine; removing is not.
+7. **Verify each task:** `npm run build`, `npm run lint`, `npm run test:unit`; the kit page at `/__ui`; the changed screen at 390×844, 768×1024 and 1280×800, once more with Lite/Turbo mode on and once with reduced motion on; keyboard only (Tab, Enter, Esc) through the changed screen; then before/after screenshots into `docs/ui/<task>/`.
+8. **Performance check on the feed:** scroll the feed on a throttled mid-range phone profile (Chrome dev-tools, 4× CPU slowdown); no long task over 200 ms and no dropped-frame stutter from shadows or blur.
+9. **Stop and ask the owner** before removing any feature from view entirely, changing the logo or site name styling, or changing the colour roles in 34.B.
 
 ---
 

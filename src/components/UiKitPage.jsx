@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import NeonSign from './NeonSign';
 
 const PALETTE = [
   { name: '--tm-night-0', hex: '#07060f', job: 'Page background' },
@@ -41,6 +42,17 @@ export default function UiKitPage() {
           Dev-only primitive showcase (Phase 35.2 / 34.3). Not shipped in production builds.
         </p>
       </header>
+
+      <section style={{ background: 'var(--tm-night-1)', border: '1px solid var(--tm-night-3)', borderRadius: 'var(--tm-radius-card)', padding: '20px' }}>
+        <h2 style={{ fontSize: 'var(--tm-text-sm)', textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--tm-text-dim)', margin: '0 0 14px' }}>
+          0. NeonSign (hero / nav / icon)
+        </h2>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'center' }}>
+          <NeonSign size="hero" />
+          <NeonSign size="nav" />
+          <NeonSign size="icon" />
+        </div>
+      </section>
 
       <section style={{ background: 'var(--tm-night-1)', border: '1px solid var(--tm-night-3)', borderRadius: 'var(--tm-radius-card)', padding: '20px' }}>
         <h2 style={{ fontSize: 'var(--tm-text-sm)', textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--tm-text-dim)', margin: '0 0 14px' }}>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
-import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
+import { ARCADE_ECONOMY_RULES, formatMoney, validateStakedGamePayout } from '../utils/tokenEconomy';
 import { triggerWinCelebration } from '../utils/winCelebration';
 import {
   createShuffledDeck,
@@ -88,6 +88,7 @@ const INITIAL_BOTS = [
 
 export default function VegasPokerGame({
   tokens = 0,
+  centz = 0,
   soundOn = true,
   onToggleSound,
   onSpendTokens,
@@ -134,7 +135,7 @@ export default function VegasPokerGame({
   const [raiseStep, setRaiseStep] = useState(10);
   const [turnIdx, setTurnIdx] = useState(null); // 0 | 1 | 2 | null
   const [statusBanner, setStatusBanner] = useState(
-    'Buy in with 🪙 site tokens or practice free to deal Texas Hold\'em!'
+    'Buy in with MemeDollarz or practice free to deal Texas Hold\'em!'
   );
   const [winnerIds, setWinnerIds] = useState([]);
   const [showdownSummary, setShowdownSummary] = useState('');
@@ -189,11 +190,11 @@ export default function VegasPokerGame({
   const handleBuyInTokens = (amount) => {
     if (phase !== 'idle' && phase !== 'showdown') return;
     if (!onSpendTokens || tokens < amount) {
-      setStatusBanner(`Need ${amount} 🪙 in wallet! Switch to Free Practice or buy smaller stack.`);
+      setStatusBanner(`Need ${formatMoney(amount)} in wallet! Switch to Free Practice or buy smaller stack.`);
       sfx.playError?.();
       return;
     }
-    const ok = onSpendTokens(amount, `Neon Hold'em '86 Buy-In (${amount} 🪙)`);
+    const ok = onSpendTokens(amount, `Neon Hold'em '86 Buy-In (${formatMoney(amount)})`);
     if (!ok) return;
     sfx.playPokerChip?.(3);
     const nextStack = savedRealStack + amount;
@@ -203,12 +204,12 @@ export default function VegasPokerGame({
     setSeats((prev) =>
       prev.map((s, idx) =>
         idx === 0
-          ? { ...s, chips: nextStack, hole: [], bet: 0, lastAction: `BOUGHT ${amount} 🪙` }
+          ? { ...s, chips: nextStack, hole: [], bet: 0, lastAction: `BOUGHT ${formatMoney(amount)}` }
           : { ...s, chips: Math.max(s.chips, amount * 2), hole: [], bet: 0, lastAction: '' }
       )
     );
     setPhase('idle');
-    setStatusBanner(`🟡 Stacked ${nextStack} 🪙 chips at the table! Hit Deal Hand to play.`);
+    setStatusBanner(`🟡 Stacked ${formatMoney(nextStack)} in table chips! Hit Deal Hand to play.`);
   };
 
   const handleCashOutChips = () => {
@@ -227,7 +228,7 @@ export default function VegasPokerGame({
       onPayoutTokens(verifiedPayout, {
         stakedTokens: stakedRef,
         xp: verifiedPayout > stakedRef ? 45 : 15,
-        label: `🃏 Poker Cashout +${verifiedPayout} 🪙`,
+        label: `🃏 Poker Cashout ${formatMoney(verifiedPayout, { sign: true })}`,
         emoji: '🃏'
       });
     }
@@ -235,10 +236,10 @@ export default function VegasPokerGame({
     if (verifiedPayout > stakedRef) {
       triggerWinCelebration({
         amount: verifiedPayout,
-        unit: '🪙',
+        unit: 'M$',
         game: "Neon Hold'em '86",
         headline: '🃏 POKER TABLE CASHOUT!',
-        detail: `Cashed ${verifiedPayout} 🪙 back to Wallet!`,
+        detail: `Cashed ${formatMoney(verifiedPayout)} back to Wallet!`,
         multiplier: verifiedPayout / stakedRef,
         tier: verifiedPayout >= stakedRef * 2.5 ? 'jackpot' : 'big'
       });
@@ -253,7 +254,7 @@ export default function VegasPokerGame({
     setWinnerIds([]);
     setShowdownSummary('');
     setSeats((prev) => prev.map((s) => ({ ...s, hole: [], bet: 0, lastAction: '', chips: s.id === 0 ? 0 : s.chips })));
-    setStatusBanner(`💰 Cashed out ${verifiedPayout} 🪙 back into your Arcade Wallet!`);
+    setStatusBanner(`💰 Cashed out ${formatMoney(verifiedPayout)} back into your Wallet!`);
   };
 
   const resolveShowdown = useCallback(
@@ -331,7 +332,7 @@ export default function VegasPokerGame({
       if (playerWon && totalPot >= 30) {
         triggerWinCelebration({
           amount: share,
-          unit: practiceMode ? 'CHIPS' : '🪙',
+          unit: practiceMode ? 'CHIPS' : 'M$',
           game: "Neon Hold'em '86",
           headline: earlyWinSeatId === 0 ? '😎 BLUFF / POT SCOOPED!' : '🃏 SHOWDOWN WINNER!',
           detail: summaryText,
@@ -518,7 +519,7 @@ export default function VegasPokerGame({
       if (nextActor === null) {
         turnIdxRef.current = null;
         setTurnIdx(null);
-        setStatusBanner(`✨ Betting round complete (${nextPot} ${practiceMode ? 'chips' : '🪙'} in pot)`);
+        setStatusBanner(`✨ Betting round complete (${practiceMode ? `${nextPot} chips` : formatMoney(nextPot)} in pot)`);
         if (streetTimerRef.current) clearTimeout(streetTimerRef.current);
         streetTimerRef.current = setTimeout(() => {
           advanceStreetOrShowdown(updatedSeats, curCommunity, nextPot, curPhase);
@@ -570,7 +571,7 @@ export default function VegasPokerGame({
       if (practiceMode) {
         setPracticeChips(250);
       } else {
-        setStatusBanner('Buy in with 🪙 site tokens below to stack your chips!');
+        setStatusBanner('Buy in with MemeDollarz below to stack your table chips!');
         sfx.playError?.();
         return;
       }
@@ -659,8 +660,9 @@ export default function VegasPokerGame({
   return (
     <GameShell
       title="NEON HOLD'EM '86 POKER"
-      eyebrow="TEXAS HOLD'EM • CHIPS & TOKEN STAKES"
+      eyebrow="TEXAS HOLD'EM • MEMEDOLLARZ STAKES"
       tokens={tokens}
+      centz={centz}
       hasPractice
       practiceMode={practiceMode}
       practiceDisabled={phase !== 'idle' && phase !== 'showdown'}
@@ -683,31 +685,31 @@ export default function VegasPokerGame({
       onBackToFeed={onBackToFeed}
       statusBanner={statusBanner}
       howToPlay={[
-        'In Real 🪙 Tokens mode, convert site tokens into casino chips (1 chip = 1 🪙), play No-Limit Texas Hold’em vs 2 AI sharks, and 💰 Cash Out your chip stack back to your wallet anytime between hands.',
+        'In MemeDollarz Mode, stack your balance into table chips, play No-Limit Texas Hold’em vs 2 AI sharks, and 💰 Cash Out your stack back to your wallet anytime between hands.',
         'Blinds rotate automatically with the Dealer button (D). Check, Call, Raise by +5/+10/+25 or 1/2 Pot, or shove ALL IN!',
         'Best 5-card Hold’em hand using your 2 hole cards + 5 community cards takes the pot.'
       ]}
     >
       <div className="tm-pk-cabinet">
-        {/* Top Table Telemetry & Real Token Cashout / Buy-In Bar */}
+        {/* Top Table Telemetry & Real MemeDollarz Cashout / Buy-In Bar */}
         <div className="tm-pk-topbar">
           <div className="tm-pk-stat-group">
             <span className="tm-pk-pill">
-              YOUR CHIPS: <strong style={{ color: '#facc15' }}>{playerChips} {practiceMode ? 'FREE' : '🪙'}</strong>
+              YOUR CHIPS: <strong style={{ color: '#facc15' }}>{practiceMode ? `${playerChips} FREE` : formatMoney(playerChips, { zero: 'balance' })}</strong>
             </span>
             <span className="tm-pk-pill">
-              POT: <strong style={{ color: '#4ade80' }}>{pot}</strong>
+              POT: <strong style={{ color: '#4ade80' }}>{practiceMode ? pot : formatMoney(pot, { zero: 'balance' })}</strong>
             </span>
             {bestPot > 0 && (
               <span className="tm-pk-pill">
-                BEST POT: <strong>{bestPot}</strong>
+                BEST POT: <strong>{practiceMode ? bestPot : formatMoney(bestPot, { zero: 'balance' })}</strong>
               </span>
             )}
           </div>
 
           {!practiceMode && savedRealStack > 0 && (phase === 'idle' || phase === 'showdown') && (
             <button type="button" className="tm-pk-cashout-btn" onClick={handleCashOutChips}>
-              💰 Cash Out {savedRealStack} 🪙
+              💰 Cash Out {formatMoney(savedRealStack, { zero: 'balance' })}
             </button>
           )}
         </div>
@@ -819,7 +821,7 @@ export default function VegasPokerGame({
             <div className="tm-pk-idle-controls">
               {!practiceMode && (
                 <div className="tm-pk-buyin-row">
-                  <span className="tm-pk-buyin-lbl">🪙 Chip Buy-In:</span>
+                  <span className="tm-pk-buyin-lbl">🟡 Chip Buy-In:</span>
                   {buyInOptions.map((amt) => (
                     <button
                       key={amt}
@@ -831,7 +833,7 @@ export default function VegasPokerGame({
                         handleBuyInTokens(amt);
                       }}
                     >
-                      +{amt} 🪙
+                      {formatMoney(amt, { sign: true })}
                     </button>
                   ))}
                 </div>
@@ -844,7 +846,7 @@ export default function VegasPokerGame({
                 onClick={startNewHand}
               >
                 {!practiceMode && playerChips <= 0
-                  ? '🪙 Tap +Buy-In Chips Above to Play'
+                  ? '🟡 Tap +Buy-In Chips Above to Play'
                   : phase === 'showdown'
                     ? '🃏 DEAL NEXT HAND'
                     : '🃏 DEAL TEXAS HOLD’EM HAND'}

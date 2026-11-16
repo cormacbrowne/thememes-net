@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
-import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
+import { formatMoney, validateStakedGamePayout } from '../utils/tokenEconomy';
 import { triggerWinCelebration } from '../utils/winCelebration';
 import { speakUtteranceChain, getEnglishVoices, pickPreferredVoice } from '../utils/aiSpeech';
 import useBoxSize from '../hooks/useBoxSize';
@@ -34,6 +34,7 @@ function formatCountdown(sec) {
 
 export default function NeonDerbyGame({
   tokens = 0,
+  centz = 0,
   soundOn = true,
   onToggleSound,
   onSpendTokens,
@@ -184,7 +185,7 @@ export default function NeonDerbyGame({
     if (!practiceMode) {
       if (stakeSum <= 0 || tokens < stakeSum) {
         sfx.playClownHonk();
-        setCommentaryText('Not enough 🪙 — switch to Free Practice or lower bet.');
+        setCommentaryText('Not enough MemeDollarz — switch to Free Practice or lower bet.');
         return;
       }
       if (onSpendTokens) {
@@ -247,7 +248,7 @@ export default function NeonDerbyGame({
         const wonAmt = practiceMode ? rawWin : verifiedWin;
         triggerWinCelebration({
           amount: wonAmt,
-          unit: practiceMode ? 'CHIPS' : '🪙',
+          unit: practiceMode ? 'CHIPS' : 'M$',
           game: "Neon Derby '86",
           headline: `🏆 ${winner.name} WINS!`,
           detail: practiceMode
@@ -266,7 +267,7 @@ export default function NeonDerbyGame({
           ? `📸 ${winner.name} wins! Practice win +${rawWin}.`
           : `📸 ${winner.name} wins ahead of ${board.horses[second].short}!`
         : verifiedWin > 0
-          ? `🏆 ${winner.name} wins! You cashed +${verifiedWin} 🪙!`
+          ? `🏆 ${winner.name} wins! You cashed ${formatMoney(verifiedWin, { sign: true })}!`
           : `📸 ${winner.name} takes 1st! Place bets for the next race.`;
 
       setCommentaryText(msg);
@@ -587,7 +588,7 @@ export default function NeonDerbyGame({
     const newTotal = totalStakedOnTicket + selectedChip;
     if (!practiceMode && newTotal > tokens) {
       sfx.playClownHonk();
-      setCommentaryText('Need more 🪙 or switch to Free Practice.');
+      setCommentaryText('Need more MemeDollarz or switch to Free Practice.');
       return;
     }
 
@@ -609,7 +610,7 @@ export default function NeonDerbyGame({
         label
       }
     ]);
-    setCommentaryText(`Added ${selectedChip} 🪙 on ${label} (${decOdds}×).`);
+    setCommentaryText(`Added ${practiceMode ? selectedChip : formatMoney(selectedChip)} on ${label} (${decOdds}×).`);
   };
 
   const handleLuckyDip = () => {
@@ -694,6 +695,7 @@ export default function NeonDerbyGame({
       ariaLabel="Neon Derby 86 Meme Horse Racing"
       onBack={onBackToFeed}
       tokens={tokens}
+      centz={centz}
       hasPractice
       practiceMode={practiceMode}
       onTogglePractice={() => setPracticeMode((p) => !p)}
@@ -774,7 +776,7 @@ export default function NeonDerbyGame({
                   className="tm-derby-primary-btn"
                   onClick={() => startRace()}
                 >
-                  🏁 START RACE ({ticketBets.length > 0 ? `${totalStakedOnTicket} 🪙` : `${selectedChip} 🪙 quick`})
+                  🏁 START RACE ({practiceMode ? `${ticketBets.length > 0 ? totalStakedOnTicket : `${selectedChip} quick`} chips` : ticketBets.length > 0 ? formatMoney(totalStakedOnTicket) : `${formatMoney(selectedChip)} quick`})
                 </button>
               </div>
             )}
@@ -858,7 +860,7 @@ export default function NeonDerbyGame({
                   className={`tm-derby-chip ${selectedChip === amt ? 'active' : ''}`}
                   onClick={() => setSelectedChip(amt)}
                 >
-                  {amt} 🪙
+                  {practiceMode ? `${amt} chip` : formatMoney(amt)}
                 </button>
               ))}
               <button
@@ -875,7 +877,7 @@ export default function NeonDerbyGame({
               <div className="tm-derby-ticket-list">
                 {ticketBets.map((b) => (
                   <span key={b.id} className="tm-derby-ticket-pill">
-                    {b.label} · {b.stake} 🪙
+                    {b.label} · {practiceMode ? `${b.stake} chip` : formatMoney(b.stake)}
                     <button
                       type="button"
                       aria-label={`Remove ${b.label}`}

@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { subscribeWinCelebration } from '../utils/winCelebration';
 import { DeLoreanSvg } from './DeLoreanTimeMachine';
+import { burst, coinsTo } from './ui/JuiceLayer';
+import { countUp, flash, haptic, isJuiceDisabled } from '../utils/juice';
 import './WinCelebrationOverlay.css';
-
-const CONFETTI_COLORS = ['#facc15', '#00f3ff', '#ec4899', '#4ade80', '#a855f7', '#fb923c'];
 
 const THEME_EMOJIS = {
   'gold-fountain': ['💰', '🏆', '💵', '✨', '💎'],
@@ -205,31 +205,64 @@ export default function WinCelebrationOverlay({
   const [activeWin, setActiveWin] = useState(null);
   const [displayAmount, setDisplayAmount] = useState(0);
   const timerRef = useRef(null);
-  const countRafRef = useRef(0);
+  const countHandleRef = useRef(null);
 
   useEffect(() => {
     const unsub = subscribeWinCelebration((payload) => {
       if (timerRef.current) clearTimeout(timerRef.current);
-      if (countRafRef.current) cancelAnimationFrame(countRafRef.current);
+      if (countHandleRef.current) {
+        countHandleRef.current.cancel();
+        countHandleRef.current = null;
+      }
       setActiveWin(payload);
 
       const targetAmt = Number(payload.amount) || 0;
       const rank = payload.rewardRank || 2;
-      if (targetAmt <= 1 || rank <= 1) {
+      if (targetAmt <= 1 || rank <= 1 || isJuiceDisabled()) {
         setDisplayAmount(targetAmt);
       } else {
         const countMs = Math.min(1150, 320 + rank * 190);
-        const t0 = performance.now();
-        const stepCount = (now) => {
-          const p = Math.min(1, (now - t0) / countMs);
-          const eased = 1 - Math.pow(1 - p, 3);
-          setDisplayAmount(Math.round(targetAmt * eased));
-          if (p < 1) {
-            countRafRef.current = requestAnimationFrame(stepCount);
-          }
-        };
         setDisplayAmount(0);
-        countRafRef.current = requestAnimationFrame(stepCount);
+        countHandleRef.current = countUp(null, 0, targetAmt, {
+          ms: countMs,
+          onTick: (val) => setDisplayAmount(Math.round(val))
+        });
+      }
+
+      if (!compactPlayfieldMode && typeof window !== 'undefined') {
+        const cx = window.innerWidth * 0.5;
+        const cy = window.innerHeight * 0.4;
+        haptic(rank >= 5 ? 'jackpot' : rank >= 3 ? 'big' : 'win');
+        if (payload.theme === 'lightning-surge' && typeof document !== 'undefined') {
+          flash(document.body, 'rgba(0, 243, 255, 0.22)', 160);
+        }
+        burst({
+          x: cx,
+          y: cy,
+          kind: 'confetti',
+          count: Math.min(40, 10 + rank * 6),
+          colour: '#ffcf4d'
+        });
+        if (rank >= 2) {
+          burst({
+            x: cx,
+            y: cy,
+            kind: 'ring',
+            colour: rank >= 4 ? '#ff2bd6' : '#00f3ff'
+          });
+        }
+        if (targetAmt > 0) {
+          burst({
+            x: cx,
+            y: cy - 12,
+            kind: 'coin',
+            count: Math.min(18, 4 + rank * 3)
+          });
+          coinsTo({
+            fromEl: { x: cx, y: cy },
+            count: Math.min(12, 3 + rank * 2)
+          });
+        }
       }
 
       timerRef.current = setTimeout(() => {
@@ -239,9 +272,12 @@ export default function WinCelebrationOverlay({
     return () => {
       unsub();
       if (timerRef.current) clearTimeout(timerRef.current);
-      if (countRafRef.current) cancelAnimationFrame(countRafRef.current);
+      if (countHandleRef.current) {
+        countHandleRef.current.cancel();
+        countHandleRef.current = null;
+      }
     };
-  }, []);
+  }, [compactPlayfieldMode]);
 
   if (!activeWin) return null;
 
@@ -274,9 +310,6 @@ export default function WinCelebrationOverlay({
   const isRare = Boolean(activeWin.isRare);
   const rank = activeWin.rewardRank || (isRare ? 5 : activeWin.isBig ? 3 : 2);
   const tierClass = `tier-${activeWin.rewardTier || 'nice'}`;
-  const baseParticlesByRank = { 1: 8, 2: 14, 3: 24, 4: 32, 5: 40 };
-  const rawCount = baseParticlesByRank[rank] || 16;
-  const particleCount = litePerfMode ? Math.max(6, Math.round(rawCount * 0.45)) : rawCount;
   const emojis = THEME_EMOJIS[activeWin.theme] || THEME_EMOJIS['gold-fountain'];
 
   return (
@@ -495,34 +528,7 @@ export default function WinCelebrationOverlay({
           </>
         )}
 
-        {/* Lightweight GPU Confetti / Emoji Burst */}
-        <div className="tm-win-particles">
-          {Array.from({ length: particleCount }).map((_, idx) => {
-            const angle = (idx / particleCount) * Math.PI * 2;
-            const dist = (isRare ? 95 : 70) + ((idx * 37) % (isRare ? 150 : 110));
-            const tx = Math.round(Math.cos(angle) * dist);
-            const ty = Math.round(Math.sin(angle) * dist * 0.68 - (isRare ? 10 : 25));
-            const isConfetti =
-              (activeWin.theme === 'comic-confetti' || isRare) && idx % 2 === 1;
-            return (
-              <span
-                key={idx}
-                className={isConfetti ? 'tm-win-ribbon' : 'tm-win-spark-emoji'}
-                style={{
-                  '--wx': `${tx}px`,
-                  '--wy': `${ty}px`,
-                  '--wrot': `${((idx * 53) % 240) - 120}deg`,
-                  '--wdelay': `${(idx % 5) * 45}ms`,
-                  backgroundColor: isConfetti
-                    ? CONFETTI_COLORS[idx % CONFETTI_COLORS.length]
-                    : undefined
-                }}
-              >
-                {isConfetti ? '' : emojis[idx % emojis.length]}
-              </span>
-            );
-          })}
-        </div>
+        {/* Confetti / Coin / Ring bursts are drawn cleanly through JuiceLayer canvas */}
       </div>
 
       {/* Unmistakable Center-Top Reward Banner (escalates with win size) */}

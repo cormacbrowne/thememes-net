@@ -1,5 +1,21 @@
 import { useState, forwardRef, useImperativeHandle } from 'react';
 import { COMIC_ACTION_WORDS } from '../data/starterMemes';
+import { burst } from './ui/JuiceLayer';
+
+const OVERLAPPING_JUICE_MAP = {
+  '💰': { kind: 'coin', colour: '#ffcf4d' },
+  '💵': { kind: 'coin', colour: '#39ff88' },
+  '🏆': { kind: 'coin', colour: '#ffcf4d' },
+  '💎': { kind: 'coin', colour: '#00f3ff' },
+  '🎉': { kind: 'confetti', colour: '#ff2bd6' },
+  '🎊': { kind: 'confetti', colour: '#00f3ff' },
+  '✨': { kind: 'star', colour: '#ffcf4d' },
+  '⭐': { kind: 'star', colour: '#ffcf4d' },
+  '🌟': { kind: 'star', colour: '#ffcf4d' },
+  '🔥': { kind: 'spark', colour: '#ff9500' },
+  '⚡': { kind: 'spark', colour: '#00f3ff' },
+  '💥': { kind: 'spark', colour: '#ff2bd6' }
+};
 
 /**
  * Isolated Particle & Comic Action-Word Overlay.
@@ -21,7 +37,13 @@ const ParticleOverlay = forwardRef(function ParticleOverlay({ litePerfMode = fal
         const y =
           e?.clientY || (rect ? rect.top + rect.height / 2 : window.innerHeight / 2);
 
+        const mapped = OVERLAPPING_JUICE_MAP[emoji];
         const count = Math.min(maxCount, 6);
+        if (mapped) {
+          burst({ x, y, kind: mapped.kind, count: Math.max(4, count * 2), colour: mapped.colour });
+          return;
+        }
+
         const batchId = Date.now() + Math.random();
         const newItems = Array.from({ length: count }).map((_, i) => ({
           id: `${batchId}-${i}`,

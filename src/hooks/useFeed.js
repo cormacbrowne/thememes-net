@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { getSupabaseClient } from '../supabaseClient';
 import { sfx } from '../utils/soundEngine';
+import { haptic } from '../utils/juice';
 import { triggerWinCelebration } from '../utils/winCelebration';
 import { loadImageFromFileOrBlob } from '../utils/canvasMutator';
 import {
@@ -800,13 +801,7 @@ export function useFeed({
           setScreenPunch(true);
           setTimeout(() => setScreenPunch(false), 140);
         }
-        try {
-          if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
-            navigator.vibrate(10);
-          }
-        } catch {
-          // ignore vibrate unsupported
-        }
+        haptic('tap');
         broadcastEmote(memeId, '🔥');
         if (currentVote <= 0) {
           const votedMeme = memesRef.current.find((m) => String(m.id) === String(memeId));

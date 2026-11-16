@@ -29,6 +29,7 @@ import {
 import { getSecurityAuditReport } from './utils/securityGuard';
 import { ACCEPT_MEDIA } from './utils/mediaPipeline';
 import ParticleOverlay from './components/ParticleOverlay';
+import JuiceLayer from './components/ui/JuiceLayer';
 import WinCelebrationOverlay from './components/WinCelebrationOverlay';
 import ArcadeErrorBoundary from './components/ArcadeErrorBoundary';
 import {
@@ -1025,6 +1026,7 @@ export default function App() {
 
       {/* ISOLATED FLOATING PHYSICS PARTICLES OVERLAY (ZERO ROOT RE-RENDERS) */}
       <ParticleOverlay ref={particleOverlayRef} litePerfMode={litePerfMode} />
+      <JuiceLayer />
 
       {/* GLOBAL VARIED WIN CELEBRATION OVERLAY */}
       <WinCelebrationOverlay

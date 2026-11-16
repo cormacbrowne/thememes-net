@@ -1,0 +1,184 @@
+/* Unified Mechanical & Video Reel Window (Phase 35.7b) */
+.tm-reel-window {
+  position: relative;
+  overflow: hidden;
+  border-radius: 11px;
+  border: 2px solid #64748b;
+  background: linear-gradient(
+    180deg,
+    #1e293b 0%,
+    #cbd5e1 10%,
+    #fffbeb 24%,
+    #ffffff 50%,
+    #fffbeb 76%,
+    #cbd5e1 90%,
+    #1e293b 100%
+  );
+  box-shadow:
+    inset 0 14px 18px rgba(15, 23, 42, 0.55),
+    inset 0 -14px 18px rgba(15, 23, 42, 0.58);
+  transition: transform 0.22s ease, opacity 0.15s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.tm-reel-window.is-held {
+  border-color: #facc15;
+  box-shadow:
+    0 0 14px rgba(250, 204, 21, 0.72),
+    inset 0 12px 16px rgba(15, 23, 42, 0.5);
+}
+
+.tm-reel-window.is-winner {
+  border-color: #3dff9a;
+  box-shadow:
+    0 0 18px rgba(61, 255, 154, 0.85),
+    inset 0 10px 14px rgba(15, 23, 42, 0.45);
+}
+
+.tm-reel-window.is-dimmed {
+  opacity: 0.6;
+}
+
+.tm-reel-window.is-anticipating {
+  transform: scale(1.04);
+  z-index: 6;
+  border-color: var(--tm-cyan, #19f0ff);
+  box-shadow:
+    0 0 24px rgba(25, 240, 255, 0.72),
+    0 0 42px rgba(255, 46, 136, 0.42),
+    inset 0 8px 16px rgba(15, 23, 42, 0.4);
+}
+
+.tm-reel-blur-probe {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tm-reel-strip {
+  position: relative;
+  width: 100%;
+  will-change: transform, opacity;
+  z-index: 2;
+}
+
+.tm-reel-strip.is-blurred-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.tm-reel-cell {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.tm-reel-cell.is-win-cell {
+  background: radial-gradient(circle, rgba(255, 184, 0, 0.34), transparent 72%);
+}
+
+.tm-reel-cell.is-breathing-cell {
+  animation: tmReelBreathe 0.65s ease-in-out infinite alternate;
+}
+
+@keyframes tmReelBreathe {
+  0% { transform: scale(1); filter: drop-shadow(0 0 4px rgba(25, 240, 255, 0.6)); }
+  100% { transform: scale(1.09); filter: drop-shadow(0 0 12px rgba(255, 184, 0, 0.95)); }
+}
+
+.tm-reel-blur-sprite {
+  width: 100%;
+  height: 135%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.tm-reel-blur-fallback {
+  opacity: 0.55;
+  transform: scaleY(1.8);
+  pointer-events: none;
+}
+
+.tm-reel-glass-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  background: linear-gradient(
+    180deg,
+    rgba(2, 6, 23, 0.42) 0%,
+    rgba(255, 255, 255, 0.1) 24%,
+    rgba(255, 255, 255, 0.22) 50%,
+    rgba(255, 255, 255, 0.1) 76%,
+    rgba(2, 6, 23, 0.45) 100%
+  );
+}
+
+.tm-bandit-payline-laser.is-pulsing {
+  opacity: 1;
+  box-shadow: 0 0 14px #19f0ff, 0 0 24px rgba(255, 46, 136, 0.85);
+}
+
+.tm-auto-spin-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  flex: 1 1 auto;
+}
+
+.tm-auto-spin-popover {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: var(--tm-night-2, #1b1536);
+  border: 1px solid var(--tm-cyan, #19f0ff);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.72), 0 0 14px rgba(25, 240, 255, 0.35);
+  z-index: 30;
+  white-space: nowrap;
+}
+
+.tm-auto-spin-choice {
+  padding: 5px 10px;
+  border-radius: 7px;
+  border: 1px solid rgba(25, 240, 255, 0.5);
+  background: rgba(25, 240, 255, 0.12);
+  color: #f4f1ff;
+  font-weight: 800;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.tm-auto-spin-choice:hover {
+  background: rgba(25, 240, 255, 0.28);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tm-reel-cell.is-breathing-cell {
+    animation: none;
+  }
+  .tm-reel-window {
+    transition: none;
+  }
+}
+
+.tm-reduced-motion-force .tm-reel-cell.is-breathing-cell,
+.tm-lite-perf .tm-reel-cell.is-breathing-cell {
+  animation: none;
+}

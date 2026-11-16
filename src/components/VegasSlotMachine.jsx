@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { pulse } from '../utils/analytics';
 import {
@@ -9,13 +9,14 @@ import {
 import { triggerWinCelebration } from '../utils/winCelebration';
 import { Money, Wallet } from './ui/Money';
 import SlotSymbolArt from './SlotSymbolArt';
+import Reel from './slots/Reel';
+import { createMachineReelController, nudgeCabinetOnStop } from './slots/reelMotion';
 import EightiesIconsStrip from './EightiesIconsStrip';
 import {
   SLOT_MACHINES,
   SLOT_MACHINE_BY_ID,
   NEON_SPECIAL_POWERUPS,
   BANDIT_REEL_STRIP,
-  wrapBanditStop,
   pickDougieQuote,
   BUFFALO_WHEEL_SEGMENTS
 } from '../data/slotMachinesCatalog';
@@ -286,7 +287,6 @@ export default function VegasSlotMachine({
   // Classic Bandit '85 State
   const [banditStops, setBanditStops] = useState([0, 7, 3]);
   const [banditSpinning, setBanditSpinning] = useState([false, false, false]);
-  const [spinTickOffset, setSpinTickOffset] = useState(0);
   const [holdAllowed, setHoldAllowed] = useState(false);
   const [heldReels, setHeldReels] = useState([false, false, false]);
   const [nudgesLeft, setNudgesLeft] = useState(0);
@@ -366,7 +366,9 @@ export default function VegasSlotMachine({
   });
 
   const timersRef = useRef([]);
-  const spinAnimRef = useRef(null);
+  const cabinetRef = useRef(null);
+  const banditController = useMemo(() => createMachineReelController(), []);
+  const activeBanditSpinRef = useRef(null);
   const pulseBatchRef = useRef({ machine: 'bandit85', turbo: false, auto: false, spins: 0, wins: 0, biggest_mult: 0 });
 
   const flushSlotBatch = useCallback(() => {
@@ -420,31 +422,11 @@ export default function VegasSlotMachine({
   useEffect(() => {
     return () => {
       clearTimers();
-      if (spinAnimRef.current) clearInterval(spinAnimRef.current);
+      banditController.destroy();
       if (sirenTimerRef.current) clearTimeout(sirenTimerRef.current);
       if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
     };
-  }, [clearTimers]);
-
-  // Fast drum/reel tick animation while spinning
-  useEffect(() => {
-    if (!isBanditSpinning && !isVideoSpinning) {
-      if (spinAnimRef.current) {
-        clearInterval(spinAnimRef.current);
-        spinAnimRef.current = null;
-      }
-      return undefined;
-    }
-    spinAnimRef.current = setInterval(() => {
-      setSpinTickOffset((n) => (n + 1) % BANDIT_REEL_STRIP.length);
-    }, turboOn ? 70 : 95);
-    return () => {
-      if (spinAnimRef.current) {
-        clearInterval(spinAnimRef.current);
-        spinAnimRef.current = null;
-      }
-    };
-  }, [isBanditSpinning, isVideoSpinning, turboOn]);
+  }, [clearTimers, banditController]);
 
   // Watchdog recovery: guarantee reels/bonus wheel never stay locked if a timer or callback stalls
   useEffect(() => {
@@ -771,34 +753,58 @@ export default function VegasSlotMachine({
     setHoldAllowed(false);
 
     const baseDelays = turboOn ? [260, 440, 620] : [520, 920, 1320];
-    [0, 1, 2].forEach((reelIdx) => {
-      if (heldReels[reelIdx]) return;
-      timersRef.current.push(
-        setTimeout(() => {
-          sfx.playSlotReelStop(reelIdx);
-          setBanditStops((prev) => {
-            const copy = [...prev];
-            copy[reelIdx] = targetStops[reelIdx];
-            return copy;
-          });
-          setBanditSpinning((prev) => {
-            const copy = [...prev];
-            copy[reelIdx] = false;
-            return copy;
-          });
-        }, baseDelays[reelIdx])
-      );
-    });
-
-    const finishDelay = (nextSpinMask[2] ? baseDelays[2] : nextSpinMask[1] ? baseDelays[1] : baseDelays[0]) + 50;
-    timersRef.current.push(
-      setTimeout(() => {
-        setHeldReels([false, false, false]);
-        finalizeBanditOutcome(spinResult, activeBet, false, useFever);
-      }, finishDelay)
+    let settled = false;
+    const remaining = new Set(
+      [0, 1, 2].filter((idx) => nextSpinMask[idx])
     );
+
+    const completeBanditSpin = () => {
+      if (settled) return;
+      settled = true;
+      activeBanditSpinRef.current = null;
+      setHeldReels([false, false, false]);
+      finalizeBanditOutcome(spinResult, activeBet, false, useFever);
+    };
+
+    const handleReelSettled = (reelIdx) => {
+      sfx.playSlotReelStop(reelIdx);
+      nudgeCabinetOnStop(cabinetRef.current);
+      setBanditStops((prev) => {
+        const copy = [...prev];
+        copy[reelIdx] = targetStops[reelIdx];
+        return copy;
+      });
+      setBanditSpinning((prev) => {
+        const copy = [...prev];
+        copy[reelIdx] = false;
+        return copy;
+      });
+      remaining.delete(reelIdx);
+      if (remaining.size === 0) {
+        timersRef.current.push(setTimeout(completeBanditSpin, 40));
+      }
+    };
+
+    activeBanditSpinRef.current = {
+      targetStops,
+      onReelStop: handleReelSettled
+    };
+
+    if (remaining.size === 0) {
+      completeBanditSpin();
+      return;
+    }
+
+    banditController.startSpin({
+      mask: nextSpinMask,
+      targetStops,
+      stopDelaysMs: baseDelays,
+      turbo: turboOn,
+      onReelStop: handleReelSettled
+    });
   }, [
     recordSlotSpinForPulse,
+    banditController,
     banditFever,
     banditFeverArmed,
     banditStops,
@@ -1578,6 +1584,7 @@ export default function VegasSlotMachine({
           className={`tm-bandit-cabinet-wrap ${isJackpot || sirenActive ? 'tm-bandit-jackpot-glow' : ''}`}
         >
           <div
+            ref={cabinetRef}
             className={`tm-bandit-cabinet tm-cabinet-${machineId} ${
               isHighRollerNeon ? `tm-cabinet-highroller-neon tm-neon-theme-${activeMachine.neonTheme}` : ''
             }`}
@@ -1814,33 +1821,23 @@ export default function VegasSlotMachine({
                 <div className="tm-bandit-drums-grid">
                   {[0, 1, 2].map((reelIdx) => {
                     const spinning = banditSpinning[reelIdx];
-                    const centerStop = spinning
-                      ? wrapBanditStop(spinTickOffset * (reelIdx + 2) + reelIdx * 5)
-                      : banditStops[reelIdx];
-                    const topSym = BANDIT_REEL_STRIP[wrapBanditStop(centerStop - 1)];
-                    const midSym = BANDIT_REEL_STRIP[wrapBanditStop(centerStop)];
-                    const botSym = BANDIT_REEL_STRIP[wrapBanditStop(centerStop + 1)];
                     const isHeld = heldReels[reelIdx];
 
                     return (
                       <div key={reelIdx} className="tm-bandit-drum-col">
-                        <div
-                          className={`tm-bandit-drum-window ${spinning ? 'spinning' : ''} ${
-                            isHeld ? 'held' : ''
-                          } ${isWinner && !spinning ? 'winner' : ''}`}
-                        >
-                          <div className="tm-bandit-drum-slot peek top">
-                            <SlotSymbolArt symbolId={topSym} size={embedded ? 30 : 36} />
-                          </div>
-                          <div className="tm-bandit-drum-slot center">
-                            <SlotSymbolArt symbolId={midSym} size={embedded ? 46 : 56} />
-                          </div>
-                          <div className="tm-bandit-drum-slot peek bottom">
-                            <SlotSymbolArt symbolId={botSym} size={embedded ? 30 : 36} />
-                          </div>
-                          <div className="tm-bandit-drum-glass" aria-hidden="true" />
-                          {isHeld && <span className="tm-bandit-held-tag">HELD</span>}
-                        </div>
+                        <Reel
+                          reelIndex={reelIdx}
+                          strip={BANDIT_REEL_STRIP}
+                          cellHeight={embedded ? 44 : 54}
+                          visibleRows={3}
+                          centerRow={1}
+                          stopIndex={banditStops[reelIdx]}
+                          controller={banditController}
+                          isHeld={isHeld}
+                          isWinner={isWinner}
+                          isSpinning={spinning}
+                          symbolSize={embedded ? 36 : 44}
+                        />
 
                         <div className="tm-bandit-drum-btns">
                           <button
@@ -1908,7 +1905,7 @@ export default function VegasSlotMachine({
                           const key = `${colIdx},${rowIdx}`;
                           const lockedOrb = lockItState?.active ? lockItState.lockedMap[key] : null;
                           const symId = colSpinning
-                            ? previewPool[(spinTickOffset + colIdx * 2 + rowIdx) % previewPool.length]
+                            ? previewPool[(colIdx * 2 + rowIdx) % previewPool.length]
                             : colSyms[rowIdx] || previewPool[0];
                           const isCellWin = !colSpinning && winningCells.has(key);
                           const wildMult =

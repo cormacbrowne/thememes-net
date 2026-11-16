@@ -287,16 +287,6 @@
     0 0 20px rgba(250, 204, 21, 0.65);
 }
 
-@keyframes tmVegasDrumSpin {
-  0% { transform: translateY(-18px) scaleY(1.08); filter: blur(1.5px); }
-  50% { transform: translateY(18px) scaleY(1.12); filter: blur(2px); }
-  100% { transform: translateY(-18px) scaleY(1.08); filter: blur(1.5px); }
-}
-
-.tm-vegas-reel-drum.spinning .tm-vegas-drum-strip {
-  animation: tmVegasDrumSpin 0.14s linear infinite;
-}
-
 @keyframes tmVegasDrumStopBounce {
   0% { transform: translateY(-14px); }
   55% { transform: translateY(6px); }
@@ -940,15 +930,6 @@
 .tm-bandit-drum-slot svg {
   max-height: 100%;
   max-width: 100%;
-}
-
-.tm-bandit-drum-window.spinning .tm-bandit-drum-slot {
-  animation: tmDrumSpinTick 0.09s linear infinite;
-}
-
-@keyframes tmDrumSpinTick {
-  0% { transform: translateY(-7px) scaleY(1.06); }
-  100% { transform: translateY(7px) scaleY(1.06); }
 }
 
 .tm-bandit-drum-glass {
@@ -1668,10 +1649,6 @@
   padding: 3px;
   border: 1px solid #475569;
   overflow: hidden;
-}
-
-.tm-video-reel-col.spinning .tm-video-cell {
-  animation: tmDrumSpinTick 0.09s linear infinite;
 }
 
 .tm-video-cell {

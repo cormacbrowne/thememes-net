@@ -38,7 +38,7 @@
 
 ### 🙋 Owner actions (agents cannot do these)
 
-1. **Make yourself a moderator — nobody is one yet.** There are 0 moderators, so nothing can be approved or removed and 1 item (the paused video meme) is waiting. Sign in on the site with your real account, then run in the Supabase SQL editor: `insert into public.profiles (id, role) values ('<your auth user id>','moderator') on conflict (id) do update set role='moderator';` Then open `/admin/moderation`.
+1. ~~Make yourself a moderator~~ ✅ done 16 Nov 2026: both owner accounts have `role = 'moderator'` and `/admin/moderation` opens for them. Still to do here: review the 1 waiting item (the paused video meme).
 2. **Read and sign off the five draft pages** (`/rules`, `/terms`, `/privacy`, `/takedown`, `/contact`); they still say "DRAFT – owner to review". Decide the **age position** (e.g. 13+, teen-safe) and add a real contact address. `/privacy` must say uploaded images and text are sent to OpenAI for moderation.
 3. **Legal check before promoting the site or switching uploads on.** UK Online Safety Act duties for a small user-to-user service (Ofcom guidance and risk assessment), UK GDPR, and a written procedure for reporting suspected child-abuse images (UK: IWF / NCA). This file is not legal advice; a short session with a solicitor is worth it.
 4. **Supabase dashboard:** turn on **leaked-password protection** (Auth → Passwords; the security advisor flags it); confirm which OAuth providers are really configured; create a separate **staging project** and add GitHub secrets `STAGING_SUPABASE_URL`, `STAGING_SUPABASE_ANON_KEY`, `STAGING_TEST_MEME_ID` so CI runs the security spec on every push (it is skipped until they exist).

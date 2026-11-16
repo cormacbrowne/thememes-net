@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
+import { pulse } from '../utils/analytics';
 import {
   ARCADE_ECONOMY_RULES,
   validateStakedGamePayout,
@@ -362,6 +363,39 @@ export default function VegasSlotMachine({
 
   const timersRef = useRef([]);
   const spinAnimRef = useRef(null);
+  const pulseBatchRef = useRef({ machine: 'bandit85', turbo: false, auto: false, spins: 0, wins: 0, biggest_mult: 0 });
+
+  const flushSlotBatch = useCallback(() => {
+    const b = pulseBatchRef.current;
+    if (b.spins <= 0) return;
+    pulse('slot_spin_batch', {
+      machine: b.machine,
+      turbo: b.turbo,
+      auto: b.auto,
+      spins: b.spins,
+      wins: b.wins,
+      biggest_mult: Number(b.biggest_mult.toFixed(2))
+    });
+    b.spins = 0;
+    b.wins = 0;
+    b.biggest_mult = 0;
+  }, []);
+
+  const recordSlotSpinForPulse = useCallback((machine) => {
+    const b = pulseBatchRef.current;
+    if (b.spins > 0 && b.machine !== machine) {
+      flushSlotBatch();
+    }
+    b.machine = machine;
+    b.turbo = Boolean(turboOn);
+    b.auto = autoSpinsLeft > 0;
+    b.spins += 1;
+    if (b.spins >= 10) {
+      flushSlotBatch();
+    }
+  }, [turboOn, autoSpinsLeft, flushSlotBatch]);
+
+  useEffect(() => () => flushSlotBatch(), [flushSlotBatch]);
   const sirenTimerRef = useRef(null);
   const leverDragStartYRef = useRef(null);
   const autoTimerRef = useRef(null);
@@ -456,6 +490,13 @@ export default function VegasSlotMachine({
 
       const isMega = tier === 'jackpot' || mult >= 15;
       const isBig = isMega || tier === 'big' || mult >= 6;
+
+      if (mult > 0) {
+        pulseBatchRef.current.wins += 1;
+        if (mult > pulseBatchRef.current.biggest_mult) {
+          pulseBatchRef.current.biggest_mult = mult;
+        }
+      }
 
       if (isBig) {
         fireBigWinSiren(isMega, dougiePhrase);
@@ -708,6 +749,7 @@ export default function VegasSlotMachine({
 
     setLeverPulled(true);
     sfx.playSlotLeverPull();
+    recordSlotSpinForPulse('bandit85');
     timersRef.current.push(setTimeout(() => setLeverPulled(false), 420));
 
     setLastOutcome(null);
@@ -759,6 +801,7 @@ export default function VegasSlotMachine({
       }, finishDelay)
     );
   }, [
+    recordSlotSpinForPulse,
     banditFever,
     banditFeverArmed,
     banditStops,
@@ -1123,6 +1166,7 @@ export default function VegasSlotMachine({
     clearTimers();
     setLeverPulled(true);
     sfx.playSlotLeverPull();
+    recordSlotSpinForPulse(machineId);
     timersRef.current.push(setTimeout(() => setLeverPulled(false), 380));
 
     if (machineId === 'silver_mustang' && mustangFreeSpins > 0) {
@@ -1292,6 +1336,7 @@ export default function VegasSlotMachine({
       }, lastDelay)
     );
   }, [
+    recordSlotSpinForPulse,
     activeMachine.name,
     anteBetOn,
     armedNeonPowerups,

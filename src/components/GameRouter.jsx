@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, Suspense } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { GAME_VIEW_MODE_TO_PATH, SITE_ORIGIN } from '../data/seoRoutes';
 import { getArcadeGameById } from '../data/arcadeGamesCatalog';
+import { pulse, pulseTimer } from '../utils/analytics';
 import {
   fetchGameLeaderboard,
   getActiveGameSession,
@@ -776,8 +777,8 @@ export default function GameRouter({
   viewMode,
   setViewMode,
   tokens,
-  handleSpendTokens,
-  handlePayoutGameTokens,
+  handleSpendTokens: rawSpendTokens,
+  handlePayoutGameTokens: rawPayoutGameTokens,
   handleEarnMemeCentz,
   awardXpOnly,
   soundOn,
@@ -831,6 +832,57 @@ export default function GameRouter({
   const [initialsPrompt, setInitialsPrompt] = useState(null);
   const [continuousPeak, setContinuousPeak] = useState(null);
   const sessionLoggedPeakRef = useRef({});
+  const pulseGameRef = useRef({ game: null, rounds: 0, spent: 0, won: 0, stop: null });
+
+  useEffect(() => {
+    const isCatalogGame = Boolean(getArcadeGameById(viewMode));
+    if (!isCatalogGame) return undefined;
+
+    pulse('game_start', { game: viewMode });
+    const stop = pulseTimer('game_end', { game: viewMode });
+    const tracker = { game: viewMode, rounds: 0, spent: 0, won: 0, stop };
+    pulseGameRef.current = tracker;
+
+    const flush = () => {
+      if (!tracker.stop) return;
+      const fn = tracker.stop;
+      tracker.stop = null;
+      const result = tracker.won > tracker.spent ? 'win' : tracker.spent > 0 ? 'loss' : 'free';
+      fn({ rounds: tracker.rounds, result });
+    };
+    window.addEventListener('pagehide', flush);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      flush();
+    };
+  }, [viewMode]);
+
+  const handleSpendTokens = useCallback(
+    (amount, ...rest) => {
+      const n = Number(amount) || 0;
+      if (n > 0 && n > (Number(tokens) || 0)) {
+        pulse('wallet_empty', { game: viewMode });
+      }
+      const ok = rawSpendTokens ? rawSpendTokens(amount, ...rest) : false;
+      if (ok && n > 0 && pulseGameRef.current.game === viewMode) {
+        pulseGameRef.current.rounds += 1;
+        pulseGameRef.current.spent += n;
+      }
+      return ok;
+    },
+    [rawSpendTokens, tokens, viewMode]
+  );
+
+  const handlePayoutGameTokens = useCallback(
+    (amount, ...rest) => {
+      const n = Number(amount) || 0;
+      if (n > 0 && pulseGameRef.current.game === viewMode) {
+        pulseGameRef.current.won += n;
+      }
+      return rawPayoutGameTokens ? rawPayoutGameTokens(amount, ...rest) : undefined;
+    },
+    [rawPayoutGameTokens, viewMode]
+  );
 
   useEffect(() => {
     if (isLeaderboardGame(viewMode)) {

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { getSettings, subscribeSettings, updateSettings } from '../utils/settingsStore';
+import { pulse } from '../utils/analytics';
 import { RadioToggleButton } from './MemesRadio';
 import './GameShell.css';
 
@@ -79,6 +80,7 @@ export default function GameShell({
       : window.location.href;
     navigator.clipboard?.writeText(targetUrl).catch(() => {});
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      pulse('share', { surface: 'game_shell', method: 'native' });
       navigator
         .share({
           title: `${title} — Free Game on THE MEMES.net`,
@@ -86,6 +88,8 @@ export default function GameShell({
           url: targetUrl
         })
         .catch(() => {});
+    } else {
+      pulse('share', { surface: 'game_shell', method: 'copy' });
     }
     sfx.playPop?.(2);
     setCopiedLink(true);

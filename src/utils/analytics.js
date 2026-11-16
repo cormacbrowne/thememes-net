@@ -1,6 +1,8 @@
 import { track } from '@vercel/analytics';
+import { pulse, pulseTimer } from './pulse';
 
 const viewedKeysThisSession = new Set();
+const featuresUsedThisSession = new Set();
 
 function safeTrack(eventName, props = {}) {
   if (typeof window === 'undefined') return;
@@ -14,10 +16,37 @@ function safeTrack(eventName, props = {}) {
         cleanProps[k] = String(v).slice(0, 120);
       }
     }
+    pulse(eventName, cleanProps);
     track(eventName, cleanProps);
   } catch {
     // Ignore analytics transport or adblocker errors
   }
+}
+
+export { pulse, pulseTimer };
+
+export function trackFeatureUseOnce(feature) {
+  if (!feature || featuresUsedThisSession.has(feature)) return;
+  featuresUsedThisSession.add(feature);
+  pulse('feature_use', { feature: String(feature).slice(0, 40) });
+}
+
+export function sanitizeErrorMessage(msg) {
+  return String(msg || 'Unknown error')
+    .replace(/https?:\/\/\S+/gi, '[url]')
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[email]')
+    .slice(0, 80);
+}
+
+export function trackClientError(where, errorOrMsg) {
+  const raw =
+    typeof errorOrMsg === 'string'
+      ? errorOrMsg
+      : errorOrMsg?.message || String(errorOrMsg || 'Error');
+  pulse('client_error', {
+    where: String(where || 'unknown').slice(0, 40),
+    message: sanitizeErrorMessage(raw)
+  });
 }
 
 export function trackMemeViewed(meme, source = 'theater') {

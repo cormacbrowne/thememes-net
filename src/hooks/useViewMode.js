@@ -7,7 +7,14 @@ import {
   normalizeRoutePath
 } from '../data/seoRoutes';
 import { recordRecentArcadeGame } from '../data/arcadeGamesCatalog';
-import { trackMemeViewed, trackGameStarted } from '../utils/analytics';
+import {
+  trackMemeViewed,
+  trackGameStarted,
+  pulse,
+  pulseTimer,
+  trackFeatureUseOnce,
+  trackClientError
+} from '../utils/analytics';
 import { getDeviceProfileSnapshot } from '../utils/deviceProfile';
 import { recordLocalMemeView } from '../utils/notifications';
 
@@ -380,6 +387,10 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
     theaterMemeId,
     openedFromShareLink,
     roastModalMeme,
+    showLeaderboard,
+    showRewardsModal,
+    battleModalOpen,
+    aiAssistantOpen,
     canonicalPath,
     isFixedArcadeGame,
     activeNavDepth,
@@ -597,4 +608,122 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [bossKeyActive, setBossKeyActive, setPrankDisguise]);
+
+  // Phase 35.1c: Pulse view, first_action, feed_depth, feature_use, and global client_error
+  const lastPulseViewRef = useRef('');
+  useEffect(() => {
+    const key = `${viewMode}:${canonicalPath}`;
+    if (lastPulseViewRef.current === key) return;
+    lastPulseViewRef.current = key;
+    pulse('view', { mode: viewMode });
+  }, [viewMode, canonicalPath]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const loadTs = Date.now();
+    let fired = false;
+    const onFirst = (kind) => () => {
+      if (fired) return;
+      fired = true;
+      pulse('first_action', { kind, ms_since_load: Math.max(0, Date.now() - loadTs) });
+      window.removeEventListener('pointerdown', onTap);
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('scroll', onScroll);
+    };
+    const onTap = onFirst('tap');
+    const onKey = onFirst('key');
+    const onScroll = onFirst('scroll');
+    window.addEventListener('pointerdown', onTap, { once: true, passive: true });
+    window.addEventListener('keydown', onKey, { once: true, passive: true });
+    window.addEventListener('scroll', onScroll, { once: true, passive: true });
+    return () => {
+      window.removeEventListener('pointerdown', onTap);
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const onErr = (event) => {
+      trackClientError('window', event?.error || event?.message || 'Script error');
+    };
+    const onRej = (event) => {
+      trackClientError('promise', event?.reason || 'Unhandled rejection');
+    };
+    window.addEventListener('error', onErr);
+    window.addEventListener('unhandledrejection', onRej);
+    return () => {
+      window.removeEventListener('error', onErr);
+      window.removeEventListener('unhandledrejection', onRej);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (viewMode !== 'feed' || typeof document === 'undefined') return undefined;
+    const stopTimer = pulseTimer('feed_depth');
+    const seenIds = new Set();
+    let observer = null;
+    const scanCards = () => {
+      const cards = document.querySelectorAll('.tm-meme-card, [data-meme-id]');
+      if (!observer) {
+        cards.forEach((el, idx) => seenIds.add(el.getAttribute('data-meme-id') || String(idx)));
+        return;
+      }
+      cards.forEach((el) => observer.observe(el));
+    };
+    if (typeof IntersectionObserver !== 'undefined') {
+      observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              const id = entry.target.getAttribute('data-meme-id') || entry.target.id || `c_${seenIds.size}`;
+              seenIds.add(id);
+            }
+          }
+        },
+        { threshold: 0.25 }
+      );
+    }
+    scanCards();
+    const interval = window.setInterval(scanCards, 2000);
+    const flushFeed = () => stopTimer({ cards_seen: seenIds.size });
+    window.addEventListener('pagehide', flushFeed);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener('pagehide', flushFeed);
+      observer?.disconnect();
+      flushFeed();
+    };
+  }, [viewMode]);
+
+  useEffect(() => {
+    if (showStudio) pulse('forge_open', { mode: forgeIntent?.mode || 'create' });
+  }, [showStudio, forgeIntent]);
+
+  useEffect(() => {
+    if (bossKeyActive || prankDisguise) trackFeatureUseOnce('boss key');
+    if (showLeaderboard) trackFeatureUseOnce('leaderboard');
+    if (showRewardsModal) trackFeatureUseOnce('rewards');
+    if (battleModalOpen) trackFeatureUseOnce('caption battle');
+    if (aiAssistantOpen) trackFeatureUseOnce('AI assistant');
+    if (viewMode === 'eightball') trackFeatureUseOnce('8-ball');
+    if (extrasDrawerOpen) {
+      if (extrasFocus === 'radio') trackFeatureUseOnce('radio');
+      else if (extrasFocus === 'pet') trackFeatureUseOnce('pet');
+      else if (extrasFocus === 'soundboard') trackFeatureUseOnce('soundboard');
+      else if (extrasFocus === 'delorean') trackFeatureUseOnce('DeLorean');
+      else if (extrasFocus === 'icons') trackFeatureUseOnce('icons strip');
+    }
+  }, [
+    bossKeyActive,
+    prankDisguise,
+    showLeaderboard,
+    showRewardsModal,
+    battleModalOpen,
+    aiAssistantOpen,
+    viewMode,
+    extrasDrawerOpen,
+    extrasFocus
+  ]);
 }

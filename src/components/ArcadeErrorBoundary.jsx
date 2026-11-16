@@ -1,5 +1,6 @@
 import React from 'react';
 import { isChunkLoadError } from '../utils/lazyWithRetry';
+import { trackClientError } from '../utils/analytics';
 
 export default class ArcadeErrorBoundary extends React.Component {
   constructor(props) {
@@ -24,6 +25,7 @@ export default class ArcadeErrorBoundary extends React.Component {
     if (typeof console !== 'undefined' && console.error) {
       console.error('[ArcadeErrorBoundary]', error, info);
     }
+    trackClientError('boundary', error);
   }
 
   handleRetry = () => {

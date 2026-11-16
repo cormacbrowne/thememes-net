@@ -23,8 +23,29 @@ import {
   trackUpvote,
   trackRemixOpened,
   trackMemePublished,
-  trackShareClicked
+  trackShareClicked,
+  pulse
 } from '../utils/analytics';
+
+function classifyPublishRefusal(err) {
+  const msg = String(err?.message || err || '').toLowerCase();
+  if (msg.includes('rate') || msg.includes('limit') || msg.includes('cooldown') || msg.includes('429')) {
+    return 'rate_limit';
+  }
+  if (msg.includes('moderat') || msg.includes('policy') || msg.includes('banned') || msg.includes('nsfw') || msg.includes('rejected')) {
+    return 'moderation';
+  }
+  if (msg.includes('auth') || msg.includes('sign') || msg.includes('session')) {
+    return 'auth';
+  }
+  if (msg.includes('network') || msg.includes('fetch') || msg.includes('timeout')) {
+    return 'network';
+  }
+  if (msg.includes('size') || msg.includes('type') || msg.includes('invalid') || msg.includes('empty')) {
+    return 'validation';
+  }
+  return 'unknown';
+}
 import { publishMeme, PENDING_REVIEW_MESSAGE } from '../utils/publishMeme';
 import {
   postComment,
@@ -1311,17 +1332,27 @@ export function useFeed({
     const finalTitle = title || fallbackCaption || `Fresh Upload by @${author}`;
 
     const client = getSupabaseClient();
-    const { meme: insertedMeme, status: publishStatus } = await publishMeme({
-      media,
-      overlay,
-      meta: {
-        title: finalTitle,
-        category: quickCat,
-        author,
-        generation: 0
-      },
-      client
-    });
+    let insertedMeme;
+    let publishStatus;
+    try {
+      const res = await publishMeme({
+        media,
+        overlay,
+        meta: {
+          title: finalTitle,
+          category: quickCat,
+          author,
+          generation: 0
+        },
+        client
+      });
+      insertedMeme = res.meme;
+      publishStatus = res.status;
+    } catch (err) {
+      pulse('publish_refused', { reason_class: classifyPublishRefusal(err) });
+      throw err;
+    }
+    pulse('publish_ok', { mode: 'quick_upload', status: publishStatus });
 
     setMemes((prev) => [insertedMeme, ...prev]);
     // 33.3: a meme waiting for review is only visible to its uploader and earns nothing yet.
@@ -1381,21 +1412,31 @@ export function useFeed({
     const generation = parent && !isBounty ? (parent.generation || 0) + 1 : 0;
 
     const client = getSupabaseClient();
-    const { meme: insertedMeme, status: publishStatus } = await publishMeme({
-      media,
-      overlay,
-      meta: {
-        ...meta,
-        author: user?.username || 'AnonMemer',
-        parentId,
-        rootId,
-        generation,
-        isBounty,
-        bountyId: activeBounty?.id || intent?.bounty?.id || null,
-        templateId: activeBounty?.template?.id || intent?.bounty?.template?.id || null
-      },
-      client
-    });
+    let insertedMeme;
+    let publishStatus;
+    try {
+      const res = await publishMeme({
+        media,
+        overlay,
+        meta: {
+          ...meta,
+          author: user?.username || 'AnonMemer',
+          parentId,
+          rootId,
+          generation,
+          isBounty,
+          bountyId: activeBounty?.id || intent?.bounty?.id || null,
+          templateId: activeBounty?.template?.id || intent?.bounty?.template?.id || null
+        },
+        client
+      });
+      insertedMeme = res.meme;
+      publishStatus = res.status;
+    } catch (err) {
+      pulse('publish_refused', { reason_class: classifyPublishRefusal(err) });
+      throw err;
+    }
+    pulse('publish_ok', { mode: intent?.mode || (parent ? 'remix' : 'forge'), status: publishStatus });
 
     if (publishStatus === 'pending') {
       // 33.3: waiting for review — only the uploader sees it; no rewards, remix credit or
@@ -1631,6 +1672,10 @@ export function useFeed({
         }
       }
       trackShareClicked(meme, 'card');
+      pulse('share', {
+        surface: 'card',
+        method: typeof navigator !== 'undefined' && typeof navigator.share === 'function' ? 'native' : 'copy'
+      });
       sfx.playPop(1);
       setGoblinFortuneToast('🔗 Share link copied (with www.thememes.net watermark on file share & download)!');
       setTimeout(() => setGoblinFortuneToast(''), 4000);

@@ -6,6 +6,7 @@
 
 import { sfx } from './soundEngine';
 import { getRadioState, setRadioStation, setRadioVolume } from './radioBus';
+import { trackFeatureUseOnce } from './analytics';
 
 export const SETTINGS_STORAGE_KEY = 'tm_settings';
 
@@ -34,7 +35,8 @@ export const DEFAULT_SETTINGS = {
   reducedMotion: 'auto', // 'auto' | 'on' | 'off'
   crtOn: false,
   turboFps: true,
-  litePerfMode: false
+  litePerfMode: false,
+  pulseOn: true
 };
 
 let cachedSettings = null;
@@ -118,6 +120,10 @@ export function applySettingsToRuntime(settings) {
     root.classList.toggle('tm-reduced-motion-force', settings.reducedMotion === 'on');
     root.classList.toggle('tm-reduced-motion-allow', settings.reducedMotion === 'off');
     root.dataset.turboFps = settings.turboFps ? '1' : '0';
+  }
+
+  if (settings.crtOn) {
+    trackFeatureUseOnce('CRT TV');
   }
 
   try {

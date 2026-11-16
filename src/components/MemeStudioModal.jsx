@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { VIRAL_CAPTIONS } from '../data/starterMemes';
 import { STUDIO_FILTERS, CAPTION_LAYOUTS } from '../utils/canvasMutator';
+import { pulse } from '../utils/analytics';
 
 const TEXT_COLOR_SWATCHES = [
   { id: '#facc15', label: 'Cyber Gold' },
@@ -451,7 +452,10 @@ export default function MemeStudioModal({
                 className="tm-btn"
                 style={{ flex: 1, justifyContent: 'center' }}
                 disabled={!customUploadImg}
-                onClick={onDownloadPng}
+                onClick={(e) => {
+                  pulse('forge_export', { method: 'download' });
+                  onDownloadPng?.(e);
+                }}
                 title={customUploadImg ? 'Download your meme as PNG' : 'Upload an image first'}
               >
                 💾 Download PNG (+25 XP)
@@ -466,7 +470,10 @@ export default function MemeStudioModal({
                   borderColor: clipboardStatus ? '#22c55e' : undefined,
                   color: clipboardStatus ? '#22c55e' : undefined
                 }}
-                onClick={onCopyClipboardPng}
+                onClick={(e) => {
+                  pulse('forge_export', { method: 'copy' });
+                  onCopyClipboardPng?.(e);
+                }}
                 title={customUploadImg ? 'Copy meme image to clipboard' : 'Upload an image first'}
               >
                 {clipboardStatus || '📋 Copy to Clipboard'}

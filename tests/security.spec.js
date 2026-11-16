@@ -229,4 +229,14 @@ if (!STAGING_URL || !ANON_KEY) {
       `non-moderator mod_queue returned ${modQueueRes.status}`
     );
   });
+
+  test('publishable key cannot select from any pulse_* table', async () => {
+    for (const tbl of ['pulse_events', 'pulse_salts', 'pulse_daily']) {
+      const res = await apiFetch(STAGING_URL, ANON_KEY, `/rest/v1/${tbl}?select=*&limit=1`);
+      assert.ok(
+        res.status === 401 || res.status === 403,
+        `expected 401/403 selecting from ${tbl}, got ${res.status}`
+      );
+    }
+  });
 }

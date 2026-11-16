@@ -91,8 +91,9 @@ export const LEGAL_PAGES = {
       {
         heading: '📊 Analytics & Anti-Bot Protection',
         bullets: [
-          'We use privacy-friendly Vercel Analytics for aggregate page views, and may use Cloudflare Turnstile on upload and comment checks to stop automated bots.',
-          'We do not sell your personal information or run third-party ad tracking profiles.'
+          'First-party anonymous usage stats (Pulse): we count page views, game plays, and button presses without cookies or tracking IDs. The count cannot be tied to a person or an account, IP addresses are never stored, and raw event counts are deleted after 30 days.',
+          'How to switch it off: toggle "Anonymous usage stats" off in Settings (⚙️), or enable Global Privacy Control (GPC) / Do-Not-Track in your browser — we honour both.',
+          'We also use privacy-friendly Vercel Analytics for aggregate page views, and may use Cloudflare Turnstile on upload and comment checks to stop automated bots. We do not sell your personal information or run third-party ad tracking profiles.'
         ]
       },
       {

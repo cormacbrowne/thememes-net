@@ -283,6 +283,17 @@ export default function SettingsSheet({ compact = false, onResetHints }) {
             >
               💨 Lite Mode: {settings.litePerfMode ? 'ON' : 'OFF'}
             </button>
+            <button
+              type="button"
+              className={`tm-settings-pill ${settings.pulseOn !== false ? 'active' : ''}`}
+              onClick={() => {
+                sfx.playToggle();
+                updateSettings({ pulseOn: settings.pulseOn === false });
+              }}
+              aria-pressed={settings.pulseOn !== false}
+            >
+              📊 Anonymous usage stats: {settings.pulseOn !== false ? 'ON' : 'OFF'}
+            </button>
           </div>
           <div className="tm-settings-sub" style={{ marginTop: '2px' }}>
             Reduced Motion (overrides OS)

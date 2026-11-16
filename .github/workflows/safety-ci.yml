@@ -23,6 +23,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Currency format guard
+        run: node scripts/check-currency.mjs
+
       - name: Unit tests (node:test + Vitest)
         run: npm run test:unit
 

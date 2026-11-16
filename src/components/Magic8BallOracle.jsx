@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { sfx } from '../utils/soundEngine';
-import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
+import { ARCADE_ECONOMY_RULES, formatMoney } from '../utils/tokenEconomy';
 import GameShell from './GameShell';
 import './Magic8BallOracle.css';
 
@@ -45,6 +45,7 @@ const FATE_STAKES = ARCADE_ECONOMY_RULES.ARCADE_STAKES.EIGHTBALL_BETS || [2, 5, 
 
 export default function Magic8BallOracle({
   tokens = 0,
+  centz = 0,
   soundOn,
   onToggleSound,
   onSpendTokens,
@@ -61,7 +62,7 @@ export default function Magic8BallOracle({
     code: 'ORACLE 86'
   });
   const [statusMsg, setStatusMsg] = useState(
-    'Free readings grant +15¢ MemeCentz! Fate Wagers pay 2.0× on Auspicious prophecies (90% RTP / 10% House Edge).'
+    'Free readings grant +3¢ MemeCentz! Fate Wagers pay 2.0× on Auspicious prophecies (90% RTP / 10% House Edge).'
   );
   const [history, setHistory] = useState([]);
   const [shakeCount, setShakeCount] = useState(0);
@@ -83,13 +84,13 @@ export default function Magic8BallOracle({
 
     if (!isFreeOracle) {
       if (tokens < numericStake) {
-        setStatusMsg(`Need M$${numericStake} MemeDollarz! Switched to Free Oracle (+15¢ per shake).`);
+        setStatusMsg(`Need ${formatMoney(numericStake)}! Switched to Free Oracle (+3¢ per shake).`);
         setStakeMode('free');
         sfx.playSadTrombone?.();
         return;
       }
       if (onSpendTokens && !onSpendTokens(numericStake, '80s Magic 8-Ball Fate Wager')) {
-        setStatusMsg(`Need M$${numericStake} MemeDollarz for a Fate Wager!`);
+        setStatusMsg(`Need ${formatMoney(numericStake)} for a Fate Wager!`);
         return;
       }
     }
@@ -118,19 +119,19 @@ export default function Magic8BallOracle({
         const paid = onPayoutTokens?.(grossWin, {
           stakedTokens: numericStake,
           xp: 30,
-          label: `🎱 8-Ball Fate Win +M$${grossWin}`,
+          label: `🎱 8-Ball Fate Win ${formatMoney(grossWin, { sign: true })}`,
           emoji: '🎱',
           maxMultiplier: 4
         });
         const shown = paid ?? grossWin;
-        outcomeTag = `+M$${shown} WIN`;
-        setStatusMsg(`✨ AUSPICIOUS PROPHECY! Oracle paid M$${shown} MemeDollarz!`);
+        outcomeTag = `${formatMoney(shown, { sign: true })} WIN`;
+        setStatusMsg(`✨ AUSPICIOUS PROPHECY! Oracle paid ${formatMoney(shown)} MemeDollarz!`);
       } else if (picked.tone === 'neutral') {
-        outcomeTag = `-${numericStake} M$ (Haze)`;
-        setStatusMsg(`🌫️ Cosmic Static! Fate Wager claimed by the neon void.`);
+        outcomeTag = `${formatMoney(-numericStake, { sign: true })} (Haze)`;
+        setStatusMsg('🌫️ Cosmic Static! Fate Wager claimed by the neon void.');
       } else {
-        outcomeTag = `-${numericStake} M$ (House)`;
-        setStatusMsg(`💀 Cyber Doom! The House claims M$${numericStake} MemeDollarz.`);
+        outcomeTag = `${formatMoney(-numericStake, { sign: true })} (House)`;
+        setStatusMsg(`💀 Cyber Doom! The House claims ${formatMoney(numericStake)} MemeDollarz.`);
       }
 
       setHistory((prev) => [
@@ -162,6 +163,7 @@ export default function Magic8BallOracle({
       className="tm-8ball-shell"
       onBack={onBackToFeed}
       tokens={tokens}
+      centz={centz}
       hasPractice
       practiceMode={isFreeOracle}
       onTogglePractice={() => setStakeMode((prev) => (prev === 'free' ? FATE_STAKES[0] : 'free'))}
@@ -171,8 +173,8 @@ export default function Magic8BallOracle({
       howToPlay={[
         'Type any question or pick one of the 80s presets.',
         'Tap or click the 3D Magic 8-Ball (or press SHAKE THE 8-BALL) to stir the mystic indigo dye.',
-        'Free Oracle mode rewards +15¢ MemeCentz every shake.',
-        'Fate Wager bets M$2–M$10 on an Auspicious (Green/Cyan) outcome paying 2.0× (45% odds = strict 10% House Edge).'
+        'Free Oracle mode rewards +3¢ MemeCentz every shake.',
+        `Fate Wager bets ${formatMoney(FATE_STAKES[0])}–${formatMoney(FATE_STAKES[FATE_STAKES.length - 1])} on an Auspicious (Green/Cyan) outcome paying 2.0× (45% odds = strict 10% House Edge).`
       ]}
     >
       <div className="tm-8ball-layout">
@@ -294,7 +296,7 @@ export default function Magic8BallOracle({
                   setStakeMode('free');
                 }}
               >
-                🔮 Free (+15¢)
+                🔮 Free (+3¢)
               </button>
               {FATE_STAKES.map((amt) => (
                 <button
@@ -307,7 +309,7 @@ export default function Magic8BallOracle({
                     setStakeMode(amt);
                   }}
                 >
-                  💵 M${amt}
+                  💵 {formatMoney(amt)}
                 </button>
               ))}
             </div>
@@ -322,8 +324,8 @@ export default function Magic8BallOracle({
             {phase === 'shaking'
               ? '🌀 CONSULTING SYNTHWAVE ETHER...'
               : isFreeOracle
-              ? '🎱 SHAKE THE 8-BALL (+15¢ MemeCentz)'
-              : `🎱 SHAKE FOR DESTINY (Wager M$${numericStake} → Win M$${numericStake * 2})`}
+              ? '🎱 SHAKE THE 8-BALL (+3¢ MemeCentz)'
+              : `🎱 SHAKE FOR DESTINY (Wager ${formatMoney(numericStake)} → Win ${formatMoney(numericStake * 2)})`}
           </button>
 
           {history.length > 0 && (

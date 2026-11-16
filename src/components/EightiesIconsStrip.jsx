@@ -1,6 +1,6 @@
 import { memo, useState } from 'react';
 import { triggerHelicopterFlyby } from '../utils/winCelebration';
-import { formatEightiesPrice } from '../utils/tokenEconomy';
+import { formatMoney } from '../utils/tokenEconomy';
 import { sfx } from '../utils/soundEngine';
 import { speakWithPersona } from '../utils/aiSpeech';
 import { getSettings } from '../utils/settingsStore';
@@ -141,7 +141,7 @@ const EIGHTIES_ICON_CAST = [
     role: '88 MPH Racer',
     voiceMode: 'kitt',
     quotes: [
-      "Wait a minute, Doc — are you telling me 1 Token is still 25¢?",
+      "Wait a minute, Doc — are you telling me an arcade quarter is still 25¢?",
       "Nobody calls me chicken when there's a Full House jackpot on the line!",
       "Check out this hoverboard move... okay, 1985 still only has twin-kick skateboards.",
       "Guess you guys aren't ready for synth-wave yet... but your kids are gonna love it."
@@ -177,7 +177,7 @@ const EIGHTIES_ICON_CAST = [
     role: 'Detroit Undercover',
     voiceMode: 'kitt',
     quotes: [
-      "I'm not gonna fall for a banana in the tailpipe... unless it pays out 50 tokens!",
+      "I'm not gonna fall for a banana in the tailpipe... unless it pays out M$12.50!",
       "Hey man, relax — the Axel F synth bassline just kicked in across the lobby.",
       "Don't tell the Chief I spent our per diem on two extra bingo cards.",
       "Trust me, I read that look — somebody at table 3 is one away from Two Lines!"
@@ -863,7 +863,7 @@ const EightiesIconsStrip = memo(function EightiesIconsStrip({ compact = false })
         <div className="tm-80s-cast-title">
           <span className="tm-80s-crt-dot" aria-hidden="true" />
           <span>📺 1980s CLASSICS CREW ({EIGHTIES_ICON_CAST.length} ICONS)</span>
-          <span className="tm-80s-price-tag">1985 PRICES (25¢ = 1🪙)</span>
+          <span className="tm-80s-price-tag">1985 PRICES (25¢ COIN-OP)</span>
         </div>
         <div className="tm-80s-chopper-btns">
           <button
@@ -965,7 +965,7 @@ const EightiesIconsStrip = memo(function EightiesIconsStrip({ compact = false })
             <div className="tm-80s-dossier-meta">
               <span className="tm-80s-meta-pill">
                 💵 1985 Prop: {selected.item80s} —{' '}
-                <strong>{formatEightiesPrice(selected.priceTokens)}</strong> ({selected.priceTokens} 🪙)
+                <strong>{formatMoney(selected.priceTokens)}</strong>
               </span>
               {selected.id === 'hawke' && (
                 <button

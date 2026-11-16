@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
-import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
+import { ARCADE_ECONOMY_RULES, formatMoney, validateStakedGamePayout } from '../utils/tokenEconomy';
 import { checkDailyPerk, consumeDailyPerk } from '../utils/memeFeedBridge';
 import { triggerWinCelebration } from '../utils/winCelebration';
 import GameShell from './GameShell';
@@ -109,7 +109,7 @@ export default function VegasRouletteGame({
     if (!practiceMode && nextTotal > tokens) {
       sfx.playClownHonk();
       setStatusBanner(
-        `Need ${nextTotal} 🪙 to bet. Try Free Practice mode.`
+        `Need ${formatMoney(nextTotal)} to bet. Try Free Practice mode.`
       );
       return;
     }
@@ -119,7 +119,9 @@ export default function VegasRouletteGame({
       [betKey]: Math.min(200, (prev[betKey] || 0) + addAmt)
     }));
     if (labelText) {
-      setStatusBanner(`+${addAmt} chip on ${labelText} (${nextTotal} on table)`);
+      setStatusBanner(
+        `+${practiceMode ? `${addAmt} chip` : formatMoney(addAmt)} on ${labelText} (${practiceMode ? nextTotal : formatMoney(nextTotal)} on table)`
+      );
     }
   };
 
@@ -150,13 +152,13 @@ export default function VegasRouletteGame({
     if (cost <= 0) return;
     if (!practiceMode && cost > tokens) {
       sfx.playClownHonk();
-      setStatusBanner(`Need ${cost} 🪙 for preset. Try 1 🪙 or Practice.`);
+      setStatusBanner(`Need ${formatMoney(cost)} for preset. Try ${formatMoney(1)} or Practice.`);
       return;
     }
 
     sfx.playChipStack();
     setBets(nextBets);
-    setStatusBanner(`Preset loaded (${cost} ${practiceMode ? 'free' : '🪙'}). Tap Spin.`);
+    setStatusBanner(`Preset loaded (${practiceMode ? `${cost} free` : formatMoney(cost)}). Tap Spin.`);
   };
 
   const handleClearBets = () => {
@@ -227,7 +229,7 @@ export default function VegasRouletteGame({
             stakedTokens: stakedTotal,
             xp: struckMult && straightBet > 0 ? 75 : 40,
             maxMultiplier: 155,
-            label: `🎡 Roulette #${landedNum}: +${verifiedPayout} 🪙!`,
+            label: `🎡 Roulette #${landedNum}: ${formatMoney(verifiedPayout, { sign: true })}!`,
             emoji: '🎡'
           });
         }
@@ -236,13 +238,13 @@ export default function VegasRouletteGame({
         const multEst = stakedTotal > 0 ? verifiedPayout / Math.max(1, stakedTotal) : 2;
         triggerWinCelebration({
           amount: verifiedPayout,
-          unit: isFreePractice ? 'CHIPS' : '🪙',
+          unit: isFreePractice ? 'CHIPS' : 'M$',
           game: "Lightning Roulette '86",
           headline: hitLightning
             ? `⚡ ${struckMult}× LIGHTNING HIT #${landedNum}!`
             : `🎡 #${landedNum} ${colName.toUpperCase()} WINNER!`,
           detail: isFreePractice
-            ? `Practice Win! Switch to Token Mode to keep real 🪙!`
+            ? 'Practice Win! Switch to MemeDollarz Mode to keep real wins!'
             : `Ball dropped into #${landedNum} (${colName})!`,
           multiplier: hitLightning ? struckMult : multEst,
           tier: hitLightning ? 'jackpot' : multEst >= 5 ? 'big' : 'win'
@@ -254,8 +256,8 @@ export default function VegasRouletteGame({
           lightningMult: straightBet > 0 ? struckMult : null
         });
         setStatusBanner(
-          `Landed #${landedNum} (${colName}) — won +${verifiedPayout} ${
-            isFreePractice ? 'chips' : '🪙'
+          `Landed #${landedNum} (${colName}) — won ${
+            isFreePractice ? `+${verifiedPayout} chips` : formatMoney(verifiedPayout, { sign: true })
           }.`
         );
       } else {
@@ -292,7 +294,7 @@ export default function VegasRouletteGame({
         if (tokens < totalBetAmount) {
           sfx.playClownHonk();
           setStatusBanner(
-            `Need ${totalBetAmount} 🪙. Clear table or switch to Practice.`
+            `Need ${formatMoney(totalBetAmount)}. Clear table or switch to Practice.`
           );
           return;
         }
@@ -726,13 +728,13 @@ export default function VegasRouletteGame({
       }}
       extraBadges={
         <span className="tm-roul-streak-pill">
-          🏆 Best: <strong>{bestWin} 🪙</strong>
+          🏆 Best: <strong>{formatMoney(bestWin, { zero: 'balance' })}</strong>
         </span>
       }
       howToPlay={[
         'Tap Red, Black, Outside bets, or individual numbers to stack chips.',
         'Straight numbers pay 30×; random Lightning strikes pay 50× to 150×.',
-        'Toggle Free Practice anytime to play with zero token risk.'
+        'Toggle Free Practice anytime to play with zero MemeDollarz risk.'
       ]}
     >
       <div className="tm-roul-cabinet">
@@ -806,8 +808,10 @@ export default function VegasRouletteGame({
               />
               {lastWinInfo && (
                 <div className="tm-roul-win-overlay-pill">
-                  🏆 #{lastWinInfo.num} WON +{lastWinInfo.payout}{' '}
-                  {practiceMode ? 'CHIPS' : '🪙'}!
+                  🏆 #{lastWinInfo.num} WON{' '}
+                  {practiceMode
+                    ? `+${lastWinInfo.payout} CHIPS`
+                    : formatMoney(lastWinInfo.payout, { sign: true })}!
                 </div>
               )}
             </div>
@@ -820,7 +824,7 @@ export default function VegasRouletteGame({
             >
               {spinning
                 ? '🎡 WHEEL SPINNING...'
-                : `⚡ SPIN WHEEL (${totalBetAmount} ${practiceMode ? 'FREE' : '🪙'})`}
+                : `⚡ SPIN WHEEL (${practiceMode ? `${totalBetAmount} FREE` : formatMoney(totalBetAmount)})`}
             </button>
           </div>
 
@@ -840,7 +844,7 @@ export default function VegasRouletteGame({
                       setSelectedChip(c);
                     }}
                   >
-                    🪙 {c}
+                    {practiceMode ? `${c} chip` : formatMoney(c)}
                   </button>
                 ))}
               </div>
@@ -1014,7 +1018,7 @@ export default function VegasRouletteGame({
               style={{ padding: '4px 10px', fontSize: '11px' }}
               onClick={onOpenUpload}
             >
-              📸 Upload Meme (+12 🪙)
+              📸 Upload Meme ({formatMoney(12, { sign: true })})
             </button>
           )}
         </div>
@@ -1033,7 +1037,7 @@ export default function VegasRouletteGame({
                     setSelectedChip(c);
                   }}
                 >
-                  🪙 {c}
+                  {practiceMode ? `${c} chip` : formatMoney(c)}
                 </button>
               ))}
             </div>
@@ -1064,7 +1068,7 @@ export default function VegasRouletteGame({
           >
             {spinning
               ? '🎡 SPINNING...'
-              : `⚡ SPIN (${totalBetAmount} ${practiceMode ? 'FREE' : '🪙'})`}
+              : `⚡ SPIN (${practiceMode ? `${totalBetAmount} FREE` : formatMoney(totalBetAmount)})`}
           </button>
         </div>
       </div>

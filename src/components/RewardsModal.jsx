@@ -11,9 +11,10 @@ import {
   COSMETIC_CATALOG,
   isCosmeticUnlocked
 } from '../data/cosmetics';
-import { ARCADE_ECONOMY_RULES, formatEightiesPrice } from '../utils/tokenEconomy';
+import { ARCADE_ECONOMY_RULES, formatMoney } from '../utils/tokenEconomy';
 import { sfx } from '../utils/soundEngine';
 import lazyWithRetry from '../utils/lazyWithRetry';
+import { Money, Wallet } from './ui/Money';
 import './RewardsModal.css';
 
 const VegasSlotMachine = lazyWithRetry(() => import('./VegasSlotMachine'));
@@ -164,14 +165,14 @@ export default function RewardsModal({
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                 <div>
                   <div style={{ fontSize: '12px', fontWeight: 900, color: '#00f3ff' }}>
-                    🛍️ 1985 MALL ARCADE COSMETICS SHOP (1🪙 = 25¢ QUARTER)
+                    🛍️ 1985 MALL ARCADE COSMETICS SHOP (1 QUARTER = 25¢)
                   </div>
                   <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '2px' }}>
-                    Authentic 1980s prices! Buy with earned <strong>🪙 Tokens</strong> or unlock free at <strong>⚡ XP milestones</strong>.
+                    Authentic 1980s prices! Buy with earned <strong>MemeDollarz</strong> or unlock free at <strong>⚡ XP milestones</strong>.
                   </div>
                 </div>
-                <div style={{ fontSize: '15px', fontWeight: 900 }}>
-                  <span style={{ color: '#facc15' }}>🪙 {tokens} ({formatEightiesPrice(tokens)})</span> •{' '}
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '15px', fontWeight: 900 }}>
+                  <Wallet tokens={tokens} size="inline" /> •{' '}
                   <span style={{ color: '#00f3ff' }}>{xp} XP</span>
                 </div>
               </div>
@@ -246,7 +247,7 @@ export default function RewardsModal({
                             <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 700 }}>
                               {xpEligible
                                 ? `⚡ ${item.unlockXp} XP Ready!`
-                                : `${formatEightiesPrice(item.tokenCost)} (${item.tokenCost} 🪙) or ${item.unlockXp} XP`}
+                                : `${formatMoney(item.tokenCost)} or ${item.unlockXp} XP`}
                             </span>
                             <button
                               type="button"
@@ -261,13 +262,13 @@ export default function RewardsModal({
                                   setShopToast(`🎉 Unlocked & equipped ${item.name}!`);
                                 } else {
                                   sfx.playVote(false, 1);
-                                  setShopToast(`Need ${formatEightiesPrice(item.tokenCost)} (${item.tokenCost} 🪙) or ${item.unlockXp} XP.`);
+                                  setShopToast(`Need ${formatMoney(item.tokenCost)} or ${item.unlockXp} XP.`);
                                 }
                               }}
                             >
                               {xpEligible
                                 ? '⚡ Claim Free'
-                                : `🪙 ${formatEightiesPrice(item.tokenCost)} (${item.tokenCost})`}
+                                : formatMoney(item.tokenCost)}
                             </button>
                           </>
                         )}
@@ -281,20 +282,20 @@ export default function RewardsModal({
         ) : (
           <>
 
-        {/* 0. LOGICAL & FAIR DAILY TOKEN COLLECTION METER (ANTI-LOOPHOLE TRANSPARENCY) */}
+        {/* 0. LOGICAL & FAIR DAILY MEMEDOLLARZ COLLECTION METER (ANTI-LOOPHOLE TRANSPARENCY) */}
         <div className="tm-fair-ledger-card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
             <div>
               <div style={{ fontSize: '12px', fontWeight: 900, color: '#4ade80', letterSpacing: '0.5px' }}>
-                🛡️ FAIR ARCADE TOKEN ECONOMY (ANTI-EXPLOIT PROTECTED)
+                🛡️ FAIR MEMEDOLLARZ ECONOMY (ANTI-EXPLOIT PROTECTED)
               </div>
-              <div style={{ fontSize: '17px', fontWeight: 900, marginTop: '2px' }}>
-                Wallet: <span style={{ color: '#facc15' }}>🪙 {tokens} Tokens ({formatEightiesPrice(tokens)})</span> •{' '}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '17px', fontWeight: 900, marginTop: '4px', flexWrap: 'wrap' }}>
+                <span>Wallet:</span> <Wallet tokens={tokens} size="inline" /> •{' '}
                 <span style={{ color: '#00f3ff' }}>{xp} XP</span>
               </div>
             </div>
             <div className="tm-spin-counter-pill" style={{ borderColor: '#4ade80', color: '#4ade80' }}>
-              Daily Collection: <strong>{dailyUsed}</strong> / {dailyMax} Max Tokens Today
+              Daily Earnings: <Money tokens={dailyUsed} zero="balance" /> / {formatMoney(dailyMax, { zero: 'balance' })}
             </div>
           </div>
 
@@ -304,16 +305,16 @@ export default function RewardsModal({
 
           <div className="tm-ledger-caps-grid">
             <div className="tm-ledger-cap-pill">
-              📸 Meme Uploads: <strong>{tokenLedger?.byCategory?.upload || 0}</strong>/{ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.upload} (+{ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens}–{ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens + ARCADE_ECONOMY_RULES.REWARDS.FIRST_UPLOAD_BONUS.tokens} 🪙)
+              📸 Meme Uploads: <strong>{formatMoney(tokenLedger?.byCategory?.upload || 0, { zero: 'balance' })}</strong> / {formatMoney(ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.upload)} ({formatMoney(ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens, { sign: true })}–{formatMoney(ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens + ARCADE_ECONOMY_RULES.REWARDS.FIRST_UPLOAD_BONUS.tokens, { sign: true })})
             </div>
             <div className="tm-ledger-cap-pill">
-              🔥 Feed Votes/Comments: <strong>{tokenLedger?.byCategory?.engagement || 0}</strong>/{ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.engagement}
+              🔥 Feed Votes/Comments: <strong>{formatMoney(tokenLedger?.byCategory?.engagement || 0, { zero: 'balance' })}</strong> / {formatMoney(ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.engagement)}
             </div>
             <div className="tm-ledger-cap-pill">
-              🎯 Daily Visit &amp; Quests: <strong>{tokenLedger?.byCategory?.quests || 0}</strong>/{ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.quests}
+              🎯 Daily Visit &amp; Quests: <strong>{formatMoney(tokenLedger?.byCategory?.quests || 0, { zero: 'balance' })}</strong> / {formatMoney(ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.quests)}
             </div>
             <div className="tm-ledger-cap-pill">
-              ⚡ XP Reactor Mint: <strong>{tokenLedger?.byCategory?.xpConversion || 0}</strong>/{ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.xpConversion}
+              ⚡ XP Reactor Mint: <strong>{formatMoney(tokenLedger?.byCategory?.xpConversion || 0, { zero: 'balance' })}</strong> / {formatMoney(ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.xpConversion)}
             </div>
           </div>
 
@@ -359,11 +360,11 @@ export default function RewardsModal({
                   </svg>
                   <div className="tm-xp-fusion-svg-center">
                     <div style={{ fontSize: '18px', lineHeight: 1 }}>
-                      {reactorFlash ? '🪙' : xpConversionState.readyTokens > 0 ? '🔥' : '⚡'}
+                      {reactorFlash ? '💰' : xpConversionState.readyTokens > 0 ? '🔥' : '⚡'}
                     </div>
                     <div style={{ fontSize: '11px', fontWeight: 900, color: '#facc15', marginTop: '2px' }}>
                       {xpConversionState.readyTokens > 0
-                        ? `+${xpConversionState.readyTokens}🪙`
+                        ? formatMoney(xpConversionState.readyTokens, { sign: true })
                         : `${xpConversionState.progressPct}%`}
                     </div>
                   </div>
@@ -371,34 +372,34 @@ export default function RewardsModal({
 
                 <div className="tm-xp-fusion-info">
                   <div className="tm-xp-fusion-badge-row">
-                    <span className="tm-xp-fusion-title">⚡ XP-TO-TOKEN NEON FUSION CORE</span>
+                    <span className="tm-xp-fusion-title">⚡ XP-TO-MEMEDOLLARZ FUSION CORE</span>
                     <span className="tm-xp-fusion-rate-pill">
-                      100 XP = +5 🪙 (Rank XP Never Drops!)
+                      {ARCADE_ECONOMY_RULES.XP_CONVERSION.XP_THRESHOLD} XP = {formatMoney(ARCADE_ECONOMY_RULES.XP_CONVERSION.TOKENS_MINTED, { sign: true })} (Rank XP Never Drops!)
                     </span>
                   </div>
 
                   <div className="tm-xp-fusion-status-text">
                     {xpConversionState.isDailyCapped ? (
                       <span style={{ color: '#4ade80' }}>
-                        ✅ Daily Reactor Cap Reached ({xpConversionState.dailyConvertedTokens}/
-                        {xpConversionState.maxDailyTokens} 🪙 minted today)!
+                        ✅ Daily Reactor Cap Reached ({formatMoney(xpConversionState.dailyConvertedTokens, { zero: 'balance' })} /{' '}
+                        {formatMoney(xpConversionState.maxDailyTokens, { zero: 'balance' })} minted today)!
                       </span>
                     ) : xpConversionState.readyTokens > 0 ? (
                       <span style={{ color: '#facc15' }}>
                         🔥 <strong>{xpConversionState.readyUnits * 100} XP</strong> ready to exchange for{' '}
-                        <strong>+{xpConversionState.readyTokens} 🪙 Tokens</strong>! (+{' '}
+                        <strong>{formatMoney(xpConversionState.readyTokens, { sign: true })}</strong>! (+{' '}
                         {xpConversionState.progressXp}/100 XP toward next batch)
                       </span>
                     ) : (
                       <span>
                          Reactor Charge: <strong style={{ color: '#00f3ff' }}>{xpConversionState.progressXp} / 100 XP</strong>{' '}
                         — Only <strong style={{ color: '#facc15' }}>{xpConversionState.xpRemaining} XP</strong> away from{' '}
-                        <strong style={{ color: '#4ade80' }}>+5 🪙 Tokens</strong>!
+                        <strong style={{ color: '#4ade80' }}>{formatMoney(ARCADE_ECONOMY_RULES.XP_CONVERSION.TOKENS_MINTED, { sign: true })}</strong>!
                       </span>
                     )}
                   </div>
 
-                  {/* Segmented 10-cell plasma bar showing exact proximity to next +5 🪙 */}
+                  {/* Segmented 10-cell plasma bar showing exact proximity to next reactor payout */}
                   <div className="tm-xp-fusion-segments">
                     {Array.from({ length: 10 }).map((_, idx) => {
                       const threshold = (idx + 1) * 10;
@@ -427,7 +428,7 @@ export default function RewardsModal({
                   type="button"
                   className={`tm-btn ${xpAutoConvert ? 'tm-btn-crt-active' : ''}`}
                   onClick={onToggleXpAutoConvert}
-                  title="When Auto-Convert is ON, every 100 XP earned automatically mints +5 🪙 Tokens into your wallet!"
+                  title={`When Auto-Convert is ON, every 100 XP earned automatically mints ${formatMoney(ARCADE_ECONOMY_RULES.XP_CONVERSION.TOKENS_MINTED, { sign: true })} into your wallet!`}
                   style={{ fontSize: '11px', padding: '7px 11px' }}
                 >
                   {xpAutoConvert ? '🤖 Auto-Convert: ON' : '🖐️ Auto-Convert: OFF (Manual)'}
@@ -448,10 +449,10 @@ export default function RewardsModal({
                   }}
                 >
                   {xpConversionState.isDailyCapped
-                    ? '✅ 50/50 🪙 Minted Today'
+                    ? `✅ ${formatMoney(xpConversionState.maxDailyTokens)} Daily Cap Minted`
                     : xpConversionState.readyTokens > 0
-                      ? `⚡ Exchange ${xpConversionState.readyUnits * 100} XP → +${xpConversionState.readyTokens} 🪙 Now!`
-                      : `⚡ ${xpConversionState.xpRemaining} XP to Next +5 🪙`}
+                      ? `⚡ Exchange ${xpConversionState.readyUnits * 100} XP → ${formatMoney(xpConversionState.readyTokens, { sign: true })} Now!`
+                      : `⚡ ${xpConversionState.xpRemaining} XP to Next ${formatMoney(ARCADE_ECONOMY_RULES.XP_CONVERSION.TOKENS_MINTED, { sign: true })}`}
                 </button>
               </div>
             </div>
@@ -467,7 +468,7 @@ export default function RewardsModal({
                   onLaunchSubGame('pusher');
                 }}
               >
-                🪙 Neon Coin Dozer &apos;86
+                🎰 Neon Coin Dozer &apos;86
               </button>
               <button
                 type="button"
@@ -552,7 +553,7 @@ export default function RewardsModal({
             <div style={{ fontSize: '18px', fontWeight: 900, marginTop: '2px' }}>
               Day {streakDays} Streak Active!{' '}
               <span style={{ fontSize: '13px', color: '#cbd5e1', fontWeight: 600 }}>
-                (+{ARCADE_ECONOMY_RULES.REWARDS.DAILY_STREAK.tokens} 🪙 Tokens + 100 XP + 1 Free Chaos Spin)
+                ({formatMoney(ARCADE_ECONOMY_RULES.REWARDS.DAILY_STREAK.tokens, { sign: true })} + 100 XP + 1 Free Chaos Spin)
               </span>
             </div>
           </div>
@@ -730,7 +731,7 @@ export default function RewardsModal({
         {/* 6. DAILY ARCADE QUESTS */}
         <div style={{ marginTop: '20px' }}>
           <div className="tm-studio-label" style={{ marginBottom: '8px' }}>
-            🎯 Live Arcade Quests (Complete for +{ARCADE_ECONOMY_RULES.REWARDS.DAILY_QUEST.tokens} 🪙 Tokens + XP + Free Chaos Spin!)
+            🎯 Live Arcade Quests (Complete for {formatMoney(ARCADE_ECONOMY_RULES.REWARDS.DAILY_QUEST.tokens, { sign: true })} + XP + Free Chaos Spin!)
           </div>
           <div className="tm-quests-list">
             {DAILY_QUESTS.map((q) => {
@@ -750,7 +751,7 @@ export default function RewardsModal({
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 800 }}>
                         <span>{q.title}</span>
                         <span style={{ color: '#facc15' }}>
-                          {current}/{q.target} • +{ARCADE_ECONOMY_RULES.REWARDS.DAILY_QUEST.tokens} 🪙 + {q.rewardXp} XP
+                          {current}/{q.target} • {formatMoney(ARCADE_ECONOMY_RULES.REWARDS.DAILY_QUEST.tokens, { sign: true })} + {q.rewardXp} XP
                         </span>
                       </div>
                       <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '6px' }}>
@@ -771,7 +772,7 @@ export default function RewardsModal({
                         className="tm-btn tm-btn-primary"
                         onClick={(e) => onClaimQuestReward(q, e)}
                       >
-                        🎁 Claim +{ARCADE_ECONOMY_RULES.REWARDS.DAILY_QUEST.tokens} 🪙
+                        🎁 Claim {formatMoney(ARCADE_ECONOMY_RULES.REWARDS.DAILY_QUEST.tokens, { sign: true })}
                       </button>
                     ) : (
                       <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700 }}>

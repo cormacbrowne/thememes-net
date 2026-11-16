@@ -465,10 +465,10 @@ const NEON_SPECIAL_PAYS = {
   ns_quarter: { 3: 2.6, 4: 6.5, 5: 17 }
 };
 
-function pickWeighted(weights) {
+function pickWeighted(weights, rng = Math.random) {
   let total = 0;
   for (let i = 0; i < weights.length; i += 1) total += weights[i].w;
-  let r = Math.random() * total;
+  let r = rng() * total;
   for (let i = 0; i < weights.length; i += 1) {
     r -= weights[i].w;
     if (r <= 0) return weights[i].id;
@@ -487,7 +487,8 @@ export function generateVideoGrid(
     lockedCols = null,
     prevGrid = null,
     neonPowerups = null
-  } = {}
+  } = {},
+  rng = Math.random
 ) {
   let weights = SILVER_MUSTANG_WEIGHTS;
   if (machineId === 'lightning_vault') {
@@ -523,7 +524,7 @@ export function generateVideoGrid(
     const col = [];
     for (let r = 0; r < rows; r += 1) {
       // Wilds typically appear on Reels 2..5 (cols 1..4) in Vegas video slots, except powerup drops
-      let sym = pickWeighted(weights);
+      let sym = pickWeighted(weights, rng);
       if (c === 0 && (sym === 'orb' || sym === 'wildchip' || sym === 'wild2x' || sym === 'ns_wild')) {
         sym =
           machineId === 'silver_mustang'
@@ -554,7 +555,7 @@ export function generateVideoGrid(
   // Apply Neon Supernova Special interactive powerup board transforms
   if (machineId === 'neon_special' && neonPowerups) {
     if (neonPowerups.laser_wild) {
-      const targetCol = 1 + Math.floor(Math.random() * 3); // reel 2, 3, or 4
+      const targetCol = 1 + Math.floor(rng() * 3); // reel 2, 3, or 4
       grid[targetCol] = ['ns_wild', 'ns_wild', 'ns_wild'];
     }
     if (neonPowerups.twin_sync) {
@@ -562,10 +563,10 @@ export function generateVideoGrid(
       grid[2] = [...grid[1]];
     }
     if (neonPowerups.hyper_wilds) {
-      const cA = 1 + Math.floor(Math.random() * 2);
-      const rA = Math.floor(Math.random() * 3);
-      const cB = 3 + Math.floor(Math.random() * 2);
-      const rB = Math.floor(Math.random() * 3);
+      const cA = 1 + Math.floor(rng() * 2);
+      const rA = Math.floor(rng() * 3);
+      const cB = 3 + Math.floor(rng() * 2);
+      const rB = Math.floor(rng() * 3);
       grid[cA][rA] = 'ns_wild';
       grid[cB][rB] = 'ns_wild';
     }
@@ -703,8 +704,8 @@ export function evaluateBuffalo1024Ways(grid, wildMultipliers = {}, spinMult = 1
 // ==========================================
 // 4. LIGHTNING VAULT HOLD & SPIN ORB GENERATOR
 // ==========================================
-export function rollLightningOrbValue() {
-  const r = Math.random();
+export function rollLightningOrbValue(rng = Math.random) {
+  const r = rng();
   if (r < 0.025) return { type: 'minor', label: 'MINOR', mult: 20, color: '#a855f7' };
   if (r < 0.09) return { type: 'mini', label: 'MINI', mult: 10, color: '#38bdf8' };
   if (r < 0.22) return { type: 'cash', label: '4×', mult: 4, color: '#facc15' };
@@ -727,12 +728,12 @@ export const BUFFALO_WHEEL_SEGMENTS = [
   { label: '60× 🚨', mult: 60, color: '#facc15', weight: 1 }
 ];
 
-export function spinBuffaloWheelSegment() {
+export function spinBuffaloWheelSegment(rng = Math.random) {
   let total = 0;
   BUFFALO_WHEEL_SEGMENTS.forEach((s) => {
     total += s.weight;
   });
-  let r = Math.random() * total;
+  let r = rng() * total;
   for (let i = 0; i < BUFFALO_WHEEL_SEGMENTS.length; i += 1) {
     r -= BUFFALO_WHEEL_SEGMENTS[i].weight;
     if (r <= 0) return { index: i, segment: BUFFALO_WHEEL_SEGMENTS[i] };

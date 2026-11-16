@@ -16,15 +16,17 @@ import {
   NEON_SPECIAL_POWERUPS,
   BANDIT_REEL_STRIP,
   wrapBanditStop,
-  evaluateBanditPayline,
   pickDougieQuote,
-  generateVideoGrid,
-  evaluate5x3Paylines,
-  evaluateBuffalo1024Ways,
-  rollLightningOrbValue,
-  BUFFALO_WHEEL_SEGMENTS,
-  spinBuffaloWheelSegment
+  BUFFALO_WHEEL_SEGMENTS
 } from '../data/slotMachinesCatalog';
+import {
+  evaluateBanditOutcome,
+  nudgeBandit,
+  spinBandit,
+  spinBonusWheel,
+  spinVideoSlot,
+  stepLockItRespin
+} from '../utils/slotEngine';
 import './VegasSlotMachine.css';
 
 const MACHINE_STORAGE_KEY = 'tm_slot_arcade_machine_v1';
@@ -651,11 +653,19 @@ export default function VegasSlotMachine({
   };
 
   const finalizeBanditOutcome = useCallback(
-    (finalStops, activeBet, fromNudge = false, feverBoost = false) => {
+    (precomputedOutcome, activeBet, fromNudge = false, feverBoost = false) => {
       try {
-        const paylineSyms = finalStops.map((idx) => BANDIT_REEL_STRIP[wrapBanditStop(idx)]);
-        const result = evaluateBanditPayline(paylineSyms);
-        const effectiveMult = result.mult > 0 && feverBoost ? result.mult * 2 : result.mult;
+        const outcome =
+          precomputedOutcome && typeof precomputedOutcome === 'object' && !Array.isArray(precomputedOutcome)
+            ? precomputedOutcome
+            : evaluateBanditOutcome({
+                finalStops: precomputedOutcome,
+                activeBet,
+                fromNudge,
+                feverBoost
+              });
+        const result = outcome.evalResult;
+        const effectiveMult = outcome.effectiveMult;
 
         if (effectiveMult > 0) {
           setBanditFever(0);
@@ -663,11 +673,11 @@ export default function VegasSlotMachine({
           awardSlotWin({
             activeBet,
             mult: effectiveMult,
-            headline: feverBoost ? `🔥 FEVER 2× ${result.headline}` : result.headline,
-            detail: `${effectiveMult}× Mechanical Payline!`,
-            tier: result.tier,
-            maxMultiplier: 100,
-            dougiePhrase: effectiveMult >= 10 ? 'HELLOOOOO-O-O!!' : ''
+            headline: outcome.headline,
+            detail: outcome.detail,
+            tier: outcome.tier,
+            maxMultiplier: outcome.maxMultiplier,
+            dougiePhrase: outcome.dougiePhrase
           });
           setHoldAllowed(false);
           setHeldReels([false, false, false]);
@@ -676,28 +686,10 @@ export default function VegasSlotMachine({
           setBanditFever((f) => Math.min(5, f + 1));
           setBanditFeverArmed(false);
           setLastOutcome({ ...result, payout: 0, bet: activeBet });
-          if (!fromNudge) {
-            const roll = Math.random();
-            if (roll < 0.11) {
-              setHoldAllowed(true);
-              setHeldReels([false, false, false]);
-              setNudgesLeft(0);
-              setStatusBanner('Lucky Hold! Lock up to 2 reels for next spin.');
-            } else if (roll < 0.20) {
-              setHoldAllowed(false);
-              setHeldReels([false, false, false]);
-              setNudgesLeft(1);
-              setStatusBanner('Lucky Nudge! Tap ⏫ NUDGE under any reel.');
-            } else {
-              setHoldAllowed(false);
-              setHeldReels([false, false, false]);
-              setNudgesLeft(0);
-              setStatusBanner(result.headline);
-            }
-          } else {
-            setNudgesLeft(0);
-            setStatusBanner('Nudge complete — pull again.');
-          }
+          setHoldAllowed(Boolean(outcome.holdAllowed));
+          setHeldReels([false, false, false]);
+          setNudgesLeft(outcome.nudgesLeft || 0);
+          setStatusBanner(outcome.statusBanner);
         }
       } catch (err) {
         console.warn('finalizeBanditOutcome recovery:', err);
@@ -715,10 +707,11 @@ export default function VegasSlotMachine({
   const handleNudgeReel = (reelIdx) => {
     if (isAnySpinning || nudgesLeft <= 0 || machineId !== 'bandit85') return;
     sfx.playSlotReelStop(reelIdx);
-    const nextStops = banditStops.map((s, idx) => (idx === reelIdx ? wrapBanditStop(s - 1) : s));
-    setBanditStops(nextStops);
+    const activeBet = lastOutcome?.bet ?? betAmount;
+    const outcome = nudgeBandit({ currentStops: banditStops, reelIdx, bet: activeBet });
+    setBanditStops(outcome.stops);
     setNudgesLeft(0);
-    finalizeBanditOutcome(nextStops, lastOutcome?.bet ?? betAmount, true, false);
+    finalizeBanditOutcome(outcome, activeBet, true, false);
   };
 
   const triggerBanditSpin = useCallback(() => {
@@ -765,11 +758,13 @@ export default function VegasSlotMachine({
             : 'Demo spin — reels rolling.')
     );
 
-    const targetStops = banditStops.map((currStop, idx) => {
-      if (heldReels[idx]) return currStop;
-      if (useFever && idx === 0) return Math.random() < 0.35 ? 0 : 7; // Weighted Fever Reel 1
-      return Math.floor(Math.random() * BANDIT_REEL_STRIP.length);
+    const spinResult = spinBandit({
+      bet: activeBet,
+      currentStops: banditStops,
+      heldReels,
+      useFever
     });
+    const targetStops = spinResult.stops;
 
     const nextSpinMask = [!heldReels[0], !heldReels[1], !heldReels[2]];
     setBanditSpinning(nextSpinMask);
@@ -799,7 +794,7 @@ export default function VegasSlotMachine({
     timersRef.current.push(
       setTimeout(() => {
         setHeldReels([false, false, false]);
-        finalizeBanditOutcome(targetStops, activeBet, false, useFever);
+        finalizeBanditOutcome(spinResult, activeBet, false, useFever);
       }, finishDelay)
     );
   }, [
@@ -822,54 +817,33 @@ export default function VegasSlotMachine({
   // ==========================================
   const finalizeVideoSpin = useCallback(
     ({
-      finalGrid,
+      spinResult,
       activeBet,
-      spinWildMults,
       isFreeSpinRound,
       coffeeRushUsed,
       wasSurge,
       usedSecondChance,
-      neonUsedPowerups = null,
       neonSpontaneousLabel = ''
     }) => {
+      const { totalMult, evalRes, winningCells: nextWinCells, meta = {} } = spinResult;
+
       if (machineId === 'neon_special') {
-        const hasSynth3x = Boolean(neonUsedPowerups?.synth_3x);
-        const spinMult = hasSynth3x ? 3 : isFreeSpinRound ? 1.5 : 1;
-        const evalRes = evaluate5x3Paylines('neon_special', finalGrid, 25, spinMult);
+        const {
+          orbCount = 0,
+          awardedFreeSpins = 0,
+          chargeGain = 1,
+          powerNames = [],
+          hasSynth3x = false,
+          isMega = false,
+          isBig = false
+        } = meta;
 
-        let orbCount = 0;
-        let airwolfCount = 0;
-        const orbCells = [];
-        finalGrid.forEach((col, c) =>
-          col.forEach((sym, r) => {
-            if (sym === 'ns_orb') {
-              orbCount += 1;
-              orbCells.push(`${c},${r}`);
-            }
-            if (sym === 'ns_airwolf') {
-              airwolfCount += 1;
-            }
-          })
-        );
-
-        const nextWinCells = new Set(evalRes.winningCells);
-        let scatterMult = 0;
-        if (orbCount >= 3) {
-          orbCells.forEach((cellKey) => nextWinCells.add(cellKey));
-          scatterMult = orbCount >= 5 ? 10 : orbCount === 4 ? 4 : 1.5;
-          if (!isFreeSpinRound) {
-            setNeonFreeSpins((n) => n + 4);
-            setNeonFreeSpinStake(activeBet);
-          }
+        if (awardedFreeSpins > 0) {
+          setNeonFreeSpins((n) => n + awardedFreeSpins);
+          setNeonFreeSpinStake(activeBet);
         }
         setWinningCells(nextWinCells);
-
-        setNeonCharge((c) => Math.min(6, c + 1 + (orbCount > 0 ? 1 : 0)));
-
-        const totalMult = Number((evalRes.totalBetMult + scatterMult).toFixed(2));
-        const powerNames = Object.entries(neonUsedPowerups || {})
-          .filter(([, on]) => Boolean(on))
-          .map(([id]) => NEON_SPECIAL_POWERUPS.find((p) => p.id === id)?.short || id);
+        setNeonCharge((c) => Math.min(6, c + chargeGain));
 
         if (neonSpontaneousLabel) {
           setNeonSurgeBanner(`⚡ ${neonSpontaneousLabel} TRIGGERED! (+House Odds Certified)`);
@@ -882,8 +856,6 @@ export default function VegasSlotMachine({
         }
 
         if (totalMult > 0) {
-          const isMega = totalMult >= 18 || orbCount >= 4;
-          const isBig = isMega || totalMult >= 6 || airwolfCount >= 4 || Boolean(neonUsedPowerups?.chopper_siren);
           awardSlotWin({
             activeBet,
             mult: totalMult,
@@ -917,49 +889,29 @@ export default function VegasSlotMachine({
       }
 
       if (machineId === 'silver_mustang') {
-        const spinMult = coffeeRushUsed ? 1.5 : isFreeSpinRound ? 1.25 : 1;
-        const evalRes = evaluate5x3Paylines('silver_mustang', finalGrid, mustangLines, spinMult);
-        setWinningCells(evalRes.winningCells);
+        const {
+          chargeGain = 4,
+          potGain = 0.25,
+          nextCoffeePot = coffeePot,
+          triggeredBonus = false,
+          awardedFreeSpins = 0,
+          bonusHeadline = '',
+          resetPot = false
+        } = meta;
 
-        // Count Coffee & Golden Orb symbols for accumulators
-        let coffeeHits = 0;
-        let orbHits = 0;
-        let dougieHits = 0;
-        finalGrid.forEach((col) =>
-          col.forEach((sym) => {
-            if (sym === 'coffee') coffeeHits += 1;
-            if (sym === 'orb') orbHits += 1;
-            if (sym === 'dougie') dougieHits += 1;
-          })
-        );
+        setWinningCells(nextWinCells);
+        setMustangCharge((c) => Math.min(100, c + chargeGain));
+        setMustangPot((p) => (resetPot ? 60 : Math.min(250, Number((p + potGain).toFixed(1)))));
 
-        setMustangCharge((c) => Math.min(100, c + 4 + (coffeeHits > 0 ? 2 : 0) + orbHits * 3 + dougieHits));
-        setMustangPot((p) => Math.min(250, Number((p + (activeBet > 0 ? 0.5 : 0.25)).toFixed(1))));
-
-        // Check Coffee Pot Free Spins trigger (10/10, max +1 per spin)
-        let triggeredBonus = false;
-        if (!isFreeSpinRound && coffeeHits > 0) {
-          const nextCoffee = coffeePot + 1;
-          if (nextCoffee >= 10) {
-            triggeredBonus = true;
-            setCoffeePot(0);
-            setMustangFreeSpins(4);
-            setFreeSpinStake(activeBet);
-            setDougieBanner(pickDougieQuote('bonus'));
-            fireBigWinSiren(false, 'HELLOOOOO-O-O! FREE SPINS!');
-          } else {
-            setCoffeePot(nextCoffee);
-          }
+        if (!isFreeSpinRound && nextCoffeePot !== coffeePot) {
+          setCoffeePot(nextCoffeePot);
         }
-
-        // Progressive Pot Jackpot check (5 Orbs or 5 Dougie on line)
-        let totalMult = evalRes.totalBetMult;
-        let bonusHeadline = '';
-        if (orbHits >= 5 || (evalRes.bestSym === 'dougie' && evalRes.bestCount === 5)) {
-          const potBonusMult = Math.min(45, Math.round(mustangPot / 8));
-          totalMult += potBonusMult;
-          setMustangPot(60);
-          bonusHeadline = '🚨 MR. JACKPOTS PROGRESSIVE POT! HELLOOOOO-O-O!!';
+        if (triggeredBonus) {
+          setCoffeePot(0);
+          setMustangFreeSpins(awardedFreeSpins || 4);
+          setFreeSpinStake(activeBet);
+          setDougieBanner(pickDougieQuote('bonus'));
+          fireBigWinSiren(false, 'HELLOOOOO-O-O! FREE SPINS!');
         }
 
         if (totalMult > 0) {
@@ -975,7 +927,9 @@ export default function VegasSlotMachine({
                 : `☕ ${evalRes.winningLines.length} PAYLINE HIT! (${totalMult}×)`),
             detail: isFreeSpinRound
               ? `Golden Orb Free Spin ${totalMult}×!`
-              : `${evalRes.winningLines.length} winning lines (${mustangLines} lines active)`,
+              : coffeeRushUsed
+                ? `${evalRes.winningLines.length} winning lines (1.5× Coffee Rush!)`
+                : `${evalRes.winningLines.length} winning lines (${mustangLines} lines active)`,
             tier: totalMult >= 20 ? 'jackpot' : isBig ? 'big' : 'win',
             maxMultiplier: 120,
             dougiePhrase: isBig ? 'HELLOOOOO-O-O!!' : ''
@@ -993,23 +947,15 @@ export default function VegasSlotMachine({
       }
 
       if (machineId === 'lightning_vault') {
-        const spinMult = wasSurge ? 1.5 : 1;
-        const evalRes = evaluate5x3Paylines('lightning_vault', finalGrid, 20, spinMult);
-        setWinningCells(evalRes.winningCells);
+        const {
+          orbCount = 0,
+          orbEntries = {},
+          triggeredLockIt = false,
+          voltageGain = 5
+        } = meta;
 
-        // Count Lightning Orbs for Hold & Spin Lock-It Bonus
-        const orbEntries = {};
-        let orbCount = 0;
-        finalGrid.forEach((col, c) =>
-          col.forEach((sym, r) => {
-            if (sym === 'bolt') {
-              orbCount += 1;
-              orbEntries[`${c},${r}`] = rollLightningOrbValue();
-            }
-          })
-        );
-
-        setVoltageMeter((v) => Math.min(100, v + 5 + orbCount * 4));
+        setWinningCells(nextWinCells);
+        setVoltageMeter((v) => Math.min(100, v + voltageGain));
         setProgressives((p) => ({
           mini: Math.min(25, Number((p.mini + 0.05).toFixed(2))),
           minor: Math.min(50, Number((p.minor + 0.1).toFixed(2))),
@@ -1017,7 +963,7 @@ export default function VegasSlotMachine({
           grand: Math.min(200, Number((p.grand + 0.3).toFixed(2)))
         }));
 
-        if (orbCount >= 3) {
+        if (triggeredLockIt) {
           setAutoSpinsLeft(0);
           fireBigWinSiren(false, '⚡ LOCK-IT HOLD & SPIN!');
           setLockItState({
@@ -1030,16 +976,16 @@ export default function VegasSlotMachine({
           return;
         }
 
-        if (evalRes.totalBetMult > 0) {
-          const isBig = evalRes.totalBetMult >= 6;
+        if (totalMult > 0) {
+          const isBig = totalMult >= 6;
           awardSlotWin({
             activeBet,
-            mult: evalRes.totalBetMult,
+            mult: totalMult,
             headline: isBig
-              ? `⚡🚨 HIGH-VOLTAGE BIG WIN! (${evalRes.totalBetMult}×)`
-              : `⚡ VAULT LINE HIT! (${evalRes.totalBetMult}×)`,
+              ? `⚡🚨 HIGH-VOLTAGE BIG WIN! (${totalMult}×)`
+              : `⚡ VAULT LINE HIT! (${totalMult}×)`,
             detail: wasSurge ? '2× Overcharge Surge applied!' : `${evalRes.winningLines.length} lines hit`,
-            tier: evalRes.totalBetMult >= 25 ? 'jackpot' : isBig ? 'big' : 'win',
+            tier: totalMult >= 25 ? 'jackpot' : isBig ? 'big' : 'win',
             maxMultiplier: 150,
             dougiePhrase: isBig ? 'HELLOOOOO-O-O!' : ''
           });
@@ -1051,26 +997,19 @@ export default function VegasSlotMachine({
       }
 
       if (machineId === 'buffalo_stampede') {
-        const evalRes = evaluateBuffalo1024Ways(finalGrid, spinWildMults, 1);
-        setWinningCells(evalRes.winningCells);
+        const {
+          wheelCount = 0,
+          chargeGain = 5,
+          nextStampede = stampedeMeter,
+          triggeredWheel = false
+        } = meta;
 
-        let wheelCount = 0;
-        let buffaloCount = 0;
-        finalGrid.forEach((col) =>
-          col.forEach((sym) => {
-            if (sym === 'wheel') wheelCount += 1;
-            if (sym === 'buffalo' || sym === 'goldcoin') buffaloCount += 1;
-          })
-        );
-
-        setBuffaloCharge((c) => Math.min(100, c + 5 + Math.min(3, buffaloCount)));
-        const nextStampede = Math.min(100, stampedeMeter + 2 + (buffaloCount >= 3 ? 1 : 0));
+        setWinningCells(nextWinCells);
+        setBuffaloCharge((c) => Math.min(100, c + chargeGain));
         setStampedeMeter(nextStampede);
 
-        const triggeredWheel = wheelCount >= 3 || nextStampede >= 100;
         if (triggeredWheel) {
           setAutoSpinsLeft(0);
-          if (nextStampede >= 100) setStampedeMeter(0);
           fireBigWinSiren(false, '🎡 VEGAS BONUS WHEEL!');
           setBonusWheelState({
             spinning: false,
@@ -1083,10 +1022,10 @@ export default function VegasSlotMachine({
               ? '🎡 3+ BONUS WHEELS! TAP SPIN WHEEL TO CLAIM!'
               : '🏆 100% GOLD STAMPEDE! BONUS WHEEL UNLOCKED!'
           );
-          if (evalRes.totalBetMult > 0) {
+          if (totalMult > 0) {
             awardSlotWin({
               activeBet,
-              mult: evalRes.totalBetMult,
+              mult: totalMult,
               headline: `🦬 WAYS WIN + 🎡 BONUS WHEEL!`,
               detail: `${evalRes.matchedWays.length} Stampede Ways`,
               tier: 'big',
@@ -1096,18 +1035,18 @@ export default function VegasSlotMachine({
           return;
         }
 
-        if (evalRes.totalBetMult > 0) {
-          const isBig = evalRes.totalBetMult >= 6;
+        if (totalMult > 0) {
+          const isBig = totalMult >= 6;
           awardSlotWin({
             activeBet,
-            mult: evalRes.totalBetMult,
+            mult: totalMult,
             headline: isBig
-              ? `🦬🚨 BUFFALO STAMPEDE MEGA WAYS! (${evalRes.totalBetMult}×)`
-              : `🦬 ${evalRes.matchedWays.length} STAMPEDE WAYS! (${evalRes.totalBetMult}×)`,
+              ? `🦬🚨 BUFFALO STAMPEDE MEGA WAYS! (${totalMult}×)`
+              : `🦬 ${evalRes.matchedWays.length} STAMPEDE WAYS! (${totalMult}×)`,
             detail: usedSecondChance
               ? '🛡️ 2nd-Chance Nudge checked + Ways paid!'
               : `${evalRes.matchedWays.reduce((a, w) => a + w.ways, 0)} winning ways!`,
-            tier: evalRes.totalBetMult >= 25 ? 'jackpot' : isBig ? 'big' : 'win',
+            tier: totalMult >= 25 ? 'jackpot' : isBig ? 'big' : 'win',
             maxMultiplier: 140,
             dougiePhrase: isBig ? 'HELLOOOOO-O-O!' : ''
           });
@@ -1127,7 +1066,6 @@ export default function VegasSlotMachine({
       fireBigWinSiren,
       machineId,
       mustangLines,
-      mustangPot,
       stampedeMeter
     ]
   );
@@ -1185,18 +1123,26 @@ export default function VegasSlotMachine({
     const wasGoldUpgrade = machineId === 'buffalo_stampede' && goldStampedeArmed;
     const wasSecondChance = machineId === 'buffalo_stampede' && secondChanceArmed;
 
-    let neonUsedPowerups = null;
-    let neonSpontaneousLabel = '';
+    const spinResult = spinVideoSlot({
+      machineId,
+      bet: activeBet,
+      isFreeSpinRound,
+      mustangLines,
+      mustangPot,
+      coffeePot,
+      stampedeMeter,
+      anteBetOn: machineId === 'lightning_vault' && anteBetOn,
+      coffeeRushUsed,
+      pieWildUsed,
+      owlLockUsed,
+      wasSurge,
+      goldUpgrade: wasGoldUpgrade,
+      wasSecondChance,
+      prevGrid: videoGrid,
+      armedNeonPowerups: machineId === 'neon_special' ? armedNeonPowerups : null
+    });
+
     if (machineId === 'neon_special') {
-      neonUsedPowerups = { ...armedNeonPowerups };
-      // 14% spontaneous Neon Powerup Surge on any spin (accounted for in 88.5% Vegas RTP)
-      const anyArmed = Object.values(neonUsedPowerups).some(Boolean);
-      if (!anyArmed && Math.random() < 0.14) {
-        const pool = ['hyper_wilds', 'low_zapper', 'twin_sync'];
-        const pick = pool[Math.floor(Math.random() * pool.length)];
-        neonUsedPowerups[pick] = true;
-        neonSpontaneousLabel = NEON_SPECIAL_POWERUPS.find((p) => p.id === pick)?.name || 'NEON SURGE';
-      }
       setArmedNeonPowerups({
         laser_wild: false,
         synth_3x: false,
@@ -1205,9 +1151,7 @@ export default function VegasSlotMachine({
         hyper_wilds: false,
         chopper_siren: false
       });
-    }
-
-    if (machineId === 'silver_mustang') {
+    } else if (machineId === 'silver_mustang') {
       setArmedPowerups({ coffeeRush: false, pieWild: false, owlLock: false });
       setDougieBanner(pickDougieQuote('spin'));
     } else if (machineId === 'lightning_vault') {
@@ -1220,62 +1164,16 @@ export default function VegasSlotMachine({
     setLastOutcome(null);
     setWinningCells(new Set());
 
-    // Build locked columns for Owl Ring Lock
-    let lockedCols = null;
-    if (owlLockUsed) {
-      lockedCols = Array.isArray(videoGrid)
-        ? videoGrid.map((col) => Array.isArray(col) && (col.includes('orb') || col.includes('dougie')))
-        : null;
-    }
-
-    const rows = machineId === 'buffalo_stampede' ? 4 : 3;
-    const generated = generateVideoGrid(machineId, {
-      cols: 5,
-      rows,
-      anteOrbBoost: machineId === 'lightning_vault' && anteBetOn,
-      goldUpgrade: wasGoldUpgrade,
-      pieWildReel: pieWildUsed || wasSurge,
+    const {
+      grid: generated,
       lockedCols,
-      prevGrid: videoGrid,
-      neonPowerups: neonUsedPowerups
-    });
+      wildMultipliers: nextWildMults,
+      neonUsedPowerups,
+      neonSpontaneousLabel,
+      usedSecondChance: nudged
+    } = spinResult;
 
-    // During Silver Mustang Free Spins, Golden Orb drops a guaranteed Wild on Reel 2 or 4
-    if (machineId === 'silver_mustang' && isFreeSpinRound) {
-      const orbCol = Math.random() < 0.5 ? 1 : 3;
-      const orbRow = Math.floor(Math.random() * 3);
-      generated[orbCol][orbRow] = 'orb';
-    }
-    // During Neon Supernova Free Spins, guarantee a Cyber Wild drop
-    if (machineId === 'neon_special' && isFreeSpinRound) {
-      const wc = 1 + Math.floor(Math.random() * 3);
-      const wr = Math.floor(Math.random() * 3);
-      generated[wc][wr] = 'ns_wild';
-    }
-
-    // Smart 2nd-Chance Nudge on Buffalo if 2 Wheels landed
-    let nudged = false;
-    if (wasSecondChance) {
-      let wheels = 0;
-      generated.forEach((col) => col.forEach((s) => { if (s === 'wheel') wheels += 1; }));
-      if (wheels === 2 && !generated[4].includes('wheel')) {
-        nudged = true;
-        if (Math.random() < 0.28) {
-          generated[4][1] = 'wheel';
-        }
-      }
-    }
-
-    // Generate 2x/3x wild multipliers for Buffalo Stampede
-    const nextWildMults = {};
     if (machineId === 'buffalo_stampede') {
-      generated.forEach((col, c) =>
-        col.forEach((sym, r) => {
-          if (sym === 'wild2x') {
-            nextWildMults[`${c},${r}`] = Math.random() < 0.15 ? 3 : 2;
-          }
-        })
-      );
       setWildMultipliers(nextWildMults);
     }
 
@@ -1319,9 +1217,8 @@ export default function VegasSlotMachine({
       setTimeout(() => {
         try {
           finalizeVideoSpin({
-            finalGrid: generated,
+            spinResult,
             activeBet,
-            spinWildMults: nextWildMults,
             isFreeSpinRound,
             coffeeRushUsed,
             wasSurge,
@@ -1348,6 +1245,7 @@ export default function VegasSlotMachine({
     betOptions,
     bonusWheelState,
     clearTimers,
+    coffeePot,
     finalizeVideoSpin,
     freeSpinStake,
     getActualSpinCost,
@@ -1355,10 +1253,13 @@ export default function VegasSlotMachine({
     lockItState?.active,
     machineId,
     mustangFreeSpins,
+    mustangLines,
+    mustangPot,
     neonFreeSpins,
     neonFreeSpinStake,
     onSpendTokens,
     secondChanceArmed,
+    stampedeMeter,
     surgeArmed,
     tokens,
     turboOn,
@@ -1416,60 +1317,47 @@ export default function VegasSlotMachine({
     if (!lockItState || !lockItState.active || isAnySpinning) return;
     sfx.playSlotLeverPull();
 
-    const nextLocked = { ...lockItState.lockedMap };
-    let newOrbFound = false;
-    const orbChance = anteBetOn ? 0.037 : 0.036;
+    const step = stepLockItRespin({
+      lockedMap: lockItState.lockedMap,
+      respinsLeft: lockItState.respinsLeft,
+      stake: lockItState.stake,
+      anteBetOn,
+      grandProgressive: progressives.grand
+    });
 
-    for (let c = 0; c < 5; c += 1) {
-      for (let r = 0; r < 3; r += 1) {
-        const key = `${c},${r}`;
-        if (!nextLocked[key] && Math.random() < orbChance) {
-          nextLocked[key] = rollLightningOrbValue();
-          newOrbFound = true;
-        }
-      }
-    }
-
-    const totalOrbs = Object.keys(nextLocked).length;
-    const nextRespins = totalOrbs >= 15 ? 0 : newOrbFound ? 3 : lockItState.respinsLeft - 1;
-
-    if (newOrbFound) {
+    if (step.newOrbFound) {
       sfx.playSlotDingDing(2);
     } else {
       sfx.playSlotReelStop(1);
     }
 
-    if (nextRespins <= 0) {
-      // Bonus finished: sum all orbs (+ Grand Jackpot if 15/15!)
-      let totalMult = Object.values(nextLocked).reduce((sum, item) => sum + item.mult, 0);
-      const hitGrand = totalOrbs >= 15;
-      if (hitGrand) {
-        totalMult += Math.round(progressives.grand);
+    if (step.finished) {
+      if (step.hitGrand) {
         setProgressives((p) => ({ ...p, grand: 110 }));
       }
       const bonusStake = lockItState.stake;
       setLockItState(null);
       awardSlotWin({
         activeBet: bonusStake,
-        mult: totalMult,
-        headline: hitGrand
-          ? `🚨⚡ GRAND LOCK-IT FULL BOARD! (${totalMult}×)`
-          : `⚡🚨 HOLD & SPIN LOCK-IT PAYOUT! (${totalMult}×)`,
-        detail: `${totalOrbs} Lightning Orbs collected!`,
-        tier: totalMult >= 30 || hitGrand ? 'jackpot' : 'big',
+        mult: step.totalMult,
+        headline: step.hitGrand
+          ? `🚨⚡ GRAND LOCK-IT FULL BOARD! (${step.totalMult}×)`
+          : `⚡🚨 HOLD & SPIN LOCK-IT PAYOUT! (${step.totalMult}×)`,
+        detail: `${step.totalOrbs} Lightning Orbs collected!`,
+        tier: step.totalMult >= 30 || step.hitGrand ? 'jackpot' : 'big',
         maxMultiplier: 150,
         dougiePhrase: 'HELLOOOOO-O-O!!'
       });
     } else {
       setLockItState({
         ...lockItState,
-        respinsLeft: nextRespins,
-        lockedMap: nextLocked
+        respinsLeft: step.nextRespins,
+        lockedMap: step.lockedMap
       });
       setStatusBanner(
-        newOrbFound
-          ? `⚡ NEW ORB LOCKED! Respins reset to 3 (${totalOrbs}/15 Orbs)`
-          : `Respin complete — ${nextRespins} respins remaining (${totalOrbs}/15 Orbs)`
+        step.newOrbFound
+          ? `⚡ NEW ORB LOCKED! Respins reset to 3 (${step.totalOrbs}/15 Orbs)`
+          : `Respin complete — ${step.nextRespins} respins remaining (${step.totalOrbs}/15 Orbs)`
       );
     }
   };
@@ -1479,9 +1367,8 @@ export default function VegasSlotMachine({
   // ==========================================
   const handleSpinBonusWheel = () => {
     if (!bonusWheelState || bonusWheelState.spinning) return;
-    const { index, segment } = spinBuffaloWheelSegment();
-    const sliceAngle = 360 / BUFFALO_WHEEL_SEGMENTS.length;
-    const targetDeg = 360 * 5 + (360 - (index * sliceAngle + sliceAngle / 2));
+    const wheelResult = spinBonusWheel({ stake: bonusWheelState.stake });
+    const { segment, targetDeg } = wheelResult;
     const stake = bonusWheelState.stake;
 
     setBonusWheelState((prev) => ({

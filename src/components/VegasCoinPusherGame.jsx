@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
+import { formatMoney } from '../utils/tokenEconomy';
 import { triggerWinCelebration } from '../utils/winCelebration';
 import './VegasCoinPusherGame.css';
 
@@ -92,7 +93,7 @@ const PRIZE_CATALOG = [
   }
 ];
 
-const SLOT_SYMBOLS = ['🪙', '🥈', '💎', '⚡', '🏆'];
+const SLOT_SYMBOLS = ['💰', '🥈', '💎', '⚡', '🏆'];
 
 let entityIdSeq = 1;
 
@@ -111,7 +112,7 @@ function createCoinEntity(x, y, overrides = {}) {
     modeTag: overrides.modeTag || 'free', // 'free' or 'token' — anti-cheat origin tag!
     emoji:
       overrides.emoji ||
-      (kind === 'goldstack' ? '💰' : kind === 'silver' ? '🥈' : '🪙'),
+      (kind === 'goldstack' ? '💰' : kind === 'silver' ? '🥈' : '🟡'),
     label:
       overrides.label ||
       (kind === 'goldstack' ? '2× Coin Stack' : kind === 'silver' ? 'Silver Score Medal' : 'Gold Coin'),
@@ -202,7 +203,7 @@ export default function VegasCoinPusherGame({
   const [feverSecondsLeft, setFeverSecondsLeft] = useState(0);
   const [tiltWarnings, setTiltWarnings] = useState(0);
   const [isTilted, setIsTilted] = useState(false);
-  const [slotReels, setSlotReels] = useState(['🪙', '💎', '🪙']);
+  const [slotReels, setSlotReels] = useState(['💰', '💎', '💰']);
   const [slotSpinning, setSlotSpinning] = useState(false);
   const [statusBanner, setStatusBanner] = useState(
     'Hit the green Skill Gate 3× to spin the mini-slot.'
@@ -227,7 +228,7 @@ export default function VegasCoinPusherGame({
     gateDir: 1,
     gateHits: 0,
     gateFlashUntil: 0,
-    slotReels: ['🪙', '💎', '🪙'],
+    slotReels: ['💰', '💎', '💰'],
     slotSpinUntil: 0,
     feverUntil: 0,
     shakeMag: 0,
@@ -282,7 +283,7 @@ export default function VegasCoinPusherGame({
       customBanner ||
         (nextFreePlay
           ? 'Switched to Free Play — fresh practice bed loaded.'
-          : 'Token Mode active — cabinet reset.')
+          : 'MemeDollarz Mode active — cabinet reset.')
     );
   }, []);
 
@@ -331,8 +332,8 @@ export default function VegasCoinPusherGame({
       const roll = Math.random();
       let outcome;
       if (roll < 0.16) {
-        outcome = ['🪙', '🪙', '🪙']; // 3-Coin Shelf Drop (1 Gold + 2 Silver)
-        setStatusBanner('Mini-slot hit: +3 bonus coins dropped on shelf.');
+        outcome = ['💰', '💰', '💰']; // 3-Coin Shelf Drop (1 Gold + 2 Silver)
+        setStatusBanner('Mini-slot hit: Triple bonus drops launched on shelf.');
         sfx.playJackpot?.();
         for (let k = 0; k < 3; k++) {
           scheduleTimeout(() => {
@@ -439,7 +440,7 @@ export default function VegasCoinPusherGame({
         if (freePlay) {
           if (practiceCoins <= 0) {
             setPracticeCoins(50);
-            setStatusBanner('🆓 FREE PRACTICE BUCKET REFILLED (+50 COINS)! KEEP DOZING!');
+            setStatusBanner('🆓 FREE PRACTICE BUCKET REFILLED! KEEP DOZING!');
             sfx.playCoinDrop?.();
             return;
           }
@@ -448,7 +449,7 @@ export default function VegasCoinPusherGame({
           if (tokens < 1) {
             switchPlayMode(
               true,
-              '🆓 Out of Tokens! Switched to FREE PLAY & reset cabinet (or upload a meme for +45 🪙)!'
+              `🆓 Out of MemeDollarz! Switched to FREE PLAY & reset cabinet (upload a meme for ${formatMoney(12, { sign: true })})!`
             );
             return;
           }
@@ -881,7 +882,7 @@ export default function VegasCoinPusherGame({
               cb.onEarnTokens?.(
                 tokenAward,
                 null,
-                c.isPrize ? `${c.emoji} ${c.label} Dozer Prize!` : '🪙 Coin Dozer Tray Drop',
+                c.isPrize ? `${c.emoji} ${c.label} Dozer Prize!` : '💰 Coin Dozer Tray Drop',
                 'subgame'
               );
             }
@@ -891,11 +892,11 @@ export default function VegasCoinPusherGame({
           if (c.isPrize || tokenAward >= 3) {
             triggerWinCelebration({
               amount: tokenAward > 0 ? tokenAward : ptsEarned,
-              unit: tokenAward > 0 ? (cb.freePlay ? 'FREE 🪙' : '🪙') : 'PTS',
+              unit: tokenAward > 0 ? (cb.freePlay ? 'FREE' : 'M$') : 'PTS',
               game: "Neon Coin Dozer '86",
               headline: c.isPrize
                 ? `${c.emoji} ${c.label.toUpperCase()} WON!`
-                : `🪙 TRAY CASCADE +${tokenAward}!`,
+                : `💰 TRAY CASCADE ${formatMoney(tokenAward, { sign: true })}!`,
               detail: `+${ptsEarned} Arcade Pts!`,
               multiplier: c.isPrize ? 5 : tokenAward,
               tier: c.isPrize ? 'jackpot' : 'win'
@@ -907,9 +908,9 @@ export default function VegasCoinPusherGame({
             c.x,
             FRONT_LIP_Y - 10,
             c.isPrize
-              ? `${c.emoji} ${c.label.toUpperCase()} ${tokenAward > 0 ? `+${tokenAward} 🪙 ` : ''}(+${ptsEarned} PTS)!`
+              ? `${c.emoji} ${c.label.toUpperCase()} ${tokenAward > 0 ? `${formatMoney(tokenAward, { sign: true })} ` : ''}(+${ptsEarned} PTS)!`
               : tokenAward > 0
-              ? `+${tokenAward} 🪙 (+${ptsEarned} PTS)`
+              ? `${formatMoney(tokenAward, { sign: true })} (+${ptsEarned} PTS)`
               : `🥈 +${ptsEarned} PTS!`,
             c.isPrize ? '#f472b6' : tokenAward > 0 ? '#4ade80' : '#38bdf8',
             c.isPrize ? 1.15 : 0.95
@@ -1062,7 +1063,7 @@ export default function VegasCoinPusherGame({
       ctx.fillText(
         isFever
           ? '🌈 BULLDOZER FEVER — 2× PUSH & LASER SHIELDS!'
-          : '🪙 TAP OR HOLD TO DROP COINS THROUGH THE SKILL GATE!',
+          : '💰 TAP OR HOLD TO DROP QUARTERS THROUGH THE SKILL GATE!',
         388,
         32
       );
@@ -1289,7 +1290,7 @@ export default function VegasCoinPusherGame({
 
       ctx.fillStyle = 'rgba(74, 222, 128, 0.28)';
       ctx.font = '900 18px Orbitron, Impact, sans-serif';
-      ctx.fillText('🪙 PRIZE & TOKEN COLLECTION TRAY 🎁', W / 2, FRONT_LIP_Y + 58);
+      ctx.fillText('💰 PRIZE & PAYOFF COLLECTION TRAY 🎁', W / 2, FRONT_LIP_Y + 58);
       ctx.restore();
 
       // 6B. Draw Accumulated Gleaming Coins inside the Bottom Collection Tray!
@@ -1464,11 +1465,11 @@ export default function VegasCoinPusherGame({
         {/* LEFT / TOP COMPACT TELEMETRY & CONTROLS DECK */}
         <div className="tm-pusher-side-deck">
           <div className="tm-pusher-brand-card">
-            <div className="tm-pusher-eyebrow">🪙 VEGAS PENNY-FALLS &amp; MINI-SLOT • 1986 EDITION</div>
+            <div className="tm-pusher-eyebrow">💰 VEGAS PENNY-FALLS &amp; MINI-SLOT • 1986 EDITION</div>
             <h2 className="tm-pusher-title">NEON COIN DOZER &apos;86</h2>
             <p className="tm-pusher-sub">{statusBanner}</p>
 
-            {/* Mode Switcher: Free Play vs Token Mode (Always resets bed to prevent stacking exploit!) */}
+            {/* Mode Switcher: Free Play vs MemeDollarz Mode (Always resets bed to prevent stacking exploit!) */}
             <div className="tm-pusher-mode-row">
               <button
                 type="button"
@@ -1481,7 +1482,7 @@ export default function VegasCoinPusherGame({
                 }}
                 title="Switch to Free Play (Resets cabinet bed)"
               >
-                🆓 Free Play ({practiceCoins} Coins)
+                🆓 Free Play ({practiceCoins} left)
               </button>
               <button
                 type="button"
@@ -1492,9 +1493,9 @@ export default function VegasCoinPusherGame({
                     switchPlayMode(false);
                   }
                 }}
-                title="Switch to Token Mode (Resets cabinet bed for fair play)"
+                title="Switch to MemeDollarz Mode (Resets cabinet bed for fair play)"
               >
-                🪙 Token Mode ({tokens} 🪙)
+                💵 MemeDollarz ({formatMoney(tokens, { zero: 'balance' })})
               </button>
             </div>
 
@@ -1510,7 +1511,9 @@ export default function VegasCoinPusherGame({
               </div>
               <div className="tm-pusher-stat">
                 <span>TRAY WON</span>
-                <strong style={{ color: '#4ade80' }}>+{coinsWonSession} 🪙</strong>
+                <strong style={{ color: '#4ade80' }}>
+                  {formatMoney(coinsWonSession, { sign: true, zero: 'balance' })}
+                </strong>
               </div>
               <div className="tm-pusher-stat">
                 <span>MINI-SLOT</span>
@@ -1548,7 +1551,7 @@ export default function VegasCoinPusherGame({
                 disabled={isTilted}
                 onClick={() => handleDropCoin(simRef.current.aimX)}
               >
-                🪙 DROP COIN {freePlay ? '(FREE)' : '(1 🪙)'}
+                💰 DROP COIN ({freePlay ? 'FREE' : formatMoney(1)})
               </button>
               <button
                 type="button"
@@ -1603,9 +1606,9 @@ export default function VegasCoinPusherGame({
                       color: won ? '#4ade80' : '#cbd5e1',
                       fontWeight: won ? 900 : 700
                     }}
-                    title={`${pr.label}: +${pr.tokens} 🪙`}
+                    title={`${pr.label}: ${formatMoney(pr.tokens, { sign: true })}`}
                   >
-                    {pr.emoji} +{pr.tokens}🪙 {won ? '✓' : ''}
+                    {pr.emoji} {formatMoney(pr.tokens, { sign: true })} {won ? '✓' : ''}
                   </span>
                 );
               })}
@@ -1614,7 +1617,7 @@ export default function VegasCoinPusherGame({
             <div className="tm-pusher-footer-links">
               {onOpenBlankStudio && (
                 <button type="button" className="tm-pusher-link-btn" onClick={onOpenBlankStudio}>
-                  📸 Upload Meme (+12 🪙)
+                  📸 Upload Meme ({formatMoney(12, { sign: true })})
                 </button>
               )}
               {onSelectViewMode && (

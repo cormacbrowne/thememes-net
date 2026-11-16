@@ -1,0 +1,170 @@
+/* ==========================================================================
+   Phase 35.2b — Neon Tube Primitives (ui- prefix)
+   Static glows only; never animate box-shadow, filter, or text-shadow.
+   ========================================================================== */
+
+.ui-tube {
+  --c: var(--tm-cyan);
+  --hot: var(--tm-cyan-hot);
+  --off: var(--tm-cyan-off);
+}
+
+.ui-tube--pink {
+  --c: var(--tm-pink);
+  --hot: var(--tm-pink-hot);
+  --off: var(--tm-pink-off);
+}
+
+.ui-tube--cyan {
+  --c: var(--tm-cyan);
+  --hot: var(--tm-cyan-hot);
+  --off: var(--tm-cyan-off);
+}
+
+.ui-tube--amber {
+  --c: var(--tm-amber);
+  --hot: var(--tm-amber-hot);
+  --off: var(--tm-amber-off);
+}
+
+.ui-tube-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tm-space-2);
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: var(--tm-radius-pill);
+  font-family: var(--tm-font-body);
+  font-size: var(--tm-text-base);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--hot);
+  background: transparent;
+  border: 2px solid var(--c);
+  box-shadow:
+    0 0 0 1px var(--off),
+    0 0 14px -2px var(--c),
+    inset 0 0 12px -4px var(--c);
+  text-shadow: 0 0 10px var(--c);
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    transform var(--tm-dur-fast) ease-out,
+    background-color var(--tm-dur-fast) ease-out;
+}
+
+.ui-tube-box:hover:not(:disabled):not(.ui-tube-box--off) {
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+}
+
+.ui-tube-box:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.ui-tube-box:focus-visible {
+  outline: 2px solid var(--tm-cyan);
+  outline-offset: 4px;
+}
+
+.ui-tube-box--solid {
+  background: var(--c);
+  color: var(--tm-night-0);
+  text-shadow: none;
+}
+
+.ui-tube-box--solid:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--c) 88%, #ffffff);
+}
+
+.ui-tube-box--off,
+.ui-tube-box:disabled {
+  --c: var(--tm-night-3);
+  border-color: var(--tm-night-3);
+  color: var(--tm-text-dim);
+  background: transparent;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+.ui-tube-box:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.ui-tube-text {
+  font-family: var(--tm-font-display);
+  color: var(--hot);
+  text-shadow: 0 0 10px var(--c);
+  letter-spacing: 0.04em;
+}
+
+.ui-tube-rule {
+  position: relative;
+  height: 2px;
+  width: 100%;
+  border: 0;
+  margin: var(--tm-space-4) 0;
+  border-radius: var(--tm-radius-pill);
+  background: var(--c);
+  box-shadow: 0 0 8px var(--c);
+  overflow: hidden;
+}
+
+.ui-tube-rule--flow::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, #ffffff, transparent);
+  opacity: 0.9;
+  animation: ui-tube-flow 2.8s linear infinite;
+}
+
+@keyframes ui-tube-flow {
+  from {
+    transform: translateX(-40px);
+  }
+  to {
+    transform: translateX(100vw);
+  }
+}
+
+.ui-flicker-on {
+  animation: ui-power-on 900ms steps(1, end) both;
+  animation-delay: calc(var(--ui-stagger, 0) * 70ms);
+}
+
+@keyframes ui-power-on {
+  0% { opacity: 0; }
+  12% { opacity: 1; }
+  18% { opacity: 0; }
+  30% { opacity: 1; }
+  36% { opacity: 0.2; }
+  48% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-tube-rule--flow::after,
+  .ui-flicker-on {
+    animation: none;
+  }
+  .ui-tube-rule--flow::after {
+    opacity: 0;
+  }
+}
+
+[data-reduced-motion='on'] .ui-tube-rule--flow::after,
+[data-reduced-motion='on'] .ui-flicker-on,
+.tm-lite-perf .ui-tube-rule--flow::after,
+.tm-lite-perf .ui-flicker-on {
+  animation: none;
+}
+
+[data-reduced-motion='on'] .ui-tube-rule--flow::after,
+.tm-lite-perf .ui-tube-rule--flow::after {
+  opacity: 0;
+}

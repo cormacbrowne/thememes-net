@@ -110,9 +110,9 @@ export default function Magic8BallOracle({
 
       let outcomeTag = 'Free Prophecy';
       if (isFreeOracle) {
-        onEarnMemeCentz?.(15, e, '8-Ball Prophecy');
-        outcomeTag = '+15¢ MemeCentz';
-        setStatusMsg(`🎱 ORACLE SAYS: "${picked.text}" (+15¢ MemeCentz added!)`);
+        onEarnMemeCentz?.(3, e, '8-Ball Prophecy');
+        outcomeTag = '+3¢ MemeCentz';
+        setStatusMsg(`🎱 ORACLE SAYS: "${picked.text}" (+3¢ MemeCentz added!)`);
       } else if (picked.tone === 'positive') {
         const grossWin = numericStake * 2;
         const paid = onPayoutTokens?.(grossWin, {

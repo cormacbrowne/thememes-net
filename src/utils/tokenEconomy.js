@@ -8,11 +8,15 @@
 // ==========================================
 
 export const CURRENCY_BRAND = {
+  name: 'MemeDollarz',
+  symbol: 'M$',
+  cent: '¢',
+  centsPerToken: 25,
   dollarName: 'MemeDollarz',
   dollarShort: 'M$',
   centzName: 'MemeCentz',
   centzShort: '¢',
-  maxDailyCentz: 500 // up to M$5.00/day from MemeCentz micro-earnings
+  maxDailyCentz: 125 // up to 5 tokens (M$1.25/day) from MemeCentz micro-earnings
 };
 
 export const ARCADE_ECONOMY_RULES = {
@@ -86,8 +90,9 @@ export const ARCADE_ECONOMY_RULES = {
 
 const LEDGER_STORAGE_KEY = 'tm_token_ledger_v2';
 const TOKENS_BALANCE_KEY = 'tm_tokens_balance_v2';
-const CENTZ_BALANCE_KEY = 'tm_memecentz_balance_v1';
-const CENTZ_DAILY_KEY = 'tm_memecentz_daily_v1';
+const LEGACY_CENTZ_BALANCE_KEY = 'tm_memecentz_balance_v1';
+const CENTZ_BALANCE_KEY = 'tm_memecentz_balance_v2';
+const CENTZ_DAILY_KEY = 'tm_memecentz_daily_v2';
 
 export function getTodayDateString() {
   const now = new Date();
@@ -177,16 +182,24 @@ export function saveTokenBalance(tokens) {
 export function loadMemeCentzBalance() {
   try {
     const saved = localStorage.getItem(CENTZ_BALANCE_KEY);
-    if (saved === null) return 25;
-    return Math.max(0, Math.min(99, Math.floor(Number(saved) || 0)));
+    if (saved !== null) {
+      return Math.max(0, Math.min(24, Math.floor(Number(saved) || 0)));
+    }
+    const legacy = localStorage.getItem(LEGACY_CENTZ_BALANCE_KEY);
+    if (legacy !== null) {
+      const migrated = Math.max(0, Math.min(24, Math.floor((Number(legacy) || 0) / 4)));
+      localStorage.setItem(CENTZ_BALANCE_KEY, String(migrated));
+      return migrated;
+    }
+    return 6;
   } catch {
-    return 25;
+    return 6;
   }
 }
 
 export function saveMemeCentzBalance(centz) {
   try {
-    localStorage.setItem(CENTZ_BALANCE_KEY, String(Math.max(0, Math.min(99, Math.floor(centz || 0)))));
+    localStorage.setItem(CENTZ_BALANCE_KEY, String(Math.max(0, Math.min(24, Math.floor(centz || 0)))));
   } catch {
     // Ignore storage quota restrictions
   }
@@ -214,11 +227,34 @@ export function saveDailyCentzEarned(earned) {
   }
 }
 
+export function formatMoney(
+  tokens = 0,
+  { centz = 0, compact = false, sign = false, zero = 'free' } = {}
+) {
+  const totalCents = Math.round((Number(tokens) || 0) * CURRENCY_BRAND.centsPerToken + (Number(centz) || 0));
+  const isNeg = totalCents < 0;
+  const absCents = Math.abs(totalCents);
+  if (absCents === 0) {
+    return zero === 'balance' ? `${CURRENCY_BRAND.symbol}0.00` : 'FREE';
+  }
+  const prefix = isNeg ? '−' : sign ? '+' : '';
+  if (absCents < 100) {
+    return `${prefix}${absCents}${CURRENCY_BRAND.cent}`;
+  }
+  const whole = Math.floor(absCents / 100);
+  const rem = absCents % 100;
+  if (compact && whole >= 100 && rem === 0) {
+    return `${prefix}${CURRENCY_BRAND.symbol}${whole.toLocaleString('en-US')}`;
+  }
+  return `${prefix}${CURRENCY_BRAND.symbol}${whole.toLocaleString('en-US')}.${String(rem).padStart(2, '0')}`;
+}
+
 export function formatMemeCurrency(dollarz = 0, centz = 0, { showCentz = true } = {}) {
-  const safeD = Math.max(0, Math.floor(Number(dollarz) || 0));
-  const safeC = Math.max(0, Math.min(99, Math.floor(Number(centz) || 0)));
-  if (!showCentz) return `M$${safeD.toLocaleString()}`;
-  return `M$${safeD.toLocaleString()}.${String(safeC).padStart(2, '0')}`;
+  return formatMoney(Number(dollarz) || 0, {
+    centz: showCentz ? Number(centz) || 0 : 0,
+    compact: !showCentz,
+    zero: 'balance'
+  });
 }
 
 /**
@@ -389,13 +425,10 @@ export function computeXpConversionState(xp = 0, convertedXp = 0, ledger = null)
 }
 
 /**
- * Formats any arcade token price or wager into authentic 1980s USD/Coin-Op pricing
- * (1 Arcade Token = 1 x 25c Arcade Quarter, circa 1985-1986).
+ * Thin wrapper around formatMoney() kept until all callers migrate in 35.5c.
  */
 export function formatEightiesPrice(tokens = 0, { compact = false } = {}) {
   const n = Math.max(0, Number(tokens) || 0);
   if (n <= 0) return compact ? 'FREE' : 'FREE (1985 PROMO)';
-  const cents = Math.round(n * 25);
-  if (cents < 100) return `${cents}¢`;
-  return `$${(cents / 100).toFixed(2)}`;
+  return formatMoney(n, { compact });
 }

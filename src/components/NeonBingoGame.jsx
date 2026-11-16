@@ -665,7 +665,7 @@ export default function NeonBingoGame({
     setDabbedNumbers((prev) => (prev.includes(value) ? prev : [...prev, value]));
 
     if (!autoDab) {
-      onEarnMemeCentz?.(15, e, 'Manual Neon Dab!');
+      onEarnMemeCentz?.(3, e, 'Manual Neon Dab!');
     }
   };
 

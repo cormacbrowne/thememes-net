@@ -20,6 +20,7 @@ import {
   loadDailyCentzEarned,
   saveDailyCentzEarned,
   evaluateTokenAward,
+  formatMoney,
   hasActionBeenRewarded,
   validateStakedGamePayout,
   computeXpConversionState,
@@ -358,8 +359,8 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
       setDailyCentzEarned(dailyCentzRef.current);
 
       const combined = memeCentzRef.current + allowedCentz;
-      const rolledOverDollarz = Math.floor(combined / 100);
-      const nextCentz = combined % 100;
+      const rolledOverDollarz = Math.floor(combined / 25);
+      const nextCentz = combined % 25;
       memeCentzRef.current = nextCentz;
       setMemeCentz(nextCentz);
 
@@ -373,7 +374,7 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
       const clientY = event?.clientY || 120;
       const badge =
         rolledOverDollarz > 0
-          ? `+M$${rolledOverDollarz}.00 MemeDollarz!`
+          ? `${formatMoney(rolledOverDollarz, { sign: true })} MemeDollarz!`
           : `+${allowedCentz}¢ ${label || 'MemeCentz'}`;
       spawnParticles(clientX, clientY, badge, rolledOverDollarz > 0 ? '💵' : '🪙');
       return { awardedCentz: allowedCentz, rolledOverDollarz };

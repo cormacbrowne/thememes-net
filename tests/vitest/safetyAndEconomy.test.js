@@ -13,8 +13,11 @@ import {
 } from '../../supabase/functions/_shared/rateLimitAndBot.js';
 import {
   ARCADE_ECONOMY_RULES,
+  CURRENCY_BRAND,
   createFreshDailyLedger,
   evaluateTokenAward,
+  formatMoney,
+  loadMemeCentzBalance,
   validateStakedGamePayout
 } from '../../src/utils/tokenEconomy.js';
 import {
@@ -143,6 +146,40 @@ describe('validateStakedGamePayout and token caps (Vitest)', () => {
     expect(capped.allowed).toBe(false);
     expect(capped.reason).toBe('daily_cap_reached');
     expect(capped.awardedTokens).toBe(0);
+  });
+
+  it('formats MemeDollarz consistently and migrates MemeCentz v1 -> v2 (35.5a)', () => {
+    expect(CURRENCY_BRAND.name).toBe('MemeDollarz');
+    expect(CURRENCY_BRAND.symbol).toBe('M$');
+    expect(CURRENCY_BRAND.centsPerToken).toBe(25);
+    expect(CURRENCY_BRAND.maxDailyCentz).toBe(125);
+
+    expect(formatMoney(0)).toBe('FREE');
+    expect(formatMoney(0, { zero: 'balance' })).toBe('M$0.00');
+    expect(formatMoney(1)).toBe('25¢');
+    expect(formatMoney(3)).toBe('75¢');
+    expect(formatMoney(4)).toBe('M$1.00');
+    expect(formatMoney(5)).toBe('M$1.25');
+    expect(formatMoney(20, { centz: 6 })).toBe('M$5.06');
+    expect(formatMoney(4000, { compact: true })).toBe('M$1,000');
+    expect(formatMoney(10, { sign: true })).toBe('+M$2.50');
+    expect(formatMoney(-3, { sign: true })).toBe('−75¢');
+
+    const store = new Map([['tm_memecentz_balance_v1', '95']]);
+    const origStorage = globalThis.localStorage;
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: {
+        getItem: (k) => (store.has(k) ? store.get(k) : null),
+        setItem: (k, v) => store.set(k, String(v))
+      },
+      configurable: true
+    });
+    try {
+      expect(loadMemeCentzBalance()).toBe(23);
+      expect(store.get('tm_memecentz_balance_v2')).toBe('23');
+    } finally {
+      Object.defineProperty(globalThis, 'localStorage', { value: origStorage, configurable: true });
+    }
   });
 });
 

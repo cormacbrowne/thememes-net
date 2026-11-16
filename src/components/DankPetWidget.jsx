@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { sfx } from '../utils/soundEngine';
+import { formatMoney } from '../utils/tokenEconomy';
 import { useDraggableFloating } from '../hooks/useDraggableFloating';
 import './DankPetWidget.css';
 
@@ -303,14 +304,14 @@ export default function DankPetWidget({
     if (payphoneClaimedToday) {
       sfx.playMetalPipe();
       setPayphoneLineMsg(
-        '🪙 *CLINK!* Coin return flap is empty right now — check back tomorrow for more forgotten arcade quarters!'
+        '☎️ *CLINK!* Coin return flap is empty right now — check back tomorrow for more forgotten arcade quarters!'
       );
       return;
     }
     sfx.playJackpot();
-    const tokensWon = onClaimPayphoneCoinReturn ? onClaimPayphoneCoinReturn(e) : 5;
+    const tokensWon = onClaimPayphoneCoinReturn ? onClaimPayphoneCoinReturn(e) : 2;
     setPayphoneLineMsg(
-      `🎉 *CHA-CHING!* Two forgotten 1986 arcade quarters tumbled out of the Coin Return Flap! (+${tokensWon || 5} 🪙 Tokens & +50 XP!)`
+      `🎉 *CHA-CHING!* Two forgotten 1986 arcade quarters tumbled out of the Coin Return Flap! (${formatMoney(tokensWon || 2, { sign: true })} & +50 XP!)`
     );
   };
 
@@ -347,12 +348,12 @@ export default function DankPetWidget({
         const awardedTokens = onWinPinataReward ? onWinPinataReward(e) : 0;
         if (awardedTokens > 0) {
           setVictoryMsg(
-            `🎉 DIRECT SMASH! You whacked the dodging Piñata 8x & won +${awardedTokens} 🪙 (+50 XP)!`
+            `🎉 DIRECT SMASH! You whacked the dodging Piñata 8x & won ${formatMoney(awardedTokens, { sign: true })} (+50 XP)!`
           );
         } else {
           awardDailyEventXp(20, e, '🪅');
           setVictoryMsg(
-            '🪅 SMASHED! (+20 XP — Daily Piñata token prize already claimed today. Upload a meme for +45 🪙!)'
+            `🪅 SMASHED! (+20 XP — Daily Piñata prize already claimed today. Upload a meme for ${formatMoney(12, { sign: true })}!)`
           );
         }
       } else if (activeEvent === 'ufo') {
@@ -494,8 +495,8 @@ export default function DankPetWidget({
                 onClick={handleFlickCoinReturn}
               >
                 {payphoneClaimedToday
-                  ? '🪙 Coin Return Flap Checked Today (Empty)'
-                  : '🪙 Flick Coin Return Flap (+5 🪙 Forgotten Quarters & +50 XP!)'}
+                  ? '☎️ Coin Return Flap Checked Today (Empty)'
+                  : `☎️ Flick Coin Return Flap (${formatMoney(2, { sign: true })} Forgotten Quarters & +50 XP!)`}
               </button>
             </div>
           </div>
@@ -523,7 +524,7 @@ export default function DankPetWidget({
               {activeEvent === 'pinata'
                 ? pinataClaimedToday
                   ? '🪅 GOLDEN PIÑATA PRACTICE (XP ONLY TODAY)'
-                  : '🪅 DODGING PIÑATA CHALLENGE (+5 🪙 IF SMASHED!)'
+                  : `🪅 DODGING PIÑATA CHALLENGE (${formatMoney(2, { sign: true })} IF SMASHED!)`
                 : activeEvent === 'ufo'
                 ? '🛸 AREA 51 UFO INTERCEPTION (+25 XP)'
                 : '🚨 DODGING BOSS ENCOUNTER (+25 XP)'}
@@ -695,12 +696,12 @@ export default function DankPetWidget({
         >
           <span>
             🚨🚔 <strong>WEE-WOO! MEME POLICE AUDIT:</strong> Verdict:{' '}
-            <strong style={{ color: '#4ade80' }}>80s NEON CERTIFIED!</strong> (Upload memes to earn +12 🪙!)
+            <strong style={{ color: '#4ade80' }}>80s NEON CERTIFIED!</strong> (Upload memes to earn {formatMoney(12, { sign: true })}!)
           </span>
         </div>
       )}
 
-      {/* ARCADE HYPE BANNER (VISUAL + XP ONLY, 0 TOKENS) */}
+      {/* ARCADE HYPE BANNER (VISUAL + XP ONLY, FREE) */}
       {activeEvent === 'jackpot' && (
         <div
           className="tm-police-siren-banner"
@@ -709,7 +710,7 @@ export default function DankPetWidget({
           role="status"
         >
           <span>
-            🎰📈🍬 <strong>80s CYBER-ARCADE LOUNGE OPEN!</strong> Wager your meme tokens on One-Arm
+            🎰📈🍬 <strong>80s CYBER-ARCADE LOUNGE OPEN!</strong> Wager your MemeDollarz on One-Arm
             Bandit, Meme Stocks, Crush &amp; Pinball!
           </span>
           {onSelectViewMode && (
@@ -766,7 +767,7 @@ export default function DankPetWidget({
               playDtmfTone('5');
               setShowPayphone(true);
             }}
-            title="Open the 1986 Neon Arcade Payphone & Secret Hotline (Check Coin Return Slot for +5 🪙!)"
+            title={`Open the 1986 Neon Arcade Payphone & Secret Hotline (Check Coin Return Slot for ${formatMoney(2, { sign: true })}!)`}
           >
             <span>☎️</span>
             <span className="tm-hide-mobile">1-800-MEME</span>

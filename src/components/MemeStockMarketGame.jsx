@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { sfx } from '../utils/soundEngine';
-import { ARCADE_ECONOMY_RULES, formatEightiesPrice } from '../utils/tokenEconomy';
+import { formatMoney } from '../utils/tokenEconomy';
 import { getCategoryActivity, getRecentMemeHeadlines } from '../utils/memeFeedBridge';
 import { triggerWinCelebration } from '../utils/winCelebration';
-import { Wallet } from './ui/Money';
+import { Money, Wallet } from './ui/Money';
 import './MemeStockMarketGame.css';
 
 // ==========================================
@@ -504,7 +504,7 @@ export default function MemeStockMarketGame({
     if (tokens < costTokens) {
       sfx.playClownHonk();
       setTradeFeedback(
-        `⚠️ Need ${costTokens} 🪙 to buy ${cleanQty} $${activeCompany.ticker}! Upload a meme (+12 🪙) to raise capital!`
+        `⚠️ Need ${formatMoney(costTokens, { zero: 'balance' })} to buy ${cleanQty} $${activeCompany.ticker}! Upload a meme (${formatMoney(12, { sign: true })}) to raise capital!`
       );
       return;
     }
@@ -526,7 +526,7 @@ export default function MemeStockMarketGame({
       };
     });
     setTradeFeedback(
-      `✅ BOUGHT ${cleanQty} sh of $${activeCompany.ticker} for ${costTokens} 🪙 (incl. 1% broker fee)`
+      `✅ BOUGHT ${cleanQty} sh of $${activeCompany.ticker} for ${formatMoney(costTokens, { zero: 'balance' })} (incl. 1% broker fee)`
     );
   };
 
@@ -564,8 +564,8 @@ export default function MemeStockMarketGame({
         xp: tradeProfit > 0 ? 25 : 5,
         label:
           tradeProfit >= 0
-            ? `📈 SOLD ${cleanQty} $${activeCompany.ticker} (+${tradeProfit} 🪙 PROFIT!)`
-            : `📉 SOLD ${cleanQty} $${activeCompany.ticker} (${proceedsTokens} 🪙 RETURNED)`,
+            ? `📈 SOLD ${cleanQty} $${activeCompany.ticker} (${formatMoney(tradeProfit, { sign: true })} PROFIT!)`
+            : `📉 SOLD ${cleanQty} $${activeCompany.ticker} (${formatMoney(proceedsTokens)} RETURNED)`,
         emoji: tradeProfit >= 0 ? '📈' : '📉'
       });
     }
@@ -573,19 +573,19 @@ export default function MemeStockMarketGame({
     if (tradeProfit > 0) {
       triggerWinCelebration({
         amount: tradeProfit,
-        unit: '🪙 PROFIT',
+        unit: 'M$',
         game: "MEMEDAQ '86",
         headline: `📈 $${activeCompany.ticker} BULL PAYDAY!`,
-        detail: `Sold ${cleanQty} shares for ${proceedsTokens} 🪙`,
+        detail: `Sold ${cleanQty} shares for ${formatMoney(proceedsTokens)}`,
         multiplier: Math.max(2, Math.round(proceedsTokens / Math.max(1, proportionalCostBasis))),
         tier: tradeProfit >= 15 ? 'big' : 'win'
       });
     }
 
     setTradeFeedback(
-      `🔔 SOLD ${cleanQty} sh of $${activeCompany.ticker} for ${proceedsTokens} 🪙 (${
-        tradeProfit >= 0 ? `+${tradeProfit}` : tradeProfit
-      } 🪙 P&L)`
+      `🔔 SOLD ${cleanQty} sh of $${activeCompany.ticker} for ${formatMoney(proceedsTokens, { zero: 'balance' })} (${
+        formatMoney(tradeProfit, { sign: true, zero: 'balance' })
+      } P&L)`
     );
   };
 
@@ -660,21 +660,21 @@ export default function MemeStockMarketGame({
           onPayoutTokens(proceeds, {
             stakedTokens: pos.totalCostTokens,
             xp: 30,
-            label: `🤖 AUTO-PROFIT SOLD ${pos.shares} $${c.ticker} (+${profit} 🪙!)`,
+            label: `🤖 AUTO-PROFIT SOLD ${pos.shares} $${c.ticker} (${formatMoney(profit, { sign: true })}!)`,
             emoji: '🤖'
           });
         }
         triggerWinCelebration({
           amount: profit,
-          unit: '🪙 PROFIT',
+          unit: 'M$',
           game: "MEMEDAQ '86",
           headline: `🤖 AUTO-PROFIT $${c.ticker}!`,
-          detail: `+${Math.round(profitRatio * 100)}% Gain (${proceeds} 🪙 returned)`,
+          detail: `+${Math.round(profitRatio * 100)}% Gain (${formatMoney(proceeds)} returned)`,
           multiplier: 3,
           tier: 'big'
         });
         setTradeFeedback(
-          `🤖 AUTO-TAKE-PROFIT (+${Math.round(profitRatio * 100)}%): Sold ${pos.shares} sh of $${c.ticker} for ${proceeds} 🪙 (+${profit} 🪙 net profit)!`
+          `🤖 AUTO-TAKE-PROFIT (+${Math.round(profitRatio * 100)}%): Sold ${pos.shares} sh of $${c.ticker} for ${formatMoney(proceeds)} (${formatMoney(profit, { sign: true })} net profit)!`
         );
       }
     });
@@ -814,13 +814,13 @@ export default function MemeStockMarketGame({
             <div className="tm-stocks-kpi">
               <span>HOLDINGS</span>
               <strong style={{ color: '#00f3ff' }}>
-                🪙 {portfolioStats.holdingsLiquidationValue.toLocaleString()} ({formatEightiesPrice(portfolioStats.holdingsLiquidationValue)})
+                <Money tokens={portfolioStats.holdingsLiquidationValue} zero="balance" />
               </strong>
             </div>
             <div className="tm-stocks-kpi">
               <span>NET WORTH</span>
               <strong style={{ color: '#facc15' }}>
-                🪙 {portfolioStats.netWorth.toLocaleString()} ({formatEightiesPrice(portfolioStats.netWorth)})
+                <Money tokens={portfolioStats.netWorth} zero="balance" />
               </strong>
             </div>
             <div className="tm-stocks-kpi">
@@ -835,10 +835,7 @@ export default function MemeStockMarketGame({
                       : '#94a3b8'
                 }}
               >
-                {portfolioStats.unrealizedPnl >= 0
-                  ? `+${portfolioStats.unrealizedPnl}`
-                  : portfolioStats.unrealizedPnl}{' '}
-                🪙
+                {formatMoney(portfolioStats.unrealizedPnl, { sign: true, zero: 'balance' })}
               </strong>
             </div>
           </div>
@@ -928,7 +925,7 @@ export default function MemeStockMarketGame({
                   </div>
                   <div className="tm-stock-row-right">
                     <div className="tm-stock-price">
-                      ${(q.price * 0.25).toFixed(2)} • 🪙 {q.price.toFixed(2)}
+                      {formatMoney(q.price, { zero: 'balance' })}
                     </div>
                     <div className={`tm-stock-delta ${up ? 'up' : 'down'}`}>
                       {up ? '▲' : '▼'} {Math.abs(q.lastDeltaPct).toFixed(1)}%
@@ -995,7 +992,7 @@ export default function MemeStockMarketGame({
                     </button>
                   </div>
                   <div className="tm-stocks-active-quote">
-                    <strong>🪙 {activeQuote.price.toFixed(2)}</strong>
+                    <strong>{formatMoney(activeQuote.price, { zero: 'balance' })}</strong>
                     <span className={chartData.isUpSession ? 'up' : 'down'}>
                       {chartData.isUpSession ? '+' : ''}
                       {chartData.sessionPct}% (30t)
@@ -1144,10 +1141,10 @@ export default function MemeStockMarketGame({
                   OWNED: <strong>{activeHolding.shares} sh</strong>
                 </span>
                 <span>
-                  AVG COST: <strong>{activeAvgCost ? `${activeAvgCost} 🪙` : '—'}</strong>
+                  AVG COST: <strong>{activeAvgCost ? formatMoney(Number(activeAvgCost), { zero: 'balance' }) : '—'}</strong>
                 </span>
                 <span>
-                  SELL VALUE: <strong>{activePosLiquidation} 🪙</strong>
+                  SELL VALUE: <strong>{formatMoney(activePosLiquidation, { zero: 'balance' })}</strong>
                 </span>
                 <span
                   style={{
@@ -1163,7 +1160,7 @@ export default function MemeStockMarketGame({
                   <strong>
                     {activeHolding.shares === 0
                       ? '—'
-                      : `${activePosPnl >= 0 ? '+' : ''}${activePosPnl} 🪙`}
+                      : formatMoney(activePosPnl, { sign: true, zero: 'balance' })}
                   </strong>
                 </span>
               </div>
@@ -1182,7 +1179,7 @@ export default function MemeStockMarketGame({
                     disabled={maxAffordableShares < 1}
                     onClick={() => handleBuyShares(1)}
                   >
-                    BUY 1 ({formatEightiesPrice(calcBuyCost(1, activeQuote.price))} / {calcBuyCost(1, activeQuote.price)} 🪙)
+                    BUY 1 ({formatMoney(calcBuyCost(1, activeQuote.price), { zero: 'balance' })})
                   </button>
                   <button
                     type="button"
@@ -1190,7 +1187,7 @@ export default function MemeStockMarketGame({
                     disabled={maxAffordableShares < 5}
                     onClick={() => handleBuyShares(5)}
                   >
-                    BUY 5 ({formatEightiesPrice(calcBuyCost(5, activeQuote.price))} / {calcBuyCost(5, activeQuote.price)} 🪙)
+                    BUY 5 ({formatMoney(calcBuyCost(5, activeQuote.price), { zero: 'balance' })})
                   </button>
                   <button
                     type="button"
@@ -1214,7 +1211,7 @@ export default function MemeStockMarketGame({
                     disabled={activeHolding.shares < 1}
                     onClick={() => handleSellShares(1)}
                   >
-                    SELL 1 (+{formatEightiesPrice(calcSellProceeds(1, activeQuote.price))} / +{calcSellProceeds(1, activeQuote.price)} 🪙)
+                    SELL 1 ({formatMoney(calcSellProceeds(1, activeQuote.price), { sign: true, zero: 'balance' })})
                   </button>
                   <button
                     type="button"
@@ -1230,7 +1227,7 @@ export default function MemeStockMarketGame({
                     disabled={activeHolding.shares < 1}
                     onClick={() => handleSellShares(activeHolding.shares)}
                   >
-                    SELL ALL (+{formatEightiesPrice(activePosLiquidation)} / +{activePosLiquidation} 🪙)
+                    SELL ALL ({formatMoney(activePosLiquidation, { sign: true, zero: 'balance' })})
                   </button>
                 </div>
               </div>
@@ -1240,7 +1237,9 @@ export default function MemeStockMarketGame({
 
             {tokens < Math.ceil(activeQuote.price * 1.02) && activeHolding.shares === 0 && (
               <div className="tm-stocks-broke-bar">
-                <span>📸 Need trading capital? Upload a meme (+12 to +20 🪙) to fund your portfolio!</span>
+                <span>
+                  📸 Need trading capital? Upload a meme ({formatMoney(12, { sign: true })} to {formatMoney(20, { sign: true })}) to fund your portfolio!
+                </span>
                 {onOpenUpload && (
                   <button type="button" className="tm-btn tm-btn-primary" onClick={onOpenUpload}>
                     📸 Upload Meme

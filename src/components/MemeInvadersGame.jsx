@@ -458,7 +458,7 @@ export default function MemeInvadersGame({
       title="Meme Invaders '86"
       eyebrow="WAVE BLASTER CABINET • FREE TO PLAY"
       titleBadge={
-        <span className="tm-gs-badge tm-gs-badge-accent">0 TOKENS • WAVE {hud.wave}</span>
+        <span className="tm-gs-badge tm-gs-badge-accent">FREE • WAVE {hud.wave}</span>
       }
       showWallet={false}
       onBack={onBackToFeed}

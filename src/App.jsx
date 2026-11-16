@@ -8,7 +8,7 @@ import {
   ARCADE_RATE_LIMITS,
   formatWindowCountdown
 } from './data/starterMemes';
-import { ARCADE_ECONOMY_RULES } from './utils/tokenEconomy';
+import { ARCADE_ECONOMY_RULES, formatMoney } from './utils/tokenEconomy';
 import { useTokenEconomy } from './hooks/useTokenEconomy';
 import { useAuth } from './hooks/useAuth';
 import { useFeed } from './hooks/useFeed';
@@ -348,7 +348,7 @@ export default function App() {
       const awarded = handleClaimDeLoreanFluxBonus?.();
       setGoblinFortuneToast(
         awarded > 0
-          ? `🏎️⚡ ${carObj.topSpeedMph} MPH! ${carObj.name} warped to ${eraObj.title} (+M$${awarded} 🪙 & +50 XP)!`
+          ? `🏎️⚡ ${carObj.topSpeedMph} MPH! ${carObj.name} warped to ${eraObj.title} (${formatMoney(awarded, { sign: true })} & +50 XP)!`
           : `🏎️⚡ ${carObj.topSpeedMph} MPH! ${carObj.name} Time Circuits locked on ${eraObj.title}!`
       );
       setTimeout(() => setGoblinFortuneToast(''), 4500);
@@ -1018,7 +1018,7 @@ export default function App() {
             DROP IMAGE TO UPLOAD OR LAUNCH MEME FORGE
           </h2>
           <p style={{ margin: 0, color: '#f472b6', fontWeight: 800 }}>
-            Instant Canvas Load ({pioneerBonusAvailable ? '+75 🪙 First Upload Bonus' : '+45 🪙 Tokens'} &amp; +120 XP)
+            Instant Canvas Load ({pioneerBonusAvailable ? `${formatMoney(20, { sign: true })} First Upload Bonus` : `${formatMoney(12, { sign: true })} MemeDollarz`} &amp; +120 XP)
           </p>
         </div>
       )}
@@ -1400,8 +1400,8 @@ export default function App() {
                   {showSavedOnly
                     ? 'Tap the ⭐ button on any meme card to save your favorites here for quick access.'
                     : `Use the 1-Click Quick-Upload Bar above, drop an image anywhere on screen, or paste (Ctrl+V) to post your meme and earn ${
-                        pioneerBonusAvailable ? '+75 🪙 First-Upload Pioneer Bonus' : '+45 🪙 Arcade Tokens'
-                      } & +120 XP to play for fun in the 80s Arcade! (Free pretend tokens — can't be bought or cashed out.)`}
+                        pioneerBonusAvailable ? `${formatMoney(20, { sign: true })} First-Upload Pioneer Bonus` : `${formatMoney(12, { sign: true })} MemeDollarz`
+                      } & +120 XP to play for fun in the 80s Arcade! (Free pretend money — can't be bought or cashed out.)`}
                 </p>
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
                   <button
@@ -1409,7 +1409,7 @@ export default function App() {
                     className="tm-btn tm-btn-primary"
                     onClick={() => quickUploadInputRef.current?.click()}
                   >
-                    📥 Select Photo / Screenshot ({pioneerBonusAvailable ? '+75 🪙 First Upload!' : '+45 🪙 & +120 XP'})
+                    📥 Select Photo / Screenshot ({pioneerBonusAvailable ? `${formatMoney(20, { sign: true })} First Upload!` : `${formatMoney(12, { sign: true })} & +120 XP`})
                   </button>
                   {(showSavedOnly || sortBy === 'new24h' || (sortBy === 'top' && topWindow !== 'all') || category !== 'all' || searchQuery.trim()) && (
                     <button
@@ -1477,14 +1477,14 @@ export default function App() {
               )}
               inFeedArcadeCard={
                 <article className="tm-card tm-infeed-arcade-card" aria-label="Side Entertainment Arcade Break">
-                  <div className="tm-infeed-arcade-badge">🕹️ 80s NEON TOKEN ARCADE &amp; CASINO</div>
+                  <div className="tm-infeed-arcade-badge">🕹️ 80s NEON MEMEDOLLARZ ARCADE &amp; CASINO</div>
                   <div style={{ fontSize: '34px', margin: '6px 0' }}>🃏🎡🎰📈🍬🎱</div>
                   <h3 style={{ margin: '0 0 6px', fontSize: '18px', color: '#facc15' }}>
                     READY FOR NEON BINGO &apos;86, COIN DOZER, ROULETTE &amp; ARCADE CABINETS?
                   </h3>
                   <p style={{ margin: '0 0 12px', fontSize: '12.5px', color: '#cbd5e1', lineHeight: 1.5 }}>
                     Dab all 90 classic comedy calls in <strong>🎱 Neon Bingo &apos;86</strong>, drop coins in{' '}
-                    <strong>🪙 Coin Dozer &apos;86</strong>, spin <strong>🎡 Lightning Roulette (150×)</strong>, pull the{' '}
+                    <strong>🎰 Coin Dozer &apos;86</strong>, spin <strong>🎡 Lightning Roulette (150×)</strong>, pull the{' '}
                     <strong>🎰 One-Arm Bandit</strong>, or fire up <strong>🎱 Upgraded 80s Pinball</strong>!
                   </p>
                   <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -1506,7 +1506,7 @@ export default function App() {
                         setViewMode('pusher');
                       }}
                     >
-                      🪙 Coin Dozer &apos;86
+                      🎰 Coin Dozer &apos;86
                     </button>
                     <button
                       type="button"

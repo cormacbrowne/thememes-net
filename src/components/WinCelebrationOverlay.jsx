@@ -6,16 +6,16 @@ import './WinCelebrationOverlay.css';
 const CONFETTI_COLORS = ['#facc15', '#00f3ff', '#ec4899', '#4ade80', '#a855f7', '#fb923c'];
 
 const THEME_EMOJIS = {
-  'gold-fountain': ['🪙', '🏆', '💰', '✨', '💎'],
+  'gold-fountain': ['💰', '🏆', '💵', '✨', '💎'],
   'lightning-surge': ['⚡', '🌩️', '✨', '💥', '🔋'],
   'synth-lasers': ['🌈', '🔥', '✨', '🎛️', '💫'],
   'comic-confetti': ['🎉', '🎊', '💥', '⭐', '🥳'],
   'delorean-88mph': ['🔥', '⚡', '🏎️', '✨', '💨'],
   'disco-strobe': ['🪩', '🌟', '💃', '✨', '🎵'],
-  'ufo-abduction': ['🛸', '👽', '💎', '🪙', '✨', '🏆'],
-  'meteor-vault': ['☄️', '🪙', '💎', '👑', '🔥', '💰'],
+  'ufo-abduction': ['🛸', '👽', '💎', '💰', '✨', '🏆'],
+  'meteor-vault': ['☄️', '💰', '💎', '👑', '🔥', '💵'],
   'hyperdrive-aurora': ['🌌', '⚡', '🏎️', '✨', '💫', '🚀'],
-  'arcade-fireworks': ['🎆', '🎇', '👑', '🏆', '✨', '🪙']
+  'arcade-fireworks': ['🎆', '🎇', '👑', '🏆', '✨', '💰']
 };
 
 const FIREWORK_BURSTS = [

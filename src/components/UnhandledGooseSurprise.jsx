@@ -37,7 +37,7 @@ const INFOMERCIAL_PRODUCTS = [
     icon: '🥓',
     name: 'TACTICAL POCKET BACON™ (MIL-SPEC MK-IV)',
     tagline: 'Aerospace-Grade Emergency Cured Pork in a Kevlar Belt Holster!',
-    price: '$0.00 (OR 3 EASY PAYMENTS OF $0.00!)',
+    price: 'M$0.00 (OR 3 EASY PAYMENTS OF M$0.00!)',
     pitch:
       'Stuck in a boring Zoom meeting? Cornered by a swan? Simply deploy Tactical Pocket Bacon™ at 140 FPS! Approved by 0 out of 10 cardiologists and 10 out of 10 blokes named Gary.',
     review:
@@ -49,7 +49,7 @@ const INFOMERCIAL_PRODUCTS = [
     icon: '🧱',
     name: 'THE EMOTIONAL SUPPORT BRICK 2000™ (PRO MAX)',
     tagline: 'Zero Battery Life! Zero Notifications! Weighs a Reassuring 4.8 Pounds!',
-    price: '$0.00 + FREE GRAVITY!',
+    price: 'M$0.00 + FREE GRAVITY!',
     pitch:
       'Tired of smart devices judging your screen time? The Emotional Support Brick 2000™ sits loyally on your desk, never asks "u up?" at 2:14 AM, and comes with a genuine hologram sticker that says "AI INSIDE".',
     review:
@@ -61,7 +61,7 @@ const INFOMERCIAL_PRODUCTS = [
     icon: '💧',
     name: 'ARTISANAL DEHYDRATED WATER™ (ORGANIC TIN)',
     tagline: '100% Vacuum-Sealed Quantum Emptiness — Just Add Water & Stir!',
-    price: '$0.00 (ULTRA-LIGHTWEIGHT SHIPPING!)',
+    price: 'M$0.00 (ULTRA-LIGHTWEIGHT SHIPPING!)',
     pitch:
       'Why lug heavy wet water around when you can carry 500 gallons of our triple-filtered Dehydrated Water™ in your shirt pocket?! Simply add ordinary tap water and boom: instant wet water!',
     review:
@@ -73,7 +73,7 @@ const INFOMERCIAL_PRODUCTS = [
     icon: '📡',
     name: 'GOLD-PLATED LEFT-HANDED WI-FI CABLES™',
     tagline: ' catch Stray Memes in Mid-Air with 24-Karat Oxygen-Free Invisible Wire!',
-    price: '$0.00 (PRE-TANGLED AT THE FACTORY!)',
+    price: 'M$0.00 (PRE-TANGLED AT THE FACTORY!)',
     pitch:
       'Are your memes loading with right-handed polarity? Our Left-Handed Wi-Fi Cables™ arrive pre-knotted in an impossible 4D Klein bottle tangle so even your cat can’t unplug the router!',
     review:
@@ -426,7 +426,7 @@ export default function UnhandledGooseSurprise({ isOpen, onClose, onOpenMode }) 
                     );
                   }}
                 >
-                  🛒 SMASH TO PANIC-BUY FOR $0.00!
+                  🛒 SMASH TO PANIC-BUY FOR FREE (M$0.00)!
                 </button>
                 <button
                   type="button"
@@ -573,7 +573,7 @@ export default function UnhandledGooseSurprise({ isOpen, onClose, onOpenMode }) 
                       onOpenMode('pusher');
                     }}
                   >
-                    🪙 Take This Lucky Aura to Coin Dozer!
+                    🎰 Take This Lucky Aura to Coin Dozer!
                   </button>
                 )}
               </div>

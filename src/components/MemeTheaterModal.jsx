@@ -319,7 +319,7 @@ export default function MemeTheaterModal({
                   }
                 }}
               >
-                ✏️ Remix this (+35 🪙)
+                ✏️ Remix this (+M$2.50)
               </button>
 
               {onOpenBlankStudio && (

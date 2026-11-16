@@ -376,7 +376,7 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
         rolledOverDollarz > 0
           ? `${formatMoney(rolledOverDollarz, { sign: true })} MemeDollarz!`
           : `+${allowedCentz}¢ ${label || 'MemeCentz'}`;
-      spawnParticles(clientX, clientY, badge, rolledOverDollarz > 0 ? '💵' : '🪙');
+      spawnParticles(clientX, clientY, badge, rolledOverDollarz > 0 ? '💵' : '💰');
       return { awardedCentz: allowedCentz, rolledOverDollarz };
     },
     [spawnParticles]
@@ -389,7 +389,7 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
       xpGain = 15,
       actionKey = null,
       event = null,
-      emoji = '🪙'
+      emoji = '💰'
     }) => {
       const evalRes = evaluateTokenAward({
         ledger: tokenLedger,
@@ -403,7 +403,7 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
           return evalRes;
         }
         if (xpGain > 0) {
-          awardXpOnly(xpGain, event, emoji, `+${xpGain} XP (Daily Token Cap Reached)`);
+          awardXpOnly(xpGain, event, emoji, `+${xpGain} XP (Daily Cap Reached)`);
         }
         return evalRes;
       }
@@ -414,7 +414,7 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
         xpGain,
         event,
         emoji,
-        `+${evalRes.awardedTokens} 🪙 & +${xpGain} XP`
+        `${formatMoney(evalRes.awardedTokens, { sign: true })} & +${xpGain} XP`
       );
       return evalRes;
     },
@@ -501,7 +501,7 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
   const handlePayoutGameTokens = useCallback(
     (
       rawPayout,
-      { stakedTokens = 0, xp: xpGain = 20, label = '', emoji = '🪙', maxMultiplier = 160, skipCelebration = false } = {}
+      { stakedTokens = 0, xp: xpGain = 20, label = '', emoji = '💰', maxMultiplier = 160, skipCelebration = false } = {}
     ) => {
       const verified = validateStakedGamePayout({
         stakedTokens,
@@ -541,8 +541,8 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
       sfx.playJackpot?.();
       const x = event?.clientX || (typeof window !== 'undefined' ? window.innerWidth / 2 : 300);
       const y = event?.clientY || 120;
-      spawnParticles(x, y, `🎁 Starter Pack: +${bonus} 🪙!`, '🎁');
-      setGoblinFortuneToast(`🎁 Starter Pack: +${bonus} 🪙! Play any arcade cabinet or bet in the casino.`);
+      spawnParticles(x, y, `🎁 Starter Pack: ${formatMoney(bonus, { sign: true })}!`, '🎁');
+      setGoblinFortuneToast(`🎁 Starter Pack: ${formatMoney(bonus, { sign: true })}! Play any arcade cabinet or bet in the casino.`);
       setTimeout(() => setGoblinFortuneToast(''), 5500);
       return bonus;
     },
@@ -636,12 +636,12 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
       spawnParticles(
         clientX,
         clientY,
-        `⚡ XP REACTOR: +${evalRes.awardedTokens} 🪙!`,
-        '🪙'
+        `⚡ XP REACTOR: ${formatMoney(evalRes.awardedTokens, { sign: true })}!`,
+        '⚡'
       );
 
       setGoblinFortuneToast(
-        `⚡ XP-TO-TOKEN REACTOR: Converted ${xpConsumed} XP → +${evalRes.awardedTokens} 🪙 Tokens! (Your Lv.${currentRank.level} Rank XP stays intact!)`
+        `⚡ XP-TO-MEMEDOLLARZ REACTOR: Converted ${xpConsumed} XP → ${formatMoney(evalRes.awardedTokens, { sign: true })}! (Your Lv.${currentRank.level} Rank XP stays intact!)`
       );
       setTimeout(() => setGoblinFortuneToast(''), 4800);
 
@@ -712,12 +712,12 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
         gainedXp,
         event,
         emoji,
-        totalAwarded > 0 ? `+${totalAwarded} 🪙 & +${gainedXp} XP!` : `+${gainedXp} XP`
+        totalAwarded > 0 ? `${formatMoney(totalAwarded, { sign: true })} & +${gainedXp} XP!` : `+${gainedXp} XP`
       );
 
       if (totalAwarded > baseTokens) {
         setGoblinFortuneToast(
-          `🌟 FIRST MEME PIONEER BONUS UNLOCKED! +${totalAwarded} 🪙 Tokens added to your Arcade Wallet!`
+          `🌟 FIRST MEME PIONEER BONUS UNLOCKED! ${formatMoney(totalAwarded, { sign: true })} added to your Wallet!`
         );
         setTimeout(() => setGoblinFortuneToast(''), 5500);
       }
@@ -826,12 +826,12 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
           emoji: '👑'
         });
         setGoblinFortuneToast(
-          `🕹️ SECRET KONAMI GOD MODE ACTIVATED! +${res.awardedTokens} 🪙 Tokens, +100 XP & "⚡ GOD MODE: GIGA-CHAD" Title Unlocked!`
+          `🕹️ SECRET KONAMI GOD MODE ACTIVATED! ${formatMoney(res.awardedTokens, { sign: true })}, +100 XP & "⚡ GOD MODE: GIGA-CHAD" Title Unlocked!`
         );
       } else {
         const rem = ARCADE_RATE_LIMITS.KONAMI_COOLDOWN_MS - (now - rateWindows.konamiLastClaim);
         setGoblinFortuneToast(
-          `🎇 GOD MODE FIREWORKS! (24h Konami Token & XP bonus resets in ${formatWindowCountdown(rem)})`
+          `🎇 GOD MODE FIREWORKS! (24h Konami bonus resets in ${formatWindowCountdown(rem)})`
         );
       }
       setTimeout(() => setGoblinFortuneToast(''), 6500);
@@ -841,7 +841,7 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
         const h = window.innerHeight;
         const bursts = [
           { x: w * 0.25, y: h * 0.3, emoji: '👑', label: 'GOD MODE!' },
-          { x: w * 0.75, y: h * 0.3, emoji: '💎', label: canClaimReward ? '+5 🪙!' : 'FIREWORKS!' },
+          { x: w * 0.75, y: h * 0.3, emoji: '💎', label: canClaimReward ? `${formatMoney(ARCADE_ECONOMY_RULES.REWARDS.KONAMI_DAILY.tokens, { sign: true })}!` : 'FIREWORKS!' },
           { x: w * 0.5, y: h * 0.45, emoji: '🚀', label: 'GIGA-CHAD!' }
         ];
         bursts.forEach((b, idx) => {
@@ -901,7 +901,7 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
       if (wasManual) {
         awardXpOnly(20, e, '👾', '+20 XP (Practice Goblin)');
         setGoblinFortuneToast(
-          '👾 PRACTICE GOBLIN CAUGHT! +20 XP! (Natural wild roaming goblins drop +5 🪙 1x/day!)'
+          `👾 PRACTICE GOBLIN CAUGHT! +20 XP! (Wild roaming goblins drop ${formatMoney(ARCADE_ECONOMY_RULES.REWARDS.GOBLIN_CATCH.tokens, { sign: true })} 1x/day!)`
         );
       } else {
         const res = awardFairReward({
@@ -915,8 +915,8 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
         const fortune = MEME_FORTUNES[Math.floor(Math.random() * MEME_FORTUNES.length)];
         setGoblinFortuneToast(
           res.awardedTokens > 0
-            ? `👾 WILD GOLDEN GOBLIN CAUGHT! +${res.awardedTokens} 🪙 & +60 XP! ${fortune}`
-            : `👾 GOBLIN CAUGHT! (+20 XP — Daily Goblin token bonus already claimed today!)`
+            ? `👾 WILD GOLDEN GOBLIN CAUGHT! ${formatMoney(res.awardedTokens, { sign: true })} & +60 XP! ${fortune}`
+            : '👾 GOBLIN CAUGHT! (+20 XP — Daily Goblin bonus already claimed today!)'
         );
       }
     },

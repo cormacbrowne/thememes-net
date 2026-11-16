@@ -81,7 +81,7 @@ export default function InsertCoinIntro({ onComplete }) {
             finish({ playSound: true, startRadio: optInRadio });
           }}
         >
-          <span className="tm-intro-coin" aria-hidden="true">🪙</span>
+          <span className="tm-intro-coin" aria-hidden="true">M$</span>
           <span className="tm-intro-blink">INSERT COIN</span>
           <span className="tm-intro-hint">TAP ANYWHERE TO START</span>
         </button>

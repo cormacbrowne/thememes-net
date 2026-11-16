@@ -600,7 +600,7 @@ export default function SunsetSprintGame({
       title="Sunset Sprint"
       eyebrow="SYNTHWAVE CHECKPOINT RACER • FREE TO PLAY"
       titleBadge={
-        <span className="tm-gs-badge tm-gs-badge-accent">0 TOKENS • STAGE {hud.stage}</span>
+        <span className="tm-gs-badge tm-gs-badge-accent">FREE • STAGE {hud.stage}</span>
       }
       showWallet={false}
       onBack={onBackToFeed}
@@ -623,7 +623,7 @@ export default function SunsetSprintGame({
         'Steer across the glowing highway by dragging your finger left/right on the canvas, tapping the thumb buttons below, using Arrow keys / A-D, or plugging in a gamepad.',
         'Dodge oncoming retro traffic to preserve speed and reach glowing Checkpoints (+18s time bonus + stage bonus points) before the timer hits 0.0s!',
         'Drive through floating 📼 Cassette Tapes to earn +250 bonus points, ignite temporary Nitro boost, and automatically switch your THE MEMES FM radio station.',
-        'Swap between all 4 classic 1980s garage rides above (DeLorean DMC-12, Lagonda, RS Cosworth, Porsche 911). Free to play (0 tokens).'
+        'Swap between all 4 classic 1980s garage rides above (DeLorean DMC-12, Lagonda, RS Cosworth, Porsche 911). Free to play.'
       ]}
     >
       <div className="tm-sunset-stage" data-testid="sunset-sprint-stage">

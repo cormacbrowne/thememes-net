@@ -18,7 +18,7 @@ import {
   isSeedMeme,
   formatMemeUploadDate
 } from '../data/starterMemes';
-import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
+import { ARCADE_ECONOMY_RULES, formatMoney } from '../utils/tokenEconomy';
 import {
   trackUpvote,
   trackRemixOpened,
@@ -1389,7 +1389,7 @@ export function useFeed({
     claimStarterPackIfFirst(event);
     setLiveCelebrationData({
       meme: insertedMeme,
-      rewardSummary: `+${ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens} 🪙 & +${ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.xp} XP`
+      rewardSummary: `${formatMoney(ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens, { sign: true })} & +${ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.xp} XP`
     });
     setSortBy('latest');
     return { status: publishStatus };
@@ -1519,10 +1519,10 @@ export function useFeed({
     setLiveCelebrationData({
       meme: insertedMeme,
       rewardSummary: isBounty
-        ? `⚔️ Caption Battle Entry! +${ARCADE_ECONOMY_RULES.REWARDS.BOUNTY_UPLOAD.tokens} 🪙`
+        ? `⚔️ Caption Battle Entry! ${formatMoney(ARCADE_ECONOMY_RULES.REWARDS.BOUNTY_UPLOAD.tokens, { sign: true })}`
         : parent
-        ? `🧬 Remix Live! +${ARCADE_ECONOMY_RULES.REWARDS.REMIX_MEME.tokens} 🪙`
-        : `+${ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens} 🪙 & +${ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.xp} XP`
+        ? `🧬 Remix Live! ${formatMoney(ARCADE_ECONOMY_RULES.REWARDS.REMIX_MEME.tokens, { sign: true })}`
+        : `${formatMoney(ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens, { sign: true })} & +${ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.xp} XP`
     });
     setSortBy('latest');
     return { status: publishStatus };

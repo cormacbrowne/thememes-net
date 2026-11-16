@@ -438,7 +438,7 @@ export default function VectorVoidGame({
       title="Vector Void"
       eyebrow="TWIN-STICK VECTOR SPACE SHOOTER • FREE TO PLAY"
       titleBadge={
-        <span className="tm-gs-badge tm-gs-badge-accent">0 TOKENS • SECTOR {hud.wave}</span>
+        <span className="tm-gs-badge tm-gs-badge-accent">FREE • SECTOR {hud.wave}</span>
       }
       showWallet={false}
       onBack={onBackToFeed}

@@ -506,7 +506,7 @@ export default function GridRidersGame({
     <GameShell
       title="🏍️ GRID RIDERS"
       eyebrow="Light-Trail Arena · Free Cabinet"
-      titleBadge="0 TOKENS"
+      titleBadge="FREE"
       showWallet={false}
       soundOn={soundOn}
       onToggleSound={onToggleSound}
@@ -530,7 +530,7 @@ export default function GridRidersGame({
         'Steer your neon lightcycle across the 44x44 circuit and force rivals into barriers or solid trails.',
         '1P vs AI: play with WASD, Arrow keys, USB/Bluetooth Gamepad, bottom D-pad, or swipe anywhere on the grid.',
         '2P Local Duel: battle on one keyboard (P1 WASD vs P2 Arrow keys) or place one phone between two players with Player 2 using the rotated top touch D-pad.',
-        'Free to play (0 tokens). Tab switching automatically pauses active rounds.'
+        'Free to play. Tab switching automatically pauses active rounds.'
       ]}
     >
       <div className="tm-riders-wrap" data-testid="grid-riders-cabinet">
@@ -709,7 +709,7 @@ export default function GridRidersGame({
         {renderTouchPad('p1', false)}
 
         <p className="tm-riders-controls-note">
-          0 Tokens Free Cabinet ·{' '}
+          Free Cabinet ·{' '}
           {arenaMode === '2p'
             ? 'P1: WASD / Bottom Pad · P2: Arrows / Rotated Top Pad'
             : 'WASD / Arrows / Gamepad · Swipe Arena or Use D-Pad'}

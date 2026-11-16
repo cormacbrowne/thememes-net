@@ -436,7 +436,7 @@ export default function BrickBlasterGame({
       title="Brick Blaster"
       eyebrow="PIXEL PATTERN BREAKER • FREE TO PLAY"
       titleBadge={
-        <span className="tm-gs-badge tm-gs-badge-accent">0 TOKENS • LVL {hud.level}</span>
+        <span className="tm-gs-badge tm-gs-badge-accent">FREE • LVL {hud.level}</span>
       }
       showWallet={false}
       onBack={onBackToFeed}

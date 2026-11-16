@@ -438,7 +438,7 @@ export default function NeonSerpentGame({
       title="Neon Serpent"
       eyebrow="SYNTHWAVE REACTION SNAKE • FREE TO PLAY"
       titleBadge={
-        <span className="tm-gs-badge tm-gs-badge-accent">0 TOKENS • LEN {hud.length}</span>
+        <span className="tm-gs-badge tm-gs-badge-accent">FREE • LEN {hud.length}</span>
       }
       showWallet={false}
       onBack={onBackToFeed}

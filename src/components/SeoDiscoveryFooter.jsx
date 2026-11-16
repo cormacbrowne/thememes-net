@@ -165,7 +165,7 @@ export default function SeoDiscoveryFooter({
                 className="tm-seo-link"
                 onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('pusher'))}
               >
-                🪙 Neon Coin Dozer &apos;86 (Coin Pusher Online Free)
+                🎰 Neon Coin Dozer &apos;86 (Coin Pusher Online Free)
               </a>
               <a
                 href="/games/meme-invaders"

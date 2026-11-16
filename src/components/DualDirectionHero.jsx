@@ -15,7 +15,7 @@ const ARCADE_EXPLORE_PILLS = [
   { id: 'bingo', label: "🎱 Bingo '86" },
   { id: 'slots', label: '🎰 Slots' },
   { id: 'pinball', label: '🛸 Pinball' },
-  { id: 'pusher', label: '🪙 Coin Dozer' },
+  { id: 'pusher', label: '🎰 Coin Dozer' },
   { id: 'blackjack', label: '🃏 Blackjack' },
   { id: 'poker', label: '🤠 Poker' },
   { id: 'roulette', label: '🎡 Roulette' },

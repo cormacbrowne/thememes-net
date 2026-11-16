@@ -3,16 +3,16 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { LEGAL_PAGES, LEGAL_ROUTE_PATHS, LEGAL_DRAFT_BANNER } from '../../src/data/legalPages.js';
+import { LEGAL_PAGES, LEGAL_ROUTE_PATHS, LEGAL_LAST_UPDATED } from '../../src/data/legalPages.js';
 import { extractStorageObjectPath, collectUserStoragePaths } from '../../supabase/functions/_shared/accountCleanup.js';
 import { getSecurityAuditReport } from '../../src/utils/securityGuard.js';
 import { submitTakedownRequest, deleteMyAccountAndMemes } from '../../src/utils/serverWrites.js';
 
-test('33.11: all five legal/safety pages exist with DRAFT banner', () => {
+test('33.11: all five legal/safety pages exist, signed off (no draft labels)', () => {
   assert.deepEqual(LEGAL_ROUTE_PATHS, ['/rules', '/terms', '/privacy', '/takedown', '/contact']);
   for (const p of LEGAL_ROUTE_PATHS) {
-    assert.equal(LEGAL_PAGES[p].badge, LEGAL_DRAFT_BANNER);
-    assert.match(LEGAL_PAGES[p].badge, /DRAFT\s*[–-]\s*owner to review/i);
+    assert.equal(LEGAL_PAGES[p].badge, LEGAL_LAST_UPDATED);
+    assert.doesNotMatch(JSON.stringify(LEGAL_PAGES[p]), /draft|placeholder|owner to (review|update)/i);
   }
 });
 

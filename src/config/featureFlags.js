@@ -6,17 +6,18 @@
 /**
  * Public meme uploads (Quick Upload "Post to Feed" and Meme Forge "Publish").
  *
- * false = PAUSED (current default). Nothing is uploaded to Supabase Storage or inserted
- *         into the `memes` table. People can still make, download and share memes
- *         from their own device; voting, comments, games and the feed keep working.
- * true  = uploads ON. Only turn this back on once Phase 33 tasks 33.1–33.3
- *         (lock-down, server-side publish pipeline, image moderation) are live.
+ * true  = uploads ON (switched on by the owner on 16 Nov 2026, after Phase 33 P0 went live:
+ *         server-side publish pipeline, image + text moderation, reports and a moderator account).
+ * false = PAUSED. Nothing is uploaded to Supabase Storage or inserted into the `memes` table.
+ *         People can still make, download and share memes from their own device; voting,
+ *         comments, games and the feed keep working. This is the emergency off-switch:
+ *         set it to false, commit and deploy.
  */
-export const PUBLIC_UPLOADS_ENABLED = false;
+export const PUBLIC_UPLOADS_ENABLED = true;
 
 /** Friendly message shown when someone tries to post while uploads are paused. */
 export const UPLOADS_PAUSED_MESSAGE =
-  '⏸️ Uploads are paused while we add safety checks — you can still make and download memes.';
+  '⏸️ Uploads are paused for now — you can still make and download memes.';
 
 /** Error code thrown by the publish pipeline when uploads are paused. */
 export const UPLOADS_PAUSED_ERROR = 'UPLOADS_PAUSED';

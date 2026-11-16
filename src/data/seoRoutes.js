@@ -758,92 +758,92 @@ export const SEO_ROUTES = [
   },
   {
     path: '/rules',
-    title: 'House Rules — Keep It Funny & Safe (Draft) | THE MEMES.net',
+    title: 'House Rules — Keep It Funny & Safe | THE MEMES.net',
     description:
-      'DRAFT – owner to review. Community House Rules for posting memes, GIFs, and comments on THE MEMES.net: what is welcome, what gets removed, and how strikes work.',
-    h1: 'THE MEMES.net House Rules (DRAFT – owner to review)',
-    kicker: 'Safety & Community Guidelines // DRAFT – owner to review',
+      'Community House Rules for posting memes, GIFs, and comments on THE MEMES.net: what is welcome, what gets removed, and how strikes work.',
+    h1: 'THE MEMES.net House Rules',
+    kicker: 'Safety & Community Guidelines',
     changefreq: 'monthly',
     priority: '0.6',
     viewMode: 'feed',
     category: 'all',
     ogImage: 'https://www.thememes.net/og-card.png',
     introParagraphs: [
-      'DRAFT – owner to review. Welcome to the THE MEMES.net House Rules page, written to keep the feed funny, lawful, and welcoming for everyone visiting the arcade. Original jokes, wholesome roasts, relatable work humor, coding memes, gaming clips converted into short GIFs under eight megabytes and ten seconds, and collaborative remix chains are always encouraged here.',
+      'Welcome to the THE MEMES.net House Rules page, written to keep the feed funny, lawful, and welcoming for everyone visiting the arcade. Original jokes, wholesome roasts, relatable work humor, coding memes, gaming clips converted into short GIFs under eight megabytes and ten seconds, and collaborative remix chains are always encouraged here.',
       'To protect visitors and comply with online safety laws, certain uploads are removed on sight. Zero tolerance applies to anything exploiting or sexualising minors, which results in immediate removal and permanent account suspension. Nudity, sexually explicit imagery, gore, graphic violence, self-harm encouragement, hate speech, personal phone numbers, home addresses, private photos shared without consent, spam links, and impersonation of staff are also strictly banned.',
       'Automated image and text screening checks every upload and comment before it goes live, and community reports hide borderline posts rapidly for human review. First violations bring a warning and removal, a second strike pauses posting for seven days, and a third strike permanently suspends the account. Please read these rules carefully before publishing.'
     ]
   },
   {
     path: '/terms',
-    title: 'Terms of Use (Draft) | THE MEMES.net',
+    title: 'Terms of Use | THE MEMES.net',
     description:
-      'DRAFT – owner to review. Terms of Use for creating memes, browsing community feeds, and playing free arcade games on THE MEMES.net.',
-    h1: 'Terms of Use (DRAFT – owner to review)',
-    kicker: 'Legal Terms & Pretend Arcade Tokens // DRAFT – owner to review',
+      'Terms of Use for creating memes, browsing community feeds, and playing free arcade games on THE MEMES.net.',
+    h1: 'Terms of Use',
+    kicker: 'Legal Terms & Pretend Arcade Tokens',
     changefreq: 'monthly',
     priority: '0.5',
     viewMode: 'feed',
     category: 'all',
     ogImage: 'https://www.thememes.net/og-card.png',
     introParagraphs: [
-      'DRAFT – owner to review. These Terms of Use explain the basic rules for visiting THE MEMES.net, creating and remixing memes, posting comments, and playing the retro browser arcade cabinets. By using the site, you confirm that you meet the minimum age required in your region and agree to follow the community House Rules across every upload, remix, username, and comment.',
+      'These Terms of Use explain the basic rules for visiting THE MEMES.net, creating and remixing memes, posting comments, and playing the retro browser arcade cabinets. By using the site, you confirm that you meet the minimum age required in your region and agree to follow the community House Rules across every upload, remix, username, and comment.',
       'Every arcade cabinet and mini-game on THE MEMES.net runs strictly on free pretend tokens called MemeDollarz and MemeCentz. These tokens are purely for fun, cannot be bought with real money, cannot be sold or transferred between users, and can never be cashed out for anything of monetary value under any circumstances.',
       'You stay responsible for the memes and captions you choose to upload and must only post content you created yourself or have clear permission to share. Uploading grants THE MEMES.net permission to re-encode, strip metadata, host, display, and enable community caption remixes, while moderators may remove posts or suspend accounts when needed for safety or copyright compliance.'
     ]
   },
   {
     path: '/privacy',
-    title: 'Privacy Policy & Data Deletion (Draft) | THE MEMES.net',
+    title: 'Privacy Policy & Data Deletion | THE MEMES.net',
     description:
-      'DRAFT – owner to review. What data THE MEMES.net stores, privacy-friendly analytics, localStorage preferences, and how to delete your account and memes.',
-    h1: 'Privacy Policy & Your Data (DRAFT – owner to review)',
-    kicker: 'Data Transparency & Account Deletion // DRAFT – owner to review',
+      'What data THE MEMES.net stores, privacy-friendly analytics, localStorage preferences, and how to delete your account and memes.',
+    h1: 'Privacy Policy & Your Data',
+    kicker: 'Data Transparency & Account Deletion',
     changefreq: 'monthly',
     priority: '0.5',
     viewMode: 'feed',
     category: 'all',
     ogImage: 'https://www.thememes.net/og-card.png',
     introParagraphs: [
-      'DRAFT – owner to review. This Privacy Policy describes what limited information THE MEMES.net collects when you browse memes, upload images or GIFs, sign in, or play retro games. If you create an account using Magic Link email or supported OAuth sign-in, Supabase Auth stores your account identifier and chosen handle, while first-time interactions may create an anonymous session ID to track votes and prevent abuse.',
+      'This Privacy Policy describes what limited information THE MEMES.net collects when you browse memes, upload images or GIFs, sign in, or play retro games. If you create an account using Magic Link email or supported OAuth sign-in, Supabase Auth stores your account identifier and chosen handle, while first-time interactions may create an anonymous session ID to track votes and prevent abuse.',
       'On your own browser, localStorage remembers sound volume, CRT shader toggles, muted categories, saved bookmarks, and pretend arcade token balances without tracking you across unrelated websites. Uploaded images and GIFs are re-encoded on our server to strip EXIF camera location tags before public storage, while temporary rate-limit checks store one-way hashed IP values briefly to block automated spam.',
       'We use lightweight aggregate page analytics through Vercel Analytics alongside Cloudflare Turnstile bot protection when signing uploads or comments, and we never sell personal data to third parties. Signed-in users can permanently remove their account, memes, comments, and uploaded files anytime via the Delete my account and memes button inside Settings or through the takedown page.'
     ]
   },
   {
     path: '/takedown',
-    title: 'Copyright & Photo Takedown Form (Draft) | THE MEMES.net',
+    title: 'Copyright & Photo Takedown Form | THE MEMES.net',
     description:
-      'DRAFT – owner to review. Request fast removal of copyrighted artwork or a photo of yourself on THE MEMES.net through our high-priority takedown form.',
-    h1: 'Copyright & Privacy Takedown (DRAFT – owner to review)',
-    kicker: 'High-Priority Removal Queue // DRAFT – owner to review',
+      'Request fast removal of copyrighted artwork or a photo of yourself on THE MEMES.net through our high-priority takedown form.',
+    h1: 'Copyright & Privacy Takedown',
+    kicker: 'High-Priority Removal Queue',
     changefreq: 'monthly',
     priority: '0.55',
     viewMode: 'feed',
     category: 'all',
     ogImage: 'https://www.thememes.net/og-card.png',
     introParagraphs: [
-      'DRAFT – owner to review. Use the THE MEMES.net Takedown Request page whenever you need an upload removed promptly for copyright infringement, unauthorized reuse of original artwork, doxxing, private contact information exposure, or because an image shows a photo of you shared without permission. Every submission creates a high-priority report directly in our server moderation database.',
+      'Use the THE MEMES.net Takedown Request page whenever you need an upload removed promptly for copyright infringement, unauthorized reuse of original artwork, doxxing, private contact information exposure, or because an image shows a photo of you shared without permission. Every submission creates a high-priority report directly in our server moderation database.',
       'To help moderators locate and act on the right post immediately, please paste the direct meme link or unique post identifier along with whether the notice involves copyright ownership, a personal photo of yourself, or privacy exposure, plus a brief explanation and an optional contact email if you want confirmation once the review is finished.',
-      'Valid notices referencing an existing meme post automatically create an escalated report entry and log the request inside the moderation audit trail so reviewers see it at the top of the queue alongside severe safety flags. For urgent follow-up inquiries or general legal correspondence, you can also check our drafted Contact page.'
+      'Valid notices referencing an existing meme post automatically create an escalated report entry and log the request inside the moderation audit trail so reviewers see it at the top of the queue alongside severe safety flags. For urgent follow-up inquiries or general legal correspondence, you can also check our Contact page.'
     ]
   },
   {
     path: '/contact',
-    title: 'Contact & Safety Desk (Draft) | THE MEMES.net',
+    title: 'Contact & Safety Desk | THE MEMES.net',
     description:
-      'DRAFT – owner to review. Contact details and safety escalation routes for THE MEMES.net moderators and site maintainers.',
-    h1: 'Contact & Safety Desk (DRAFT – owner to review)',
-    kicker: 'Maintainer & Safety Inquiries // DRAFT – owner to review',
+      'Contact details and safety escalation routes for THE MEMES.net moderators and site maintainers.',
+    h1: 'Contact & Safety Desk',
+    kicker: 'Maintainer & Safety Inquiries',
     changefreq: 'monthly',
     priority: '0.5',
     viewMode: 'feed',
     category: 'all',
     ogImage: 'https://www.thememes.net/og-card.png',
     introParagraphs: [
-      'DRAFT – owner to review. Welcome to the THE MEMES.net Contact and Safety Desk page, which directs visitors to the fastest channel for content removals, privacy questions, bug reports, and site maintenance feedback. Because THE MEMES.net is built as a lightweight community meme platform and browser arcade, automated triage keeps response times fast without unnecessary forms.',
-      'If your message is about removing an image, GIF, or comment for copyright reasons, harassment, personal contact details, or a photo of you posted without permission, please submit it directly on our Takedown page rather than sending a plain email, as takedown notices write straight into the high-priority moderator queue with tracking IDs.',
-      'For owner review, press inquiries, partnership questions, accessibility feedback, or reproducible software bug reports affecting mobile Safari or desktop browsers, please use the site maintainer contact address published once signed off alongside a link to the page route or shared meme identifier where the problem appeared.'
+      'Welcome to the THE MEMES.net Contact and Safety Desk page, which directs visitors to the fastest channel for content removals, privacy questions, bug reports, and site maintenance feedback. Because THE MEMES.net is built as a lightweight community meme platform and browser arcade, automated triage keeps response times fast without unnecessary forms.',
+      'If your message is about removing an image, GIF, or comment for copyright reasons, harassment, personal contact details, or a photo of you posted without permission, please submit it directly on our Takedown page as takedown notices write straight into the high-priority moderator queue with tracking IDs.',
+      'For owner review, press inquiries, partnership questions, accessibility feedback, or reproducible software bug reports affecting mobile Safari or desktop browsers, please use the same Takedown form (choose "Other") and include a link to the page route or shared meme identifier where the problem appeared. There is no public email address, so every message reaches the same moderator queue and nothing gets lost in an inbox.'
     ]
   },
   {

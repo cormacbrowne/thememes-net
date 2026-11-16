@@ -1,13 +1,13 @@
-// Phase 33 task 33.11: Drafted legal, safety, takedown, and contact pages.
-// Marked "DRAFT – owner to review" until the site owner finalizes copy & legal review.
+// Phase 33 task 33.11: legal, safety, takedown, and contact pages.
+// Owner signed these off for publication on 16 Nov 2026 (draft labels removed).
 
-export const LEGAL_DRAFT_BANNER = 'DRAFT – owner to review before legal/public sign-off';
+export const LEGAL_LAST_UPDATED = 'Last updated 16 November 2026';
 
 export const LEGAL_PAGES = {
   '/rules': {
     path: '/rules',
     navLabel: '📜 House Rules',
-    badge: LEGAL_DRAFT_BANNER,
+    badge: LEGAL_LAST_UPDATED,
     title: 'House Rules — Keep It Funny, Keep It Legal | THE MEMES.net',
     h1: 'THE MEMES.net House Rules',
     subtitle: 'Short, honest, and easy to follow so the arcade stays open for everyone.',
@@ -17,7 +17,8 @@ export const LEGAL_PAGES = {
         bullets: [
           'Original jokes, wholesome roasts, coding & gaming memes, GIFs, and spicy remix chains.',
           'Public-domain reaction formats and commentary that punch up or poke fun at everyday life.',
-          'Friendly banter in comments that stays playful instead of personal.'
+          'Friendly banter in comments that stays playful instead of personal.',
+          'THE MEMES.net is for people aged 13 and over, and everything posted is kept teen-safe.'
         ]
       },
       {
@@ -42,15 +43,15 @@ export const LEGAL_PAGES = {
   '/terms': {
     path: '/terms',
     navLabel: '⚖️ Terms',
-    badge: LEGAL_DRAFT_BANNER,
-    title: 'Terms of Use (Draft) | THE MEMES.net',
+    badge: LEGAL_LAST_UPDATED,
+    title: 'Terms of Use | THE MEMES.net',
     h1: 'Terms of Use',
     subtitle: 'Plain-English rules for browsing, creating memes, and playing arcade cabinets.',
     sections: [
       {
         heading: '1. Using THE MEMES.net',
         bullets: [
-          'By creating memes, commenting, or playing here, you confirm you are old enough under local law to use social sites and will follow the House Rules.',
+          'By creating memes, commenting, or playing here, you confirm you are at least 13 years old (or older if the law where you live requires it) and will follow the House Rules.',
           'All arcade cabinets run on pretend tokens (MemeDollarz M$ and MemeCentz ¢) that are 100% free, just for fun, and cannot be bought, sold, or cashed out.'
         ]
       },
@@ -65,7 +66,7 @@ export const LEGAL_PAGES = {
       {
         heading: '3. Takedowns & Disputes',
         bullets: [
-          'Believe something infringes your copyright or invades your privacy? Submit a high-priority notice on /takedown or reach us via /contact.'
+          'Believe something infringes your copyright or invades your privacy? Submit a high-priority notice on /takedown or see /contact for other questions.'
         ]
       }
     ]
@@ -73,8 +74,8 @@ export const LEGAL_PAGES = {
   '/privacy': {
     path: '/privacy',
     navLabel: '🔐 Privacy',
-    badge: LEGAL_DRAFT_BANNER,
-    title: 'Privacy Policy (Draft) | THE MEMES.net',
+    badge: LEGAL_LAST_UPDATED,
+    title: 'Privacy Policy | THE MEMES.net',
     h1: 'Privacy Policy & Data Controls',
     subtitle: 'What we store, why we store it, and how to delete everything in one place.',
     sections: [
@@ -83,13 +84,14 @@ export const LEGAL_PAGES = {
         bullets: [
           'Account data: if you sign in via Magic Link or OAuth, Supabase stores your email/provider ID and chosen handle. First-time commenters/voters may use an anonymous Supabase session ID.',
           'Browser localStorage: saves pretend arcade tokens, CRT/sound settings, muted categories, and bookmarked memes locally on your device.',
-          'Abuse & rate-limit logs: uploads and reports record hashed IPs briefly for spam prevention and strip EXIF/GPS metadata from every uploaded image/GIF.'
+          'Abuse & rate-limit logs: uploads and reports record hashed IPs briefly for spam prevention and strip EXIF/GPS metadata from every uploaded image/GIF.',
+          'Automated safety checks: every uploaded image/GIF and the text of titles, captions, comments and usernames is sent to the OpenAI moderation service to be checked against the House Rules before it can appear. We do not send your email address or account details with it.'
         ]
       },
       {
         heading: '📊 Analytics & Anti-Bot Protection',
         bullets: [
-          'We use privacy-friendly Vercel Analytics for aggregate page views and Cloudflare Turnstile on signup/upload checks to stop automated bots.',
+          'We use privacy-friendly Vercel Analytics for aggregate page views, and may use Cloudflare Turnstile on upload and comment checks to stop automated bots.',
           'We do not sell your personal information or run third-party ad tracking profiles.'
         ]
       },
@@ -105,8 +107,8 @@ export const LEGAL_PAGES = {
   '/takedown': {
     path: '/takedown',
     navLabel: '🚩 Takedown',
-    badge: LEGAL_DRAFT_BANNER,
-    title: 'Copyright & Privacy Takedown Request (Draft) | THE MEMES.net',
+    badge: LEGAL_LAST_UPDATED,
+    title: 'Copyright & Privacy Takedown Request | THE MEMES.net',
     h1: 'Copyright & "Picture of Me" Takedown',
     subtitle: 'Creates an immediate high-priority review item for moderators.',
     sections: [
@@ -122,8 +124,8 @@ export const LEGAL_PAGES = {
   '/contact': {
     path: '/contact',
     navLabel: '✉️ Contact',
-    badge: LEGAL_DRAFT_BANNER,
-    title: 'Contact THE MEMES.net (Draft) | THE MEMES.net',
+    badge: LEGAL_LAST_UPDATED,
+    title: 'Contact THE MEMES.net | THE MEMES.net',
     h1: 'Contact & Safety Desk',
     subtitle: 'Where to reach the site maintainer for safety, press, or legal inquiries.',
     sections: [
@@ -131,8 +133,8 @@ export const LEGAL_PAGES = {
         heading: '📬 Reaching The Owner',
         bullets: [
           'Safety, copyright, or privacy removals: submit directly on /takedown so your request logs straight into the moderation queue with priority 95.',
-          'Owner email placeholder (DRAFT – owner to update before launch): safety@thememes.net',
-          'For bug reports or feature ideas, include the meme URL (/m/...) or route path where you noticed the issue.'
+          'There is no public email address: the /takedown form is the way to reach the site owner and moderators, and it accepts any kind of request (choose "Other").',
+          'For bug reports or feature ideas, use the same form and include the meme URL (/m/...) or route path where you noticed the issue.'
         ]
       }
     ]

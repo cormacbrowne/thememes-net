@@ -1732,7 +1732,7 @@ test.describe('Phase 33.11 Legal, Takedowns & Settings Account Deletion', () => 
 
       for (const route of ['/rules', '/terms', '/privacy', '/contact', '/takedown']) {
         await page.goto(route, { waitUntil: 'domcontentloaded' });
-        await expect(page.locator('.tm-legal-draft')).toContainText('DRAFT – owner to review');
+        await expect(page.locator('.tm-legal-draft')).toContainText('Last updated');
         await expect(page.locator('.tm-legal-card h1')).toBeVisible();
         const overflow = await page.evaluate(
           () => document.documentElement.scrollWidth - window.innerWidth

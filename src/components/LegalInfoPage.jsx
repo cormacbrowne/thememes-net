@@ -52,7 +52,7 @@ export default function LegalInfoPage({ pathname }) {
             ← Back to Memes &amp; Arcade
           </a>
           <span className="tm-legal-draft" role="note">
-            📝 {page.badge}
+            🗓️ {page.badge}
           </span>
         </header>
 

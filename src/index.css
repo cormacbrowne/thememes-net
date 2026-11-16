@@ -1,12 +1,5 @@
 @import "tailwindcss";
-
-:root {
-  --tm-neon-pink: #ff2a85;
-  --tm-neon-cyan: #00f3ff;
-  --tm-neon-gold: #facc15;
-  --tm-neon-purple: #a855f7;
-  --tm-neon-green: #00ff88;
-}
+@import "./styles/tokens.css";
 
 * {
   box-sizing: border-box;
@@ -14,8 +7,9 @@
 
 body {
   margin: 0;
-  background-color: #050510;
-  color: #f8fafc;
+  background-color: var(--tm-night-0);
+  color: var(--tm-text);
+  font-family: var(--tm-font-body);
 }
 
 /* ==========================================

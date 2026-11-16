@@ -1,0 +1,110 @@
+/* ==========================================================================
+   Phase 35.2a / 34.1 — Design Tokens
+   Breakpoints (cannot be used inside @media, documented here for all CSS):
+     - Compact phone:    @media (max-width: 480px)
+     - Phone & tablet:   @media (max-width: 860px)
+     - Desktop:          @media (min-width: 861px)
+     - Wide desktop:     @media (min-width: 1181px)
+   ========================================================================== */
+
+:root {
+  /* Palette: 4 darks, 3 signal tubes (gas / hot / off), 1 ambient UV, 2 text, 2 status */
+  --tm-night-0: #07060f;
+  --tm-night-1: #110d22;
+  --tm-night-2: #1b1536;
+  --tm-night-3: #2c2452;
+
+  --tm-pink: #ff2e88;
+  --tm-pink-hot: #ffd9ea;
+  --tm-pink-off: #3d1028;
+
+  --tm-cyan: #19f0ff;
+  --tm-cyan-hot: #e2fdff;
+  --tm-cyan-off: #0b3440;
+
+  --tm-amber: #ffb800;
+  --tm-amber-hot: #fff1c9;
+  --tm-amber-off: #3d2c05;
+
+  --tm-uv: #8a3dff;
+
+  --tm-text: #f4f1ff;
+  --tm-text-dim: #a59fc4;
+  --tm-text-mute: #7c759e;
+
+  --tm-ok: #3dff9a;
+  --tm-danger: #ff4d5e;
+
+  /* Surface & role aliases */
+  --tm-bg: var(--tm-night-0);
+  --tm-surface-1: var(--tm-night-1);
+  --tm-surface-2: var(--tm-night-2);
+  --tm-border: var(--tm-night-3);
+
+  /* Legacy 5 neon aliases (re-tinted to Phase 35 palette) */
+  --tm-neon-pink: var(--tm-pink);
+  --tm-neon-cyan: var(--tm-cyan);
+  --tm-neon-gold: var(--tm-amber);
+  --tm-neon-purple: var(--tm-uv);
+  --tm-neon-green: var(--tm-ok);
+
+  /* Type families & 8-step scale */
+  --tm-font-display: 'Audiowide', system-ui, -apple-system, sans-serif;
+  --tm-font-arcade: 'Press Start 2P', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --tm-font-body: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --tm-text-xs: 11px;
+  --tm-text-sm: 12px;
+  --tm-text-base: 14px;
+  --tm-text-md: 16px;
+  --tm-text-lg: 18px;
+  --tm-text-xl: 22px;
+  --tm-text-2xl: 28px;
+  --tm-text-3xl: 40px;
+
+  /* Spacing (4px grid) */
+  --tm-space-1: 4px;
+  --tm-space-2: 8px;
+  --tm-space-3: 12px;
+  --tm-space-4: 16px;
+  --tm-space-6: 24px;
+  --tm-space-8: 32px;
+  --tm-space-12: 48px;
+
+  /* Radii */
+  --tm-radius-chip: 6px;
+  --tm-radius-btn: 10px;
+  --tm-radius-card: 16px;
+  --tm-radius-sheet: 24px;
+  --tm-radius-pill: 999px;
+
+  /* Shadows & glows */
+  --tm-shadow-1: 0 2px 8px rgba(7, 6, 15, 0.45);
+  --tm-shadow-2: 0 8px 24px rgba(7, 6, 15, 0.65);
+  --tm-shadow-3: 0 18px 48px rgba(7, 6, 15, 0.85);
+  --tm-glow-pink: 0 0 14px -2px var(--tm-pink);
+  --tm-glow-cyan: 0 0 14px -2px var(--tm-cyan);
+
+  /* Motion */
+  --tm-dur-fast: 120ms;
+  --tm-dur: 200ms;
+  --tm-dur-slow: 400ms;
+  --tm-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --tm-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Layers */
+  --tm-z-base: 1;
+  --tm-z-sticky: 100;
+  --tm-z-dock: 200;
+  --tm-z-overlay: 300;
+  --tm-z-sheet: 400;
+  --tm-z-modal: 500;
+  --tm-z-toast: 600;
+  --tm-z-boss: 700;
+
+  /* Layout */
+  --tm-nav-h: 56px;
+  --tm-dock-h: 64px;
+  --tm-safe-top: env(safe-area-inset-top, 0px);
+  --tm-safe-bottom: env(safe-area-inset-bottom, 0px);
+}

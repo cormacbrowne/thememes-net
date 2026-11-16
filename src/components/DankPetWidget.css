@@ -5,8 +5,8 @@
   left: 18px;
   z-index: 940;
   background: linear-gradient(135deg, rgba(14, 18, 36, 0.95), rgba(38, 14, 52, 0.95));
-  border: 2px solid #00f3ff;
-  color: #f8fafc;
+  border: 2px solid var(--tm-cyan);
+  color: var(--tm-text);
   padding: 8px 14px;
   border-radius: 999px;
   display: inline-flex;
@@ -15,13 +15,13 @@
   font-size: 12px;
   font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 18px rgba(0, 243, 255, 0.35);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 18px rgba(25, 240, 255, 0.35);
   transition: transform 0.16s ease, border-color 0.16s ease;
 }
 
 .tm-dank-pet-launcher:hover {
   transform: translateY(-2px) scale(1.05);
-  border-color: #facc15;
+  border-color: var(--tm-amber);
 }
 
 .tm-dank-pet-launcher-emoji {
@@ -35,10 +35,10 @@
   z-index: 945;
   width: 248px;
   background: linear-gradient(160deg, rgba(10, 13, 28, 0.97), rgba(26, 11, 46, 0.97));
-  border: 2px solid #00f3ff;
+  border: 2px solid var(--tm-cyan);
   border-radius: 18px;
   padding: 12px;
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.8), 0 0 24px rgba(0, 243, 255, 0.3);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.8), 0 0 24px rgba(25, 240, 255, 0.3);
 }
 
 .tm-dank-pet-header {
@@ -51,13 +51,13 @@
 .tm-dank-pet-badge {
   font-size: 10px;
   font-weight: 900;
-  color: #facc15;
+  color: var(--tm-amber);
   text-transform: uppercase;
   letter-spacing: 0.6px;
 }
 
 .tm-dank-pet-close {
-  background: linear-gradient(135deg, rgba(255, 42, 133, 0.3), rgba(15, 23, 42, 0.9));
+  background: linear-gradient(135deg, rgba(255, 46, 136, 0.3), rgba(17, 13, 34, 0.9));
   border: 1.5px solid rgba(255, 77, 166, 0.85);
   color: #ffffff;
   border-radius: 10px;
@@ -119,7 +119,7 @@
 .tm-dank-pet-speech {
   font-size: 11px;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--tm-text);
   margin-top: 6px;
   line-height: 1.35;
 }
@@ -129,7 +129,7 @@
   justify-content: space-between;
   font-size: 10px;
   font-weight: 800;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
   margin: 8px 0;
 }
 
@@ -140,9 +140,9 @@
 }
 
 .tm-dank-pet-btn {
-  background: rgba(0, 243, 255, 0.12);
-  border: 1px solid rgba(0, 243, 255, 0.35);
-  color: #f8fafc;
+  background: rgba(25, 240, 255, 0.12);
+  border: 1px solid rgba(25, 240, 255, 0.35);
+  color: var(--tm-text);
   border-radius: 8px;
   padding: 6px 4px;
   font-size: 11px;
@@ -152,9 +152,9 @@
 }
 
 .tm-dank-pet-btn:hover {
-  background: rgba(250, 204, 21, 0.22);
-  border-color: #facc15;
-  color: #facc15;
+  background: rgba(255, 184, 0, 0.22);
+  border-color: var(--tm-amber);
+  color: var(--tm-amber);
 }
 
 
@@ -202,9 +202,9 @@
   justify-content: center;
   padding: 6px 5px;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.88);
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  color: #cbd5e1;
+  background: rgba(17, 13, 34, 0.88);
+  border: 1px solid rgba(165, 159, 196, 0.35);
+  color: var(--tm-text-soft);
   font-size: 13px;
   user-select: none;
   touch-action: none;
@@ -212,12 +212,12 @@
 }
 
 .tm-donotpress-dock.is-dragging {
-  filter: drop-shadow(0 0 12px rgba(0, 243, 255, 0.6));
+  filter: drop-shadow(0 0 12px rgba(25, 240, 255, 0.6));
 }
 
 .tm-donotpress-btn {
-  background: linear-gradient(145deg, #ef4444, #b91c1c);
-  border: 2.5px solid #fde047;
+  background: linear-gradient(145deg, var(--tm-danger), #b91c1c);
+  border: 2.5px solid var(--tm-amber);
   color: #ffffff;
   padding: 9px 15px;
   border-radius: 999px;
@@ -234,7 +234,7 @@
 
 .tm-donotpress-btn:hover {
   transform: translateY(-2px) scale(1.06);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.85), 0 0 28px #facc15;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.85), 0 0 28px var(--tm-amber);
 }
 
 .tm-donotpress-btn:active {
@@ -249,9 +249,9 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: rgba(15, 23, 42, 0.9);
+  background: rgba(17, 13, 34, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.25);
-  color: #94a3b8;
+  color: var(--tm-text-dim);
   font-size: 11px;
   font-weight: 900;
   cursor: pointer;
@@ -274,25 +274,25 @@
   width: 100%;
   max-width: 370px;
   background: linear-gradient(155deg, rgba(14, 18, 38, 0.98), rgba(38, 12, 52, 0.98));
-  border: 2.5px solid #facc15;
+  border: 2.5px solid var(--tm-amber);
   border-radius: 22px;
   padding: 20px;
   text-align: center;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 36px rgba(250, 204, 21, 0.35);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 36px rgba(255, 184, 0, 0.35);
 }
 
 .tm-chaos-event-tag {
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.7px;
-  color: #00f3ff;
+  color: var(--tm-cyan);
   text-transform: uppercase;
 }
 
 .tm-chaos-target-btn {
   width: 100%;
-  background: radial-gradient(circle, rgba(250, 204, 21, 0.2), rgba(15, 23, 42, 0.9));
-  border: 2px dashed rgba(250, 204, 21, 0.65);
+  background: radial-gradient(circle, rgba(255, 184, 0, 0.2), rgba(17, 13, 34, 0.9));
+  border: 2px dashed rgba(255, 184, 0, 0.65);
   border-radius: 18px;
   padding: 16px 12px;
   cursor: pointer;
@@ -301,12 +301,12 @@
 
 .tm-chaos-target-btn:hover:not(:disabled) {
   transform: scale(1.04);
-  border-color: #00f3ff;
+  border-color: var(--tm-cyan);
 }
 
 .tm-chaos-target-btn.hit {
   transform: scale(0.9) rotate(-6deg);
-  border-color: #ef4444;
+  border-color: var(--tm-danger);
 }
 
 .tm-chaos-target-cta {
@@ -314,7 +314,7 @@
   margin-top: 8px;
   font-size: 12px;
   font-weight: 900;
-  color: #facc15;
+  color: var(--tm-amber);
   background: rgba(5, 7, 15, 0.8);
   padding: 4px 12px;
   border-radius: 999px;
@@ -322,7 +322,7 @@
 
 @keyframes tmPoliceStrobe {
   0%, 100% {
-    border-color: #ef4444;
+    border-color: var(--tm-danger);
     box-shadow: 0 12px 36px rgba(0, 0, 0, 0.85), 0 0 28px rgba(239, 68, 68, 0.65);
   }
   50% {
@@ -340,7 +340,7 @@
   width: calc(100% - 32px);
   max-width: 780px;
   background: rgba(10, 14, 28, 0.96);
-  border: 2.5px solid #ef4444;
+  border: 2.5px solid var(--tm-danger);
   border-radius: 16px;
   padding: 12px 18px;
   display: flex;
@@ -349,7 +349,7 @@
   flex-wrap: wrap;
   gap: 10px;
   font-size: 13px;
-  color: #f8fafc;
+  color: var(--tm-text);
   cursor: pointer;
   animation: tmPoliceStrobe 0.55s linear infinite;
 }
@@ -372,28 +372,28 @@
   gap: 6px;
   padding: 9px 13px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #0f172a, #1e1b4b);
-  border: 2px solid #00f3ff;
-  color: #00f3ff;
+  background: linear-gradient(135deg, var(--tm-night-1), #1e1b4b);
+  border: 2px solid var(--tm-cyan);
+  color: var(--tm-cyan);
   font-size: 12px;
   font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.65), 0 0 12px rgba(0, 243, 255, 0.35);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.65), 0 0 12px rgba(25, 240, 255, 0.35);
   transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
 .tm-payphone-dock-btn:hover {
   transform: translateY(-2px) scale(1.03);
-  border-color: #facc15;
-  color: #facc15;
+  border-color: var(--tm-amber);
+  color: var(--tm-amber);
 }
 
 .tm-payphone-coin-dot {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: #facc15;
-  box-shadow: 0 0 10px #facc15;
+  background: var(--tm-amber);
+  box-shadow: 0 0 10px var(--tm-amber);
   animation: tmReactorPulse 1s infinite;
 }
 
@@ -402,9 +402,9 @@
   border-radius: 20px;
   padding: 16px;
   background: linear-gradient(160deg, #0b1120 0%, #170d2a 100%);
-  border: 2.5px solid #00f3ff;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 32px rgba(0, 243, 255, 0.3);
-  color: #f8fafc;
+  border: 2.5px solid var(--tm-cyan);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 32px rgba(25, 240, 255, 0.3);
+  color: var(--tm-text);
 }
 
 .tm-payphone-header {
@@ -418,7 +418,7 @@
 .tm-payphone-eyebrow {
   font-size: 10px;
   font-weight: 900;
-  color: #00f3ff;
+  color: var(--tm-cyan);
   letter-spacing: 0.7px;
 }
 
@@ -426,23 +426,23 @@
   margin: 2px 0 0;
   font-size: 18px;
   font-weight: 900;
-  color: #facc15;
+  color: var(--tm-amber);
 }
 
 .tm-payphone-vfd {
   background: #03140d;
-  border: 1.5px solid #4ade80;
+  border: 1.5px solid var(--tm-ok);
   border-radius: 12px;
   padding: 10px 12px;
   margin-bottom: 12px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--tm-font-display);
   box-shadow: inset 0 0 14px rgba(74, 222, 128, 0.2);
 }
 
 .tm-payphone-vfd-num {
   font-size: 13px;
   font-weight: 900;
-  color: #4ade80;
+  color: var(--tm-ok);
   letter-spacing: 1px;
   margin-bottom: 4px;
 }
@@ -470,18 +470,18 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
-  background: rgba(15, 23, 42, 0.9);
+  background: rgba(17, 13, 34, 0.9);
   padding: 8px;
   border-radius: 12px;
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  border: 1px solid rgba(165, 159, 196, 0.3);
 }
 
 .tm-payphone-key {
   height: 34px;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.25);
-  background: linear-gradient(180deg, #334155, #0f172a);
-  color: #f8fafc;
+  background: linear-gradient(180deg, var(--tm-night-3), var(--tm-night-1));
+  color: var(--tm-text);
   font-size: 14px;
   font-weight: 900;
   cursor: pointer;
@@ -491,14 +491,14 @@
 .tm-payphone-key:hover,
 .tm-payphone-key:active {
   transform: scale(0.94);
-  border-color: #00f3ff;
-  color: #00f3ff;
+  border-color: var(--tm-cyan);
+  color: var(--tm-cyan);
 }
 
 .tm-payphone-graffiti-title {
   font-size: 10px;
   font-weight: 900;
-  color: #f472b6;
+  color: var(--tm-pink);
   margin-bottom: 6px;
   letter-spacing: 0.4px;
 }
@@ -514,8 +514,8 @@
   padding: 6px 10px;
   border-radius: 9px;
   border: 1px dashed rgba(244, 114, 182, 0.45);
-  background: rgba(15, 23, 42, 0.78);
-  color: #e2e8f0;
+  background: rgba(17, 13, 34, 0.78);
+  color: var(--tm-text);
   font-size: 11.5px;
   font-weight: 800;
   cursor: pointer;
@@ -525,9 +525,9 @@
 .tm-payphone-speed-btn:hover,
 .tm-payphone-speed-btn.active {
   border-style: solid;
-  border-color: #facc15;
-  color: #facc15;
-  background: rgba(250, 204, 21, 0.14);
+  border-color: var(--tm-amber);
+  color: var(--tm-amber);
+  background: rgba(255, 184, 0, 0.14);
 }
 
 .tm-payphone-coin-return-bar {
@@ -541,20 +541,20 @@
   font-size: 12px;
   font-weight: 900;
   cursor: pointer;
-  border: 1.5px solid #facc15;
-  background: linear-gradient(135deg, rgba(250, 204, 21, 0.22), rgba(236, 72, 153, 0.22));
-  color: #facc15;
+  border: 1.5px solid var(--tm-amber);
+  background: linear-gradient(135deg, rgba(255, 184, 0, 0.22), rgba(255, 46, 136, 0.22));
+  color: var(--tm-amber);
   transition: transform 0.14s ease, box-shadow 0.14s ease;
 }
 
 .tm-payphone-coin-flap-btn.unclaimed:hover {
   transform: translateY(-1px);
-  box-shadow: 0 0 18px rgba(250, 204, 21, 0.45);
+  box-shadow: 0 0 18px rgba(255, 184, 0, 0.45);
 }
 
 .tm-payphone-coin-flap-btn.claimed {
-  border-color: rgba(148, 163, 184, 0.35);
-  background: rgba(15, 23, 42, 0.65);
-  color: #94a3b8;
+  border-color: rgba(165, 159, 196, 0.35);
+  background: rgba(17, 13, 34, 0.65);
+  color: var(--tm-text-dim);
 }
 

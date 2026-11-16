@@ -12,9 +12,9 @@
   gap: 8px;
   padding: 10px 14px;
   background: radial-gradient(circle at 50% 18%, rgba(12, 24, 52, 0.96), rgba(4, 7, 18, 0.99));
-  border: 2px solid rgba(0, 243, 255, 0.55);
+  border: 2px solid rgba(25, 240, 255, 0.55);
   border-radius: 20px;
-  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.88), 0 0 36px rgba(0, 243, 255, 0.2);
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.88), 0 0 36px rgba(25, 240, 255, 0.2);
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -26,8 +26,8 @@
   flex-wrap: wrap;
   gap: 8px;
   padding: 6px 10px;
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid rgba(0, 243, 255, 0.32);
+  background: rgba(17, 13, 34, 0.85);
+  border: 1px solid rgba(25, 240, 255, 0.32);
   border-radius: 14px;
   flex-shrink: 0;
 }
@@ -40,11 +40,12 @@
 }
 
 .tm-bj-title-badge {
-  font-family: Impact, "Arial Black", sans-serif;
+  font-family: var(--tm-font-neon);
+  font-weight: 400;
   font-size: clamp(14px, 2.2vw, 18px);
   letter-spacing: 0.9px;
-  color: #00f3ff;
-  text-shadow: 0 0 12px rgba(0, 243, 255, 0.55);
+  color: var(--tm-cyan);
+  text-shadow: 0 0 12px rgba(25, 240, 255, 0.55);
 }
 
 .tm-bj-sub-pills {
@@ -59,9 +60,9 @@
   font-weight: 800;
   padding: 3px 9px;
   border-radius: 999px;
-  background: rgba(2, 6, 23, 0.88);
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  color: #e2e8f0;
+  background: rgba(7, 6, 15, 0.88);
+  border: 1px solid rgba(165, 159, 196, 0.35);
+  color: var(--tm-text);
 }
 .tm-bj-stat-pill.hot {
   border-color: #f97316;
@@ -69,8 +70,8 @@
   background: rgba(249, 115, 22, 0.16);
 }
 .tm-bj-stat-pill.gold {
-  border-color: #facc15;
-  color: #fde047;
+  border-color: var(--tm-amber);
+  color: var(--tm-amber);
 }
 
 .tm-bj-header-right {
@@ -85,23 +86,23 @@
   border-radius: 999px;
   font-size: 11px;
   font-weight: 900;
-  border: 1.5px solid rgba(148, 163, 184, 0.4);
-  background: rgba(15, 23, 42, 0.9);
-  color: #94a3b8;
+  border: 1.5px solid rgba(165, 159, 196, 0.4);
+  background: rgba(17, 13, 34, 0.9);
+  color: var(--tm-text-dim);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 .tm-bj-visor-toggle.on {
-  border-color: #00f3ff;
-  color: #00f3ff;
-  background: rgba(0, 243, 255, 0.15);
-  box-shadow: 0 0 14px rgba(0, 243, 255, 0.3);
+  border-color: var(--tm-cyan);
+  color: var(--tm-cyan);
+  background: rgba(25, 240, 255, 0.15);
+  box-shadow: 0 0 14px rgba(25, 240, 255, 0.3);
 }
 
 .tm-bj-mode-toggle {
   display: inline-flex;
-  background: rgba(2, 6, 23, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.32);
+  background: rgba(7, 6, 15, 0.9);
+  border: 1px solid rgba(165, 159, 196, 0.32);
   border-radius: 999px;
   padding: 2px;
 }
@@ -111,14 +112,17 @@
   border-radius: 999px;
   border: none;
   background: transparent;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
   font-size: 11px;
   font-weight: 900;
   cursor: pointer;
 }
 .tm-bj-mode-btn.active {
-  background: linear-gradient(135deg, #00f3ff, #ec4899);
-  color: #020617;
+  background: color-mix(in srgb, var(--tm-cyan) 12%, var(--tm-night-1));
+  color: var(--tm-cyan-hot);
+  border-color: var(--tm-cyan);
+  box-shadow: 0 0 0 1px var(--tm-cyan-off), 0 0 14px -4px var(--tm-cyan), inset 0 0 10px -5px var(--tm-cyan);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--tm-cyan) 70%, transparent);
 }
 
 /* Neon Cyber-Felt Table */
@@ -133,8 +137,8 @@
   border-radius: 18px;
   background:
     radial-gradient(ellipse at 50% 45%, rgba(6, 52, 72, 0.65) 0%, rgba(7, 16, 36, 0.94) 68%, rgba(3, 7, 18, 0.99) 100%);
-  border: 2px solid rgba(236, 72, 153, 0.45);
-  box-shadow: inset 0 0 42px rgba(0, 243, 255, 0.18), inset 0 0 16px rgba(236, 72, 153, 0.2);
+  border: 2px solid rgba(255, 46, 136, 0.45);
+  box-shadow: inset 0 0 42px rgba(25, 240, 255, 0.18), inset 0 0 16px rgba(255, 46, 136, 0.2);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -160,9 +164,9 @@
   letter-spacing: 0.7px;
   padding: 4px 12px;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.92);
-  border: 1.5px solid #f472b6;
-  color: #f472b6;
+  background: rgba(17, 13, 34, 0.92);
+  border: 1.5px solid var(--tm-pink);
+  color: var(--tm-pink);
   box-shadow: 0 0 12px rgba(244, 114, 182, 0.3);
 }
 
@@ -171,26 +175,26 @@
   font-weight: 900;
   padding: 3px 11px;
   border-radius: 999px;
-  background: rgba(2, 6, 23, 0.92);
-  border: 1.5px solid #00f3ff;
-  color: #00f3ff;
+  background: rgba(7, 6, 15, 0.92);
+  border: 1.5px solid var(--tm-cyan);
+  color: var(--tm-cyan);
 }
 .tm-bj-total-pill.bj {
-  border-color: #facc15;
-  color: #fde047;
-  box-shadow: 0 0 14px rgba(250, 204, 21, 0.45);
+  border-color: var(--tm-amber);
+  color: var(--tm-amber);
+  box-shadow: 0 0 14px rgba(255, 184, 0, 0.45);
 }
 .tm-bj-total-pill.bust {
-  border-color: #ef4444;
+  border-color: var(--tm-danger);
   color: #f87171;
 }
 
 .tm-bj-dealer-quote {
   font-size: 12px;
   font-weight: 800;
-  color: #e2e8f0;
-  background: rgba(15, 23, 42, 0.78);
-  border: 1px dashed rgba(0, 243, 255, 0.38);
+  color: var(--tm-text);
+  background: rgba(17, 13, 34, 0.78);
+  border: 1px dashed rgba(25, 240, 255, 0.38);
   padding: 4px 12px;
   border-radius: 10px;
   text-align: center;
@@ -205,11 +209,11 @@
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.8px;
-  color: rgba(250, 204, 21, 0.82);
+  color: rgba(255, 184, 0, 0.82);
   text-transform: uppercase;
   padding: 4px 10px;
-  border-top: 1px dashed rgba(0, 243, 255, 0.28);
-  border-bottom: 1px dashed rgba(236, 72, 153, 0.28);
+  border-top: 1px dashed rgba(25, 240, 255, 0.28);
+  border-bottom: 1px dashed rgba(255, 46, 136, 0.28);
   margin: 4px 0;
 }
 
@@ -237,9 +241,9 @@
 .tm-bj-empty-cards-hint {
   font-size: 12px;
   font-weight: 800;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
   padding: 20px 16px;
-  border: 1.5px dashed rgba(148, 163, 184, 0.32);
+  border: 1.5px dashed rgba(165, 159, 196, 0.32);
   border-radius: 14px;
   text-align: center;
 }
@@ -248,9 +252,9 @@
   width: 68px;
   height: 96px;
   border-radius: 11px;
-  background: linear-gradient(155deg, #0f172a 0%, #1e1b4b 55%, #090d16 100%);
-  border: 2px solid #00f3ff;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8), 0 0 14px rgba(0, 243, 255, 0.32);
+  background: linear-gradient(155deg, var(--tm-night-1) 0%, #1e1b4b 55%, var(--tm-night-0) 100%);
+  border: 2px solid var(--tm-cyan);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8), 0 0 14px rgba(25, 240, 255, 0.32);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -262,15 +266,15 @@
 }
 
 .tm-bj-card.red {
-  border-color: #f472b6;
-  color: #f472b6;
+  border-color: var(--tm-pink);
+  color: var(--tm-pink);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8), 0 0 14px rgba(244, 114, 182, 0.38);
 }
 
 .tm-bj-card.cyan {
-  border-color: #00f3ff;
-  color: #00f3ff;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8), 0 0 14px rgba(0, 243, 255, 0.38);
+  border-color: var(--tm-cyan);
+  color: var(--tm-cyan);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8), 0 0 14px rgba(25, 240, 255, 0.38);
 }
 
 .tm-bj-card-corner {
@@ -305,13 +309,13 @@
 }
 
 .tm-bj-card-hole {
-  border-color: #facc15;
+  border-color: var(--tm-amber);
   background: repeating-linear-gradient(
     45deg,
-    rgba(15, 23, 42, 0.96),
-    rgba(15, 23, 42, 0.96) 6px,
-    rgba(236, 72, 153, 0.25) 6px,
-    rgba(236, 72, 153, 0.25) 12px
+    rgba(17, 13, 34, 0.96),
+    rgba(17, 13, 34, 0.96) 6px,
+    rgba(255, 46, 136, 0.25) 6px,
+    rgba(255, 46, 136, 0.25) 12px
   );
   align-items: center;
   justify-content: center;
@@ -322,7 +326,7 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  color: #facc15;
+  color: var(--tm-amber);
   font-size: 11px;
   font-weight: 900;
 }
@@ -332,12 +336,12 @@
   align-self: center;
   padding: 5px 14px;
   border-radius: 999px;
-  background: linear-gradient(135deg, rgba(250, 204, 21, 0.24), rgba(236, 72, 153, 0.24));
-  border: 1.5px solid #facc15;
-  color: #fde047;
+  background: linear-gradient(135deg, rgba(255, 184, 0, 0.24), rgba(255, 46, 136, 0.24));
+  border: 1.5px solid var(--tm-amber);
+  color: var(--tm-amber);
   font-size: 12px;
   font-weight: 900;
-  box-shadow: 0 0 18px rgba(250, 204, 21, 0.35);
+  box-shadow: 0 0 18px rgba(255, 184, 0, 0.35);
 }
 
 /* Player Hands Area (Supports Split Dual Hands) */
@@ -364,14 +368,14 @@
   gap: 6px;
   padding: 8px 10px;
   border-radius: 14px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1.5px solid rgba(148, 163, 184, 0.28);
+  background: rgba(17, 13, 34, 0.6);
+  border: 1.5px solid rgba(165, 159, 196, 0.28);
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .tm-bj-hand-slot.active-turn {
-  border-color: #00f3ff;
-  box-shadow: 0 0 22px rgba(0, 243, 255, 0.28);
+  border-color: var(--tm-cyan);
+  box-shadow: 0 0 22px rgba(25, 240, 255, 0.28);
 }
 
 .tm-bj-hand-head {
@@ -385,15 +389,15 @@
 .tm-bj-hand-label {
   font-size: 11px;
   font-weight: 900;
-  color: #f8fafc;
+  color: var(--tm-text);
 }
 
 .tm-bj-stake-tag {
   font-size: 10.5px;
   font-weight: 900;
-  color: #facc15;
-  background: rgba(250, 204, 21, 0.14);
-  border: 1px solid rgba(250, 204, 21, 0.4);
+  color: var(--tm-amber);
+  background: rgba(255, 184, 0, 0.14);
+  border: 1px solid rgba(255, 184, 0, 0.4);
   padding: 2px 8px;
   border-radius: 999px;
 }
@@ -409,13 +413,13 @@
 .tm-bj-hand-outcome-pill.blackjack,
 .tm-bj-hand-outcome-pill.charlie {
   background: rgba(34, 197, 94, 0.22);
-  border: 1.5px solid #4ade80;
-  color: #4ade80;
+  border: 1.5px solid var(--tm-ok);
+  color: var(--tm-ok);
 }
 .tm-bj-hand-outcome-pill.push {
-  background: rgba(250, 204, 21, 0.2);
-  border: 1.5px solid #facc15;
-  color: #fde047;
+  background: rgba(255, 184, 0, 0.2);
+  border: 1.5px solid var(--tm-amber);
+  color: var(--tm-amber);
 }
 .tm-bj-hand-outcome-pill.lose,
 .tm-bj-hand-outcome-pill.bust {
@@ -433,23 +437,23 @@
   flex-wrap: wrap;
   padding: 6px 12px;
   border-radius: 12px;
-  background: linear-gradient(90deg, rgba(0, 243, 255, 0.14), rgba(168, 85, 247, 0.16));
-  border: 1px solid rgba(0, 243, 255, 0.45);
+  background: linear-gradient(90deg, rgba(25, 240, 255, 0.14), rgba(168, 85, 247, 0.16));
+  border: 1px solid rgba(25, 240, 255, 0.45);
   font-size: 11.5px;
 }
 .tm-bj-visor-badge {
   font-weight: 900;
-  color: #00f3ff;
+  color: var(--tm-cyan);
 }
 .tm-bj-visor-action {
-  color: #facc15;
+  color: var(--tm-amber);
   font-weight: 900;
   padding: 1px 8px;
   border-radius: 6px;
-  background: rgba(250, 204, 21, 0.16);
+  background: rgba(255, 184, 0, 0.16);
 }
 .tm-bj-visor-reason {
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
 }
 
 /* Bottom Blackjack Controls */
@@ -457,8 +461,8 @@
   flex-shrink: 0;
   padding: 8px 12px;
   border-radius: 14px;
-  background: rgba(15, 23, 42, 0.92);
-  border: 1px solid rgba(0, 243, 255, 0.32);
+  background: rgba(17, 13, 34, 0.92);
+  border: 1px solid rgba(25, 240, 255, 0.32);
 }
 
 .tm-bj-betting-bar {
@@ -479,16 +483,16 @@
 .tm-bj-ctrl-label {
   font-size: 10.5px;
   font-weight: 900;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
   letter-spacing: 0.5px;
 }
 
 .tm-bj-chip-btn {
   padding: 6px 11px;
   border-radius: 999px;
-  border: 1.5px solid rgba(250, 204, 21, 0.45);
-  background: rgba(2, 6, 23, 0.9);
-  color: #fde047;
+  border: 1.5px solid rgba(255, 184, 0, 0.45);
+  background: rgba(7, 6, 15, 0.9);
+  color: var(--tm-amber);
   font-size: 11.5px;
   font-weight: 900;
   cursor: pointer;
@@ -496,28 +500,28 @@
   transition: all 0.14s ease;
 }
 .tm-bj-chip-btn.active {
-  background: linear-gradient(135deg, #facc15, #f97316);
-  color: #020617;
+  background: linear-gradient(135deg, var(--tm-amber), #f97316);
+  color: var(--tm-night-0);
   border-color: #ffffff;
-  box-shadow: 0 0 14px rgba(250, 204, 21, 0.55);
+  box-shadow: 0 0 14px rgba(255, 184, 0, 0.55);
 }
 
 .tm-bj-sidebet-btn {
   padding: 6px 11px;
   border-radius: 999px;
   border: 1.5px dashed rgba(244, 114, 182, 0.55);
-  background: rgba(15, 23, 42, 0.9);
-  color: #f472b6;
+  background: rgba(17, 13, 34, 0.9);
+  color: var(--tm-pink);
   font-size: 11px;
   font-weight: 900;
   cursor: pointer;
 }
 .tm-bj-sidebet-btn.active {
   border-style: solid;
-  border-color: #facc15;
-  background: rgba(236, 72, 153, 0.25);
-  color: #fde047;
-  box-shadow: 0 0 14px rgba(236, 72, 153, 0.4);
+  border-color: var(--tm-amber);
+  background: rgba(255, 46, 136, 0.25);
+  color: var(--tm-amber);
+  box-shadow: 0 0 14px rgba(255, 46, 136, 0.4);
 }
 
 .tm-bj-deal-cta {
@@ -555,22 +559,22 @@
 }
 
 .tm-bj-act-btn.hit {
-  background: linear-gradient(135deg, #00f3ff, #0284c7);
-  color: #020617;
-  border-color: #e0f2fe;
-  box-shadow: 0 0 18px rgba(0, 243, 255, 0.45);
+  background: linear-gradient(135deg, var(--tm-cyan), #0284c7);
+  color: var(--tm-night-0);
+  border-color: var(--tm-cyan-hot);
+  box-shadow: 0 0 18px rgba(25, 240, 255, 0.45);
 }
 .tm-bj-act-btn.stand {
-  background: linear-gradient(135deg, #f472b6, #db2777);
+  background: linear-gradient(135deg, var(--tm-pink), #db2777);
   color: #ffffff;
   border-color: #fce7f3;
   box-shadow: 0 0 18px rgba(244, 114, 182, 0.45);
 }
 .tm-bj-act-btn.double {
-  background: linear-gradient(135deg, #facc15, #eab308);
-  color: #020617;
+  background: linear-gradient(135deg, var(--tm-amber), #eab308);
+  color: var(--tm-night-0);
   border-color: #fef9c3;
-  box-shadow: 0 0 18px rgba(250, 204, 21, 0.45);
+  box-shadow: 0 0 18px rgba(255, 184, 0, 0.45);
 }
 .tm-bj-act-btn.split {
   background: linear-gradient(135deg, #a855f7, #7e22ce);
@@ -592,28 +596,29 @@
 
 .tm-bj-title {
   margin: 0;
-  font-family: Impact, "Arial Black", sans-serif;
+  font-family: var(--tm-font-neon);
+  font-weight: 400;
   font-size: clamp(16px, 2.4vw, 21px);
   letter-spacing: 1px;
-  color: #00f3ff;
-  text-shadow: 0 0 14px rgba(0, 243, 255, 0.55);
+  color: var(--tm-cyan-hot);
+  text-shadow: 0 0 14px rgba(25, 240, 255, 0.55);
 }
 
 .tm-bj-streak-pill {
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(2, 6, 23, 0.9);
-  border: 1px solid rgba(250, 204, 21, 0.45);
-  color: #fde047;
+  background: rgba(7, 6, 15, 0.9);
+  border: 1px solid rgba(255, 184, 0, 0.45);
+  color: var(--tm-amber);
   font-size: 11px;
   font-weight: 800;
 }
 
 .tm-bj-visor-toggle.active {
-  border-color: #00f3ff;
-  color: #00f3ff;
-  background: rgba(0, 243, 255, 0.16);
-  box-shadow: 0 0 14px rgba(0, 243, 255, 0.35);
+  border-color: var(--tm-cyan);
+  color: var(--tm-cyan);
+  background: rgba(25, 240, 255, 0.16);
+  box-shadow: 0 0 14px rgba(25, 240, 255, 0.35);
 }
 
 .tm-bj-dealer-bar {
@@ -623,7 +628,7 @@
   flex-wrap: wrap;
   padding: 6px 12px;
   border-radius: 12px;
-  background: rgba(15, 23, 42, 0.88);
+  background: rgba(17, 13, 34, 0.88);
   border: 1px solid rgba(244, 114, 182, 0.38);
   flex-shrink: 0;
 }
@@ -638,7 +643,7 @@
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.7px;
-  color: #f472b6;
+  color: var(--tm-pink);
 }
 
 .tm-bj-dealer-line {
@@ -653,14 +658,14 @@
   align-items: flex-end;
   padding: 5px 11px;
   border-radius: 10px;
-  background: rgba(2, 6, 23, 0.92);
-  border: 1.5px solid var(--visor-col, #00f3ff);
-  box-shadow: 0 0 14px rgba(0, 243, 255, 0.25);
+  background: rgba(7, 6, 15, 0.92);
+  border: 1.5px solid var(--visor-col, var(--tm-cyan));
+  box-shadow: 0 0 14px rgba(25, 240, 255, 0.25);
 }
 
 .tm-bj-visor-sub {
   font-size: 10.5px;
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
 }
 
 .tm-bj-felt-table {
@@ -674,8 +679,8 @@
   border-radius: 16px;
   background:
     radial-gradient(ellipse at 50% 45%, rgba(6, 56, 76, 0.68) 0%, rgba(8, 17, 38, 0.94) 70%, rgba(3, 7, 18, 0.99) 100%);
-  border: 2px solid rgba(0, 243, 255, 0.42);
-  box-shadow: inset 0 0 38px rgba(0, 243, 255, 0.16), inset 0 0 16px rgba(236, 72, 153, 0.18);
+  border: 2px solid rgba(25, 240, 255, 0.42);
+  box-shadow: inset 0 0 38px rgba(25, 240, 255, 0.16), inset 0 0 16px rgba(255, 46, 136, 0.18);
   overflow-y: auto;
 }
 
@@ -684,8 +689,8 @@
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 1px;
-  color: rgba(250, 204, 21, 0.85);
-  border-bottom: 1px dashed rgba(0, 243, 255, 0.3);
+  color: rgba(255, 184, 0, 0.85);
+  border-bottom: 1px dashed rgba(25, 240, 255, 0.3);
   padding-bottom: 4px;
 }
 
@@ -696,16 +701,16 @@
   gap: 6px;
   padding: 6px 10px;
   border-radius: 14px;
-  background: rgba(15, 23, 42, 0.55);
-  border: 1.5px solid rgba(148, 163, 184, 0.22);
+  background: rgba(17, 13, 34, 0.55);
+  border: 1.5px solid rgba(165, 159, 196, 0.22);
 }
 
 .tm-bj-zone.active-hand {
-  border-color: #00f3ff;
-  box-shadow: 0 0 20px rgba(0, 243, 255, 0.32);
+  border-color: var(--tm-cyan);
+  box-shadow: 0 0 20px rgba(25, 240, 255, 0.32);
 }
 .tm-bj-zone.won-hand {
-  border-color: #4ade80;
+  border-color: var(--tm-ok);
   box-shadow: 0 0 20px rgba(74, 222, 128, 0.32);
 }
 .tm-bj-zone.lost-hand {
@@ -724,42 +729,42 @@
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.6px;
-  color: #e2e8f0;
+  color: var(--tm-text);
 }
 
 .tm-bj-score-pill {
   padding: 2px 10px;
   border-radius: 999px;
-  background: rgba(2, 6, 23, 0.92);
-  border: 1.5px solid #00f3ff;
-  color: #00f3ff;
+  background: rgba(7, 6, 15, 0.92);
+  border: 1.5px solid var(--tm-cyan);
+  color: var(--tm-cyan);
   font-size: 11.5px;
   font-weight: 900;
 }
 .tm-bj-score-pill.blackjack {
-  border-color: #facc15;
-  color: #fde047;
-  box-shadow: 0 0 12px rgba(250, 204, 21, 0.45);
+  border-color: var(--tm-amber);
+  color: var(--tm-amber);
+  box-shadow: 0 0 12px rgba(255, 184, 0, 0.45);
 }
 .tm-bj-score-pill.bust {
-  border-color: #ef4444;
+  border-color: var(--tm-danger);
   color: #f87171;
 }
 
 .tm-bj-empty-slot {
   font-size: 12px;
   font-weight: 800;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
   padding: 18px 16px;
-  border: 1.5px dashed rgba(148, 163, 184, 0.35);
+  border: 1.5px dashed rgba(165, 159, 196, 0.35);
   border-radius: 12px;
   text-align: center;
 }
 
 .tm-bj-card {
-  border-color: var(--card-col, #00f3ff);
-  color: var(--card-col, #00f3ff);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8), 0 0 14px var(--card-glow, rgba(0, 243, 255, 0.35));
+  border-color: var(--card-col, var(--tm-cyan));
+  color: var(--card-col, var(--tm-cyan));
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8), 0 0 14px var(--card-glow, rgba(25, 240, 255, 0.35));
 }
 
 .tm-bj-card-corner.bot {
@@ -777,13 +782,13 @@
 }
 
 .tm-bj-card.hole-card {
-  border-color: #facc15;
+  border-color: var(--tm-amber);
   background: repeating-linear-gradient(
     45deg,
-    rgba(15, 23, 42, 0.96),
-    rgba(15, 23, 42, 0.96) 6px,
-    rgba(236, 72, 153, 0.28) 6px,
-    rgba(236, 72, 153, 0.28) 12px
+    rgba(17, 13, 34, 0.96),
+    rgba(17, 13, 34, 0.96) 6px,
+    rgba(255, 46, 136, 0.28) 6px,
+    rgba(255, 46, 136, 0.28) 12px
   );
   align-items: center;
   justify-content: center;
@@ -794,7 +799,7 @@
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  color: #fde047;
+  color: var(--tm-amber);
   font-weight: 900;
   font-size: 10px;
 }
@@ -806,17 +811,17 @@
   align-self: center;
   padding: 4px 14px;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  color: #cbd5e1;
+  background: rgba(17, 13, 34, 0.9);
+  border: 1px solid rgba(165, 159, 196, 0.4);
+  color: var(--tm-text-soft);
   font-size: 11.5px;
   font-weight: 900;
 }
 .tm-bj-sidebet-toast.won {
-  border-color: #facc15;
-  color: #fde047;
-  background: linear-gradient(135deg, rgba(250, 204, 21, 0.24), rgba(236, 72, 153, 0.24));
-  box-shadow: 0 0 16px rgba(250, 204, 21, 0.4);
+  border-color: var(--tm-amber);
+  color: var(--tm-amber);
+  background: linear-gradient(135deg, rgba(255, 184, 0, 0.24), rgba(255, 46, 136, 0.24));
+  box-shadow: 0 0 16px rgba(255, 184, 0, 0.4);
 }
 
 .tm-bj-player-hands-grid {
@@ -831,9 +836,9 @@
 .tm-bj-hand-outcome-badge {
   padding: 3px 11px;
   border-radius: 999px;
-  background: rgba(2, 6, 23, 0.92);
-  border: 1px solid #facc15;
-  color: #fde047;
+  background: rgba(7, 6, 15, 0.92);
+  border: 1px solid var(--tm-amber);
+  color: var(--tm-amber);
   font-size: 11px;
   font-weight: 900;
 }
@@ -864,17 +869,19 @@
 .tm-bj-mode-pill {
   padding: 5px 11px;
   border-radius: 999px;
-  border: 1.5px solid rgba(0, 243, 255, 0.45);
-  background: rgba(2, 6, 23, 0.9);
-  color: #00f3ff;
+  border: 1.5px solid rgba(25, 240, 255, 0.45);
+  background: rgba(7, 6, 15, 0.9);
+  color: var(--tm-cyan);
   font-size: 11px;
   font-weight: 900;
   cursor: pointer;
 }
 .tm-bj-mode-pill.active {
-  background: linear-gradient(135deg, #00f3ff, #ec4899);
-  color: #020617;
-  border-color: #ffffff;
+  background: color-mix(in srgb, var(--tm-cyan) 12%, var(--tm-night-1));
+  color: var(--tm-cyan-hot);
+  border-color: var(--tm-cyan);
+  box-shadow: 0 0 0 1px var(--tm-cyan-off), 0 0 14px -4px var(--tm-cyan), inset 0 0 10px -5px var(--tm-cyan);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--tm-cyan) 70%, transparent);
 }
 
 .tm-bj-deal-cta-row {
@@ -887,14 +894,14 @@
 .tm-bj-deal-btn {
   padding: 9px 18px;
   border-radius: 12px;
-  border: 2px solid #facc15;
-  background: linear-gradient(135deg, #00f3ff 0%, #ec4899 55%, #facc15 100%);
-  color: #020617;
+  border: 2px solid var(--tm-amber);
+  background: linear-gradient(180deg, var(--tm-amber-hot) 0%, var(--tm-amber) 42%, color-mix(in srgb, var(--tm-amber) 76%, #000000) 100%);
+  color: var(--tm-night-0);
   font-size: 13px;
   font-weight: 900;
   letter-spacing: 0.6px;
   cursor: pointer;
-  box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
+  box-shadow: 0 0 20px rgba(255, 184, 0, 0.35);
 }
 .tm-bj-deal-btn:hover:not(:disabled) {
   transform: translateY(-1px) scale(1.02);
@@ -905,7 +912,7 @@
   font-size: 9.5px;
   font-weight: 900;
   letter-spacing: 0.8px;
-  color: #f472b6;
+  color: var(--tm-pink);
   text-transform: uppercase;
 }
 
@@ -927,7 +934,7 @@
 .tm-bandit-back-btn {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
   font-weight: 800;
   font-size: 12px;
   padding: 10px 12px;
@@ -938,9 +945,9 @@
 }
 
 .tm-crush2-wallet {
-  background: rgba(250, 204, 21, 0.14);
-  border: 1px solid rgba(250, 204, 21, 0.45);
-  color: #fde047;
+  background: rgba(255, 184, 0, 0.14);
+  border: 1px solid rgba(255, 184, 0, 0.45);
+  color: var(--tm-amber);
   font-size: 11px;
   font-weight: 900;
   padding: 3px 8px;

@@ -102,7 +102,7 @@ function drawPlayerRearCar(ctx, state, cx, cy) {
   ctx.fillStyle = '#fde047';
   ctx.fillRect(-13, 3, 26, 9);
   ctx.fillStyle = '#0f172a';
-  ctx.font = 'bold 6px "Courier New", monospace';
+  ctx.font = 'bold 6px "Oxanium", "Courier New", monospace';
   ctx.textAlign = 'center';
   ctx.fillText((spec.plate || '80S-RUN').slice(0, 7), 0, 10);
 
@@ -298,7 +298,7 @@ function drawSunsetSprintFrame(ctx, state) {
     ctx.strokeStyle = '#00f3ff';
     ctx.lineWidth = 2;
     ctx.strokeRect(48, 86, SPRINT_WIDTH - 96, 44);
-    ctx.font = '900 18px "Courier New", monospace';
+    ctx.font = '900 18px "Oxanium", "Courier New", monospace';
     ctx.fillStyle = '#fde047';
     ctx.textAlign = 'center';
     ctx.fillText('CHECKPOINT! +18s BONUS', SPRINT_WIDTH / 2, 114);

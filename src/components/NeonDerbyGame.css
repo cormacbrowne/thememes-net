@@ -7,8 +7,8 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  color: #f8fafc;
-  background: radial-gradient(circle at top, rgba(236, 72, 153, 0.14), rgba(2, 6, 23, 0.96) 65%);
+  color: var(--tm-text);
+  background: radial-gradient(circle at top, rgba(255, 46, 136, 0.14), rgba(7, 6, 15, 0.96) 65%);
 }
 
 .tm-derby-header {
@@ -19,8 +19,8 @@
   gap: 8px;
   padding: 6px 10px;
   border-radius: 12px;
-  background: rgba(15, 23, 42, 0.88);
-  border: 1px solid rgba(0, 243, 255, 0.25);
+  background: rgba(17, 13, 34, 0.88);
+  border: 1px solid rgba(25, 240, 255, 0.25);
 }
 
 .tm-derby-header-left,
@@ -36,14 +36,14 @@
   font-size: 16px;
   font-weight: 900;
   letter-spacing: 0.04em;
-  color: #fde047;
+  color: var(--tm-amber);
 }
 
 .tm-derby-cup-badge {
   font-size: 11px;
   font-weight: 900;
-  color: #090d16;
-  background: linear-gradient(135deg, #facc15, #f97316);
+  color: var(--tm-night-0);
+  background: linear-gradient(135deg, var(--tm-amber), #f97316);
   padding: 3px 8px;
   border-radius: 999px;
 }
@@ -53,16 +53,16 @@
   border-radius: 999px;
   font-size: 12px;
   font-weight: 800;
-  background: rgba(250, 204, 21, 0.14);
-  border: 1px solid rgba(250, 204, 21, 0.45);
-  color: #fef08a;
+  background: rgba(255, 184, 0, 0.14);
+  border: 1px solid rgba(255, 184, 0, 0.45);
+  color: var(--tm-amber-hot);
 }
 
 .tm-derby-btn,
 .tm-derby-pill {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #f8fafc;
+  color: var(--tm-text);
   border-radius: 999px;
   padding: 6px 11px;
   font-size: 12px;
@@ -73,7 +73,7 @@
 }
 
 .tm-derby-pill.is-active {
-  border-color: #22c55e;
+  border-color: var(--tm-ok);
   background: rgba(34, 197, 94, 0.2);
   color: #dcfce7;
 }
@@ -81,11 +81,11 @@
 .tm-derby-howto {
   padding: 10px 14px;
   border-radius: 12px;
-  background: rgba(15, 23, 42, 0.95);
-  border: 1px solid rgba(56, 189, 248, 0.45);
+  background: rgba(17, 13, 34, 0.95);
+  border: 1px solid rgba(25, 240, 255, 0.45);
   font-size: 13px;
   line-height: 1.45;
-  color: #e2e8f0;
+  color: var(--tm-text);
 }
 
 .tm-derby-howto ul {
@@ -104,11 +104,11 @@
   gap: 6px;
   font-size: 12px;
   font-weight: 700;
-  color: #a5f3fc;
+  color: var(--tm-cyan-hot);
 }
 
 .tm-derby-countdown {
-  color: #fde047;
+  color: var(--tm-amber);
 }
 
 .tm-derby-grid {
@@ -127,7 +127,7 @@
 .tm-derby-track-card,
 .tm-derby-board-card {
   background: rgba(10, 14, 30, 0.9);
-  border: 1px solid rgba(236, 72, 153, 0.3);
+  border: 1px solid rgba(255, 46, 136, 0.3);
   border-radius: 14px;
   padding: 10px;
   display: flex;
@@ -142,11 +142,11 @@
   gap: 6px;
   font-size: 12px;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--tm-text);
 }
 
 .tm-derby-comment {
-  color: #00f3ff;
+  color: var(--tm-cyan);
 }
 
 .tm-derby-canvas-wrap {
@@ -171,15 +171,15 @@
   height: 100%;
   display: block;
   border-radius: 10px;
-  border: 1.5px solid rgba(0, 243, 255, 0.45);
+  border: 1.5px solid rgba(25, 240, 255, 0.45);
   background: #060913;
-  box-shadow: 0 0 20px rgba(0, 243, 255, 0.14);
+  box-shadow: 0 0 20px rgba(25, 240, 255, 0.14);
   transition: box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .tm-derby-canvas.is-live-race {
-  border-color: #ff2a85;
-  box-shadow: 0 0 28px rgba(255, 42, 133, 0.35), 0 0 22px rgba(0, 243, 255, 0.25);
+  border-color: var(--tm-pink);
+  box-shadow: 0 0 28px rgba(255, 46, 136, 0.35), 0 0 22px rgba(25, 240, 255, 0.25);
 }
 
 .tm-derby-track-actions,
@@ -208,19 +208,19 @@
 
 .tm-derby-primary-btn {
   flex: 1 1 180px;
-  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  background: linear-gradient(135deg, var(--tm-pink), #8b5cf6);
   color: #ffffff;
 }
 
 .tm-derby-lucky-btn {
-  background: rgba(250, 204, 21, 0.16);
-  border: 1px solid rgba(250, 204, 21, 0.5);
-  color: #fef08a;
+  background: rgba(255, 184, 0, 0.16);
+  border: 1px solid rgba(255, 184, 0, 0.5);
+  color: var(--tm-amber-hot);
 }
 
 .tm-derby-cheer-btn {
   width: 100%;
-  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  background: linear-gradient(135deg, #f59e0b, var(--tm-danger));
   color: #ffffff;
 }
 
@@ -233,7 +233,7 @@
 .tm-derby-tab {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.16);
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
   border-radius: 8px;
   padding: 8px 4px;
   font-size: 11px;
@@ -244,8 +244,8 @@
 }
 
 .tm-derby-tab.active {
-  border-color: #00f3ff;
-  background: rgba(0, 243, 255, 0.18);
+  border-color: var(--tm-cyan);
+  background: rgba(25, 240, 255, 0.18);
   color: #ffffff;
 }
 
@@ -274,8 +274,8 @@
   padding: 7px 9px;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  color: #f8fafc;
+  border: 1px solid rgba(165, 159, 196, 0.22);
+  color: var(--tm-text);
   text-align: left;
   cursor: pointer;
   touch-action: manipulation;
@@ -283,13 +283,13 @@
 }
 
 .tm-derby-horse-row.is-primary {
-  border-color: #facc15;
-  background: rgba(250, 204, 21, 0.15);
+  border-color: var(--tm-amber);
+  background: rgba(255, 184, 0, 0.15);
 }
 
 .tm-derby-horse-row.is-second {
-  border-color: #00f3ff;
-  background: rgba(0, 243, 255, 0.15);
+  border-color: var(--tm-cyan);
+  background: rgba(25, 240, 255, 0.15);
 }
 
 .tm-derby-silk {
@@ -320,7 +320,7 @@
 
 .tm-derby-horse-info small {
   font-size: 10px;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
 }
 
 .tm-derby-odds {
@@ -328,12 +328,12 @@
   flex-direction: column;
   align-items: flex-end;
   font-size: 12px;
-  color: #fde047;
+  color: var(--tm-amber);
 }
 
 .tm-derby-odds small {
   font-size: 10px;
-  color: #a5f3fc;
+  color: var(--tm-cyan-hot);
 }
 
 .tm-derby-slip {
@@ -354,7 +354,7 @@
 .tm-derby-chip {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.22);
-  color: #f8fafc;
+  color: var(--tm-text);
   border-radius: 999px;
   padding: 7px 11px;
   font-size: 12px;
@@ -365,8 +365,8 @@
 }
 
 .tm-derby-chip.active {
-  border-color: #ec4899;
-  background: rgba(236, 72, 153, 0.28);
+  border-color: var(--tm-pink);
+  background: rgba(255, 46, 136, 0.28);
 }
 
 .tm-derby-add-btn {
@@ -387,8 +387,8 @@
   gap: 5px;
   padding: 4px 8px;
   border-radius: 999px;
-  background: rgba(0, 243, 255, 0.14);
-  border: 1px solid rgba(0, 243, 255, 0.4);
+  background: rgba(25, 240, 255, 0.14);
+  border: 1px solid rgba(25, 240, 255, 0.4);
   font-size: 11px;
   font-weight: 700;
 }

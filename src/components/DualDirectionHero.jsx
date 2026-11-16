@@ -73,7 +73,8 @@ export default function DualDirectionHero({
               </span>
             )}
             <h1 className="tm-dual-hero-heading">
-              TWO 80s WORLDS IN ONE SITE: <span className="is-cyan">MEMES</span> &amp;{' '}
+              <span className="tm-dual-hero-lede">TWO 80s WORLDS IN ONE SITE: </span>
+              <span className="is-cyan">MEMES</span> &amp;{' '}
               <span className="is-pink">CYBER-ARCADE</span>
             </h1>
           </div>

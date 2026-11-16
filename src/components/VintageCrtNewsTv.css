@@ -35,7 +35,7 @@
   z-index: 1290;
   box-shadow:
     0 20px 52px rgba(0, 0, 0, 0.78),
-    0 0 24px rgba(0, 243, 255, 0.22);
+    0 0 24px rgba(25, 240, 255, 0.22);
 }
 
 .tm-crt-tv-shell.is-dragging {
@@ -57,7 +57,7 @@
   bottom: 0;
   width: 2px;
   height: 18px;
-  background: linear-gradient(180deg, #f8fafc, #64748b);
+  background: linear-gradient(180deg, var(--tm-text), var(--tm-text-mute));
   border-radius: 2px;
 }
 
@@ -80,8 +80,8 @@
   width: 20px;
   height: 6px;
   border-radius: 4px 4px 0 0;
-  background: #334155;
-  border: 1px solid #94a3b8;
+  background: var(--tm-night-3);
+  border: 1px solid var(--tm-text-dim);
 }
 
 .tm-crt-tv-topbar {
@@ -93,7 +93,7 @@
   margin-bottom: 7px;
   padding: 4px 7px;
   border-radius: 8px;
-  background: linear-gradient(180deg, #334155, #1e293b);
+  background: linear-gradient(180deg, var(--tm-night-3), var(--tm-night-2));
   border: 1px solid rgba(203, 213, 225, 0.25);
 }
 
@@ -107,19 +107,19 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-family: ui-monospace, 'Courier New', monospace;
+  font-family: var(--tm-font-display);
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.06em;
-  color: #e2e8f0;
+  color: var(--tm-text);
 }
 
 .tm-crt-rec-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #ef4444;
-  box-shadow: 0 0 8px #ef4444;
+  background: var(--tm-danger);
+  box-shadow: 0 0 8px var(--tm-danger);
   animation: tmCrtBlink 1.3s ease-in-out infinite;
 }
 
@@ -135,9 +135,9 @@
 }
 
 .tm-crt-mini-btn {
-  border: 1px solid rgba(148, 163, 184, 0.42);
-  background: rgba(15, 23, 42, 0.9);
-  color: #cbd5e1;
+  border: 1px solid rgba(165, 159, 196, 0.42);
+  background: rgba(17, 13, 34, 0.9);
+  color: var(--tm-text-soft);
   border-radius: 6px;
   padding: 2px 6px;
   font-size: 10px;
@@ -151,8 +151,8 @@
 }
 
 .tm-crt-mini-btn.is-pinned {
-  border-color: rgba(0, 243, 255, 0.65);
-  color: #67e8f9;
+  border-color: rgba(25, 240, 255, 0.65);
+  color: var(--tm-cyan-hot);
   background: rgba(8, 51, 68, 0.9);
 }
 
@@ -169,10 +169,10 @@
   border-radius: 14px;
   overflow: hidden;
   background: #030712;
-  border: 3px solid #1e293b;
+  border: 3px solid var(--tm-night-2);
   box-shadow:
     inset 0 0 22px rgba(0, 0, 0, 0.9),
-    0 0 12px rgba(56, 189, 248, 0.2);
+    0 0 12px rgba(25, 240, 255, 0.2);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -214,9 +214,9 @@
   inset: 0;
   z-index: 6;
   background-image: radial-gradient(rgba(255, 255, 255, 0.82) 1px, transparent 0),
-    radial-gradient(rgba(56, 189, 248, 0.6) 1px, transparent 0);
+    radial-gradient(rgba(25, 240, 255, 0.6) 1px, transparent 0);
   background-size: 4px 4px, 3px 3px;
-  background-color: rgba(15, 23, 42, 0.85);
+  background-color: rgba(17, 13, 34, 0.85);
 }
 
 .tm-crt-osd-row {
@@ -227,10 +227,10 @@
   justify-content: space-between;
   gap: 6px;
   padding: 5px 8px 0;
-  font-family: ui-monospace, 'Courier New', monospace;
+  font-family: var(--tm-font-display);
   font-size: 9.5px;
   font-weight: 900;
-  color: #4ade80;
+  color: var(--tm-ok);
   text-shadow: 0 0 6px rgba(74, 222, 128, 0.7);
 }
 
@@ -257,7 +257,7 @@
   font-size: 11.5px;
   line-height: 1.25;
   font-weight: 900;
-  color: #f8fafc;
+  color: var(--tm-text);
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
 }
 
@@ -265,7 +265,7 @@
   margin: 4px 0 0;
   font-size: 10.5px;
   line-height: 1.32;
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
 }
 
 .tm-crt-ticker-bar {
@@ -288,7 +288,7 @@
   font-size: 9px;
   font-weight: 900;
   letter-spacing: 0.08em;
-  background: #facc15;
+  background: var(--tm-amber);
   color: #111827;
 }
 
@@ -302,10 +302,10 @@
 .tm-crt-ticker-track span {
   display: inline-block;
   padding-left: 100%;
-  font-family: ui-monospace, 'Courier New', monospace;
+  font-family: var(--tm-font-display);
   font-size: 9.5px;
   font-weight: 800;
-  color: #f8fafc;
+  color: var(--tm-text);
   animation: tmCrtMarquee 22s linear infinite;
 }
 
@@ -322,16 +322,16 @@
   gap: 6px;
   padding: 7px 6px;
   border-radius: 10px;
-  background: linear-gradient(180deg, #94a3b8 0%, #475569 100%);
-  border: 1px solid #cbd5e1;
+  background: linear-gradient(180deg, var(--tm-text-dim) 0%, var(--tm-night-3) 100%);
+  border: 1px solid var(--tm-text-soft);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
 .tm-crt-dial-label {
-  font-family: ui-monospace, 'Courier New', monospace;
+  font-family: var(--tm-font-display);
   font-size: 8.5px;
   font-weight: 900;
-  color: #0f172a;
+  color: var(--tm-night-1);
   letter-spacing: 0.06em;
 }
 
@@ -347,14 +347,14 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #475569, #090d16);
-  border: 2px solid #e2e8f0;
+  background: radial-gradient(circle at 35% 30%, var(--tm-night-3), var(--tm-night-0));
+  border: 2px solid var(--tm-text);
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #4ade80;
-  font-family: ui-monospace, 'Courier New', monospace;
+  color: var(--tm-ok);
+  font-family: var(--tm-font-display);
   font-size: 11px;
   font-weight: 900;
   cursor: pointer;
@@ -362,9 +362,9 @@
 
 .tm-crt-dial-step {
   width: 100%;
-  border: 1px solid #1e293b;
-  background: #0f172a;
-  color: #e2e8f0;
+  border: 1px solid var(--tm-night-2);
+  background: var(--tm-night-1);
+  color: var(--tm-text);
   border-radius: 5px;
   padding: 2px 4px;
   font-size: 9px;
@@ -400,7 +400,7 @@
   display: block;
   height: 2px;
   border-radius: 2px;
-  background: #1e293b;
+  background: var(--tm-night-2);
 }
 
 @media (max-width: 960px) {

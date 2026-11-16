@@ -14,8 +14,8 @@
 }
 
 .tm-creator-hero-card {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(24, 14, 42, 0.92));
-  border: 1.5px solid rgba(0, 243, 255, 0.38);
+  background: linear-gradient(135deg, rgba(17, 13, 34, 0.92), rgba(24, 14, 42, 0.92));
+  border: 1.5px solid rgba(25, 240, 255, 0.38);
   border-radius: 18px;
   padding: 20px;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
@@ -46,7 +46,7 @@
 .tm-creator-handle-row h1 {
   margin: 0;
   font-size: clamp(22px, 3.2vw, 30px);
-  color: #00f3ff;
+  color: var(--tm-cyan);
   word-break: break-word;
 }
 
@@ -62,14 +62,14 @@
   padding: 9px 18px;
   font-weight: 800;
   cursor: pointer;
-  border: 1.5px solid #00f3ff;
-  background: rgba(0, 243, 255, 0.14);
-  color: #e0f2fe;
+  border: 1.5px solid var(--tm-cyan);
+  background: rgba(25, 240, 255, 0.14);
+  color: var(--tm-cyan-hot);
   transition: all 0.16s ease;
 }
 
 .tm-follow-btn.following {
-  border-color: #22c55e;
+  border-color: var(--tm-ok);
   background: rgba(34, 197, 94, 0.18);
   color: #bbf7d0;
 }
@@ -97,7 +97,7 @@
 
 .tm-creator-kpi span {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
   font-weight: 700;
 }
 
@@ -112,7 +112,7 @@
 .tm-creator-section h2 {
   margin: 0 0 12px;
   font-size: 16px;
-  color: #facc15;
+  color: var(--tm-amber);
   letter-spacing: 0.03em;
 }
 
@@ -121,7 +121,7 @@
   padding: 14px;
   border-radius: 14px;
   background: rgba(8, 12, 26, 0.85);
-  border: 1px solid rgba(0, 243, 255, 0.3);
+  border: 1px solid rgba(25, 240, 255, 0.3);
 }
 
 .tm-avatar-picker-head {
@@ -132,12 +132,12 @@
   flex-wrap: wrap;
   font-size: 12px;
   font-weight: 800;
-  color: #00f3ff;
+  color: var(--tm-cyan);
   margin-bottom: 10px;
 }
 
 .tm-avatar-picker-hint {
-  color: #94a3b8;
+  color: var(--tm-text-dim);
   font-weight: 600;
 }
 
@@ -156,17 +156,17 @@
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
 }
 
 .tm-avatar-choice-btn.active {
-  border-color: #00f3ff;
-  background: rgba(0, 243, 255, 0.16);
+  border-color: var(--tm-cyan);
+  background: rgba(25, 240, 255, 0.16);
   color: #ffffff;
-  box-shadow: 0 0 14px rgba(0, 243, 255, 0.32);
+  box-shadow: 0 0 14px rgba(25, 240, 255, 0.32);
 }
 
 .tm-avatar-picker-status {
@@ -190,7 +190,7 @@
   padding: 10px 12px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(250, 204, 21, 0.25);
+  border: 1px solid rgba(255, 184, 0, 0.25);
 }
 
 .tm-creator-memes-grid {

@@ -180,7 +180,7 @@ function drawInvadersFrame(ctx, state, bossImg) {
     ctx.strokeStyle = 'rgba(0, 243, 255, 0.55)';
     ctx.strokeRect(24, 10, INVADERS_WIDTH - 48, 26);
     ctx.fillStyle = '#fde047';
-    ctx.font = 'bold 11px "Courier New", monospace';
+    ctx.font = 'bold 11px "Oxanium", "Courier New", monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(state.bannerText.slice(0, 48), INVADERS_WIDTH / 2, 23);

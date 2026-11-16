@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { Camera, ClipboardPaste, ImagePlus, Upload } from 'lucide-react';
 import { sfx } from '../utils/soundEngine';
 import { VIRAL_CAPTIONS } from '../data/starterMemes';
 import { ACCEPT_MEDIA, validateFile } from '../utils/mediaPipeline';
@@ -280,14 +281,15 @@ export default function QuickUploadBar({
               if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click();
             }}
           >
-            <span className="tm-quick-upload-icon">🖼️</span>
+            <span className="tm-quick-upload-icon" aria-hidden="true">
+              <ImagePlus size={22} strokeWidth={1.75} />
+            </span>
             <div>
               <div className="tm-quick-upload-title">
-                Upload an Image or GIF → Add Top &amp; Bottom Meme Text
+                Upload an image or GIF, add top &amp; bottom meme text
               </div>
               <div className="tm-quick-upload-sub">
-                Drop, pick, or paste (Ctrl+V) any photo or GIF — instant download &amp; share with{' '}
-                <code>www.thememes.net</code> watermark.
+                Drag it here, pick a file or paste with Ctrl+V. Top and bottom text, instant download, share anywhere.
               </div>
             </div>
           </div>
@@ -298,7 +300,8 @@ export default function QuickUploadBar({
               className="tm-btn tm-btn-primary"
               onClick={() => fileInputRef.current?.click()}
             >
-              📸 Upload Image / GIF
+              <Upload size={16} strokeWidth={2.25} aria-hidden="true" />
+              Upload image / GIF
             </button>
 
             <button
@@ -307,7 +310,8 @@ export default function QuickUploadBar({
               onClick={handlePasteClipboardClick}
               title="Paste image from clipboard (or press Ctrl+V)"
             >
-              📋 Paste
+              <ClipboardPaste size={15} strokeWidth={2} aria-hidden="true" />
+              Paste
             </button>
 
             <button
@@ -316,7 +320,8 @@ export default function QuickUploadBar({
               onClick={() => cameraInputRef.current?.click()}
               title="Take a photo with your camera"
             >
-              📷 Camera
+              <Camera size={15} strokeWidth={2} aria-hidden="true" />
+              Camera
             </button>
           </div>
         </div>

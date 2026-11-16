@@ -14,7 +14,7 @@
   max-height: 92dvh;
   overflow-y: auto;
   background: #0d0f1c;
-  color: #f8fafc;
+  color: var(--tm-text);
   border: 1px solid rgba(0, 245, 255, 0.35);
   border-bottom: none;
   border-radius: 18px 18px 0 0;
@@ -27,7 +27,7 @@
   width: 44px;
   height: 5px;
   border-radius: 3px;
-  background: rgba(148, 163, 184, 0.5);
+  background: rgba(165, 159, 196, 0.5);
   margin: 0 auto 10px;
 }
 
@@ -40,7 +40,7 @@
 
 .tm-report-sub {
   margin: 0 0 12px;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
   font-size: 14px;
 }
 
@@ -57,21 +57,21 @@
   min-height: 46px;
   padding: 10px 12px;
   border-radius: 12px;
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(165, 159, 196, 0.25);
+  background: rgba(17, 13, 34, 0.7);
   font-size: 15px;
   cursor: pointer;
 }
 
 .tm-report-reason input {
-  accent-color: #00f5ff;
+  accent-color: var(--tm-cyan);
   width: 18px;
   height: 18px;
   margin: 0;
 }
 
 .tm-report-reason.is-on {
-  border-color: #00f5ff;
+  border-color: var(--tm-cyan);
   background: rgba(0, 245, 255, 0.1);
 }
 
@@ -79,9 +79,9 @@
   margin: 0 0 10px;
   padding: 10px 12px;
   border-radius: 10px;
-  background: rgba(250, 204, 21, 0.12);
-  border: 1px solid rgba(250, 204, 21, 0.4);
-  color: #fde68a;
+  background: rgba(255, 184, 0, 0.12);
+  border: 1px solid rgba(255, 184, 0, 0.4);
+  color: var(--tm-amber-hot);
   font-size: 13px;
   line-height: 1.45;
 }
@@ -93,9 +93,9 @@
   min-height: 52px;
   padding: 10px 12px;
   border-radius: 12px;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  background: #070810;
-  color: #f8fafc;
+  border: 1px solid rgba(165, 159, 196, 0.3);
+  background: var(--tm-night-0);
+  color: var(--tm-text);
   font-size: 16px; /* 16px stops iOS zooming on focus */
   margin-bottom: 10px;
 }
@@ -130,15 +130,15 @@
 }
 
 .tm-report-secondary {
-  border: 1px solid rgba(148, 163, 184, 0.4);
+  border: 1px solid rgba(165, 159, 196, 0.4);
   background: transparent;
-  color: #e2e8f0;
+  color: var(--tm-text);
 }
 
 .tm-report-cancel {
   border: none;
   background: transparent;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
   font-weight: 500;
   margin-top: 4px;
 }
@@ -147,7 +147,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #64748b;
+  color: var(--tm-text-mute);
   font-size: 12px;
   margin: 12px 0;
 }
@@ -157,7 +157,7 @@
   content: '';
   flex: 1;
   height: 1px;
-  background: rgba(148, 163, 184, 0.25);
+  background: rgba(165, 159, 196, 0.25);
 }
 
 .tm-report-done {
@@ -170,7 +170,7 @@
 }
 
 .tm-report-done p {
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
   margin: 6px 0 16px;
 }
 

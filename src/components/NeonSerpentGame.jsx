@@ -171,7 +171,7 @@ function drawSerpentFrame(ctx, state) {
     const pop = state.popups[i];
     ctx.save();
     ctx.globalAlpha = Math.max(0, pop.life / pop.maxLife);
-    ctx.font = 'bold 13px "Courier New", monospace';
+    ctx.font = 'bold 13px "Oxanium", "Courier New", monospace';
     ctx.textAlign = 'center';
     ctx.fillStyle = pop.color;
     ctx.fillText(pop.text, Math.min(SERPENT_CANVAS_SIZE - 46, Math.max(46, pop.x)), Math.max(18, pop.y));

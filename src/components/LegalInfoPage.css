@@ -1,7 +1,7 @@
 .tm-legal-page {
   min-height: 100dvh;
-  background: radial-gradient(circle at top, rgba(0, 245, 255, 0.08), transparent 45%), #070810;
-  color: #e2e8f0;
+  background: radial-gradient(circle at top, rgba(0, 245, 255, 0.08), transparent 45%), var(--tm-night-0);
+  color: var(--tm-text);
   font-family: system-ui, -apple-system, sans-serif;
   padding: 16px 14px 56px;
   box-sizing: border-box;
@@ -22,7 +22,7 @@
 }
 
 .tm-legal-back {
-  color: #00f5ff;
+  color: var(--tm-cyan);
   text-decoration: none;
   font-weight: 700;
   font-size: 14px;
@@ -32,9 +32,9 @@
   display: inline-block;
   padding: 5px 10px;
   border-radius: 999px;
-  background: rgba(250, 204, 21, 0.14);
-  border: 1px solid rgba(250, 204, 21, 0.45);
-  color: #fde047;
+  background: rgba(255, 184, 0, 0.14);
+  border: 1px solid rgba(255, 184, 0, 0.45);
+  color: var(--tm-amber);
   font-size: 12px;
   font-weight: 700;
 }
@@ -49,9 +49,9 @@
 .tm-legal-nav-link {
   padding: 7px 12px;
   border-radius: 10px;
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  color: #cbd5e1;
+  background: rgba(17, 13, 34, 0.85);
+  border: 1px solid rgba(165, 159, 196, 0.22);
+  color: var(--tm-text-soft);
   text-decoration: none;
   font-size: 13px;
   font-weight: 600;
@@ -64,8 +64,8 @@
 }
 
 .tm-legal-card {
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(17, 13, 34, 0.9);
+  border: 1px solid rgba(165, 159, 196, 0.25);
   border-radius: 16px;
   padding: clamp(18px, 4vw, 28px);
 }
@@ -73,12 +73,12 @@
 .tm-legal-card h1 {
   margin: 0 0 6px;
   font-size: clamp(22px, 5vw, 30px);
-  color: #f8fafc;
+  color: var(--tm-text);
 }
 
 .tm-legal-sub {
   margin: 0 0 18px;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
   font-size: 15px;
   line-height: 1.5;
 }
@@ -86,13 +86,13 @@
 .tm-legal-section {
   margin-top: 20px;
   padding-top: 16px;
-  border-top: 1px solid rgba(148, 163, 184, 0.16);
+  border-top: 1px solid rgba(165, 159, 196, 0.16);
 }
 
 .tm-legal-section h2 {
   margin: 0 0 10px;
   font-size: 17px;
-  color: #facc15;
+  color: var(--tm-amber);
 }
 
 .tm-legal-section ul {
@@ -100,7 +100,7 @@
   padding-left: 20px;
   display: grid;
   gap: 8px;
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
   line-height: 1.55;
   font-size: 14px;
 }
@@ -116,7 +116,7 @@
   gap: 6px;
   font-size: 13px;
   font-weight: 600;
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
 }
 
 .tm-legal-input {
@@ -124,9 +124,9 @@
   box-sizing: border-box;
   padding: 10px 12px;
   border-radius: 10px;
-  background: #070810;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  color: #f8fafc;
+  background: var(--tm-night-0);
+  border: 1px solid rgba(165, 159, 196, 0.35);
+  color: var(--tm-text);
   font-size: 14px;
   font-family: inherit;
 }
@@ -151,7 +151,7 @@
 .tm-legal-form-msg {
   padding: 10px 12px;
   border-radius: 10px;
-  background: rgba(15, 23, 42, 0.95);
+  background: rgba(17, 13, 34, 0.95);
   border: 1px solid rgba(0, 245, 255, 0.35);
   font-size: 13px;
   line-height: 1.45;

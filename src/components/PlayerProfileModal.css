@@ -1,7 +1,7 @@
 /* Arcade Player Profile Modal */
 .tm-profile-modal {
   max-width: 760px;
-  border-color: rgba(0, 243, 255, 0.45);
+  border-color: rgba(25, 240, 255, 0.45);
 }
 .tm-profile-header {
   display: flex;
@@ -16,12 +16,12 @@
   width: 58px;
   height: 58px;
   border-radius: 16px;
-  background: linear-gradient(135deg, #00f3ff, #ec4899);
+  background: linear-gradient(135deg, var(--tm-cyan), var(--tm-pink));
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 30px;
-  box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
+  box-shadow: 0 0 20px rgba(25, 240, 255, 0.4);
 }
 .tm-profile-stats-grid {
   display: grid;
@@ -42,7 +42,7 @@
 }
 .tm-stat-lbl {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
   font-weight: 700;
   margin-top: 3px;
 }
@@ -60,8 +60,8 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 .tm-badge-card.unlocked {
-  background: rgba(0, 243, 255, 0.09);
-  border-color: rgba(0, 243, 255, 0.4);
+  background: rgba(25, 240, 255, 0.09);
+  border-color: rgba(25, 240, 255, 0.4);
 }
 .tm-badge-card.locked {
   background: rgba(255, 255, 255, 0.02);
@@ -93,8 +93,8 @@
   margin-top: 14px;
   padding: 12px 14px;
   border-radius: 14px;
-  background: linear-gradient(135deg, rgba(0, 243, 255, 0.08), rgba(236, 72, 153, 0.08));
-  border: 1px solid rgba(0, 243, 255, 0.3);
+  background: linear-gradient(135deg, rgba(25, 240, 255, 0.08), rgba(255, 46, 136, 0.08));
+  border: 1px solid rgba(25, 240, 255, 0.3);
 }
 
 .tm-creator-stats-head {
@@ -105,7 +105,7 @@
   flex-wrap: wrap;
   font-size: 11px;
   font-weight: 900;
-  color: #00f3ff;
+  color: var(--tm-cyan);
   letter-spacing: 0.06em;
   margin-bottom: 10px;
 }
@@ -134,7 +134,7 @@
 
 .tm-creator-stat-item span {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
 }
 
 .tm-creator-notif-box {
@@ -142,7 +142,7 @@
   padding: 12px 14px;
   border-radius: 14px;
   background: rgba(9, 11, 22, 0.78);
-  border: 1px solid rgba(250, 204, 21, 0.25);
+  border: 1px solid rgba(255, 184, 0, 0.25);
 }
 
 .tm-creator-notif-head {
@@ -151,7 +151,7 @@
   align-items: center;
   font-size: 12px;
   font-weight: 900;
-  color: #facc15;
+  color: var(--tm-amber);
   margin-bottom: 8px;
 }
 
@@ -172,10 +172,10 @@
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.04);
   font-size: 12px;
-  color: #e2e8f0;
+  color: var(--tm-text);
 }
 
 .tm-creator-notif-item.unread {
-  border-left: 3px solid #facc15;
-  background: rgba(250, 204, 21, 0.09);
+  border-left: 3px solid var(--tm-amber);
+  background: rgba(255, 184, 0, 0.09);
 }

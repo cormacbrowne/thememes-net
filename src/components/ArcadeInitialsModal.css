@@ -1,9 +1,9 @@
 .tm-initials-modal {
   max-width: 460px;
   width: min(94vw, 460px);
-  border-color: rgba(250, 204, 21, 0.72);
-  background: radial-gradient(circle at top, rgba(30, 41, 59, 0.98), rgba(9, 13, 28, 0.99));
-  box-shadow: 0 0 36px rgba(250, 204, 21, 0.22), 0 0 60px rgba(0, 243, 255, 0.14);
+  border-color: rgba(255, 184, 0, 0.72);
+  background: radial-gradient(circle at top, rgba(27, 21, 54, 0.98), rgba(9, 13, 28, 0.99));
+  box-shadow: 0 0 36px rgba(255, 184, 0, 0.22), 0 0 60px rgba(25, 240, 255, 0.14);
 }
 
 .tm-initials-score-card {
@@ -14,8 +14,8 @@
   padding: 12px 14px;
   margin-bottom: 14px;
   border-radius: 14px;
-  background: rgba(15, 23, 42, 0.86);
-  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: rgba(17, 13, 34, 0.86);
+  border: 1px solid rgba(25, 240, 255, 0.35);
   text-align: center;
 }
 
@@ -23,8 +23,8 @@
   font-size: 30px;
   font-weight: 900;
   letter-spacing: 0.04em;
-  color: #facc15;
-  text-shadow: 0 0 14px rgba(250, 204, 21, 0.45);
+  color: var(--tm-amber);
+  text-shadow: 0 0 14px rgba(255, 184, 0, 0.45);
 }
 
 .tm-initials-drums {
@@ -42,14 +42,14 @@
   gap: 6px;
   padding: 8px;
   border-radius: 14px;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1.5px solid rgba(148, 163, 184, 0.28);
+  background: rgba(17, 13, 34, 0.9);
+  border: 1.5px solid rgba(165, 159, 196, 0.28);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .tm-initials-slot.active {
-  border-color: #38bdf8;
-  box-shadow: 0 0 18px rgba(56, 189, 248, 0.35);
+  border-color: var(--tm-cyan);
+  box-shadow: 0 0 18px rgba(25, 240, 255, 0.35);
 }
 
 .tm-initials-slot.blocked {
@@ -61,9 +61,9 @@
   width: 100%;
   min-height: 40px;
   border-radius: 10px;
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  background: rgba(30, 41, 59, 0.9);
-  color: #e2e8f0;
+  border: 1px solid rgba(25, 240, 255, 0.35);
+  background: rgba(27, 21, 54, 0.9);
+  color: var(--tm-text);
   font-size: 16px;
   font-weight: 900;
   cursor: pointer;
@@ -71,8 +71,8 @@
 
 .tm-initials-step-btn:hover,
 .tm-initials-step-btn:focus-visible {
-  background: rgba(56, 189, 248, 0.22);
-  border-color: #38bdf8;
+  background: rgba(25, 240, 255, 0.22);
+  border-color: var(--tm-cyan);
   color: #fff;
 }
 
@@ -80,29 +80,29 @@
   width: 100%;
   min-height: 62px;
   border-radius: 12px;
-  border: 2px solid rgba(250, 204, 21, 0.45);
-  background: linear-gradient(180deg, rgba(2, 6, 23, 0.98), rgba(15, 23, 42, 0.95));
-  color: #facc15;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  border: 2px solid rgba(255, 184, 0, 0.45);
+  background: linear-gradient(180deg, rgba(7, 6, 15, 0.98), rgba(17, 13, 34, 0.95));
+  color: var(--tm-amber);
+  font-family: var(--tm-font-display);
   font-size: 32px;
   font-weight: 900;
   letter-spacing: 0.04em;
   cursor: pointer;
-  text-shadow: 0 0 12px rgba(250, 204, 21, 0.5);
+  text-shadow: 0 0 12px rgba(255, 184, 0, 0.5);
 }
 
 .tm-initials-hint {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
   text-align: center;
   margin-bottom: 10px;
 }
 
 .tm-initials-for-fun {
   font-size: 11px;
-  color: #cbd5e1;
-  background: rgba(250, 204, 21, 0.08);
-  border: 1px solid rgba(250, 204, 21, 0.26);
+  color: var(--tm-text-soft);
+  background: rgba(255, 184, 0, 0.08);
+  border: 1px solid rgba(255, 184, 0, 0.26);
   border-radius: 10px;
   padding: 8px 10px;
   text-align: center;

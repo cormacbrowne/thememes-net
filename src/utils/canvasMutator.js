@@ -160,7 +160,7 @@ export function renderArtworkWithFilter(ctx, W, areaY, areaH, filterMode, drawAr
     for (let y = areaY; y < areaY + areaH; y += 4) {
       ctx.fillRect(0, y, W, 2);
     }
-    ctx.font = 'bold 14px "Courier New", monospace';
+    ctx.font = 'bold 14px "Oxanium", "Courier New", monospace';
     ctx.fillStyle = 'rgba(0, 243, 255, 0.85)';
     ctx.textAlign = 'left';
     ctx.fillText('PLAY ▶  SP  04:20:69', 18, areaY + 26);
@@ -198,7 +198,7 @@ export function stampArcadeCartridgeFooter(ctx, W, H) {
   const fs = Math.max(10, Math.round(Math.min(W, H) * 0.022));
   const pillH = Math.max(18, Math.round(fs * 1.65));
   ctx.save();
-  ctx.font = `400 ${fs}px "Audiowide", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+  ctx.font = `600 ${fs}px "Oxanium", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
   const tw = ctx.measureText(label).width;
   const markW = Math.max(10, Math.round(fs * 0.95));
   const markGap = Math.max(5, Math.round(fs * 0.4));

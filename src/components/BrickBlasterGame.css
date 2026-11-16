@@ -31,22 +31,22 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.8px;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
 }
 
 .tm-blaster-stat-val {
-  font-family: 'Courier New', monospace;
+  font-family: var(--tm-font-display);
   font-size: 16px;
   font-weight: 900;
-  color: #f8fafc;
+  color: var(--tm-text);
 }
 
 .tm-blaster-stat-val.pink {
-  color: #f472b6;
+  color: var(--tm-pink);
 }
 
 .tm-blaster-stat-val.gold {
-  color: #facc15;
+  color: var(--tm-amber);
 }
 
 .tm-blaster-level-strip {
@@ -57,10 +57,10 @@
   gap: 8px;
   padding: 8px 12px;
   border-radius: 12px;
-  background: rgba(15, 23, 42, 0.88);
-  border: 1px solid rgba(250, 204, 21, 0.32);
+  background: rgba(17, 13, 34, 0.88);
+  border: 1px solid rgba(255, 184, 0, 0.32);
   font-size: 12px;
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
 }
 
 .tm-blaster-power-pills {
@@ -74,15 +74,15 @@
   border-radius: 999px;
   font-size: 11px;
   font-weight: 800;
-  background: rgba(30, 41, 59, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  color: #cbd5e1;
+  background: rgba(27, 21, 54, 0.9);
+  border: 1px solid rgba(165, 159, 196, 0.28);
+  color: var(--tm-text-soft);
 }
 
 .tm-blaster-pill.active-multi {
-  border-color: rgba(250, 204, 21, 0.8);
-  background: rgba(250, 204, 21, 0.2);
-  color: #fde047;
+  border-color: rgba(255, 184, 0, 0.8);
+  background: rgba(255, 184, 0, 0.2);
+  color: var(--tm-amber);
 }
 
 .tm-blaster-pill.active-laser {
@@ -92,8 +92,8 @@
 }
 
 .tm-blaster-pill.active-wide {
-  border-color: rgba(56, 189, 248, 0.8);
-  background: rgba(56, 189, 248, 0.2);
+  border-color: rgba(25, 240, 255, 0.8);
+  background: rgba(25, 240, 255, 0.2);
   color: #7dd3fc;
 }
 
@@ -139,7 +139,7 @@
   margin: 0;
   font-size: 24px;
   font-weight: 900;
-  color: #f472b6;
+  color: var(--tm-pink);
   text-shadow: 0 0 14px rgba(244, 114, 182, 0.55);
 }
 
@@ -148,7 +148,7 @@
   max-width: 340px;
   font-size: 13px;
   line-height: 1.5;
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
 }
 
 .tm-blaster-overlay-actions {
@@ -172,7 +172,7 @@
   border-radius: 14px;
   border: 1.5px solid rgba(244, 114, 182, 0.45);
   background: linear-gradient(180deg, rgba(24, 16, 40, 0.96), rgba(40, 22, 58, 0.92));
-  color: #f8fafc;
+  color: var(--tm-text);
   font-size: 14px;
   font-weight: 900;
   cursor: pointer;
@@ -187,8 +187,8 @@
 }
 
 .tm-blaster-pad-btn.launch {
-  border-color: rgba(250, 204, 21, 0.72);
-  color: #fde047;
+  border-color: rgba(255, 184, 0, 0.72);
+  color: var(--tm-amber);
 }
 
 @media (max-width: 480px) {

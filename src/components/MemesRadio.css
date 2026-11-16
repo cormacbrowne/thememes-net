@@ -13,8 +13,8 @@
 }
 
 .tm-radio-toggle.is-on {
-  border-color: #ec4899;
-  box-shadow: 0 0 12px rgba(236, 72, 153, 0.45);
+  border-color: var(--tm-pink);
+  box-shadow: 0 0 12px rgba(255, 46, 136, 0.45);
 }
 
 .tm-radio-toggle-icon {
@@ -32,7 +32,7 @@
 .tm-radio-eq i {
   width: 3px;
   height: 100%;
-  background: #ec4899;
+  background: var(--tm-pink);
   border-radius: 1px;
   transform-origin: bottom;
   animation: tm-radio-eq 0.9s ease-in-out infinite;
@@ -40,12 +40,12 @@
 
 .tm-radio-eq i:nth-child(2) {
   animation-delay: -0.3s;
-  background: #00f3ff;
+  background: var(--tm-cyan);
 }
 
 .tm-radio-eq i:nth-child(3) {
   animation-delay: -0.6s;
-  background: #facc15;
+  background: var(--tm-amber);
 }
 
 @keyframes tm-radio-eq {
@@ -61,10 +61,10 @@
 /* ---------- Cassette deck (Extras drawer) ---------- */
 .tm-radio-deck {
   background: linear-gradient(160deg, rgba(30, 16, 52, 0.95), rgba(10, 12, 28, 0.95));
-  border: 1px solid rgba(236, 72, 153, 0.45);
+  border: 1px solid rgba(255, 46, 136, 0.45);
   border-radius: 14px;
   padding: 14px;
-  color: #e2e8f0;
+  color: var(--tm-text);
 }
 
 .tm-radio-head {
@@ -79,26 +79,26 @@
 .tm-radio-brand {
   font-weight: 900;
   letter-spacing: 0.06em;
-  color: #facc15;
+  color: var(--tm-amber);
   font-size: 13px;
 }
 
 .tm-radio-sub {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
 }
 
 .tm-radio-cassette {
   position: relative;
-  background: linear-gradient(180deg, #1f2937, #0f172a);
-  border: 2px solid #334155;
+  background: linear-gradient(180deg, #1f2937, var(--tm-night-1));
+  border: 2px solid var(--tm-night-3);
   border-radius: 10px;
   padding: 10px 12px 12px;
   margin-bottom: 10px;
 }
 
 .tm-radio-label {
-  background: linear-gradient(90deg, #fde68a, #fbcfe8);
+  background: linear-gradient(90deg, var(--tm-amber-hot), var(--tm-pink-hot));
   color: #1e1b4b;
   border-radius: 6px;
   padding: 6px 10px;
@@ -116,7 +116,7 @@
 }
 
 .tm-radio-label-track {
-  font-family: 'Press Start 2P', ui-monospace, monospace;
+  font-family: var(--tm-font-arcade);
   font-size: 9px;
   white-space: nowrap;
   overflow: hidden;
@@ -134,9 +134,9 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  border: 3px solid #e2e8f0;
-  background: repeating-conic-gradient(#0f172a 0deg 30deg, #475569 30deg 60deg);
-  box-shadow: inset 0 0 0 8px #1e293b;
+  border: 3px solid var(--tm-text);
+  background: repeating-conic-gradient(var(--tm-night-1) 0deg 30deg, var(--tm-night-3) 30deg 60deg);
+  box-shadow: inset 0 0 0 8px var(--tm-night-2);
 }
 
 .tm-radio-tape-window {
@@ -144,7 +144,7 @@
   height: 22px;
   border-radius: 4px;
   background: linear-gradient(180deg, #3f2a1d, #1c130d);
-  border: 1px solid #64748b;
+  border: 1px solid var(--tm-text-mute);
 }
 
 .tm-radio-deck.is-playing .tm-radio-reel {
@@ -159,7 +159,7 @@
 
 .tm-radio-note {
   font-size: 11px;
-  color: #a5f3fc;
+  color: var(--tm-cyan-hot);
   margin: 0 0 8px;
 }
 
@@ -174,7 +174,7 @@
 .tm-radio-btn {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #f8fafc;
+  color: var(--tm-text);
   font-weight: 800;
   border-radius: 8px;
   padding: 8px 12px;
@@ -188,7 +188,7 @@
 }
 
 .tm-radio-play {
-  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  background: linear-gradient(135deg, var(--tm-pink), #8b5cf6);
   border-color: transparent;
 }
 
@@ -201,7 +201,7 @@
 
 .tm-radio-volume input {
   width: 100%;
-  accent-color: #ec4899;
+  accent-color: var(--tm-pink);
 }
 
 .tm-radio-stations {
@@ -213,7 +213,7 @@
 .tm-radio-station {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
   border-radius: 8px;
   padding: 8px;
   font-size: 12px;
@@ -223,9 +223,9 @@
 }
 
 .tm-radio-station.active {
-  border-color: #00f3ff;
+  border-color: var(--tm-cyan);
   color: #fff;
-  background: rgba(0, 243, 255, 0.12);
+  background: rgba(25, 240, 255, 0.12);
 }
 
 .tm-radio-station.locked {
@@ -240,8 +240,8 @@
 .tm-radio-lock-tag {
   font-size: 10px;
   font-weight: 800;
-  color: #facc15;
-  background: rgba(250, 204, 21, 0.14);
+  color: var(--tm-amber);
+  background: rgba(255, 184, 0, 0.14);
   padding: 1px 6px;
   border-radius: 999px;
 }
@@ -249,30 +249,30 @@
 /* Cassette Skins (Phase 28.16) */
 .tm-cassette-skin-gold-chrome {
   background: linear-gradient(155deg, #78350f, #ca8a04, #451a03);
-  border-color: #facc15;
-  box-shadow: 0 0 18px rgba(250, 204, 21, 0.35);
+  border-color: var(--tm-amber);
+  box-shadow: 0 0 18px rgba(255, 184, 0, 0.35);
 }
 
 .tm-cassette-skin-gold-chrome .tm-radio-label {
-  background: linear-gradient(90deg, #fef08a, #fde047);
+  background: linear-gradient(90deg, var(--tm-amber-hot), var(--tm-amber));
   color: #422006;
 }
 
 .tm-cassette-skin-clear-neon {
-  background: linear-gradient(155deg, rgba(0, 243, 255, 0.2), rgba(236, 72, 153, 0.18));
-  border-color: #00f3ff;
-  box-shadow: inset 0 0 18px rgba(0, 243, 255, 0.22);
+  background: linear-gradient(155deg, rgba(25, 240, 255, 0.2), rgba(255, 46, 136, 0.18));
+  border-color: var(--tm-cyan);
+  box-shadow: inset 0 0 18px rgba(25, 240, 255, 0.22);
 }
 
 .tm-cassette-skin-vhs-static {
-  background: linear-gradient(160deg, #1e1b4b, #090d16);
+  background: linear-gradient(160deg, #1e1b4b, var(--tm-night-0));
   border-color: #a855f7;
   box-shadow: 0 0 14px rgba(168, 85, 247, 0.35);
 }
 
 .tm-cassette-skin-vhs-static .tm-radio-label {
-  background: linear-gradient(90deg, #c084fc, #38bdf8);
-  color: #0f172a;
+  background: linear-gradient(90deg, #c084fc, var(--tm-cyan));
+  color: var(--tm-night-1);
 }
 
 /* ---------- Beat-synced visuals (only while the radio plays) ----------
@@ -288,7 +288,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  box-shadow: inset 0 0 42px rgba(236, 72, 153, 0.4);
+  box-shadow: inset 0 0 42px rgba(255, 46, 136, 0.4);
   opacity: calc(var(--beat, 0) * 0.9);
   transition: opacity 0.2s ease-out;
 }
@@ -339,8 +339,8 @@
 }
 
 .tm-radio-chevron-btn.is-open {
-  border-color: #00f3ff;
-  color: #00f3ff;
+  border-color: var(--tm-cyan);
+  color: var(--tm-cyan);
 }
 
 .tm-radio-eq-quick-btn {
@@ -365,19 +365,19 @@
   width: min(304px, calc(100vw - 16px));
   z-index: 1250;
   background: linear-gradient(165deg, rgba(11, 15, 34, 0.98), rgba(24, 11, 44, 0.98));
-  border: 1.5px solid #00f3ff;
+  border: 1.5px solid var(--tm-cyan);
   border-radius: 14px;
   padding: 10px;
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.92), 0 0 24px rgba(0, 243, 255, 0.25);
-  color: #f8fafc;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.92), 0 0 24px rgba(25, 240, 255, 0.25);
+  color: var(--tm-text);
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
 .tm-radio-popover.is-dragging {
-  box-shadow: 0 24px 52px rgba(0, 0, 0, 0.96), 0 0 32px rgba(236, 72, 153, 0.45);
-  border-color: #ec4899;
+  box-shadow: 0 24px 52px rgba(0, 0, 0, 0.96), 0 0 32px rgba(255, 46, 136, 0.45);
+  border-color: var(--tm-pink);
 }
 
 .tm-radio-drag-head {
@@ -385,7 +385,7 @@
 }
 
 .tm-radio-drag-grip {
-  color: #67e8f9;
+  color: var(--tm-cyan-hot);
   opacity: 0.75;
   font-size: 14px;
   cursor: grab;
@@ -410,13 +410,13 @@
 .tm-radio-pop-kicker {
   font-size: 10.5px;
   font-weight: 800;
-  color: #facc15;
+  color: var(--tm-amber);
 }
 
 .tm-radio-pop-track {
   font-size: 11.5px;
   font-weight: 900;
-  color: #e2e8f0;
+  color: var(--tm-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -434,8 +434,8 @@
   padding: 4px 8px;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.22);
-  background: rgba(15, 23, 42, 0.9);
-  color: #f8fafc;
+  background: rgba(17, 13, 34, 0.9);
+  color: var(--tm-text);
   font-size: 12px;
   font-weight: 900;
   cursor: pointer;
@@ -456,7 +456,7 @@
 
 .tm-radio-pop-volume input {
   flex: 1;
-  accent-color: #ec4899;
+  accent-color: var(--tm-pink);
 }
 
 .tm-radio-pop-list {
@@ -477,8 +477,8 @@
   padding: 7px 10px;
   border-radius: 9px;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(15, 23, 42, 0.72);
-  color: #e2e8f0;
+  background: rgba(17, 13, 34, 0.72);
+  color: var(--tm-text);
   font-size: 12px;
   font-weight: 700;
   text-align: left;
@@ -487,21 +487,21 @@
 }
 
 .tm-radio-pop-station.active {
-  border-color: #00f3ff;
-  background: rgba(0, 243, 255, 0.16);
+  border-color: var(--tm-cyan);
+  background: rgba(25, 240, 255, 0.16);
   color: #ffffff;
 }
 
 .tm-radio-pop-live {
   font-size: 10px;
   font-weight: 900;
-  color: #4ade80;
+  color: var(--tm-ok);
 }
 
 /* ---------- Inline station strip (InsertCoinIntro & MobileGamesDrawer) ---------- */
 .tm-radio-strip {
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid rgba(0, 243, 255, 0.28);
+  background: rgba(17, 13, 34, 0.85);
+  border: 1px solid rgba(25, 240, 255, 0.28);
   border-radius: 12px;
   padding: 8px 10px;
   margin-bottom: 10px;
@@ -515,7 +515,7 @@
   gap: 6px;
   font-size: 11px;
   font-weight: 800;
-  color: #a5f3fc;
+  color: var(--tm-cyan-hot);
   margin-bottom: 6px;
 }
 
@@ -534,8 +534,8 @@
   padding: 5px 8px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(2, 6, 23, 0.85);
-  color: #cbd5e1;
+  background: rgba(7, 6, 15, 0.85);
+  color: var(--tm-text-soft);
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
@@ -543,8 +543,8 @@
 }
 
 .tm-radio-strip-pill.active {
-  border-color: #ec4899;
-  background: rgba(236, 72, 153, 0.22);
+  border-color: var(--tm-pink);
+  background: rgba(255, 46, 136, 0.22);
   color: #ffffff;
 }
 
@@ -574,16 +574,16 @@
   padding: 4px 8px;
   border-radius: 999px;
   background: rgba(10, 14, 30, 0.95);
-  border: 1.5px solid rgba(236, 72, 153, 0.72);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.78), 0 0 16px rgba(236, 72, 153, 0.34);
-  color: #f8fafc;
+  border: 1.5px solid rgba(255, 46, 136, 0.72);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.78), 0 0 16px rgba(255, 46, 136, 0.34);
+  color: var(--tm-text);
   font-size: 11px;
   font-weight: 800;
 }
 
 .tm-mobile-now-playing.is-dragging {
-  border-color: #00f3ff;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.9), 0 0 24px rgba(0, 243, 255, 0.55);
+  border-color: var(--tm-cyan);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.9), 0 0 24px rgba(25, 240, 255, 0.55);
 }
 
 .tm-now-playing-grip {
@@ -591,7 +591,7 @@
   align-items: center;
   justify-content: center;
   padding: 4px 5px;
-  color: #f472b6;
+  color: var(--tm-pink);
   font-size: 14px;
   cursor: grab;
   user-select: none;
@@ -652,9 +652,9 @@
 
 .tm-radio-btn.is-active-mode,
 .tm-radio-chip-btn.is-active {
-  border-color: #00f3ff;
-  color: #e0f2fe;
-  background: rgba(0, 243, 255, 0.16);
+  border-color: var(--tm-cyan);
+  color: var(--tm-cyan-hot);
+  background: rgba(25, 240, 255, 0.16);
 }
 
 .tm-radio-pop-features,
@@ -665,8 +665,8 @@
   margin-bottom: 10px;
   padding: 8px;
   border-radius: 10px;
-  background: rgba(2, 6, 23, 0.55);
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(7, 6, 15, 0.55);
+  border: 1px solid rgba(165, 159, 196, 0.18);
 }
 
 .tm-radio-feat-row {
@@ -679,14 +679,14 @@
 .tm-radio-feat-label {
   font-size: 11px;
   font-weight: 700;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
   margin-right: 2px;
 }
 
 .tm-radio-chip-btn {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.16);
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
   border-radius: 999px;
   padding: 4px 9px;
   font-size: 11px;
@@ -702,12 +702,12 @@
   gap: 8px;
   font-size: 11px;
   font-weight: 700;
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
   cursor: pointer;
 }
 
 .tm-radio-toggle-row input {
-  accent-color: #00f3ff;
+  accent-color: var(--tm-cyan);
   width: 16px;
   height: 16px;
   cursor: pointer;

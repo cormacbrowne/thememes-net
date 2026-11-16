@@ -51,7 +51,7 @@ function drawBlasterFrame(ctx, state) {
   // Top level & pattern header inside CRT
   ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
   ctx.fillRect(10, 10, BLASTER_WIDTH - 20, 34);
-  ctx.font = 'bold 13px "Courier New", monospace';
+  ctx.font = 'bold 13px "Oxanium", "Courier New", monospace';
   ctx.textAlign = 'center';
   ctx.fillStyle = '#fde047';
   ctx.fillText(
@@ -72,13 +72,13 @@ function drawBlasterFrame(ctx, state) {
     ctx.fillRect(br.x, br.y, br.w, 3);
 
     if (br.isMystery) {
-      ctx.font = 'bold 12px "Courier New", monospace';
+      ctx.font = 'bold 12px "Oxanium", "Courier New", monospace';
       ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('★', br.x + br.w / 2, br.y + br.h / 2 + 1);
     } else if (br.hp > 1) {
-      ctx.font = 'bold 10px "Courier New", monospace';
+      ctx.font = 'bold 10px "Oxanium", "Courier New", monospace';
       ctx.fillStyle = '#0f172a';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -159,7 +159,7 @@ function drawBlasterFrame(ctx, state) {
 
   // Serve prompt if ball attached
   if (state.balls.some((b) => b.attached) && state.status === 'playing') {
-    ctx.font = 'bold 12px "Courier New", monospace';
+    ctx.font = 'bold 12px "Oxanium", "Courier New", monospace';
     ctx.textAlign = 'center';
     ctx.fillStyle = '#fde047';
     ctx.fillText('TAP OR PRESS SPACE TO LAUNCH BALL', BLASTER_WIDTH / 2, BLASTER_HEIGHT - 74);

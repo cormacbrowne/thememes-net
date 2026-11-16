@@ -14,8 +14,8 @@
   gap: 8px;
   padding: 10px 14px;
   border-radius: 14px;
-  background: linear-gradient(145deg, rgba(15, 23, 42, 0.94), rgba(30, 27, 75, 0.88));
-  border: 1px solid rgba(0, 243, 255, 0.35);
+  background: linear-gradient(145deg, rgba(17, 13, 34, 0.94), rgba(30, 27, 75, 0.88));
+  border: 1px solid rgba(25, 240, 255, 0.35);
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
 }
 
@@ -31,22 +31,22 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.8px;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
 }
 
 .tm-invaders-stat-val {
-  font-family: 'Courier New', monospace;
+  font-family: var(--tm-font-display);
   font-size: 16px;
   font-weight: 900;
-  color: #f8fafc;
+  color: var(--tm-text);
 }
 
 .tm-invaders-stat-val.cyan {
-  color: #00f3ff;
+  color: var(--tm-cyan);
 }
 
 .tm-invaders-stat-val.gold {
-  color: #facc15;
+  color: var(--tm-amber);
 }
 
 .tm-invaders-canvas-wrap {
@@ -56,9 +56,9 @@
   aspect-ratio: 4 / 5;
   border-radius: 16px;
   overflow: hidden;
-  border: 2px solid rgba(0, 243, 255, 0.48);
+  border: 2px solid rgba(25, 240, 255, 0.48);
   background: #070913;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 28px rgba(0, 243, 255, 0.16);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 28px rgba(25, 240, 255, 0.16);
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
@@ -91,8 +91,8 @@
   margin: 0;
   font-size: 24px;
   font-weight: 900;
-  color: #00f3ff;
-  text-shadow: 0 0 14px rgba(0, 243, 255, 0.55);
+  color: var(--tm-cyan);
+  text-shadow: 0 0 14px rgba(25, 240, 255, 0.55);
 }
 
 .tm-invaders-overlay p {
@@ -100,7 +100,7 @@
   max-width: 340px;
   font-size: 13px;
   line-height: 1.5;
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
 }
 
 .tm-invaders-overlay-actions {
@@ -122,9 +122,9 @@
 .tm-invaders-pad-btn {
   min-height: 52px;
   border-radius: 14px;
-  border: 1.5px solid rgba(0, 243, 255, 0.45);
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.9));
-  color: #f8fafc;
+  border: 1.5px solid rgba(25, 240, 255, 0.45);
+  background: linear-gradient(180deg, rgba(17, 13, 34, 0.95), rgba(27, 21, 54, 0.9));
+  color: var(--tm-text);
   font-size: 15px;
   font-weight: 900;
   letter-spacing: 0.4px;
@@ -136,18 +136,18 @@
 
 .tm-invaders-pad-btn:active {
   transform: translateY(1px);
-  background: rgba(0, 243, 255, 0.22);
+  background: rgba(25, 240, 255, 0.22);
 }
 
 .tm-invaders-pad-btn.fire {
   border-color: rgba(244, 114, 182, 0.72);
-  background: linear-gradient(135deg, rgba(236, 72, 153, 0.35), rgba(168, 85, 247, 0.35));
-  color: #fde047;
-  box-shadow: 0 0 18px rgba(236, 72, 153, 0.28);
+  background: linear-gradient(135deg, rgba(255, 46, 136, 0.35), rgba(168, 85, 247, 0.35));
+  color: var(--tm-amber);
+  box-shadow: 0 0 18px rgba(255, 46, 136, 0.28);
 }
 
 .tm-invaders-pad-btn.fire:active {
-  background: linear-gradient(135deg, rgba(236, 72, 153, 0.65), rgba(168, 85, 247, 0.65));
+  background: linear-gradient(135deg, rgba(255, 46, 136, 0.65), rgba(168, 85, 247, 0.65));
 }
 
 .tm-invaders-boss-chip {
@@ -157,14 +157,14 @@
   gap: 10px;
   padding: 8px 12px;
   border-radius: 12px;
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid rgba(250, 204, 21, 0.35);
+  background: rgba(17, 13, 34, 0.85);
+  border: 1px solid rgba(255, 184, 0, 0.35);
   font-size: 12px;
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
 }
 
 .tm-invaders-boss-chip strong {
-  color: #fde047;
+  color: var(--tm-amber);
 }
 
 .tm-invaders-boss-thumb {
@@ -172,7 +172,7 @@
   height: 34px;
   border-radius: 6px;
   object-fit: cover;
-  border: 1px solid rgba(250, 204, 21, 0.6);
+  border: 1px solid rgba(255, 184, 0, 0.6);
   flex-shrink: 0;
 }
 

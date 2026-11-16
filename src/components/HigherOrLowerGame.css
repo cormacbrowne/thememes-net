@@ -8,8 +8,8 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  color: #f8fafc;
-  background: radial-gradient(circle at top, rgba(34, 197, 94, 0.13), rgba(2, 6, 23, 0.96) 65%);
+  color: var(--tm-text);
+  background: radial-gradient(circle at top, rgba(34, 197, 94, 0.13), rgba(7, 6, 15, 0.96) 65%);
 }
 
 .tm-hilow-header {
@@ -22,7 +22,7 @@
   gap: 8px;
   padding: 6px 10px;
   border-radius: 12px;
-  background: rgba(15, 23, 42, 0.9);
+  background: rgba(17, 13, 34, 0.9);
   border: 1px solid rgba(34, 197, 94, 0.35);
 }
 
@@ -38,7 +38,7 @@
   margin: 0;
   font-size: 16px;
   font-weight: 900;
-  color: #4ade80;
+  color: var(--tm-ok);
 }
 
 .tm-hilow-badge,
@@ -58,14 +58,14 @@
 }
 
 .tm-hilow-best {
-  border-color: rgba(250, 204, 21, 0.5);
-  color: #fef08a;
+  border-color: rgba(255, 184, 0, 0.5);
+  color: var(--tm-amber-hot);
 }
 
 .tm-hilow-btn {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.22);
-  color: #f8fafc;
+  color: var(--tm-text);
   border-radius: 999px;
   padding: 6px 11px;
   font-size: 12px;
@@ -80,7 +80,7 @@
   max-width: 860px;
   padding: 10px 14px;
   border-radius: 12px;
-  background: rgba(15, 23, 42, 0.95);
+  background: rgba(17, 13, 34, 0.95);
   border: 1px solid rgba(34, 197, 94, 0.45);
   font-size: 13px;
   line-height: 1.45;
@@ -119,13 +119,13 @@
   justify-content: center;
   font-size: 12px;
   font-weight: 900;
-  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  background: linear-gradient(135deg, var(--tm-pink), #8b5cf6);
   color: #ffffff;
 }
 
 .tm-hilow-card {
   background: rgba(10, 14, 30, 0.92);
-  border: 1px solid rgba(148, 163, 184, 0.28);
+  border: 1px solid rgba(165, 159, 196, 0.28);
   border-radius: 14px;
   overflow: hidden;
   display: flex;
@@ -133,12 +133,12 @@
 }
 
 .tm-hilow-card.is-win {
-  border-color: #22c55e;
+  border-color: var(--tm-ok);
   box-shadow: 0 0 22px rgba(34, 197, 94, 0.35);
 }
 
 .tm-hilow-card.is-loss {
-  border-color: #ef4444;
+  border-color: var(--tm-danger);
   box-shadow: 0 0 22px rgba(239, 68, 68, 0.35);
 }
 
@@ -161,18 +161,18 @@
   background: transparent;
   border: none;
   padding: 0;
-  color: #f8fafc;
+  color: var(--tm-text);
   font-size: 14px;
   font-weight: 800;
   text-align: left;
   cursor: pointer;
   text-decoration: underline;
-  text-decoration-color: rgba(56, 189, 248, 0.45);
+  text-decoration-color: rgba(25, 240, 255, 0.45);
 }
 
 .tm-hilow-meta {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
 }
 
 .tm-hilow-score-pill {
@@ -182,8 +182,8 @@
   font-size: 15px;
   font-weight: 900;
   text-align: center;
-  background: rgba(56, 189, 248, 0.14);
-  border: 1px solid rgba(56, 189, 248, 0.4);
+  background: rgba(25, 240, 255, 0.14);
+  border: 1px solid rgba(25, 240, 255, 0.4);
   color: #bae6fd;
 }
 
@@ -206,12 +206,12 @@
 }
 
 .tm-hilow-choice.is-higher {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
+  background: linear-gradient(135deg, var(--tm-ok), #16a34a);
   color: #052e16;
 }
 
 .tm-hilow-choice.is-lower {
-  background: linear-gradient(135deg, #f97316, #ef4444);
+  background: linear-gradient(135deg, #f97316, var(--tm-danger));
   color: #ffffff;
 }
 
@@ -219,7 +219,7 @@
   width: 100%;
   max-width: 520px;
   background: rgba(10, 14, 30, 0.94);
-  border: 1px solid rgba(236, 72, 153, 0.45);
+  border: 1px solid rgba(255, 46, 136, 0.45);
   border-radius: 16px;
   padding: 18px;
   text-align: center;
@@ -231,21 +231,21 @@
 .tm-hilow-share-card {
   padding: 16px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(88, 28, 135, 0.4));
-  border: 1px solid rgba(0, 243, 255, 0.35);
+  background: linear-gradient(135deg, rgba(17, 13, 34, 0.95), rgba(88, 28, 135, 0.4));
+  border: 1px solid rgba(25, 240, 255, 0.35);
 }
 
 .tm-hilow-share-kicker {
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.08em;
-  color: #00f3ff;
+  color: var(--tm-cyan);
 }
 
 .tm-hilow-share-card h2 {
   margin: 6px 0;
   font-size: 18px;
-  color: #fde047;
+  color: var(--tm-amber);
 }
 
 .tm-hilow-big-num {
@@ -275,14 +275,14 @@
 
 .tm-hilow-share-btn {
   border: none;
-  background: linear-gradient(135deg, #22c55e, #0ea5e9);
+  background: linear-gradient(135deg, var(--tm-ok), #0ea5e9);
   color: #052e16;
 }
 
 .tm-hilow-restart-btn {
   border: 1px solid rgba(255, 255, 255, 0.25);
   background: rgba(255, 255, 255, 0.08);
-  color: #f8fafc;
+  color: var(--tm-text);
 }
 
 @media (max-width: 860px) {

@@ -1,7 +1,7 @@
 .tm-hof-page {
   min-height: 100dvh;
-  background: radial-gradient(circle at top, #17153b, #070810 62%);
-  color: #f8fafc;
+  background: radial-gradient(circle at top, #17153b, var(--tm-night-0) 62%);
+  color: var(--tm-text);
   padding: 20px 14px 48px;
 }
 
@@ -25,8 +25,8 @@
   gap: 6px;
   padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(56, 189, 248, 0.45);
-  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(25, 240, 255, 0.45);
+  background: rgba(17, 13, 34, 0.85);
   color: #7df9ff;
   font-weight: 700;
   font-size: 13px;
@@ -36,21 +36,21 @@
 .tm-hof-hero {
   padding: 20px;
   border-radius: 18px;
-  background: linear-gradient(135deg, rgba(250, 204, 21, 0.14), rgba(168, 85, 247, 0.12));
-  border: 1.5px solid rgba(250, 204, 21, 0.55);
+  background: linear-gradient(135deg, rgba(255, 184, 0, 0.14), rgba(168, 85, 247, 0.12));
+  border: 1.5px solid rgba(255, 184, 0, 0.55);
   margin-bottom: 20px;
 }
 
 .tm-hof-hero h1 {
   margin: 0 0 6px;
   font-size: clamp(22px, 4vw, 30px);
-  color: #facc15;
+  color: var(--tm-amber);
 }
 
 .tm-hof-hero p {
   margin: 0;
   font-size: 14px;
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
   line-height: 1.55;
 }
 
@@ -61,7 +61,7 @@
 }
 
 .tm-hof-card {
-  background: rgba(15, 23, 42, 0.88);
+  background: rgba(17, 13, 34, 0.88);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 16px;
   padding: 12px;
@@ -71,15 +71,15 @@
 }
 
 .tm-hof-card.reigning {
-  border: 2px solid #facc15;
-  box-shadow: 0 0 24px rgba(250, 204, 21, 0.35), 0 0 12px rgba(168, 85, 247, 0.25);
+  border: 2px solid var(--tm-amber);
+  box-shadow: 0 0 24px rgba(255, 184, 0, 0.35), 0 0 12px rgba(168, 85, 247, 0.25);
 }
 
 .tm-hof-media {
   position: relative;
   border-radius: 10px;
   overflow: hidden;
-  background: #020617;
+  background: var(--tm-night-0);
 }
 
 .tm-hof-media img {
@@ -107,7 +107,7 @@
 
 .tm-hof-cap.bottom {
   bottom: 8px;
-  color: #facc15;
+  color: var(--tm-amber);
 }
 
 .tm-hof-meta {
@@ -121,8 +121,8 @@
 .tm-hof-empty {
   padding: 28px 18px;
   border-radius: 16px;
-  border: 1px dashed rgba(250, 204, 21, 0.4);
-  background: rgba(15, 23, 42, 0.72);
+  border: 1px dashed rgba(255, 184, 0, 0.4);
+  background: rgba(17, 13, 34, 0.72);
   text-align: center;
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
 }

@@ -1,10 +1,10 @@
 /* Phase 3: Meme Crush Saga (Candy-Crush Style Match-3 Puzzle) */
 .tm-crush-cabinet {
   background: linear-gradient(160deg, rgba(14, 18, 38, 0.96), rgba(32, 11, 48, 0.96));
-  border: 2px solid rgba(236, 72, 153, 0.55);
+  border: 2px solid rgba(255, 46, 136, 0.55);
   border-radius: 22px;
   padding: 16px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), 0 0 32px rgba(236, 72, 153, 0.2);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), 0 0 32px rgba(255, 46, 136, 0.2);
 }
 
 .tm-crush-hud-grid {
@@ -26,14 +26,14 @@
   display: block;
   font-size: 10px;
   font-weight: 800;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
   letter-spacing: 0.6px;
 }
 
 .tm-crush-stat-val {
   font-size: 18px;
   font-weight: 900;
-  color: #f8fafc;
+  color: var(--tm-text);
 }
 
 .tm-crush-progress-track {
@@ -47,7 +47,7 @@
 
 .tm-crush-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #00f3ff, #ec4899, #facc15);
+  background: linear-gradient(90deg, var(--tm-cyan), var(--tm-pink), var(--tm-amber));
   transition: width 0.25s ease;
 }
 
@@ -61,9 +61,9 @@
 }
 
 .tm-crush-booster-btn {
-  background: rgba(15, 23, 42, 0.9);
-  border: 1.5px solid rgba(0, 243, 255, 0.4);
-  color: #f8fafc;
+  background: rgba(17, 13, 34, 0.9);
+  border: 1.5px solid rgba(25, 240, 255, 0.4);
+  color: var(--tm-text);
   padding: 6px 12px;
   border-radius: 10px;
   font-size: 12px;
@@ -74,9 +74,9 @@
 
 .tm-crush-booster-btn:hover:not(:disabled),
 .tm-crush-booster-btn.active {
-  border-color: #facc15;
-  color: #facc15;
-  background: rgba(250, 204, 21, 0.16);
+  border-color: var(--tm-amber);
+  color: var(--tm-amber);
+  background: rgba(255, 184, 0, 0.16);
 }
 
 .tm-crush-booster-btn:disabled {
@@ -87,7 +87,7 @@
 .tm-crush-plays-pill {
   font-size: 11px;
   font-weight: 800;
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
 }
 
 .tm-crush-board-shell {
@@ -101,7 +101,7 @@
   grid-template-columns: repeat(8, 1fr);
   gap: 6px;
   background: rgba(5, 7, 15, 0.9);
-  border: 2px solid rgba(0, 243, 255, 0.35);
+  border: 2px solid rgba(25, 240, 255, 0.35);
   border-radius: 18px;
   padding: 10px;
   aspect-ratio: 1 / 1;
@@ -111,7 +111,7 @@
   position: relative;
   border-radius: 12px;
   border: 2px solid var(--candy-border, rgba(255, 255, 255, 0.25));
-  background: var(--candy-bg, rgba(30, 41, 59, 0.8));
+  background: var(--candy-bg, rgba(27, 21, 54, 0.8));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -129,13 +129,13 @@
 .tm-crush-tile.selected {
   transform: scale(1.12);
   border-color: #ffffff;
-  box-shadow: 0 0 18px #facc15, inset 0 0 10px rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 18px var(--tm-amber), inset 0 0 10px rgba(255, 255, 255, 0.5);
   z-index: 3;
 }
 
 @keyframes tmCrushHintPulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 0 rgba(250, 204, 21, 0); }
-  50% { transform: scale(1.12); box-shadow: 0 0 20px #facc15; border-color: #facc15; }
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 184, 0, 0); }
+  50% { transform: scale(1.12); box-shadow: 0 0 20px var(--tm-amber); border-color: var(--tm-amber); }
 }
 
 .tm-crush-tile.hint {
@@ -154,13 +154,13 @@
 
 .tm-crush-tile.special-striped-h,
 .tm-crush-tile.special-striped-v {
-  box-shadow: 0 0 16px #00f3ff, inset 0 0 12px rgba(0, 243, 255, 0.45);
+  box-shadow: 0 0 16px var(--tm-cyan), inset 0 0 12px rgba(25, 240, 255, 0.45);
 }
 
 .tm-crush-tile.special-color-bomb {
-  background: radial-gradient(circle, rgba(250, 204, 21, 0.45), rgba(236, 72, 153, 0.45), rgba(0, 243, 255, 0.45));
-  border-color: #facc15;
-  box-shadow: 0 0 20px #facc15;
+  background: radial-gradient(circle, rgba(255, 184, 0, 0.45), rgba(255, 46, 136, 0.45), rgba(25, 240, 255, 0.45));
+  border-color: var(--tm-amber);
+  box-shadow: 0 0 20px var(--tm-amber);
 }
 
 .tm-crush-emoji {
@@ -175,7 +175,7 @@
   right: 3px;
   font-size: 9px;
   font-weight: 900;
-  color: #facc15;
+  color: var(--tm-amber);
   text-shadow: 0 1px 4px #000;
   pointer-events: none;
 }
@@ -187,19 +187,19 @@
   flex-wrap: wrap;
   margin-top: 12px;
   font-size: 11px;
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
 }
 
 
 /* Meme Crush Saga Turbo-Charged Effects */
 @keyframes tmFeverCabinetGlow {
   0%, 100% {
-    border-color: #facc15;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 38px rgba(250, 204, 21, 0.45);
+    border-color: var(--tm-amber);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 38px rgba(255, 184, 0, 0.45);
   }
   50% {
-    border-color: #00f3ff;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 42px rgba(0, 243, 255, 0.5);
+    border-color: var(--tm-cyan);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 42px rgba(25, 240, 255, 0.5);
   }
 }
 
@@ -208,8 +208,8 @@
 }
 
 .tm-crush-levelup-strip {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(250, 204, 21, 0.22));
-  border: 2px solid #4ade80;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(255, 184, 0, 0.22));
+  border: 2px solid var(--tm-ok);
   border-radius: 14px;
   padding: 10px 14px;
   margin-bottom: 12px;
@@ -219,13 +219,13 @@
   flex-wrap: wrap;
   gap: 10px;
   font-size: 13px;
-  color: #f8fafc;
+  color: var(--tm-text);
 }
 
 .tm-crush-tile.special-packet-bomb {
   background: radial-gradient(circle, rgba(249, 115, 22, 0.55), rgba(239, 68, 68, 0.45));
-  border-color: #facc15;
-  box-shadow: 0 0 18px #f97316, inset 0 0 10px rgba(250, 204, 21, 0.6);
+  border-color: var(--tm-amber);
+  box-shadow: 0 0 18px #f97316, inset 0 0 10px rgba(255, 184, 0, 0.6);
 }
 
 /* Center-Board 3D Candy Crush Announcer Splash */
@@ -255,11 +255,11 @@
   z-index: 30;
   pointer-events: none;
   background: linear-gradient(145deg, rgba(10, 14, 28, 0.96), rgba(38, 12, 52, 0.96));
-  border: 3px solid var(--splash-color, #facc15);
+  border: 3px solid var(--splash-color, var(--tm-amber));
   border-radius: 20px;
   padding: 12px 24px;
   text-align: center;
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.9), 0 0 36px var(--splash-color, #facc15);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.9), 0 0 36px var(--splash-color, var(--tm-amber));
   white-space: nowrap;
   animation: tmCrushAnnouncerPop 1.12s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -269,14 +269,14 @@
   font-size: clamp(22px, 5vw, 32px);
   font-weight: 900;
   letter-spacing: 1.2px;
-  color: var(--splash-color, #facc15);
+  color: var(--splash-color, var(--tm-amber));
   text-shadow: 0 3px 10px rgba(0, 0, 0, 0.95);
 }
 
 .tm-crush-announcer-sub {
   font-size: 11px;
   font-weight: 900;
-  color: #f8fafc;
+  color: var(--tm-text);
   letter-spacing: 0.8px;
   margin-top: 2px;
 }
@@ -293,7 +293,7 @@
   z-index: 22;
   pointer-events: none;
   background: #ffffff;
-  box-shadow: 0 0 16px var(--laser-color, #00f3ff), 0 0 32px var(--laser-color, #00f3ff);
+  box-shadow: 0 0 16px var(--laser-color, var(--tm-cyan)), 0 0 32px var(--laser-color, var(--tm-cyan));
   border-radius: 999px;
   animation: tmLaserBeamFlash 0.4s ease-out forwards;
 }
@@ -358,7 +358,7 @@
 /* 2. iPhone Candy Crush Style Glossy 3D Jelly Candies, Crystal Frost & 3-Star Tube */
 .tm-crush-star-tube-shell {
   background: rgba(7, 10, 22, 0.86);
-  border: 1.5px solid rgba(0, 243, 255, 0.35);
+  border: 1.5px solid rgba(25, 240, 255, 0.35);
   border-radius: 16px;
   padding: 10px 14px;
   margin-bottom: 12px;
@@ -375,7 +375,7 @@
   flex-wrap: wrap;
   font-size: 12px;
   font-weight: 800;
-  color: #f8fafc;
+  color: var(--tm-text);
 }
 
 .tm-crush-mascot-avatar {
@@ -385,12 +385,12 @@
 .tm-crush-mascot-text {
   flex: 1;
   min-width: 180px;
-  color: #fde047;
+  color: var(--tm-amber);
 }
 
 .tm-crush-jelly-badge {
-  background: rgba(56, 189, 248, 0.16);
-  border: 1px solid #38bdf8;
+  background: rgba(25, 240, 255, 0.16);
+  border: 1px solid var(--tm-cyan);
   color: #7dd3fc;
   padding: 3px 10px;
   border-radius: 999px;
@@ -406,7 +406,7 @@
   position: relative;
   height: 14px;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.95);
+  background: rgba(17, 13, 34, 0.95);
   border: 2px solid rgba(255, 255, 255, 0.22);
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.85);
 }
@@ -414,8 +414,8 @@
 .tm-crush-star-tube-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #4ade80 0%, #00f3ff 45%, #ec4899 78%, #facc15 100%);
-  box-shadow: 0 0 14px rgba(0, 243, 255, 0.6);
+  background: linear-gradient(90deg, var(--tm-ok) 0%, var(--tm-cyan) 45%, var(--tm-pink) 78%, var(--tm-amber) 100%);
+  box-shadow: 0 0 14px rgba(25, 240, 255, 0.6);
   transition: width 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -423,8 +423,8 @@
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%) scale(0.88);
-  background: #0f172a;
-  border: 1.5px solid #64748b;
+  background: var(--tm-night-1);
+  border: 1.5px solid var(--tm-text-mute);
   border-radius: 999px;
   padding: 1px 6px;
   font-size: 10px;
@@ -434,16 +434,16 @@
 
 .tm-crush-star-marker.lit {
   filter: grayscale(0);
-  border-color: #facc15;
+  border-color: var(--tm-amber);
   background: #1e1b4b;
   transform: translate(-50%, -50%) scale(1.12);
-  box-shadow: 0 0 12px #facc15;
+  box-shadow: 0 0 12px var(--tm-amber);
 }
 
 /* 3D Glossy Jelly Candy Tile Upgrades */
 .tm-crush-tile {
   box-shadow:
-    0 4px 0 var(--candy-shadow, #0f172a),
+    0 4px 0 var(--candy-shadow, var(--tm-night-1)),
     0 6px 12px rgba(0, 0, 0, 0.55),
     inset 0 2px 4px rgba(255, 255, 255, 0.45);
   overflow: hidden;
@@ -464,15 +464,15 @@
 /* Glowing Frosted Crystal Jelly Underlay */
 .tm-crush-tile.has-crystal-jelly {
   box-shadow:
-    0 0 0 2.5px rgba(56, 189, 248, 0.85),
-    0 0 16px rgba(56, 189, 248, 0.5),
+    0 0 0 2.5px rgba(25, 240, 255, 0.85),
+    0 0 16px rgba(25, 240, 255, 0.5),
     inset 0 0 14px rgba(186, 230, 253, 0.45);
 }
 
 .tm-crush-tile.has-double-jelly {
   box-shadow:
-    0 0 0 3px #e0f2fe,
-    0 0 20px rgba(0, 243, 255, 0.8),
+    0 0 0 3px var(--tm-cyan-hot),
+    0 0 20px rgba(25, 240, 255, 0.8),
     inset 0 0 18px rgba(224, 242, 254, 0.65);
 }
 
@@ -489,7 +489,7 @@
 .tm-crush-tile.special-seeking-rocket {
   background: radial-gradient(circle, rgba(74, 222, 128, 0.65), rgba(16, 185, 129, 0.5), rgba(5, 46, 22, 0.9));
   border-color: #86efac;
-  box-shadow: 0 0 18px #4ade80, inset 0 0 10px rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 18px var(--tm-ok), inset 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
 /* Smooth Gravity Drop-In & Elastic Jelly Bounce */
@@ -532,7 +532,7 @@
   height: 100%;
   z-index: 25;
   pointer-events: none;
-  filter: drop-shadow(0 0 8px #00f3ff) drop-shadow(0 0 14px #facc15);
+  filter: drop-shadow(0 0 8px var(--tm-cyan)) drop-shadow(0 0 14px var(--tm-amber));
 }
 
 @keyframes tmShockwaveExpand {
@@ -551,8 +551,8 @@
   width: 90px;
   height: 90px;
   border-radius: 50%;
-  border: 4px solid var(--sw-color, #00f3ff);
-  box-shadow: 0 0 20px var(--sw-color, #00f3ff), inset 0 0 14px var(--sw-color, #00f3ff);
+  border: 4px solid var(--sw-color, var(--tm-cyan));
+  box-shadow: 0 0 20px var(--sw-color, var(--tm-cyan)), inset 0 0 14px var(--sw-color, var(--tm-cyan));
   z-index: 23;
   pointer-events: none;
   animation: tmShockwaveExpand 0.58s ease-out forwards;
@@ -575,7 +575,7 @@
 }
 
 .tm-crush2-cabinet {
-  --crush-accent: #ec4899;
+  --crush-accent: var(--tm-pink);
   width: 100%;
   max-width: 550px;
   height: 100%;
@@ -617,7 +617,7 @@
   margin: 0;
   font-size: clamp(14px, 2.2vw, 18px);
   font-weight: 900;
-  color: #f8fafc;
+  color: var(--tm-text);
 }
 
 .tm-crush2-stake-bar {
@@ -628,9 +628,9 @@
 }
 
 .tm-crush2-wallet {
-  background: rgba(250, 204, 21, 0.14);
-  border: 1px solid rgba(250, 204, 21, 0.45);
-  color: #fde047;
+  background: rgba(255, 184, 0, 0.14);
+  border: 1px solid rgba(255, 184, 0, 0.45);
+  color: var(--tm-amber);
   font-size: 11px;
   font-weight: 900;
   padding: 3px 8px;
@@ -638,9 +638,9 @@
 }
 
 .tm-crush2-prize-btn {
-  background: linear-gradient(135deg, #facc15, #f97316);
+  background: linear-gradient(135deg, var(--tm-amber), #f97316);
   border: none;
-  color: #090a0f;
+  color: var(--tm-night-0);
   font-size: 10.5px;
   font-weight: 900;
   padding: 4px 9px;
@@ -650,7 +650,7 @@
 
 .tm-crush2-stake-active {
   background: rgba(34, 197, 94, 0.2);
-  border: 1px solid #4ade80;
+  border: 1px solid var(--tm-ok);
   color: #86efac;
   font-size: 10.5px;
   font-weight: 900;
@@ -674,7 +674,7 @@
 .tm-crush2-lvl-pill {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
   font-size: 10.5px;
   font-weight: 900;
   padding: 3px 8px;
@@ -686,8 +686,8 @@
 
 .tm-crush2-lvl-pill.active {
   background: var(--crush-accent);
-  border-color: #fde047;
-  color: #090a0f;
+  border-color: var(--tm-amber);
+  color: var(--tm-night-0);
   box-shadow: 0 0 10px var(--crush-accent);
 }
 
@@ -707,11 +707,11 @@
 .tm-crush2-stat {
   font-size: 11.5px;
   font-weight: 900;
-  color: #e2e8f0;
+  color: var(--tm-text);
 }
 
 .tm-crush2-stat strong {
-  color: #fde047;
+  color: var(--tm-amber);
   font-size: 13px;
 }
 
@@ -728,12 +728,12 @@
   padding: 2px 7px;
   font-size: 10.5px;
   font-weight: 900;
-  color: #f8fafc;
+  color: var(--tm-text);
 }
 
 .tm-crush2-goal-chip.done {
   background: rgba(34, 197, 94, 0.24);
-  border-color: #4ade80;
+  border-color: var(--tm-ok);
   color: #86efac;
 }
 
@@ -772,7 +772,7 @@
 .tm-crush2-cell {
   position: relative;
   border-radius: 8px;
-  background: rgba(30, 41, 59, 0.58);
+  background: rgba(27, 21, 54, 0.58);
   border: 1.5px solid rgba(255, 255, 255, 0.09);
   display: flex;
   align-items: center;
@@ -784,20 +784,20 @@
 }
 
 .tm-crush2-cell.jelly-1 {
-  background: linear-gradient(135deg, rgba(0, 243, 255, 0.28), rgba(168, 85, 247, 0.28));
-  border-color: #38bdf8;
-  box-shadow: inset 0 0 8px rgba(0, 243, 255, 0.45);
+  background: linear-gradient(135deg, rgba(25, 240, 255, 0.28), rgba(168, 85, 247, 0.28));
+  border-color: var(--tm-cyan);
+  box-shadow: inset 0 0 8px rgba(25, 240, 255, 0.45);
 }
 
 .tm-crush2-cell.jelly-2 {
-  background: linear-gradient(135deg, rgba(0, 243, 255, 0.5), rgba(236, 72, 153, 0.45));
-  border: 2px solid #e0f2fe;
+  background: linear-gradient(135deg, rgba(25, 240, 255, 0.5), rgba(255, 46, 136, 0.45));
+  border: 2px solid var(--tm-cyan-hot);
   box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.65);
 }
 
 .tm-crush2-cell.selected {
-  border-color: #fde047;
-  box-shadow: 0 0 12px #facc15;
+  border-color: var(--tm-amber);
+  box-shadow: 0 0 12px var(--tm-amber);
   transform: scale(1.06);
   z-index: 4;
 }
@@ -807,7 +807,7 @@
 }
 
 .tm-crush2-cell.exit-row {
-  border-bottom: 2px dashed rgba(250, 204, 21, 0.65);
+  border-bottom: 2px dashed rgba(255, 184, 0, 0.65);
 }
 
 .tm-crush2-candy {
@@ -822,9 +822,9 @@
 }
 
 .tm-crush2-candy.cassette {
-  background: linear-gradient(135deg, #facc15, #ec4899);
+  background: linear-gradient(135deg, var(--tm-amber), var(--tm-pink));
   border: 1.5px solid #fff;
-  box-shadow: 0 0 10px rgba(250, 204, 21, 0.7);
+  box-shadow: 0 0 10px rgba(255, 184, 0, 0.7);
 }
 
 .tm-crush2-candy.sp-striped-h {
@@ -835,7 +835,7 @@
     transparent 3px,
     transparent 6px
   );
-  border: 1.5px solid #fde047;
+  border: 1.5px solid var(--tm-amber);
 }
 
 .tm-crush2-candy.sp-striped-v {
@@ -846,7 +846,7 @@
     transparent 3px,
     transparent 6px
   );
-  border: 1.5px solid #38bdf8;
+  border: 1.5px solid var(--tm-cyan);
 }
 
 .tm-crush2-candy.sp-packet-bomb {
@@ -855,12 +855,12 @@
 }
 
 .tm-crush2-candy.sp-seeking-rocket {
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.5), rgba(168, 85, 247, 0.35));
-  border: 1.5px solid #67e8f9;
+  background: radial-gradient(circle, rgba(25, 240, 255, 0.5), rgba(168, 85, 247, 0.35));
+  border: 1.5px solid var(--tm-cyan-hot);
 }
 
 .tm-crush2-candy.sp-color-bomb {
-  background: conic-gradient(#ef4444, #facc15, #22c55e, #00f3ff, #a855f7, #ec4899, #ef4444);
+  background: conic-gradient(var(--tm-danger), var(--tm-amber), var(--tm-ok), var(--tm-cyan), #a855f7, var(--tm-pink), var(--tm-danger));
   border: 1.5px solid #fff;
   border-radius: 50%;
 }
@@ -877,8 +877,8 @@
   right: -2px;
   font-size: 9px;
   font-weight: 900;
-  background: #090a0f;
-  color: #fde047;
+  background: var(--tm-night-0);
+  color: var(--tm-amber);
   border-radius: 4px;
   padding: 0 2px;
   line-height: 1.1;
@@ -892,8 +892,8 @@
     45deg,
     rgba(6, 182, 212, 0.22) 0px,
     rgba(6, 182, 212, 0.22) 4px,
-    rgba(15, 23, 42, 0.32) 4px,
-    rgba(15, 23, 42, 0.32) 8px
+    rgba(17, 13, 34, 0.32) 4px,
+    rgba(17, 13, 34, 0.32) 8px
   );
   border-radius: 6px;
   display: flex;
@@ -910,7 +910,7 @@
   left: 50%;
   transform: translateX(-50%);
   font-size: 8px;
-  color: #fde047;
+  color: var(--tm-amber);
   opacity: 0.75;
   pointer-events: none;
 }
@@ -928,7 +928,7 @@
 
 .tm-crush2-modal {
   background: linear-gradient(180deg, #1e1238, #0d0b1e);
-  border: 2px solid #facc15;
+  border: 2px solid var(--tm-amber);
   border-radius: 18px;
   padding: 16px;
   max-width: 340px;
@@ -959,7 +959,7 @@
   padding: 4px 8px;
   font-size: 11px;
   font-weight: 800;
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -977,7 +977,7 @@
   flex: 1;
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.16);
-  color: #e2e8f0;
+  color: var(--tm-text);
   font-size: 11px;
   font-weight: 800;
   padding: 6px 8px;
@@ -987,14 +987,14 @@
 }
 
 .tm-crush2-tool-btn.active {
-  background: rgba(250, 204, 21, 0.25);
-  border-color: #facc15;
-  color: #fde047;
+  background: rgba(255, 184, 0, 0.25);
+  border-color: var(--tm-amber);
+  color: var(--tm-amber);
 }
 
 .tm-crush2-tool-btn.upload {
   border-color: rgba(244, 114, 182, 0.55);
-  color: #fbcfe8;
+  color: var(--tm-pink-hot);
 }
 
 /* ==========================================
@@ -1008,11 +1008,11 @@
   padding: 3px 8px;
   border-radius: 10px;
   background: rgba(9, 13, 28, 0.9);
-  border: 1px solid rgba(236, 72, 153, 0.45);
+  border: 1px solid rgba(255, 46, 136, 0.45);
 }
 
 .tm-crush2-fever-pill.overdrive {
-  border-color: #facc15;
+  border-color: var(--tm-amber);
   background: linear-gradient(135deg, rgba(88, 28, 135, 0.85), rgba(124, 45, 18, 0.85));
   animation: tmReactorPulse 0.9s ease-in-out infinite;
 }
@@ -1022,7 +1022,7 @@
   justify-content: space-between;
   font-size: 9.5px;
   font-weight: 900;
-  color: #facc15;
+  color: var(--tm-amber);
   margin-bottom: 3px;
 }
 
@@ -1035,13 +1035,13 @@
 
 .tm-crush2-fever-fill {
   height: 100%;
-  background: linear-gradient(90deg, #00f3ff, #ec4899, #facc15);
+  background: linear-gradient(90deg, var(--tm-cyan), var(--tm-pink), var(--tm-amber));
   transition: width 0.25s ease;
 }
 
 .tm-crush2-board-fever .tm-crush2-grid {
-  border-color: #facc15 !important;
-  box-shadow: 0 0 24px rgba(250, 204, 21, 0.45), inset 0 0 18px rgba(236, 72, 153, 0.28) !important;
+  border-color: var(--tm-amber) !important;
+  box-shadow: 0 0 24px rgba(255, 184, 0, 0.45), inset 0 0 18px rgba(255, 46, 136, 0.28) !important;
 }
 
 @keyframes tmCrushBoardShake {
@@ -1071,7 +1071,7 @@
 
 .tm-crush2-cell.hint-glow .tm-crush2-candy {
   animation: tmCrushHintPulse 0.85s ease-in-out infinite;
-  border-color: #facc15 !important;
+  border-color: var(--tm-amber) !important;
 }
 
 /* Full-Row & Full-Column Laser Beams */
@@ -1081,8 +1081,8 @@
   right: 0;
   height: 14px;
   transform: translateY(-50%);
-  background: linear-gradient(180deg, rgba(0, 243, 255, 0), #00f3ff, #ffffff, #ec4899, rgba(236, 72, 153, 0));
-  box-shadow: 0 0 20px #00f3ff;
+  background: linear-gradient(180deg, rgba(25, 240, 255, 0), var(--tm-cyan), #ffffff, var(--tm-pink), rgba(255, 46, 136, 0));
+  box-shadow: 0 0 20px var(--tm-cyan);
   pointer-events: none;
   z-index: 8;
   animation: tmLaserFlash 0.18s ease-out forwards;
@@ -1094,8 +1094,8 @@
   bottom: 0;
   width: 14px;
   transform: translateX(-50%);
-  background: linear-gradient(90deg, rgba(0, 243, 255, 0), #00f3ff, #ffffff, #ec4899, rgba(236, 72, 153, 0));
-  box-shadow: 0 0 20px #00f3ff;
+  background: linear-gradient(90deg, rgba(25, 240, 255, 0), var(--tm-cyan), #ffffff, var(--tm-pink), rgba(255, 46, 136, 0));
+  box-shadow: 0 0 20px var(--tm-cyan);
   pointer-events: none;
   z-index: 8;
   animation: tmLaserFlash 0.18s ease-out forwards;
@@ -1113,8 +1113,8 @@
   height: 34%;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  border: 4px solid #facc15;
-  background: radial-gradient(circle, rgba(250, 204, 21, 0.45), rgba(236, 72, 153, 0.25), transparent 70%);
+  border: 4px solid var(--tm-amber);
+  background: radial-gradient(circle, rgba(255, 184, 0, 0.45), rgba(255, 46, 136, 0.25), transparent 70%);
   pointer-events: none;
   z-index: 8;
   animation: tmBombRingExpand 0.22s ease-out forwards;
@@ -1153,8 +1153,8 @@
   padding: 8px 18px;
   border-radius: 14px;
   background: rgba(5, 8, 20, 0.92);
-  border: 2px solid var(--callout-color, #facc15);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.8), 0 0 22px var(--callout-color, #facc15);
+  border: 2px solid var(--callout-color, var(--tm-amber));
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.8), 0 0 22px var(--callout-color, var(--tm-amber));
   text-align: center;
   pointer-events: none;
   z-index: 10;
@@ -1164,7 +1164,7 @@
 .tm-crush2-callout-main {
   font-size: 18px;
   font-weight: 900;
-  color: var(--callout-color, #facc15);
+  color: var(--callout-color, var(--tm-amber));
   letter-spacing: 0.6px;
 }
 
@@ -1184,7 +1184,7 @@
 .tm-bandit-back-btn {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
   font-weight: 800;
   font-size: 12px;
   padding: 10px 12px;

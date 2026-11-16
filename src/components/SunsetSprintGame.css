@@ -31,14 +31,14 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.8px;
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
 }
 
 .tm-sunset-stat-val {
-  font-family: 'Courier New', monospace;
+  font-family: var(--tm-font-display);
   font-size: 16px;
   font-weight: 900;
-  color: #f8fafc;
+  color: var(--tm-text);
 }
 
 .tm-sunset-stat-val.orange {
@@ -46,7 +46,7 @@
 }
 
 .tm-sunset-stat-val.gold {
-  color: #fde047;
+  color: var(--tm-amber);
 }
 
 .tm-sunset-stat-val.urgent {
@@ -62,7 +62,7 @@
   padding: 6px 10px;
   border-radius: 12px;
   background: rgba(15, 10, 28, 0.9);
-  border: 1px solid rgba(0, 243, 255, 0.3);
+  border: 1px solid rgba(25, 240, 255, 0.3);
 }
 
 .tm-sunset-car-preview {
@@ -87,18 +87,18 @@
 .tm-sunset-car-pill {
   padding: 4px 8px;
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  background: rgba(15, 23, 42, 0.85);
-  color: #e2e8f0;
+  border: 1px solid rgba(165, 159, 196, 0.35);
+  background: rgba(17, 13, 34, 0.85);
+  color: var(--tm-text);
   font-size: 11px;
   font-weight: 800;
   cursor: pointer;
 }
 
 .tm-sunset-car-pill.active {
-  border-color: #00f3ff;
-  background: rgba(0, 243, 255, 0.18);
-  color: #67e8f9;
+  border-color: var(--tm-cyan);
+  background: rgba(25, 240, 255, 0.18);
+  color: var(--tm-cyan-hot);
 }
 
 .tm-sunset-radio-bar {
@@ -109,18 +109,18 @@
   gap: 8px;
   padding: 7px 12px;
   border-radius: 12px;
-  background: linear-gradient(90deg, rgba(249, 115, 22, 0.14), rgba(236, 72, 153, 0.16));
+  background: linear-gradient(90deg, rgba(249, 115, 22, 0.14), rgba(255, 46, 136, 0.16));
   border: 1px solid rgba(251, 146, 60, 0.42);
   font-size: 12px;
-  color: #fde68a;
+  color: var(--tm-amber-hot);
 }
 
 .tm-sunset-radio-btn {
   padding: 4px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(250, 204, 21, 0.55);
-  background: rgba(15, 23, 42, 0.9);
-  color: #fde047;
+  border: 1px solid rgba(255, 184, 0, 0.55);
+  background: rgba(17, 13, 34, 0.9);
+  color: var(--tm-amber);
   font-size: 11px;
   font-weight: 800;
   cursor: pointer;
@@ -177,7 +177,7 @@
   max-width: 340px;
   font-size: 13px;
   line-height: 1.5;
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
 }
 
 .tm-sunset-overlay-actions {
@@ -201,7 +201,7 @@
   border-radius: 14px;
   border: 1.5px solid rgba(251, 146, 60, 0.45);
   background: linear-gradient(180deg, rgba(28, 13, 44, 0.96), rgba(45, 16, 48, 0.92));
-  color: #f8fafc;
+  color: var(--tm-text);
   font-size: 14px;
   font-weight: 900;
   cursor: pointer;
@@ -216,8 +216,8 @@
 }
 
 .tm-sunset-pad-btn.nitro {
-  border-color: rgba(0, 243, 255, 0.65);
-  color: #67e8f9;
+  border-color: rgba(25, 240, 255, 0.65);
+  color: var(--tm-cyan-hot);
 }
 
 @media (max-width: 480px) {

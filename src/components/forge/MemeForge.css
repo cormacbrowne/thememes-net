@@ -19,8 +19,8 @@
   display: flex;
   flex-direction: column;
   background: #090d1a;
-  border: 2px solid rgba(0, 243, 255, 0.4);
-  box-shadow: 0 0 35px rgba(0, 243, 255, 0.2);
+  border: 2px solid rgba(25, 240, 255, 0.4);
+  box-shadow: 0 0 35px rgba(25, 240, 255, 0.2);
   border-radius: 16px;
   overflow: hidden;
 }
@@ -37,7 +37,7 @@
 .tm-forge-title {
   font-size: 16px;
   font-weight: 900;
-  color: #00f3ff;
+  color: var(--tm-cyan);
   letter-spacing: 0.5px;
 }
 
@@ -94,10 +94,10 @@
 
 .tm-forge-empty {
   background: rgba(255, 255, 255, 0.05);
-  border: 2px dashed rgba(0, 243, 255, 0.4);
+  border: 2px dashed rgba(25, 240, 255, 0.4);
   border-radius: 12px;
   padding: 24px;
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
@@ -107,9 +107,9 @@
 }
 
 .tm-forge-empty:hover {
-  border-color: #00f3ff;
-  color: #00f3ff;
-  background: rgba(0, 243, 255, 0.08);
+  border-color: var(--tm-cyan);
+  color: var(--tm-cyan);
+  background: rgba(25, 240, 255, 0.08);
 }
 
 .tm-forge-tools {
@@ -135,7 +135,7 @@
   font-weight: 800;
   background: none;
   border: none;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
   cursor: pointer;
   text-align: center;
   white-space: nowrap;
@@ -143,9 +143,9 @@
 }
 
 .tm-forge-tab.active {
-  color: #00f3ff;
-  border-bottom-color: #00f3ff;
-  background: rgba(0, 243, 255, 0.06);
+  color: var(--tm-cyan);
+  border-bottom-color: var(--tm-cyan);
+  background: rgba(25, 240, 255, 0.06);
 }
 
 .tm-forge-tool-body {
@@ -190,8 +190,8 @@
 }
 
 .tm-swatch.active {
-  border-color: #00f3ff;
-  box-shadow: 0 0 8px #00f3ff;
+  border-color: var(--tm-cyan);
+  box-shadow: 0 0 8px var(--tm-cyan);
 }
 
 .tm-emoji-grid {
@@ -211,8 +211,8 @@
 }
 
 .tm-emoji-tile:hover {
-  background: rgba(0, 243, 255, 0.15);
-  border-color: #00f3ff;
+  background: rgba(25, 240, 255, 0.15);
+  border-color: var(--tm-cyan);
   transform: scale(1.15);
 }
 
@@ -283,9 +283,9 @@
   height: min(92dvh, 840px);
   max-height: 94dvh;
   background: linear-gradient(180deg, #0d1226 0%, #070a17 100%);
-  border: 1.5px solid rgba(0, 243, 255, 0.45);
+  border: 1.5px solid rgba(25, 240, 255, 0.45);
   border-radius: 18px;
-  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.85), 0 0 28px rgba(0, 243, 255, 0.16);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.85), 0 0 28px rgba(25, 240, 255, 0.16);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -298,8 +298,8 @@
   justify-content: space-between;
   gap: 8px;
   padding: 10px 14px;
-  background: rgba(2, 6, 23, 0.9);
-  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(7, 6, 15, 0.9);
+  border-bottom: 1px solid rgba(165, 159, 196, 0.18);
   flex-shrink: 0;
 }
 
@@ -307,7 +307,7 @@
   min-width: 0;
   font-size: 14px;
   font-weight: 900;
-  color: #00f3ff;
+  color: var(--tm-cyan);
   letter-spacing: 0.4px;
   white-space: nowrap;
   overflow: hidden;
@@ -327,10 +327,10 @@
   justify-content: space-between;
   gap: 8px;
   padding: 6px 14px;
-  background: rgba(250, 204, 21, 0.14);
-  border-bottom: 1px solid rgba(250, 204, 21, 0.4);
+  background: rgba(255, 184, 0, 0.14);
+  border-bottom: 1px solid rgba(255, 184, 0, 0.4);
   font-size: 12px;
-  color: #fde047;
+  color: var(--tm-amber);
   flex-shrink: 0;
   flex-wrap: wrap;
 }
@@ -351,7 +351,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at center, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.98));
+  background: radial-gradient(circle at center, rgba(17, 13, 34, 0.9), rgba(7, 6, 15, 0.98));
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -362,7 +362,7 @@
   max-width: min(100%, 520px);
   max-height: min(100%, 54dvh);
   background: #050814;
-  border: 1.5px solid rgba(0, 243, 255, 0.4);
+  border: 1.5px solid rgba(25, 240, 255, 0.4);
   border-radius: 12px;
   box-shadow: 0 12px 34px rgba(0, 0, 0, 0.7);
   overflow: hidden;
@@ -390,9 +390,9 @@
 }
 
 .tm-forge-layer.selected {
-  outline: 2px dashed #00f3ff;
+  outline: 2px dashed var(--tm-cyan);
   outline-offset: 3px;
-  background: rgba(0, 243, 255, 0.08);
+  background: rgba(25, 240, 255, 0.08);
   border-radius: 6px;
 }
 
@@ -401,7 +401,7 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #00f3ff;
+  background: var(--tm-cyan);
   border: 2px solid #040711;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
   pointer-events: auto;
@@ -413,14 +413,14 @@
   top: -16px;
   left: 50%;
   transform: translateX(-50%);
-  background: #facc15;
+  background: var(--tm-amber);
   cursor: grab;
 }
 
 .tm-forge-handle.resize {
   right: -12px;
   bottom: -12px;
-  background: #00f3ff;
+  background: var(--tm-cyan);
   cursor: nwse-resize;
 }
 
@@ -443,8 +443,8 @@
   justify-content: space-between;
   gap: 8px;
   padding: 10px 14px;
-  background: rgba(2, 6, 23, 0.95);
-  border-top: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(7, 6, 15, 0.95);
+  border-top: 1px solid rgba(165, 159, 196, 0.18);
   flex-shrink: 0;
   flex-wrap: wrap;
 }
@@ -452,7 +452,7 @@
 .tm-forge-status {
   font-size: 12px;
   font-weight: 700;
-  color: #4ade80;
+  color: var(--tm-ok);
 }
 
 .tm-forge-foot-btns {
@@ -499,7 +499,7 @@
     max-height: 38dvh;
     overflow-y: auto;
     padding: 8px;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    border-bottom: 1px solid rgba(165, 159, 196, 0.2);
   }
 
   .tm-forge-stage-canvas,
@@ -547,9 +547,9 @@
   margin-left: 8px;
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(0, 243, 255, 0.14);
-  border: 1px solid rgba(0, 243, 255, 0.45);
-  color: #00f3ff;
+  background: rgba(25, 240, 255, 0.14);
+  border: 1px solid rgba(25, 240, 255, 0.45);
+  color: var(--tm-cyan);
   font-size: 11px;
   font-weight: 900;
 }
@@ -559,9 +559,9 @@
   max-width: 680px;
   padding: 8px 12px;
   border-radius: 10px;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(56, 189, 248, 0.4);
-  color: #e2e8f0;
+  background: rgba(17, 13, 34, 0.9);
+  border: 1px solid rgba(25, 240, 255, 0.4);
+  color: var(--tm-text);
   font-size: 12.5px;
   font-weight: 700;
   text-align: center;
@@ -576,8 +576,8 @@
 .tm-forge-upload-hub {
   width: 100%;
   max-width: 560px;
-  background: rgba(15, 23, 42, 0.88);
-  border: 2px dashed rgba(0, 243, 255, 0.5);
+  background: rgba(17, 13, 34, 0.88);
+  border: 2px dashed rgba(25, 240, 255, 0.5);
   border-radius: 16px;
   padding: 18px 16px;
   display: flex;
@@ -590,25 +590,25 @@
 }
 
 .tm-forge-upload-hub:hover {
-  border-color: #00f3ff;
-  background: rgba(15, 23, 42, 0.98);
+  border-color: var(--tm-cyan);
+  background: rgba(17, 13, 34, 0.98);
 }
 
 .tm-forge-upload-title {
   font-size: 15px;
   font-weight: 900;
-  color: #f8fafc;
+  color: var(--tm-text);
 }
 
 .tm-forge-upload-sub {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
   line-height: 1.4;
 }
 
 .tm-forge-watermark-hint {
   font-size: 11px;
-  color: #64748b;
+  color: var(--tm-text-mute);
   font-weight: 700;
   white-space: nowrap;
 }

@@ -35,10 +35,10 @@
   min-height: 44px;
   padding: 10px 20px;
   border-radius: var(--tm-radius-pill);
-  font-family: var(--tm-font-body);
+  font-family: var(--tm-font-display);
   font-size: var(--tm-text-base);
-  font-weight: 700;
-  letter-spacing: 0.03em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   color: var(--hot);
   background: transparent;
   border: 2px solid var(--c);
@@ -67,14 +67,45 @@
   outline-offset: 4px;
 }
 
+/* Primary: the tube is lit and the glass behind it is flooded with its colour.
+   (Was a flat paint fill; Phase 36 keeps the neon and drops the plastic.) */
 .ui-tube-box--solid {
-  background: var(--c);
-  color: var(--tm-night-0);
-  text-shadow: none;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--c) 30%, var(--tm-night-1)) 0%,
+    color-mix(in srgb, var(--c) 10%, var(--tm-night-1)) 100%
+  );
+  color: var(--hot);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--c) 85%, transparent);
+  box-shadow:
+    0 0 0 1px var(--off),
+    0 0 20px -4px var(--c),
+    inset 0 0 16px -6px var(--c);
+}
+
+.ui-tube-box--solid::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.24) 50%, transparent 65%);
+  transform: translateX(-120%);
+  pointer-events: none;
 }
 
 .ui-tube-box--solid:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--c) 88%, #ffffff);
+  color: #ffffff;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--c) 44%, var(--tm-night-1)) 0%,
+    color-mix(in srgb, var(--c) 18%, var(--tm-night-1)) 100%
+  );
+}
+
+.ui-tube-box--solid:hover:not(:disabled)::after {
+  transform: translateX(120%);
+  transition: transform 620ms var(--tm-ease-out);
 }
 
 .ui-tube-box--off,
@@ -93,7 +124,8 @@
 }
 
 .ui-tube-text {
-  font-family: var(--tm-font-display);
+  font-family: var(--tm-font-neon);
+  font-weight: 400;
   color: var(--hot);
   text-shadow: 0 0 10px var(--c);
   letter-spacing: 0.04em;
@@ -148,6 +180,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .ui-tube-box--solid::after {
+    display: none;
+  }
   .ui-tube-rule--flow::after,
   .ui-flicker-on {
     animation: none;

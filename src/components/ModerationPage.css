@@ -1,8 +1,8 @@
 /* /admin/moderation (task 33.5). Mobile first. */
 .tm-mod-page {
   min-height: 100dvh;
-  background: #070810;
-  color: #e2e8f0;
+  background: var(--tm-night-0);
+  color: var(--tm-text);
   font-family: system-ui, -apple-system, sans-serif;
   padding: 12px 16px 48px;
   box-sizing: border-box;
@@ -19,7 +19,7 @@
 }
 
 .tm-mod-link {
-  color: #00f5ff;
+  color: var(--tm-cyan);
 }
 
 .tm-mod-header {
@@ -45,7 +45,7 @@
 .tm-mod-stats span {
   padding: 3px 8px;
   border-radius: 999px;
-  background: rgba(148, 163, 184, 0.15);
+  background: rgba(165, 159, 196, 0.15);
 }
 
 .tm-mod-stats .is-alert {
@@ -63,7 +63,7 @@
   min-height: 40px;
   padding: 0 14px;
   border-radius: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  border: 1px solid rgba(165, 159, 196, 0.3);
   background: transparent;
   color: inherit;
   font-size: 14px;
@@ -71,8 +71,8 @@
 }
 
 .tm-mod-tabs .is-on {
-  border-color: #00f5ff;
-  color: #00f5ff;
+  border-color: var(--tm-cyan);
+  color: var(--tm-cyan);
 }
 
 .tm-mod-flash {
@@ -82,7 +82,7 @@
   padding: 10px 12px;
   border-radius: 10px;
   background: #0f2a2e;
-  border: 1px solid #00f5ff;
+  border: 1px solid var(--tm-cyan);
   margin-bottom: 10px;
   font-size: 14px;
 }
@@ -90,7 +90,7 @@
 .tm-mod-keys {
   display: none;
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
   margin: 0 0 10px;
 }
 
@@ -99,7 +99,7 @@ kbd {
   font-size: 11px;
   padding: 1px 5px;
   border-radius: 4px;
-  border: 1px solid rgba(148, 163, 184, 0.4);
+  border: 1px solid rgba(165, 159, 196, 0.4);
 }
 
 .tm-mod-list {
@@ -111,7 +111,7 @@ kbd {
 }
 
 .tm-mod-item {
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  border: 1px solid rgba(165, 159, 196, 0.2);
   border-radius: 14px;
   padding: 12px;
   background: #0d0f1c;
@@ -137,8 +137,8 @@ kbd {
   text-align: center;
   padding: 2px 6px;
   border-radius: 6px;
-  background: rgba(250, 204, 21, 0.2);
-  color: #fde68a;
+  background: rgba(255, 184, 0, 0.2);
+  color: var(--tm-amber-hot);
 }
 
 .tm-mod-sev.is-high {
@@ -150,11 +150,11 @@ kbd {
   text-transform: uppercase;
   font-size: 11px;
   letter-spacing: 0.08em;
-  color: #00f5ff;
+  color: var(--tm-cyan);
 }
 
 .tm-mod-muted {
-  color: #94a3b8;
+  color: var(--tm-text-dim);
 }
 
 .tm-mod-media {
@@ -214,8 +214,8 @@ kbd {
 .tm-mod-comment {
   margin: 0;
   padding: 10px 12px;
-  border-left: 3px solid #38bdf8;
-  background: rgba(56, 189, 248, 0.08);
+  border-left: 3px solid var(--tm-cyan);
+  background: rgba(25, 240, 255, 0.08);
   border-radius: 6px;
   word-break: break-word;
 }
@@ -232,13 +232,13 @@ kbd {
   padding: 3px 8px;
   border-radius: 999px;
   background: rgba(255, 45, 120, 0.15);
-  color: #fbcfe8;
+  color: var(--tm-pink-hot);
 }
 
 .tm-mod-notes {
   margin: 8px 0 0;
   padding-left: 18px;
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
   font-size: 13px;
 }
 
@@ -254,9 +254,9 @@ kbd {
   min-height: 42px;
   padding: 8px 12px;
   border-radius: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  background: #070810;
-  color: #f8fafc;
+  border: 1px solid rgba(165, 159, 196, 0.3);
+  background: var(--tm-night-0);
+  color: var(--tm-text);
   font-size: 16px;
 }
 
@@ -274,7 +274,7 @@ kbd {
   font-weight: 700;
   cursor: pointer;
   color: #fff;
-  background: #334155;
+  background: var(--tm-night-3);
   touch-action: manipulation;
 }
 
@@ -312,7 +312,7 @@ kbd {
 .tm-mod-log td {
   text-align: left;
   padding: 8px 6px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+  border-bottom: 1px solid rgba(165, 159, 196, 0.15);
   white-space: nowrap;
 }
 

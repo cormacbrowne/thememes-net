@@ -20,9 +20,9 @@
 }
 
 .tm-riders-mode-btn {
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  background: rgba(15, 23, 42, 0.85);
-  color: #cbd5e1;
+  border: 1px solid rgba(25, 240, 255, 0.35);
+  background: rgba(17, 13, 34, 0.85);
+  color: var(--tm-text-soft);
   border-radius: 999px;
   padding: 6px 14px;
   font-size: 0.78rem;
@@ -33,10 +33,10 @@
 }
 
 .tm-riders-mode-btn.active {
-  background: linear-gradient(135deg, rgba(0, 243, 255, 0.22), rgba(255, 42, 133, 0.18));
-  border-color: #00f3ff;
+  background: linear-gradient(135deg, rgba(25, 240, 255, 0.22), rgba(255, 46, 136, 0.18));
+  border-color: var(--tm-cyan);
   color: #ffffff;
-  box-shadow: 0 0 14px rgba(0, 243, 255, 0.3);
+  box-shadow: 0 0 14px rgba(25, 240, 255, 0.3);
 }
 
 .tm-riders-hud {
@@ -48,10 +48,10 @@
   padding: 7px 12px;
   border-radius: 10px;
   background: rgba(6, 11, 24, 0.9);
-  border: 1px solid rgba(0, 243, 255, 0.26);
+  border: 1px solid rgba(25, 240, 255, 0.26);
   font-size: 0.78rem;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--tm-text);
   box-sizing: border-box;
 }
 
@@ -62,11 +62,11 @@
 }
 
 .tm-riders-p1-tag {
-  color: #00f3ff;
+  color: var(--tm-cyan);
 }
 
 .tm-riders-p2-tag {
-  color: #ff2a85;
+  color: var(--tm-pink);
 }
 
 .tm-riders-stage {
@@ -76,10 +76,10 @@
   aspect-ratio: 1 / 1;
   border-radius: 14px;
   overflow: hidden;
-  border: 2px solid rgba(0, 243, 255, 0.45);
+  border: 2px solid rgba(25, 240, 255, 0.45);
   box-shadow:
-    0 0 24px rgba(0, 243, 255, 0.18),
-    inset 0 0 20px rgba(255, 42, 133, 0.08);
+    0 0 24px rgba(25, 240, 255, 0.18),
+    inset 0 0 20px rgba(255, 46, 136, 0.08);
   background: #040712;
 }
 
@@ -103,7 +103,7 @@
   text-align: center;
   background: rgba(4, 7, 18, 0.84);
   backdrop-filter: blur(4px);
-  color: #f8fafc;
+  color: var(--tm-text);
 }
 
 .tm-riders-overlay h3 {
@@ -111,8 +111,8 @@
   font-size: 1.25rem;
   font-weight: 900;
   letter-spacing: 0.05em;
-  color: #00f3ff;
-  text-shadow: 0 0 12px rgba(0, 243, 255, 0.55);
+  color: var(--tm-cyan);
+  text-shadow: 0 0 12px rgba(25, 240, 255, 0.55);
 }
 
 .tm-riders-overlay p {
@@ -120,7 +120,7 @@
   max-width: 320px;
   font-size: 0.82rem;
   line-height: 1.45;
-  color: #cbd5e1;
+  color: var(--tm-text-soft);
 }
 
 .tm-riders-overlay-actions {
@@ -141,13 +141,13 @@
   padding: 8px 12px;
   border-radius: 12px;
   background: rgba(8, 13, 28, 0.92);
-  border: 1px solid rgba(56, 189, 248, 0.25);
+  border: 1px solid rgba(25, 240, 255, 0.25);
   box-sizing: border-box;
 }
 
 .tm-riders-pad-shell.p2-flipped {
   transform: rotate(180deg);
-  border-color: rgba(255, 42, 133, 0.35);
+  border-color: rgba(255, 46, 136, 0.35);
 }
 
 .tm-riders-pad-label {
@@ -170,9 +170,9 @@
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  border: 1px solid rgba(0, 243, 255, 0.45);
-  background: rgba(0, 243, 255, 0.12);
-  color: #e0f2fe;
+  border: 1px solid rgba(25, 240, 255, 0.45);
+  background: rgba(25, 240, 255, 0.12);
+  color: var(--tm-cyan-hot);
   font-size: 0.95rem;
   font-weight: 900;
   cursor: pointer;
@@ -182,8 +182,8 @@
 }
 
 .tm-riders-pad-shell.p2-flipped .tm-riders-dir-btn {
-  border-color: rgba(255, 42, 133, 0.45);
-  background: rgba(255, 42, 133, 0.14);
+  border-color: rgba(255, 46, 136, 0.45);
+  background: rgba(255, 46, 136, 0.14);
   color: #fce7f3;
 }
 
@@ -213,7 +213,7 @@
 
 .tm-riders-controls-note {
   font-size: 0.72rem;
-  color: #94a3b8;
+  color: var(--tm-text-dim);
   text-align: center;
   line-height: 1.4;
 }

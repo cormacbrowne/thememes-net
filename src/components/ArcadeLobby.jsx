@@ -87,7 +87,9 @@ export default function ArcadeLobby({
     <section className="tm-lobby" aria-label="Cyber Arcade Lobby">
       <header className="tm-lobby-hero">
         <div className="tm-lobby-hero-copy">
-          <h1 className="tm-lobby-title">🕹️ Cyber-Arcade Lobby</h1>
+          <h1 className="tm-lobby-title">
+            <span className="is-cyan">Cyber-Arcade</span> <span className="is-pink">Lobby</span>
+          </h1>
           <p className="tm-lobby-sub">
             {ARCADE_GAMES_CATALOG.length} retro cabinets, MemeDollarz ($) casino tables &amp; shareable prank screens.
           </p>

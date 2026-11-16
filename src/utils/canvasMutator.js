@@ -189,22 +189,22 @@ export function renderArtworkWithFilter(ctx, W, areaY, areaH, filterMode, drawAr
 }
 
 /**
- * Subtle electric-blue corner watermark with lightning strike stamped once on exported/shared images and GIFs.
- * Automatically detects and cleanly replaces any legacy/pre-existing bottom-right cartridge stamp so
- * `www.thememes.net` is never stamped twice on forwarded or remixed memes.
+ * Phase 35.3e: Neon "M" tube mark + `thememes.net` watermark stamped once on exported/shared images and GIFs.
+ * Keeps the same pill height as before so existing meme layouts do not shift, and cleanly replaces any
+ * legacy bottom-right cartridge stamp so the mark is never stamped twice.
  */
 export function stampArcadeCartridgeFooter(ctx, W, H) {
-  const label = 'www.thememes.net';
+  const label = 'thememes.net';
   const fs = Math.max(10, Math.round(Math.min(W, H) * 0.022));
   const pillH = Math.max(18, Math.round(fs * 1.65));
   ctx.save();
-  ctx.font = `700 ${fs}px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+  ctx.font = `400 ${fs}px "Audiowide", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
   const tw = ctx.measureText(label).width;
-  const boltW = Math.max(8, Math.round(fs * 0.78));
-  const boltGap = Math.max(4, Math.round(fs * 0.34));
+  const markW = Math.max(10, Math.round(fs * 0.95));
+  const markGap = Math.max(5, Math.round(fs * 0.4));
   const pad = Math.round(fs * 0.58);
   const margin = Math.max(6, Math.round(fs * 0.5));
-  const pillW = Math.round(boltW + boltGap + tw + pad * 2);
+  const pillW = Math.round(markW + markGap + tw + pad * 2);
   const x = W - pillW - margin;
   const y = H - pillH - margin;
 
@@ -259,44 +259,67 @@ export function stampArcadeCartridgeFooter(ctx, W, H) {
     // Tainted/CORS canvases skip pixel inspection safely
   }
 
-  // Dark subtle cartridge pill + delicate electric-blue border
-  ctx.globalAlpha = 0.82;
-  ctx.fillStyle = '#070810';
+  // Dark night-0 pill + subtle cyan glass border
+  ctx.globalAlpha = 0.88;
+  ctx.fillStyle = '#07060f';
   if (typeof ctx.roundRect === 'function') {
     ctx.beginPath();
     ctx.roundRect(x, y, pillW, pillH, Math.round(pillH * 0.3));
     ctx.fill();
     ctx.lineWidth = Math.max(1, fs * 0.08);
-    ctx.strokeStyle = 'rgba(0, 243, 255, 0.42)';
+    ctx.strokeStyle = 'rgba(25, 240, 255, 0.38)';
     ctx.stroke();
   } else {
     ctx.fillRect(x, y, pillW, pillH);
-    ctx.strokeStyle = 'rgba(0, 243, 255, 0.42)';
+    ctx.strokeStyle = 'rgba(25, 240, 255, 0.38)';
     ctx.strokeRect(x, y, pillW, pillH);
   }
 
-  // Crisp vector lightning strike next to `www.thememes.net`
-  const bx = x + pad;
+  // Pink "M" neon tube mark + tiny amber underline
+  const mx = x + pad;
   const cy = y + pillH / 2;
-  const bh = fs * 1.05;
-  ctx.globalAlpha = 0.96;
-  ctx.shadowColor = 'rgba(0, 243, 255, 0.55)';
-  ctx.shadowBlur = Math.max(3, Math.round(fs * 0.35));
-  ctx.fillStyle = '#00f3ff';
-  ctx.beginPath();
-  ctx.moveTo(bx + boltW * 0.62, cy - bh * 0.52);
-  ctx.lineTo(bx + boltW * 0.1, cy + bh * 0.06);
-  ctx.lineTo(bx + boltW * 0.48, cy + bh * 0.06);
-  ctx.lineTo(bx + boltW * 0.28, cy + bh * 0.54);
-  ctx.lineTo(bx + boltW * 0.92, cy - bh * 0.08);
-  ctx.lineTo(bx + boltW * 0.52, cy - bh * 0.08);
-  ctx.closePath();
-  ctx.fill();
+  const mh = fs * 0.92;
+  const topY = cy - mh * 0.52;
+  const botY = cy + mh * 0.34;
+  const midY = cy + mh * 0.02;
+  ctx.globalAlpha = 0.98;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
 
-  // Subtle, cool electric-blue domain text (written once)
+  // Pink M outer core + glow + white-hot centre
+  ctx.shadowColor = 'rgba(255, 46, 136, 0.7)';
+  ctx.shadowBlur = Math.max(3, Math.round(fs * 0.32));
+  ctx.strokeStyle = '#ff2e88';
+  ctx.lineWidth = Math.max(1.8, fs * 0.17);
+  ctx.beginPath();
+  ctx.moveTo(mx + markW * 0.08, botY);
+  ctx.lineTo(mx + markW * 0.08, topY);
+  ctx.lineTo(mx + markW * 0.5, midY);
+  ctx.lineTo(mx + markW * 0.92, topY);
+  ctx.lineTo(mx + markW * 0.92, botY);
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = '#ffd9ea';
+  ctx.lineWidth = Math.max(0.8, fs * 0.065);
+  ctx.stroke();
+
+  // Tiny amber underline under the M
+  const underY = botY + Math.max(2, fs * 0.16);
+  ctx.strokeStyle = '#ffb800';
+  ctx.lineWidth = Math.max(1.1, fs * 0.1);
+  ctx.beginPath();
+  ctx.moveTo(mx + markW * 0.06, underY);
+  ctx.lineTo(mx + markW * 0.94, underY);
+  ctx.stroke();
+
+  // Heading font domain text (`thememes.net`)
+  ctx.shadowColor = 'rgba(25, 240, 255, 0.5)';
+  ctx.shadowBlur = Math.max(2, Math.round(fs * 0.25));
+  ctx.fillStyle = '#e2fdff';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
-  ctx.fillText(label, bx + boltW + boltGap, cy + 0.5);
+  ctx.fillText(label, mx + markW + markGap, cy + 0.5);
   ctx.restore();
 }
 

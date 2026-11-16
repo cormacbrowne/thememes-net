@@ -13,7 +13,6 @@ const PulseReportPage = lazy(() => import('./components/PulseReportPage.jsx'))
 const LegalInfoPage = lazy(() => import('./components/LegalInfoPage.jsx'))
 // eslint-disable-next-line react-refresh/only-export-components
 const HallOfFamePage = lazy(() => import('./components/HallOfFamePage.jsx'))
-// eslint-disable-next-line react-refresh/only-export-components
 const UiKitPage = import.meta.env.DEV ? lazy(() => import('./components/UiKitPage.jsx')) : null
 const pathname = typeof window !== 'undefined' ? window.location.pathname : '/'
 const isModerationRoute = /^\/admin\/moderation\/?$/i.test(pathname)

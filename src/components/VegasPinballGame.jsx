@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { sfx } from '../utils/soundEngine';
-import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
+import { ARCADE_ECONOMY_RULES, formatMoney, validateStakedGamePayout } from '../utils/tokenEconomy';
 import { checkDailyPerk, consumeDailyPerk } from '../utils/memeFeedBridge';
 import { triggerWinCelebration } from '../utils/winCelebration';
 import './VegasPinballGame.css';
@@ -391,7 +391,7 @@ export default function VegasPinballGame({
     setGameOverInfo(null);
     setHudBanner(
       stakeAmt > 0
-        ? `🪙 ${stakeAmt}-TOKEN PRIZE GAME LIVE! PRESS [SPACE] OR CLICK 🚀 LAUNCH BALL!`
+        ? `🎱 ${formatMoney(stakeAmt)} PRIZE GAME LIVE! PRESS [SPACE] OR CLICK 🚀 LAUNCH BALL!`
         : `🆓 FREE PLAY ACTIVE ON ${nextTbl.name.toUpperCase()} — PRESS [SPACE] OR CLICK 🚀 LAUNCH!`
     );
   }, []);
@@ -431,7 +431,7 @@ export default function VegasPinballGame({
       sfx.playClownHonk();
       resetTableGame(activeTable, 0);
       setHudBanner(
-        `🆓 PLAYING IN FREE PRACTICE MODE! (Need ${entryCost} 🪙 for Prize Run — Upload a Meme for +45 🪙!)`
+        `🆓 PLAYING IN FREE PRACTICE MODE! (Need ${formatMoney(entryCost)} for Prize Run — Upload a Meme for ${formatMoney(12, { sign: true })}!)`
       );
       return;
     }
@@ -747,7 +747,7 @@ export default function VegasPinballGame({
         onPayoutTokens(payout, {
           stakedTokens: activeStake,
           xp: 50,
-          label: `🎱 Pinball ${st.table.name}: ${finalScore.toLocaleString()} pts (+M$${payout})!`,
+          label: `🎱 Pinball ${st.table.name}: ${finalScore.toLocaleString()} pts (${formatMoney(payout, { sign: true })})!`,
           emoji: '🎱'
         });
         triggerWinCelebration({
@@ -2410,9 +2410,9 @@ export default function VegasPinballGame({
               type="button"
               className={`tm-bj-mode-pill ${stakedTokens > 0 ? 'active' : ''}`}
               onClick={handleStartPrizeRun}
-              title="Insert 10 M$ MemeDollarz to play for 8–28 M$ high-score payouts!"
+              title={`Insert ${formatMoney(entryCost)} to play for ${formatMoney(8)}–${formatMoney(28)} high-score payouts!`}
             >
-              {stakedTokens > 0 && !gameOverInfo ? '🏆 10 M$ LIVE' : `🪙 ${entryCost} M$ Prize`}
+              {stakedTokens > 0 && !gameOverInfo ? `🏆 ${formatMoney(stakedTokens)} LIVE` : `🏆 ${formatMoney(entryCost)} Prize`}
             </button>
             <button
               type="button"
@@ -2523,15 +2523,15 @@ export default function VegasPinballGame({
               <div className="tm-crush2-overlay" role="dialog">
                 <div className="tm-crush2-modal">
                   <div style={{ fontSize: '38px' }}>
-                    {gameOverInfo.payout > 0 ? '🏆🪙' : '🎱'}
+                    {gameOverInfo.payout > 0 ? '🏆' : '🎱'}
                   </div>
                   <h3>GAME OVER — {gameOverInfo.score.toLocaleString()} PTS</h3>
                   <p>
                     {gameOverInfo.staked > 0
                       ? gameOverInfo.payout > 0
-                        ? `Awesome run! You won +M$${gameOverInfo.payout} MemeDollarz!`
-                        : 'Needed 18,000+ pts to cash on a M$10 Prize Run. Try again!'
-                      : `Free Play Complete! Play Free again anytime or insert M$${entryCost} to win up to M$28!`}
+                        ? `Awesome run! You won ${formatMoney(gameOverInfo.payout, { sign: true })}!`
+                        : `Needed 18,000+ pts to cash on a ${formatMoney(entryCost)} Prize Run. Try again!`
+                      : `Free Play Complete! Play Free again anytime or insert ${formatMoney(entryCost)} to win up to ${formatMoney(28)}!`}
                   </p>
                   <div className="tm-crush2-modal-btns">
                     <button
@@ -2546,7 +2546,7 @@ export default function VegasPinballGame({
                       className="tm-btn"
                       onClick={handleStartPrizeRun}
                     >
-                      🪙 Play Prize Run (M${entryCost})
+                      🏆 Play Prize Run ({formatMoney(entryCost)})
                     </button>
                     {tokens < entryCost && onOpenUpload && (
                       <button
@@ -2554,7 +2554,7 @@ export default function VegasPinballGame({
                         className="tm-btn"
                         onClick={onOpenUpload}
                       >
-                        📸 Upload Meme (+M$12)
+                        📸 Upload Meme ({formatMoney(12, { sign: true })})
                       </button>
                     )}
                   </div>
@@ -2644,19 +2644,19 @@ export default function VegasPinballGame({
             </div>
 
             <div className="tm-pin2-wing-card">
-              <div className="tm-pin2-wing-label">💰 M$10 PRIZE PAYOUTS (90% RTP)</div>
+              <div className="tm-pin2-wing-label">💰 {formatMoney(entryCost)} PRIZE PAYOUTS (90% RTP)</div>
               <div className="tm-pin2-key-list">
                 <div>
-                  <strong>18,000+ pts</strong> <span>M$8</span>
+                  <strong>18,000+ pts</strong> <span>{formatMoney(8)}</span>
                 </div>
                 <div>
-                  <strong>32,000+ pts</strong> <span>M$12</span>
+                  <strong>32,000+ pts</strong> <span>{formatMoney(12)}</span>
                 </div>
                 <div>
-                  <strong>50,000+ pts</strong> <span>M$18</span>
+                  <strong>50,000+ pts</strong> <span>{formatMoney(18)}</span>
                 </div>
                 <div>
-                  <strong>75,000+ pts</strong> <span>M$28 Jackpot!</span>
+                  <strong>75,000+ pts</strong> <span>{formatMoney(28)} Jackpot!</span>
                 </div>
               </div>
             </div>

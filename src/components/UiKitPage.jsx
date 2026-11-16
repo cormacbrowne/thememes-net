@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import NeonSign from './NeonSign';
+import { Money, Wallet } from './ui/Money';
 
 const PALETTE = [
   { name: '--tm-night-0', hex: '#07060f', job: 'Page background' },
@@ -17,6 +18,7 @@ const PALETTE = [
 ];
 
 export default function UiKitPage() {
+  const [sampleTokens, setSampleTokens] = useState(20);
   useEffect(() => {
     document.title = 'UI Kit (/__ui) · THE MEMES.net';
   }, []);
@@ -92,6 +94,28 @@ export default function UiKitPage() {
         </div>
         <hr className="ui-tube ui-tube--cyan ui-tube-rule ui-tube-rule--flow" />
         <hr className="ui-tube ui-tube--pink ui-tube-rule" />
+      </section>
+
+      <section style={{ background: 'var(--tm-night-1)', border: '1px solid var(--tm-night-3)', borderRadius: 'var(--tm-radius-card)', padding: '20px' }}>
+        <h2 style={{ fontSize: 'var(--tm-text-sm)', textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--tm-text-dim)', margin: '0 0 14px' }}>
+          2b. One Money &amp; One Wallet (35.5b)
+        </h2>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center' }}>
+          <Wallet tokens={sampleTokens} centz={6} size="md" onClick={() => setSampleTokens((t) => t + 5)} />
+          <Wallet tokens={sampleTokens} centz={0} size="sm" />
+          <Money tokens={1} />
+          <Money tokens={5} />
+          <Money tokens={4000} compact />
+          <Money tokens={10} sign />
+          <Money tokens={0} zero="balance" />
+          <button
+            type="button"
+            className="ui-tube ui-tube--amber ui-tube-box"
+            onClick={() => setSampleTokens((t) => (t === 20 ? 60 : 20))}
+          >
+            Toggle M$5.06 / M$15.06
+          </button>
+        </div>
       </section>
 
       <section style={{ background: 'var(--tm-night-1)', border: '1px solid var(--tm-night-3)', borderRadius: 'var(--tm-radius-card)', padding: '20px' }}>

@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
 import { sfx } from '../utils/soundEngine';
-import { formatEightiesPrice } from '../utils/tokenEconomy';
+import { formatMoney } from '../utils/tokenEconomy';
 import { SITE_ORIGIN } from '../data/seoRoutes';
 import { RadioStationStrip } from './MemesRadio';
 import { DeLoreanDockBanner } from './DeLoreanTimeMachine';
+import { Wallet } from './ui/Money';
 import EightiesIconsStrip from './EightiesIconsStrip';
 import {
   ARCADE_GAMES_CATALOG,
@@ -17,6 +18,7 @@ import './ArcadeLobby.css';
 
 export default function ArcadeLobby({
   tokens = 0,
+  memeCentz = 0,
   onSelectGame,
   onOpenRewards,
   onOpenExtras,
@@ -93,17 +95,16 @@ export default function ArcadeLobby({
 
         <div className="tm-lobby-quick-actions">
           {onOpenRewards && (
-            <button
-              type="button"
-              className="tm-lobby-wallet"
+            <Wallet
+              tokens={tokens}
+              centz={memeCentz}
+              size="md"
               onClick={() => {
                 sfx.playToggle();
                 onOpenRewards();
               }}
-              aria-label={`Wallet balance ${tokens} tokens (${formatEightiesPrice(tokens)})`}
-            >
-              🪙 <span>{tokens} ({formatEightiesPrice(tokens)})</span>
-            </button>
+              ariaLabel={`MemeDollarz Wallet balance ${formatMoney(tokens, { centz: memeCentz, zero: 'balance' })}`}
+            />
           )}
           {onOpenLeaderboard && (
             <button

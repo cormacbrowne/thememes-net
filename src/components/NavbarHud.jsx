@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Menu, Plus } from 'lucide-react';
-import { ARCADE_ECONOMY_RULES } from '../utils/tokenEconomy';
+import { ARCADE_ECONOMY_RULES, formatMoney } from '../utils/tokenEconomy';
 import { ARCADE_GAMES_CATALOG } from '../data/arcadeGamesCatalog';
 import { formatLivePresenceLabel } from '../utils/liveSignals';
 import { RadioToggleButton } from './MemesRadio';
+import { Wallet } from './ui/Money';
 import NeonSign from './NeonSign';
 
 export default function NavbarHud({
@@ -160,9 +161,11 @@ export default function NavbarHud({
           </button>
 
           {/* 2. UNIFIED MEMEDOLLARZ & MEMECENTZ WALLET PILL */}
-          <button
-            type="button"
-            className={`ui-tube ui-tube--amber ui-tube-box tm-token-wallet-pill ${reactorFlash ? 'tm-wallet-mint-flash' : ''}`}
+          <Wallet
+            tokens={tokens}
+            centz={memeCentz}
+            size="sm"
+            className={`tm-token-wallet-pill ${reactorFlash ? 'tm-wallet-mint-flash' : ''}`}
             onClick={(e) => {
               if (reactorReadyTokens > 0 && onExchangeXpForTokens) {
                 onExchangeXpForTokens(e);
@@ -170,23 +173,20 @@ export default function NavbarHud({
                 onOpenRewards();
               }
             }}
-            aria-label={`Open Token Wallet — ${tokens} MemeDollarz and ${memeCentz} MemeCentz`}
+            ariaLabel={`Open MemeDollarz Wallet — ${formatMoney(tokens, { centz: memeCentz, zero: 'balance' })}`}
             title={
               reactorReadyTokens > 0
-                ? `Tap to mint +M$${reactorReadyTokens} MemeDollarz from your XP Reactor!`
-                : `MemeDollarz Wallet & Vault: M$${tokens}.${String(memeCentz).padStart(2, '0')} (Lv.${currentRank?.level || 1} • Max M$${ARCADE_ECONOMY_RULES.MAX_DAILY_EARNED_TOKENS}/day)`
+                ? `Tap to mint +${formatMoney(reactorReadyTokens)} MemeDollarz from your XP Reactor!`
+                : `MemeDollarz Wallet & Vault: ${formatMoney(tokens, { centz: memeCentz, zero: 'balance' })} (Lv.${currentRank?.level || 1} • Max ${formatMoney(ARCADE_ECONOMY_RULES.MAX_DAILY_EARNED_TOKENS)}/day)`
             }
-          >
-            <span className="tm-token-coin" aria-hidden="true">M$</span>
-            <span className="tm-token-balance">
-              {tokens}.{String(memeCentz).padStart(2, '0')}
-            </span>
-            {(unclaimedRewardsCount > 0 || reactorReadyTokens > 0) && (
-              <span className="tm-reward-alert-dot">
-                {reactorReadyTokens > 0 ? `+M$${reactorReadyTokens}` : unclaimedRewardsCount}
-              </span>
-            )}
-          </button>
+            badge={
+              (unclaimedRewardsCount > 0 || reactorReadyTokens > 0) && (
+                <span className="tm-reward-alert-dot">
+                  {reactorReadyTokens > 0 ? `+${formatMoney(reactorReadyTokens)}` : unclaimedRewardsCount}
+                </span>
+              )
+            }
+          />
 
           {/* 2.2 INSTALL AS IPHONE APP SHORTCUT (Desktop / Tablet) */}
           {onOpenInstallModal && (

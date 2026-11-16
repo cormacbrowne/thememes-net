@@ -3,6 +3,7 @@ import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
 import { checkDailyPerk, consumeDailyPerk } from '../utils/memeFeedBridge';
 import { triggerWinCelebration } from '../utils/winCelebration';
+import { Wallet } from './ui/Money';
 import './VegasBlackjackGame.css';
 
 // ==========================================
@@ -231,6 +232,7 @@ function getCyberVisorAdvice(handCards, dealerUpCard, canDouble, canSplit) {
 
 export default function VegasBlackjackGame({
   tokens = 0,
+  centz = 0,
   onSpendTokens,
   onPayoutTokens,
   onRecordHighScore,
@@ -947,7 +949,7 @@ export default function VegasBlackjackGame({
           </div>
 
           <div className="tm-bj-hud-pills">
-            <span className="tm-crush2-wallet">🪙 {tokens}</span>
+            <Wallet tokens={tokens} centz={centz} size="sm" />
             <span className="tm-bj-streak-pill" title="Consecutive Winning Hands">
               🔥 Streak: <strong>{winStreak}</strong>
             </span>

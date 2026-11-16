@@ -7,6 +7,7 @@ import {
   formatEightiesPrice
 } from '../utils/tokenEconomy';
 import { triggerWinCelebration } from '../utils/winCelebration';
+import { Wallet } from './ui/Money';
 import SlotSymbolArt from './SlotSymbolArt';
 import EightiesIconsStrip from './EightiesIconsStrip';
 import {
@@ -253,6 +254,7 @@ function NeonSideRail({ side = 'left', theme = 'plasma-cyan' }) {
 export default function VegasSlotMachine({
   embedded = false,
   tokens = 0,
+  centz = 0,
   memes = [],
   onCreditCreator,
   onSpendTokens,
@@ -2286,8 +2288,8 @@ export default function VegasSlotMachine({
             <div className="tm-bandit-control-deck">
               <div className="tm-bandit-wallet-row">
                 <div className="tm-bandit-stat-box">
-                  <span>WALLET (1985$)</span>
-                  <strong>🪙 {tokens.toLocaleString()} ({formatEightiesPrice(tokens, { compact: true })})</strong>
+                  <span>WALLET</span>
+                  <Wallet tokens={tokens} centz={centz} size="inline" compact />
                 </div>
                 <div className="tm-bandit-stat-box">
                   <span>WAGER</span>

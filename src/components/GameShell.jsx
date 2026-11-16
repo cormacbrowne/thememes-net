@@ -3,6 +3,7 @@ import { sfx } from '../utils/soundEngine';
 import { getSettings, subscribeSettings, updateSettings } from '../utils/settingsStore';
 import { pulse } from '../utils/analytics';
 import { RadioToggleButton } from './MemesRadio';
+import { Wallet } from './ui/Money';
 import './GameShell.css';
 
 export default function GameShell({
@@ -14,6 +15,7 @@ export default function GameShell({
   embedded = false,
   onBack,
   tokens = null,
+  centz = 0,
   showWallet = true,
   hasPractice = false,
   practiceMode = false,
@@ -127,17 +129,7 @@ export default function GameShell({
 
         <div className="tm-gs-right">
           {showWallet && typeof tokens === 'number' && (
-            <span className="tm-gs-wallet" aria-label={`Wallet ${tokens} MemeDollarz`}>
-              🪙 <strong>M${tokens}</strong>
-              {deltaInfo && (
-                <span
-                  key={deltaInfo.id}
-                  className={`tm-gs-delta ${deltaInfo.diff >= 0 ? 'is-up' : 'is-down'}`}
-                >
-                  {deltaInfo.diff > 0 ? `+M$${deltaInfo.diff}` : `-M$${Math.abs(deltaInfo.diff)}`}
-                </span>
-              )}
-            </span>
+            <Wallet tokens={tokens} centz={centz} size="sm" delta={deltaInfo} />
           )}
 
           {extraBadges}

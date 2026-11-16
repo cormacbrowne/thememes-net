@@ -1699,6 +1699,7 @@ export default function App() {
           viewMode={viewMode}
         setViewMode={setViewMode}
         tokens={tokens}
+        memeCentz={memeCentz}
         handleSpendTokens={handleSpendTokens}
         handlePayoutGameTokens={handlePayoutGameTokens}
         handleEarnMemeCentz={handleEarnMemeCentz}

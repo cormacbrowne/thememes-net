@@ -3,6 +3,7 @@ import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES, formatEightiesPrice } from '../utils/tokenEconomy';
 import { getCategoryActivity, getRecentMemeHeadlines } from '../utils/memeFeedBridge';
 import { triggerWinCelebration } from '../utils/winCelebration';
+import { Wallet } from './ui/Money';
 import './MemeStockMarketGame.css';
 
 // ==========================================
@@ -209,6 +210,7 @@ function loadPortfolio() {
 
 export default function MemeStockMarketGame({
   tokens = 0,
+  centz = 0,
   memes = [],
   onSpendTokens,
   onPayoutTokens,
@@ -807,9 +809,7 @@ export default function MemeStockMarketGame({
           <div className="tm-stocks-kpis">
             <div className="tm-stocks-kpi">
               <span>CASH WALLET</span>
-              <strong>
-                🪙 {tokens.toLocaleString()} ({formatEightiesPrice(tokens)})
-              </strong>
+              <Wallet tokens={tokens} centz={centz} size="inline" />
             </div>
             <div className="tm-stocks-kpi">
               <span>HOLDINGS</span>

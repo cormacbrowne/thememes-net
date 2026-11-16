@@ -16,6 +16,7 @@ import MemeSkeletonGrid from './MemeSkeletonGrid';
 import VerticalReelsView from './VerticalReelsView';
 import { RadioToggleButton } from './MemesRadio';
 import NeonSign from './NeonSign';
+import { Wallet } from './ui/Money';
 
 const ArcadeInitialsModal = lazyWithRetry(() => import('./ArcadeInitialsModal'));
 
@@ -338,17 +339,17 @@ export function FixedArcadeTopBar({
         >
           {sharedGame ? '✅' : '🔗'}
         </button>
-        <button
-          type="button"
+        <Wallet
+          tokens={tokens}
+          centz={memeCentz}
+          size="sm"
           className="tm-fixed-wallet-pill"
           onClick={() => {
             sfx.playToggle();
             setShowRewardsModal(true);
           }}
           title="Open MemeDollarz Wallet & Daily Quests"
-        >
-          🪙 <strong>M${tokens}.{String(memeCentz || 0).padStart(2, '0')}</strong>
-        </button>
+        />
         <RadioToggleButton className="tm-fixed-icon-btn" />
         <button
           type="button"
@@ -779,6 +780,7 @@ export default function GameRouter({
   viewMode,
   setViewMode,
   tokens,
+  memeCentz = 0,
   handleSpendTokens: rawSpendTokens,
   handlePayoutGameTokens: rawPayoutGameTokens,
   handleEarnMemeCentz,
@@ -982,6 +984,7 @@ export default function GameRouter({
         <Suspense fallback={<MemeSkeletonGrid count={3} />}>
           <VegasBlackjackGame
             tokens={tokens}
+            centz={memeCentz}
             onSpendTokens={handleSpendTokens}
             onPayoutTokens={handlePayoutGameTokens}
             onRecordHighScore={handleRecordHighScore}
@@ -1135,6 +1138,7 @@ export default function GameRouter({
           <VegasSlotMachine
             embedded={false}
             tokens={tokens}
+            centz={memeCentz}
             onSpendTokens={handleSpendTokens}
             onPayoutTokens={handlePayoutGameTokens}
             onRecordHighScore={handleRecordHighScore}
@@ -1164,6 +1168,7 @@ export default function GameRouter({
         <Suspense fallback={<MemeSkeletonGrid count={3} />}>
           <MemeStockMarketGame
             tokens={tokens}
+            centz={memeCentz}
             onSpendTokens={handleSpendTokens}
             onPayoutTokens={handlePayoutGameTokens}
             onRecordHighScore={handleRecordHighScore}
@@ -1308,6 +1313,7 @@ export default function GameRouter({
         <Suspense fallback={<MemeSkeletonGrid count={3} />}>
           <MemeCrushGame
             tokens={tokens}
+            centz={memeCentz}
             onSpendTokens={handleSpendTokens}
             onPayoutTokens={handlePayoutGameTokens}
             onRecordHighScore={handleRecordHighScore}
@@ -1420,6 +1426,7 @@ export default function GameRouter({
         <Suspense fallback={<MemeSkeletonGrid count={6} />}>
           <ArcadeLobby
             tokens={tokens}
+            memeCentz={memeCentz}
             onSelectGame={(gameId) => {
               closeAllModals();
               setViewMode(gameId);

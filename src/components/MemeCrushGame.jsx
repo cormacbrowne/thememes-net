@@ -3,6 +3,7 @@ import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES, validateStakedGamePayout } from '../utils/tokenEconomy';
 import { getLevelBackdropMeme } from '../utils/memeFeedBridge';
 import { triggerWinCelebration } from '../utils/winCelebration';
+import { Wallet } from './ui/Money';
 import './MemeCrushGame.css';
 
 const GRID_SIZE = 8;
@@ -431,6 +432,7 @@ function hasAnyValidMove(board, locks, levelDef) {
 
 export default function MemeCrushGame({
   tokens = 0,
+  centz = 0,
   memes = [],
   onOpenTheater,
   onSpendTokens,
@@ -1365,7 +1367,7 @@ export default function MemeCrushGame({
           </div>
 
           <div className="tm-crush2-stake-bar">
-            <span className="tm-crush2-wallet">🪙 {tokens}</span>
+            <Wallet tokens={tokens} centz={centz} size="sm" />
             {activeStakeTokens > 0 && !roundResult ? (
               <span className="tm-crush2-stake-active">
                 🏆 PRIZE RUN ({starPayouts[1]}/{starPayouts[2]}/{starPayouts[3]} 🪙)

@@ -1,0 +1,152 @@
+/* ==========================================================================
+   Phase 35.5b — One Money & One Wallet (ui-money / ui-wallet)
+   Always tabular-nums in MemeDollarz amber (--tm-amber / --tm-amber-hot).
+   ========================================================================== */
+
+.ui-money {
+  color: var(--tm-amber-hot, #fff1c9);
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.ui-coin-icon {
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.ui-wallet {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 5px 12px;
+  border-radius: var(--tm-radius-pill, 999px);
+  border: 1.5px solid var(--tm-amber, #ffb800);
+  background: color-mix(in srgb, var(--tm-amber, #ffb800) 10%, var(--tm-night-1, #110d22));
+  color: var(--tm-amber-hot, #fff1c9);
+  font-family: var(--tm-font-body, system-ui, sans-serif);
+  font-size: var(--tm-text-sm, 12px);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  box-shadow:
+    0 0 0 1px var(--tm-amber-off, #3d2c05),
+    0 0 12px -3px var(--tm-amber, #ffb800);
+  text-shadow: 0 0 8px rgba(255, 184, 0, 0.35);
+  touch-action: manipulation;
+  transition: transform var(--tm-dur-fast, 120ms) ease-out, background-color var(--tm-dur-fast, 120ms) ease-out;
+}
+
+button.ui-wallet {
+  cursor: pointer;
+}
+
+button.ui-wallet:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--tm-amber, #ffb800) 18%, var(--tm-night-1, #110d22));
+}
+
+button.ui-wallet:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+button.ui-wallet:focus-visible {
+  outline: 2px solid var(--tm-cyan, #19f0ff);
+  outline-offset: 3px;
+}
+
+.ui-wallet--sm {
+  min-height: 32px;
+  padding: 4px 10px;
+  gap: 5px;
+  font-size: var(--tm-text-sm, 12px);
+}
+
+.ui-wallet--md {
+  min-height: 40px;
+  padding: 6px 14px;
+  gap: 6px;
+  font-size: var(--tm-text-base, 14px);
+}
+
+.ui-wallet--inline {
+  min-height: 0;
+  padding: 2px 8px;
+  gap: 5px;
+  font-size: inherit;
+  border-color: rgba(255, 184, 0, 0.55);
+  box-shadow: 0 0 8px -4px var(--tm-amber, #ffb800);
+}
+
+.ui-wallet .ui-money {
+  color: var(--tm-amber-hot, #fff1c9);
+  font-size: inherit;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.ui-wallet__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 6px;
+  border-radius: var(--tm-radius-pill, 999px);
+  background: var(--tm-pink, #ff2e88);
+  color: var(--tm-night-0, #07060f);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1.3;
+  text-shadow: none;
+}
+
+.ui-wallet__delta {
+  position: absolute;
+  top: -16px;
+  right: 4px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  pointer-events: none;
+  text-shadow: none;
+  animation: uiWalletDeltaFloat 1.25s ease forwards;
+}
+
+.ui-wallet__delta.is-up {
+  background: var(--tm-ok, #3dff9a);
+  color: #052e16;
+}
+
+.ui-wallet__delta.is-down {
+  background: var(--tm-danger, #ff4d5e);
+  color: #fef2f2;
+}
+
+@keyframes uiWalletDeltaFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.85);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(-6px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-wallet__delta {
+    animation: none;
+  }
+}

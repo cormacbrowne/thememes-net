@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, Suspense } from 'react';
 import { sfx } from '../utils/soundEngine';
+import { formatMoney } from '../utils/tokenEconomy';
 import { GAME_VIEW_MODE_TO_PATH, SITE_ORIGIN } from '../data/seoRoutes';
 import { getArcadeGameById } from '../data/arcadeGamesCatalog';
 import { pulse, pulseTimer } from '../utils/analytics';
@@ -141,7 +142,7 @@ export function FixedArcadeTopBar({
             setViewMode('pusher');
           }}
         >
-          🪙 Dozer
+          🎰 Dozer
         </button>
         <button
           type="button"
@@ -376,9 +377,9 @@ export function ArcadeLoungePromo({ setViewMode }) {
   return (
     <section className="tm-arcade-steer-shell" aria-label="Side Entertainment Arcade Lounge">
       <div className="tm-arcade-steer-section-head">
-        <span className="tm-arcade-steer-eyebrow">🕹️ 80s NEON TOKEN CASINO &amp; ARCADE LOUNGE</span>
+        <span className="tm-arcade-steer-eyebrow">🕹️ 80s NEON MEMEDOLLARZ CASINO &amp; ARCADE LOUNGE</span>
         <h2 className="tm-arcade-steer-heading">
-          Earn 🪙 Tokens by Uploading Memes — Then Wager, Trade &amp; Play in Fixed Non-Scroll Cabinets
+          Earn MemeDollarz by Uploading Memes — Then Wager, Trade &amp; Play in Fixed Non-Scroll Cabinets
         </h2>
       </div>
       <div className="tm-arcade-steer-grid tm-arcade-steer-grid-4">
@@ -409,7 +410,7 @@ export function ArcadeLoungePromo({ setViewMode }) {
           </div>
           <div className="tm-arcade-steer-footer">
             <span className="tm-arcade-steer-payout">
-              🎟️ Free Practice or M$10 Card Buy-In (Up to 8.5× Full House!)
+              🎟️ Free Practice or {formatMoney(10)} Card Buy-In (Up to 8.5× Full House!)
             </span>
             <button
               type="button"
@@ -434,25 +435,26 @@ export function ArcadeLoungePromo({ setViewMode }) {
           }}
         >
           <div className="tm-arcade-steer-top">
-            <span className="tm-arcade-steer-pill">🪙 NEON COIN DOZER &apos;86 • 25¢ PER COIN DROP</span>
+            <span className="tm-arcade-steer-pill">🎰 NEON COIN DOZER &apos;86 • {formatMoney(1)} PER COIN DROP</span>
             <span className="tm-arcade-steer-best">
               🏆 Best: {readSafeNumber('tm_pusher_highscore').toLocaleString()} pts
             </span>
           </div>
           <div className="tm-arcade-steer-body">
-            <div className="tm-arcade-steer-icons">🪙🎁💎🏆</div>
+            <div className="tm-arcade-steer-icons">🎰🎁💎🏆</div>
             <div>
               <h3 className="tm-arcade-steer-title">NEON COIN DOZER &apos;86 — PRIZE PUSHER</h3>
               <p className="tm-arcade-steer-desc">
                 Drop coins onto the reciprocating <strong>Chrome Pusher Shelf</strong> to nudge cascades of coins,{' '}
-                <strong>💎 Neon Diamonds (+8 🪙)</strong>, <strong>🎁 Mystery Boxes (+12 🪙)</strong> &amp;{' '}
-                <strong>🏆 Golden Trophies (+20 🪙)</strong> over the front lip into the payoff tray!
+                <strong>💎 Neon Diamonds ({formatMoney(8, { sign: true })})</strong>,{' '}
+                <strong>🎁 Mystery Boxes ({formatMoney(12, { sign: true })})</strong> &amp;{' '}
+                <strong>🏆 Golden Trophies ({formatMoney(20, { sign: true })})</strong> over the front lip into the payoff tray!
               </p>
             </div>
           </div>
           <div className="tm-arcade-steer-footer">
             <span className="tm-arcade-steer-payout">
-              🪙 Free Practice Bucket or 1 Token per Coin Drop • Bulldozer Fever Shields
+              🎮 Free Practice Bucket or {formatMoney(1)} per Coin Drop • Bulldozer Fever Shields
             </span>
             <button
               type="button"
@@ -496,7 +498,7 @@ export function ArcadeLoungePromo({ setViewMode }) {
           </div>
           <div className="tm-arcade-steer-footer">
             <span className="tm-arcade-steer-payout">
-              🪙 Wager 5–50 Tokens (3:2 Blackjack • Up to 15× Side Bet) or Free Practice
+              🃏 Wager {formatMoney(5)}–{formatMoney(50)} (3:2 Blackjack • Up to 15× Side Bet) or Free Practice
             </span>
             <button
               type="button"
@@ -521,7 +523,7 @@ export function ArcadeLoungePromo({ setViewMode }) {
           }}
         >
           <div className="tm-arcade-steer-top">
-            <span className="tm-arcade-steer-pill">🟡 NEON HOLD&apos;EM &apos;86 • $2.50–$25 BUY-INS</span>
+            <span className="tm-arcade-steer-pill">🟡 NEON HOLD&apos;EM &apos;86 • {formatMoney(10)}–{formatMoney(100)} BUY-INS</span>
             <span className="tm-arcade-steer-best">
               🏆 Best Pot: {readSafeNumber('tm_poker_best_pot_v1').toLocaleString()}
             </span>
@@ -531,7 +533,7 @@ export function ArcadeLoungePromo({ setViewMode }) {
             <div>
               <h3 className="tm-arcade-steer-title">NEON HOLD&apos;EM &apos;86 — TEXAS POKER</h3>
               <p className="tm-arcade-steer-desc">
-                Stack your site <strong>🪙 Tokens</strong> into glowing casino chips and play full{' '}
+                Stack your <strong>MemeDollarz</strong> into glowing casino chips and play full{' '}
                 <strong>No-Limit Texas Hold&apos;em</strong> against AI sharks! Bet Flop, Turn &amp; River, shove{' '}
                 <strong>ALL IN</strong>, and <strong>💰 Cash Out</strong> your stack back into your wallet!
               </p>
@@ -539,7 +541,7 @@ export function ArcadeLoungePromo({ setViewMode }) {
           </div>
           <div className="tm-arcade-steer-footer">
             <span className="tm-arcade-steer-payout">
-              🟡 Buy In 10–100 🪙 or Practice Free • Real-Time 7-Card Hand Evaluator
+              🟡 Buy In {formatMoney(10)}–{formatMoney(100)} or Practice Free • Real-Time 7-Card Hand Evaluator
             </span>
             <button
               type="button"
@@ -582,7 +584,7 @@ export function ArcadeLoungePromo({ setViewMode }) {
           </div>
           <div className="tm-arcade-steer-footer">
             <span className="tm-arcade-steer-payout">
-              🪙 Stack 1–25 Token Chips • 1-Tap Lucky 7s &amp; Lightning Presets
+              🎡 Stack {formatMoney(1)}–{formatMoney(25)} Chips • 1-Tap Lucky 7s &amp; Lightning Presets
             </span>
             <button
               type="button"
@@ -609,7 +611,7 @@ export function ArcadeLoungePromo({ setViewMode }) {
           <div className="tm-arcade-steer-top">
             <span className="tm-arcade-steer-pill">🎰 VEGAS SLOT ARCADE • 5 MACHINES (25¢ PLAY)</span>
             <span className="tm-arcade-steer-best">
-              🏆 Best: {readSafeNumber('tm_slots_best_win').toLocaleString()} 🪙
+              🏆 Best: {formatMoney(readSafeNumber('tm_slots_best_win'), { compact: true, zero: 'balance' })}
             </span>
           </div>
           <div className="tm-arcade-steer-body">
@@ -626,7 +628,7 @@ export function ArcadeLoungePromo({ setViewMode }) {
           </div>
           <div className="tm-arcade-steer-footer">
             <span className="tm-arcade-steer-payout">
-              🪙 1980s Vegas Quarter Stakes ($1.25–$12.50 / 5–50 🪙) • House Always Wins Odds
+              🎰 1980s Vegas Quarter Stakes ({formatMoney(5)}–{formatMoney(50)}) • House Always Wins Odds
             </span>
             <button
               type="button"
@@ -653,7 +655,7 @@ export function ArcadeLoungePromo({ setViewMode }) {
           <div className="tm-arcade-steer-top">
             <span className="tm-arcade-steer-pill">📈 MEMEDAQ &apos;86 • LIVE WALL ST TERMINAL</span>
             <span className="tm-arcade-steer-best">
-              🏆 Peak: {readSafeNumber('tm_stocks_highscore').toLocaleString()} 🪙
+              🏆 Peak: {formatMoney(readSafeNumber('tm_stocks_highscore'), { compact: true, zero: 'balance' })}
             </span>
           </div>
           <div className="tm-arcade-steer-body">
@@ -668,7 +670,7 @@ export function ArcadeLoungePromo({ setViewMode }) {
           </div>
           <div className="tm-arcade-steer-footer">
             <span className="tm-arcade-steer-payout">
-              🪙 Trade Real Tokens • Insider Rumor Hotline
+              📈 Trade MemeDollarz • Insider Rumor Hotline
             </span>
             <button
               type="button"
@@ -693,7 +695,7 @@ export function ArcadeLoungePromo({ setViewMode }) {
           }}
         >
           <div className="tm-arcade-steer-top">
-            <span className="tm-arcade-steer-pill">🍬 10 NEON LEVELS • $2.50 COIN-OP ENTRY</span>
+            <span className="tm-arcade-steer-pill">🍬 10 NEON LEVELS • {formatMoney(10)} COIN-OP ENTRY</span>
             <span className="tm-arcade-steer-best">
               🏆 Best: {readSafeNumber('tm_crush_highscore').toLocaleString()} pts
             </span>
@@ -710,7 +712,7 @@ export function ArcadeLoungePromo({ setViewMode }) {
           </div>
           <div className="tm-arcade-steer-footer">
             <span className="tm-arcade-steer-payout">
-              🪙 10 Token Prize Run (Win up to 26 🪙) or Free Practice
+              🍬 {formatMoney(10)} Prize Run (Win up to {formatMoney(18)}) or Free Practice
             </span>
             <button
               type="button"
@@ -735,7 +737,7 @@ export function ArcadeLoungePromo({ setViewMode }) {
           }}
         >
           <div className="tm-arcade-steer-top">
-            <span className="tm-arcade-steer-pill">🎱 5 PINBALL TABLES • $2.50 ARCADE RUN</span>
+            <span className="tm-arcade-steer-pill">🎱 5 PINBALL TABLES • {formatMoney(10)} ARCADE RUN</span>
             <span className="tm-arcade-steer-best">
               🏆 Best: {readSafeNumber('tm_pinball_highscore').toLocaleString()} pts
             </span>
@@ -753,7 +755,7 @@ export function ArcadeLoungePromo({ setViewMode }) {
           </div>
           <div className="tm-arcade-steer-footer">
             <span className="tm-arcade-steer-payout">
-              🪙 10 Token Coin-Op Run (Win up to 35 🪙) or Free Practice
+              🎱 {formatMoney(10)} Coin-Op Run (Win up to {formatMoney(28)}) or Free Practice
             </span>
             <button
               type="button"
@@ -933,6 +935,7 @@ export default function GameRouter({
         <Suspense fallback={<MemeSkeletonGrid count={3} />}>
           <NeonBingoGame
             tokens={tokens}
+            centz={memeCentz}
             soundOn={soundOn}
             onToggleSound={() => {
               const nextState = !soundOn;
@@ -961,11 +964,11 @@ export default function GameRouter({
               handlePayoutGameTokens(amt, {
                 stakedTokens: Math.max(1, amt),
                 xp: 12,
-                label: label || `+${amt} 🪙 Dozer Tray Win!`,
-                emoji: '🪙'
+                label: label || `${formatMoney(amt, { sign: true })} Dozer Tray Win!`,
+                emoji: '💰'
               });
             }}
-            onEarnXp={(xpAmt) => awardXpOnly(xpAmt, null, '🪙', `+${xpAmt} XP`)}
+            onEarnXp={(xpAmt) => awardXpOnly(xpAmt, null, '⚡', `+${xpAmt} XP`)}
             onRecordHighScore={handleRecordHighScore}
             onOpenBlankStudio={() => {
               sfx.playToggle();
@@ -1005,6 +1008,7 @@ export default function GameRouter({
         <Suspense fallback={<MemeSkeletonGrid count={3} />}>
           <VegasPokerGame
             tokens={tokens}
+            centz={memeCentz}
             soundOn={soundOn}
             onToggleSound={() => {
               const nextState = !soundOn;
@@ -1027,6 +1031,7 @@ export default function GameRouter({
         <Suspense fallback={<MemeSkeletonGrid count={3} />}>
           <NeonDerbyGame
             tokens={tokens}
+            centz={memeCentz}
             soundOn={soundOn}
             litePerfMode={litePerfMode}
             prefersReducedMotion={
@@ -1072,6 +1077,7 @@ export default function GameRouter({
         <Suspense fallback={<MemeSkeletonGrid count={3} />}>
           <Magic8BallOracle
             tokens={tokens}
+            centz={memeCentz}
             soundOn={soundOn}
             onToggleSound={() => {
               const nextState = !soundOn;
@@ -1117,6 +1123,7 @@ export default function GameRouter({
         <Suspense fallback={<MemeSkeletonGrid count={3} />}>
           <VegasRouletteGame
             tokens={tokens}
+            centz={memeCentz}
             onSpendTokens={handleSpendTokens}
             onPayoutTokens={handlePayoutGameTokens}
             onRecordHighScore={handleRecordHighScore}

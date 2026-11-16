@@ -7,6 +7,7 @@ import {
   formatMoney
 } from '../utils/tokenEconomy';
 import { triggerWinCelebration } from '../utils/winCelebration';
+import { haptic, hitStop } from '../utils/juice';
 import { Money, Wallet } from './ui/Money';
 import SlotSymbolArt from './SlotSymbolArt';
 import Reel from './slots/Reel';
@@ -281,6 +282,7 @@ export default function VegasSlotMachine({
   const [turboOn, setTurboOn] = useState(false);
   const [autoSpinsLeft, setAutoSpinsLeft] = useState(0);
   const [autoMenuOpen, setAutoMenuOpen] = useState(false);
+  const [anticipationReel, setAnticipationReel] = useState(null);
   const [leverPulled, setLeverPulled] = useState(false);
   const [leverDragPx, setLeverDragPx] = useState(0);
   const [sirenActive, setSirenActive] = useState(false);
@@ -409,6 +411,7 @@ export default function VegasSlotMachine({
   const autoTimerRef = useRef(null);
   const spinHoldTimerRef = useRef(null);
   const spinHoldTriggeredRef = useRef(false);
+  const heartbeatIntervalRef = useRef(null);
 
   const isBanditSpinning = banditSpinning.some(Boolean);
   const isVideoSpinning = videoReelsSpinning.some(Boolean);
@@ -427,6 +430,8 @@ export default function VegasSlotMachine({
     return () => {
       clearTimers();
       banditController.destroy();
+      sfx.stopSlotRiser();
+      if (heartbeatIntervalRef.current) clearInterval(heartbeatIntervalRef.current);
       if (sirenTimerRef.current) clearTimeout(sirenTimerRef.current);
       if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
       if (spinHoldTimerRef.current) clearTimeout(spinHoldTimerRef.current);
@@ -436,9 +441,15 @@ export default function VegasSlotMachine({
   // Watchdog recovery: guarantee reels/bonus wheel never stay locked if a timer or callback stalls
   useEffect(() => {
     if (!isBanditSpinning && !isVideoSpinning && !isWheelSpinning) return undefined;
-    const timeoutMs = isWheelSpinning ? 4500 : 3500;
+    const timeoutMs = isWheelSpinning ? 4500 : 7500;
     const watchdog = setTimeout(() => {
       clearTimers();
+      sfx.stopSlotRiser();
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current);
+        heartbeatIntervalRef.current = null;
+      }
+      setAnticipationReel(null);
       setBanditSpinning([false, false, false]);
       setVideoReelsSpinning([false, false, false, false, false]);
       setHeldReels([false, false, false]);
@@ -763,16 +774,45 @@ export default function VegasSlotMachine({
     setBanditSpinning(nextSpinMask);
     setHoldAllowed(false);
 
-    const baseDelays = turboOn ? [160, 260, 360] : [450, 700, 950];
+    const anticipationTarget =
+      !turboOn && Array.isArray(spinResult.anticipation) && spinResult.anticipation.length > 0
+        ? spinResult.anticipation[0]
+        : null;
+    const isJackpotAlive =
+      anticipationTarget === 2 && spinResult.paylineSyms?.[0] === '777';
+    const extraSuspenseMs = isJackpotAlive ? 1800 : 1200;
+    const baseDelays = turboOn
+      ? [160, 260, 360]
+      : [450, 700, anticipationTarget === 2 ? 950 + extraSuspenseMs : 950];
     let settled = false;
     const remaining = new Set(
       [0, 1, 2].filter((idx) => nextSpinMask[idx])
     );
 
-    const completeBanditSpin = () => {
+    const stopSuspenseEffects = () => {
+      sfx.stopSlotRiser();
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current);
+        heartbeatIntervalRef.current = null;
+      }
+      setAnticipationReel(null);
+    };
+
+    const completeBanditSpin = async () => {
       if (settled) return;
       settled = true;
+      const slamRequested = Boolean(activeBanditSpinRef.current?.slamRequested);
+      stopSuspenseEffects();
       activeBanditSpinRef.current = null;
+
+      if (anticipationTarget === 2 && !slamRequested) {
+        if (spinResult.totalMult > 0) {
+          await hitStop(90);
+        } else {
+          sfx.playSlotAww();
+        }
+      }
+
       setHeldReels([false, false, false]);
       finalizeBanditOutcome(spinResult, activeBet, false, useFever);
     };
@@ -791,7 +831,22 @@ export default function VegasSlotMachine({
         return copy;
       });
       remaining.delete(reelIdx);
+
+      if (
+        anticipationTarget === 2 &&
+        reelIdx === 1 &&
+        remaining.has(2) &&
+        !activeBanditSpinRef.current?.slamRequested
+      ) {
+        setAnticipationReel(2);
+        sfx.playSlotRiser(extraSuspenseMs);
+        haptic('heartbeat');
+        if (heartbeatIntervalRef.current) clearInterval(heartbeatIntervalRef.current);
+        heartbeatIntervalRef.current = setInterval(() => haptic('heartbeat'), 1000);
+      }
+
       if (remaining.size === 0) {
+        if (anticipationTarget === 2) stopSuspenseEffects();
         timersRef.current.push(setTimeout(completeBanditSpin, 40));
       }
     };
@@ -813,6 +868,8 @@ export default function VegasSlotMachine({
       stopDelaysMs: baseDelays,
       turbo: turboOn,
       windUpScale,
+      crawlReels: [false, false, anticipationTarget === 2],
+      onTickSymbol: (_idx, rawP) => sfx.playSlotTick(rawP),
       onReelStop: handleReelSettled
     });
   }, [
@@ -1290,6 +1347,12 @@ export default function VegasSlotMachine({
     const active = activeBanditSpinRef.current;
     if (!active || active.slamRequested) return;
     active.slamRequested = true;
+    sfx.stopSlotRiser();
+    if (heartbeatIntervalRef.current) {
+      clearInterval(heartbeatIntervalRef.current);
+      heartbeatIntervalRef.current = null;
+    }
+    setAnticipationReel(null);
     sfx.playToggle();
     banditController.slamStop({
       targetStops: active.targetStops,
@@ -1656,6 +1719,8 @@ export default function VegasSlotMachine({
           <div
             ref={cabinetRef}
             className={`tm-bandit-cabinet tm-cabinet-${machineId} ${
+              anticipationReel !== null ? 'is-suspense' : ''
+            } ${
               isHighRollerNeon ? `tm-cabinet-highroller-neon tm-neon-theme-${activeMachine.neonTheme}` : ''
             }`}
           >
@@ -1885,13 +1950,17 @@ export default function VegasSlotMachine({
             {machineId === 'bandit85' ? (
               <div className="tm-bandit-reel-bezel">
                 <div className="tm-bandit-payline-arrow left" aria-hidden="true">▶</div>
-                <div className="tm-bandit-payline-laser" aria-hidden="true" />
+                <div className={`tm-bandit-payline-laser ${anticipationReel !== null ? 'is-pulsing' : ''}`} aria-hidden="true" />
                 <div className="tm-bandit-payline-arrow right" aria-hidden="true">◀</div>
 
                 <div className="tm-bandit-drums-grid">
                   {[0, 1, 2].map((reelIdx) => {
                     const spinning = banditSpinning[reelIdx];
                     const isHeld = heldReels[reelIdx];
+                    const isAnt = anticipationReel === reelIdx;
+                    const isDim = anticipationReel !== null && anticipationReel !== reelIdx;
+                    const breatheRows =
+                      anticipationReel !== null && reelIdx < anticipationReel ? new Set([1]) : null;
 
                     return (
                       <div key={reelIdx} className="tm-bandit-drum-col">
@@ -1906,6 +1975,9 @@ export default function VegasSlotMachine({
                           isHeld={isHeld}
                           isWinner={isWinner}
                           isSpinning={spinning}
+                          isAnticipating={isAnt}
+                          isDimmed={isDim}
+                          breathingRows={breatheRows}
                           symbolSize={embedded ? 36 : 44}
                           onTapReel={isBanditSpinning ? handleSlamStopBandit : undefined}
                         />

@@ -693,6 +693,27 @@
   max-width: 630px;
 }
 
+.tm-bandit-cabinet.is-suspense .tm-bandit-marquee,
+.tm-bandit-cabinet.is-suspense .tm-bandit-payglass-wrap,
+.tm-bandit-cabinet.is-suspense .tm-bandit-control-deck,
+.tm-bandit-cabinet.is-suspense .tm-bandit-power-row,
+.tm-bandit-cabinet.is-suspense .tm-bandit-meters-row {
+  opacity: 0.6;
+  transition: opacity 0.15s ease-out;
+}
+
+.tm-bandit-cabinet:not(.is-suspense) .tm-bandit-marquee,
+.tm-bandit-cabinet:not(.is-suspense) .tm-bandit-payglass-wrap,
+.tm-bandit-cabinet:not(.is-suspense) .tm-bandit-control-deck,
+.tm-bandit-cabinet:not(.is-suspense) .tm-bandit-power-row,
+.tm-bandit-cabinet:not(.is-suspense) .tm-bandit-meters-row {
+  transition: opacity 0.15s ease-out;
+}
+
+.tm-bandit-cabinet.is-suspense .tm-bandit-reel-bezel {
+  box-shadow: 0 0 26px rgba(25, 240, 255, 0.28), inset 0 0 18px rgba(0, 0, 0, 0.72);
+}
+
 .tm-bandit-cabinet {
   flex: 1;
   min-width: 0;

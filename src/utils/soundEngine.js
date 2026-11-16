@@ -1361,6 +1361,122 @@ export class SoundEngine {
     }
   }
 
+  stopSlotRiser() {
+    if (this._activeSlotRiser) {
+      try {
+        this._activeSlotRiser();
+      } catch {
+        // ignore
+      }
+      this._activeSlotRiser = null;
+    }
+  }
+
+  /**
+   * 🎛️ SUSPENSE RISER SYNTH TONE FOR ANTICIPATION REELS
+   */
+  playSlotRiser(durationMs = 1400) {
+    this.stopSlotRiser();
+    if (!this.enabled) return () => {};
+    try {
+      this.init();
+      if (!this.ctx) return () => {};
+      const now = this.ctx.currentTime;
+      const durSec = Math.max(0.4, Math.min(3.0, durationMs / 1000));
+
+      const osc = this.ctx.createOscillator();
+      const filter = this.ctx.createBiquadFilter();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(190, now);
+      osc.frequency.exponentialRampToValueAtTime(740, now + durSec);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(380, now);
+      filter.frequency.exponentialRampToValueAtTime(2600, now + durSec);
+
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.11, now + 0.14);
+      gain.gain.linearRampToValueAtTime(0.16, now + durSec - 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + durSec);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this._getOutputNode());
+      this._disconnectOnEnded(osc, [filter, gain]);
+      osc.start(now);
+      osc.stop(now + durSec + 0.03);
+
+      const stopFn = () => {
+        try {
+          const t = this.ctx?.currentTime || 0;
+          gain.gain.cancelScheduledValues(t);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.03);
+          osc.stop(t + 0.04);
+        } catch {
+          // ignore
+        }
+      };
+      this._activeSlotRiser = stopFn;
+      return stopFn;
+    } catch {
+      return () => {};
+    }
+  }
+
+  /**
+   * 🕐 RISING CRAWL TICK PER SYMBOL DURING ANTICIPATION
+   */
+  playSlotTick(progress = 0) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const clamped = Math.max(0, Math.min(1, Number(progress) || 0));
+      const freq = 520 + clamped * 680;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now);
+      gain.gain.setValueAtTime(0.14, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
+      osc.connect(gain);
+      gain.connect(this._getOutputNode());
+      this._disconnectOnEnded(osc, [gain]);
+      osc.start(now);
+      osc.stop(now + 0.05);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 😌 SOFT LOW "AWW" TONE WHEN AN ANTICIPATION MISSES
+   */
+  playSlotAww() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(290, now);
+      osc.frequency.exponentialRampToValueAtTime(155, now + 0.24);
+      gain.gain.setValueAtTime(0.11, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.26);
+      osc.connect(gain);
+      gain.connect(this._getOutputNode());
+      this._disconnectOnEnded(osc, [gain]);
+      osc.start(now);
+      osc.stop(now + 0.28);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
   /**
    * 🔔 LAS VEGAS SLOT BELL "DING-DING-DING!" STRIKES
    */

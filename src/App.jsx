@@ -2077,6 +2077,7 @@ export default function App() {
               key={`rewards-${rewardsInitialTab}`}
               xp={xp}
               tokens={tokens}
+              centz={memeCentz}
               tokenLedger={tokenLedger}
               xpConversionState={xpConversionState}
               xpAutoConvert={xpAutoConvert}

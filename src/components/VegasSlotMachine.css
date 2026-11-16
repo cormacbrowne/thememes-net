@@ -1081,6 +1081,17 @@
   color: #f8fafc;
 }
 
+.tm-bandit-stat-box .ui-wallet--inline {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 900;
+  max-width: 100%;
+}
+
 .tm-bandit-bet-row {
   display: flex;
   align-items: center;

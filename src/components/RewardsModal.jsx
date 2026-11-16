@@ -22,6 +22,7 @@ const VegasSlotMachine = lazyWithRetry(() => import('./VegasSlotMachine'));
 export default function RewardsModal({
   xp,
   tokens = 25,
+  centz = 0,
   tokenLedger,
   xpConversionState = null,
   xpAutoConvert = true,
@@ -172,7 +173,7 @@ export default function RewardsModal({
                   </div>
                 </div>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '15px', fontWeight: 900 }}>
-                  <Wallet tokens={tokens} size="inline" /> •{' '}
+                  <Wallet tokens={tokens} centz={centz} size="inline" /> •{' '}
                   <span style={{ color: '#00f3ff' }}>{xp} XP</span>
                 </div>
               </div>
@@ -290,7 +291,7 @@ export default function RewardsModal({
                 🛡️ FAIR MEMEDOLLARZ ECONOMY (ANTI-EXPLOIT PROTECTED)
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '17px', fontWeight: 900, marginTop: '4px', flexWrap: 'wrap' }}>
-                <span>Wallet:</span> <Wallet tokens={tokens} size="inline" /> •{' '}
+                <span>Wallet:</span> <Wallet tokens={tokens} centz={centz} size="inline" /> •{' '}
                 <span style={{ color: '#00f3ff' }}>{xp} XP</span>
               </div>
             </div>
@@ -305,7 +306,7 @@ export default function RewardsModal({
 
           <div className="tm-ledger-caps-grid">
             <div className="tm-ledger-cap-pill">
-              📸 Meme Uploads: <strong>{formatMoney(tokenLedger?.byCategory?.upload || 0, { zero: 'balance' })}</strong> / {formatMoney(ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.upload)} ({formatMoney(ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens, { sign: true })}–{formatMoney(ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens + ARCADE_ECONOMY_RULES.REWARDS.FIRST_UPLOAD_BONUS.tokens, { sign: true })})
+              📸 Uploads: <strong>{formatMoney(tokenLedger?.byCategory?.upload || 0, { zero: 'balance' })}</strong> / {formatMoney(ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.upload)} ({formatMoney(ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens, { sign: true })}–{formatMoney(ARCADE_ECONOMY_RULES.REWARDS.UPLOAD_MEME.tokens + ARCADE_ECONOMY_RULES.REWARDS.FIRST_UPLOAD_BONUS.tokens)})
             </div>
             <div className="tm-ledger-cap-pill">
               🔥 Feed Votes/Comments: <strong>{formatMoney(tokenLedger?.byCategory?.engagement || 0, { zero: 'balance' })}</strong> / {formatMoney(ARCADE_ECONOMY_RULES.CATEGORY_DAILY_CAPS.engagement)}
@@ -579,6 +580,7 @@ export default function RewardsModal({
           <VegasSlotMachine
             embedded
             tokens={tokens}
+            centz={centz}
             onSpendTokens={onSpendTokens}
             onPayoutTokens={onPayoutTokens}
             onOpenUpload={() => {

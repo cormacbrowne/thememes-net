@@ -22,7 +22,7 @@
 
 > **Where we are (site review, 16 Nov 2026):** the safety work (P0, 33.1–33.13), "make the fake things real" (P1, 33.14–33.18) and the first six skill cabinets (33.19–33.24) are **built, live and verified**. Their full task text and completion notes were moved word for word to [`docs/HISTORY.md`](docs/HISTORY.md) ("Phase 33 — completed tasks"). This file now lists **only what is still to do**.
 >
-> **Order:** loose ends below → owner actions → P2 (fun) → P3 (polish/health) → P4 (growth and money).
+> **Order:** owner actions → loose ends below → P2 (fun) → P3 (polish/health) → P4 (growth and money).
 
 ### ✅ Review result (16 Nov 2026) — what was checked
 
@@ -30,15 +30,10 @@
 - **Code:** `npm run lint` clean, `npm run test:unit` 256 node:test + 45 Vitest pass, `npm audit --omit=dev` 0 vulnerabilities, no secrets in the repo or its git history, GitHub "Safety CI" green.
 - **Live site (`www.thememes.net`):** CSP, HSTS, `nosniff`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy` headers all present; `/rules`, `/terms`, `/privacy`, `/takedown`, `/contact`, all six new game routes and the sitemap respond; `.env`/`.git` paths are not served.
 - **Fixed during the review (task 33.51, see history):** creator-profile migration (33.17) was never applied and had a broken rate-limit call → fixed and applied; `delete-account` function was never deployed → deployed; unknown URLs (including `/admin/moderation`) returned a Vercel 404 instead of the app → rewrite fixed and verified live (HTTP 200) after deploy; `/hall-of-fame` had an empty `<title>`/description → fixed; spare database grants removed (migration `20261115000024`).
-- **Public uploads are still switched off** (`PUBLIC_UPLOADS_ENABLED = false` in `src/config/featureFlags.js`). Keep it off until the loose ends and owner actions 1–3 below are done.
+- **Public uploads are still switched off** (`PUBLIC_UPLOADS_ENABLED = false` in `src/config/featureFlags.js`). Keep it off until owner actions 1–3 below are done.
 
 ### 🔧 Loose ends from finished work (do these first)
 
-- [ ] **33.52 Deploy the three Edge Functions whose repo code is newer than live.** The Supabase CLI on this machine is not logged in, and these are too large to paste safely through the MCP tool. Owner runs `npx supabase login` once, then an agent (or the owner) runs, from the repo root:
-  - `npx supabase functions deploy submit-caption-entry --no-verify-jwt --project-ref otvvphmjojqyjaznjzyo` — **not deployed at all**, so Daily Caption Battle entries cannot be submitted on the live site (33.15).
-  - `npx supabase functions deploy publish-meme --no-verify-jwt --project-ref otvvphmjojqyjaznjzyo` — live is v12 (33.7); the repo adds the GIF size/length limits and video refusal (33.9) and caption-battle mirroring (33.15). The storage bucket already refuses video MIME types, so this is a second layer, but it must be live before uploads are switched on.
-  - `npx supabase functions deploy post-comment --no-verify-jwt --project-ref otvvphmjojqyjaznjzyo` — live is v3; the repo returns `user_id` so the 🗑️ button shows on a comment you have just posted (33.8).
-  - **Acceptance:** `list_edge_functions` shows all seven functions; submitting a caption-battle entry works on the live site; a >8 MB GIF is refused with `GIF_TOO_LARGE`.
 - [ ] **33.54 Small hardening follow-ups (none exploitable today).** (a) Rate-limit `start_game_session` (an account can create unlimited `score_sessions` rows) and add a cron job that deletes `score_sessions`/`rate_limit_events` older than 30 days. (b) `is_suspended(uuid)` lets anyone ask whether a given account id is suspended; restrict to own id / moderators. (c) Move the `pg_net` extension out of `public`. (d) Remove the unused legacy public bucket `meme-images` after confirming no meme row points at it. (e) Delete the orphaned test files in Storage `memes/u/` (`826097b0…`, `be9befb2…`, `75a101d0…`, `7f9b4595…`). (f) `delete-account` should also remove the user's `takedown_requests` and `reports` rows.
 
 ### 🙋 Owner actions (agents cannot do these)
@@ -49,7 +44,7 @@
 4. **Supabase dashboard:** turn on **leaked-password protection** (Auth → Passwords; the security advisor flags it); confirm which OAuth providers are really configured; create a separate **staging project** and add GitHub secrets `STAGING_SUPABASE_URL`, `STAGING_SUPABASE_ANON_KEY`, `STAGING_TEST_MEME_ID` so CI runs the security spec on every push (it is skipped until they exist).
 5. **Bot check keys:** add `VITE_TURNSTILE_SITE_KEY` in Vercel and `TURNSTILE_SECRET_KEY` in Supabase Edge Function secrets. Until then Turnstile is skipped and only the rate limits apply.
 6. **Daily moderation digest:** add a Discord webhook: `select vault.create_secret('<url>', 'moderation_digest_webhook_url');`
-7. **Then decide when to switch uploads on** (`PUBLIC_UPLOADS_ENABLED = true`), after 33.52 and items 1–3.
+7. **Then decide when to switch uploads on** (`PUBLIC_UPLOADS_ENABLED = true`), after items 1–3. All seven Edge Functions are now deployed and current.
 8. **Moderation provider upgrade (when the site earns):** the free OpenAI check does not cover hate symbols, drugs or weapons in images and has no child-abuse hash matching; look at Hive / Thorn Safer / Microsoft PhotoDNA.
 9. **Search and first traffic:** submit `https://www.thememes.net/sitemap.xml` in Google Search Console and Bing Webmaster Tools; share real `/m/<id>?ref=share` and game links on Reddit, Discord, X, TikTok; list the games on itch.io.
 

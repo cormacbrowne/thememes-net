@@ -243,6 +243,20 @@ export function parsePublishRequest(body, userId) {
     ? rawBountyId
     : null;
   const isBounty = Boolean(body.isBounty && bountyId);
+
+  // 36.V: video memes carry the browser-made moderation frames (own quarantine paths only).
+  const kind = body.kind === 'video' ? 'video' : 'image';
+  let framePaths = [];
+  if (kind === 'video') {
+    if (!Array.isArray(body.framePaths) || body.framePaths.length < 1 || body.framePaths.length > 16) {
+      return { ok: false, error: 'bad_request' };
+    }
+    framePaths = [...new Set(body.framePaths)];
+    if (framePaths.some((fp) => !isOwnQuarantinePath(fp, userId) || fp === body.path)) {
+      return { ok: false, error: 'bad_path' };
+    }
+  }
+  const clampNum = (v, lo, hi) => (Number.isFinite(Number(v)) ? Math.min(hi, Math.max(lo, Number(v))) : null);
   return {
     ok: true,
     value: {
@@ -256,7 +270,12 @@ export function parsePublishRequest(body, userId) {
       parentId,
       rootId,
       isBounty,
-      bountyId
+      bountyId,
+      kind,
+      framePaths,
+      durationSec: kind === 'video' ? clampNum(body.durationSec, 0, 600) : null,
+      width: kind === 'video' ? clampNum(body.width, 0, 4096) : null,
+      height: kind === 'video' ? clampNum(body.height, 0, 4096) : null
     }
   };
 }

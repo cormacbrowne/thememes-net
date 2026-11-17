@@ -175,7 +175,7 @@ async function buildFromIntent(intent = {}) {
     out.doc = makeDoc();
     return out;
   }
-  out.tip = '📸 Upload or paste (Ctrl+V) any image or GIF, then type Top & Bottom text!';
+  out.tip = '📸 Upload or paste (Ctrl+V) any image, GIF or short video, then type Top & Bottom text!';
   out.doc = makeDoc();
   return out;
 }
@@ -532,7 +532,7 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
   const handlePublish = async (e) => {
     e?.preventDefault?.();
     if (!hasMedia) {
-      setError('📸 Upload, drop, or paste (Ctrl+V) an image or GIF first!');
+      setError('📸 Upload, drop, or paste (Ctrl+V) an image, GIF or video first!');
       return;
     }
     if (!PUBLIC_UPLOADS_ENABLED) {
@@ -578,7 +578,7 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
           }
         }
 
-        if (cleanLayers.length) {
+        if (doc.base.kind === 'gif' && cleanLayers.length) {
           try {
             const posterSource =
               doc.base.posterUrl || (uploadFile ? await makePoster(uploadFile, doc.base.kind) : null);
@@ -598,7 +598,19 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
           posterBlob,
           width: doc.base.width,
           height: doc.base.height,
-          duration: doc.base.duration
+          duration: doc.base.duration,
+          // 36.V: videos are re-recorded in the browser before upload; show progress.
+          onProgress:
+            doc.base.kind === 'video'
+              ? (p, stage) =>
+                  setStatus(
+                    stage === 'preparing'
+                      ? `🎬 Getting your video ready… ${Math.round(p * 100)}% (keep this open)`
+                      : stage === 'uploading'
+                        ? '📤 Uploading your video…'
+                        : CHECKING_MESSAGE
+                  )
+              : undefined
         };
         overlay = burnedMotion
           ? { v: 1, burned: true, layers: cleanLayers }

@@ -405,3 +405,16 @@ kbd {
 .tm-mod-cats-table tr.is-off td {
   opacity: 0.5;
 }
+
+/* 36.V: video review */
+.tm-mod-video {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tm-mod-video video {
+  width: 100%;
+  max-height: 60vh;
+  border-radius: 12px;
+  background: #000;
+}

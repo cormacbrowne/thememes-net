@@ -14,7 +14,10 @@ export const MEDIA_LIMITS = {
 };
 
 export const ACCEPT_MEDIA =
-  'image/png,image/jpeg,image/webp,image/gif,.png,.jpg,.jpeg,.webp,.gif';
+  'image/png,image/jpeg,image/webp,image/gif,video/mp4,video/quicktime,video/webm,.png,.jpg,.jpeg,.webp,.gif,.mp4,.mov,.webm';
+
+/** 36.V: raw clips can be big (they are re-recorded at 720p before upload). */
+export const VIDEO_LIMITS_CLIENT = { RAW_MAX_BYTES: 400 * 1024 * 1024, MAX_SEC: 30 };
 
 export const VIDEO_PAUSED_ERROR = '🎬 Video memes are coming back soon — post a still or a GIF for now.';
 
@@ -105,19 +108,28 @@ export async function validateFile(file) {
   if (!securityCheck.safe) {
     return { ok: false, error: securityCheck.reason };
   }
-  const kind = getMediaKind(file);
-  if (kind === 'video') {
-    return { ok: false, kind, error: VIDEO_PAUSED_ERROR };
-  }
+  let kind = getMediaKind(file);
   try {
-    if (typeof file?.slice === 'function') {
+    if (kind !== 'video' && typeof file?.slice === 'function') {
       const head = new Uint8Array(await file.slice(0, 16).arrayBuffer());
-      if (isVideoBytes(head)) {
-        return { ok: false, kind: 'video', error: VIDEO_PAUSED_ERROR };
-      }
+      if (isVideoBytes(head)) kind = 'video';
     }
   } catch {
     // ignore slice errors and rely on MIME/extension + probe
+  }
+  if (kind === 'video') {
+    if (file.size > VIDEO_LIMITS_CLIENT.RAW_MAX_BYTES) {
+      return { ok: false, kind, error: '⚠️ That video file is very large — trim it to 30 seconds or less.' };
+    }
+    const probe = await probeMedia(file).catch(() => null);
+    if (!probe?.playable) {
+      return { ok: false, kind, error: '🎬 This browser cannot read that video. Try an MP4, or open the site in Safari.' };
+    }
+    const tip =
+      probe.duration > VIDEO_LIMITS_CLIENT.MAX_SEC + 0.5
+        ? `✂️ Only the first ${VIDEO_LIMITS_CLIENT.MAX_SEC} seconds will be posted.`
+        : '';
+    return { ok: true, kind, probe, tip };
   }
   if (!kind) {
     return { ok: false, error: '⚠️ Unsupported file. Use PNG, JPG, WebP or GIF.' };

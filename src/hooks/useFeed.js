@@ -1206,7 +1206,8 @@ export function useFeed({
     topText = '',
     bottomText = '',
     category: quickCat = 'dank',
-    event = null
+    event = null,
+    onProgress = undefined
   }) => {
     if (!PUBLIC_UPLOADS_ENABLED) {
       throw new Error(UPLOADS_PAUSED_ERROR);
@@ -1277,7 +1278,7 @@ export function useFeed({
         }
       }
 
-      if (effectiveLayers.length) {
+      if (v.kind === 'gif' && effectiveLayers.length) {
         try {
           const rawPoster = await makePoster(file, v.kind);
           if (rawPoster) {
@@ -1294,7 +1295,8 @@ export function useFeed({
         posterBlob,
         width: v.probe?.width || 0,
         height: v.probe?.height || 0,
-        duration: v.probe?.duration || 0
+        duration: v.probe?.duration || 0,
+        onProgress
       };
       if (effectiveLayers.length) {
         overlay = burnedMotion

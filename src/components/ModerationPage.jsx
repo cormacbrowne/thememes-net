@@ -292,6 +292,28 @@ export default function ModerationPage() {
                           🧒 Reported as involving a child. The image is not shown. Remove it and follow the
                           legal reporting procedure; do not download or share it.
                         </div>
+                      ) : item.media_type === 'video' && show ? (
+                        <div className="tm-mod-video">
+                          {/* 36.V: videos are always held for a person; watch it (muted first, sound on demand). */}
+                          <video
+                            src={item.image_url}
+                            poster={item.poster_url || undefined}
+                            controls
+                            muted
+                            playsInline
+                            preload="metadata"
+                          />
+                          <button
+                            type="button"
+                            className="tm-mod-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setRevealed((r) => ({ ...r, [item.id]: false }));
+                            }}
+                          >
+                            Hide video
+                          </button>
+                        </div>
                       ) : img ? (
                         <button
                           type="button"
@@ -308,7 +330,10 @@ export default function ModerationPage() {
                       ) : (
                         <div className="tm-mod-hidden-media">No image</div>
                       )}
-                      <div className="tm-mod-title">{item.title || '(no title)'}</div>
+                      <div className="tm-mod-title">
+                        {item.media_type === 'video' && <span className="tm-mod-chip">🎬 Video — tap to watch</span>}{' '}
+                        {item.title || '(no title)'}
+                      </div>
                     </div>
                   ) : (
                     <blockquote className="tm-mod-comment">{item.body}</blockquote>

@@ -9,6 +9,8 @@ import {
   CHECKING_MESSAGE,
   LIVE_MESSAGE,
   PENDING_REVIEW_MESSAGE,
+  VIDEO_PENDING_MESSAGE,
+  VIDEO_PREPARING_MESSAGE,
   RULES_PATH
 } from '../utils/publishMeme';
 import {
@@ -210,9 +212,20 @@ export default function QuickUploadBar({
       return;
     }
     setIsSubmitting(true);
-    setStatusMsg(CHECKING_MESSAGE);
+    const isVideo = selectedKind === 'video';
+    setStatusMsg(isVideo ? VIDEO_PREPARING_MESSAGE : CHECKING_MESSAGE);
     try {
       const result = await onQuickPublishFile({
+        onProgress: isVideo
+          ? (p, stage) =>
+              setStatusMsg(
+                stage === 'preparing'
+                  ? `🎬 Getting your video ready… ${Math.round(p * 100)}% (keep this open)`
+                  : stage === 'uploading'
+                    ? '📤 Uploading your video…'
+                    : CHECKING_MESSAGE
+              )
+          : undefined,
         file: selectedFile,
         title: quickTitle.trim(),
         topText: quickTopCaption.trim(),
@@ -222,8 +235,8 @@ export default function QuickUploadBar({
       });
       handleClearPreview();
       const pending = result?.status === 'pending';
-      setStatusMsg(pending ? PENDING_REVIEW_MESSAGE : LIVE_MESSAGE);
-      setTimeout(() => setStatusMsg(''), pending ? 7000 : 3500);
+      setStatusMsg(pending ? (isVideo ? VIDEO_PENDING_MESSAGE : PENDING_REVIEW_MESSAGE) : LIVE_MESSAGE);
+      setTimeout(() => setStatusMsg(''), pending ? 9000 : 3500);
     } catch (err) {
       setStatusMsg(
         err?.message === UPLOADS_PAUSED_ERROR
@@ -287,7 +300,7 @@ export default function QuickUploadBar({
             </span>
             <div>
               <div className="tm-quick-upload-title">
-                Upload an image or GIF, add top &amp; bottom meme text
+                Upload an image, GIF or video (up to 30s), add top &amp; bottom meme text
               </div>
               <div className="tm-quick-upload-sub">
                 Drag it here, pick a file or paste with Ctrl+V. Top and bottom text, instant download, share anywhere.

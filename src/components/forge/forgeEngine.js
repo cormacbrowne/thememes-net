@@ -473,7 +473,13 @@ export function pickVideoRecorderMime() {
  * Plays the clip once off-screen through canvas.captureStream + MediaRecorder.
  * Returns { blob, mime, ext } or null when the browser cannot record.
  */
-export async function burnInVideo(videoUrl, layers, images, onProgress, { maxSeconds = 90 } = {}) {
+export async function burnInVideo(
+  videoUrl,
+  layers,
+  images,
+  onProgress,
+  { maxSeconds = 90, maxDim = 1080, watermark = true, frameCount = 0, frameMaxDim = 480 } = {}
+) {
   if (typeof MediaRecorder === 'undefined' || !HTMLCanvasElement.prototype.captureStream) return null;
   const mime = pickVideoRecorderMime();
   if (!mime) return null;
@@ -491,7 +497,7 @@ export async function burnInVideo(videoUrl, layers, images, onProgress, { maxSec
     v.onloadeddata = res;
     v.onerror = () => rej(new Error('video-load'));
   });
-  const scale = Math.min(1, 1080 / Math.max(v.videoWidth || 720, v.videoHeight || 720));
+  const scale = Math.min(1, maxDim / Math.max(v.videoWidth || 720, v.videoHeight || 720));
   const W = Math.max(2, Math.round((v.videoWidth || 720) * scale) & ~1);
   const H = Math.max(2, Math.round((v.videoHeight || 720) * scale) & ~1);
   const c = document.createElement('canvas');
@@ -501,7 +507,31 @@ export async function burnInVideo(videoUrl, layers, images, onProgress, { maxSec
   const draw = () => {
     ctx.drawImage(v, 0, 0, W, H);
     if (cleanLayers.length) drawLayers(ctx, W, H, cleanLayers, images || new Map());
-    stampArcadeCartridgeFooter(ctx, W, H, { fast: true });
+    if (watermark) stampArcadeCartridgeFooter(ctx, W, H, { fast: true });
+  };
+
+  // 36.V: small stills of what is being recorded, spread over the clip, for moderation.
+  const frameJobs = [];
+  const playLen = Math.min(maxSeconds, Number.isFinite(v.duration) && v.duration > 0 ? v.duration : maxSeconds);
+  const nFrames = frameCount === 'auto' ? Math.min(16, Math.max(4, Math.ceil(playLen / 2))) : frameCount;
+  const frameTimes = nFrames > 0
+    ? Array.from({ length: nFrames }, (_, i) => (i === 0 ? 0 : (playLen * i) / nFrames))
+    : [];
+  let nextFrame = 0;
+  const grabFrames = () => {
+    while (nextFrame < frameTimes.length && v.currentTime + 0.001 >= frameTimes[nextFrame]) {
+      const fs = Math.min(1, frameMaxDim / Math.max(W, H));
+      const fc = document.createElement('canvas');
+      fc.width = Math.max(2, Math.round(W * fs));
+      fc.height = Math.max(2, Math.round(H * fs));
+      fc.getContext('2d').drawImage(c, 0, 0, fc.width, fc.height);
+      frameJobs.push(
+        new Promise((res) =>
+          fc.toBlob((b) => (b && b.type === 'image/webp' ? res(b) : fc.toBlob((j) => res(j), 'image/jpeg', 0.85)), 'image/webp', 0.82)
+        )
+      );
+      nextFrame += 1;
+    }
   };
   draw();
   const stream = c.captureStream(30);
@@ -532,6 +562,7 @@ export async function burnInVideo(videoUrl, layers, images, onProgress, { maxSec
   const useVfc = typeof v.requestVideoFrameCallback === 'function';
   const tick = () => {
     draw();
+    if (frameTimes.length) grabFrames();
     if (onProgress && v.duration) onProgress(Math.min(1, v.currentTime / v.duration));
     if (v.currentTime >= maxSeconds) v.pause();
     if (useVfc) vfc = v.requestVideoFrameCallback(tick);
@@ -555,13 +586,43 @@ export async function burnInVideo(videoUrl, layers, images, onProgress, { maxSec
   draw();
   rec.stop();
   await stopped;
+  const frames = (await Promise.all(frameJobs)).filter(Boolean);
   try {
     audioCtx?.close();
   } catch {
     // ignore
   }
   const baseMime = mime.split(';')[0];
-  return { blob: new Blob(chunks, { type: baseMime }), mime: baseMime, ext: baseMime === 'video/mp4' ? 'mp4' : 'webm' };
+  return {
+    blob: new Blob(chunks, { type: baseMime }),
+    mime: baseMime,
+    ext: baseMime === 'video/mp4' ? 'mp4' : 'webm',
+    frames,
+    width: W,
+    height: H,
+    duration: Math.min(playLen, v.currentTime || playLen)
+  };
+}
+
+/**
+ * 36.V: get a picked video ready to post. Re-records it (max 30 s, 720p, captions burned in,
+ * no logo: the logo is added when it is shared), which also drops every bit of phone metadata
+ * (location, device), and grabs 4–16 small stills for moderation (the first is the poster).
+ * Returns { blob, mime, ext, frames, width, height, duration } or null if the browser cannot record.
+ */
+export async function prepareVideoForUpload(source, layers = [], { onProgress } = {}) {
+  const url = source instanceof Blob ? URL.createObjectURL(source) : source;
+  try {
+    return await burnInVideo(url, layers, new Map(), onProgress, {
+      maxSeconds: 30,
+      maxDim: 720,
+      watermark: false,
+      frameCount: 'auto',
+      frameMaxDim: 480
+    });
+  } finally {
+    if (source instanceof Blob) URL.revokeObjectURL(url);
+  }
 }
 
 /**

@@ -44,6 +44,7 @@ import { moderateImage, moderateText } from '../_shared/moderation.js';
 import { IMAGE_MODERATION } from '../_shared/moderationConfig.js';
 import { authorNameFor, isProfileSuspended } from '../_shared/identity.js';
 import { verifyTurnstile, extractClientIp, ipHashFor, BOT_ERROR_MESSAGES } from '../_shared/rateLimitAndBot.js';
+import { inspectAndCleanVideo, VIDEO_LIMITS, VIDEO_ERRORS } from '../_shared/videoInspect.js';
 
 // The package's main entry is dist/index.js; the 32-bit WASM build sits at dist/x86/magick.wasm.
 const wasmBytes = await Deno.readFile(
@@ -144,7 +145,8 @@ async function ensureCallerProfile(userId: string) {
 }
 
 async function handleSignUpload(req: Request, userId: string, body: Record<string, unknown>) {
-  if (typeof body?.mimeType === 'string' && body.mimeType.toLowerCase().startsWith('video/')) {
+  const isVideo = body?.kind === 'video';
+  if (!isVideo && typeof body?.mimeType === 'string' && body.mimeType.toLowerCase().startsWith('video/')) {
     return fail(req, 415, PUBLISH_ERRORS.VIDEO_PAUSED);
   }
   const bot = await verifyTurnstile({
@@ -187,7 +189,9 @@ async function handleSignUpload(req: Request, userId: string, body: Record<strin
     });
   }
 
-  const count = body.count === 2 ? 2 : 1;
+  // 36.V: a video takes 1 slot for the clip + 1 per moderation frame (first frame = poster).
+  const frameCount = Math.min(VIDEO_LIMITS.MAX_FRAMES, Math.max(1, Math.floor(Number(body.frames) || 1)));
+  const count = isVideo ? 1 + frameCount : body.count === 2 ? 2 : 1;
   const uploads = [];
   for (let i = 0; i < count; i += 1) {
     const path = buildQuarantinePath(userId, crypto.randomUUID());
@@ -195,7 +199,170 @@ async function handleSignUpload(req: Request, userId: string, body: Record<strin
     if (error || !data) return fail(req, 500, PUBLISH_ERRORS.SERVER);
     uploads.push({ path, token: data.token });
   }
-  return json(req, 200, { ok: true, uploads, maxBytes: PUBLISH_LIMITS.MAX_UPLOAD_BYTES });
+  return json(req, 200, {
+    ok: true,
+    uploads,
+    maxBytes: isVideo ? VIDEO_LIMITS.MAX_BYTES : PUBLISH_LIMITS.MAX_UPLOAD_BYTES
+  });
+}
+
+// ==========================================
+// 36.V Stage 1: video memes. The clip is never decoded here (2 s CPU budget): it is checked and
+// cleaned at the container level (videoInspect.js), the browser-made frames are re-encoded and
+// moderated like images, and the meme is ALWAYS held `pending` for a moderator because those
+// frames come from the browser and cannot be trusted on their own.
+// ==========================================
+async function readQuarantineVideo(path: string) {
+  const { data, error } = await admin.storage.from(QUARANTINE_BUCKET).download(path);
+  if (error || !data) return { error: PUBLISH_ERRORS.NOT_FOUND };
+  if (data.size > VIDEO_LIMITS.MAX_BYTES) return { error: VIDEO_ERRORS.TOO_LARGE };
+  const bytes = new Uint8Array(await data.arrayBuffer());
+  const res = inspectAndCleanVideo(bytes);
+  if (!res.ok) return { error: res.error };
+  return { bytes, res };
+}
+
+async function handlePublishVideo(
+  req: Request,
+  user: { id: string; is_anonymous?: boolean; email?: string; user_metadata?: Record<string, unknown> },
+  // deno-lint-ignore no-explicit-any
+  input: any,
+  profile: { id?: string; username?: string | null; role?: string; suspended_until?: string | null } | null
+) {
+  const toDelete = [input.path, ...input.framePaths];
+  try {
+    const ipHash = await ipHashFor(req.headers);
+    const { data: pubRl, error: pubRlErr } = await admin.rpc('check_and_record_rate_limit', {
+      p_user_id: user.id,
+      p_action: 'upload',
+      p_ip_hash: ipHash,
+      p_record: true
+    });
+    if (pubRlErr) return fail(req, 500, PUBLISH_ERRORS.SERVER);
+    if (!pubRl?.ok) {
+      return json(req, 429, pubRl, { 'Retry-After': String(pubRl?.retry_after_seconds || 60) });
+    }
+
+    const clip = await readQuarantineVideo(input.path);
+    if (clip.error) return fail(req, clip.error === VIDEO_ERRORS.TOO_LARGE ? 413 : 415, clip.error);
+    const durationSec = clip.res.durationSec ?? input.durationSec;
+    if (durationSec != null && durationSec > VIDEO_LIMITS.MAX_SEC + 0.75) {
+      return fail(req, 415, VIDEO_ERRORS.TOO_LONG);
+    }
+
+    // Moderation frames: decoded + re-encoded like any still (also proves they are real images).
+    const frames = [];
+    for (const fp of input.framePaths) {
+      const f = await readQuarantine(fp);
+      if (f.error || f.type === 'gif') return fail(req, 415, PUBLISH_ERRORS.UNDECODABLE);
+      try {
+        frames.push(transcodeImage(Magick, f.bytes, f.type));
+      } catch {
+        return fail(req, 415, PUBLISH_ERRORS.UNDECODABLE);
+      }
+    }
+    const poster = frames[0];
+    const sha256 = await sha256Hex(clip.bytes);
+
+    const banCheck = await admin.rpc('is_banned_image', {
+      p_sha256: sha256,
+      p_phash: poster.phash,
+      p_max_distance: IMAGE_MODERATION.bannedPhashMaxDistance
+    });
+    if (banCheck.data === true) {
+      await logRejection(user.id, 'banned_hash', null);
+      return json(req, 422, { ok: false, error: PUBLISH_ERRORS.REJECTED, status: 'rejected' });
+    }
+
+    const samples = frames.flatMap((f) => f.samples ?? []);
+    const [imageVerdict, textVerdict] = await Promise.all([
+      moderateImage({ samples, env: Deno.env }),
+      moderateText({ texts: input.texts, env: Deno.env })
+    ]);
+    const autoStatus = decideStatus(imageVerdict, textVerdict);
+    const moderation = {
+      image: imageVerdict,
+      text: textVerdict,
+      video: { container: clip.res.container, durationSec, stripped: clip.res.stripped, frames: frames.length, auto: autoStatus },
+      checked_at: new Date().toISOString()
+    };
+
+    if (autoStatus === 'rejected') {
+      if (imageVerdict.decision === 'reject') {
+        await admin
+          .from('banned_hashes')
+          .upsert(
+            { sha256, phash: poster.phash, reason: `auto_reject:${(imageVerdict.flagged ?? []).join(',')}`, source: 'publish-meme' },
+            { onConflict: 'sha256', ignoreDuplicates: true }
+          );
+        if (imageVerdict.zeroTolerance) {
+          await admin.from('moderation_incidents').insert({
+            kind: 'suspected_csam',
+            user_id: user.id,
+            sha256,
+            phash: poster.phash,
+            provider: imageVerdict.provider,
+            categories: imageVerdict.categories ?? null
+          });
+        }
+      }
+      const detail = textVerdict.decision === 'reject' ? textVerdict.category ?? 'rules' : 'image';
+      await logRejection(user.id, detail === 'image' ? 'video' : 'text', detail);
+      return json(req, 422, { ok: false, error: PUBLISH_ERRORS.REJECTED, status: 'rejected', detail });
+    }
+    // Stage 1: browser-made frames are never enough to auto-approve a video.
+    const status = 'pending';
+
+    let category = input.category;
+    if (input.requestedCategory && input.requestedCategory !== category) {
+      const { data: cat } = await admin
+        .from('meme_categories')
+        .select('id')
+        .eq('id', input.requestedCategory)
+        .eq('active', true)
+        .maybeSingle();
+      if (cat?.id) category = cat.id;
+    }
+
+    const id = crypto.randomUUID();
+    const ext = clip.res.container === 'webm' ? 'webm' : 'mp4';
+    const videoUrl = await putPublic(`videos/${id}.${ext}`, clip.res.cleaned, ext === 'webm' ? 'video/webm' : 'video/mp4');
+    const posterUrl = await putPublic(`posters/${id}.webp`, poster.data, 'image/webp');
+    const w = Math.round(input.width || poster.width || 0) || null;
+    const h = Math.round(input.height || poster.height || 0) || null;
+
+    const row = {
+      id,
+      title: input.title,
+      category,
+      image_url: videoUrl,
+      author_name: authorNameFor(user, profile),
+      user_id: user.id,
+      score: 1,
+      generation: 0,
+      media_type: 'video',
+      poster_url: posterUrl,
+      width: w,
+      height: h,
+      duration_sec: durationSec != null ? Math.round(durationSec * 10) / 10 : null,
+      overlay: input.overlay,
+      base_image_url: null,
+      status,
+      sha256,
+      phash: poster.phash,
+      moderation
+    };
+    const { data: inserted, error } = await admin.from('memes').insert(row).select().single();
+    if (error || !inserted) {
+      await admin.storage.from(PUBLIC_BUCKET).remove([`videos/${id}.${ext}`, `posters/${id}.webp`]);
+      return fail(req, 500, PUBLISH_ERRORS.SERVER);
+    }
+    return json(req, 200, { ok: true, status, meme: inserted });
+  } catch {
+    return fail(req, 500, PUBLISH_ERRORS.SERVER);
+  } finally {
+    await admin.storage.from(QUARANTINE_BUCKET).remove(toDelete).catch(() => {});
+  }
 }
 
 async function handlePublish(
@@ -207,6 +374,7 @@ async function handlePublish(
   const parsed = parsePublishRequest(body, user.id);
   if (!parsed.ok) return fail(req, 400, parsed.error);
   const input = parsed.value;
+  if (input.kind === 'video') return handlePublishVideo(req, user, input, profile);
   const toDelete = [input.path, input.basePath].filter(Boolean) as string[];
 
   try {

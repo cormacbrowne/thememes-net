@@ -21,6 +21,10 @@ export const CHECKING_MESSAGE = '🕵️ Checking your meme… usually a few sec
 export const LIVE_MESSAGE = '✅ Live! Your meme is on the feed.';
 export const PENDING_REVIEW_MESSAGE =
   '⏳ Our robots want a second look. Only you can see it until a moderator approves it.';
+/** 36.V Stage 1: every video waits for a moderator. */
+export const VIDEO_PENDING_MESSAGE =
+  '🎬 Your video is with the moderators — usually live within a few hours. Only you can see it until then.';
+export const VIDEO_PREPARING_MESSAGE = '🎬 Getting your video ready… it plays through once, keep this open.';
 
 /** Friendly copy for every error code publishMeme can throw (err.message is the code). */
 export const PUBLISH_ERROR_MESSAGES = {
@@ -29,6 +33,11 @@ export const PUBLISH_ERROR_MESSAGES = {
   rate_limited: '⏳ Cool your jets, speed racer. Try again in a moment.',
   ...BOT_ERROR_MESSAGES,
   video_paused: '🎬 Video memes are coming back soon — post a still or a GIF for now.',
+  video_unsupported: '🎬 This browser cannot prepare videos. Try Safari or Chrome, or post a GIF.',
+  video_too_large: '⚠️ That video is too big after preparing — try a shorter clip (max 30 seconds).',
+  video_too_long: '⚠️ Videos can be up to 30 seconds long.',
+  video_tracks: '⚠️ That video has extra data tracks we cannot post. Try exporting it again as a normal MP4.',
+  video_metadata: '⚠️ That video carries hidden metadata we cannot remove. Try exporting it again as MP4.',
   too_large: '⚠️ That file is too big — keep it under 15MB.',
   gif_too_large: '⚠️ GIFs must be 8MB or smaller.',
   gif_too_long: '⚠️ GIFs must be 10 seconds or shorter (max 300 frames).',
@@ -111,13 +120,87 @@ async function fetchAsBlob(url) {
  * Without a Supabase client (offline) a still image becomes a local draft that only exists in
  * this browser tab; it is never sent anywhere and never appears in anyone else's feed.
  */
+/**
+ * 36.V Stage 1 video path: re-record in the browser (strips metadata, burns captions in, max 30 s
+ * 720p), upload the clip + moderation stills to quarantine, ask the server to check it. Every
+ * video comes back `pending` until a moderator approves it.
+ */
+async function publishVideo({ media, overlay, meta, client }) {
+  if (!client) throw new Error('OFFLINE_VIDEO');
+  const safeOverlay = sanitizeOverlayPayload(overlay);
+  const title = sanitizeUserText(meta.title || 'Untitled Meme', 140);
+  const category = sanitizeUserText(meta.category || 'dank', 32);
+  const textProblem = precheckTexts([title, ...(safeOverlay?.layers || []).map((l) => l?.text || '')]);
+  if (textProblem) throw publishError(rejectionCode(textProblem));
+  if (!(await ensureWriteSession(client))) throw publishError('sign_in_required');
+
+  const source = media.file || media.url;
+  if (!source) throw publishError('bad_request');
+  const report = typeof media.onProgress === 'function' ? media.onProgress : () => {};
+  report(0, 'preparing');
+  let prepared;
+  try {
+    const { prepareVideoForUpload } = await import('../components/forge/forgeEngine.js');
+    prepared = await prepareVideoForUpload(source, safeOverlay?.burned ? [] : safeOverlay?.layers || [], {
+      onProgress: (p) => report(p, 'preparing')
+    });
+  } catch {
+    prepared = null;
+  }
+  if (!prepared?.blob || !prepared.frames?.length) throw publishError('video_unsupported');
+  if (prepared.blob.size > 25 * 1024 * 1024) throw publishError('video_too_large');
+
+  report(1, 'uploading');
+  const turnstileToken = await getTurnstileToken('upload');
+  const signed = await invokePublishFunction(client, {
+    action: 'sign-upload',
+    kind: 'video',
+    frames: prepared.frames.length,
+    mimeType: prepared.mime,
+    ...(turnstileToken ? { turnstileToken } : {})
+  });
+  const uploads = signed?.uploads || [];
+  if (uploads.length < 1 + prepared.frames.length) throw publishError('server_error');
+  const put = async (slot, blob, contentType) => {
+    const { error } = await client.storage
+      .from('quarantine')
+      .uploadToSignedUrl(slot.path, slot.token, blob, { contentType });
+    if (error) throw publishError(/size|large/i.test(error.message || '') ? 'video_too_large' : 'network');
+  };
+  await put(uploads[0], prepared.blob, prepared.mime);
+  const frameSlots = uploads.slice(1, 1 + prepared.frames.length);
+  await Promise.all(frameSlots.map((slot, i) => put(slot, prepared.frames[i], prepared.frames[i].type || 'image/webp')));
+
+  report(1, 'checking');
+  // Captions are now part of the picture, so the overlay is stored as burned (never redrawn).
+  const storedOverlay = safeOverlay?.layers?.length ? { ...safeOverlay, burned: true } : null;
+  const result = await invokePublishFunction(client, {
+    action: 'publish',
+    kind: 'video',
+    path: uploads[0].path,
+    framePaths: frameSlots.map((s) => s.path),
+    durationSec: Math.round(prepared.duration * 10) / 10,
+    width: prepared.width,
+    height: prepared.height,
+    title,
+    category,
+    overlay: storedOverlay
+  });
+  if (!result?.meme) throw publishError(result?.error || 'server_error');
+  return {
+    savedToDb: true,
+    status: result.status,
+    meme: { ...result.meme, is_spoiler: Boolean(meta.isSpoiler), root_meme_id: result.meme.id, comments: [] }
+  };
+}
+
 export async function publishMeme({ media, overlay = null, meta = {}, client = null }) {
   // Kill switch (src/config/featureFlags.js).
   if (!PUBLIC_UPLOADS_ENABLED) {
     throw new Error(UPLOADS_PAUSED_ERROR);
   }
   const kind = media?.kind || 'image';
-  if (kind === 'video') throw publishError('video_paused');
+  if (kind === 'video') return publishVideo({ media, overlay, meta, client });
   const isGif = kind === 'gif';
   const safeOverlay = sanitizeOverlayPayload(overlay);
   const title = sanitizeUserText(meta.title || 'Untitled Meme', 140);

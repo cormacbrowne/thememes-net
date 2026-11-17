@@ -53,9 +53,9 @@ function makeSyntheticGif({ frames = 2, delayCs = 10, comment = '' } = {}) {
   return new Uint8Array(out);
 }
 
-test('33.9: ACCEPT_MEDIA and MEDIA_LIMITS pause videos and tighten GIF limits', () => {
-  assert.doesNotMatch(ACCEPT_MEDIA, /video\//i);
-  assert.doesNotMatch(ACCEPT_MEDIA, /\.(mp4|mov|webm)\b/i);
+test('33.9 + 36.V: ACCEPT_MEDIA takes videos again (owner-approved), GIF limits stay tight', () => {
+  assert.match(ACCEPT_MEDIA, /video\/mp4/i);
+  assert.match(ACCEPT_MEDIA, /\.mov\b/i);
   assert.match(ACCEPT_MEDIA, /image\/gif/);
   assert.equal(MEDIA_LIMITS.GIF_MAX_BYTES, 8 * 1024 * 1024);
   assert.equal(MEDIA_LIMITS.GIF_MAX_SEC, 10);
@@ -120,14 +120,9 @@ test('33.9: transcodeImage strips GIF metadata and rejects >8MB, >10s, and >300 
   );
 });
 
-test('33.9: validateFile refuses video MIME, disguised video bytes, >8MB GIF, and >10s GIF', async () => {
-  const mp4File = new File([new Uint8Array([0, 0, 0, 24, 0x66, 0x74, 0x79, 0x70, 0x6d, 0x70, 0x34, 0x32])], 'clip.mp4', {
-    type: 'video/mp4'
-  });
-  const mp4Res = await validateFile(mp4File);
-  assert.equal(mp4Res.ok, false);
-  assert.match(mp4Res.error, /coming back soon/i);
-
+test('33.9 + 36.V: validateFile routes disguised video bytes to the video path, refuses >8MB / >10s GIFs', async () => {
+  // Node has no <video> element, so a video can never be probed here: it is refused as
+  // unreadable and, importantly, is never treated as a GIF.
   const disguisedVideo = new File(
     [new Uint8Array([0, 0, 0, 24, 0x66, 0x74, 0x79, 0x70, 0x6d, 0x70, 0x34, 0x32, 0, 0, 0, 0])],
     'fake.gif',
@@ -135,7 +130,7 @@ test('33.9: validateFile refuses video MIME, disguised video bytes, >8MB GIF, an
   );
   const disguisedRes = await validateFile(disguisedVideo);
   assert.equal(disguisedRes.ok, false);
-  assert.match(disguisedRes.error, /coming back soon/i);
+  assert.equal(disguisedRes.kind, 'video');
 
   const bigGif = new File([new Uint8Array(8 * 1024 * 1024 + 512)], 'huge.gif', { type: 'image/gif' });
   const bigRes = await validateFile(bigGif);

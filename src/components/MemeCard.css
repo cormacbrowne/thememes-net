@@ -262,3 +262,23 @@
     transition: none;
   }
 }
+
+/* iPhone colour fix (owner report 17 Nov 2026): memes looked washed out in the home feed but
+   fine in Reels. The only difference was the desktop tilt effect: a 3D perspective layer
+   (will-change: transform) plus a screen-blended glare layer over the image. iOS Safari
+   flattens that layer stack and drops the photo's wide-colour / HDR rendering. Tilt never runs
+   on touch screens anyway (MemeCard.jsx checks hover: none), so drop those layers there. */
+@media (hover: none) {
+  .tm-grid {
+    perspective: none;
+  }
+
+  .tm-holo-card {
+    transform: none;
+    will-change: auto;
+  }
+
+  .tm-holo-glare {
+    display: none;
+  }
+}

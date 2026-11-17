@@ -4,6 +4,13 @@ import { Analytics } from '@vercel/analytics/react'
 import './index.css'
 import App from './App.jsx'
 
+// TEMPORARY iPhone colour diagnosis (17 Nov 2026): ?diag=nobg,nosun,nonav,flat,all each switch off one
+// suspect layer so the owner can see on a real iPhone which one washes out the feed. Remove after.
+if (typeof window !== 'undefined') {
+  const diag = new URLSearchParams(window.location.search).get('diag')
+  if (diag) diag.split(',').forEach((d) => document.documentElement.classList.add(`tm-diag-${d.trim()}`))
+}
+
 // Task 33.5, 33.11 & 33.15: moderator queue, legal pages, and daily caption Hall of Fame lazy-loaded.
 // eslint-disable-next-line react-refresh/only-export-components
 const ModerationPage = lazy(() => import('./components/ModerationPage.jsx'))

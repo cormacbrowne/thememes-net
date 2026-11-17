@@ -282,3 +282,32 @@
     display: none;
   }
 }
+
+/* TEMPORARY iPhone colour diagnosis, see src/main.jsx. Remove once the cause is found. */
+html.tm-diag-nobg .tm-synthwave-bg,
+html.tm-diag-all .tm-synthwave-bg {
+  display: none !important;
+}
+
+html.tm-diag-nosun .tm-synthwave-sun,
+html.tm-diag-nosun .tm-synthwave-glow {
+  display: none !important;
+}
+
+html.tm-diag-nonav .tm-nav,
+html.tm-diag-all .tm-nav {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: #07060f !important;
+}
+
+html.tm-diag-flat .tm-card,
+html.tm-diag-all .tm-card {
+  background: #07060f !important;
+  box-shadow: none !important;
+}
+
+html.tm-diag-all .tm-juice-layer,
+html.tm-diag-all .tm-film-grain {
+  display: none !important;
+}

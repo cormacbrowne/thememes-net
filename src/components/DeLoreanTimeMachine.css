@@ -485,8 +485,9 @@
   filter: hue-rotate(48deg) saturate(1.65) brightness(1.15);
 }
 
-.tm-app.tm-era-1955 .tm-synthwave-bg,
-.tm-app.tm-era-1955 .tm-grid {
+/* Era themes tint the page background only, never the memes. Sepia on .tm-grid made every
+   home-feed meme look washed out on a phone that had picked 1955 (owner report 17 Nov 2026). */
+.tm-app.tm-era-1955 .tm-synthwave-bg {
   filter: sepia(0.55) contrast(1.08);
 }
 

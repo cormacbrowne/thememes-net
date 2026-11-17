@@ -307,46 +307,6 @@ function renderRouteHtml(baseHtml, route) {
   return html;
 }
 
-function generateSitemapXml(lastmod) {
-  const routeUrlsXml = SEO_ROUTES.map((route) => {
-    const loc = `${SITE_ORIGIN}${route.path === '/' ? '/' : route.path}`;
-    return `  <url>
-    <loc>${escapeHtml(loc)}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>${escapeHtml(route.changefreq || 'daily')}</changefreq>
-    <priority>${escapeHtml(route.priority || '0.8')}</priority>
-  </url>`;
-  });
-
-  const seedMemeUrlsXml = STARTER_MEMES.map((meme) => {
-    const loc = `${SITE_ORIGIN}/m/${encodeURIComponent(String(meme.id))}`;
-    return `  <url>
-    <loc>${escapeHtml(loc)}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>`;
-  });
-
-  const creatorUrlsXml = extractUniqueCreatorHandles(STARTER_MEMES).map((c) => {
-    const loc = `${SITE_ORIGIN}/u/${encodeURIComponent(c.handle)}`;
-    return `  <url>
-    <loc>${escapeHtml(loc)}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>`;
-  });
-
-  const urlsXml = [...routeUrlsXml, ...creatorUrlsXml, ...seedMemeUrlsXml].join('\n');
-
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urlsXml}
-</urlset>
-`;
-}
-
 function renderMemeHtml(baseHtml, meme) {
   const safeId = encodeURIComponent(String(meme.id));
   const canonicalUrl = `${SITE_ORIGIN}/m/${safeId}`;
@@ -520,12 +480,12 @@ function main() {
     writeDualCleanUrlFiles(`/u/${encodeURIComponent(creator.handle)}`, renderedCreator);
   }
 
-  const sitemapXml = generateSitemapXml(todayIso);
-  fs.writeFileSync(path.join(PUBLIC_DIR, 'sitemap.xml'), sitemapXml, 'utf8');
-  fs.writeFileSync(path.join(DIST_DIR, 'sitemap.xml'), sitemapXml, 'utf8');
+  // /sitemap.xml is served live by api/sitemap.js (vercel.json rewrite). A static file here would
+  // win over the rewrite on Vercel and hide every user meme from search engines, so never write one.
+  fs.rmSync(path.join(DIST_DIR, 'sitemap.xml'), { force: true });
 
   console.log(
-    `[prerender-seo] Generated ${SEO_ROUTES.length} static SEO routes + ${creators.length} creator profiles + ${STARTER_MEMES.length} static meme pages in dist/ + updated sitemaps (${todayIso}).`
+    `[prerender-seo] Generated ${SEO_ROUTES.length} static SEO routes + ${creators.length} creator profiles + ${STARTER_MEMES.length} static meme pages in dist/ (${todayIso}).`
   );
 }
 

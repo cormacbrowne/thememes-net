@@ -14,7 +14,13 @@
 6. **Do not break:** the token economy (`src/utils/tokenEconomy.js`, always pass winnings through `validateStakedGamePayout`), security (`src/utils/securityGuard.js`, CSP in **both** `index.html` and `vercel.json`), lazy loading (`React.lazy` + `<Suspense>` for every game/modal), `prefers-reduced-motion`, and `litePerfMode`.
 7. **No audio before a user gesture.** iOS Safari only counts `touchend` / `click` / `pointerup` / `keydown` as a gesture, **not** `touchstart`.
 8. **When any update/task is done:** if working on a numbered roadmap task, tick its box and add a one-line "Completion Note" (what changed + files). Verify `npm run lint` and `npm run build` exit 0, commit with a clear message, and **always push through to GitHub (`git push origin main`)** once updates are finished (requires `BypassSandbox: true` for network access).
-9. **If stuck or a task is ambiguous:** stop and ask the owner. Never delete features, files, or data without asking.
+9. **Search engines (IndexNow for Bing & co., sitemap for Google) — keep them told about changes:**
+   - **Automatic, nothing to do:** after every successful production deploy of `main` that touches `src/`, `public/`, `api/`, `index.html`, `vercel.json` or `scripts/prerender-seo.mjs`, the GitHub Action `.github/workflows/indexnow.yml` runs `npm run indexnow -- --pages` (all site pages from the live sitemap). New, approved and removed memes are pinged one by one by the `publish-meme` and `moderate` Edge Functions (`_shared/indexNow.js`).
+   - **Run by hand, once the deploy is live (`BypassSandbox: true`):** `npm run indexnow` (every URL, memes included) after a bulk change to many meme pages, e.g. a migration that approves, removes or edits many memes, or a change to `api/meme-og.js` / `api/creator-og.js`; `npm run indexnow -- <url> <url>` after changing a few specific pages outside a deploy (e.g. a single meme fixed in the database). Check the GitHub Action ran green after a push that added or renamed routes.
+   - **Adding any new public route or page-making code path** (new game, new SEO route, new kind of public page like `/u/` or a future `/s/` score page): add it to `SEO_ROUTES` / `api/sitemap.js` so it is in the live sitemap (that is what Google reads and what the Action submits), and if the page is created at runtime from the database, call `submitIndexNow([...])` from the Edge Function that makes it public.
+   - **Never** commit a static `sitemap.xml` to `public/` or write one into `dist/`: a real file wins over the `vercel.json` rewrite and hides every user meme from search engines (bug fixed 17 Nov 2026). Never stamp "today" on every `<lastmod>`: Google ignores `lastmod` site-wide once it is shown to be inaccurate. Do not change the IndexNow key (`public/5eed15f774c2bb475174d8b3153e9496.txt` must match `INDEXNOW_KEY`).
+   - **Google** has no IndexNow and has shut down its sitemap "ping" URL; its Indexing API is only allowed for job posts and livestreams, so do not use it. Google finds changes through the sitemap registered in Search Console (owner task 35.9a) and links.
+10. **If stuck or a task is ambiguous:** stop and ask the owner. Never delete features, files, or data without asking.
 
 ---
 
@@ -368,6 +374,7 @@ This **is tasks 34.4 and 34.5** (read them; their measurements and "done when" n
 **The plan in one line:** make the things people create while playing easy to send, make each sent thing a doorway back, and make the pages that already match what people search for fast and good. Measure every step with Pulse (`src` and `ref_host`).
 
 - [ ] **35.9a Owner, today, no code (10 minutes):** submit `https://www.thememes.net/sitemap.xml` in Google Search Console and Bing Webmaster Tools (owner action 9 in the Phase 33 list, still not done). Nothing else in this section pays off until this is done.
+  - _17 Nov 2026:_ IndexNow (Bing, Yandex, Seznam, Naver) is live: key file, Edge Function pings on approve/remove, auto-submit after each deploy (see agent rule 9); first submission of 107 URLs accepted. Live `/sitemap.xml` now comes from `api/sitemap.js` (it was a static build file missing every user meme). **Google still needs the owner:** in Search Console add a **Domain** property for `thememes.net` (DNS TXT record at the registrar; covers www and non-www, no code), then Sitemaps → submit `https://www.thememes.net/sitemap.xml`. Bing Webmaster Tools can then import the site from Search Console in one click.
 - [ ] **35.9b Tag every outgoing link.** Every share, copy-link, download watermark QR and embed adds `?ref=<surface>` (`card`, `score`, `daily`, `jackpot`, `embed`, `prank`). Pulse turns that into the "where they came from" table. (This is the measuring half of 33.49.)
 - [ ] **35.9c Share cards made by play.** After a MEGA or JACKPOT, a top-10 score, a daily result or a finished meme, offer one card with one button (the native share sheet on phones, copy + download on desktop). The card is drawn on a canvas in the new identity: the lit sign, the result in tube lettering, and a challenge line ("I hit a 62× dream jackpot. Your turn."). The link opens a page with a matching OG image from a new `api/score-og` function (same pattern as `api/meme-og.js`). Does 33.29's OG part and most of 33.49.
 - [ ] **35.9d "Beat my score" (33.29) and the Daily Challenge (33.28).** Promote both to here. The daily result shares as a spoiler-free emoji strip plus link. These two are the strongest reasons for one visitor to bring another, and for both to return tomorrow.
@@ -714,7 +721,7 @@ thememes-net/
 │   ├── icons.svg                      # SVG sprite sheet
 │   ├── manifest.webmanifest           # Installable PWA Web App Manifest
 │   ├── robots.txt                     # Search crawler directives (Googlebot, Googlebot-Image)
-│   └── sitemap.xml                    # XML Sitemap for Google Search & Category indexing
+│   └── 5eed…9496.txt                  # IndexNow key file (sitemap is live from api/sitemap.js, never a static file)
 └── src/
     ├── main.jsx                       # React DOM root mount (<StrictMode><App /></StrictMode>)
     ├── index.css                      # Cyber-Arcade CSS: Synthwave grid, 3D holo tilt, rarity foil, CRT overlay, Soundboard & Loot Wheel

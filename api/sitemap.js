@@ -38,14 +38,20 @@ async function fetchLiveMemeEntries(limit = 500) {
 }
 
 export default async function handler(req, res) {
-  const todayIso = new Date().toISOString().slice(0, 10);
   const liveRows = await fetchLiveMemeEntries(500);
+  // Google only trusts <lastmod> when it is accurate, so never stamp "today" on everything:
+  // memes use their own date, the home feed uses the newest meme's date, other pages omit it.
+  const newestMemeIso = liveRows
+    .map((r) => String(r?.created_at || '').slice(0, 10))
+    .filter(Boolean)
+    .sort()
+    .pop();
+  const lastmodTag = (iso) => (iso ? `\n    <lastmod>${escapeXml(iso)}</lastmod>` : '');
 
   const staticRouteXml = SEO_ROUTES.map((route) => {
     const loc = `${SITE_ORIGIN}${route.path === '/' ? '/' : route.path}`;
     return `  <url>
-    <loc>${escapeXml(loc)}</loc>
-    <lastmod>${todayIso}</lastmod>
+    <loc>${escapeXml(loc)}</loc>${lastmodTag(route.path === '/' ? newestMemeIso : '')}
     <changefreq>${escapeXml(route.changefreq || 'daily')}</changefreq>
     <priority>${escapeXml(route.priority || '0.8')}</priority>
   </url>`;
@@ -58,10 +64,9 @@ export default async function handler(req, res) {
     const idStr = String(row?.id || '').trim();
     if (!idStr || seenIds.has(idStr)) continue;
     seenIds.add(idStr);
-    const mod = row.created_at ? String(row.created_at).slice(0, 10) : todayIso;
+    const mod = row.created_at ? String(row.created_at).slice(0, 10) : '';
     memeUrlXml.push(`  <url>
-    <loc>${escapeXml(`${SITE_ORIGIN}/m/${encodeURIComponent(idStr)}`)}</loc>
-    <lastmod>${escapeXml(mod)}</lastmod>
+    <loc>${escapeXml(`${SITE_ORIGIN}/m/${encodeURIComponent(idStr)}`)}</loc>${lastmodTag(mod)}
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>`);
@@ -73,7 +78,6 @@ export default async function handler(req, res) {
     seenIds.add(idStr);
     memeUrlXml.push(`  <url>
     <loc>${escapeXml(`${SITE_ORIGIN}/m/${encodeURIComponent(idStr)}`)}</loc>
-    <lastmod>${todayIso}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>`);
@@ -82,7 +86,6 @@ export default async function handler(req, res) {
   const creatorUrlsXml = extractUniqueCreatorHandles(STARTER_MEMES).map(
     (c) => `  <url>
     <loc>${escapeXml(`${SITE_ORIGIN}/u/${encodeURIComponent(c.handle)}`)}</loc>
-    <lastmod>${todayIso}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>`

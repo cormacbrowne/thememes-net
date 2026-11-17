@@ -1,0 +1,44 @@
+name: IndexNow after deploy
+
+# Vercel reports each deploy back to GitHub as a commit status named "Vercel".
+# When a deploy of main succeeds and the commit changed something a visitor sees,
+# tell IndexNow (Bing & co.) the site pages changed. Meme pages (/m/<id>) are pinged
+# individually by the publish-meme / moderate Edge Functions, so they are skipped here.
+on:
+  status:
+
+concurrency:
+  group: indexnow
+  cancel-in-progress: true
+
+jobs:
+  submit:
+    if: >-
+      github.event.context == 'Vercel' &&
+      github.event.state == 'success' &&
+      contains(github.event.branches.*.name, 'main')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.sha }}
+          fetch-depth: 2
+
+      - name: Did this deploy change site pages?
+        id: changed
+        run: |
+          if git diff --name-only HEAD~1 HEAD | grep -qE '^(src/|public/|api/|scripts/prerender-seo\.mjs|index\.html|vercel\.json)'; then
+            echo "pages=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "pages=0" >> "$GITHUB_OUTPUT"
+            echo "No page-affecting files changed; skipping IndexNow."
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.changed.outputs.pages == '1'
+        with:
+          node-version: 22
+
+      - name: Submit site pages to IndexNow
+        if: steps.changed.outputs.pages == '1'
+        run: node scripts/indexnow-submit.mjs --pages

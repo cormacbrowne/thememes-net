@@ -151,6 +151,39 @@ Each neon colour has three forms, like a real tube: the gas colour (`--tm-pink`)
 
 ---
 
+### 35.2f / 35.2g Neon Refine, passes 2 and 3 (16–17 Nov 2026) + HANDOFF FOR THE NEXT AGENT
+
+**Done in these passes (all pushed to `main`):**
+- 35.2f: 80s icons strip restyled as unlit glass; 249 legacy hex colours inside JSX `style={{…}}` props mapped to tokens (40 files); poker buy-in / size pills lit amber.
+- 35.2g: non-game panels (extras drawer, AI copilot panel, Dank Pet card, DeLorean modal, Forge window, iPhone modal, live-celebration card, dock games drawer) use the modal chrome (1 px `--tm-night-3` border, cyan top edge, `--tm-shadow-3`) instead of a 2 px cyan outline; radio Play and Reels "Remix this" are pink lit glass; Rewards vault game links are plain `.tm-btn` (one pink action per screen); **arcade steer cards under the home feed were clipping their titles** (icons sat beside the copy at a fixed width) and now stack, with a cyan tube CTA.
+
+**The look, in five rules (do not regress these):**
+1. Primary action = pink tube over smoked glass (`.ui-tube-box--solid`, `.tm-btn-primary`). Never a flat fill, never a multi-colour gradient. One per screen.
+2. Selected / navigation = lit cyan tube; everything unselected is unlit glass (`--tm-night-3` border, `--tm-text-dim` text).
+3. Amber is money and wins only (wallet, stakes, deal / spin, jackpots).
+4. Fonts: `--tm-font-display` (Oxanium) for headings, labels, numbers; `--tm-font-neon` (Tilt Neon, weight 400 only) for one-to-three-word lit signs; `--tm-font-body` (Outfit) for reading and for user-written text such as meme titles; `--tm-font-arcade` for tiny arcade labels. Impact stays for meme captions and slot/win shout text.
+5. Panels: `--tm-night-1` surface, 1 px `--tm-night-3` border, shadow tokens. Game cabinets may keep a coloured 2 px tube frame; ordinary panels may not.
+
+**Still to do, in suggested order (each is its own commit):**
+- [ ] **Game-by-game look.** Only the home feed, lobby, studio, slots, blackjack, poker, stock market, reels, auth, extras drawer, rewards vault, hall of fame and `/rules` were looked at. Open every other route in `src/data/seoRoutes.js` (bingo, pinball, coin pusher, roulette, derby, meme crush, 8-ball, guess, higher-or-lower, invaders, serpent, brick blaster, sunset sprint, vector void, grid riders, battle arena, swipe deck, the five boss-key prank screens, soundboard, creator profile, leaderboard, settings sheet, report sheet, AI roast, theater) at 390×844 and 1280×800 and fix anything off-rule.
+- [ ] **Emoji as icons.** Buttons and pills still lead with emoji (🔥 Hot, 🏆 Ranks, ⚙️ Settings, 🎨 Remix, the lobby station pills, the hero Explore pills). `lucide-react` is already a dependency: swap them the way `QuickUploadBar.jsx` and `MobileArcadeDock.jsx` do. Keep emoji inside user content and game art.
+- [ ] **Remaining off-palette colours in CSS** (count with `grep -rhoi "#[0-9a-f]{6}" src --include=*.css | sort | uniq -c | sort -rn`): `#f97316` orange (40, mostly amber→orange game fills, acceptable inside staked games, not elsewhere), `#a855f7` / `#c084fc` / `#8b5cf6` purple (should become `--tm-uv` glows or go), `#f87171` / `#fca5a5` / `#fb7185` reds (→ `--tm-danger`), `#86efac` / `#bbf7d0` greens (→ `--tm-ok`). The remaining multi-colour gradients are listed by `grep -rn "linear-gradient([^;]*var(--tm-cyan)[^;]*var(--tm-pink)" src --include=*.css`; progress bars and the supernova card foil may stay, button fills may not.
+- [ ] **Colours in canvas code and SVG attributes** (`ctx.fillStyle = '#…'`, `fill="#…"`) were deliberately left: `var()` does not work there. If they need re-tinting, use the literal palette hex values from `tokens.css`.
+- [ ] **VintageCrtNewsTv** keeps its wood-grain body on purpose. Its top bar and side panel greys could be warmer; low priority.
+- [ ] **Inline styles.** Many components still carry long `style={{…}}` blocks (RewardsModal, MemeStockMarketGame, App.jsx). Move them into the component CSS file when touching that component; do not do a blind sweep.
+- [ ] **Glow budget.** The home page on desktop still lights more than three tubes at once (nav tab, Create, wallet, Make a meme, Play, Hot, #ALL, Upload). Consider making the nav Create button unlit on the home page, where "Make a meme" is already the pink action.
+- [ ] Then resume the roadmap at **35.7e** (see the Pause/Resume Note under 35.7).
+
+**Things that will save you time:**
+- CSS files are checked out with **CRLF** on this Windows machine. Exact multi-line string matches written with `
+` will not match; normalise line endings when reading and restore them when writing.
+- The Browser-pane screenshot of a page scrolled far down at an emulated size can show the lower half unpainted (`content-visibility` plus the scaled capture). It is a capture artefact; confirm with `getBoundingClientRect` before "fixing" it.
+- In dev only, the console shows `cannot add presence callbacks … after subscribe()` from `useLivePresence.js` (React StrictMode double-mount). The production site is clean. Worth a proper fix, but it is not a styling regression.
+- `npx vitest run` has **one failure that predates Phase 35.2e**: the "staging security assertions" case in `tests/vitest/safetyAndEconomy.test.js`, which shells out to `node --test tests/security.spec.js`. Everything else passes. Find out what it needs (it may want staging credentials) before treating a red run as your fault.
+- Vercel deploys `main` about a minute after a push. Check `https://www.thememes.net/games` afterwards.
+
+---
+
 ### 35.3 The sign: the new logo
 
 **What it is.** The words THE MEMES.net as a neon sign made of bent glass tubes: small cyan "THE", big pink "MEMES", small cyan ".net", and an amber underline with one "zap" in it. A short bright pulse of light travels along each tube, the sign stutters on when the page loads, and the middle "M" has a loose connection and buzzes every few seconds. There is **no box** around it.

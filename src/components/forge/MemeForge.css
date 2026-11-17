@@ -19,8 +19,9 @@
   display: flex;
   flex-direction: column;
   background: #090d1a;
-  border: 2px solid rgba(25, 240, 255, 0.4);
-  box-shadow: 0 0 35px rgba(25, 240, 255, 0.2);
+  border: 1px solid var(--tm-night-3);
+  border-top-color: color-mix(in srgb, var(--tm-cyan) 55%, var(--tm-night-3));
+  box-shadow: var(--tm-shadow-3), 0 -1px 26px -10px var(--tm-cyan);
   border-radius: 16px;
   overflow: hidden;
 }

@@ -463,7 +463,7 @@ export default function RewardsModal({
             <div style={{ display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }}>
               <button
                 type="button"
-                className="tm-btn tm-btn-primary"
+                className="tm-btn"
                 onClick={() => {
                   onClose();
                   onLaunchSubGame('pusher');
@@ -473,7 +473,7 @@ export default function RewardsModal({
               </button>
               <button
                 type="button"
-                className="tm-btn tm-btn-primary"
+                className="tm-btn"
                 onClick={() => {
                   onClose();
                   onLaunchSubGame('blackjack');
@@ -483,7 +483,7 @@ export default function RewardsModal({
               </button>
               <button
                 type="button"
-                className="tm-btn tm-btn-primary"
+                className="tm-btn"
                 onClick={() => {
                   onClose();
                   onLaunchSubGame('poker');
@@ -493,7 +493,7 @@ export default function RewardsModal({
               </button>
               <button
                 type="button"
-                className="tm-btn tm-btn-primary"
+                className="tm-btn"
                 onClick={() => {
                   onClose();
                   onLaunchSubGame('roulette');
@@ -503,7 +503,7 @@ export default function RewardsModal({
               </button>
               <button
                 type="button"
-                className="tm-btn tm-btn-primary"
+                className="tm-btn"
                 onClick={() => {
                   onClose();
                   onLaunchSubGame('slots');
@@ -513,7 +513,7 @@ export default function RewardsModal({
               </button>
               <button
                 type="button"
-                className="tm-btn tm-btn-primary"
+                className="tm-btn"
                 onClick={() => {
                   onClose();
                   onLaunchSubGame('stocks');
@@ -523,7 +523,7 @@ export default function RewardsModal({
               </button>
               <button
                 type="button"
-                className="tm-btn tm-btn-primary"
+                className="tm-btn"
                 onClick={() => {
                   onClose();
                   onLaunchSubGame('crush');
@@ -533,7 +533,7 @@ export default function RewardsModal({
               </button>
               <button
                 type="button"
-                className="tm-btn tm-btn-primary"
+                className="tm-btn"
                 onClick={() => {
                   onClose();
                   onLaunchSubGame('pinball');

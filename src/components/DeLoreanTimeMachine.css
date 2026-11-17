@@ -245,8 +245,9 @@
   padding: 18px;
   border-radius: 20px;
   background: radial-gradient(circle at 50% 10%, rgba(17, 13, 34, 0.98), rgba(3, 7, 18, 0.99));
-  border: 2px solid var(--tm-cyan);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9), 0 0 36px rgba(25, 240, 255, 0.28);
+  border: 1px solid var(--tm-night-3);
+  border-top-color: color-mix(in srgb, var(--tm-cyan) 55%, var(--tm-night-3));
+  box-shadow: var(--tm-shadow-3), 0 -1px 26px -10px var(--tm-cyan);
   color: var(--tm-text);
 }
 

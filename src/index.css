@@ -2755,9 +2755,10 @@ html {
 }
 
 .tm-reels-title {
+  font-family: var(--tm-font-body);
   margin: 6px 0 4px;
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--tm-text);
   line-height: 1.35;
   cursor: pointer;
@@ -2819,7 +2820,7 @@ html {
 
 .tm-reels-remix-btn {
   border-color: var(--tm-pink);
-  background: linear-gradient(135deg, rgba(255, 46, 136, 0.3), rgba(25, 240, 255, 0.3));
+  background: color-mix(in srgb, var(--tm-pink) 18%, var(--tm-night-0));
 }
 
 .tm-reels-action-icon {
@@ -3606,10 +3607,11 @@ html {
   right: 12px;
   z-index: 985;
   background: rgba(10, 14, 28, 0.97);
-  border: 2px solid var(--tm-cyan);
+  border: 1px solid var(--tm-night-3);
+  border-top-color: color-mix(in srgb, var(--tm-cyan) 55%, var(--tm-night-3));
   border-radius: 18px;
   padding: 12px;
-  box-shadow: 0 -10px 34px rgba(0, 0, 0, 0.85), 0 0 24px rgba(25, 240, 255, 0.3);
+  box-shadow: var(--tm-shadow-3), 0 -1px 26px -10px var(--tm-cyan);
   backdrop-filter: blur(16px);
 }
 
@@ -4495,11 +4497,14 @@ html[data-device="iphone-duo"] button {
   width: min(860px, 95vw);
   max-height: 88vh;
   overflow-y: auto;
-  background: linear-gradient(165deg, rgba(9, 13, 24, 0.98), rgba(17, 13, 34, 0.98));
-  border: 2px solid var(--tm-cyan);
+  background:
+    radial-gradient(80% 40% at 50% 0%, color-mix(in srgb, var(--tm-uv) 14%, transparent), transparent 70%),
+    linear-gradient(180deg, var(--tm-night-2), var(--tm-night-1) 38%);
+  border: 1px solid var(--tm-night-3);
+  border-top-color: color-mix(in srgb, var(--tm-cyan) 55%, var(--tm-night-3));
   border-radius: 20px;
   padding: 20px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 32px rgba(25, 240, 255, 0.22);
+  box-shadow: var(--tm-shadow-3), 0 -1px 26px -10px var(--tm-cyan);
 }
 
 .tm-extras-drawer-card .tm-soundboard-shell {
@@ -4526,16 +4531,18 @@ html[data-device="iphone-duo"] button {
 
 .tm-extras-drawer-kicker {
   display: block;
+  font-family: var(--tm-font-display);
   font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  color: var(--tm-cyan);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--tm-cyan-hot);
 }
 
 .tm-extras-drawer-title {
   margin: 2px 0 0;
   font-size: 20px;
-  font-weight: 900;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   color: var(--tm-text);
 }
 
@@ -4643,18 +4650,22 @@ html[data-device="iphone-duo"] button {
   gap: 6px;
   padding: 8px 15px;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--tm-amber), #f97316);
-  border: none;
-  color: var(--tm-night-0);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tm-pink) 30%, var(--tm-night-1)), color-mix(in srgb, var(--tm-pink) 12%, var(--tm-night-1)));
+  border: 1.5px solid var(--tm-pink);
+  color: var(--tm-pink-hot);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--tm-pink) 80%, transparent);
+  font-family: var(--tm-font-display);
+  letter-spacing: 0.03em;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(255, 184, 0, 0.4);
-  transition: transform 0.14s ease;
+  box-shadow: 0 0 0 1px var(--tm-pink-off), 0 0 16px -4px var(--tm-pink), inset 0 0 12px -5px var(--tm-pink);
+  transition: transform 0.14s ease, color 0.14s ease;
 }
 
 .tm-reels-remix-cta-pill:hover {
-  transform: scale(1.04);
+  transform: translateY(-1px);
+  color: #ffffff;
 }
 
 .tm-reels-share-cta-pill {
@@ -5005,3 +5016,43 @@ a.tm-btn {
   text-decoration: underline;
 }
 
+
+/* ==========================================
+   PHASE 35.2g — ARCADE STEER CARDS (home page, under the feed)
+   Icons sat beside the copy at a fixed width and squeezed the title to ~97px,
+   so words clipped. Stack them, and make the per-card CTA a cyan tube so the
+   page keeps one pink action.
+   ========================================== */
+.tm-arcade-steer-card .tm-arcade-steer-body {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.tm-arcade-steer-card .tm-arcade-steer-icons {
+  align-self: flex-start;
+  max-width: 100%;
+}
+
+.tm-arcade-steer-card .tm-arcade-steer-title {
+  font-family: var(--tm-font-display);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+}
+
+.tm-arcade-steer-card .tm-btn.tm-arcade-steer-cta {
+  color: var(--tm-cyan-hot);
+  background: color-mix(in srgb, var(--tm-cyan) 8%, var(--tm-night-1));
+  border: 1.5px solid var(--tm-cyan);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--tm-cyan) 70%, transparent);
+  box-shadow:
+    0 0 0 1px var(--tm-cyan-off),
+    0 0 14px -4px var(--tm-cyan),
+    inset 0 0 10px -5px var(--tm-cyan);
+}
+
+.tm-arcade-steer-card .tm-btn.tm-arcade-steer-cta:hover {
+  color: #ffffff;
+  background: color-mix(in srgb, var(--tm-cyan) 18%, var(--tm-night-1));
+}

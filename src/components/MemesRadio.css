@@ -188,8 +188,10 @@
 }
 
 .tm-radio-play {
-  background: linear-gradient(135deg, var(--tm-pink), #8b5cf6);
-  border-color: transparent;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tm-pink) 28%, var(--tm-night-1)), color-mix(in srgb, var(--tm-pink) 10%, var(--tm-night-1)));
+  border-color: var(--tm-pink);
+  color: var(--tm-pink-hot);
+  box-shadow: 0 0 0 1px var(--tm-pink-off), 0 0 14px -4px var(--tm-pink), inset 0 0 10px -5px var(--tm-pink);
 }
 
 .tm-radio-volume {

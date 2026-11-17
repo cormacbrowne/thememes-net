@@ -37,8 +37,9 @@
   max-width: 520px;
   width: 94%;
   text-align: center;
-  border: 2px solid rgba(25, 240, 255, 0.55);
-  box-shadow: 0 0 42px rgba(25, 240, 255, 0.28), 0 0 24px rgba(255, 46, 136, 0.24);
+  border: 1px solid var(--tm-night-3);
+  border-top-color: color-mix(in srgb, var(--tm-cyan) 55%, var(--tm-night-3));
+  box-shadow: var(--tm-shadow-3), 0 -1px 26px -10px var(--tm-cyan);
   padding: 20px;
 }
 

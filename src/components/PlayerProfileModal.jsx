@@ -1,3 +1,4 @@
+import { REMIX_ENABLED } from '../config/featureFlags';
 import { useEffect, useMemo, useState } from 'react';
 import { RANKS, computePlayerBadges, formatMemeUploadDate } from '../data/starterMemes';
 import { loadLocalMemeViews } from '../utils/notifications';
@@ -287,6 +288,18 @@ export default function PlayerProfileModal({
           />
         )}
 
+        {isMe && currentUser?.verified && currentUser?.needsHandle && (
+          <p className="tm-profile-handle-nudge" role="note">
+            Pick your @handle below. Until you do, your memes show <strong>@{currentUser.username}</strong>
+            {' '}(we never show your Google name).
+          </p>
+        )}
+        {isMe && (currentUser?.role === 'moderator' || currentUser?.role === 'admin') && (
+          <a className="tm-btn tm-profile-mod-link" href="/admin/moderation">
+            🛡️ Open moderation queue
+          </a>
+        )}
+
         {/* Unique Handle Claim / Update (Verified accounts only) */}
         {isMe && currentUser?.verified && onClaimUsername && (
           <form
@@ -548,17 +561,19 @@ export default function PlayerProfileModal({
                       <span style={{ fontSize: '11px', color: 'var(--tm-amber)', fontWeight: 800 }}>
                         🔥 {m.score}
                       </span>
-                      <button
-                        type="button"
-                        className="tm-mutate-btn"
-                        style={{ padding: '4px 8px', fontSize: '10px' }}
-                        onClick={(e) => {
-                          onClose();
-                          onTriggerStudioMutate(m, e);
-                        }}
-                      >
-                        🧬 Mutate
-                      </button>
+                      {REMIX_ENABLED && (
+                        <button
+                          type="button"
+                          className="tm-mutate-btn"
+                          style={{ padding: '4px 8px', fontSize: '10px' }}
+                          onClick={(e) => {
+                            onClose();
+                            onTriggerStudioMutate(m, e);
+                          }}
+                        >
+                          🧬 Mutate
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

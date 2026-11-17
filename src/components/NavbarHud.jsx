@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Menu, Plus } from 'lucide-react';
+import { Menu, Plus, ShieldCheck } from 'lucide-react';
 import { ARCADE_ECONOMY_RULES, formatMoney } from '../utils/tokenEconomy';
 import { ARCADE_GAMES_CATALOG } from '../data/arcadeGamesCatalog';
 import { formatLivePresenceLabel } from '../utils/liveSignals';
@@ -223,6 +223,17 @@ export default function NavbarHud({
           {/* 4. PROFILE / JOIN BUTTON (Desktop; Mobile uses bottom dock Profile tab) */}
           {user ? (
             <div className="tm-hide-mobile" style={{ display: 'inline-flex', gap: '4px' }}>
+              {(user.role === 'moderator' || user.role === 'admin') && (
+                <a
+                  href="/admin/moderation"
+                  className="tm-btn"
+                  title="Moderation queue (approve / remove memes)"
+                  aria-label="Open moderation queue"
+                  style={{ padding: '6px 9px', display: 'inline-flex', alignItems: 'center' }}
+                >
+                  <ShieldCheck size={16} aria-hidden="true" />
+                </a>
+              )}
               <button
                 type="button"
                 className="tm-btn tm-user-btn"

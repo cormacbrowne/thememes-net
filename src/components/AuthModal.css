@@ -125,3 +125,19 @@
   padding: 10px;
   border-radius: 10px;
 }
+
+/* Handle field above the social buttons: the name shown on posts (never the Google name). */
+.tm-auth-handle-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--tm-text, #fff);
+}
+.tm-auth-handle-field em {
+  font-style: normal;
+  font-weight: 500;
+  color: var(--tm-text-dim);
+}

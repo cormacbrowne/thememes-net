@@ -1,3 +1,4 @@
+import ModerationCategories from './ModerationCategories';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getSupabaseClient } from '../supabaseClient';
 import { reasonLabel } from '../../supabase/functions/_shared/moderationQueue.js';
@@ -41,6 +42,8 @@ export default function ModerationPage() {
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [flash, setFlash] = useState('');
+  const [signedInAs, setSignedInAs] = useState('');
+  const [signInMsg, setSignInMsg] = useState('');
 
   useEffect(() => {
     document.title = 'Moderation queue · THE MEMES.net';
@@ -56,12 +59,15 @@ export default function ModerationPage() {
   const load = useCallback(async () => {
     const { data: sess } = await client.auth.getSession();
     if (!sess?.session || sess.session.user?.is_anonymous) {
+      setSignedInAs('');
       setState('denied');
       return;
     }
+    const sessUser = sess.session.user;
+    setSignedInAs(sessUser.email || sessUser.user_metadata?.name || 'this account');
     const { data, error } = await client.rpc('mod_queue');
     if (error) {
-      setState(error.code === '42501' ? 'denied' : 'error');
+      setState(error.code === '42501' || /forbidden|permission/i.test(error.message || '') ? 'denied' : 'error');
       return;
     }
     setItems(Array.isArray(data) ? data : []);
@@ -77,8 +83,41 @@ export default function ModerationPage() {
   useEffect(() => {
     Promise.resolve().then(load);
     const t = setInterval(load, 30000);
-    return () => clearInterval(t);
-  }, [load]);
+    // Reload as soon as a Google / email sign-in finishes on this page.
+    const sub = client?.auth?.onAuthStateChange?.((event) => {
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') load();
+    });
+    return () => {
+      clearInterval(t);
+      sub?.data?.subscription?.unsubscribe?.();
+    };
+  }, [client, load]);
+
+  const signInWithProvider = useCallback(
+    async (provider) => {
+      if (!client?.auth?.signInWithOAuth) return;
+      setSignInMsg('Opening sign-in…');
+      // Sign out of any anonymous session first so the OAuth account is used here.
+      const { data: sess } = await client.auth.getSession();
+      if (sess?.session?.user?.is_anonymous) await client.auth.signOut().catch(() => {});
+      const { data, error } = await client.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: `${window.location.origin}/admin/moderation`, skipBrowserRedirect: true }
+      });
+      if (error || !data?.url) {
+        setSignInMsg(`Could not start sign-in: ${error?.message || 'provider unavailable'}`);
+        return;
+      }
+      window.location.assign(data.url);
+    },
+    [client]
+  );
+
+  const signOut = useCallback(async () => {
+    await client?.auth?.signOut?.().catch(() => {});
+    setSignedInAs('');
+    load();
+  }, [client, load]);
 
   const current = items[cursor] || null;
 
@@ -143,7 +182,30 @@ export default function ModerationPage() {
     return (
       <div className="tm-mod-page tm-mod-center">
         <h1>🔒 Moderators only</h1>
-        <p>Sign in on the main site with a moderator account, then come back to this page.</p>
+        {signedInAs ? (
+          <>
+            <p>
+              You are signed in as <strong>{signedInAs}</strong>, which is not a moderator account.
+            </p>
+            <div className="tm-mod-signin">
+              <button type="button" className="tm-mod-btn" onClick={signOut}>Sign out</button>
+              <button type="button" className="tm-mod-btn" onClick={() => signInWithProvider('google')}>
+                Use a different Google account
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p>Sign in with your moderator account to open the queue.</p>
+            <div className="tm-mod-signin">
+              <button type="button" className="tm-mod-btn is-approve" onClick={() => signInWithProvider('google')}>
+                Sign in with Google
+              </button>
+            </div>
+            <p className="tm-mod-muted">Email accounts: sign in on the main site, then come back to /admin.</p>
+          </>
+        )}
+        {signInMsg && <p className="tm-mod-muted" role="status">{signInMsg}</p>}
         <a href="/" className="tm-mod-link">← Back to THE MEMES.net</a>
       </div>
     );
@@ -169,12 +231,15 @@ export default function ModerationPage() {
         <nav className="tm-mod-tabs" aria-label="Moderation views">
           <button type="button" className={tab === 'queue' ? 'is-on' : ''} onClick={() => setTab('queue')}>Queue</button>
           <button type="button" className={tab === 'log' ? 'is-on' : ''} onClick={() => setTab('log')}>Log</button>
+          <button type="button" className={tab === 'categories' ? 'is-on' : ''} onClick={() => setTab('categories')}>Categories</button>
           <button type="button" onClick={load}>↻</button>
         </nav>
       </header>
       {flash && <div className="tm-mod-flash" role="status">{flash}</div>}
 
-      {tab === 'log' ? (
+      {tab === 'categories' ? (
+        <ModerationCategories client={client} />
+      ) : tab === 'log' ? (
         <div className="tm-mod-log-wrap">
           <table className="tm-mod-log">
             <thead>

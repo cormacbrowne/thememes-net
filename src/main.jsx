@@ -15,7 +15,9 @@ const LegalInfoPage = lazy(() => import('./components/LegalInfoPage.jsx'))
 const HallOfFamePage = lazy(() => import('./components/HallOfFamePage.jsx'))
 const UiKitPage = import.meta.env.DEV ? lazy(() => import('./components/UiKitPage.jsx')) : null
 const pathname = typeof window !== 'undefined' ? window.location.pathname : '/'
-const isModerationRoute = /^\/admin\/moderation\/?$/i.test(pathname)
+// Owner-friendly aliases: /admin, /administrator, /moderator, /moderation, /administrator/moderator …
+const isModerationRoute =
+  /^\/(?:admin(?:istrator)?(?:\/(?:moderation|moderator|mod|queue))?|moderat(?:ion|or))\/?$/i.test(pathname)
 const isPulseRoute = /^\/admin\/pulse\/?$/i.test(pathname)
 const isLegalRoute = /^\/(?:rules|terms|privacy|takedown|contact)\/?$/i.test(pathname)
 const isHallOfFameRoute = /^\/hall-of-fame\/?$/i.test(pathname)

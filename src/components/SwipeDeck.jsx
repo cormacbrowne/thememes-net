@@ -1,3 +1,4 @@
+import { REMIX_ENABLED } from '../config/featureFlags';
 import { useState, useRef } from 'react';
 import MemeMedia from './MemeMedia';
 import { getMemeRarityTier, formatMemeUploadDate } from '../data/starterMemes';
@@ -222,13 +223,15 @@ export default function SwipeDeck({
           >
             🔍 View
           </button>
-          <button
-            type="button"
-            className="tm-mutate-btn"
-            onClick={(e) => onTriggerStudioMutate(m, e)}
-          >
-            🧬 Remix
-          </button>
+          {REMIX_ENABLED && (
+            <button
+              type="button"
+              className="tm-mutate-btn"
+              onClick={(e) => onTriggerStudioMutate(m, e)}
+            >
+              🧬 Remix
+            </button>
+          )}
         </div>
       </div>
     </section>

@@ -21,3 +21,10 @@ export const UPLOADS_PAUSED_MESSAGE =
 
 /** Error code thrown by the publish pipeline when uploads are paused. */
 export const UPLOADS_PAUSED_ERROR = 'UPLOADS_PAUSED';
+
+/**
+ * Remixing other people's memes (Remix / Caption this / Mutate / Fork buttons, remix trees).
+ * false = OFF (owner decision 17 Nov 2026: "once someone has posted a meme that's it, no more
+ *         edits"). Making a brand-new meme in the editor is unaffected.
+ */
+export const REMIX_ENABLED = false;

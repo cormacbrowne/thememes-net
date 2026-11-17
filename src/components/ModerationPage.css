@@ -341,3 +341,67 @@ kbd {
     max-height: 420px;
   }
 }
+
+.tm-mod-signin {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin: 8px 0 14px;
+}
+
+/* Categories tab (owner brief 17 Nov 2026, item 8) */
+.tm-mod-cats {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 12px 16px 40px;
+}
+.tm-mod-cats-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.tm-mod-input {
+  min-height: 44px;
+  flex: 1 1 220px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--tm-night-3);
+  background: var(--tm-night-1);
+  color: inherit;
+  font: inherit;
+}
+.tm-mod-input--emoji {
+  flex: 0 0 64px;
+  text-align: center;
+}
+.tm-mod-input--num {
+  flex: none;
+  width: 72px;
+  min-height: 36px;
+}
+.tm-mod-check {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.tm-mod-cats-add .tm-mod-btn {
+  min-height: 44px;
+  padding: 0 16px;
+}
+.tm-mod-cats-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+}
+.tm-mod-cats-table th,
+.tm-mod-cats-table td {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--tm-night-3);
+  text-align: left;
+}
+.tm-mod-cats-table tr.is-off td {
+  opacity: 0.5;
+}

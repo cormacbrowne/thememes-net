@@ -157,6 +157,21 @@ export default function AuthModal({
           )}
         </div>
 
+        {/* @handle first: used for Google/Discord sign-in and email sign-up alike. Shown on
+            everything you post instead of your real name. */}
+        <label className="tm-auth-handle-field">
+          <span>Your @handle <em>(shown on your memes, never your real name)</em></span>
+          <input
+            type="text"
+            autoComplete="username"
+            className="tm-input"
+            placeholder="e.g. MemeLord_99 (optional, 3–20 chars)"
+            maxLength={21}
+            value={authUsername}
+            onChange={(e) => setAuthUsername(e.target.value)}
+          />
+        </label>
+
         {/* 1-CLICK SOCIAL OAUTH BUTTONS (GOOGLE, DISCORD, FACEBOOK) */}
         <div className="tm-oauth-grid">
           {SOCIAL_PROVIDERS.map((provider) => {
@@ -260,17 +275,6 @@ export default function AuthModal({
             onSubmit={onAuthSubmit}
             style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
           >
-            {authMode === 'signup' && (
-              <input
-                type="text"
-                autoComplete="username"
-                className="tm-input"
-                placeholder="Choose @handle (3–20 chars, optional)"
-                maxLength={20}
-                value={authUsername}
-                onChange={(e) => setAuthUsername(e.target.value)}
-              />
-            )}
             <input
               type="email"
               required

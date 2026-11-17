@@ -1,3 +1,4 @@
+import { REMIX_ENABLED } from '../config/featureFlags';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import MemeMedia from './MemeMedia';
 import MemeLiveEmotes from './MemeLiveEmotes';
@@ -297,21 +298,23 @@ export default function VerticalReelsView({
 
                   {/* Clear 1-Tap Remix & Share Quick Loop Bar */}
                   <div className="tm-reels-quick-loop-row">
-                    <button
-                      type="button"
-                      className="tm-reels-remix-cta-pill"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (onCaptionThis) {
-                          onCaptionThis(meme, e);
-                        } else if (onTriggerStudioMutate) {
-                          onTriggerStudioMutate(meme, e);
-                        }
-                      }}
-                      title="Open this exact meme template in the Studio to write your own caption!"
-                    >
-                      ✏️ Remix this
-                    </button>
+                    {REMIX_ENABLED && (
+                      <button
+                        type="button"
+                        className="tm-reels-remix-cta-pill"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onCaptionThis) {
+                            onCaptionThis(meme, e);
+                          } else if (onTriggerStudioMutate) {
+                            onTriggerStudioMutate(meme, e);
+                          }
+                        }}
+                        title="Open this exact meme template in the Studio to write your own caption!"
+                      >
+                        ✏️ Remix this
+                      </button>
+                    )}
                     <button
                       type="button"
                       className="tm-reels-share-cta-pill"
@@ -340,17 +343,19 @@ export default function VerticalReelsView({
                   </button>
 
                   {/* 1-Tap Remix this Button */}
-                  <button
-                    type="button"
-                    className="tm-reels-action-btn tm-reels-remix-btn"
-                    onClick={(e) =>
-                      onCaptionThis ? onCaptionThis(meme, e) : onTriggerStudioMutate(meme, e)
-                    }
-                    title="Remix this meme (+150 XP)"
-                  >
-                    <span className="tm-reels-action-icon">✏️</span>
-                    <span className="tm-reels-action-lbl">Remix this</span>
-                  </button>
+                  {REMIX_ENABLED && (
+                    <button
+                      type="button"
+                      className="tm-reels-action-btn tm-reels-remix-btn"
+                      onClick={(e) =>
+                        onCaptionThis ? onCaptionThis(meme, e) : onTriggerStudioMutate(meme, e)
+                      }
+                      title="Remix this meme (+150 XP)"
+                    >
+                      <span className="tm-reels-action-icon">✏️</span>
+                      <span className="tm-reels-action-lbl">Remix this</span>
+                    </button>
+                  )}
 
                   {/* Native Share */}
                   <button

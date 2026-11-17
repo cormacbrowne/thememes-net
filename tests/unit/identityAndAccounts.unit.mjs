@@ -86,10 +86,15 @@ test('authorNameFor ignores client spoofed metadata for anonymous users and pref
     user_metadata: { full_name: 'Meta Fallback' }
   };
   assert.equal(authorNameFor(realUser, { username: 'VerifiedCreator' }), 'VerifiedCreator');
-  assert.equal(authorNameFor(realUser, null), 'Meta_Fallback');
+  // Owner brief 17 Nov 2026: a Google/Discord real name or an email prefix is never published.
+  assert.equal(authorNameFor(realUser, null), anonymousHandleFor(realUser.id));
   assert.equal(
     authorNameFor({ id: '11111111-2222-3333-4444-555555555555', is_anonymous: false, email: 'pixel@example.com' }, null),
-    'pixel'
+    anonymousHandleFor('11111111-2222-3333-4444-555555555555')
+  );
+  assert.equal(
+    authorNameFor({ ...realUser, user_metadata: { pending_username: 'ChosenHandle' } }, null),
+    'ChosenHandle'
   );
   assert.equal(authorNameFor(null, null), FALLBACK_AUTHOR);
 });

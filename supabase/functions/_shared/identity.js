@@ -82,11 +82,10 @@ export function authorNameFor(user, profile = null) {
     if (v.ok) return v.username;
   }
 
+  // Only a handle the person chose is ever published. Real names from Google/Discord
+  // (full_name / name) and email prefixes are personal data and are never used.
   const meta = user.user_metadata || {};
-  const emailPrefix = typeof user.email === 'string' && user.email.includes('@')
-    ? user.email.split('@')[0]
-    : '';
-  const candidate = meta.username || meta.full_name || meta.name || emailPrefix || '';
+  const candidate = meta.username || meta.pending_username || '';
   const raw = cleanText(String(candidate).replace(/\s+/g, '_'), 20).replace(/[^A-Za-z0-9_.-]/g, '');
   if (
     raw.length >= 3 &&

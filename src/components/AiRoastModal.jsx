@@ -1,3 +1,4 @@
+import { REMIX_ENABLED } from '../config/featureFlags';
 import { useState, useMemo } from 'react';
 import { generateAiMemeRoast } from '../data/starterMemes';
 import { sfx } from '../utils/soundEngine';
@@ -118,16 +119,18 @@ export default function AiRoastModal({
           >
             {copied ? '✅ Copied Verdict!' : '📋 Copy AI Roast'}
           </button>
-          <button
-            type="button"
-            className="tm-mutate-btn"
-            onClick={(e) => {
-              onClose();
-              onTriggerStudioMutate(meme, e);
-            }}
-          >
-            🧬 Mutate This Meme
-          </button>
+          {REMIX_ENABLED && (
+            <button
+              type="button"
+              className="tm-mutate-btn"
+              onClick={(e) => {
+                onClose();
+                onTriggerStudioMutate(meme, e);
+              }}
+            >
+              🧬 Mutate This Meme
+            </button>
+          )}
         </div>
       </div>
     </div>

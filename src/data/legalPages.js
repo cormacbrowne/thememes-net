@@ -1,7 +1,7 @@
 // Phase 33 task 33.11: legal, safety, takedown, and contact pages.
 // Owner signed these off for publication on 16 Nov 2026 (draft labels removed).
 
-export const LEGAL_LAST_UPDATED = 'Last updated 16 November 2026';
+export const LEGAL_LAST_UPDATED = 'Last updated 17 November 2026';
 
 export const LEGAL_PAGES = {
   '/rules': {
@@ -58,8 +58,10 @@ export const LEGAL_PAGES = {
       {
         heading: '2. Your Uploads & Rights',
         bullets: [
-          'You remain responsible for everything you post. Only upload images or GIFs you created or have permission to share.',
-          'You grant THE MEMES.net a non-exclusive, worldwide, royalty-free licence to host, re-encode, display, and allow community remixes of memes you post.',
+          'You keep ownership of what you post, and you remain responsible for it. Only upload images, GIFs or videos you created or have permission to share.',
+          'By posting a meme you grant THE MEMES.net a non-exclusive, worldwide, royalty-free licence to host, re-encode, display and promote it, and to add the thememes.net name and logo to copies of it.',
+          'Memes are made to be shared. By posting, you agree that THE MEMES.net and its visitors may share, download and repost your meme on other websites, apps and social media, with the thememes.net logo and link left on. Your @handle is shown with it on this site; your real name never is.',
+          'Once a meme is posted it cannot be edited. You can ask us to remove it at any time through /takedown or /contact, and we will take it off THE MEMES.net. Copies that people have already shared elsewhere are outside our control.',
           'We may remove or hide any upload, comment, or account at any time to enforce safety, copyright, or UK Online Safety obligations.'
         ]
       },

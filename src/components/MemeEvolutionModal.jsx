@@ -1,3 +1,4 @@
+import { REMIX_ENABLED } from '../config/featureFlags';
 import { formatMemeUploadDate } from '../data/starterMemes';
 
 export default function MemeEvolutionModal({
@@ -100,13 +101,15 @@ export default function MemeEvolutionModal({
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    className="tm-mutate-btn"
-                    onClick={(e) => onTriggerStudioMutate(node, e)}
-                  >
-                    🧬 Remix This
-                  </button>
+                  {REMIX_ENABLED && (
+                    <button
+                      type="button"
+                      className="tm-mutate-btn"
+                      onClick={(e) => onTriggerStudioMutate(node, e)}
+                    >
+                      🧬 Remix This
+                    </button>
+                  )}
                 </div>
               );
             })}

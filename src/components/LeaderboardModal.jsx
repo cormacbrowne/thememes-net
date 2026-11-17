@@ -1,3 +1,4 @@
+import { REMIX_ENABLED } from '../config/featureFlags';
 import { useEffect, useMemo, useState } from 'react';
 import { RANKS, formatMemeUploadDate } from '../data/starterMemes';
 import {
@@ -424,16 +425,18 @@ export default function LeaderboardModal({
                   >
                     🔍 View
                   </button>
-                  <button
-                    type="button"
-                    className="tm-mutate-btn"
-                    onClick={(e) => {
-                      onClose();
-                      onTriggerStudioMutate(m, e);
-                    }}
-                  >
-                    🧬 Mutate
-                  </button>
+                  {REMIX_ENABLED && (
+                    <button
+                      type="button"
+                      className="tm-mutate-btn"
+                      onClick={(e) => {
+                        onClose();
+                        onTriggerStudioMutate(m, e);
+                      }}
+                    >
+                      🧬 Mutate
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -478,16 +481,18 @@ export default function LeaderboardModal({
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
                   <span className="tm-lineage-btn">🧬 {m.mutation_count || 0} REMIXES</span>
-                  <button
-                    type="button"
-                    className="tm-mutate-btn"
-                    onClick={(e) => {
-                      onClose();
-                      onTriggerStudioMutate(m, e);
-                    }}
-                  >
-                    🧬 Fork Origin
-                  </button>
+                  {REMIX_ENABLED && (
+                    <button
+                      type="button"
+                      className="tm-mutate-btn"
+                      onClick={(e) => {
+                        onClose();
+                        onTriggerStudioMutate(m, e);
+                      }}
+                    >
+                      🧬 Fork Origin
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

@@ -1,5 +1,5 @@
 import { memo, useRef } from 'react';
-import { fitText, fontCss, LINE_HEIGHT } from './forge/forgeEngine';
+import { fitText, fontCss, LINE_HEIGHT, normalizeOverlayLayers } from './forge/forgeEngine';
 import useBoxSize from '../hooks/useBoxSize';
 
 /** Renders one overlay layer as absolutely positioned HTML (same math as the canvas export). */
@@ -63,7 +63,7 @@ export function LayerView({ layer, W, H, children, className = '', style, ...res
 const MemeOverlay = memo(function MemeOverlay({ overlay }) {
   const ref = useRef(null);
   const { W, H } = useBoxSize(ref);
-  const layers = overlay?.layers || [];
+  const layers = normalizeOverlayLayers(overlay?.layers || []);
   if (!layers.length || overlay?.burned) return null;
   return (
     <div ref={ref} className="tm-ov-root" aria-hidden="true">

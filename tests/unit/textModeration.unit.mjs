@@ -111,7 +111,8 @@ test('reserved names', () => {
 test('author name is server-derived and safe', () => {
   assert.equal(authorNameFor({ is_anonymous: true, user_metadata: { username: 'Cool' } }), 'AnonMemer');
   assert.equal(authorNameFor({ user_metadata: { username: 'TheMemesHQ' } }), 'AnonMemer');
-  assert.equal(authorNameFor({ user_metadata: { full_name: 'Neon Otter' } }), 'Neon_Otter');
+  assert.equal(authorNameFor({ user_metadata: { full_name: 'Neon Otter' } }), 'AnonMemer');
+  assert.equal(authorNameFor({ user_metadata: { username: 'Neon_Otter' } }), 'Neon_Otter');
   assert.equal(authorNameFor({ user_metadata: { username: `x ${term(decoded[0].t)}` } }), 'AnonMemer');
   assert.equal(authorNameFor(null), 'AnonMemer');
 });

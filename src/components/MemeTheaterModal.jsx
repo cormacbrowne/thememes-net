@@ -1,3 +1,4 @@
+import { REMIX_ENABLED } from '../config/featureFlags';
 import { useEffect, useState, useRef } from 'react';
 import MemeMedia from './MemeMedia';
 import MemeLiveEmotes from './MemeLiveEmotes';
@@ -224,20 +225,22 @@ export default function MemeTheaterModal({
           <div className="tm-shared-meme-recipient-banner">
             <span>🔥 Someone shared this meme with you on <strong>THE MEMES.net</strong>!</span>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                className="tm-btn tm-shared-remix-btn"
-                onClick={(e) => {
-                  onClose();
-                  if (onCaptionThis) {
-                    onCaptionThis(meme, e);
-                  } else if (onTriggerStudioMutate) {
-                    onTriggerStudioMutate(meme, e);
-                  }
-                }}
-              >
-                ✏️ Remix this
-              </button>
+              {REMIX_ENABLED && (
+                <button
+                  type="button"
+                  className="tm-btn tm-shared-remix-btn"
+                  onClick={(e) => {
+                    onClose();
+                    if (onCaptionThis) {
+                      onCaptionThis(meme, e);
+                    } else if (onTriggerStudioMutate) {
+                      onTriggerStudioMutate(meme, e);
+                    }
+                  }}
+                >
+                  ✏️ Remix this
+                </button>
+              )}
               {onOpenBlankStudio && (
                 <button
                   type="button"
@@ -266,7 +269,7 @@ export default function MemeTheaterModal({
               onTouchEnd={handleStageTouchEnd}
               title="Double-tap to Upvote • Swipe left/right for Next/Prev"
             >
-              {gen > 0 && <div className="tm-gen-pill">🧬 GEN-{gen} REMIX</div>}
+              {REMIX_ENABLED && gen > 0 && <div className="tm-gen-pill">🧬 GEN-{gen} REMIX</div>}
               <MemeMedia meme={meme} mode="theater" />
               <MemeLiveEmotes memeId={meme.id} />
             </div>
@@ -307,20 +310,22 @@ export default function MemeTheaterModal({
                 ))}
               </div>
 
-              <button
-                type="button"
-                className="tm-mutate-btn"
-                onClick={(e) => {
-                  onClose();
-                  if (onCaptionThis) {
-                    onCaptionThis(meme, e);
-                  } else {
-                    onTriggerStudioMutate(meme, e);
-                  }
-                }}
-              >
-                ✏️ Remix this (+M$2.50)
-              </button>
+              {REMIX_ENABLED && (
+                <button
+                  type="button"
+                  className="tm-mutate-btn"
+                  onClick={(e) => {
+                    onClose();
+                    if (onCaptionThis) {
+                      onCaptionThis(meme, e);
+                    } else {
+                      onTriggerStudioMutate(meme, e);
+                    }
+                  }}
+                >
+                  ✏️ Remix this (+M$2.50)
+                </button>
+              )}
 
               {onOpenBlankStudio && (
                 <button
@@ -340,74 +345,76 @@ export default function MemeTheaterModal({
           {/* Right: Side-by-Side Evolution Lineage & Comments */}
           <div className="tm-theater-sidebar">
             {/* Mini Evolution Tree */}
+            {REMIX_ENABLED && (
             <div className="tm-theater-panel">
-              <div className="tm-studio-label" style={{ color: 'var(--tm-pink)', marginBottom: '8px' }}>
-                🧬 Genetic Lineage ({lineageNodes.length}{' '}
-                {lineageNodes.length === 1 ? 'Node' : 'Nodes'})
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '190px', overflowY: 'auto' }}>
-                {lineageNodes.map((node) => {
-                  const isCurrent = String(node.id) === String(meme.id);
-                  const nGen = node.generation || 0;
-                  const nodeDate = formatMemeUploadDate(node.created_at);
-                  return (
-                    <div
-                      key={node.id}
-                      onClick={() => onSelectMeme(node)}
-                      style={{
-                        marginLeft: `${Math.min(nGen * 14, 56)}px`,
-                        padding: '8px 10px',
-                        borderRadius: '10px',
-                        background: isCurrent
-                          ? 'rgba(0, 243, 255, 0.14)'
-                          : 'rgba(255, 255, 255, 0.04)',
-                        border: isCurrent
-                          ? '1px solid var(--tm-cyan)'
-                          : '1px solid rgba(255, 255, 255, 0.08)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '8px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                        <img
-                          src={node.image_url}
-                          alt={node.title}
-                          style={{
-                            width: '38px',
-                            height: '38px',
-                            borderRadius: '6px',
-                            objectFit: 'cover',
-                            flexShrink: 0
-                          }}
-                        />
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: '10px', fontWeight: 900, color: nGen === 0 ? '#a3e635' : 'var(--tm-pink)' }}>
-                            {nGen === 0 ? 'GEN-0 ORIGIN' : `GEN-${nGen} REMIX`} • {nodeDate.dateOnly}
-                          </div>
-                          <div
+                <div className="tm-studio-label" style={{ color: 'var(--tm-pink)', marginBottom: '8px' }}>
+                  🧬 Genetic Lineage ({lineageNodes.length}{' '}
+                  {lineageNodes.length === 1 ? 'Node' : 'Nodes'})
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '190px', overflowY: 'auto' }}>
+                  {lineageNodes.map((node) => {
+                    const isCurrent = String(node.id) === String(meme.id);
+                    const nGen = node.generation || 0;
+                    const nodeDate = formatMemeUploadDate(node.created_at);
+                    return (
+                      <div
+                        key={node.id}
+                        onClick={() => onSelectMeme(node)}
+                        style={{
+                          marginLeft: `${Math.min(nGen * 14, 56)}px`,
+                          padding: '8px 10px',
+                          borderRadius: '10px',
+                          background: isCurrent
+                            ? 'rgba(0, 243, 255, 0.14)'
+                            : 'rgba(255, 255, 255, 0.04)',
+                          border: isCurrent
+                            ? '1px solid var(--tm-cyan)'
+                            : '1px solid rgba(255, 255, 255, 0.08)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '8px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                          <img
+                            src={node.image_url}
+                            alt={node.title}
                             style={{
-                              fontSize: '12px',
-                              fontWeight: 700,
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis'
+                              width: '38px',
+                              height: '38px',
+                              borderRadius: '6px',
+                              objectFit: 'cover',
+                              flexShrink: 0
                             }}
-                          >
-                            {node.title}
+                          />
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: '10px', fontWeight: 900, color: nGen === 0 ? '#a3e635' : 'var(--tm-pink)' }}>
+                              {nGen === 0 ? 'GEN-0 ORIGIN' : `GEN-${nGen} REMIX`} • {nodeDate.dateOnly}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: '12px',
+                                fontWeight: 700,
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis'
+                              }}
+                            >
+                              {node.title}
+                            </div>
                           </div>
                         </div>
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--tm-amber)', flexShrink: 0 }}>
+                          🔥 {node.score || 0}
+                        </span>
                       </div>
-                      <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--tm-amber)', flexShrink: 0 }}>
-                        🔥 {node.score || 0}
-                      </span>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Live Comments Thread */}
             <div className="tm-theater-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>

@@ -106,6 +106,44 @@ export function makeTextLayer(overrides = {}) {
   };
 }
 
+/**
+ * Normalises stored overlay layers. Rows published before 17 Nov 2026 went through an old
+ * sanitizer that renamed fill→color, turned stroke into a colour string and dropped w/h/type.
+ */
+export function normalizeOverlayLayers(layers = []) {
+  if (!Array.isArray(layers)) return [];
+  return layers
+    .filter((l) => l && typeof l === 'object')
+    .map((l) => {
+      const isSticker = l.type === 'sticker' || l.kind === 'sticker';
+      const legacyStroke = typeof l.stroke === 'string' ? l.stroke : null;
+      return {
+        ...l,
+        type: isSticker ? 'sticker' : 'text',
+        w: Number.isFinite(l.w) ? l.w : isSticker ? 0.2 : 0.92,
+        h: Number.isFinite(l.h) ? l.h : isSticker ? 0.2 : 0.18,
+        rot: Number.isFinite(l.rot) ? l.rot : 0,
+        font: l.font || 'Anton',
+        size: Number.isFinite(l.size) ? l.size : 0.09,
+        fill: l.fill || l.color || '#ffffff',
+        stroke: legacyStroke ? 0.09 : Number.isFinite(l.stroke) ? l.stroke : 0.09,
+        strokeColor: l.strokeColor || legacyStroke || '#000000',
+        align: l.align || 'center',
+        caps: l.caps !== false
+      };
+    });
+}
+
+/**
+ * True when the meme's media file already has its captions baked in, so the overlay must not be
+ * drawn again (on screen or on export). Every image publish path burns text into the file.
+ */
+export function isOverlayBurnedIn(meme) {
+  if (!meme?.overlay) return true;
+  if (meme.overlay.burned) return true;
+  return meme.media_type !== 'video' && meme.media_type !== 'gif';
+}
+
 export function makeSticker(overrides = {}) {
   return { id: newId('stk'), type: 'sticker', emoji: '🔥', src: '', x: 0.5, y: 0.5, w: 0.2, h: 0.2, rot: 0, ...overrides };
 }
@@ -416,51 +454,114 @@ export function loadImg(src) {
   });
 }
 
+/** Best recorder format: MP4 first (iPhone, Instagram, X, WhatsApp all take it), then WebM. */
+export function pickVideoRecorderMime() {
+  if (typeof MediaRecorder === 'undefined' || typeof MediaRecorder.isTypeSupported !== 'function') return '';
+  const candidates = [
+    'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+    'video/mp4;codecs=avc1,mp4a',
+    'video/mp4',
+    'video/webm;codecs=vp9,opus',
+    'video/webm;codecs=vp8,opus',
+    'video/webm'
+  ];
+  return candidates.find((m) => MediaRecorder.isTypeSupported(m)) || '';
+}
+
 /**
- * Stretch goal: burn captions into a video with canvas.captureStream + MediaRecorder.
- * Returns a WebM Blob, or null when unsupported.
+ * Burns captions (if any) plus the thememes.net logo watermark into a video, keeping its sound.
+ * Plays the clip once off-screen through canvas.captureStream + MediaRecorder.
+ * Returns { blob, mime, ext } or null when the browser cannot record.
  */
-export async function burnInVideo(videoUrl, layers, images, onProgress) {
+export async function burnInVideo(videoUrl, layers, images, onProgress, { maxSeconds = 90 } = {}) {
   if (typeof MediaRecorder === 'undefined' || !HTMLCanvasElement.prototype.captureStream) return null;
-  await ensureFontsLoaded(layers);
+  const mime = pickVideoRecorderMime();
+  if (!mime) return null;
+  const cleanLayers = normalizeOverlayLayers(layers || []);
+  await ensureFontsLoaded(cleanLayers);
   const v = document.createElement('video');
   v.crossOrigin = 'anonymous';
-  v.src = videoUrl;
-  v.muted = true;
   v.playsInline = true;
+  v.setAttribute('playsinline', '');
+  v.preload = 'auto';
+  v.muted = false;
+  v.volume = 1;
+  v.src = videoUrl;
   await new Promise((res, rej) => {
     v.onloadeddata = res;
-    v.onerror = rej;
+    v.onerror = () => rej(new Error('video-load'));
   });
-  const scale = Math.min(1, 1080 / Math.max(v.videoWidth, v.videoHeight));
-  const W = Math.round(v.videoWidth * scale);
-  const H = Math.round(v.videoHeight * scale);
+  const scale = Math.min(1, 1080 / Math.max(v.videoWidth || 720, v.videoHeight || 720));
+  const W = Math.max(2, Math.round((v.videoWidth || 720) * scale) & ~1);
+  const H = Math.max(2, Math.round((v.videoHeight || 720) * scale) & ~1);
   const c = document.createElement('canvas');
   c.width = W;
   c.height = H;
   const ctx = c.getContext('2d');
+  const draw = () => {
+    ctx.drawImage(v, 0, 0, W, H);
+    if (cleanLayers.length) drawLayers(ctx, W, H, cleanLayers, images || new Map());
+    stampArcadeCartridgeFooter(ctx, W, H, { fast: true });
+  };
+  draw();
   const stream = c.captureStream(30);
-  const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
-  const rec = new MediaRecorder(stream, { mimeType: mime });
+
+  // Keep the original sound: route the element through Web Audio into the recording only
+  // (not to the speakers, so exporting is silent for the person).
+  let audioCtx = null;
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) {
+      audioCtx = new AC();
+      const src = audioCtx.createMediaElementSource(v);
+      const dest = audioCtx.createMediaStreamDestination();
+      src.connect(dest);
+      dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
+      if (audioCtx.state === 'suspended') await audioCtx.resume().catch(() => {});
+    }
+  } catch {
+    audioCtx = null;
+  }
+
+  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 4_000_000 });
   const chunks = [];
-  rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+  rec.ondataavailable = (e) => e.data && e.data.size && chunks.push(e.data);
   const stopped = new Promise((res) => (rec.onstop = res));
   let raf = 0;
+  let vfc = 0;
+  const useVfc = typeof v.requestVideoFrameCallback === 'function';
   const tick = () => {
-    ctx.drawImage(v, 0, 0, W, H);
-    drawLayers(ctx, W, H, layers, images);
-    stampArcadeCartridgeFooter(ctx, W, H, {});
-    if (onProgress && v.duration) onProgress(v.currentTime / v.duration);
-    raf = requestAnimationFrame(tick);
+    draw();
+    if (onProgress && v.duration) onProgress(Math.min(1, v.currentTime / v.duration));
+    if (v.currentTime >= maxSeconds) v.pause();
+    if (useVfc) vfc = v.requestVideoFrameCallback(tick);
+    else raf = requestAnimationFrame(tick);
   };
-  rec.start();
+  rec.start(250);
+  try {
+    await v.play();
+  } catch {
+    // Autoplay with sound refused (no recent tap): record silently instead.
+    v.muted = true;
+    await v.play();
+  }
   tick();
-  await v.play();
-  await new Promise((res) => (v.onended = res));
+  await new Promise((res) => {
+    v.onended = res;
+    v.onpause = () => v.currentTime >= maxSeconds && res();
+  });
+  if (useVfc && v.cancelVideoFrameCallback) v.cancelVideoFrameCallback(vfc);
   cancelAnimationFrame(raf);
+  draw();
   rec.stop();
   await stopped;
-  return new Blob(chunks, { type: 'video/webm' });
+  try {
+    audioCtx?.close();
+  } catch {
+    // ignore
+  }
+  const baseMime = mime.split(';')[0];
+  return { blob: new Blob(chunks, { type: baseMime }), mime: baseMime, ext: baseMime === 'video/mp4' ? 'mp4' : 'webm' };
 }
 
 /**
@@ -635,7 +736,7 @@ export async function exportMemeWithWatermark(
     ? (hasVisibleOverlay ? input.base_image_url : null) || input.image_url || input.base_image_url
     : input.url || '';
   const sourceFile = isFeedMeme ? null : input.file || null;
-  const source = sourceFile || rawUrl;
+  let source = sourceFile || rawUrl;
   const kind = isFeedMeme
     ? input.media_type === 'gif' || /\.gif(?:$|\?)/i.test(String(input.image_url || rawUrl))
       ? 'gif'
@@ -649,19 +750,18 @@ export async function exportMemeWithWatermark(
     String(input.id || '').startsWith('seed-') ||
     /\/seed\/seed-/i.test(String(rawUrl || ''));
   const explicitFallback = buildFallbackCaptionLayers(captionText, topText, bottomText);
-  const feedTitleFallback =
-    isFeedMeme && !input.overlay?.burned && !isPreBurnedSeed && input.title
-      ? buildFallbackCaptionLayers(input.title)
-      : [];
 
   let overlayLayers = [];
+  let feedSource = null;
   if (isFeedMeme) {
-    if (hasVisibleOverlay && (input.base_image_url || !input.overlay?.burned)) {
-      overlayLayers = rawLayers;
-    } else if (explicitFallback.length) {
-      overlayLayers = explicitFallback;
-    } else if (!input.overlay?.burned) {
-      overlayLayers = feedTitleFallback;
+    // Owner brief 17 Nov 2026 (item 3): exporting a posted meme used to redraw its captions over
+    // an image that already had them (and invent captions from the title). Now: if the file already
+    // carries its text, export that file as-is + logo; only live overlays (video / unburned GIF) are drawn.
+    const burned = isPreBurnedSeed || isOverlayBurnedIn(input);
+    feedSource = input.image_url || input.base_image_url || '';
+    if (!burned && hasVisibleOverlay) {
+      overlayLayers = normalizeOverlayLayers(rawLayers);
+      if (kind === 'gif' && input.base_image_url) feedSource = input.base_image_url;
     }
   } else if (hasVisibleOverlay) {
     overlayLayers = rawLayers;
@@ -671,6 +771,7 @@ export async function exportMemeWithWatermark(
     overlayLayers = buildFallbackCaptionLayers(input.title);
   }
 
+  if (feedSource) source = feedSource;
   const stamp = Date.now();
   if (kind === 'gif') {
     const gifDoc = input.doc || {
@@ -697,10 +798,10 @@ export async function exportMemeWithWatermark(
       const ext = sourceFile.type?.includes('webm') ? 'webm' : 'mp4';
       return { blob: sourceFile, mime: sourceFile.type || 'video/mp4', filename: `thememes-net-${stamp}.${ext}` };
     }
-    const videoUrl = sourceFile ? URL.createObjectURL(sourceFile) : rawUrl;
+    const videoUrl = sourceFile ? URL.createObjectURL(sourceFile) : source;
     try {
-      const blob = await burnInVideo(videoUrl, overlayLayers, input.images || new Map(), onProgress);
-      if (blob) return { blob, mime: 'video/webm', filename: `thememes-net-${stamp}.webm` };
+      const res = await burnInVideo(videoUrl, overlayLayers, input.images || new Map(), onProgress);
+      if (res?.blob) return { blob: res.blob, mime: res.mime, filename: `thememes-net-${stamp}.${res.ext}` };
     } finally {
       if (sourceFile) URL.revokeObjectURL(videoUrl);
     }

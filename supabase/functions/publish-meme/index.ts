@@ -323,6 +323,18 @@ async function handlePublish(
       }
     }
 
+    // Owner-added categories live in public.meme_categories (managed from /admin).
+    let category = input.category;
+    if (input.requestedCategory && input.requestedCategory !== category) {
+      const { data: cat } = await admin
+        .from('meme_categories')
+        .select('id')
+        .eq('id', input.requestedCategory)
+        .eq('active', true)
+        .maybeSingle();
+      if (cat?.id) category = cat.id;
+    }
+
     const id = crypto.randomUUID();
     const imageUrl = await putPublic(`u/${id}.${clean.ext}`, clean.data, clean.contentType);
     const posterUrl = clean.poster
@@ -333,7 +345,7 @@ async function handlePublish(
     const row = {
       id,
       title: input.title,
-      category: input.category,
+      category,
       image_url: imageUrl,
       author_name: authorNameFor(user, profile),
       user_id: user.id,

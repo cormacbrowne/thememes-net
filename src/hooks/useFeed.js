@@ -10,9 +10,7 @@ import {
   burnInAnimatedGif,
   renderStillImageBlob,
   drawLayers,
-  ensureFontsLoaded,
-  exportMemeWithWatermark,
-  shareExportedMeme
+  ensureFontsLoaded
 } from '../components/forge/forgeEngine';
 import {
   STARTER_MEMES,
@@ -148,7 +146,14 @@ export function useFeed({
     memesRef.current = memes;
   }, [memes]);
 
-  const [isLoadingFeed, setIsLoadingFeed] = useState(false);
+  // Owner brief 17 Nov 2026 (item 1): show skeleton cards until the live feed answers, instead of
+  // painting the built-in starter memes first and then shuffling live ones in on top of them.
+  const [isLoadingFeed, setIsLoadingFeed] = useState(() => Boolean(getSupabaseClient()));
+  useEffect(() => {
+    if (!isLoadingFeed) return undefined;
+    const t = setTimeout(() => setIsLoadingFeed(false), 6000); // offline / slow network fallback
+    return () => clearTimeout(t);
+  }, [isLoadingFeed]);
   const [visibleCount, setVisibleCount] = useState(FEED_PAGE_SIZE);
   const [hasMoreServer, setHasMoreServer] = useState(false);
   const [isLoadingMoreFeed, setIsLoadingMoreFeed] = useState(false);
@@ -1626,54 +1631,22 @@ export function useFeed({
     [bookmarkedIds, awardFairReward]
   );
 
+  // Share / download open one sheet that prepares the file with the logo burned in, then offers
+  // Share (fresh tap, required by iPhone Safari), Save and Copy link (owner brief 17 Nov 2026).
+  const [shareSheet, setShareSheet] = useState(null);
+  const handleDownloadMeme = useCallback((meme) => {
+    if (meme) setShareSheet({ meme, action: 'download' });
+  }, []);
   const handleShareMeme = useCallback(
     (meme, e) => {
       if (!meme) return;
-      const shareUrl = `${window.location.origin}/m/${encodeURIComponent(String(meme.id))}?ref=share`;
-      navigator.clipboard?.writeText(shareUrl).catch(() => {});
-      if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-        const canShareFile =
-          typeof File !== 'undefined' &&
-          typeof navigator.canShare === 'function' &&
-          navigator.canShare({ files: [new File([new Blob(['x'])], 'meme.png', { type: 'image/png' })] });
-        if (canShareFile) {
-          exportMemeWithWatermark(meme, { watermark: true })
-            .then((res) =>
-              shareExportedMeme({
-                blob: res?.blob || null,
-                filename: res?.filename || `thememes-net-${meme.id}.png`,
-                title: meme.title || 'Check out this meme!',
-                text: `${meme.title || 'Fresh Meme'} ⚡`,
-                url: shareUrl
-              })
-            )
-            .catch(() => {
-              navigator
-                .share({
-                  title: meme.title || 'Check out this meme!',
-                  text: `${meme.title || 'Fresh Meme'} ⚡`,
-                  url: shareUrl
-                })
-                .catch(() => {});
-            });
-        } else {
-          navigator
-            .share({
-              title: meme.title || 'Check out this meme!',
-              text: `${meme.title || 'Fresh Meme'} ⚡`,
-              url: shareUrl
-            })
-            .catch(() => {});
-        }
-      }
+      setShareSheet({ meme, action: 'share' });
       trackShareClicked(meme, 'card');
       pulse('share', {
         surface: 'card',
         method: typeof navigator !== 'undefined' && typeof navigator.share === 'function' ? 'native' : 'copy'
       });
       sfx.playPop(1);
-      setGoblinFortuneToast('🔗 Share link copied (with www.thememes.net watermark on file share & download)!');
-      setTimeout(() => setGoblinFortuneToast(''), 4000);
       awardFairReward({
         category: 'engagement',
         requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.SHARE_MEME.tokens,
@@ -1683,7 +1656,7 @@ export function useFeed({
         emoji: '🔗'
       });
     },
-    [awardFairReward, setGoblinFortuneToast]
+    [awardFairReward]
   );
 
   // Derived Feed Filters & Trending Formats (Task 33.16: Hot / New / Top Day-Week-All)
@@ -1962,6 +1935,9 @@ export function useFeed({
     handleRestoreReportedMemes,
     handleToggleBookmark,
     handleShareMeme,
+    handleDownloadMeme,
+    shareSheet,
+    setShareSheet,
     triggerSwipe,
     handlePrevSwipeCard,
     handleBattlePick,

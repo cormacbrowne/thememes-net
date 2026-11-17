@@ -250,3 +250,35 @@
 .tm-lite-perf .tm-dual-hero.is-first-visit .tm-dual-hero-body {
   animation: none;
 }
+
+/* ---------- Owner brief 17 Nov 2026 (item 12): the big neon sign leads the home page ---------- */
+.tm-dual-hero-sign {
+  display: flex;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.tm-dual-hero-sign .tm-neon-sign--hero {
+  width: clamp(220px, 26vw, 300px);
+  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--tm-pink) 22%, transparent));
+}
+
+/* The words stay for screen readers and search engines; the sign carries them visually. */
+.tm-dual-hero-heading--sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 860px) {
+  .tm-dual-hero-brand {
+    justify-content: center;
+  }
+  .tm-dual-hero-sign .tm-neon-sign--hero {
+    width: min(232px, 62vw);
+    margin: 2px auto 2px;
+  }
+}

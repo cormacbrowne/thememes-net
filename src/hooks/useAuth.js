@@ -4,6 +4,8 @@ import { anonymousHandleFor, validateUsername } from '../../supabase/functions/_
 import { claimUsername, USERNAME_ERROR_MESSAGES, textRejectionMessage } from '../utils/serverWrites';
 import { sfx } from '../utils/soundEngine';
 
+const PENDING_HANDLE_KEY = 'tm_pending_handle';
+
 const FAKE_USER_ID_RE = /^(oauth-|magic-|email-|arcade-)/;
 
 const isRealCachedUser = (u) =>
@@ -18,11 +20,6 @@ const isRealCachedUser = (u) =>
       u.verified === true
   );
 
-const sanitizeFallbackHandle = (raw = '') =>
-  String(raw)
-    .replace(/[^a-zA-Z0-9_-]/g, '')
-    .replace(/^[^a-zA-Z0-9]+/, '')
-    .slice(0, 20);
 
 const clearStoredUser = () => {
   try {
@@ -91,13 +88,25 @@ export function useAuth({ setShowAuthModal, awardXpAndCombo }) {
     setAnonHandle('');
     setProfileStatus(profile);
 
-    // If user confirmed a pending username from email signup and hasn't claimed yet, claim it now.
+    // If a handle was chosen before signing up (email metadata) or before a Google/Discord
+    // redirect (kept in localStorage across the redirect) and isn't claimed yet, claim it now.
     let claimedUsername = profile?.username || '';
-    const pendingUsername = sessionUser.user_metadata?.pending_username;
+    let storedPending;
+    try {
+      storedPending = localStorage.getItem(PENDING_HANDLE_KEY) || '';
+    } catch {
+      storedPending = '';
+    }
+    const pendingUsername = sessionUser.user_metadata?.pending_username || storedPending;
     if (!claimedUsername && pendingUsername && client) {
       const claimRes = await claimUsername(client, pendingUsername);
       if (claimRes.ok) {
         claimedUsername = claimRes.username;
+      }
+      try {
+        localStorage.removeItem(PENDING_HANDLE_KEY);
+      } catch {
+        // ignore
       }
     }
 
@@ -106,13 +115,9 @@ export function useAuth({ setShowAuthModal, awardXpAndCombo }) {
       sessionUser.app_metadata?.provider ||
       sessionUser.identities?.[0]?.provider ||
       'email';
-    const rawFallback =
-      sessionUser.user_metadata?.full_name?.replace(/\s+/g, '_') ||
-      sessionUser.user_metadata?.name?.replace(/\s+/g, '_') ||
-      email.split('@')[0] ||
-      'Memer';
-    const handle =
-      claimedUsername || sanitizeFallbackHandle(rawFallback) || anonymousHandleFor(sessionUser.id);
+    // Never fall back to a real name or email: until a handle is claimed, show the
+    // same anonymous-style handle the server puts on memes (e.g. NeonOtter_482).
+    const handle = claimedUsername || anonymousHandleFor(sessionUser.id);
 
     const u = {
       id: sessionUser.id,
@@ -122,6 +127,7 @@ export function useAuth({ setShowAuthModal, awardXpAndCombo }) {
       email,
       provider,
       verified: true,
+      needsHandle: !claimedUsername,
       role: profile?.role || 'user',
       strikes: profile?.strikes || 0,
       suspendedUntil: profile?.suspended_until || null
@@ -181,6 +187,22 @@ export function useAuth({ setShowAuthModal, awardXpAndCombo }) {
   const handleSocialOAuthLogin = async (provider) => {
     setAuthMessage(`🔐 Checking ${provider.shortName} sign-in...`);
     const client = getSupabaseClient();
+
+    // Keep the chosen @handle across the OAuth redirect so it is claimed on return.
+    const wanted = String(authUsername || '').trim().replace(/^@/, '');
+    if (wanted) {
+      const v = validateUsername(wanted);
+      if (!v.ok) {
+        setAuthMessage(`⚠️ ${USERNAME_ERROR_MESSAGES[v.error] || 'That handle cannot be used.'}`);
+        sfx.playSadTrombone();
+        return;
+      }
+      try {
+        localStorage.setItem(PENDING_HANDLE_KEY, v.username);
+      } catch {
+        // ignore
+      }
+    }
 
     const settings = await fetchSupabaseAuthSettings();
     const isProviderEnabledOnServer = Boolean(settings?.external?.[provider.id]);
@@ -455,7 +477,7 @@ export function useAuth({ setShowAuthModal, awardXpAndCombo }) {
     if (!res.ok) return res;
     setUser((prev) => {
       if (!prev) return prev;
-      const updated = { ...prev, username: res.username, claimedUsername: res.username };
+      const updated = { ...prev, username: res.username, claimedUsername: res.username, needsHandle: false };
       try {
         localStorage.setItem('tm_user', JSON.stringify(updated));
       } catch {

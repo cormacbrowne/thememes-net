@@ -179,3 +179,18 @@
   border-left: 3px solid var(--tm-amber);
   background: rgba(255, 184, 0, 0.09);
 }
+
+.tm-profile-handle-nudge {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--tm-amber, #ffb627);
+  background: color-mix(in srgb, var(--tm-amber, #ffb627) 10%, transparent);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.tm-profile-mod-link {
+  display: inline-flex;
+  margin: 0 0 12px;
+  text-decoration: none;
+}

@@ -1,3 +1,4 @@
+import CategorySelect from './CategorySelect';
 import { useState, useRef, useEffect } from 'react';
 import { VIRAL_CAPTIONS } from '../data/starterMemes';
 import { STUDIO_FILTERS, CAPTION_LAYOUTS } from '../utils/canvasMutator';
@@ -744,17 +745,11 @@ export default function MemeStudioModal({
                 style={{ width: '100%', marginTop: '6px' }}
               />
               <div style={{ display: 'flex', gap: '8px', marginTop: '8px', alignItems: 'center' }}>
-                <select
-                  className="tm-input"
+                <CategorySelect
                   value={studioCategory}
-                  onChange={(e) => setStudioCategory(e.target.value)}
+                  onChange={setStudioCategory}
                   style={{ flex: 1, background: 'var(--tm-night-2)' }}
-                >
-                  <option value="dank">#DANK / FUNNY</option>
-                  <option value="relatable">#RELATABLE / LIFE</option>
-                  <option value="gaming">#GAMING</option>
-                  <option value="tech">#TECH / CODING</option>
-                </select>
+                />
 
                 <button
                   type="button"

@@ -1,3 +1,4 @@
+import CategorySelect from '../CategorySelect';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import useMemeEditor from '../../hooks/useMemeEditor';
 import ForgeStage from './ForgeStage';
@@ -36,12 +37,6 @@ import {
   UPLOADS_PAUSED_ERROR
 } from '../../config/featureFlags';
 
-const CATEGORIES = [
-  ['dank', '#DANK / FUNNY'],
-  ['relatable', '#RELATABLE / LIFE'],
-  ['gaming', '#GAMING'],
-  ['tech', '#TECH / CODING']
-];
 
 function probeRemote(url, kind) {
   return new Promise((resolve) => {
@@ -499,13 +494,13 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
     setBusy(true);
     setStatus('🔥 Burning captions into video… keep this tab open.');
     try {
-      const blob = await burnInVideo(doc.base.url, doc.layers, images, (p) =>
+      const res = await burnInVideo(doc.base.url, doc.layers, images, (p) =>
         setStatus(`🔥 Burning in… ${Math.round(p * 100)}%`)
       );
-      if (!blob) setStatus('⚠️ Burn-in not supported in this browser. Captions stay as an overlay.');
+      if (!res?.blob) setStatus('⚠️ Burn-in not supported in this browser. Captions stay as an overlay.');
       else {
-        triggerBlobDownload(blob, `thememes-net-${Date.now()}.webm`);
-        setStatus('✅ Burned-in WebM downloaded with www.thememes.net watermark!');
+        triggerBlobDownload(res.blob, `thememes-net-${Date.now()}.${res.ext}`);
+        setStatus(`✅ Video saved (${res.ext.toUpperCase()}) with the thememes.net logo burned in!`);
       }
     } catch {
       setStatus('⚠️ Burn-in failed (video may block cross-origin capture).');
@@ -801,19 +796,13 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
         </div>
 
         <p className="tm-house-rules-line" style={{ padding: '6px 14px 0' }}>
-          By posting you agree to the <a href={RULES_PATH}>House Rules</a>. No nudity, no hate, no
+          By posting you agree to the <a href={RULES_PATH}>House Rules</a> and <a href="/terms">Terms</a>, including that your meme can be shared on other sites with the thememes.net logo. No nudity, no hate, no
           personal info, nothing you don&apos;t have the right to share.
         </p>
 
         <form className="tm-forge-publish" onSubmit={handlePublish}>
           <input className="tm-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title (optional)" />
-          <select className="tm-input" value={category} onChange={(e) => setCategory(e.target.value)}>
-            {CATEGORIES.map(([v, l]) => (
-              <option key={v} value={v}>
-                {l}
-              </option>
-            ))}
-          </select>
+          <CategorySelect value={category} onChange={setCategory} />
           <label className="tm-forge-check">
             <input type="checkbox" checked={isSpoiler} onChange={(e) => setIsSpoiler(e.target.checked)} /> 🌶️ Spoiler
           </label>

@@ -111,24 +111,41 @@ export function sanitizeUserText(input, maxLen = 280) {
 export function sanitizeOverlayPayload(overlay) {
   if (!overlay || typeof overlay !== 'object') return null;
   const rawLayers = Array.isArray(overlay.layers) ? overlay.layers.slice(0, 24) : [];
+  // Keeps the Forge layer schema (type/w/h/fill/stroke ratio/strokeColor) and the `burned` flag,
+  // so the feed never draws text a second time over an image that already has it baked in.
+  const num = (v, lo, hi, dflt) => (Number.isFinite(Number(v)) ? Math.max(lo, Math.min(hi, Number(v))) : dflt);
+  const hex = (v, dflt) => (/^#[0-9a-fA-F]{3,8}$/.test(String(v || '')) ? v : dflt);
   const safeLayers = rawLayers
     .filter((l) => l && typeof l === 'object')
-    .map((l, idx) => ({
-      id: sanitizeUserText(l.id || `layer-${idx}`, 48),
-      kind: l.kind === 'sticker' ? 'sticker' : 'text',
-      text: sanitizeUserText(l.text || '', 160),
-      x: Number.isFinite(Number(l.x)) ? Math.max(0, Math.min(1, Number(l.x))) : 0.5,
-      y: Number.isFinite(Number(l.y)) ? Math.max(0, Math.min(1, Number(l.y))) : 0.5,
-      size: Number.isFinite(Number(l.size)) ? Math.max(0.02, Math.min(0.35, Number(l.size))) : 0.08,
-      rot: Number.isFinite(Number(l.rot)) ? Math.max(-360, Math.min(360, Number(l.rot))) : 0,
-      color: /^#[0-9a-fA-F]{3,8}$/.test(String(l.color || '')) ? l.color : '#ffffff',
-      stroke: /^#[0-9a-fA-F]{3,8}$/.test(String(l.stroke || '')) ? l.stroke : '#000000',
-      font: sanitizeUserText(l.font || 'Impact', 40),
-      caps: Boolean(l.caps),
-      startSec: l.startSec != null && Number.isFinite(Number(l.startSec)) ? Math.max(0, Number(l.startSec)) : null,
-      endSec: l.endSec != null && Number.isFinite(Number(l.endSec)) ? Math.max(0, Number(l.endSec)) : null
-    }));
-  return { v: 1, layers: safeLayers };
+    .map((l, idx) => {
+      const isSticker = l.type === 'sticker' || l.kind === 'sticker';
+      const legacyStrokeColor = typeof l.stroke === 'string' ? l.stroke : null;
+      const out = {
+        id: sanitizeUserText(l.id || `layer-${idx}`, 48),
+        type: isSticker ? 'sticker' : 'text',
+        x: num(l.x, 0, 1, 0.5),
+        y: num(l.y, 0, 1, 0.5),
+        w: num(l.w, 0.02, 1, isSticker ? 0.2 : 0.9),
+        h: num(l.h, 0.02, 1, isSticker ? 0.2 : 0.16),
+        rot: num(l.rot, -360, 360, 0)
+      };
+      if (isSticker) {
+        out.emoji = sanitizeUserText(l.emoji || '', 16);
+        return out;
+      }
+      out.text = sanitizeUserText(l.text || '', 160);
+      out.font = sanitizeUserText(l.font || 'Anton', 40);
+      out.size = num(l.size, 0.02, 0.35, 0.09);
+      out.fill = hex(l.fill || l.color, '#ffffff');
+      out.stroke = legacyStrokeColor ? 0.09 : num(l.stroke, 0, 0.4, 0.09);
+      out.strokeColor = hex(l.strokeColor || legacyStrokeColor, '#000000');
+      out.align = ['left', 'center', 'right'].includes(l.align) ? l.align : 'center';
+      out.caps = l.caps !== false;
+      if (l.startSec != null && Number.isFinite(Number(l.startSec))) out.startSec = Math.max(0, Number(l.startSec));
+      if (l.endSec != null && Number.isFinite(Number(l.endSec))) out.endSec = Math.max(0, Number(l.endSec));
+      return out;
+    });
+  return { v: 1, burned: Boolean(overlay.burned), layers: safeLayers };
 }
 
 /**

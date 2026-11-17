@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import MemeOverlay from './MemeOverlay';
+import { isOverlayBurnedIn } from './forge/forgeEngine';
 import { registerAutoplay, hasUserGestured } from '../utils/videoAutoplay';
 import { formatDuration } from '../utils/mediaPipeline';
 import { sanitizeMediaUrl } from '../utils/securityGuard';
@@ -48,6 +49,8 @@ const MemeMedia = memo(function MemeMedia({
   }, [active, isVideo, mode]);
 
   if (!meme) return null;
+  // Captions already baked into the file are never drawn a second time (owner brief item 3).
+  const liveOverlay = isOverlayBurnedIn(meme) ? null : meme.overlay;
   const safeImageUrl = sanitizeMediaUrl(meme.image_url, '');
   const safePosterUrl = sanitizeMediaUrl(meme.poster_url, '');
   const boxStyle = meme.width && meme.height ? { aspectRatio: `${meme.width} / ${meme.height}` } : undefined;
@@ -68,7 +71,7 @@ const MemeMedia = memo(function MemeMedia({
             draggable={false}
           />
         )}
-        <MemeOverlay overlay={meme.overlay} />
+        <MemeOverlay overlay={liveOverlay} />
         {meme.media_type === 'gif' && <span className="tm-media-badge">GIF</span>}
       </div>
     );
@@ -88,7 +91,7 @@ const MemeMedia = memo(function MemeMedia({
             decoding={priority ? 'sync' : 'async'}
           />
         )}
-        <MemeOverlay overlay={meme.overlay} />
+        {!safePosterUrl && <MemeOverlay overlay={liveOverlay} />}
         <button
           type="button"
           className="tm-media-play"
@@ -118,7 +121,7 @@ const MemeMedia = memo(function MemeMedia({
         autoPlay={mode === 'swipe' || (mode === 'feed' && litePerfMode && liteTapped)}
         preload={mode === 'reel' ? preload : 'metadata'}
       />
-      <MemeOverlay overlay={meme.overlay} />
+      <MemeOverlay overlay={liveOverlay} />
       <span className="tm-media-badge">🎬 {formatDuration(meme.duration_sec)}</span>
       {mode !== 'theater' && (
         <button

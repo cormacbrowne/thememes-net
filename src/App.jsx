@@ -1,3 +1,6 @@
+import GameFullscreenToggle from './components/GameFullscreenToggle';
+import { ARCADE_GAMES_CATALOG } from './data/arcadeGamesCatalog';
+import { useMemeCategories } from './data/memeCategories';
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { sfx } from './utils/soundEngine';
 import lazyWithRetry from './utils/lazyWithRetry';
@@ -70,6 +73,11 @@ const MemeEvolutionModal = lazyWithRetry(() => import('./components/MemeEvolutio
 const ArcadeAiAssistant = lazyWithRetry(() => import('./components/ArcadeAiAssistant'));
 const AuthModal = lazyWithRetry(() => import('./components/AuthModal'));
 const MemeTheaterModal = lazyWithRetry(() => import('./components/MemeTheaterModal'));
+const ShareMemeSheet = lazyWithRetry(() => import('./components/ShareMemeSheet'));
+const PRANK_SCREEN_IDS = new Set(['zoom', 'excel', 'bsod', 'update', 'terminal', 'ai']);
+const FULLSCREEN_GAME_IDS = new Set(
+  ARCADE_GAMES_CATALOG.map((g) => g.id).filter((id) => !PRANK_SCREEN_IDS.has(id))
+);
 const LeaderboardModal = lazyWithRetry(() => import('./components/LeaderboardModal'));
 const PlayerProfileModal = lazyWithRetry(() => import('./components/PlayerProfileModal'));
 const CreatorProfilePage = lazyWithRetry(() => import('./components/CreatorProfilePage'));
@@ -214,7 +222,7 @@ export default function App() {
   const [stampedeSprites, setStampedeSprites] = useState([]);
   const [bubbleWrapItems, setBubbleWrapItems] = useState([]);
   const bubbleComboRef = useRef(0);
-  const [roastsRun, setRoastsRun] = useState(() =>
+  const [roastsRun] = useState(() =>
     Number(localStorage.getItem('tm_roasts_run') || 0)
   );
   const [chaosMutator, setChaosMutator] = useState('none');
@@ -380,6 +388,23 @@ export default function App() {
     handleLogout
   } = auth;
   const authUserId = profileStatus?.id || user?.id || null;
+  const memeCategories = useMemeCategories();
+
+  // Signed in (e.g. with Google) but no @handle yet: open the profile once per session so the
+  // person picks one. Memes show an anonymous-style handle until then, never the real name.
+  const needsHandle = Boolean(user?.verified && user?.needsHandle);
+  useEffect(() => {
+    if (!needsHandle) return;
+    try {
+      if (sessionStorage.getItem('tm_handle_nudged') === '1') return;
+      sessionStorage.setItem('tm_handle_nudged', '1');
+    } catch {
+      // storage blocked: still nudge once for this render
+    }
+    const t = setTimeout(() => setProfileUsername(user.username), 900);
+    return () => clearTimeout(t);
+  }, [needsHandle, user?.username, setProfileUsername]);
+
   const { onlineCount, broadcastEmote } = useLivePresence({ username: user?.username });
 
   const feed = useFeed({
@@ -438,7 +463,6 @@ export default function App() {
     handleAcceptBounty,
     handleTriggerStudioMutate,
     handleCaptionThis,
-    handleOpenEvolutionTree,
     handleVote,
     handleReaction,
     handleToggleComments,
@@ -458,6 +482,9 @@ export default function App() {
     handleRestoreReportedMemes,
     handleToggleBookmark,
     handleShareMeme,
+    handleDownloadMeme,
+    shareSheet,
+    setShareSheet,
     triggerSwipe,
     handlePrevSwipeCard,
     handleBattlePick,
@@ -877,18 +904,6 @@ export default function App() {
     [memes, setMutatingParentMeme, spawnParticles, setForgeIntent, setShowStudio]
   );
 
-  const handleOpenAiRoast = useCallback(
-    (meme, e) => {
-      if (!meme) return;
-      sfx.playAnimeShock();
-      setRoastModalMeme(meme);
-      setRoastsRun((r) => r + 1);
-      incrementQuest('q-roast', 1);
-      awardXpOnly(ARCADE_ECONOMY_RULES.REWARDS.ROAST_MEME.xp, e, '🤖');
-    },
-    [incrementQuest, awardXpOnly, setRoastModalMeme]
-  );
-
   const isAnyModalOpen = Boolean(
     showStudio ||
       theaterMeme ||
@@ -1279,30 +1294,21 @@ export default function App() {
                     ))}
                   </div>
                 )}
-                {['all', 'dank', 'tech', 'gaming', 'relatable'].map((cat) => (
+                {[{ id: 'all', label: 'All', emoji: '', trending: false }, ...memeCategories].map((cat) => (
                   <button
-                    key={cat}
+                    key={cat.id}
                     type="button"
-                    className={`tm-tab tm-mobile-filter-item ${category === cat && !showSavedOnly ? 'active' : ''}`}
+                    className={`tm-tab tm-mobile-filter-item ${cat.trending ? 'tm-tab--trending' : ''} ${category === cat.id && !showSavedOnly ? 'active' : ''}`}
                     onClick={() => {
                       setShowSavedOnly(false);
-                      setCategory(cat);
+                      setCategory(cat.id);
                     }}
+                    title={cat.trending ? `Trending now: ${cat.label}` : undefined}
                   >
-                    #{cat.toUpperCase()}
+                    {cat.emoji ? `${cat.emoji} ` : '#'}
+                    {cat.label}
                   </button>
                 ))}
-                <button
-                  type="button"
-                  className={`tm-tab tm-mobile-filter-item ${category === 'remixes' && !showSavedOnly ? 'active' : ''}`}
-                  onClick={() => {
-                    setShowSavedOnly(false);
-                    setCategory('remixes');
-                  }}
-                  title="Browse viral caption remixes & multi-generation chains"
-                >
-                  😜 Remixes
-                </button>
                 {showSavedOnly && (
                   <button
                     type="button"
@@ -1449,11 +1455,9 @@ export default function App() {
                   onToggleComments={handleToggleComments}
                   onCommentInputChange={handleCommentInputChange}
                   onAddComment={handleAddComment}
-                  onOpenEvolutionTree={handleOpenEvolutionTree}
-                  onTriggerStudioMutate={handleTriggerStudioMutate}
-                  onCaptionThis={handleCaptionThis}
                   onOpenTheater={handleOpenTheater}
                   onShareMeme={handleShareMeme}
+                  onDownloadMeme={handleDownloadMeme}
                   onOpenProfile={(username) => {
                     sfx.playToggle();
                     setProfileUsername(username);
@@ -1462,7 +1466,6 @@ export default function App() {
                   onReportComment={handleReportComment}
                   onDeleteComment={handleDeleteComment}
                   currentUserId={feedUserId || authUserId}
-                  onOpenAiRoast={handleOpenAiRoast}
                   cardFrame={
                     isActiveCaptionKing(meme.author_name, activeCaptionKings)
                       ? 'caption-king'
@@ -1810,6 +1813,12 @@ export default function App() {
         </Suspense>
       )}
 
+      {/* Owner brief 17 Nov 2026 (item 5): full-screen button on every playable game */}
+      <GameFullscreenToggle
+        active={FULLSCREEN_GAME_IDS.has(viewMode) && !bossKeyActive}
+        floatEnter={!isFixedArcadeGame}
+      />
+
       {/* PHASE 29.4: DISMISSIBLE MOBILE NOW-PLAYING PILL */}
       {!bossKeyActive && <MobileNowPlayingPill isGameLayout={isFixedArcadeGame} />}
 
@@ -2022,6 +2031,17 @@ export default function App() {
       )}
 
       {/* MODAL 5: CREATOR ARCADE PROFILE & ACHIEVEMENT BADGE CASE */}
+      {shareSheet?.meme && (
+        <Suspense fallback={null}>
+          <ShareMemeSheet
+            key={shareSheet.meme.id}
+            meme={shareSheet.meme}
+            initialAction={shareSheet.action}
+            onClose={() => setShareSheet(null)}
+          />
+        </Suspense>
+      )}
+
       {profileUsername && (
         <Suspense fallback={MODAL_SKELETON_FALLBACK}>
           <PlayerProfileModal

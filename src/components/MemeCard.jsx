@@ -1,4 +1,5 @@
 import { useRef, useCallback, useState, memo } from 'react';
+import { ArrowBigUp, ArrowBigDown, MessageCircle, Star, Download, Share2, Flag, Maximize2 } from 'lucide-react';
 import MemeMedia from './MemeMedia';
 import MemeLiveEmotes from './MemeLiveEmotes';
 import {
@@ -9,6 +10,8 @@ import {
 } from '../data/starterMemes';
 import { formatUpvotesLastHourSignal } from '../utils/liveSignals';
 import { exportMemeWithWatermark, triggerBlobDownload } from './forge/forgeEngine';
+import { useMemeCategories } from '../data/memeCategories';
+import './MemeCard.css';
 
 const MemeCard = memo(function MemeCard({
   meme,
@@ -23,18 +26,15 @@ const MemeCard = memo(function MemeCard({
   onToggleComments,
   onCommentInputChange,
   onAddComment,
-  onOpenEvolutionTree,
-  onTriggerStudioMutate,
-  onCaptionThis,
   onOpenTheater,
   onShareMeme,
+  onDownloadMeme,
   onOpenProfile,
   onReportMeme,
   onReportComment,
   onDeleteComment,
   loadingComments = false,
   currentUserId = null,
-  onOpenAiRoast,
   cardFrame = 'default',
   litePerfMode = false
 }) {
@@ -45,8 +45,8 @@ const MemeCard = memo(function MemeCard({
   const [dblTapBurst, setDblTapBurst] = useState(false);
   const [comicWord, setComicWord] = useState('');
   const [squishCard, setSquishCard] = useState(false);
-  const gen = meme.generation || 0;
-  const remixCount = meme.mutation_count || 0;
+  const categories = useMemeCategories();
+  const cat = categories.find((c) => c.id === meme.category);
   const rarity = getMemeRarityTier(meme);
   const isBlurred = Boolean(meme.is_spoiler) && !spoilerRevealed;
   const uploadInfo = formatMemeUploadDate(meme.created_at);
@@ -120,6 +120,10 @@ const MemeCard = memo(function MemeCard({
   const handleDownloadMemeImage = async (e) => {
     e.stopPropagation();
     if (!meme?.image_url) return;
+    if (onDownloadMeme) {
+      onDownloadMeme(meme, e);
+      return;
+    }
     triggerComicPop('WATERMARKED! ⬇');
     const safeName = (meme.title || 'thememes-net').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 32);
     try {
@@ -159,61 +163,45 @@ const MemeCard = memo(function MemeCard({
         </div>
       )}
 
-      <div className="tm-card-header">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', minWidth: 0 }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-            Posted by{' '}
-            <strong
-              className="tm-author-handle"
-              style={{ cursor: 'pointer' }}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onOpenProfile) onOpenProfile(meme.author_name || 'Anon');
-              }}
-              title="View Creator Profile & Badges"
-            >
-              @{meme.author_name || 'Anon'}
-            </strong>
-            {uploadInfo.isNewToday && (
-              <span
-                className="tm-upload-new-pill"
-                title={`Uploaded within the last 24h (${uploadInfo.dateTime})`}
-              >
-                🆕 NEW
-              </span>
-            )}
-          </span>
-          <span
-            className="tm-upload-date-badge"
-            title={`Exact upload timestamp: ${uploadInfo.dateTime}`}
+      <div className="mc-head">
+        <div className="mc-byline">
+          <button
+            type="button"
+            className="mc-author"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onOpenProfile) onOpenProfile(meme.author_name || 'Anon');
+            }}
+            title="View creator profile"
           >
-            📅 Uploaded {uploadInfo.dateTime} • <strong>{uploadInfo.relative}</strong>
-          </span>
+            @{meme.author_name || 'Anon'}
+          </button>
+          <span className="mc-dot" aria-hidden="true">·</span>
+          <time className="mc-time" dateTime={meme.created_at || undefined} title={`Uploaded ${uploadInfo.dateTime}`}>
+            {uploadInfo.relative}
+          </time>
+          {uploadInfo.isNewToday && <span className="mc-new">NEW</span>}
         </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+        <div className="mc-badges">
           {cardFrame === 'caption-king' && (
             <span className="tm-rarity-badge supernova" data-testid="caption-king-frame-badge">
-              👑 CAPTION KING (24h)
+              👑 CAPTION KING
             </span>
           )}
-          {meme.is_spoiler && (
-            <span className="tm-rarity-badge heating">🌶️ SPICY</span>
-          )}
-          {meme.is_bounty && (
-            <span className="tm-rarity-badge supernova">🎯 BOUNTY</span>
-          )}
-          {rarity.label && (
-            <span className={`tm-rarity-badge ${rarity.tier}`}>{rarity.label}</span>
-          )}
-          <span className="tm-tag">#{meme.category || 'meme'}</span>
+          {meme.is_spoiler && <span className="tm-rarity-badge heating">🌶️ SPICY</span>}
+          {meme.is_bounty && <span className="tm-rarity-badge supernova">🎯 BOUNTY</span>}
+          {rarity.label && <span className={`tm-rarity-badge ${rarity.tier}`}>{rarity.label}</span>}
+          <span className="mc-cat">
+            {cat?.emoji ? `${cat.emoji} ` : '#'}
+            {cat?.label || meme.category || 'meme'}
+          </span>
         </div>
       </div>
 
       <h2
-        className="tm-card-title tm-clickable-title"
+        className="mc-title tm-clickable-title"
         onClick={() => onOpenTheater && onOpenTheater(meme)}
-        title="Open in Fullscreen Theater Mode"
+        title="Open full screen"
       >
         {meme.title}
       </h2>
@@ -225,24 +213,24 @@ const MemeCard = memo(function MemeCard({
           onVote(meme.id, 1, e);
         }}
         onTouchEnd={handleImageTouchEnd}
-        title="Double-tap for instant Combo Upvote!"
+        title="Double-tap to upvote"
       >
         {dblTapBurst && (
           <div className="tm-dbltap-burst" aria-hidden="true">
             🔥
           </div>
         )}
-        {gen > 0 && <div className="tm-gen-pill">🧬 GEN-{gen} REMIX</div>}
         <button
           type="button"
-          className="tm-theater-QuickBtn"
+          className="mc-expand"
           onClick={(e) => {
             e.stopPropagation();
             if (onOpenTheater) onOpenTheater(meme);
           }}
-          title="Open Theater View & Permalink"
+          aria-label="Open full screen"
+          title="Open full screen"
         >
-          🔍 Expand
+          <Maximize2 size={16} aria-hidden="true" />
         </button>
 
         {isBlurred && (
@@ -255,7 +243,7 @@ const MemeCard = memo(function MemeCard({
           >
             <span style={{ fontSize: '30px' }}>🌶️</span>
             <strong>SPICY / SPOILER MEME</strong>
-            <span>Click to unblur artwork</span>
+            <span>Tap to reveal</span>
           </div>
         )}
 
@@ -268,7 +256,6 @@ const MemeCard = memo(function MemeCard({
           className={isBlurred ? 'tm-img-blurred' : ''}
         />
         <MemeLiveEmotes memeId={meme.id} litePerfMode={litePerfMode} />
-        <span className="tm-dbl-hint">⚡ Double-tap to Upvote</span>
       </div>
 
       {hourlyUpvotesSignal && (
@@ -283,171 +270,120 @@ const MemeCard = memo(function MemeCard({
         </div>
       )}
 
-      <div className="tm-card-actions">
-        {/* Upvote / Downvote Pill */}
-        <div className="tm-vote-pill">
-          <button
-            type="button"
-            className={`tm-vote-btn up ${myVote === 1 ? 'voted' : ''}`}
-            aria-label="Upvote meme"
-            onClick={(e) => {
-              triggerComicPop('AWESOME! 🔥');
-              onVote(meme.id, 1, e);
-            }}
-          >
-            ▲
-          </button>
-          <span className="tm-score">{meme.score || 0}</span>
-          <button
-            type="button"
-            className={`tm-vote-btn down ${myVote === -1 ? 'voted' : ''}`}
-            aria-label="Downvote meme"
-            onClick={(e) => {
-              triggerComicPop('OOF 😅');
-              onVote(meme.id, -1, e);
-            }}
-          >
-            ▼
-          </button>
-        </div>
-
-        {/* Emoji Reactions */}
-        <div className="tm-react-group">
-          {['🔥', '💀', '😂', '🗿'].map((emoji) => (
+      <div className="mc-actions">
+        <div className="mc-row mc-row--engage">
+          <div className="mc-vote" role="group" aria-label="Vote">
             <button
-              key={emoji}
               type="button"
-              className="tm-react-btn"
+              className={`mc-vote-btn up ${myVote === 1 ? 'is-on' : ''}`}
+              aria-label="Upvote meme"
+              aria-pressed={myVote === 1}
               onClick={(e) => {
-                const mapWord = {
-                  '🔥': 'SPICY! 🔥',
-                  '💀': 'WILD! 💀',
-                  '😂': 'HAHA! 😂',
-                  '🗿': 'LEGEND! 🗿'
-                };
-                triggerComicPop(mapWord[emoji]);
-                onReaction(meme.id, emoji, e);
+                triggerComicPop('AWESOME! 🔥');
+                onVote(meme.id, 1, e);
               }}
             >
-              {emoji} {(meme.reactions && meme.reactions[emoji]) || 0}
+              <ArrowBigUp size={20} aria-hidden="true" />
             </button>
-          ))}
+            <span className="mc-score">{meme.score || 0}</span>
+            <button
+              type="button"
+              className={`mc-vote-btn down ${myVote === -1 ? 'is-on' : ''}`}
+              aria-label="Downvote meme"
+              aria-pressed={myVote === -1}
+              onClick={(e) => {
+                triggerComicPop('OOF 😅');
+                onVote(meme.id, -1, e);
+              }}
+            >
+              <ArrowBigDown size={20} aria-hidden="true" />
+            </button>
+          </div>
+          <div className="mc-reacts" role="group" aria-label="Reactions">
+            {['🔥', '💀', '😂', '🗿'].map((emoji) => (
+              <button
+                key={emoji}
+                type="button"
+                className="mc-react"
+                aria-label={`React ${emoji}`}
+                onClick={(e) => {
+                  const mapWord = { '🔥': 'SPICY! 🔥', '💀': 'WILD! 💀', '😂': 'HAHA! 😂', '🗿': 'LEGEND! 🗿' };
+                  triggerComicPop(mapWord[emoji]);
+                  onReaction(meme.id, emoji, e);
+                }}
+              >
+                <span aria-hidden="true">{emoji}</span>
+                <span className="mc-count">{(meme.reactions && meme.reactions[emoji]) || 0}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Comment, Bookmark, Share & Flag/Hide Buttons */}
-        <div style={{ display: 'flex', gap: '5px' }}>
+        <div className="mc-row mc-row--tools">
           <button
             type="button"
-            className="tm-react-btn"
+            className={`mc-tool ${isCommentsOpen ? 'is-on' : ''}`}
             onClick={() => onToggleComments(meme.id)}
-            title="Toggle Comments"
+            aria-label="Comments"
+            aria-expanded={Boolean(isCommentsOpen)}
             data-testid={`meme-comments-toggle-${meme.id}`}
           >
-            💬{' '}
-            {meme.commentsLoaded
-              ? (meme.comments || []).length
-              : Math.max((meme.comments || []).length, Number(meme.comments_count || 0))}
+            <MessageCircle size={18} aria-hidden="true" />
+            <span className="mc-count">{meme.commentsLoaded
+    ? (meme.comments || []).length
+    : Math.max((meme.comments || []).length, Number(meme.comments_count || 0))}</span>
           </button>
           {onToggleBookmark && (
             <button
               type="button"
-              className="tm-react-btn"
-              style={
-                isBookmarked
-                  ? { borderColor: '#facc15', color: '#facc15', background: 'rgba(250, 204, 21, 0.16)' }
-                  : undefined
-              }
+              className={`mc-tool ${isBookmarked ? 'is-saved' : ''}`}
               onClick={(e) => {
                 e.stopPropagation();
                 triggerComicPop(isBookmarked ? 'REMOVED' : 'SAVED! ⭐');
                 onToggleBookmark(meme, e);
               }}
-              aria-label={isBookmarked ? 'Remove meme from saved' : 'Save meme'}
-              title={isBookmarked ? 'Remove from Saved Memes' : 'Save Meme to Favorites (+15 XP)'}
+              aria-label={isBookmarked ? 'Remove from saved' : 'Save meme'}
+              aria-pressed={isBookmarked}
+              title={isBookmarked ? 'Saved' : 'Save'}
             >
-              {isBookmarked ? '⭐' : '☆'}
+              <Star size={18} aria-hidden="true" fill={isBookmarked ? 'currentColor' : 'none'} />
+              <span className="mc-tool-label">Save</span>
             </button>
           )}
           <button
             type="button"
-            className="tm-react-btn"
+            className="mc-tool"
             onClick={handleDownloadMemeImage}
-            aria-label="Download meme image"
-            title="Download / Save Meme Image"
+            aria-label="Download meme with thememes.net logo"
+            title="Download"
           >
-            ⬇
+            <Download size={18} aria-hidden="true" />
+            <span className="mc-tool-label">Download</span>
           </button>
           <button
             type="button"
-            className="tm-react-btn"
+            className="mc-tool mc-tool--share"
             onClick={handleShareClick}
-            aria-label="Share meme link"
-            title="Share Meme / Copy Link"
+            aria-label="Share meme"
+            title="Share"
           >
-            {copied ? '✅' : '🔗'}
+            <Share2 size={18} aria-hidden="true" />
+            <span className="mc-tool-label">{copied ? 'Shared' : 'Share'}</span>
           </button>
           {onReportMeme && (
             <button
               type="button"
-              className="tm-react-btn"
+              className="mc-tool mc-tool--flag"
               onClick={(e) => {
                 e.stopPropagation();
                 onReportMeme(meme, e);
               }}
               aria-label="Report or hide meme"
-              title="Report / Hide Meme"
+              title="Report / hide"
             >
-              🚩
+              <Flag size={17} aria-hidden="true" />
             </button>
           )}
-        </div>
-      </div>
-
-      {/* FORK & MUTATE + AI ROAST ACTION BAR */}
-      <div className="tm-mutate-bar">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            className="tm-lineage-btn"
-            onClick={(e) => onOpenEvolutionTree(meme, e)}
-            title="Inspect full remix family tree"
-          >
-            🌿 GEN-{gen} {remixCount > 0 ? `• ${remixCount} REMIXES` : '• TREE'}
-          </button>
-
-          {onOpenAiRoast && (
-            <button
-              type="button"
-              className="tm-roast-trigger-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenAiRoast(meme, e);
-              }}
-              title="Run AI Vibe & Comedy Scanner"
-            >
-              🤖 AI Scan
-            </button>
-          )}
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          {onCaptionThis && (
-            <button
-              type="button"
-              className="tm-caption-this-btn"
-              onClick={(e) => onCaptionThis(meme, e)}
-              title="Add top & bottom text to this template"
-            >
-              ✏️ Caption
-            </button>
-          )}
-          <button
-            type="button"
-            className="tm-mutate-btn"
-            onClick={(e) => onTriggerStudioMutate(meme, e)}
-          >
-            🎨 Remix
-          </button>
         </div>
       </div>
 

@@ -18,6 +18,27 @@
 
 ---
 
+## 00. 🧹 Phase 36: "Meme core first" (owner brief, 17 Nov 2026) — DONE except the open items below
+
+> Owner's 12 points (first impressions + core meme functionality). All shipped on 17 Nov 2026 unless marked open.
+
+- [x] **36.1 Smooth start.** The prerendered shell for every route now opens with a static copy of the lit neon sign (`bootSplashHtml()` in `scripts/prerender-seo.mjs`, built from `neonSignPaths.js`) instead of the old-style "Featured Community Memes" block; `/` no longer preloads a seed image. The feed shows skeletons until the live feed answers (`isLoadingFeed` starts true in `useFeed.js`, 6 s fallback) instead of painting starter memes first.
+- [x] **36.2 Blank memes on iPhone.** Cause: `content-visibility: auto` on `.tm-card` + `loading="lazy"` images (also black in Chromium screenshots). Removed in `src/index.css`; the grid is already windowed.
+- [x] **36.3 Duplicated caption on share/download.** Cause: `sanitizeOverlayPayload()` (`securityGuard.js`) dropped `burned` and rewrote layers into another schema, so the feed drew captions again over images that already had them and exports redrew them. Fixed the sanitizer (keeps Forge schema + `burned`), added `normalizeOverlayLayers()` / `isOverlayBurnedIn()` in `forgeEngine.js`, fixed the 1 affected DB row, and export of a posted meme now uses the file as-is + logo (no title-to-caption invention). Bigger logo watermark (3.6% of short side). Video export: `burnInVideo()` now records **MP4 with sound** where supported (WebM fallback) with the logo on every frame. New `ShareMemeSheet.jsx` prepares the file first, then Share / Save / Copy link (iPhone needs a fresh tap for the share sheet).
+- [x] **36.4 Card buttons on PC.** `MemeCard.jsx` + new `MemeCard.css`: one-line header (@handle · time · category), image, then two aligned grid rows (vote + 4 reactions; comments / save / download / Share / report). lucide icons.
+- [x] **36.5 Full-screen games.** `GameFullscreenToggle.jsx`: real Fullscreen API where available, immersive "hide every bar" mode on iPhone (no page fullscreen API there) + one-time "Add to Home Screen" tip. Button in the fixed arcade bar (⤢) and floating on other games.
+- [x] **36.6 Handle not real name.** Handle field now sits above the Google button and survives the OAuth redirect (`tm_pending_handle`). `authorNameFor()` never uses Google `full_name`/`name` or email prefixes (falls back to the anonymous-style handle). One-time profile nudge when signed in without a handle. **Deployed** `publish-meme` (v14) and `post-comment` (v5). Owner's pizza meme renamed to the account's anon handle.
+- [ ] **36.6b Deploy `submit-caption-entry`** with the new `_shared/identity.js` (not redeployed yet; only matters for Google accounts with no handle entering the daily caption battle).
+- [x] **36.7 No remixes.** `REMIX_ENABLED = false` in `src/config/featureFlags.js` hides every Remix / Caption this / Mutate / Fork button, GEN pills and lineage panels. Card also loses Remix tree + AI Scan. Server already refuses edits to posted memes (33.1).
+- [x] **36.8 Categories.** New table `public.meme_categories` (migration `20261117000001_36_meme_categories.sql`, moderators write, everyone reads) seeded with Black Friday, Christmas, TikTok Trends + 14 more. `/admin` → Categories tab to add / mark trending / hide / reorder. `CategorySelect.jsx` in Quick upload, Studio and Forge; feed chips from `useMemeCategories()`; `publish-meme` accepts any active category.
+- [x] **36.9 Terms.** `/terms` section 2 now says memes may be shared/reposted elsewhere with the thememes.net logo, real names never shown, posts cannot be edited, removal on request. Upload screens link the Terms. (Owner to read the wording.)
+- [x] **36.10 Admin login.** `/admin`, `/administrator`, `/administrator/moderator`, `/moderator`, `/moderation` all open the moderation queue, which now has its own "Sign in with Google" button and says which account is signed in when it is not a moderator. Moderator shield link in the top bar and profile.
+- [ ] **36.11 Video uploads are still paused by design (33.9).** Server refuses video bytes; re-enabling needs 33.9b (server-side transcode + frame moderation). GIF and image uploads work.
+- [x] **36.12 The big neon sign** now leads the home page (`DualDirectionHero.jsx`, flowing tubes, power-on stutter on a first visit) and the pre-app boot screen.
+- Known: `tests/vitest/safetyAndEconomy.test.js` "staging security assertions" fails on main before and after this phase (pre-existing).
+
+---
+
 ## 0. ⚡ START HERE — Phase 35: "NEON TURBO" (owner brief, 16 Nov 2026)
 
 > **This phase is first in the queue.** It was written after a full review of the code and the running site on 16 Nov 2026. Work through it top to bottom. Everything in Phase 33 and Phase 34 below still stands unless a task here says it replaces it.

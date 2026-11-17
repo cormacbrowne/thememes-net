@@ -193,9 +193,11 @@ export function renderArtworkWithFilter(ctx, W, areaY, areaH, filterMode, drawAr
  * Keeps the same pill height as before so existing meme layouts do not shift, and cleanly replaces any
  * legacy bottom-right cartridge stamp so the mark is never stamped twice.
  */
-export function stampArcadeCartridgeFooter(ctx, W, H) {
+export function stampArcadeCartridgeFooter(ctx, W, H, opts = {}) {
   const label = 'thememes.net';
-  const fs = Math.max(10, Math.round(Math.min(W, H) * 0.022));
+  // Owner brief 17 Nov 2026: the site address + logo must be clearly readable when a meme is
+  // reposted elsewhere (was 2.2% of the short side, too small once a platform recompresses it).
+  const fs = Math.max(13, Math.round(Math.min(W, H) * 0.036));
   const pillH = Math.max(18, Math.round(fs * 1.65));
   ctx.save();
   ctx.font = `600 ${fs}px "Oxanium", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
@@ -209,7 +211,9 @@ export function stampArcadeCartridgeFooter(ctx, W, H) {
   const y = H - pillH - margin;
 
   // Clean up any wider legacy `#070810` + `#00f3ff` bottom-right stamp so it never renders twice
+  // (stills only: video frames skip this per-frame pixel scan).
   try {
+    if (opts && opts.fast) throw new Error('skip');
     const scanLeft = Math.max(0, Math.floor(W * 0.35));
     const scanTop = Math.max(0, y - Math.round(pillH * 0.6));
     const scanW = W - scanLeft;

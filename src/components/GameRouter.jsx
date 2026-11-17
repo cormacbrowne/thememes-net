@@ -1,3 +1,4 @@
+import { Maximize2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, Suspense } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { formatMoney } from '../utils/tokenEconomy';
@@ -331,6 +332,15 @@ export function FixedArcadeTopBar({
             🏆
           </button>
         )}
+        <button
+          type="button"
+          className="tm-fixed-icon-btn tm-fixed-fs-btn"
+          onClick={() => window.dispatchEvent(new Event('tm-game-fs-enter'))}
+          title="Play full screen"
+          aria-label="Play full screen"
+        >
+          <Maximize2 size={16} aria-hidden="true" />
+        </button>
         <button
           type="button"
           className="tm-fixed-icon-btn"

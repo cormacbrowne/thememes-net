@@ -58,21 +58,15 @@ export default function DualDirectionHero({
       className={`tm-dual-hero ${isFirstVisit ? 'is-first-visit' : ''}`}
       aria-label="Choose Your Realm: Memes or 80s Cyber-Arcade"
     >
-      {isFirstVisit && (
-        <div className="tm-dual-hero-sign-stage">
-          <NeonSign size="hero" powerOn />
-        </div>
-      )}
-
       <div className="tm-dual-hero-body">
         <div className="tm-dual-hero-top">
           <div className="tm-dual-hero-brand">
-            {!isFirstVisit && (
-              <span className="tm-hide-mobile">
-                <NeonSign size="icon" powerOn={false} />
-              </span>
-            )}
-            <h1 className="tm-dual-hero-heading">
+            {/* Owner brief 17 Nov 2026 (item 12): the big lit sign, neon flowing through the tubes,
+                is the first thing every visitor sees. Powers on with a stutter on a first visit. */}
+            <div className="tm-dual-hero-sign">
+              <NeonSign size="hero" flow powerOn={isFirstVisit} />
+            </div>
+            <h1 className="tm-dual-hero-heading tm-dual-hero-heading--sr">
               <span className="tm-dual-hero-lede">TWO 80s WORLDS IN ONE SITE: </span>
               <span className="is-cyan">MEMES</span> &amp;{' '}
               <span className="is-pink">CYBER-ARCADE</span>

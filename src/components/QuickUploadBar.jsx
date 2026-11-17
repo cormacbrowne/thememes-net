@@ -1,3 +1,4 @@
+import CategorySelect from './CategorySelect';
 import { useState, useRef } from 'react';
 import { Camera, ClipboardPaste, ImagePlus, Upload } from 'lucide-react';
 import { sfx } from '../utils/soundEngine';
@@ -391,22 +392,16 @@ export default function QuickUploadBar({
                   onChange={(e) => setQuickTitle(e.target.value)}
                   style={{ flex: 2, minWidth: '180px' }}
                 />
-                <select
-                  className="tm-input"
+                <CategorySelect
                   value={quickCategory}
-                  onChange={(e) => setQuickCategory(e.target.value)}
+                  onChange={setQuickCategory}
                   style={{ flex: 1, minWidth: '130px', background: 'var(--tm-night-2)' }}
-                >
-                  <option value="dank">#DANK / FUNNY</option>
-                  <option value="relatable">#RELATABLE</option>
-                  <option value="gaming">#GAMING</option>
-                  <option value="tech">#TECH</option>
-                </select>
+                />
               </div>
             )}
 
             <p className="tm-house-rules-line">
-              By posting you agree to the <a href={RULES_PATH}>House Rules</a>. No nudity, no hate,
+              By posting you agree to the <a href={RULES_PATH}>House Rules</a> and <a href="/terms">Terms</a>, including that your meme can be shared on other sites with the thememes.net logo. No nudity, no hate,
               no personal info, nothing you don&apos;t have the right to share.
             </p>
 

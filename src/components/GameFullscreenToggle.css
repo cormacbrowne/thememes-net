@@ -1,0 +1,89 @@
+/* Full-screen games (owner brief 17 Nov 2026, item 5). */
+
+.tm-game-fs-btn {
+  position: fixed;
+  right: max(10px, env(safe-area-inset-right));
+  bottom: calc(84px + env(safe-area-inset-bottom));
+  z-index: 8500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--tm-cyan) 70%, transparent);
+  background: color-mix(in srgb, var(--tm-night-0) 82%, transparent);
+  color: var(--tm-cyan-hot);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 0 14px color-mix(in srgb, var(--tm-cyan) 35%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  cursor: pointer;
+}
+
+.tm-game-fs-btn.is-on {
+  top: calc(8px + env(safe-area-inset-top));
+  bottom: auto;
+  width: 40px;
+  min-height: 40px;
+  padding: 0;
+  justify-content: center;
+  opacity: 0.7;
+}
+
+.tm-game-fs-btn.is-on:hover,
+.tm-game-fs-btn.is-on:focus-visible {
+  opacity: 1;
+}
+
+.tm-game-fs-tip {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  z-index: 8600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--tm-night-3);
+  background: var(--tm-night-2);
+  font-size: 13px;
+  line-height: 1.4;
+  box-shadow: var(--tm-shadow-2);
+}
+
+.tm-game-fs-tip button {
+  flex-shrink: 0;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--tm-cyan);
+  background: transparent;
+  color: inherit;
+  font-weight: 700;
+}
+
+/* Immersive mode: every bar goes, the game gets the whole screen. */
+html.tm-game-fs,
+html.tm-game-fs body {
+  background: var(--tm-night-0);
+  overscroll-behavior: none;
+}
+
+html.tm-game-fs .tm-fixed-arcade-bar,
+html.tm-game-fs .tm-nav,
+html.tm-game-fs .tm-mobile-dock,
+html.tm-game-fs .tm-mobile-now-playing,
+html.tm-game-fs .tm-seo-footer,
+html.tm-game-fs footer {
+  display: none !important;
+}
+
+html.tm-game-fs .tm-app {
+  padding-top: env(safe-area-inset-top) !important;
+  padding-bottom: env(safe-area-inset-bottom) !important;
+}

@@ -25,6 +25,8 @@ export const PUBLISH_LIMITS = {
 export const QUARANTINE_BUCKET = 'quarantine';
 export const PUBLIC_BUCKET = 'memes';
 export const ALLOWED_CATEGORIES = new Set(['dank', 'relatable', 'gaming', 'tech', 'shitpost', 'wholesome', 'retro', 'animals', 'sports', 'random']);
+/** Shape of an owner-added category id (public.meme_categories.id). Checked against the table server-side. */
+export const CATEGORY_SLUG_RE = /^[a-z0-9][a-z0-9-]{1,23}$/;
 
 /**
  * Identify a file by its first bytes (never trust the name or the browser's MIME type).
@@ -177,7 +179,7 @@ const SAFE_LAYER_KEYS = new Set([
   'id', 'type', 'text', 'x', 'y', 'w', 'h', 'width', 'height', 'rotation', 'scale', 'size', 'fontSize',
   'font', 'fontFamily', 'color', 'fill', 'stroke', 'strokeColor', 'strokeWidth', 'align', 'bold', 'italic',
   'uppercase', 'opacity', 'emoji', 'sticker', 'shadow', 'bg', 'background', 'lineHeight', 'letterSpacing',
-  'start', 'end', 'anim', 'animation', 'z'
+  'start', 'end', 'anim', 'animation', 'z', 'rot', 'caps', 'startSec', 'endSec'
 ]);
 
 /**
@@ -231,6 +233,8 @@ export function parsePublishRequest(body, userId) {
   const title = cleanText(body.title, PUBLISH_LIMITS.TITLE_MAX) || 'Untitled Meme';
   const rawCategory = cleanText(body.category, PUBLISH_LIMITS.CATEGORY_MAX).toLowerCase();
   const category = ALLOWED_CATEGORIES.has(rawCategory) ? rawCategory : 'dank';
+  // Owner-added categories (e.g. 'black-friday') are verified against public.meme_categories by the caller.
+  const requestedCategory = CATEGORY_SLUG_RE.test(rawCategory) ? rawCategory : null;
   const { overlay, texts } = sanitizeOverlay(body.overlay);
   const parentId = isUuid(body.parentId) ? body.parentId.toLowerCase() : null;
   const rootId = isUuid(body.rootId) ? body.rootId.toLowerCase() : parentId;
@@ -246,6 +250,7 @@ export function parsePublishRequest(body, userId) {
       basePath: body.basePath || null,
       title,
       category,
+      requestedCategory,
       overlay,
       texts: [title, ...texts],
       parentId,

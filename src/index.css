@@ -443,8 +443,8 @@ html {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  content-visibility: auto;
-  contain-intrinsic-size: 0 520px;
+  /* No content-visibility here: with lazy images it left memes blank/black on iPhone Safari
+     (owner brief 17 Nov 2026, item 2). The feed is already windowed by VirtualizedMemeGrid. */
 }
 
 /* Active-by-default 3D Holographic Tilt */

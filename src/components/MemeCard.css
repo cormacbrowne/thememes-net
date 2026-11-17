@@ -1,0 +1,264 @@
+/* Meme card, owner brief 17 Nov 2026 (items 4 + 7): one tidy header, the image, and two
+   aligned action rows (vote + reactions, then tools) that look the same on phone and PC.
+   Loaded after index.css, so these rules win at equal specificity. */
+
+.tm-card .mc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 14px 4px;
+  min-width: 0;
+}
+
+.mc-byline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--tm-text-dim);
+}
+
+.mc-author {
+  min-width: 0;
+  max-width: 14ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--tm-cyan);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mc-author:hover,
+.mc-author:focus-visible {
+  text-decoration: underline;
+}
+
+.mc-time {
+  white-space: nowrap;
+}
+
+.mc-new {
+  padding: 1px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--tm-ok);
+  color: var(--tm-ok);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.mc-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.mc-badges .tm-rarity-badge {
+  font-size: 10px;
+}
+
+.mc-cat {
+  white-space: nowrap;
+  padding: 3px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--tm-night-3);
+  background: var(--tm-night-2);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.tm-card .mc-title {
+  margin: 0;
+  padding: 2px 14px 10px;
+  font-size: 15px;
+  line-height: 1.3;
+  font-weight: 700;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.mc-expand {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(7, 6, 15, 0.6);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.mc-expand:hover,
+.mc-expand:focus-visible {
+  opacity: 1;
+}
+
+/* ---------- actions ---------- */
+
+.mc-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--tm-night-3);
+}
+
+.mc-row {
+  display: grid;
+  align-items: center;
+  gap: 8px;
+}
+
+.mc-row--engage {
+  grid-template-columns: auto 1fr;
+}
+
+.mc-vote {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--tm-night-3);
+  background: var(--tm-night-0);
+}
+
+.mc-vote-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 100%;
+  border: 0;
+  background: none;
+  color: var(--tm-text-dim);
+  cursor: pointer;
+}
+
+.mc-vote-btn.up.is-on,
+.mc-vote-btn.up:hover {
+  color: var(--tm-pink);
+}
+
+.mc-vote-btn.down.is-on,
+.mc-vote-btn.down:hover {
+  color: var(--tm-cyan);
+}
+
+.mc-vote-btn.is-on svg {
+  fill: currentColor;
+}
+
+.mc-score {
+  min-width: 2ch;
+  text-align: center;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--tm-amber);
+}
+
+.mc-reacts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.mc-react,
+.mc-tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+  height: 40px;
+  padding: 0 6px;
+  border-radius: 12px;
+  border: 1px solid var(--tm-night-3);
+  background: var(--tm-night-1);
+  color: var(--tm-text, #fff);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.mc-react:hover,
+.mc-tool:hover {
+  border-color: color-mix(in srgb, var(--tm-cyan) 55%, var(--tm-night-3));
+}
+
+.mc-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--tm-text-dim);
+}
+
+.mc-row--tools {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.5fr) minmax(0, 0.8fr);
+}
+
+/* Icons speak for themselves; only Share keeps its word. */
+.mc-tool:not(.mc-tool--share) .mc-tool-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.mc-tool-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.mc-tool.is-on {
+  border-color: var(--tm-cyan);
+}
+
+.mc-tool.is-saved {
+  border-color: var(--tm-amber);
+  color: var(--tm-amber);
+}
+
+.mc-tool--share {
+  border-color: color-mix(in srgb, var(--tm-pink) 60%, var(--tm-night-3));
+  color: var(--tm-pink-hot, #ffd9ea);
+}
+
+.mc-tool--flag {
+  padding: 0;
+  color: var(--tm-text-dim);
+}
+
+/* Narrow cards: icons only in the tool row so nothing wraps. */
+@media (max-width: 380px) {
+  .mc-tool-label {
+    display: none;
+  }
+  .mc-row--tools {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(0, 0.8fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mc-react,
+  .mc-tool {
+    transition: none;
+  }
+}

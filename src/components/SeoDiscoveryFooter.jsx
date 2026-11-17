@@ -356,11 +356,11 @@ export default function SeoDiscoveryFooter({
           </h3>
           <div className="tm-seo-faq-grid">
             <details className="tm-faq-item">
-              <summary>How do I make or remix a meme for free on THE MEMES.net?</summary>
+              <summary>How do I make a meme for free on THE MEMES.net?</summary>
               <p>
-                Open the <a href="/meme-generator" onClick={(e) => handleSpaLinkClick(e, onOpenBlankStudio)} style={{ color: 'var(--tm-cyan)' }}>Meme Generator</a> or hit <strong>🧬 REMIX</strong> on any card to launch
+                Open the <a href="/meme-generator" onClick={(e) => handleSpaLinkClick(e, onOpenBlankStudio)} style={{ color: 'var(--tm-cyan)' }}>Meme Generator</a> to launch
                 the HTML5 Meme Forge 3.0 studio. Pick from 20 blank meme templates, paste from clipboard (Ctrl+V),
-                apply Deep Fry or VHS Glitch filters, and download or publish watermark-free memes.
+                apply Deep Fry or VHS Glitch filters, and download or publish your meme (downloads carry a small thememes.net logo).
               </p>
             </details>
             <details className="tm-faq-item">

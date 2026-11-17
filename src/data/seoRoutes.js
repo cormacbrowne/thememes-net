@@ -431,7 +431,7 @@ export const SEO_ROUTES = [
     introParagraphs: [
       "Put your meme taste to the test in Higher or Lower: Meme Edition, an endless free-to-play prediction game built right on top of the live THE MEMES.net meme catalog. Two posts appear side by side with the first meme's verified community upvote score revealed, and your job is simply to call whether the next meme has higher or lower upvotes.",
       'Pulling dynamically from real community uploads alongside classic seed memes across dank, tech, gaming, and relatable categories, every round tests how well you know what makes the internet laugh. Streak along effortlessly on desktop or mobile portrait screens with large one-tap Higher and Lower buttons and zero cost or login walls required.',
-      'Beat your personal high score saved in local storage, generate a shareable streak card when a run ends, and click any meme title right inside the matchup to open its theater view, upvote it, or remix your own spin-off directly in Meme Forge.'
+      'Beat your personal high score saved in local storage, generate a shareable streak card when a run ends, and click any meme title right inside the matchup to open its theater view, upvote it, or make your own meme in the free meme generator.'
     ]
   },
   {
@@ -560,17 +560,17 @@ export const SEO_ROUTES = [
     path: '/memes/dank',
     title: 'Dank Memes & Viral Humor — Community Feed | THE MEMES.net',
     description:
-      'Browse dank memes, chaotic reaction images, and community shitposts. Double-tap to upvote, react with emojis, remix any template in one tap, or upload your own.',
+      'Browse dank memes, chaotic reaction images, and community shitposts. Double-tap to upvote, react with emojis, share the best ones, or upload your own.',
     h1: 'Dank Memes & Chaotic Community Humor',
-    kicker: '#DANK Category // Instant Feed & Remix Tree',
+    kicker: '#DANK Category // Instant Community Feed',
     changefreq: 'hourly',
     priority: '0.9',
     viewMode: 'feed',
     category: 'dank',
     prerenderCategory: 'dank',
     introParagraphs: [
-      'Dive into the #DANK feed on THE MEMES.net—home to absurdist reaction memes, chaotic late-night shitposts, stonks vs not-stonks energy, cyber-arcade humor, and fresh community remixes. Every meme loads instantaneously offline or online with lightweight WebP art, and real community uploads always rank automatically above starter classics once submitted.',
-      'Double-tap any meme card to fire an instant upvote combo, drop 🔥 💀 😂 🗿 emoji reactions, inspect the genetic Meme Evolution Tree to trace how a joke mutated across creators, or click Mutate / Caption This to open any template directly inside Meme Forge 3.0 with your own punchline, stickers, and Deep Fry filters.',
+      'Dive into the #DANK feed on THE MEMES.net—home to absurdist reaction memes, chaotic late-night shitposts, stonks vs not-stonks energy, cyber-arcade humor, and fresh community uploads. Every meme loads instantaneously offline or online with lightweight WebP art, and real community uploads always rank automatically above starter classics once submitted.',
+      'Double-tap any meme card to fire an instant upvote combo, drop 🔥 💀 😂 🗿 emoji reactions, save your favorites, tap Share to send a meme straight to a group chat, or open the free meme generator to put your own punchline, stickers, and Deep Fry filters on any classic template. New uploads join the feed after a quick safety check.',
       'Explore all 16 featured #DANK starter memes right below with full captions and alt descriptions, switch effortlessly between Latest and Top leaderboards, copy direct Theater share links for Discord and WhatsApp, or jump straight into Programming, Gaming, and Relatable meme categories and seven free retro arcade games.'
     ]
   },
@@ -578,7 +578,7 @@ export const SEO_ROUTES = [
     path: '/memes/programming',
     title: 'Funny Programming, Coding & Tech Memes | THE MEMES.net',
     description:
-      'Scroll hilarious programming, software engineering, Friday production deploy, git blame, CSS, and AI coding memes. Remix developer meme templates free online.',
+      'Scroll hilarious programming, software engineering, Friday production deploy, git blame, CSS, and AI coding memes. Make your own developer memes free online.',
     h1: 'Programming, Coding & Developer Memes',
     kicker: '#TECH Category // Built For Developers & Engineers',
     changefreq: 'hourly',
@@ -588,15 +588,15 @@ export const SEO_ROUTES = [
     prerenderCategory: 'tech',
     introParagraphs: [
       'Take a well-earned break from production incidents, pull requests, and endless code reviews with our curated #TECH and programming meme feed. From Friday 4:59 PM production deploys and git blame plot twists to CSS centering struggles, 63 open StackOverflow tabs, light-mode IDE flashbangs, and npm install dependency trees, every post captures real software engineering life.',
-      'Double-tap to upvote your favorite developer jokes, scan and roast any post with our interactive AI Vibe Inspector, or click Caption This to drop your engineering team’s latest inside joke onto classic Expanding Brain, This Is Fine, IQ Bell Curve, and Spiderman Pointing formats inside Meme Forge 3.0 with zero file uploads needed.',
-      'Browse all 16 featured programming and developer memes right below, download crisp PNGs stamped with www.thememes.net, check the community evolution lineage, or share direct Theater links straight into your engineering Slack, Microsoft Teams, and Discord channels with one quick tap on desktop or phone.'
+      'Double-tap to upvote your favorite developer jokes, save the ones that hit too close to home, or open the free meme generator to drop your engineering team’s latest inside joke onto classic Expanding Brain, This Is Fine, IQ Bell Curve, and Spiderman Pointing formats with zero file uploads needed.',
+      'Browse all 16 featured programming and developer memes right below, download crisp PNGs stamped with www.thememes.net, or share direct Theater links straight into your engineering Slack, Microsoft Teams, and Discord channels with one quick tap on desktop or phone. Fresh developer memes from the community land here as soon as they pass a quick safety check.'
     ]
   },
   {
     path: '/memes/gaming',
     title: 'Gaming Memes, RPG Boss Jokes & Esports Humor | THE MEMES.net',
     description:
-      'Discover funny gaming memes about side quests, surprise boss phase music, FPS reloads, fall-damage tests, and late-night squad lobbies. Vote or remix in one click.',
+      'Discover funny gaming memes about side quests, surprise boss phase music, FPS reloads, fall-damage tests, and late-night squad lobbies. Vote, react, and share in one click.',
     h1: 'Gaming, RPG & Squad Lobby Memes',
     kicker: '#GAMING Category // Boss Phases & Side Quests',
     changefreq: 'hourly',
@@ -606,8 +606,8 @@ export const SEO_ROUTES = [
     prerenderCategory: 'gaming',
     introParagraphs: [
       'Level up your scroll break with the #GAMING meme feed on THE MEMES.net. Celebrate every universal gamer habit—ignoring the main quest for 80 hours of side quests, immediately testing fall damage in every new RPG, reloading after firing a single bullet, leaning 45 degrees closer during a clutch round, and hearing boss-fight Latin choir music right after an autosave icon appears.',
-      'Vote head-to-head in the 1v1 King of the Hill Meme Battle Arena, double-tap meme cards to stack 5x overdrive combos on your favorite squad jokes, or hit Mutate / Caption This to remix any gaming meme template for your clan Discord server in under 20 seconds.',
-      'Check out all 16 featured gaming and esports memes below, share direct permalinks with your friends and party teammates, explore the full evolution lineage of popular remixes, and jump straight into 5-table Retro Pinball, Neon Coin Dozer 86, or Meme Crush Saga whenever you want to play.'
+      'Vote head-to-head in the 1v1 King of the Hill Meme Battle Arena, double-tap meme cards to stack 5x overdrive combos on your favorite squad jokes, or open the free meme generator to caption a classic template for your clan Discord server in under 20 seconds.',
+      'Check out all 16 featured gaming and esports memes below, share direct permalinks with your friends and party teammates, and jump straight into 5-table Retro Pinball, Neon Coin Dozer 86, or Meme Crush Saga whenever you want to play. New gaming memes from players join this page as soon as they pass a quick safety check.'
     ]
   },
   {
@@ -624,7 +624,7 @@ export const SEO_ROUTES = [
     prerenderCategory: 'relatable',
     introParagraphs: [
       'Scroll the #RELATABLE meme feed for instant "why is this literally me?" comedy—covering 3:47 AM sleep-schedule math, six consecutive morning alarms, checking the fridge for the sixth time hoping new snacks spawned, turning down the car radio to see street signs better, quick 5-minute work meetings that last an hour, and the pure bliss of cancelled weekend plans.',
-      'Every card lets you double-tap to upvote, react with emojis, bookmark posts to your personal Saved favorites collection, or tap Share for a direct Theater permalink you can drop straight into group chats on WhatsApp, iMessage, and Discord. Spot a blank format you want to personalize? Tap Caption This to launch it straight inside Meme Forge 3.0.',
+      'Every card lets you double-tap to upvote, react with emojis, bookmark posts to your personal Saved favorites collection, or tap Share for a direct Theater permalink you can drop straight into group chats on WhatsApp, iMessage, and Discord. Spot a format you want to personalize? Open the free meme generator and add your own top and bottom text.',
       'Browse all 16 featured relatable memes below, switch cleanly between desktop masonry grid and mobile fullscreen vertical Reels views, explore trending daily caption bounties, or upload your own slice-of-life joke in seconds with zero sign-up hurdles.'
     ]
   },
@@ -670,7 +670,7 @@ export const SEO_ROUTES = [
     path: '/games/speed-swipe',
     title: 'Meme Speed Swipe — Fast Dank or Cringe Rating Arcade Game | THE MEMES.net',
     description:
-      'Play Meme Speed Swipe free online! Rapid-fire swipe through fresh community memes, crown Dank hits, combo your XP multiplier, and jump straight into Meme Forge remixes.',
+      'Play Meme Speed Swipe free online! Rapid-fire swipe through fresh community memes, crown Dank hits, combo your XP multiplier, and jump straight into the free meme generator.',
     h1: 'Meme Speed Swipe — Fast-Paced Community Meme Judge Game',
     kicker: 'THE MEMES.net // Lightning Card Rating & XP Combos',
     changefreq: 'daily',
@@ -698,8 +698,8 @@ export const SEO_ROUTES = [
     schemaType: 'VideoGame',
     introParagraphs: [
       'Enter the neon colosseum in the 1v1 Meme Battle Arena on THE MEMES.net, where two viral challengers square off side-by-side in a ruthless King of the Hill championship. Only one joke survives each round based on live player taste, building an unbeatable title reign while hungry new challengers try to dethrone the reigning champion.',
-      'Compare reaction memes, developer jokes, gaming moments, and community remixes head-to-head in clean full-contrast arena cards. Vote for your winner with a single click or keystroke to see instant crowd agreement percentages, rack up undefeated judging streaks, earn Arcade XP toward free cosmetic rewards, and trigger arena fanfare sound effects.',
-      'Curious who created a champion meme or want to challenge it yourself? Tap any fighter inside the arena to inspect its full remix family tree in Theater View, grab a direct shareable link for WhatsApp or Discord debates, or spin up your own challenger directly in Meme Forge 3.0.'
+      'Compare reaction memes, developer jokes, gaming moments, and community uploads head-to-head in clean full-contrast arena cards. Vote for your winner with a single click or keystroke to see instant crowd agreement percentages, rack up undefeated judging streaks, earn Arcade XP toward free cosmetic rewards, and trigger arena fanfare sound effects.',
+      'Curious who created a champion meme or want to challenge it yourself? Tap any fighter inside the arena to open it in Theater View and see who posted it, grab a direct shareable link for WhatsApp or Discord debates, or make your own challenger in the free meme generator.'
     ]
   },
   {
@@ -769,7 +769,7 @@ export const SEO_ROUTES = [
     category: 'all',
     ogImage: 'https://www.thememes.net/og-card.png',
     introParagraphs: [
-      'Welcome to the THE MEMES.net House Rules page, written to keep the feed funny, lawful, and welcoming for everyone visiting the arcade. Original jokes, wholesome roasts, relatable work humor, coding memes, gaming clips converted into short GIFs under eight megabytes and ten seconds, and collaborative remix chains are always encouraged here.',
+      'Welcome to the THE MEMES.net House Rules page, written to keep the feed funny, lawful, and welcoming for everyone visiting the arcade. Original jokes, wholesome roasts, relatable work humor, coding memes, gaming clips converted into short GIFs under eight megabytes and ten seconds, and friendly caption battles are always encouraged here.',
       'To protect visitors and comply with online safety laws, certain uploads are removed on sight. Zero tolerance applies to anything exploiting or sexualising minors, which results in immediate removal and permanent account suspension. Nudity, sexually explicit imagery, gore, graphic violence, self-harm encouragement, hate speech, personal phone numbers, home addresses, private photos shared without consent, spam links, and impersonation of staff are also strictly banned.',
       'Automated image and text screening checks every upload and comment before it goes live, and community reports hide borderline posts rapidly for human review. First violations bring a warning and removal, a second strike pauses posting for seven days, and a third strike permanently suspends the account. Please read these rules carefully before publishing.'
     ]
@@ -787,7 +787,7 @@ export const SEO_ROUTES = [
     category: 'all',
     ogImage: 'https://www.thememes.net/og-card.png',
     introParagraphs: [
-      'These Terms of Use explain the basic rules for visiting THE MEMES.net, creating and remixing memes, posting comments, and playing the retro browser arcade cabinets. By using the site, you confirm that you meet the minimum age required in your region and agree to follow the community House Rules across every upload, remix, username, and comment.',
+      'These Terms of Use explain the basic rules for visiting THE MEMES.net, creating and posting memes, posting comments, and playing the retro browser arcade cabinets. By using the site, you confirm that you meet the minimum age required in your region and agree to follow the community House Rules across every upload, caption, username, and comment.',
       'Every arcade cabinet and mini-game on THE MEMES.net runs strictly on free pretend currency called MemeDollarz (M$) and MemeCentz (¢). MemeDollarz are purely for fun, cannot be bought with real money, cannot be sold or transferred between users, and can never be cashed out for anything of monetary value under any circumstances.',
       'You stay responsible for the memes and captions you choose to upload and must only post content you created yourself or have clear permission to share. Uploading grants THE MEMES.net permission to re-encode, strip metadata, host, display, and enable community caption remixes, while moderators may remove posts or suspend accounts when needed for safety or copyright compliance.'
     ]
@@ -860,7 +860,7 @@ export const SEO_ROUTES = [
     ogImage: 'https://www.thememes.net/og-card.png',
     h1: 'Caption Battle Hall of Fame',
     introParagraphs: [
-      'Every day at 00:00 UTC, TheMemes.net launches a fresh Daily Caption Battle built around a featured template and prompt. Players submit original one-line captions or full visual meme remixes directly from the feed or the Caption Battle arena, and the community votes on the sharpest punchlines throughout the 24-hour window.',
+      'Every day at 00:00 UTC, TheMemes.net launches a fresh Daily Caption Battle built around a featured template and prompt. Players submit original one-line captions directly from the feed or the Caption Battle arena, and the community votes on the sharpest punchlines throughout the 24-hour window.',
       'Once the daily timer turns over, the highest-voted entry claims the crown and is permanently enshrined in the Hall of Fame archive. Every winning caption, total vote count, battle date, and winning creator handle is stored in Postgres so historic victories remain verifiable and browsable anytime.',
       'Reigning daily champions also receive the glowing 24-hour Caption King card frame across their memes and creator profile modal for the full following UTC day. All submissions pass automated text moderation and duplicate checks so every crown represents genuine community comedy. Dive into the archive to study winning comedy timings, inspect past prompts, or jump straight back into today’s open arena.'
     ]

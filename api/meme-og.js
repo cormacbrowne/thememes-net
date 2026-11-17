@@ -87,7 +87,7 @@ async function loadBaseIndexHtml() {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>THE MEMES.net — Community Meme &amp; 80s Cyber-Arcade</title>
-    <meta name="description" content="Explore funny community memes, remix templates, and play 80s Cyber-Arcade games on THE MEMES.net." />
+    <meta name="description" content="Explore funny community memes, make your own, and play 80s Cyber-Arcade games on THE MEMES.net." />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
     <link rel="canonical" href="${SITE_ORIGIN}/" />
     <meta property="og:type" content="website" />

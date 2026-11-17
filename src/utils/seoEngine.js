@@ -17,7 +17,7 @@ const NON_PATH_VIEW_MODES = {
   reels: {
     title: 'Vertical Meme Reels — Fullscreen Community Memes | THE MEMES.net',
     description:
-      'Swipe through fullscreen vertical meme reels, double-tap to upvote, remix templates in one tap, and share direct links.'
+      'Swipe through fullscreen vertical meme reels, double-tap to upvote, react, and share direct links.'
   },
   swipe: {
     title: 'Hyper-Swipe Meme Triage Deck | THE MEMES.net',

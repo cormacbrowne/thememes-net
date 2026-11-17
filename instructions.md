@@ -33,7 +33,27 @@
 - [x] **36.8 Categories.** New table `public.meme_categories` (migration `20261117000001_36_meme_categories.sql`, moderators write, everyone reads) seeded with Black Friday, Christmas, TikTok Trends + 14 more. `/admin` → Categories tab to add / mark trending / hide / reorder. `CategorySelect.jsx` in Quick upload, Studio and Forge; feed chips from `useMemeCategories()`; `publish-meme` accepts any active category.
 - [x] **36.9 Terms.** `/terms` section 2 now says memes may be shared/reposted elsewhere with the thememes.net logo, real names never shown, posts cannot be edited, removal on request. Upload screens link the Terms. (Owner to read the wording.)
 - [x] **36.10 Admin login.** `/admin`, `/administrator`, `/administrator/moderator`, `/moderator`, `/moderation` all open the moderation queue, which now has its own "Sign in with Google" button and says which account is signed in when it is not a moderator. Moderator shield link in the top bar and profile.
-- [ ] **36.11 Video uploads are still paused by design (33.9).** Server refuses video bytes; re-enabling needs 33.9b (server-side transcode + frame moderation). GIF and image uploads work.
+- [ ] **36.11 Video uploads are still paused by design (33.9).** Server refuses video bytes. Plan: **36.V** below (replaces 33.9b). GIF and image uploads work.
+
+### 36.V Safe video uploads — plan (17 Nov 2026, waiting for owner's pick of Stage 2 option)
+
+**Why it is not a one-line switch.** A posted video must be (1) re-encoded so phone metadata (GPS location, device, owner name) and hidden payloads are gone, (2) checked for nudity/gore frame by frame, and (3) checked for sound. Supabase Edge Functions get **2 s CPU and 256 MB per request** (docs: functions/limits), so they cannot run ffmpeg. Anything the *browser* says about its own video (frames, "already re-encoded") cannot be trusted, because a bad actor can send clean frames with a bad video.
+
+**Stage 1 — ship now, no new services, no cost (owner approves every video).**
+- [ ] **V1 Client prep.** In Quick upload / Forge, a picked video (≤ 30 s, ≤ 25 MB, MP4/MOV/WebM) is re-recorded in the browser with the existing `burnInVideo()` pipeline (canvas + MediaRecorder, MP4 where supported): output is a fresh file with no source metadata, max 720p, captions burned in, logo on. The browser also grabs 1 frame per second (max 30) as WebP and the first frame as the poster. Progress bar while it records (plays once, muted to the user).
+- [ ] **V2 Upload.** `sign-upload` accepts `kind: 'video'` and returns 1 video slot + up to 31 image slots in `quarantine`. Quarantine bucket MIME list gains `video/mp4`, `video/webm` (public `memes` bucket too, for the `videos/` prefix only via the function).
+- [ ] **V3 Server checks in `publish-meme` (pure JS, well under 2 s CPU).** New `_shared/videoInspect.js`: magic bytes; parse MP4 boxes (`ftyp`/`moov`/`mvhd`) or WebM EBML header for duration, size and track list; refuse > 30 s, > 25 MB, > 1 video + 1 audio track; **remux-strip** any `udta`/`meta`/`©xyz` (location) boxes from MP4 at box level (no decode needed); refuse files it cannot parse. Frames go through the existing image path (re-encode + `moderateImage`). Title/captions through `moderateText`.
+- [ ] **V4 Always pending.** Because the frames come from the browser, a video is **never auto-approved** in Stage 1: status is `pending` even when every frame is clean (a frame that *fails* still rejects instantly and bans the hash). It appears in `/admin/moderation` with the video player (muted by default, ▶ with sound for the moderator) and the frame strip; Approve publishes it. The uploader sees "🎬 Your video is with the moderators — usually live within a few hours".
+- [ ] **V5 Feed.** Videos autoplay muted (already true), tap for sound; poster first on lite/low-data. Pulse events `video_upload_start/ok/refused`.
+- [ ] **V6 Tests.** Unit tests for `videoInspect.js` (good MP4, MP4 with GPS box → stripped, MOV, WebM, AVI refused, truncated file, 31 s refused, polyglot). Flip `PUBLIC_UPLOADS` video copy in `publishMeme.js` (`video_paused` message) and `ACCEPT_MEDIA`.
+
+**Stage 2 — auto-approval with trusted server-side frames (needs one small outside service; owner picks).**
+- **Option A: Cloudflare Stream** (pay as you go, roughly $5 per 1,000 minutes stored + $1 per 1,000 minutes watched). Upload goes to Stream; it transcodes, strips metadata, serves adaptive video, and gives thumbnails at any timestamp, which the edge function fetches and moderates. Least code; videos then play from Cloudflare (CSP `media-src` update).
+- **Option B: Mux** (similar model and price; very good developer tools, thumbnails API, webhooks).
+- **Option C: own ffmpeg worker** (e.g. a tiny container on Fly.io / Render, a few £/month): quarantine → `ffmpeg -map_metadata -1` to H.264 720p MP4 + 1 fps frames → moderation → public bucket. Cheapest at scale, most to maintain.
+- With any option: clean frames → `approved` automatically; borderline → `pending`; audio stays muted-by-default (omni-moderation cannot hear; a Whisper transcript check can be added later for a few pence per hour of audio).
+
+**Recommendation:** build Stage 1 now (videos work this week, owner approves each one, no cost), then Stage 2 Option A once there are more than ~10 videos a day.
 - [x] **36.12 The big neon sign** now leads the home page (`DualDirectionHero.jsx`, flowing tubes, power-on stutter on a first visit) and the pre-app boot screen.
 - Known: `tests/vitest/safetyAndEconomy.test.js` "staging security assertions" fails on main before and after this phase (pre-existing).
 

@@ -5056,3 +5056,12 @@ a.tm-btn {
   color: #ffffff;
   background: color-mix(in srgb, var(--tm-cyan) 18%, var(--tm-night-1));
 }
+
+/* Owner brief 17 Nov 2026 (item 8): trending category chips carry a thin amber tube. */
+.tm-tab.tm-tab--trending:not(.active) {
+  border-color: color-mix(in srgb, var(--tm-amber) 55%, var(--tm-night-3));
+  color: var(--tm-amber-hot);
+}
+.tm-tab svg {
+  flex-shrink: 0;
+}

@@ -1,3 +1,4 @@
+import { Flame, Zap, Trophy, X, SlidersHorizontal } from 'lucide-react';
 import GameFullscreenToggle from './components/GameFullscreenToggle';
 import { ARCADE_GAMES_CATALOG } from './data/arcadeGamesCatalog';
 import { useMemeCategories } from './data/memeCategories';
@@ -1243,7 +1244,7 @@ export default function App() {
                     setSortBy('hot');
                   }}
                 >
-                  🔥 Hot
+                  <Flame size={15} aria-hidden="true" /> Hot
                 </button>
                 <button
                   type="button"
@@ -1254,7 +1255,7 @@ export default function App() {
                     setSortBy('latest');
                   }}
                 >
-                  ⚡ New
+                  <Zap size={15} aria-hidden="true" /> New
                 </button>
                 <button
                   type="button"
@@ -1265,7 +1266,7 @@ export default function App() {
                     setSortBy('top');
                   }}
                 >
-                  🏆 Top
+                  <Trophy size={15} aria-hidden="true" /> Top
                 </button>
                 <button
                   type="button"
@@ -1273,7 +1274,8 @@ export default function App() {
                   aria-expanded={mobileFiltersOpen}
                   onClick={() => setMobileFiltersOpen((prev) => !prev)}
                 >
-                  {mobileFiltersOpen ? '✕ Close' : '🔍 Filter'}
+                  {mobileFiltersOpen ? <X size={15} aria-hidden="true" /> : <SlidersHorizontal size={15} aria-hidden="true" />}
+                  {mobileFiltersOpen ? 'Close' : 'Filter'}
                 </button>
                 {sortBy === 'top' && !showSavedOnly && (
                   <div className="tm-top-window-pills tm-mobile-filter-item" role="group" aria-label="Top time window" style={{ display: 'inline-flex', gap: '4px' }}>

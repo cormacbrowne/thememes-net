@@ -15,7 +15,7 @@ export const LEGAL_PAGES = {
       {
         heading: '✅ What Is Welcome Here',
         bullets: [
-          'Original jokes, wholesome roasts, coding & gaming memes, GIFs, and spicy remix chains.',
+          'Original jokes, wholesome roasts, coding & gaming memes, GIFs, and sharp Daily Caption Battle entries.',
           'Public-domain reaction formats and commentary that punch up or poke fun at everyday life.',
           'Friendly banter in comments that stays playful instead of personal.',
           'THE MEMES.net is for people aged 13 and over, and everything posted is kept teen-safe.'

@@ -789,7 +789,7 @@ export const SEO_ROUTES = [
     introParagraphs: [
       'These Terms of Use explain the basic rules for visiting THE MEMES.net, creating and posting memes, posting comments, and playing the retro browser arcade cabinets. By using the site, you confirm that you meet the minimum age required in your region and agree to follow the community House Rules across every upload, caption, username, and comment.',
       'Every arcade cabinet and mini-game on THE MEMES.net runs strictly on free pretend currency called MemeDollarz (M$) and MemeCentz (¢). MemeDollarz are purely for fun, cannot be bought with real money, cannot be sold or transferred between users, and can never be cashed out for anything of monetary value under any circumstances.',
-      'You stay responsible for the memes and captions you choose to upload and must only post content you created yourself or have clear permission to share. Uploading grants THE MEMES.net permission to re-encode, strip metadata, host, display, and enable community caption remixes, while moderators may remove posts or suspend accounts when needed for safety or copyright compliance.'
+      'You stay responsible for the memes and captions you choose to upload and must only post content you created yourself or have clear permission to share. Uploading grants THE MEMES.net permission to re-encode, strip metadata, host, display, and promote it with the thememes.net logo, and posts cannot be edited once published, while moderators may remove posts or suspend accounts when needed for safety or copyright compliance.'
     ]
   },
   {

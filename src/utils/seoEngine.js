@@ -10,6 +10,7 @@ import {
   getSeoRouteForState,
   getCanonicalPathForState
 } from '../data/seoRoutes.js';
+import { buildMemeJsonLd, memeSeoDescription } from './memeSeo.js';
 import { sanitizeMediaUrl } from './securityGuard.js';
 
 const NON_PATH_VIEW_MODES = {
@@ -108,10 +109,11 @@ export function updateDynamicSeo({
   if (activeMeme) {
     const author = activeMeme.author_name || 'Anon';
     pageTitle = `${activeMeme.title} — Meme by @${author} | THE MEMES.net`;
-    pageDesc = `View, upvote (${activeMeme.score || 1} pts), roast with AI, or remix "${activeMeme.title}" by @${author} on THE MEMES.net.`;
+    pageDesc = memeSeoDescription(activeMeme);
     canonicalUrl = `${SITE_ORIGIN}/m/${encodeURIComponent(String(activeMeme.id))}`;
-    const safeOg = sanitizeMediaUrl(activeMeme.image_url, '');
-    if (activeMeme.media_type !== 'video' && safeOg && !safeOg.startsWith('data:') && !safeOg.startsWith('blob:')) {
+    const isVid = activeMeme.media_type === 'video';
+    const safeOg = sanitizeMediaUrl(isVid ? activeMeme.poster_url : activeMeme.image_url, '');
+    if (safeOg && !safeOg.startsWith('data:') && !safeOg.startsWith('blob:')) {
       ogImageUrl = safeOg.startsWith('/') ? `${SITE_ORIGIN}${safeOg}` : safeOg;
     }
   }
@@ -151,42 +153,7 @@ export function updateDynamicSeo({
     document.head.appendChild(ldScript);
   }
   if (activeMeme) {
-    const isVid = activeMeme.media_type === 'video';
-    const schema = {
-      '@context': 'https://schema.org',
-      '@type': isVid ? 'VideoObject' : 'SocialMediaPosting',
-      headline: activeMeme.title,
-      name: activeMeme.title,
-      description: pageDesc,
-      url: canonicalUrl,
-      datePublished: activeMeme.created_at || new Date().toISOString(),
-      ...(isVid
-        ? {
-            thumbnailUrl: [activeMeme.poster_url || activeMeme.image_url],
-            uploadDate: activeMeme.created_at || new Date().toISOString(),
-            contentUrl: activeMeme.image_url
-          }
-        : {}),
-      author: {
-        '@type': 'Person',
-        name: activeMeme.author_name || 'AnonMemer'
-      },
-      interactionStatistic: {
-        '@type': 'InteractionCounter',
-        interactionType: 'https://schema.org/LikeAction',
-        userInteractionCount: Number(activeMeme.score || 1)
-      },
-      ...(!isVid
-        ? {
-            sharedContent: {
-              '@type': 'ImageObject',
-              name: activeMeme.title,
-              caption: `${activeMeme.title} (${activeMeme.category || 'meme'})`
-            }
-          }
-        : {})
-    };
-    ldScript.textContent = JSON.stringify(schema);
+    ldScript.textContent = JSON.stringify(buildMemeJsonLd(activeMeme, canonicalUrl, ogImageUrl));
   } else if (viewMode === 'creator' && creatorHandle) {
     const clean = String(creatorHandle).trim().replace(/^@+/, '');
     ldScript.textContent = JSON.stringify({

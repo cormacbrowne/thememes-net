@@ -61,7 +61,7 @@
     <meta name="twitter:image" content="https://www.thememes.net/og-card.png" />
     <meta name="twitter:image:alt" content="THE MEMES.net — Free Meme &amp; GIF Maker &amp; Funny Memes" />
 
-    <!-- Schema.org Structured Data (Organization Logo + WebSite + WebApplication + FAQPage) for Google Rich Results -->
+    <!-- Schema.org site-wide entities (Organization + WebSite). Page-specific JSON-LD goes in #tm-dynamic-jsonld. -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -83,7 +83,10 @@
           {
             "@type": "WebSite",
             "name": "THE MEMES.net",
-            "alternateName": ["TheMemes", "THE MEMES Cyber-Arcade"],
+            "alternateName": [
+              "TheMemes",
+              "THE MEMES Cyber-Arcade"
+            ],
             "url": "https://www.thememes.net/",
             "publisher": {
               "@id": "https://www.thememes.net/#organization"
@@ -93,38 +96,6 @@
               "target": "https://www.thememes.net/?q={search_term_string}",
               "query-input": "required name=search_term_string"
             }
-          },
-          {
-            "@type": "WebApplication",
-            "name": "THE MEMES.net Meme Forge Studio & Soundboard",
-            "applicationCategory": "EntertainmentApplication",
-            "operatingSystem": "Web, iOS, Android, Windows, macOS",
-            "offers": {
-              "@type": "Offer",
-              "price": "0",
-              "priceCurrency": "USD"
-            }
-          },
-          {
-            "@type": "FAQPage",
-            "mainEntity": [
-              {
-                "@type": "Question",
-                "name": "How do I create or remix a meme for free on THE MEMES.net?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Click + Upload / Create or hit MUTATE on any meme card to open the HTML5 Meme Forge Studio 2.0. Drag and drop any image, apply Deep Fry or Glitch filters, add stickers, and download or publish your PNG."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "Does the THE MEMES.net soundboard work on iPhone and Android?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Yes! THE MEMES.net features a custom iOS Safari playback synthesizer with 4 Sound Packs (Goofy Cartoon, Vine Brainrot, MLG Airhorn, and Cyber-Arcade) that plays even when the iPhone silent switch is enabled."
-                }
-              }
-            ]
           }
         ]
       }

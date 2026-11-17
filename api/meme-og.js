@@ -2,7 +2,9 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { STARTER_MEMES } from '../src/data/starterMemes.js';
-import { SITE_ORIGIN, DEFAULT_OG_IMAGE } from '../src/data/seoRoutes.js';
+import { SITE_ORIGIN, DEFAULT_OG_IMAGE, CATEGORY_ID_TO_SLUG } from '../src/data/seoRoutes.js';
+import { replaceRootContent, replaceRouteJsonLd, sendNotFound, sendTryLater } from './_seoShell.js';
+import { buildMemeJsonLd, memeSeoDescription } from '../src/utils/memeSeo.js';
 
 function escapeHtml(value = '') {
   return String(value)
@@ -104,6 +106,9 @@ async function loadBaseIndexHtml() {
 </html>`;
 }
 
+// Returned when the database could not answer (timeout / error), as opposed to "no such meme".
+const FETCH_FAILED = Symbol('fetch_failed');
+
 async function fetchLiveMeme(memeId) {
   const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL;
   const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
@@ -123,11 +128,11 @@ async function fetchLiveMeme(memeId) {
       },
       signal: controller.signal
     });
-    if (!res.ok) return null;
+    if (!res.ok) return FETCH_FAILED;
     const rows = await res.json();
     return Array.isArray(rows) && rows[0] ? rows[0] : null;
   } catch {
-    return null;
+    return FETCH_FAILED;
   } finally {
     clearTimeout(timer);
   }
@@ -152,11 +157,11 @@ async function fetchMemePublicState(memeId) {
       body: JSON.stringify({ p_id: memeId }),
       signal: controller.signal
     });
-    if (!res.ok) return 'missing';
+    if (!res.ok) return 'error';
     const state = await res.json();
     return typeof state === 'string' ? state : 'missing';
   } catch {
-    return 'missing';
+    return 'error';
   } finally {
     clearTimeout(timer);
   }
@@ -189,15 +194,22 @@ export default async function handler(req, res) {
   let html = await loadBaseIndexHtml();
 
   let meme = STARTER_MEMES.find((m) => String(m.id) === memeId) || null;
+  let lookupFailed = false;
   if (!meme && memeId) {
-    meme = await fetchLiveMeme(memeId);
-    if (!meme && (await fetchMemePublicState(memeId)) === 'gone') {
-      res.statusCode = 410;
-      res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600');
-      res.setHeader('X-Robots-Tag', 'noindex');
-      res.end(goneHtml());
-      return;
+    const live = await fetchLiveMeme(memeId);
+    if (live === FETCH_FAILED) lookupFailed = true;
+    else meme = live;
+    if (!meme) {
+      const state = await fetchMemePublicState(memeId);
+      if (state === 'gone') {
+        res.statusCode = 410;
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600');
+        res.setHeader('X-Robots-Tag', 'noindex');
+        res.end(goneHtml());
+        return;
+      }
+      if (state === 'error') lookupFailed = true;
     }
   }
   if (!meme && /^(?:seed|tpl)-[a-z0-9-]+$/i.test(memeId)) {
@@ -213,9 +225,7 @@ export default async function handler(req, res) {
 
   if (meme) {
     const titleText = `${meme.title || 'Funny Meme'} — @${meme.author_name || 'Anon'} | THE MEMES.net`;
-    const descText = `Laugh, upvote (${Number(meme.score || 1)} pts), or remix "${
-      meme.title || 'this meme'
-    }" by adding your own top & bottom text free on THE MEMES.net.`;
+    const descText = memeSeoDescription(meme);
     const canonicalUrl = `${SITE_ORIGIN}/m/${encodeURIComponent(String(meme.id))}`;
     const rawImg = meme.media_type === 'video' ? meme.poster_url || DEFAULT_OG_IMAGE : meme.image_url;
     const ogImg = toAbsoluteUrl(rawImg);
@@ -272,8 +282,22 @@ export default async function handler(req, res) {
       `<meta name="twitter:image" content="${safeImg}" />`
     );
 
-    const articleMarkup = `<main class="tm-seo-prerender" data-meme-id="${escapeHtml(String(meme.id))}" style="min-height:100vh;background:#070810;color:#f8fafc;padding:32px 18px 64px;font-family:system-ui,-apple-system,sans-serif;"><article style="max-width:720px;margin:0 auto;"><h1 style="margin:0 0 12px;font-size:28px;">${escapeHtml(meme.title || 'Meme')}</h1><p style="color:#94a3b8;margin:0 0 16px;">By @${escapeHtml(meme.author_name || 'Anon')} · Category #${escapeHtml(meme.category || 'dank')} · Score ${Number(meme.score || 1)}</p><img src="${safeImg}" alt="${escapeHtml(meme.title || 'Meme')}" style="max-width:100%;height:auto;border-radius:12px;display:block;margin-bottom:16px;" /><p style="line-height:1.6;color:#cbd5e1;">${safeDesc}</p><a href="/" style="color:#00f5ff;">← Back to THE MEMES.net Feed &amp; 80s Cyber-Arcade</a></article></main>`;
-    html = replaceMeta(html, /<div\s+id="root">[\s\S]*?<\/div>/i, `<div id="root">${articleMarkup}</div>`);
+    const catSlug = CATEGORY_ID_TO_SLUG[String(meme.category || '').toLowerCase()] || '';
+    const articleMarkup = `<main class="tm-seo-prerender" data-meme-id="${escapeHtml(String(meme.id))}" style="min-height:100vh;background:#070810;color:#f8fafc;padding:32px 18px 64px;font-family:system-ui,-apple-system,sans-serif;"><article style="max-width:720px;margin:0 auto;"><h1 style="margin:0 0 12px;font-size:28px;">${escapeHtml(meme.title || 'Meme')}</h1><p style="color:#94a3b8;margin:0 0 16px;">By <a href="/u/${escapeHtml(encodeURIComponent(meme.author_name || 'Anon'))}" style="color:#00f5ff;">@${escapeHtml(meme.author_name || 'Anon')}</a> · ${
+      catSlug
+        ? `<a href="/memes/${catSlug}" style="color:#00f5ff;">#${escapeHtml(meme.category)} memes</a>`
+        : `#${escapeHtml(meme.category || 'meme')}`
+    } · Score ${Number(meme.score || 1)}${
+      meme.created_at ? ` · <time datetime="${escapeHtml(meme.created_at)}">${escapeHtml(String(meme.created_at).slice(0, 10))}</time>` : ''
+    }</p><img src="${safeImg}" alt="${escapeHtml(meme.title || 'Meme')}" style="max-width:100%;height:auto;border-radius:12px;display:block;margin-bottom:16px;" /><p style="line-height:1.6;color:#cbd5e1;">${safeDesc}</p><nav style="display:flex;gap:16px;flex-wrap:wrap;"><a href="/" style="color:#00f5ff;">🔥 More funny memes</a><a href="/meme-generator" style="color:#ffb800;">Make your own meme</a><a href="/games" style="color:#ffb800;">Play free arcade games</a></nav></article></main>`;
+    html = replaceRootContent(html, articleMarkup);
+
+    // Per-meme structured data (replaces the copied route JSON-LD of the home shell).
+    html = replaceRouteJsonLd(html, buildMemeJsonLd(meme, canonicalUrl, ogImg));
+  } else if (lookupFailed) {
+    return sendTryLater(res, html);
+  } else {
+    return sendNotFound(res, html);
   }
 
   res.statusCode = 200;

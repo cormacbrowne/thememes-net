@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { SEO_ROUTES, SITE_ORIGIN, DEFAULT_OG_IMAGE, getTemplateRoutePath } from '../src/data/seoRoutes.js';
 import { STARTER_MEMES, STUDIO_TEMPLATES } from '../src/data/starterMemes.js';
 import { buildRouteJsonLd } from '../src/utils/seoEngine.js';
+import { buildMemeJsonLd, memeSeoDescription } from '../src/utils/memeSeo.js';
 import { extractUniqueCreatorHandles } from '../src/utils/creatorProfiles.js';
 import { SIGN_TUBES, SIGN_VIEWBOX } from '../src/components/neonSignPaths.js';
 
@@ -312,9 +313,7 @@ function renderMemeHtml(baseHtml, meme) {
   const canonicalUrl = `${SITE_ORIGIN}/m/${safeId}`;
   const author = meme.author_name || 'TheMemesHQ';
   const titleText = `${meme.title || 'Funny Meme'} — @${author} | THE MEMES.net`;
-  const descText = `Laugh, upvote (${Number(meme.score || 1)} pts), or remix "${
-    meme.title || 'this meme'
-  }" by adding your own top & bottom text free on THE MEMES.net.`;
+  const descText = memeSeoDescription(meme);
   const rawImg = meme.media_type === 'video' ? meme.poster_url || DEFAULT_OG_IMAGE : meme.image_url;
   const ogImg =
     rawImg && rawImg.startsWith('/')
@@ -350,16 +349,7 @@ function renderMemeHtml(baseHtml, meme) {
   html = html.replace(/<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${safeDesc}" />`);
   html = html.replace(/<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${safeImg}" />`);
 
-  const memeJsonLd = JSON.stringify({
-    '@context': 'https://schema.org',
-    '@type': 'SocialMediaPosting',
-    headline: meme.title || 'Funny Meme',
-    name: meme.title || 'Funny Meme',
-    description: descText,
-    url: canonicalUrl,
-    image: ogImg,
-    author: { '@type': 'Person', name: author }
-  }).replaceAll('<', '\\u003c');
+  const memeJsonLd = JSON.stringify(buildMemeJsonLd(meme, canonicalUrl, ogImg)).replaceAll('<', '\\u003c');
   html = html.replace(/\s*<script[^>]*id="tm-dynamic-jsonld"[^>]*>[\s\S]*?<\/script>/i, '');
   html = html.replace(
     /<\/head>/i,

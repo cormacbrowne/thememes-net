@@ -21,7 +21,7 @@ async function fetchLiveMemeEntries(limit = 500) {
   if (!supabaseUrl || !supabaseKey) return [];
 
   try {
-    const endpoint = `${supabaseUrl.replace(/\/+$/, '')}/rest/v1/memes?status=eq.approved&select=id,created_at,score&order=score.desc&limit=${limit}`;
+    const endpoint = `${supabaseUrl.replace(/\/+$/, '')}/rest/v1/memes?status=eq.approved&select=id,created_at,score,title,author_name,image_url,poster_url,media_type&order=score.desc&limit=${limit}`;
     const res = await fetch(endpoint, {
       headers: {
         apikey: supabaseKey,
@@ -47,6 +47,15 @@ export default async function handler(req, res) {
     .sort()
     .pop();
   const lastmodTag = (iso) => (iso ? `\n    <lastmod>${escapeXml(iso)}</lastmod>` : '');
+  // Google Images: list each meme's picture (or video poster) with its page.
+  const imageTag = (meme) => {
+    const raw = String((meme?.media_type === 'video' ? meme.poster_url : meme?.image_url) || '').trim();
+    let abs = '';
+    if (raw.startsWith('/seed/')) abs = `${SITE_ORIGIN}${raw}`;
+    else if (/^https:\/\/[^\s"<>]+$/.test(raw) && !raw.includes('..')) abs = raw;
+    if (!abs) return '';
+    return `\n    <image:image>\n      <image:loc>${escapeXml(abs)}</image:loc>\n    </image:image>`;
+  };
 
   const staticRouteXml = SEO_ROUTES.map((route) => {
     const loc = `${SITE_ORIGIN}${route.path === '/' ? '/' : route.path}`;
@@ -68,7 +77,7 @@ export default async function handler(req, res) {
     memeUrlXml.push(`  <url>
     <loc>${escapeXml(`${SITE_ORIGIN}/m/${encodeURIComponent(idStr)}`)}</loc>${lastmodTag(mod)}
     <changefreq>weekly</changefreq>
-    <priority>0.75</priority>
+    <priority>0.75</priority>${imageTag(row)}
   </url>`);
   }
 
@@ -79,20 +88,27 @@ export default async function handler(req, res) {
     memeUrlXml.push(`  <url>
     <loc>${escapeXml(`${SITE_ORIGIN}/m/${encodeURIComponent(idStr)}`)}</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.6</priority>${imageTag(seed)}
   </url>`);
   }
 
-  const creatorUrlsXml = extractUniqueCreatorHandles(STARTER_MEMES).map(
-    (c) => `  <url>
-    <loc>${escapeXml(`${SITE_ORIGIN}/u/${encodeURIComponent(c.handle)}`)}</loc>
+  // Creator pages: the starter account plus everyone with an approved meme.
+  const handles = new Map();
+  for (const c of extractUniqueCreatorHandles(STARTER_MEMES)) handles.set(c.handle.toLowerCase(), c.handle);
+  for (const row of liveRows) {
+    const h = String(row?.author_name || '').trim();
+    if (/^[a-zA-Z0-9_-]{2,32}$/.test(h) && !handles.has(h.toLowerCase())) handles.set(h.toLowerCase(), h);
+  }
+  const creatorUrlsXml = [...handles.values()].map(
+    (handle) => `  <url>
+    <loc>${escapeXml(`${SITE_ORIGIN}/u/${encodeURIComponent(handle)}`)}</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.6</priority>
   </url>`
   );
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 ${[...staticRouteXml, ...creatorUrlsXml, ...memeUrlXml].join('\n')}
 </urlset>
 `;

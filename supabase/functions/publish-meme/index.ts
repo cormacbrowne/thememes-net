@@ -25,6 +25,7 @@
 // ==========================================
 import { createClient } from 'npm:@supabase/supabase-js@2.49.4';
 import * as Magick from 'npm:@imagemagick/magick-wasm@0.0.44';
+import { memeUrl, submitIndexNow } from '../_shared/indexNow.js';
 import {
   PUBLISH_LIMITS,
   PUBLISH_ERRORS,
@@ -88,6 +89,14 @@ function json(req: Request, status: number, body: unknown, extraHeaders: Record<
     status,
     headers: { ...corsHeaders(req), 'Content-Type': 'application/json', ...extraHeaders }
   });
+}
+
+// IndexNow: tell Bing & co. a new public meme page exists, without delaying the response.
+function pingIndexNow(id: string) {
+  const task = submitIndexNow([memeUrl(id)]);
+  // deno-lint-ignore no-explicit-any
+  const rt = (globalThis as any).EdgeRuntime;
+  if (rt?.waitUntil) rt.waitUntil(task);
 }
 
 function fail(req: Request, status: number, error: string): Response {
@@ -561,6 +570,7 @@ async function handlePublish(
         moderation
       });
     }
+    if (inserted.status === 'approved') pingIndexNow(inserted.id);
     return json(req, 200, { ok: true, status, meme: inserted });
   } catch {
     return fail(req, 500, PUBLISH_ERRORS.SERVER);

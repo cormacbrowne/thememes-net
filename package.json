@@ -11,7 +11,8 @@
     "test:smoke": "playwright test",
     "test:unit": "node --test \"tests/unit/*.unit.mjs\" && vitest run",
     "test:vitest": "vitest run",
-    "test:security": "node --test tests/security.spec.js"
+    "test:security": "node --test tests/security.spec.js",
+    "indexnow": "node scripts/indexnow-submit.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",

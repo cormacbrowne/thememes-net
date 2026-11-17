@@ -222,7 +222,7 @@
       "destination": "/api/creator-og?handle=:handle"
     },
     {
-      "source": "/((?!_vercel/|api/|assets/|seed/|favicon|logo-|apple-touch-icon|manifest\\.webmanifest|BingSiteAuth\\.xml).*)",
+      "source": "/((?!_vercel/|api/|assets/|seed/|favicon|logo-|apple-touch-icon|manifest\\.webmanifest|BingSiteAuth\\.xml|5eed15f774c2bb475174d8b3153e9496\\.txt).*)",
       "destination": "/"
     }
   ],

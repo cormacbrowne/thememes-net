@@ -16,6 +16,7 @@
 // Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (automatic).
 // ==========================================
 import { createClient } from 'npm:@supabase/supabase-js@2.49.4';
+import { memeUrl, submitIndexNow } from '../_shared/indexNow.js';
 import { parseDecisionRequest, publicObjectFromUrl, removedArchivePath } from '../_shared/moderationQueue.js';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
@@ -107,6 +108,13 @@ Deno.serve(async (req: Request) => {
   if (!result.ok) return json(req, result.error === 'not_found' ? 404 : 400, result);
 
   const files = { moved: [] as string[], deleted: [] as string[] };
+  // IndexNow: an approved meme page is now public; a removed one now returns 410. Both need a recrawl.
+  if (parsed.memeId) {
+    const task = submitIndexNow([memeUrl(parsed.memeId)]);
+    // deno-lint-ignore no-explicit-any
+    const rt = (globalThis as any).EdgeRuntime;
+    if (rt?.waitUntil) rt.waitUntil(task);
+  }
   if (parsed.memeId && parsed.decision !== 'approve') {
     const urls = [result.image_url, result.poster_url, result.base_image_url].filter(Boolean) as string[];
     const others: string[] = [];

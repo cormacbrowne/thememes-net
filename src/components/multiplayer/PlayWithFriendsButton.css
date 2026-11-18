@@ -1,0 +1,28 @@
+/* Entry button on the single-player cabinets that opens a multiplayer room. */
+.tm-mp-entry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 6px 12px;
+  border-radius: var(--tm-radius-pill);
+  border: 2px solid var(--tm-pink);
+  background: rgba(61, 16, 40, 0.8);
+  color: var(--tm-pink-hot);
+  font-family: var(--tm-font-display);
+  font-weight: 800;
+  font-size: var(--tm-text-sm);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: var(--tm-glow-pink);
+}
+
+.tm-mp-entry-btn:hover {
+  box-shadow: 0 0 18px -2px var(--tm-pink);
+}
+@media (max-width: 480px) {
+  .tm-mp-entry-btn .tm-mp-entry-long {
+    display: none;
+  }
+}

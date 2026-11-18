@@ -94,7 +94,8 @@ export default function VegasPokerGame({
   onSpendTokens,
   onPayoutTokens,
   onRecordHighScore,
-  onBackToFeed
+  onBackToFeed,
+  onPlayWithFriends
 }) {
   const buyInOptions = ARCADE_ECONOMY_RULES.ARCADE_STAKES.POKER_BUYINS || [10, 25, 50, 100];
 
@@ -660,6 +661,7 @@ export default function VegasPokerGame({
   return (
     <GameShell
       title="NEON HOLD'EM '86 POKER"
+      onPlayWithFriends={onPlayWithFriends}
       eyebrow="TEXAS HOLD'EM • MEMEDOLLARZ STAKES"
       tokens={tokens}
       centz={centz}

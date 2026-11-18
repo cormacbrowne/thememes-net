@@ -20,6 +20,8 @@ import { RadioToggleButton } from './MemesRadio';
 import NeonSign from './NeonSign';
 import GameIcon from './GameIcon';
 import { Wallet } from './ui/Money';
+import { generateRoomCode, readRoomFromSearch } from '../utils/multiplayer/roomCore';
+import { MP_GAMES, getMpGameForViewMode } from '../utils/multiplayer/mpGames';
 
 const QUICK_ARCADE_PILLS = [
   { id: 'invaders', label: 'Invaders' },
@@ -67,6 +69,29 @@ const NeonDerbyGame = lazyWithRetry(() => import('./NeonDerbyGame'));
 const GuessTheMemeGame = lazyWithRetry(() => import('./GuessTheMemeGame'));
 const Magic8BallOracle = lazyWithRetry(() => import('./Magic8BallOracle'));
 const HigherOrLowerGame = lazyWithRetry(() => import('./HigherOrLowerGame'));
+const MultiplayerRoom = lazyWithRetry(() => import('./multiplayer/MultiplayerRoom'));
+
+function roomFromUrl(viewMode) {
+  if (typeof window === 'undefined') return null;
+  const game = getMpGameForViewMode(viewMode);
+  const code = readRoomFromSearch(window.location.search);
+  return game && code ? { game: game.id, viewMode, code } : null;
+}
+
+function writeRoomToUrl(code) {
+  if (typeof window === 'undefined' || !window.history?.replaceState) return;
+  try {
+    const url = new URL(window.location.href);
+    if (code) url.searchParams.set('room', code);
+    else url.searchParams.delete('room');
+    url.searchParams.delete('ref');
+    if (url.toString() !== window.location.href) {
+      window.history.replaceState(window.history.state, '', url.toString());
+    }
+  } catch {
+    // ignore
+  }
+}
 
 function readSafeNumber(key, fallback = 0) {
   try {
@@ -698,6 +723,31 @@ export default function GameRouter({
   onOpenPrankDisguise
 }) {
   const [initialsPrompt, setInitialsPrompt] = useState(null);
+  // Play with friends: { game, viewMode, code } while a multiplayer room is open (invite link = ?room=CODE).
+  const [mpRoom, setMpRoom] = useState(() => roomFromUrl(viewMode));
+  const [mpPrevView, setMpPrevView] = useState(viewMode);
+  if (mpPrevView !== viewMode) {
+    setMpPrevView(viewMode);
+    setMpRoom(roomFromUrl(viewMode));
+  }
+  const activeRoom = mpRoom && mpRoom.viewMode === viewMode ? mpRoom : null;
+  useEffect(() => {
+    // Leaving the game page drops the room from the URL so other pages never carry it.
+    if (!getMpGameForViewMode(viewMode)) writeRoomToUrl(null);
+  }, [viewMode]);
+  const openMpRoom = useCallback((gameId) => {
+    const def = MP_GAMES[gameId];
+    if (!def) return;
+    const code = generateRoomCode();
+    writeRoomToUrl(code);
+    setMpRoom({ game: def.id, viewMode: def.viewMode, code });
+    pulse('mp_room_open', { game: def.id });
+    window.scrollTo?.({ top: 0, left: 0, behavior: 'auto' });
+  }, []);
+  const leaveMpRoom = useCallback(() => {
+    writeRoomToUrl(null);
+    setMpRoom(null);
+  }, []);
   const [continuousPeak, setContinuousPeak] = useState(null);
   const sessionLoggedPeakRef = useRef({});
   const pulseGameRef = useRef({ game: null, rounds: 0, spent: 0, won: 0, stop: null });
@@ -847,45 +897,55 @@ export default function GameRouter({
 
       {viewMode === 'blackjack' && (
         <Suspense fallback={<MemeSkeletonGrid count={3} />}>
-          <VegasBlackjackGame
-            tokens={tokens}
-            centz={memeCentz}
-            onSpendTokens={handleSpendTokens}
-            onPayoutTokens={handlePayoutGameTokens}
-            onRecordHighScore={handleRecordHighScore}
-            onOpenUpload={() => {
-              sfx.playToggle();
-              setViewMode('feed');
-              handleOpenBlankStudio();
-            }}
-            onBackToFeed={() => {
-              sfx.playToggle();
-              setViewMode('feed');
-            }}
-          />
+          {activeRoom ? (
+            <MultiplayerRoom key={activeRoom.code} game={activeRoom.game} code={activeRoom.code} onLeave={leaveMpRoom} />
+          ) : (
+            <VegasBlackjackGame
+              onPlayWithFriends={() => openMpRoom('blackjack')}
+              tokens={tokens}
+              centz={memeCentz}
+              onSpendTokens={handleSpendTokens}
+              onPayoutTokens={handlePayoutGameTokens}
+              onRecordHighScore={handleRecordHighScore}
+              onOpenUpload={() => {
+                sfx.playToggle();
+                setViewMode('feed');
+                handleOpenBlankStudio();
+              }}
+              onBackToFeed={() => {
+                sfx.playToggle();
+                setViewMode('feed');
+              }}
+            />
+          )}
         </Suspense>
       )}
 
       {viewMode === 'poker' && (
         <Suspense fallback={<MemeSkeletonGrid count={3} />}>
-          <VegasPokerGame
-            tokens={tokens}
-            centz={memeCentz}
-            soundOn={soundOn}
-            onToggleSound={() => {
-              const nextState = !soundOn;
-              sfx.enabled = nextState;
-              setSoundOn(nextState);
-              if (nextState) sfx.playToggle();
-            }}
-            onSpendTokens={handleSpendTokens}
-            onPayoutTokens={handlePayoutGameTokens}
-            onRecordHighScore={handleRecordHighScore}
-            onBackToFeed={() => {
-              sfx.playToggle();
-              setViewMode('feed');
-            }}
-          />
+          {activeRoom ? (
+            <MultiplayerRoom key={activeRoom.code} game={activeRoom.game} code={activeRoom.code} onLeave={leaveMpRoom} />
+          ) : (
+            <VegasPokerGame
+              onPlayWithFriends={() => openMpRoom('poker')}
+              tokens={tokens}
+              centz={memeCentz}
+              soundOn={soundOn}
+              onToggleSound={() => {
+                const nextState = !soundOn;
+                sfx.enabled = nextState;
+                setSoundOn(nextState);
+                if (nextState) sfx.playToggle();
+              }}
+              onSpendTokens={handleSpendTokens}
+              onPayoutTokens={handlePayoutGameTokens}
+              onRecordHighScore={handleRecordHighScore}
+              onBackToFeed={() => {
+                sfx.playToggle();
+                setViewMode('feed');
+              }}
+            />
+          )}
         </Suspense>
       )}
 
@@ -1078,21 +1138,26 @@ export default function GameRouter({
 
       {viewMode === 'serpent' && (
         <Suspense fallback={<MemeSkeletonGrid count={3} />}>
-          <NeonSerpentGame
-            soundOn={soundOn}
-            onToggleSound={() => {
-              const nextState = !soundOn;
-              sfx.enabled = nextState;
-              setSoundOn(nextState);
-              if (nextState) sfx.playToggle();
-            }}
-            onRecordHighScore={handleRecordHighScore}
-            onOpenLeaderboard={() => onOpenCabinetLeaderboard?.('serpent')}
-            onBackToFeed={() => {
-              sfx.playToggle();
-              setViewMode('feed');
-            }}
-          />
+          {activeRoom ? (
+            <MultiplayerRoom key={activeRoom.code} game={activeRoom.game} code={activeRoom.code} onLeave={leaveMpRoom} />
+          ) : (
+            <NeonSerpentGame
+              onPlayWithFriends={() => openMpRoom('serpent')}
+              soundOn={soundOn}
+              onToggleSound={() => {
+                const nextState = !soundOn;
+                sfx.enabled = nextState;
+                setSoundOn(nextState);
+                if (nextState) sfx.playToggle();
+              }}
+              onRecordHighScore={handleRecordHighScore}
+              onOpenLeaderboard={() => onOpenCabinetLeaderboard?.('serpent')}
+              onBackToFeed={() => {
+                sfx.playToggle();
+                setViewMode('feed');
+              }}
+            />
+          )}
         </Suspense>
       )}
 

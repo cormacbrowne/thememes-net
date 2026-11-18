@@ -5,6 +5,7 @@ import { getSettings, subscribeSettings, updateSettings } from '../utils/setting
 import { pulse } from '../utils/analytics';
 import { RadioToggleButton } from './MemesRadio';
 import { Wallet } from './ui/Money';
+import PlayWithFriendsButton from './multiplayer/PlayWithFriendsButton';
 import './GameShell.css';
 
 export default function GameShell({
@@ -23,6 +24,8 @@ export default function GameShell({
   onTogglePractice,
   practiceDisabled = false,
   extraBadges = null,
+  onPlayWithFriends = null,
+  friendsLabel = '2–4',
   soundOn: soundOnProp,
   onToggleSound: onToggleSoundProp,
   sharePath = '',
@@ -187,6 +190,8 @@ export default function GameShell({
           {showWallet && typeof tokens === 'number' && (
             <Wallet tokens={tokens} centz={centz} size="sm" delta={deltaInfo} />
           )}
+
+          <PlayWithFriendsButton onClick={onPlayWithFriends} players={friendsLabel} />
 
           {extraBadges}
 

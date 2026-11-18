@@ -25,6 +25,17 @@
 
 ---
 
+## 000a. Play with friends (multiplayer) — 18 Nov 2026 (night) — done
+
+- [x] **Rooms:** pink **👥 Play Friends** pill on Poker, 21's and Neon Serpent opens a room; the invite link is the game's normal URL + `?room=CODE` (e.g. `/games/poker?room=K7QZP`), shared with the native share sheet / copied. No new routes, no DB tables, no migration.
+- **How it works:** Supabase Realtime channel `tm-mp:<game>:<CODE>` (broadcast + presence) in `src/hooks/useGameRoom.js`. The player who joined first is host; the host's browser runs the pure engine and broadcasts the whole table (`state` events), others send `action` events. Host leaves → next in line takes over with the last state; a host that reloads asks for the table back (`hello` with `hasState: false`). Leaving on purpose (`forgetSeat`) puts you at the back of the queue. Heartbeat republish every 4 s for dropped messages.
+- **Games** (`src/utils/multiplayer/`, registry `mpGames.js`, tests `tests/vitest/multiplayer.test.js`): **Hold'em with Friends** 2–4 players, 1,000 chips, blinds 10/20, side pots, 30 s turn timer (auto check/fold), away players auto-fold, newcomers sit in next hand. **21's Head to Head** 2 players vs the dealer, 500 chips, bets 10–100, hit/stand/double, dealer stands on 17, head-to-head 🏅 per round. **Worm Wars** 2–4 worms on 26×26, 135 ms host tick, last worm alive wins the round, first to 3; dead worms turn into snacks; arrows/WASD, swipe, on-screen pad on touch.
+- **Rules to keep:** multiplayer uses **table chips only** — never stake or pay MemeDollarz from a room (the host's browser decides outcomes, so it can't be trusted with wallet payouts). Hidden cards travel in the broadcast, so a determined player could peek with dev tools; fine for free chips, not for anything of value. UI lives in `src/components/multiplayer/` (one CSS file, `Multiplayer.css`; entry pill CSS in `PlayWithFriendsButton.css`).
+- **Realtime budget:** Worm Wars sends ~7 messages/s from the host (each counted once per receiver); poker/21's only on moves. Keep an eye on Realtime message usage in the Supabase dashboard if rooms get popular.
+- [ ] **Follow-ups (not done):** "👥 2–4" badge on the lobby cards; a host on a backgrounded tab slows the worm clock to ~1 tick/s (browser timer throttling).
+
+---
+
 ## 000. Owner brief 18 Nov 2026 (evening) — done
 
 - [x] **1 Opens on profile:** the "pick your @handle" nudge fired whenever `get_my_profile` failed (slow phone wake-up) because a missing profile looked like "no handle". Now `needsHandle` is only true when the profile loaded, the cached handle is reused on a failed fetch, and the nudge runs only on `/` at most once every 3 days (`useAuth.js`, `App.jsx`).

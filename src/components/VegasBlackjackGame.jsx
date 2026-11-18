@@ -4,6 +4,7 @@ import { ARCADE_ECONOMY_RULES, formatMoney, validateStakedGamePayout } from '../
 import { checkDailyPerk, consumeDailyPerk } from '../utils/memeFeedBridge';
 import { triggerWinCelebration } from '../utils/winCelebration';
 import { Wallet } from './ui/Money';
+import PlayWithFriendsButton from './multiplayer/PlayWithFriendsButton';
 import './VegasBlackjackGame.css';
 
 // ==========================================
@@ -237,7 +238,8 @@ export default function VegasBlackjackGame({
   onPayoutTokens,
   onRecordHighScore,
   onOpenUpload,
-  onBackToFeed
+  onBackToFeed,
+  onPlayWithFriends
 }) {
   const betOptions = ARCADE_ECONOMY_RULES.ARCADE_STAKES.BLACKJACK_BETS || [5, 10, 25, 50];
 
@@ -950,6 +952,7 @@ export default function VegasBlackjackGame({
 
           <div className="tm-bj-hud-pills">
             <Wallet tokens={tokens} centz={centz} size="sm" />
+            <PlayWithFriendsButton onClick={onPlayWithFriends} players="2" />
             <span className="tm-bj-streak-pill" title="Consecutive Winning Hands">
               🔥 Streak: <strong>{winStreak}</strong>
             </span>

@@ -184,7 +184,8 @@ export default function NeonSerpentGame({
   onToggleSound,
   onRecordHighScore,
   onOpenLeaderboard,
-  onBackToFeed
+  onBackToFeed,
+  onPlayWithFriends
 }) {
   const canvasRef = useRef(null);
   const gameRef = useRef(null);
@@ -445,6 +446,7 @@ export default function NeonSerpentGame({
       soundOn={soundOn}
       onToggleSound={onToggleSound}
       sharePath="/games/neon-serpent"
+      onPlayWithFriends={onPlayWithFriends}
       extraBadges={
         onOpenLeaderboard ? (
           <button

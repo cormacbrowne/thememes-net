@@ -35,7 +35,8 @@
 - [x] **6 Full screen:** top-bar button is now a lit labelled FULL pill (share + Lobby label hidden ≤480px to make room). `GameShell` zooms the game to fit the screen in full-screen mode on phones/tablets (min 55%); roulette gets half-height number rows in full screen. Blackjack, poker, pinball, crush, stocks already fit.
 - [x] **7 Slots one-screen:** paytable, coin-op/odds strips, missions, record, feature quotes and the "← Memes" button moved into a **How to play** sheet (portal). Cabinet gets an electric spark frame, random ⚡ SURGE spins (28%, 1.6× reel speed, banner), and a lightning-storm overlay on BIG/MEGA/JACKPOT. Reels grow on tall screens. Odds and payouts unchanged.
 - [x] **8 Games vs pranks:** lobby has a top-level GAMES | PRANKS switch; the two lists never mix.
-- [ ] **Follow-ups:** roulette and derby still fit only by zooming to ~60% in Safari with bars showing; a dedicated phone layout for each would read better. Curate tab not yet clicked through with a moderator login.
+- [x] **Roulette & derby event focus:** betting scrolls normally (`GameShell fitToScreen={false}`); once the ball is in play the wheel fills the phone screen with your bets lit win/lose, and once the gates open the track fills the screen with a live 8-horse standings board (your horses marked YOU) and your tickets lighting up; the results stay until Next Race Card.
+- [ ] **Follow-up:** Curate tab not yet clicked through with a moderator login.
 
 ---
 

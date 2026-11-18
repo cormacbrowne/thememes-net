@@ -28,6 +28,7 @@ export default function GameShell({
   sharePath = '',
   howToPlay = [],
   statusBanner = null,
+  fitToScreen = true,
   children
 }) {
   const [howToOpen, setHowToOpen] = useState(false);
@@ -44,7 +45,7 @@ export default function GameShell({
   useEffect(() => {
     const body = bodyRef.current;
     const fit = fitRef.current;
-    if (!body || !fit || typeof window === 'undefined') return undefined;
+    if (!fitToScreen || !body || !fit || typeof window === 'undefined') return undefined;
     let raf = 0;
     let last = 1;
     const measure = () => {
@@ -85,7 +86,7 @@ export default function GameShell({
       window.removeEventListener('resize', measure);
       fit.style.zoom = '';
     };
-  }, []);
+  }, [fitToScreen]);
   const deltaSeqRef = useRef(0);
 
   const effectiveSoundOn = soundOnProp !== undefined ? soundOnProp : localSoundOn;

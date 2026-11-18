@@ -63,6 +63,9 @@ export default function NeonDerbyGame({
   const [commentaryText, setCommentaryText] = useState('Pick a horse & place bets, or roll Lucky Dip.');
   const [voiceCommentary, setVoiceCommentary] = useState(true);
   const [leaderNames, setLeaderNames] = useState(['Doge', 'Stonks', 'Nyan']);
+  // Owner brief 18 Nov 2026: full live order for the race-focus standings board.
+  const [liveOrder, setLiveOrder] = useState([0, 1, 2, 3, 4, 5, 6, 7]);
+  const raceFocus = phase !== 'betting';
   const [raceResult, setRaceResult] = useState(null); // { order, totalPayout, totalStaked, net, derbyCup }
 
   const canvasWrapRef = useRef(null);
@@ -203,6 +206,8 @@ export default function NeonDerbyGame({
     const finalOrder = sampleRaceOrder(board.weights, raceSeed);
 
     setRaceResult(null);
+    setLiveOrder([0, 1, 2, 3, 4, 5, 6, 7]);
+    canvasWrapRef.current?.closest('.tm-gs-body')?.scrollTo?.({ top: 0, behavior: 'auto' });
     setPhase('racing');
     setCommentaryText("🔔 AND THEY'RE OFF under the neon floodlights!");
     sfx.playDerbyBugle?.();
@@ -370,6 +375,7 @@ export default function NeonDerbyGame({
             DERBY_HORSES[rankedNow[1].i].short,
             DERBY_HORSES[rankedNow[2].i].short
           ]);
+          setLiveOrder(rankedNow.map((r) => r.i));
         }
 
         if (elapsedRatio >= 1) {
@@ -691,6 +697,7 @@ export default function NeonDerbyGame({
   return (
     <GameShell
       title="🏇 NEON DERBY '86"
+      fitToScreen={false}
       titleBadge={isDerbyCup ? <span className="tm-derby-cup-badge">🏆 DERBY CUP +15%</span> : null}
       ariaLabel="Neon Derby 86 Meme Horse Racing"
       onBack={onBackToFeed}
@@ -719,7 +726,7 @@ export default function NeonDerbyGame({
         'Tap Start Race anytime; daily 8 PM Derby Cup pays +15% bonus rewards.'
       ]}
     >
-      <div className="tm-derby-stage">
+      <div className={`tm-derby-stage ${raceFocus ? 'is-race-focus' : ''}`}>
 
       {/* Meta Strip */}
       <div className="tm-derby-meta-strip">
@@ -781,6 +788,56 @@ export default function NeonDerbyGame({
               </div>
             )}
           </div>
+
+          {raceFocus && (
+            <div className="tm-derby-focus" aria-live="polite">
+              <ol className="tm-derby-standings" aria-label="Live standings">
+                {(raceResult ? raceResult.order : liveOrder).map((hIdx, rank) => {
+                  const h = board.horses[hIdx];
+                  const mine = ticketBets.some((b) => b.firstIdx === hIdx || (b.betType === 'exacta' && b.secondIdx === hIdx));
+                  return (
+                    <li key={hIdx} className={`${mine ? 'is-mine' : ''} ${rank < 3 ? `is-top${rank + 1}` : ''}`}>
+                      <span className="tm-derby-standing-rank">{rank + 1}</span>
+                      <span className="tm-derby-silk" style={{ background: h.silk, color: 'var(--tm-night-0)' }}>
+                        {h.lane}
+                      </span>
+                      <span className="tm-derby-standing-name">
+                        {h.emoji} {h.short}
+                      </span>
+                      {mine && <span className="tm-derby-standing-mine">YOU</span>}
+                    </li>
+                  );
+                })}
+              </ol>
+              <div className="tm-derby-focus-tickets">
+                {ticketBets.map((b) => {
+                  const order = raceResult ? raceResult.order : liveOrder;
+                  const [p1, p2, p3] = order;
+                  const hit =
+                    (b.betType === 'win' && b.firstIdx === p1) ||
+                    (b.betType === 'place' && (b.firstIdx === p1 || b.firstIdx === p2)) ||
+                    (b.betType === 'show' && [p1, p2, p3].includes(b.firstIdx)) ||
+                    (b.betType === 'exacta' && b.firstIdx === p1 && b.secondIdx === p2);
+                  return (
+                    <span
+                      key={b.id}
+                      className={`tm-derby-focus-ticket ${hit ? 'is-winning' : ''} ${raceResult ? 'is-final' : ''}`}
+                    >
+                      {raceResult ? (hit ? '✅' : '❌') : hit ? '🔥' : '🏇'} {b.label} ·{' '}
+                      {practiceMode ? `${b.stake} chip` : formatMoney(b.stake, { compact: true })} @ {b.decOdds}×
+                    </span>
+                  );
+                })}
+                {raceResult && (
+                  <strong className={`tm-derby-focus-net ${raceResult.totalPayout > 0 ? 'is-up' : ''}`}>
+                    {raceResult.totalPayout > 0
+                      ? `Won ${practiceMode ? `${raceResult.totalPayout} chips` : formatMoney(raceResult.totalPayout, { sign: true })}`
+                      : 'No win this race'}
+                  </strong>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Odds Board & Betting Slip */}

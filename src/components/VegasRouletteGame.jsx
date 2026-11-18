@@ -42,6 +42,21 @@ const EVEN_MONEY_BETS = [
 
 const OUTSIDE_BETS = [...DOZEN_BETS, ...EVEN_MONEY_BETS];
 
+// Owner brief 18 Nov 2026: labels + win check for the "your bets" panel shown during a spin.
+function betLabel(key) {
+  if (key.startsWith('n_')) return `#${key.slice(2)}`;
+  if (key.startsWith('col')) return `Col ${key.slice(3)}`;
+  return OUTSIDE_BETS.find((b) => b.id === key)?.short || key;
+}
+
+function betWins(key, n) {
+  if (n === null || n === undefined) return null;
+  if (key.startsWith('n_')) return Number(key.slice(2)) === n;
+  if (key.startsWith('col')) return n > 0 && (n - Number(key.slice(3))) % 3 === 0;
+  const ob = OUTSIDE_BETS.find((b) => b.id === key);
+  return ob ? ob.match(n) : false;
+}
+
 export default function VegasRouletteGame({
   tokens = 0,
   onSpendTokens,
@@ -65,6 +80,9 @@ export default function VegasRouletteGame({
   const [spinning, setSpinning] = useState(false);
   const [spinPhase, setSpinPhase] = useState('idle'); // 'idle' | 'lightning' | 'spinning' | 'dropping' | 'landed'
   const [landingFlash, setLandingFlash] = useState(false);
+  // While the ball is in play the wheel owns the phone screen (no scrolling); betting scrolls.
+  const [eventFocus, setEventFocus] = useState(false);
+  const [eventBets, setEventBets] = useState({});
   const [winningNum, setWinningNum] = useState(null);
   const [lightningMap, setLightningMap] = useState({}); // { 17: 100, 0: 150, 23: 50 }
   const [history, setHistory] = useState([17, 0, 32, 7, 24, 19, 8, 36]);
@@ -268,6 +286,7 @@ export default function VegasRouletteGame({
         );
       }
       setSpinPhase('landed');
+      setTimeout(() => setEventFocus(false), 3000);
       setLandingFlash(true);
       setTimeout(() => setLandingFlash(false), 900);
       setTimeout(() => setSpinPhase((p) => (p === 'landed' ? 'idle' : p)), 1500);
@@ -310,6 +329,9 @@ export default function VegasRouletteGame({
     setWinningNum(null);
     setLandingFlash(false);
     setSpinning(true);
+    setEventBets({ ...bets });
+    setEventFocus(true);
+    wheelColRef.current?.closest('.tm-gs-body')?.scrollTo?.({ top: 0, behavior: 'auto' });
     setSpinPhase('lightning');
 
     // Focus the giant spinning wheel smoothly on iPhone / mobile
@@ -714,6 +736,7 @@ export default function VegasRouletteGame({
   return (
     <GameShell
       title="NEON LIGHTNING ROULETTE '86"
+      fitToScreen={false}
       eyebrow="European single-zero wheel • Lightning up to 150×"
       ariaLabel="80s Neon Lightning Roulette Wheel and Table"
       onBack={onBackToFeed}
@@ -737,7 +760,7 @@ export default function VegasRouletteGame({
         'Toggle Free Practice anytime to play with zero MemeDollarz risk.'
       ]}
     >
-      <div className="tm-roul-cabinet">
+      <div className={`tm-roul-cabinet ${eventFocus ? 'is-event-focus' : ''}`}>
 
         {/* 2. RECENT WINNING NUMBERS HISTORY & LIGHTNING CALLOUT STRIP */}
         <div className="tm-roul-history-bar">
@@ -826,6 +849,47 @@ export default function VegasRouletteGame({
                 ? '🎡 WHEEL SPINNING...'
                 : `⚡ SPIN WHEEL (${practiceMode ? `${totalBetAmount} FREE` : formatMoney(totalBetAmount)})`}
             </button>
+
+            {eventFocus && (
+              <div className="tm-roul-event-panel" aria-live="polite">
+                <div className="tm-roul-event-head">
+                  <span>YOUR BETS</span>
+                  <strong>
+                    {practiceMode
+                      ? `${Object.values(eventBets).reduce((s, v) => s + v, 0)} chips`
+                      : formatMoney(Object.values(eventBets).reduce((s, v) => s + v, 0))}
+                  </strong>
+                </div>
+                <div className="tm-roul-event-bets">
+                  {Object.entries(eventBets)
+                    .filter(([, amt]) => amt > 0)
+                    .map(([key, amt]) => {
+                      const won = spinning ? null : betWins(key, winningNum);
+                      return (
+                        <span
+                          key={key}
+                          className={`tm-roul-event-bet ${won === true ? 'is-win' : won === false ? 'is-lose' : ''}`}
+                        >
+                          {betLabel(key)}{' '}
+                          <strong>{practiceMode ? amt : formatMoney(amt, { compact: true })}</strong>
+                          {key.startsWith('n_') && lightningMap[Number(key.slice(2))] && (
+                            <em> ⚡{lightningMap[Number(key.slice(2))]}×</em>
+                          )}
+                        </span>
+                      );
+                    })}
+                </div>
+                {!spinning && (
+                  <div className={`tm-roul-event-result ${lastWinInfo ? 'is-win' : ''}`}>
+                    {lastWinInfo
+                      ? `🏆 #${lastWinInfo.num} · WON ${practiceMode ? `+${lastWinInfo.payout} chips` : formatMoney(lastWinInfo.payout, { sign: true })}`
+                      : winningNum !== null
+                        ? `#${winningNum} ${getNumberColor(winningNum).toUpperCase()} · no win this time`
+                        : ''}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* RIGHT: INTERACTIVE 80s NEON BETTING BOARD */}

@@ -2652,28 +2652,34 @@
   position: absolute;
   inset: 0;
   border-radius: 23px 23px 15px 15px;
-  padding: 3px;
+  padding: 4px;
   pointer-events: none;
   z-index: 3;
   --spark: #7fe9ff;
   background: conic-gradient(
     from var(--tm-slot-arc),
-    transparent 0deg 52deg,
+    transparent 0deg 44deg,
+    color-mix(in srgb, var(--spark) 35%, transparent) 60deg,
     var(--spark) 70deg,
     #fff 74deg,
     var(--spark) 78deg,
-    transparent 96deg 232deg,
+    color-mix(in srgb, var(--spark) 35%, transparent) 88deg,
+    transparent 104deg 224deg,
+    color-mix(in srgb, var(--spark) 35%, transparent) 240deg,
     var(--spark) 250deg,
     #fff 254deg,
     var(--spark) 258deg,
-    transparent 276deg 360deg
+    color-mix(in srgb, var(--spark) 35%, transparent) 268deg,
+    transparent 284deg 360deg
   );
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  filter: drop-shadow(0 0 4px var(--spark)) drop-shadow(0 0 12px var(--spark));
+  /* No filter here: an animated drop-shadow over the whole cabinet blacked out the page on some
+     Windows PCs (GPU). The soft stops in the gradient carry the glow instead. */
+  contain: paint;
   animation: tmSlotArc 3.2s linear infinite;
 }
 
@@ -2683,8 +2689,7 @@
 
 .tm-bandit-cabinet.is-surge-roll.is-spinning .tm-slot-electric {
   --spark: #ffffff;
-  animation-duration: 0.55s;
-  filter: drop-shadow(0 0 6px #19f0ff) drop-shadow(0 0 20px #19f0ff);
+  animation-duration: 0.7s;
 }
 
 .tm-bandit-cabinet.is-win-lit .tm-slot-electric {
@@ -2756,11 +2761,10 @@
 
 .tm-slot-storm path {
   fill: none;
-  stroke: #fff;
-  stroke-width: 1.1;
+  stroke: #e2fdff;
+  stroke-width: 1.6;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 0 3px #19f0ff) drop-shadow(0 0 10px #8a3dff);
   stroke-dasharray: 220;
   stroke-dashoffset: 220;
   opacity: 0;
@@ -2768,8 +2772,8 @@
 }
 
 .tm-slot-storm.is-jackpot path {
-  filter: drop-shadow(0 0 4px var(--tm-amber)) drop-shadow(0 0 14px var(--tm-pink));
-  stroke-width: 1.6;
+  stroke: #fff1c9;
+  stroke-width: 2;
 }
 
 .tm-slot-storm::after {

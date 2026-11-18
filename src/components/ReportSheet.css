@@ -20,7 +20,7 @@
   border-radius: 18px 18px 0 0;
   padding: 10px 16px calc(16px + env(safe-area-inset-bottom));
   box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.55);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--tm-font-body);
 }
 
 .tm-report-grab {

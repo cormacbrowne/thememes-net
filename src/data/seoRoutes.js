@@ -114,7 +114,9 @@ export const PRANK_DISGUISE_TO_PATH = {
   excel: '/fake-excel-boss-screen',
   zoom: '/fake-teams-zoom-call-screen',
   terminal: '/fake-hacker-terminal-screen',
-  ai: '/fake-ai-workspace-boss-screen'
+  ai: '/fake-ai-workspace-boss-screen',
+  crackphone: '/fake-cracked-iphone-screen',
+  crackpad: '/fake-cracked-ipad-screen'
 };
 
 export const SEO_ROUTES = [
@@ -267,7 +269,7 @@ export const SEO_ROUTES = [
       'Play Sunset Sprint free online! Race 80s garage cars down a pseudo-3D synthwave highway, dodge traffic, beat checkpoint timers & grab cassettes that switch THE MEMES FM.',
     h1: 'Sunset Sprint — Free Retro Synthwave Highway Racer',
     kicker: 'Pseudo-3D 80s Racer // Drag Steer, Keyboard & Gamepad — Free to Play',
-    ogImage: 'https://www.thememes-net/og/games.png',
+    ogImage: 'https://www.thememes.net/og/games.png',
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'sunset',
@@ -536,6 +538,44 @@ export const SEO_ROUTES = [
       'Pull off the classic PC crash prank in one second with our interactive Fake Blue Screen of Death (BSOD) simulator. Modeled cleanly after the iconic modern Windows stop-code screen, it displays the oversized ":(" frown face, "Your device ran into a problem and needs to restart" notice, live advancing percentage readout, QR IT ticket support block, and CRITICAL_SYNERGY_OVERFLOW_EXCEPTION error details.',
       'Click the F11 Fullscreen button (or press F11 on desktop keyboards) and toggle Hide Toolbar to fill your entire monitor edge-to-edge with zero browser tabs or address bar visible. Tapping or clicking anywhere on the blue screen steps the error-dump recovery percentage from 0% toward 100% while keeping the illusion completely believable for coworkers or friends.',
       'Ready to reveal the prank? Press Escape anytime (or exit fullscreen) to jump straight back to THE MEMES.net, or press number keys 1–6 to flip seamlessly between BSOD, Windows Update, Excel forecast spreadsheet, DevOps Kubernetes terminal, Zoom standup call, and Enterprise AI workspace screens.'
+    ]
+  },
+  {
+    path: '/fake-cracked-iphone-screen',
+    title: 'Fake Cracked iPhone Screen Prank (Sparks & Broken Glass) | THE MEMES.net',
+    description:
+      'Turn your phone into a fake smashed screen: shattered glass, leaking ink, dead pixel lines and live sparks. Tap to crack it more. Free, no app needed.',
+    h1: 'Fake Cracked iPhone Screen Prank — Broken Glass With Sparks',
+    kicker: 'Prank Screens // Tap To Crack It More',
+    changefreq: 'weekly',
+    priority: '0.9',
+    viewMode: 'feed',
+    category: 'all',
+    bossDisguise: 'crackphone',
+    introParagraphs: [
+      'Make anyone think you just dropped your phone. This fake cracked screen fills the display with shattered glass radiating from a corner impact, a black ink bleed, dead pink and green pixel lines and a glitching band, all over a normal-looking lock screen with the real time.',
+      'Sparks spit out of the cracks and a blue electric arc crackles now and then, as if the screen is shorting out. Every tap adds a fresh impact right where you touched, with a crunch and a buzz.',
+      'For a true full screen on iPhone, add THE MEMES.net to your Home Screen first, then open it from there: the address bar disappears and the broken glass runs edge to edge. On Android and on computers, tapping Start switches the browser into full screen by itself.',
+      'Best ways to use it: leave the phone face up on the table and wait for someone to notice, hand it over mid-story with a sorry face, or put it on a friend’s phone while they are not looking. Nothing is installed, nothing is changed on the device, and nothing is sent anywhere. To get out, triple-tap the top-left corner (a hidden button opens the prank controls) or press Esc on a keyboard. There is an iPad version too, plus a fake blue screen and a fake system update in the same prank collection.'
+    ]
+  },
+  {
+    path: '/fake-cracked-ipad-screen',
+    title: 'Fake Cracked iPad Screen Prank (Shattered Tablet With Sparks) | THE MEMES.net',
+    description:
+      'A full-screen fake shattered tablet: spider-web cracks, ink bleed, dead pixel lines and electric sparks. Tap to crack it more. Works in any browser.',
+    h1: 'Fake Cracked iPad Screen Prank — Shattered Tablet Simulator',
+    kicker: 'Prank Screens // Big-Screen Smash',
+    changefreq: 'weekly',
+    priority: '0.8',
+    viewMode: 'feed',
+    category: 'all',
+    bossDisguise: 'crackpad',
+    introParagraphs: [
+      'The big-screen version of the cracked phone prank. A spider-web of broken glass spreads across the tablet from an off-centre impact, with leaking ink, dead pixel columns and a glitching band over a calm lock screen clock.',
+      'Live sparks spit from the cracks and electric arcs jump across the glass. Tap anywhere and another impact crunches in where your finger landed.',
+      'Tap Start to go full screen, then leave it on the sofa and wait. On iPad the browser can switch to true full screen, so the cracked glass covers everything from edge to edge; on a laptop or desktop it works the same way and fills the whole monitor.',
+      'It works best on a tablet that someone else is about to pick up: a kid, a partner, a flatmate mid-film. Every crack is drawn live, so no two smashes look exactly the same, and the lock screen clock shows the real time to sell the illusion. Nothing is installed or changed on the device. Triple-tap the top-left corner to open the hidden prank controls, switch to the iPhone version, share the link, or press Esc to get back out.'
     ]
   },
   {

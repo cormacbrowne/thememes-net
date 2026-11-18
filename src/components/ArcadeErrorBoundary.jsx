@@ -77,7 +77,7 @@ export default class ArcadeErrorBoundary extends React.Component {
             padding: '22px 20px',
             textAlign: 'center',
             color: 'var(--tm-text)',
-            fontFamily: 'system-ui, -apple-system, sans-serif'
+            fontFamily: 'var(--tm-font-body)'
           }}
         >
           <div style={{ fontSize: '2.1rem', marginBottom: '8px' }}>📺⚡</div>

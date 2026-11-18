@@ -1563,7 +1563,7 @@ export default function VegasPinballGame({
 
       ctx.globalAlpha = 0.92;
       ctx.fillStyle = st.feverTicks > 0 ? '#fde047' : st.multiplier > 1 ? '#facc15' : '#00f3ff';
-      ctx.font = '900 15px sans-serif';
+      ctx.font = '900 15px "Oxanium", sans-serif';
       ctx.fillText(
         st.comboCount > 1
           ? `🔥 ${st.comboCount}× COMBO • ${st.multiplier}×`
@@ -1571,13 +1571,13 @@ export default function VegasPinballGame({
         cx,
         cy - 3
       );
-      ctx.font = '900 10.5px sans-serif';
+      ctx.font = '900 10.5px "Oxanium", sans-serif';
       ctx.fillStyle = '#00ff88';
       ctx.fillText(`🎯 MISSION: ${st.missionProgress}/${st.missionGoal}`, cx, cy + 15);
 
       if (st.mysteryTicks > 0 && st.mysteryText) {
         ctx.fillStyle = '#fde047';
-        ctx.font = '900 12px sans-serif';
+        ctx.font = '900 12px "Oxanium", sans-serif';
         ctx.fillText(st.mysteryText, cx, cy - 26);
       }
       if (st.tiltTicks > 0) {
@@ -1607,7 +1607,7 @@ export default function VegasPinballGame({
         ctx.lineWidth = 1.8;
         ctx.strokeRect(barX, barY, barW, barH);
         ctx.fillStyle = '#fde047';
-        ctx.font = '900 9px sans-serif';
+        ctx.font = '900 9px "Oxanium", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('SKILL', SHOOTER_X, barY - 6);
 
@@ -1623,7 +1623,7 @@ export default function VegasPinballGame({
         ctx.fill();
         ctx.stroke();
         ctx.fillStyle = '#fde047';
-        ctx.font = '900 12.5px sans-serif';
+        ctx.font = '900 12.5px "Oxanium", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('🚀 PRESS [SPACE] OR CLICK HERE TO LAUNCH BALL!', PLAY_CENTER_X, 457);
         ctx.restore();
@@ -1636,7 +1636,7 @@ export default function VegasPinballGame({
         const ay = 120 + i * 44;
         if (!hasBallInShooter || ay < 390) {
           ctx.fillStyle = lit ? '#00f3ff' : 'rgba(255, 0, 127, 0.34)';
-          ctx.font = '900 13px sans-serif';
+          ctx.font = '900 13px "Oxanium", sans-serif';
           ctx.textAlign = 'center';
           ctx.fillText('▲', SHOOTER_X, ay);
         }
@@ -1646,7 +1646,7 @@ export default function VegasPinballGame({
       for (let i = 0; i < 3; i++) {
         const lit = (Math.floor(st.tick / 7) + i) % 3 === 0;
         ctx.fillStyle = lit ? '#facc15' : 'rgba(0, 243, 255, 0.25)';
-        ctx.font = '900 12px sans-serif';
+        ctx.font = '900 12px "Oxanium", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('▲', cx, 306 - i * 14);
       }
@@ -1676,7 +1676,7 @@ export default function VegasPinballGame({
         ctx.lineTo(-10, 4);
         ctx.closePath();
         ctx.fill();
-        ctx.font = '900 7.5px sans-serif';
+        ctx.font = '900 7.5px "Oxanium", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(ins.label, 0, 26);
         ctx.restore();
@@ -1786,7 +1786,7 @@ export default function VegasPinballGame({
         ctx.fillRect(pad.x, pad.y, pad.w, pad.h);
         ctx.strokeRect(pad.x, pad.y, pad.w, pad.h);
         ctx.fillStyle = '#fde047';
-        ctx.font = '900 13px sans-serif';
+        ctx.font = '900 13px "Oxanium", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('▲', pad.x + pad.w / 2, pad.y + 22);
         ctx.fillText('▲', pad.x + pad.w / 2, pad.y + 42);
@@ -1816,7 +1816,7 @@ export default function VegasPinballGame({
           ctx.arc(p.x, p.y, 16, st.tick * 0.08, st.tick * 0.08 + Math.PI * 1.6);
           ctx.stroke();
           ctx.fillStyle = '#fff';
-          ctx.font = '900 8.5px sans-serif';
+          ctx.font = '900 8.5px "Oxanium", sans-serif';
           ctx.textAlign = 'center';
           ctx.fillText(tag, p.x, p.y + 3);
           ctx.restore();
@@ -1843,7 +1843,7 @@ export default function VegasPinballGame({
         ctx.fill();
         ctx.stroke();
         ctx.fillStyle = '#fef08a';
-        ctx.font = '900 8.5px sans-serif';
+        ctx.font = '900 8.5px "Oxanium", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(sk.label, sk.x, sk.y + 3);
         ctx.restore();
@@ -1874,7 +1874,7 @@ export default function VegasPinballGame({
         ctx.fill();
         ctx.stroke();
         ctx.fillStyle = lit ? '#020617' : '#f8fafc';
-        ctx.font = '900 12px sans-serif';
+        ctx.font = '900 12px "Oxanium", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(tbl.lanesWord[idx], lx, 70);
         ctx.restore();
@@ -1898,7 +1898,7 @@ export default function VegasPinballGame({
         ctx.lineWidth = 2;
         ctx.strokeRect(tc.x - 9, tc.y - 15, 18, 30);
         ctx.fillStyle = lit ? '#022c22' : '#ffffff';
-        ctx.font = '900 11px sans-serif';
+        ctx.font = '900 11px "Oxanium", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(tbl.targetWord[idx], tc.x, tc.y + 4);
         ctx.restore();
@@ -1978,7 +1978,7 @@ export default function VegasPinballGame({
 
         ctx.globalAlpha = 1;
         ctx.fillStyle = flash ? '#090612' : '#ffffff';
-        ctx.font = '900 14px sans-serif';
+        ctx.font = '900 14px "Oxanium", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(bmp.label, bx, by + 5);
         ctx.restore();
@@ -2123,7 +2123,7 @@ export default function VegasPinballGame({
         ctx.lineTo(284, H - 24);
         ctx.stroke();
         ctx.fillStyle = laserCol;
-        ctx.font = '900 9.5px sans-serif';
+        ctx.font = '900 9.5px "Oxanium", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(
           st.feverTicks > 0
@@ -2235,7 +2235,7 @@ export default function VegasPinballGame({
         ctx.shadowColor = '#000000';
         ctx.shadowBlur = 6;
         ctx.fillStyle = ft.color;
-        ctx.font = '900 13px sans-serif';
+        ctx.font = '900 13px "Oxanium", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(ft.text, ft.x, ft.y);
         ctx.restore();
@@ -2253,7 +2253,7 @@ export default function VegasPinballGame({
         ctx.arc(mx, H - 30, 7, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = '#090d16';
-        ctx.font = '900 8px sans-serif';
+        ctx.font = '900 8px "Oxanium", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('M', mx, H - 27);
         ctx.restore();
@@ -2272,7 +2272,7 @@ export default function VegasPinballGame({
         ctx.lineTo(282, H - 30);
         ctx.stroke();
         ctx.fillStyle = '#00f3ff';
-        ctx.font = '900 9.5px sans-serif';
+        ctx.font = '900 9.5px "Oxanium", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('🧲 MAGNA-SAVE ACTIVE!', PLAY_CENTER_X, H - 42);
         ctx.restore();
@@ -2294,7 +2294,7 @@ export default function VegasPinballGame({
 
         ctx.shadowBlur = 0;
         ctx.fillStyle = '#fde047';
-        ctx.font = '900 10.5px sans-serif';
+        ctx.font = '900 10.5px "Oxanium", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('🎰 MYSTERY MINI-SLOT', PLAY_CENTER_X, 170);
 
@@ -2312,7 +2312,7 @@ export default function VegasPinballGame({
         });
 
         ctx.fillStyle = ms.ticks <= 85 ? '#4ade80' : '#a5f3fc';
-        ctx.font = '900 10px sans-serif';
+        ctx.font = '900 10px "Oxanium", sans-serif';
         ctx.fillText(ms.ticks <= 85 ? ms.prizeText : 'SPINNING REELS...', PLAY_CENTER_X, 228);
         ctx.restore();
       }

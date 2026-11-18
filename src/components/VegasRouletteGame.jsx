@@ -581,7 +581,7 @@ export default function VegasRouletteGame({
             ctx.translate(tx, ty);
             ctx.rotate(midA + Math.PI / 2);
             ctx.fillStyle = isWinPocket ? '#050814' : '#ffffff';
-            ctx.font = '900 8.5px sans-serif';
+            ctx.font = '900 8.5px "Oxanium", sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText(String(num), 0, 3);
             ctx.restore();
@@ -628,7 +628,7 @@ export default function VegasRouletteGame({
             ctx.fillText(String(winningNum), CX, CY + 6);
           } else {
             ctx.fillStyle = spinning ? '#00f3ff' : '#facc15';
-            ctx.font = '900 11px sans-serif';
+            ctx.font = '900 11px "Oxanium", sans-serif';
             ctx.fillText(spinning ? 'SPIN!' : "80s '86", CX, CY + 4);
           }
 

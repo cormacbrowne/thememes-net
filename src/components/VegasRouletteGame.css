@@ -81,7 +81,7 @@
 .tm-roul-title {
   margin: 0;
   font-family: var(--tm-font-neon);
-  font-weight: 400;
+  font-weight: 800;
   font-size: clamp(15px, 2.2vw, 20px);
   letter-spacing: 1px;
   color: var(--tm-amber);
@@ -856,5 +856,26 @@
   .tm-roul-mobile-actionbar .tm-roul-spin-btn {
     min-height: 46px;
     font-size: 13.5px;
+  }
+}
+
+/* Owner brief 18 Nov 2026 (item 6): full screen on a phone = no scrolling. Half-height number
+   rows and a smaller wheel so GameShell's fit-zoom stays big enough to read and tap. */
+@media (max-width: 860px) {
+  html.tm-game-fs .tm-roul-matrix-grid .tm-roul-num-cell {
+    min-height: 27px;
+    height: 27px;
+    font-size: 12px;
+  }
+  html.tm-game-fs .tm-roul-matrix-grid {
+    gap: 3px;
+  }
+  html.tm-game-fs .tm-roul-canvas {
+    width: min(210px, 30dvh);
+    height: min(210px, 30dvh);
+  }
+  html.tm-game-fs .tm-roul-wheel-column {
+    padding: 6px;
+    gap: 4px;
   }
 }

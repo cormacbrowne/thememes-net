@@ -91,6 +91,18 @@ export function useAuth({ setShowAuthModal, awardXpAndCombo }) {
     // If a handle was chosen before signing up (email metadata) or before a Google/Discord
     // redirect (kept in localStorage across the redirect) and isn't claimed yet, claim it now.
     let claimedUsername = profile?.username || '';
+    // A slow or failed profile fetch (common on phones waking a backgrounded tab) must not
+    // look like "no handle yet": reuse the handle cached for this same account.
+    if (!profile) {
+      try {
+        const cached = JSON.parse(localStorage.getItem('tm_user') || 'null');
+        if (cached?.id === sessionUser.id && cached?.claimedUsername) {
+          claimedUsername = cached.claimedUsername;
+        }
+      } catch {
+        // ignore
+      }
+    }
     let storedPending;
     try {
       storedPending = localStorage.getItem(PENDING_HANDLE_KEY) || '';
@@ -127,7 +139,8 @@ export function useAuth({ setShowAuthModal, awardXpAndCombo }) {
       email,
       provider,
       verified: true,
-      needsHandle: !claimedUsername,
+      // Only true when the server confirmed there is no handle (profile loaded).
+      needsHandle: Boolean(profile) && !claimedUsername,
       role: profile?.role || 'user',
       strikes: profile?.strikes || 0,
       suspendedUntil: profile?.suspended_until || null

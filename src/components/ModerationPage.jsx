@@ -1,4 +1,5 @@
 import ModerationCategories from './ModerationCategories';
+import ModerationCurate from './ModerationCurate';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getSupabaseClient } from '../supabaseClient';
 import { reasonLabel } from '../../supabase/functions/_shared/moderationQueue.js';
@@ -230,6 +231,7 @@ export default function ModerationPage() {
         </div>
         <nav className="tm-mod-tabs" aria-label="Moderation views">
           <button type="button" className={tab === 'queue' ? 'is-on' : ''} onClick={() => setTab('queue')}>Queue</button>
+          <button type="button" className={tab === 'curate' ? 'is-on' : ''} onClick={() => setTab('curate')}>Curate</button>
           <button type="button" className={tab === 'log' ? 'is-on' : ''} onClick={() => setTab('log')}>Log</button>
           <button type="button" className={tab === 'categories' ? 'is-on' : ''} onClick={() => setTab('categories')}>Categories</button>
           <button type="button" onClick={load}>↻</button>
@@ -237,7 +239,9 @@ export default function ModerationPage() {
       </header>
       {flash && <div className="tm-mod-flash" role="status">{flash}</div>}
 
-      {tab === 'categories' ? (
+      {tab === 'curate' ? (
+        <ModerationCurate client={client} />
+      ) : tab === 'categories' ? (
         <ModerationCategories client={client} />
       ) : tab === 'log' ? (
         <div className="tm-mod-log-wrap">
@@ -250,7 +254,7 @@ export default function ModerationPage() {
                 <tr key={row.id}>
                   <td>{timeAgo(row.created_at)}</td>
                   <td>{row.action}</td>
-                  <td>{row.meme_id ? `meme ${row.meme_id.slice(0, 8)}` : `comment ${String(row.comment_id).slice(0, 8)}`}</td>
+                  <td>{row.meme_id ? `meme ${row.meme_id.slice(0, 8)}` : row.comment_id ? `comment ${String(row.comment_id).slice(0, 8)}` : row.note || '—'}</td>
                   <td>{row.reason || '—'}{row.note ? ` · ${row.note}` : ''}</td>
                   <td>{row.moderator_id ? row.moderator_id.slice(0, 8) : 'auto'}</td>
                 </tr>

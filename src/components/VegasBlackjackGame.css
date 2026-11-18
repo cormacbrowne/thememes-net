@@ -41,7 +41,7 @@
 
 .tm-bj-title-badge {
   font-family: var(--tm-font-neon);
-  font-weight: 400;
+  font-weight: 800;
   font-size: clamp(14px, 2.2vw, 18px);
   letter-spacing: 0.9px;
   color: var(--tm-cyan);
@@ -597,7 +597,7 @@
 .tm-bj-title {
   margin: 0;
   font-family: var(--tm-font-neon);
-  font-weight: 400;
+  font-weight: 800;
   font-size: clamp(16px, 2.4vw, 21px);
   letter-spacing: 1px;
   color: var(--tm-cyan-hot);

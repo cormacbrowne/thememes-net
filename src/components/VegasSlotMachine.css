@@ -97,7 +97,7 @@
 
 .tm-vegas-neon-logo {
   font-family: var(--tm-font-neon);
-  font-weight: 400;
+  font-weight: 800;
   font-size: clamp(20px, 4.2vw, 30px);
   letter-spacing: 1.5px;
   color: #ffffff;
@@ -2628,4 +2628,385 @@
   .tm-bandit-action-row {
     gap: 6px;
   }
+}
+
+/* =====================================================================
+   Owner brief 18 Nov 2026 (item 7): one-screen neon slots
+   ===================================================================== */
+
+.tm-bandit-cabinet {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Electricity racing round the cabinet tube: two sparks chase each other; faster while spinning,
+   gold and frantic on a win. Uses the @property --tm-arc registered by the home portal CSS, with a
+   local fallback registration so slots work when loaded directly. */
+@property --tm-slot-arc {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.tm-slot-electric {
+  position: absolute;
+  inset: 0;
+  border-radius: 23px 23px 15px 15px;
+  padding: 3px;
+  pointer-events: none;
+  z-index: 3;
+  --spark: #7fe9ff;
+  background: conic-gradient(
+    from var(--tm-slot-arc),
+    transparent 0deg 52deg,
+    var(--spark) 70deg,
+    #fff 74deg,
+    var(--spark) 78deg,
+    transparent 96deg 232deg,
+    var(--spark) 250deg,
+    #fff 254deg,
+    var(--spark) 258deg,
+    transparent 276deg 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  filter: drop-shadow(0 0 4px var(--spark)) drop-shadow(0 0 12px var(--spark));
+  animation: tmSlotArc 3.2s linear infinite;
+}
+
+.tm-bandit-cabinet.is-spinning .tm-slot-electric {
+  animation-duration: 1.1s;
+}
+
+.tm-bandit-cabinet.is-surge-roll.is-spinning .tm-slot-electric {
+  --spark: #ffffff;
+  animation-duration: 0.55s;
+  filter: drop-shadow(0 0 6px #19f0ff) drop-shadow(0 0 20px #19f0ff);
+}
+
+.tm-bandit-cabinet.is-win-lit .tm-slot-electric {
+  --spark: var(--tm-amber);
+  animation-duration: 0.8s;
+}
+
+@keyframes tmSlotArc {
+  to {
+    --tm-slot-arc: 360deg;
+  }
+}
+
+/* SURGE banner while a hyper-speed spin runs */
+.tm-slot-surge-flash {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  z-index: 6;
+  transform: translate(-50%, -50%);
+  padding: 4px 16px;
+  border-radius: 999px;
+  border: 2px solid #19f0ff;
+  background: rgba(7, 6, 15, 0.78);
+  color: #e2fdff;
+  font-family: var(--tm-font-title);
+  font-weight: 900;
+  font-size: 20px;
+  letter-spacing: 0.2em;
+  text-shadow: 0 0 6px #19f0ff, 0 0 18px #19f0ff;
+  box-shadow: 0 0 22px rgba(25, 240, 255, 0.6);
+  pointer-events: none;
+  animation: tmSurgeIn 0.9s var(--tm-ease-spring) both;
+}
+
+@keyframes tmSurgeIn {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.12);
+  }
+  70% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Lightning storm on BIG / MEGA / JACKPOT */
+.tm-slot-storm {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.tm-slot-storm svg {
+  width: 100%;
+  height: 100%;
+}
+
+.tm-slot-storm path {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.1;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 3px #19f0ff) drop-shadow(0 0 10px #8a3dff);
+  stroke-dasharray: 220;
+  stroke-dashoffset: 220;
+  opacity: 0;
+  animation: tmBolt 0.95s ease-out forwards;
+}
+
+.tm-slot-storm.is-jackpot path {
+  filter: drop-shadow(0 0 4px var(--tm-amber)) drop-shadow(0 0 14px var(--tm-pink));
+  stroke-width: 1.6;
+}
+
+.tm-slot-storm::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 30%, rgba(180, 230, 255, 0.35), transparent 60%);
+  opacity: 0;
+  animation: tmStormGlow 0.95s ease-out forwards;
+}
+
+@keyframes tmBolt {
+  0% {
+    opacity: 1;
+    stroke-dashoffset: 220;
+  }
+  35% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes tmStormGlow {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ---------- How to play sheet ---------- */
+.tm-slot-help {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 12px;
+  background: rgba(7, 6, 15, 0.72);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.tm-slot-help-card {
+  width: min(560px, 100%);
+  max-height: min(86dvh, 760px);
+  overflow-y: auto;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  border-radius: 20px;
+  border: 1px solid var(--tm-night-3);
+  background: var(--tm-night-1);
+  box-shadow: var(--tm-shadow-3), 0 0 0 1px rgba(25, 240, 255, 0.2);
+  color: var(--tm-text);
+  font-family: var(--tm-font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.tm-slot-help-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tm-slot-help-head h2 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--tm-amber-hot);
+  text-shadow: 0 0 8px rgba(255, 184, 0, 0.6);
+}
+
+.tm-slot-help-close {
+  flex-shrink: 0;
+  min-height: 38px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--tm-pink);
+  background: color-mix(in srgb, var(--tm-pink) 18%, transparent);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tm-slot-help-card h3 {
+  margin: 14px 0 6px;
+  font-family: var(--tm-font-title);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tm-cyan-hot);
+}
+
+.tm-slot-help-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tm-slot-help-facts span {
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--tm-night-3);
+  font-size: 12px;
+  color: var(--tm-text-soft);
+}
+
+.tm-slot-help-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.tm-slot-help-list li {
+  margin-bottom: 5px;
+}
+
+.tm-slot-help-record {
+  margin: 12px 0 4px;
+  color: var(--tm-amber-hot);
+  font-weight: 700;
+}
+
+.tm-slot-help-small {
+  margin: 0;
+  font-size: 12px;
+  color: var(--tm-text-dim);
+}
+
+.tm-slot-help .tm-slot-paytable-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.tm-slot-help .tm-slot-paytable-grid span {
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: var(--tm-night-2);
+  font-size: 13px;
+}
+
+.tm-slot-paytable-btn {
+  border-color: var(--tm-cyan) !important;
+  color: var(--tm-cyan-hot) !important;
+  box-shadow: 0 0 10px -3px var(--tm-cyan);
+}
+
+/* ---------- Phones: everything on one screen ---------- */
+@media (max-width: 860px) {
+  .tm-slot-switcher-bar {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .tm-slot-switcher-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .tm-slot-switcher-bar > * {
+    flex-shrink: 0;
+  }
+  .tm-slot-tab-badge {
+    display: none;
+  }
+  .tm-bandit-standalone .tm-slot-arcade-shell {
+    gap: 5px;
+  }
+  .tm-bandit-standalone .tm-bandit-cabinet {
+    gap: 5px;
+    padding: 8px 9px;
+  }
+  .tm-bandit-standalone .tm-bandit-bulbs {
+    display: none;
+  }
+  .tm-bandit-standalone .tm-slot-coin-tray {
+    display: none;
+  }
+  .tm-bandit-standalone .tm-bandit-wallet-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .tm-bandit-standalone .tm-slot-powerup-deck {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    justify-content: flex-start;
+  }
+  .tm-bandit-standalone .tm-slot-powerup-deck::-webkit-scrollbar {
+    display: none;
+  }
+  .tm-bandit-standalone .tm-slot-powerup-deck > * {
+    flex-shrink: 0;
+  }
+  .tm-bandit-standalone .tm-bandit-bet-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tm-bandit-standalone .tm-bandit-bet-row::-webkit-scrollbar {
+    display: none;
+  }
+  .tm-bandit-standalone .tm-bandit-bet-row > * {
+    flex-shrink: 0;
+  }
+  .tm-bandit-standalone .tm-bandit-bet-label {
+    display: none;
+  }
+  .tm-bandit-standalone .tm-bandit-led-bar {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* Motion off */
+@media (prefers-reduced-motion: reduce) {
+  .tm-slot-electric,
+  .tm-slot-surge-flash,
+  .tm-slot-storm {
+    animation: none;
+    display: none;
+  }
+}
+
+.tm-lite-perf .tm-slot-electric,
+[data-reduced-motion='on'] .tm-slot-electric,
+.tm-lite-perf .tm-slot-storm,
+[data-reduced-motion='on'] .tm-slot-storm {
+  display: none;
 }

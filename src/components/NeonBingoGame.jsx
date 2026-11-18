@@ -339,7 +339,7 @@ export default function NeonBingoGame({
         ctx.fill();
 
         ctx.fillStyle = '#090d16';
-        ctx.font = '900 6.5px monospace';
+        ctx.font = '900 6.5px "Oxanium", sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(String(b.num), b.x, b.y + 0.5);

@@ -302,6 +302,24 @@ export const BOSS_SCREENS_CATALOG = [
     pitch: 'SynergyGPT Q4 Executive Workspace generating ultra-convincing corporate memos.',
     path: '/fake-ai-workspace-boss-screen',
     accent: '#8b5cf6'
+  },
+  {
+    id: 'crackphone',
+    icon: '📱',
+    label: 'Cracked iPhone Screen',
+    pitch: 'Smashed glass, bleeding ink and live sparks shorting inside the screen. Every tap cracks it more.',
+    path: '/fake-cracked-iphone-screen',
+    accent: '#ff7a3d',
+    isNew: true
+  },
+  {
+    id: 'crackpad',
+    icon: '📱',
+    label: 'Cracked iPad Screen',
+    pitch: 'The big-screen version: a shattered tablet with dead pixel lines and electric arcs.',
+    path: '/fake-cracked-ipad-screen',
+    accent: '#b03cff',
+    isNew: true
   }
 ];
 

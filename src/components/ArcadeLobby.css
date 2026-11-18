@@ -53,7 +53,7 @@
   margin: 0;
   font-family: var(--tm-font-neon);
   font-size: clamp(1.6rem, 3.2vw, 2.4rem);
-  font-weight: 400;
+  font-weight: 800;
   line-height: 1.1;
   letter-spacing: 0.05em;
   color: var(--tm-cyan-hot);
@@ -438,8 +438,8 @@
   font-size: 1rem;
   font-weight: 800;
   color: var(--tm-text);
-  font-family: var(--tm-font-display);
-  letter-spacing: 0.02em;
+  font-family: var(--tm-font-title);
+  letter-spacing: 0.03em;
 }
 
 .tm-lobby-card-pitch {
@@ -555,5 +555,73 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 2px;
+  }
+}
+
+/* ---------- Owner brief 18 Nov 2026 (item 8): Games | Prank Screens realm switch ---------- */
+.tm-lobby-realm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 5px;
+  margin: 0 0 16px;
+  border-radius: var(--tm-radius-pill);
+  border: 1px solid var(--tm-night-3);
+  background: var(--tm-night-0);
+}
+
+.tm-lobby-realm-btn {
+  --c: var(--tm-cyan);
+  --hot: var(--tm-cyan-hot);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--tm-radius-pill);
+  background: transparent;
+  color: var(--tm-text-dim);
+  font-family: var(--tm-font-title);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color var(--tm-dur-fast) ease-out, border-color var(--tm-dur-fast) ease-out,
+    box-shadow var(--tm-dur) ease-out;
+}
+
+.tm-lobby-realm-btn.is-pranks {
+  --c: var(--tm-pink);
+  --hot: var(--tm-pink-hot);
+}
+
+.tm-lobby-realm-btn.active {
+  color: var(--hot);
+  border-color: var(--c);
+  background: color-mix(in srgb, var(--c) 12%, var(--tm-night-1));
+  box-shadow: 0 0 16px -4px var(--c), inset 0 0 12px -6px var(--c);
+  text-shadow: 0 0 8px var(--c);
+}
+
+.tm-lobby-realm-count {
+  min-width: 24px;
+  padding: 1px 7px;
+  border-radius: var(--tm-radius-pill);
+  border: 1px solid currentColor;
+  font-family: var(--tm-font-display);
+  font-size: 11px;
+  letter-spacing: 0;
+  opacity: 0.8;
+}
+
+@media (max-width: 480px) {
+  .tm-lobby-realm-btn {
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    gap: 6px;
+    padding: 8px 6px;
   }
 }

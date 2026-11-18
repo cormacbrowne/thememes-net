@@ -1,39 +1,26 @@
-import { useEffect, useState } from 'react';
-import { Crown, Film, Smartphone, Swords, Volume2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { ChevronDown, Crown, Gamepad2, Laugh, PenLine, Skull } from 'lucide-react';
 import { sfx } from '../utils/soundEngine';
-import GameIcon from './GameIcon';
 import NeonSign from './NeonSign';
 import './DualDirectionHero.css';
 
-const MEME_EXPLORE_PILLS = [
-  { id: 'reels', label: 'Reels', Icon: Film, type: 'view' },
-  { id: 'caption_battle', label: 'Caption Battle', Icon: Crown, type: 'battle', testId: 'hero-caption-battle-btn' },
-  { id: 'soundboard', label: 'Soundboard', Icon: Volume2, type: 'soundboard' },
-  { id: 'battle', label: '1v1 Battle', Icon: Swords, type: 'view' },
-  { id: 'guess', label: 'Guess Meme', gameIcon: 'guess', type: 'view' }
-];
-
-const ARCADE_EXPLORE_PILLS = [
-  { id: 'bingo', label: "Bingo '86" },
-  { id: 'slots', label: 'Slots' },
-  { id: 'pinball', label: 'Pinball' },
-  { id: 'pusher', label: 'Coin Dozer' },
-  { id: 'blackjack', label: 'Blackjack' },
-  { id: 'poker', label: 'Poker' },
-  { id: 'roulette', label: 'Roulette' },
-  { id: 'derby', label: 'Derby' },
-  { id: 'stocks', label: 'MEMEDAQ' },
-  { id: 'eightball', label: '8-Ball' }
-];
+/**
+ * Owner brief 18 Nov 2026 (item 2): the home page is a portal. One huge lit sign, then two
+ * neon doors: a cyan MEMES door and a pink PLAY door, each with electricity running round it.
+ * MEMES warps down into the feed (which sits right under the portal); PLAY warps into the arcade.
+ * While the portal is on screen the small sign in the top bar is hidden, so the big one owns
+ * the first screen; scroll past it and the small sign fades back in top left.
+ */
+const WARP_MS = 380;
 
 export default function DualDirectionHero({
   onSelectViewMode,
   onOpenBlankStudio,
   onOpenCaptionBattle,
-  onOpenSoundboard,
-  onOpenInstallModal
+  onScrollToMemes
 }) {
-  const [realmFocus, setRealmFocus] = useState('both'); // 'both' | 'memes' | 'arcade'
+  const rootRef = useRef(null);
+  const [warping, setWarping] = useState(null); // 'memes' | 'play' | null
   const [isFirstVisit] = useState(() => {
     if (typeof window === 'undefined') return false;
     try {
@@ -55,130 +42,143 @@ export default function DualDirectionHero({
     return () => window.clearTimeout(t);
   }, [isFirstVisit]);
 
+  // Hide the top-bar sign while the giant one is in view.
+  useEffect(() => {
+    const el = rootRef.current;
+    const docEl = typeof document !== 'undefined' ? document.documentElement : null;
+    if (!el || !docEl) return undefined;
+    if (typeof IntersectionObserver === 'undefined') {
+      docEl.classList.add('tm-portal-visible');
+      return () => docEl.classList.remove('tm-portal-visible');
+    }
+    const obs = new IntersectionObserver(
+      ([entry]) => docEl.classList.toggle('tm-portal-visible', entry.intersectionRatio > 0.35),
+      { threshold: [0, 0.35, 0.6, 1] }
+    );
+    obs.observe(el);
+    return () => {
+      obs.disconnect();
+      docEl.classList.remove('tm-portal-visible');
+    };
+  }, []);
+
+  const go = (which) => {
+    if (warping) return;
+    setWarping(which);
+    if (which === 'memes') sfx.playToggle?.();
+    else sfx.playJackpot?.();
+    const reduced =
+      typeof window !== 'undefined' &&
+      (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ||
+        document.documentElement.getAttribute('data-reduced-motion') === 'on');
+    window.setTimeout(
+      () => {
+        setWarping(null);
+        if (which === 'memes') onScrollToMemes?.();
+        else onSelectViewMode?.('lobby');
+      },
+      reduced ? 0 : WARP_MS
+    );
+  };
+
   return (
     <section
-      className={`tm-dual-hero ${isFirstVisit ? 'is-first-visit' : ''}`}
-      aria-label="Choose Your Realm: Memes or 80s Cyber-Arcade"
+      ref={rootRef}
+      className={`tm-dual-hero tm-portal ${isFirstVisit ? 'is-first-visit' : ''} ${
+        warping ? `is-warping is-warping-${warping}` : ''
+      }`}
+      aria-label="Choose your world: Memes or Play"
     >
-      <div className="tm-dual-hero-body">
-        <div className="tm-dual-hero-top">
-          <div className="tm-dual-hero-brand">
-            {/* Owner brief 17 Nov 2026 (item 12): the big lit sign, neon flowing through the tubes,
-                is the first thing every visitor sees. Powers on with a stutter on a first visit. */}
-            <div className="tm-dual-hero-sign">
-              <NeonSign size="hero" flow powerOn={isFirstVisit} />
-            </div>
-            <h1 className="tm-dual-hero-heading tm-dual-hero-heading--sr">
-              <span className="tm-dual-hero-lede">TWO 80s WORLDS IN ONE SITE: </span>
-              <span className="is-cyan">MEMES</span> &amp;{' '}
-              <span className="is-pink">CYBER-ARCADE</span>
-            </h1>
-          </div>
+      <div className="tm-portal-sky" aria-hidden="true">
+        <div className="tm-portal-sun" />
+        <div className="tm-portal-floor" />
+      </div>
 
-          <div className="tm-dual-hero-actions">
-            <button
-              type="button"
-              className="ui-tube ui-tube--pink ui-tube-box ui-tube-box--solid tm-hero-cta"
-              onClick={() => {
-                sfx.playToggle?.();
-                onOpenBlankStudio?.();
-              }}
-            >
-              Make a meme
-            </button>
-            <button
-              type="button"
-              className="ui-tube ui-tube--cyan ui-tube-box tm-hero-cta"
-              onClick={() => {
-                sfx.playJackpot?.();
-                onSelectViewMode?.('lobby');
-              }}
-            >
-              Play
-            </button>
-          </div>
+      <div className="tm-portal-body">
+        <div className="tm-portal-sign">
+          <NeonSign size="hero" flow powerOn={isFirstVisit} />
+        </div>
+        <h1 className="tm-dual-hero-heading tm-dual-hero-heading--sr">
+          THE MEMES.net: two 80s worlds in one site, memes and a free neon arcade
+        </h1>
+
+        <div className="tm-portal-doors">
+          <button
+            type="button"
+            className="tm-portal-door is-memes"
+            data-testid="portal-memes-btn"
+            onClick={() => go('memes')}
+          >
+            <span className="tm-portal-door-arc" aria-hidden="true" />
+            <span className="tm-portal-door-inner">
+              <Laugh className="tm-portal-door-icon" size={26} strokeWidth={2.2} aria-hidden="true" />
+              <span className="tm-portal-door-word">MEMES</span>
+              <span className="tm-portal-door-sub">Laugh · Make · Battle</span>
+            </span>
+          </button>
+
+          <button
+            type="button"
+            className="tm-portal-door is-play"
+            data-testid="portal-play-btn"
+            onClick={() => go('play')}
+          >
+            <span className="tm-portal-door-arc" aria-hidden="true" />
+            <span className="tm-portal-door-inner">
+              <Gamepad2 className="tm-portal-door-icon" size={26} strokeWidth={2.2} aria-hidden="true" />
+              <span className="tm-portal-door-word">PLAY</span>
+              <span className="tm-portal-door-sub">Arcade · Vegas · Pranks</span>
+            </span>
+          </button>
         </div>
 
-        {/* Desktop-only single horizontal Explore strip (hidden on phones so first meme is < 320px) */}
-        <div className="tm-hero-explore-row tm-hide-mobile">
-          <div className="tm-dual-focus-tabs" role="tablist" aria-label="Realm Focus View">
-            {[
-              { id: 'both', label: 'All' },
-              { id: 'memes', label: 'Memes' },
-              { id: 'arcade', label: 'Games' }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                aria-selected={realmFocus === tab.id}
-                className={`tm-dual-focus-btn ${realmFocus === tab.id ? 'active' : ''}`}
-                onClick={() => {
-                  sfx.playToggle?.();
-                  setRealmFocus(tab.id);
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {realmFocus !== 'arcade' &&
-            MEME_EXPLORE_PILLS.map((pill) => {
-              const IconComp = pill.Icon;
-              return (
-                <button
-                  key={pill.id}
-                  type="button"
-                  data-testid={pill.testId}
-                  className="tm-portal-quick-pill"
-                  onClick={() => {
-                    sfx.playToggle?.();
-                    if (pill.type === 'battle') onOpenCaptionBattle?.();
-                    else if (pill.type === 'soundboard') onOpenSoundboard?.();
-                    else onSelectViewMode?.(pill.id);
-                  }}
-                >
-                  {IconComp ? (
-                    <IconComp size={13} aria-hidden="true" />
-                  ) : (
-                    <GameIcon id={pill.gameIcon || pill.id} size={14} />
-                  )}
-                  <span>{pill.label}</span>
-                </button>
-              );
-            })}
-
-          {realmFocus !== 'memes' &&
-            ARCADE_EXPLORE_PILLS.map((g) => (
-              <button
-                key={g.id}
-                type="button"
-                className="tm-portal-quick-pill is-game"
-                onClick={() => {
-                  sfx.playToggle?.();
-                  onSelectViewMode?.(g.id);
-                }}
-              >
-                <GameIcon id={g.id} size={14} />
-                <span>{g.label}</span>
-              </button>
-            ))}
-
-          {onOpenInstallModal && (
-            <button
-              type="button"
-              className="tm-portal-quick-pill"
-              onClick={() => {
-                sfx.playToggle?.();
-                onOpenInstallModal();
-              }}
-            >
-              <Smartphone size={13} aria-hidden="true" />
-              <span>iPhone App</span>
-            </button>
-          )}
+        <div className="tm-portal-chips">
+          <button
+            type="button"
+            className="tm-portal-chip"
+            onClick={() => {
+              sfx.playToggle?.();
+              onOpenBlankStudio?.();
+            }}
+          >
+            <PenLine size={13} aria-hidden="true" /> Make a meme
+          </button>
+          <button
+            type="button"
+            className="tm-portal-chip"
+            data-testid="hero-caption-battle-btn"
+            onClick={() => {
+              sfx.playToggle?.();
+              onOpenCaptionBattle?.();
+            }}
+          >
+            <Crown size={13} aria-hidden="true" /> Caption battle
+          </button>
+          <button
+            type="button"
+            className="tm-portal-chip"
+            onClick={() => {
+              sfx.playToggle?.();
+              try {
+                sessionStorage.setItem('tm_lobby_realm', 'pranks');
+              } catch {
+                // ignore
+              }
+              onSelectViewMode?.('lobby');
+            }}
+          >
+            <Skull size={13} aria-hidden="true" /> Prank screens
+          </button>
         </div>
+
+        <button
+          type="button"
+          className="tm-portal-scroll"
+          onClick={() => onScrollToMemes?.()}
+          aria-label="Scroll down to the memes"
+        >
+          <ChevronDown size={22} aria-hidden="true" />
+        </button>
       </div>
     </section>
   );

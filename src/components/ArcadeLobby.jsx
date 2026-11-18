@@ -43,6 +43,9 @@ import {
 } from '../utils/gameRatings';
 import './ArcadeLobby.css';
 
+/** sessionStorage key the home portal sets to open the lobby on the Prank Screens list. */
+export const LOBBY_REALM_KEY = 'tm_lobby_realm';
+
 const GROUP_ICONS = {
   skill: Gamepad2,
   meme: Brain,
@@ -66,6 +69,15 @@ export default function ArcadeLobby({
   onTriggerDeLoreanWarp,
   onOpenPrankDisguise
 }) {
+  const [realm, setRealm] = useState(() => {
+    try {
+      const wanted = sessionStorage.getItem(LOBBY_REALM_KEY);
+      sessionStorage.removeItem(LOBBY_REALM_KEY);
+      return wanted === 'pranks' ? 'pranks' : 'games';
+    } catch {
+      return 'games';
+    }
+  });
   const [activeFilter, setActiveFilter] = useState('all');
   const [sortMode, setSortMode] = useState('top-rated'); // 'top-rated' | 'grouped'
   const [favoriteIds, setFavoriteIds] = useState(() => getFavoriteArcadeGameIds());
@@ -137,10 +149,6 @@ export default function ArcadeLobby({
   );
 
   const visibleGroups = useMemo(() => {
-    if (activeFilter === 'pranks') {
-      return [];
-    }
-
     if (activeFilter === 'favs') {
       const favGames = sortGamesByRating(
         ARCADE_GAMES_CATALOG.filter((g) => favSet.has(g.id)),
@@ -173,18 +181,26 @@ export default function ArcadeLobby({
     }));
   }, [activeFilter, sortMode, favSet, ratingsSummary, sortedAllGames]);
 
-  const showPrankSection = activeFilter === 'pranks' || activeFilter === 'all';
 
   return (
     <section className="tm-lobby" aria-label="Cyber Arcade Lobby">
       <header className="tm-lobby-hero">
         <div className="tm-lobby-hero-copy">
           <h1 className="tm-lobby-title">
-            <span className="is-cyan">Cyber-Arcade</span> <span className="is-pink">Lobby</span>
+            {realm === 'pranks' ? (
+              <>
+                <span className="is-pink">Prank</span> <span className="is-cyan">Screens</span>
+              </>
+            ) : (
+              <>
+                <span className="is-cyan">Cyber-Arcade</span> <span className="is-pink">Lobby</span>
+              </>
+            )}
           </h1>
           <p className="tm-lobby-sub">
-            {ARCADE_GAMES_CATALOG.length} retro skill cabinets &amp; MemeDollarz (M$) tables ·{' '}
-            {BOSS_SCREENS_CATALOG.length} separate office prank disguises
+            {realm === 'pranks'
+              ? `${BOSS_SCREENS_CATALOG.length} fullscreen fakes: tap one, go fullscreen, hand over the phone`
+              : `${ARCADE_GAMES_CATALOG.length} retro skill cabinets & MemeDollarz (M$) tables`}
           </p>
         </div>
 
@@ -256,7 +272,41 @@ export default function ArcadeLobby({
         </div>
       </header>
 
-      {/* Category Filter Pills — Games vs Prank Screens clearly separated */}
+      {/* Owner brief 18 Nov 2026 (item 8): games and prank screens are two separate lists. */}
+      <div className="tm-lobby-realm" role="tablist" aria-label="Games or prank screens">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={realm === 'games'}
+          data-testid="lobby-realm-games"
+          className={`tm-lobby-realm-btn is-games ${realm === 'games' ? 'active' : ''}`}
+          onClick={() => {
+            sfx.playToggle();
+            setRealm('games');
+          }}
+        >
+          <Gamepad2 size={18} aria-hidden="true" />
+          <span>Games</span>
+          <span className="tm-lobby-realm-count">{ARCADE_GAMES_CATALOG.length}</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={realm === 'pranks'}
+          data-testid="lobby-realm-pranks"
+          className={`tm-lobby-realm-btn is-pranks ${realm === 'pranks' ? 'active' : ''}`}
+          onClick={() => {
+            sfx.playToggle();
+            setRealm('pranks');
+          }}
+        >
+          <EyeOff size={18} aria-hidden="true" />
+          <span>Pranks</span>
+          <span className="tm-lobby-realm-count">{BOSS_SCREENS_CATALOG.length}</span>
+        </button>
+      </div>
+
+      {realm === 'games' && (
       <div className="tm-lobby-toolbar">
         <div className="tm-lobby-filters" role="tablist" aria-label="Filter Arcade Games and Prank Screens">
           <button
@@ -295,17 +345,6 @@ export default function ArcadeLobby({
               </button>
             );
           })}
-          <span className="tm-lobby-filter-divider" aria-hidden="true" />
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeFilter === 'pranks'}
-            className={`tm-lobby-filter-pill is-prank-tab ${activeFilter === 'pranks' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('pranks')}
-          >
-            <EyeOff size={14} aria-hidden="true" />
-            <span>Prank Screens ({BOSS_SCREENS_CATALOG.length})</span>
-          </button>
         </div>
 
         {activeFilter === 'all' && (
@@ -328,9 +367,10 @@ export default function ArcadeLobby({
           </div>
         )}
       </div>
+      )}
 
       {/* Continue Playing Row */}
-      {activeFilter === 'all' && recentGames.length > 0 && (
+      {realm === 'games' && activeFilter === 'all' && recentGames.length > 0 && (
         <div className="tm-lobby-section">
           <div className="tm-lobby-section-head">
             <h2 className="tm-lobby-section-title">
@@ -357,7 +397,7 @@ export default function ArcadeLobby({
       )}
 
       {/* Arcade & Casino Games Sections (Higher star ratings at the top) */}
-      {activeFilter !== 'pranks' && (
+      {realm === 'games' && (
         visibleGroups.length === 0 ? (
           <div className="tm-lobby-empty">
             Tap the heart on any cabinet to pin it to your Favourites row.
@@ -390,14 +430,14 @@ export default function ArcadeLobby({
       )}
 
       {/* Separate Office Disguise & Prank Screens Section */}
-      {showPrankSection && (
+      {realm === 'pranks' && (
         <div className="tm-lobby-section tm-lobby-pranks-section">
           <div className="tm-lobby-section-head">
             <h2 className="tm-lobby-section-title">
-              <EyeOff size={15} aria-hidden="true" /> Office Disguises &amp; Prank Screens
+              <EyeOff size={15} aria-hidden="true" /> Fake screens &amp; office disguises
             </h2>
             <span className="tm-lobby-section-desc">
-              Separate from arcade games — fullscreen Boss-Key tools &amp; shareable pranks
+              Not games: fullscreen fakes to fool a friend (or hide from the boss). Tap to launch.
             </span>
           </div>
           <div className="tm-lobby-grid">

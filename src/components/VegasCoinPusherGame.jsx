@@ -1041,7 +1041,7 @@ export default function VegasCoinPusherGame({
       ctx.strokeRect(26, 18, 152, 46);
 
       ctx.fillStyle = '#67e8f9';
-      ctx.font = '900 9px monospace';
+      ctx.font = '900 9px "Oxanium", sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('🎰 SKILL GATE SLOT', 102, 29);
 
@@ -1095,7 +1095,7 @@ export default function VegasCoinPusherGame({
       ctx.strokeStyle = '#ffffff';
       ctx.stroke();
       ctx.fillStyle = '#0f172a';
-      ctx.font = '900 10px sans-serif';
+      ctx.font = '900 10px "Oxanium", sans-serif';
       ctx.fillText('DROP', s.aimX, 98);
       ctx.restore();
 
@@ -1121,7 +1121,7 @@ export default function VegasCoinPusherGame({
       ctx.fillRect(s.gateX - 34, BED_TOP_Y - 22, 68, 18);
       ctx.strokeRect(s.gateX - 34, BED_TOP_Y - 22, 68, 18);
       ctx.fillStyle = '#ffffff';
-      ctx.font = '900 10px monospace';
+      ctx.font = '900 10px "Oxanium", sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(`🎯 GATE ${s.gateHits || 0}/3`, s.gateX, BED_TOP_Y - 10);
       ctx.restore();
@@ -1261,7 +1261,7 @@ export default function VegasCoinPusherGame({
       ctx.fillRect(botBounds.left, FRONT_LIP_Y - 4, botBounds.right - botBounds.left, 16);
 
       ctx.fillStyle = '#052e16';
-      ctx.font = '900 11px monospace';
+      ctx.font = '900 11px "Oxanium", sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(
         '▼ WINNING PAYOFF EDGE — PUSH COINS & PRIZES OVER THIS LIP! ▼',

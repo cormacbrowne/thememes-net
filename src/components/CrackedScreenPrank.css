@@ -1,0 +1,324 @@
+/* Owner brief 18 Nov 2026 (item 5): smashed phone / tablet screen prank. Deliberately not the
+   site's neon look: it must pass for a real broken lock screen. */
+
+.tm-crack {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+  z-index: 0;
+}
+
+/* Abstract wallpaper (no brand imagery) */
+.tm-crack-wallpaper {
+  position: absolute;
+  inset: -4%;
+  background:
+    radial-gradient(60% 45% at 20% 18%, #ff7a3d 0%, transparent 60%),
+    radial-gradient(55% 50% at 85% 30%, #b03cff 0%, transparent 62%),
+    radial-gradient(70% 60% at 50% 95%, #1f6bff 0%, transparent 65%),
+    linear-gradient(160deg, #2a0b3d, #0b1a3d 60%, #050814);
+  filter: saturate(1.1) brightness(0.82);
+}
+
+.tm-crack-lock {
+  position: absolute;
+  top: 9%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.35);
+}
+
+.tm-crack-date {
+  font-size: clamp(17px, 2.4vh, 24px);
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.tm-crack-time {
+  font-size: clamp(78px, 12.5vh, 132px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.tm-crack.is-tablet .tm-crack-lock {
+  top: 12%;
+  text-align: left;
+  left: 8%;
+}
+
+.tm-crack.is-tablet .tm-crack-time {
+  font-size: clamp(90px, 15vh, 170px);
+}
+
+.tm-crack-lock-foot {
+  position: absolute;
+  left: 13%;
+  right: 13%;
+  bottom: 6.5%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.tm-crack-round {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(30, 30, 40, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.tm-crack.is-tablet .tm-crack-lock-foot {
+  display: none;
+}
+
+.tm-crack-homebar {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  width: 134px;
+  height: 5px;
+  transform: translateX(-50%);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+/* ---------- LCD damage ---------- */
+.tm-crack-ink {
+  position: absolute;
+  width: 46vmin;
+  height: 38vmin;
+  transform: translate(-48%, -52%) rotate(-12deg);
+  border-radius: 46% 54% 42% 58% / 52% 40% 60% 48%;
+  background:
+    radial-gradient(40% 46% at 38% 44%, #000 0 70%, transparent 100%),
+    radial-gradient(34% 30% at 68% 60%, #000 0 60%, transparent 100%),
+    radial-gradient(22% 40% at 52% 22%, rgba(0, 0, 0, 0.95) 0 50%, transparent 100%),
+    radial-gradient(closest-side, rgba(0, 0, 0, 0.85) 0 52%, rgba(40, 0, 70, 0.5) 72%, transparent 100%);
+  filter: blur(2.5px);
+  pointer-events: none;
+}
+
+.tm-crack-ink::after {
+  content: '';
+  position: absolute;
+  left: 58%;
+  top: 8%;
+  width: 18%;
+  height: 120%;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.6) 60%, transparent);
+  border-radius: 40%;
+  transform: rotate(14deg);
+  filter: blur(3px);
+}
+
+.tm-crack-deadline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, #ff2bd6, #ff2bd6 40%, #7a00ff 70%, #ff2bd6);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.tm-crack-deadline.is-green {
+  width: 1px;
+  background: #34ff6a;
+  opacity: 0.7;
+}
+
+.tm-crack-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 14px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.14) 0 3px, rgba(0, 255, 200, 0.18) 3px 5px, rgba(255, 0, 120, 0.16) 5px 9px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: tmCrackBand 4.7s steps(1) infinite;
+}
+
+@keyframes tmCrackBand {
+  0%,
+  60% {
+    transform: translate(0, 0);
+    opacity: 0.75;
+  }
+  62% {
+    transform: translate(-14px, 22px);
+    opacity: 1;
+  }
+  70% {
+    transform: translate(9px, -6px);
+    opacity: 0.6;
+  }
+  78%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.75;
+  }
+}
+
+/* ---------- Glass ---------- */
+.tm-crack-glass {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.tm-crack-glass path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tm-crack-shadow path {
+  stroke: rgba(0, 0, 0, 0.55);
+  stroke-width: 2.6;
+  transform: translate(1px, 1.2px);
+}
+
+.tm-crack-line path {
+  stroke: rgba(255, 255, 255, 0.82);
+  stroke-width: 1.15;
+  filter: drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.55));
+}
+
+.tm-crack-line path.is-thin {
+  stroke: rgba(255, 255, 255, 0.55);
+  stroke-width: 0.7;
+}
+
+.tm-crack-core {
+  fill: rgba(255, 255, 255, 0.85);
+  filter: blur(1.2px);
+}
+
+.tm-crack-sparks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* A slow, gentle backlight stutter: one dip every few seconds, never strobing. */
+.tm-crack-flicker {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  animation: tmCrackFlicker 6.4s steps(1) infinite;
+}
+
+@keyframes tmCrackFlicker {
+  0%,
+  84%,
+  100% {
+    opacity: 0;
+  }
+  85% {
+    opacity: 0.45;
+  }
+  88% {
+    opacity: 0.1;
+  }
+  92% {
+    opacity: 0;
+  }
+}
+
+.tm-crack.is-still .tm-crack-band,
+.tm-crack.is-still .tm-crack-flicker {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tm-crack-band,
+  .tm-crack-flicker {
+    animation: none;
+  }
+}
+
+/* Exit hotspot used by BossKeyOverlay: invisible, top-left corner, triple tap. */
+.tm-crack-exit-hotspot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 64px;
+  height: 64px;
+  z-index: 5;
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+/* Start sheet: how to run the prank, then it gets out of the way. */
+.tm-crack-start {
+  position: fixed;
+  inset: auto 12px calc(16px + env(safe-area-inset-bottom, 0px)) 12px;
+  z-index: 6;
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(10, 10, 18, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.7);
+  font-family: var(--tm-font-body);
+  color: #f4f1ff;
+  cursor: default;
+}
+
+.tm-crack-start h2 {
+  margin: 0 0 6px;
+  font-size: 17px;
+}
+
+.tm-crack-start ol {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #d2cceb;
+}
+
+.tm-crack-start-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.tm-crack-start-actions button {
+  flex: 1;
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.tm-crack-start-actions button.is-go {
+  background: #ff2e88;
+  border-color: #ff2e88;
+}
+
+.tm-crack.is-tablet .tm-crack-ink {
+  width: 30vmin;
+  height: 24vmin;
+}

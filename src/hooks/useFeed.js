@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { getSupabaseClient } from '../supabaseClient';
+import { readCachedHiddenSeeds, fetchHiddenSeeds } from '../utils/hiddenSeeds';
 import { sfx } from '../utils/soundEngine';
 import { haptic } from '../utils/juice';
 import { triggerWinCelebration } from '../utils/winCelebration';
@@ -141,6 +142,23 @@ export function useFeed({
       return [...STARTER_MEMES];
     }
   });
+  const [hiddenSeeds, setHiddenSeeds] = useState(() => readCachedHiddenSeeds());
+  useEffect(() => {
+    let alive = true;
+    fetchHiddenSeeds().then((set) => {
+      if (alive && set) setHiddenSeeds(set);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  const feedMemes = useMemo(
+    () =>
+      hiddenSeeds.size
+        ? memes.filter((m) => !(m?.is_seed && hiddenSeeds.has(String(m.id))))
+        : memes,
+    [memes, hiddenSeeds]
+  );
   const memesRef = useRef(memes);
   useEffect(() => {
     memesRef.current = memes;
@@ -1864,7 +1882,7 @@ export function useFeed({
   };
 
   return {
-    memes,
+    memes: feedMemes,
     isLoadingFeed,
     visibleCount,
     setVisibleCount,

@@ -502,12 +502,12 @@ export default function NeonDerbyGame({
         ctx2d.fill();
 
         ctx2d.fillStyle = '#090d16';
-        ctx2d.font = `bold ${isCompactW ? 10 : 12}px system-ui, sans-serif`;
+        ctx2d.font = `bold ${isCompactW ? 10 : 12}px "Oxanium", system-ui, sans-serif`;
         ctx2d.textAlign = 'center';
         ctx2d.textBaseline = 'middle';
         ctx2d.fillText(String(horse.lane), x - 10, yMid + bob + 0.5);
 
-        ctx2d.font = `${horseFontSize}px system-ui, sans-serif`;
+        ctx2d.font = `${horseFontSize}px "Oxanium", system-ui, sans-serif`;
         ctx2d.fillText(horse.emoji, x + 10, yMid + bob);
 
         // Live rank badge (1st/2nd/3rd) + horse name tag (flips left near finish wire so it never clips)
@@ -515,7 +515,7 @@ export default function NeonDerbyGame({
         const nearFinish = x > w - (isCompactW ? 88 : 112);
         const tagText = liveRank && liveRank <= 3 ? `${liveRank === 1 ? '🥇' : liveRank === 2 ? '🥈' : '🥉'} ${horse.short}` : horse.short;
         ctx2d.fillStyle = isPicked ? '#fde047' : liveRank === 1 ? '#facc15' : '#e0f2fe';
-        ctx2d.font = `bold ${isCompactW ? 9.5 : 11}px system-ui, sans-serif`;
+        ctx2d.font = `bold ${isCompactW ? 9.5 : 11}px "Oxanium", system-ui, sans-serif`;
         ctx2d.textAlign = nearFinish ? 'right' : 'left';
         ctx2d.fillText(tagText, nearFinish ? x - (silkRadius + 16) : x + 26, yMid + bob);
       }
@@ -546,7 +546,7 @@ export default function NeonDerbyGame({
         ctx2d.lineWidth = 1;
         ctx2d.strokeRect(10, 8, isCompactW ? 196 : 228, 22);
         ctx2d.fillStyle = elapsedRatio >= 0.88 ? '#facc15' : '#ff2a85';
-        ctx2d.font = 'bold 11px system-ui, sans-serif';
+        ctx2d.font = 'bold 11px "Oxanium", system-ui, sans-serif';
         ctx2d.textAlign = 'left';
         ctx2d.textBaseline = 'middle';
         const camStage = elapsedRatio >= 0.88 ? 'PHOTO FINISH' : elapsedRatio >= 0.62 ? 'STRETCH RUN' : 'FULL FIELD';

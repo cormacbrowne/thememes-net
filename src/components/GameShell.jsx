@@ -35,6 +35,57 @@ export default function GameShell({
   const [localSoundOn, setLocalSoundOn] = useState(() => getSettings().sfxOn);
   const [deltaInfo, setDeltaInfo] = useState(null);
   const prevTokensRef = useRef(tokens);
+  const bodyRef = useRef(null);
+  const fitRef = useRef(null);
+
+  // Owner brief 18 Nov 2026 (item 6): in full-screen mode on a phone the whole game must fit
+  // with no scrolling. Measure the game's natural height and zoom it down to fit (CSS zoom keeps
+  // touch / click coordinates right, unlike transform). Never below 55%; off outside full screen.
+  useEffect(() => {
+    const body = bodyRef.current;
+    const fit = fitRef.current;
+    if (!body || !fit || typeof window === 'undefined') return undefined;
+    let raf = 0;
+    let last = 1;
+    const measure = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const fs = document.documentElement.classList.contains('tm-game-fs');
+        if (!fs || window.innerWidth > 1024) {
+          if (last !== 1) {
+            fit.style.zoom = '';
+            last = 1;
+          }
+          return;
+        }
+        // Read the unzoomed height in the same frame (no paint in between, so no flicker).
+        const prevZoom = fit.style.zoom;
+        fit.style.zoom = '';
+        const natural = fit.getBoundingClientRect().height;
+        fit.style.zoom = prevZoom;
+        const avail = body.clientHeight - 2;
+        const next = Math.max(0.55, Math.min(1, avail / Math.max(1, natural)));
+        if (Math.abs(next - last) > 0.01) {
+          fit.style.zoom = next === 1 ? '' : String(next);
+          last = next;
+        }
+      });
+    };
+    measure();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+    ro?.observe(body);
+    ro?.observe(fit);
+    const mo = new MutationObserver(measure);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    window.addEventListener('resize', measure);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro?.disconnect();
+      mo.disconnect();
+      window.removeEventListener('resize', measure);
+      fit.style.zoom = '';
+    };
+  }, []);
   const deltaSeqRef = useRef(0);
 
   const effectiveSoundOn = soundOnProp !== undefined ? soundOnProp : localSoundOn;
@@ -238,7 +289,11 @@ export default function GameShell({
         </div>
       )}
 
-      <div className="tm-gs-body">{children}</div>
+      <div className="tm-gs-body" ref={bodyRef}>
+        <div className="tm-gs-fit" ref={fitRef}>
+          {children}
+        </div>
+      </div>
 
       <p className="tm-gs-compliance">
         Tokens are free, just for fun, can&apos;t be bought or cashed out.

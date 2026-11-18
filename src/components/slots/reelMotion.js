@@ -251,7 +251,7 @@ export function createMachineReelController() {
       r.launchMs = launchMs;
       // Exciting surge spins accelerate past standard cruise speed!
       const baseCruise = turbo ? 3650 : 2750;
-      r.cruiseSpeed = surge ? Math.round(baseCruise * 1.38) : baseCruise;
+      r.cruiseSpeed = surge ? Math.round(baseCruise * 1.6) : baseCruise;
       r.surgeMode = Boolean(surge) && !disabled;
       r.settleMs = settleMs;
       r.overshootPx = disabled ? 0 : 12 + (idx % 3);

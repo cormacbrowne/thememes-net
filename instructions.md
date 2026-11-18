@@ -25,6 +25,20 @@
 
 ---
 
+## 000. Owner brief 18 Nov 2026 (evening) — done
+
+- [x] **1 Opens on profile:** the "pick your @handle" nudge fired whenever `get_my_profile` failed (slow phone wake-up) because a missing profile looked like "no handle". Now `needsHandle` is only true when the profile loaded, the cached handle is reused on a failed fetch, and the nudge runs only on `/` at most once every 3 days (`useAuth.js`, `App.jsx`).
+- [x] **2 Home portal:** `DualDirectionHero.jsx/.css` is now a full-first-screen portal: giant flowing sign over a striped sun and moving grid floor, a cyan MEMES door (warps down to the feed) and a pink PLAY door (warps to the lobby), each with sparks racing round the tube; small chips for Make a meme / Caption battle / Prank screens. The top-bar sign hides while the portal is in view (`html.tm-portal-visible`).
+- [x] **3 Meme curation:** `/admin/moderation` → **Curate** tab (`ModerationCurate.jsx`). Grid of every live meme (uploads + built-in seeds) with Suspects filter (no title, broken image, duplicate file/hash/title, downvoted), multi-select, Hide / Restore. Migration `20261118000001_meme_curation.sql` (applied live 18 Nov 2026): `mod_curate_meme` (reversible, no strike, files kept) and `hidden_seed_memes` + `mod_hide_seed`; the feed filters hidden seeds (`utils/hiddenSeeds.js`, `useFeed.js`).
+- [x] **4/9 Fonts:** owner picked **Orbitron** (self-hosted `public/fonts/orbitron-latin-wght.woff2`, OFL). New token `--tm-font-title`; `--tm-font-neon` now points at it. All `h1`/`h2`, game titles (`.tm-gs-title`), lobby card titles and lit signs use it; meme titles stay in Outfit. Canvas labels moved from generic sans to Oxanium. Prank screens keep their deliberately realistic system fonts; Impact stays for captions / win shouts.
+- [x] **5 Cracked screen pranks:** `CrackedScreenPrank.jsx/.css`, disguises `crackphone` / `crackpad` (keys 7/8), routes `/fake-cracked-iphone-screen` and `/fake-cracked-ipad-screen`. Generated cracks, ink bleed, dead pixel lines, canvas sparks + arcs, tap = new impact. Start sheet; hidden triple-tap top-left corner for controls.
+- [x] **6 Full screen:** top-bar button is now a lit labelled FULL pill (share + Lobby label hidden ≤480px to make room). `GameShell` zooms the game to fit the screen in full-screen mode on phones/tablets (min 55%); roulette gets half-height number rows in full screen. Blackjack, poker, pinball, crush, stocks already fit.
+- [x] **7 Slots one-screen:** paytable, coin-op/odds strips, missions, record, feature quotes and the "← Memes" button moved into a **How to play** sheet (portal). Cabinet gets an electric spark frame, random ⚡ SURGE spins (28%, 1.6× reel speed, banner), and a lightning-storm overlay on BIG/MEGA/JACKPOT. Reels grow on tall screens. Odds and payouts unchanged.
+- [x] **8 Games vs pranks:** lobby has a top-level GAMES | PRANKS switch; the two lists never mix.
+- [ ] **Follow-ups:** roulette and derby still fit only by zooming to ~60% in Safari with bars showing; a dedicated phone layout for each would read better. Curate tab not yet clicked through with a moderator login.
+
+---
+
 ## 00. 🧹 Phase 36: "Meme core first" — remaining items (completed 36.1–36.12 moved to `docs/HISTORY.md`)
 
 - [ ] **36.6b Deploy `submit-caption-entry`** with the new `_shared/identity.js` (not redeployed yet; only matters for Google accounts with no handle entering the daily caption battle).

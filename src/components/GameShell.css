@@ -71,6 +71,7 @@
 
 .tm-gs-title {
   margin: 0;
+  font-family: var(--tm-font-title);
   font-size: clamp(0.95rem, 2.2vw, 1.2rem);
   font-weight: 900;
   letter-spacing: 0.02em;
@@ -277,5 +278,51 @@
   .tm-gs-compliance {
     font-size: 0.65rem;
     margin-top: 2px;
+  }
+}
+
+/* Owner brief 18 Nov 2026 (item 6): wrapper that GameShell zooms to fit in full-screen mode. */
+.tm-gs-fit {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+  min-width: 0;
+}
+
+/* Full screen: the top arcade bar is gone, so the shell owns the whole screen; one slim header row. */
+html.tm-game-fs .tm-gs-shell {
+  min-height: 100dvh;
+  max-height: 100dvh;
+}
+
+html.tm-game-fs .tm-gs-compliance,
+html.tm-game-fs .tm-gs-eyebrow {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  html.tm-game-fs .tm-gs-header {
+    flex-wrap: nowrap;
+    padding: 3px 50px 3px 8px;
+    margin-bottom: 3px;
+  }
+
+  html.tm-game-fs .tm-gs-right {
+    width: auto;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+  }
+
+  html.tm-game-fs .tm-gs-right .tm-gs-btn span {
+    display: none;
+  }
+
+  html.tm-game-fs .tm-gs-right > :is(button[aria-label^='Share'], .tm-radio-toggle) {
+    display: none;
+  }
+
+  html.tm-game-fs .tm-gs-left {
+    min-width: 0;
+    flex: 1 1 auto;
   }
 }

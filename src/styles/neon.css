@@ -125,7 +125,7 @@
 
 .ui-tube-text {
   font-family: var(--tm-font-neon);
-  font-weight: 400;
+  font-weight: 800;
   color: var(--hot);
   text-shadow: 0 0 10px var(--c);
   letter-spacing: 0.04em;

@@ -145,6 +145,7 @@ export function FixedArcadeTopBar({
           window.scrollTo?.({ top: 0, left: 0, behavior: 'auto' });
         }}
         title="Back to Cyber-Arcade Lobby"
+        aria-label="Back to Cyber-Arcade Lobby"
       >
         <Gamepad2 size={14} aria-hidden="true" />
         <span>Lobby</span>
@@ -189,11 +190,12 @@ export function FixedArcadeTopBar({
           title="Play full screen"
           aria-label="Play full screen"
         >
-          <Maximize2 size={16} aria-hidden="true" />
+          <Maximize2 size={15} aria-hidden="true" />
+          <span>Full</span>
         </button>
         <button
           type="button"
-          className="tm-fixed-icon-btn"
+          className="tm-fixed-icon-btn tm-fixed-share-btn"
           onClick={handleShareCurrentGame}
           title="Copy or Share Direct Link to This Game"
           aria-label="Share direct link to this game"

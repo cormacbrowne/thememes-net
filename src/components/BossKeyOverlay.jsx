@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { PRANK_DISGUISE_TO_PATH, SITE_ORIGIN, getSeoRouteByPath } from '../data/seoRoutes';
+import CrackedScreenPrank from './CrackedScreenPrank';
 import './BossKeyOverlay.css';
 
 const DISGUISE_MODES = [
@@ -9,8 +10,12 @@ const DISGUISE_MODES = [
   { id: 'zoom', label: '📹 3. Teams / Zoom' },
   { id: 'ai', label: '🤖 4. Enterprise AI' },
   { id: 'update', label: '🔄 5. OS Update' },
-  { id: 'bsod', label: '💀 6. Blue Screen' }
+  { id: 'bsod', label: '💀 6. Blue Screen' },
+  { id: 'crackphone', label: '📱 7. Cracked iPhone' },
+  { id: 'crackpad', label: '📱 8. Cracked iPad' }
 ];
+
+const CRACK_IDS = new Set(['crackphone', 'crackpad']);
 
 const INITIAL_EXCEL_ROWS = [
   ['Q1-2026', 'North America Cloud Ops', '$1,420,690.00', '$1,380,110.00', '+2.94%', 'On Track', 'A. Vance'],
@@ -87,6 +92,8 @@ export default function BossKeyOverlay({
   const [aiMessages, setAiMessages] = useState([AI_COPILOT_MEMOS[0]]);
   const [bsodPct, setBsodPct] = useState(42);
   const [prevInitialDisguise, setPrevInitialDisguise] = useState(initialDisguise);
+  const [crackSheet, setCrackSheet] = useState('start'); // 'start' | 'menu' | null
+  const cornerTapsRef = useRef({ n: 0, t: 0 });
 
   if (initialDisguise !== prevInitialDisguise) {
     setPrevInitialDisguise(initialDisguise);
@@ -127,6 +134,7 @@ export default function BossKeyOverlay({
 
   const selectDisguise = (nextId) => {
     setDisguise(nextId);
+    if (CRACK_IDS.has(nextId)) setCrackSheet('start');
     if (nextId === 'bsod') sfx.playXpCrash();
     if (onDisguiseChange) onDisguiseChange(nextId);
   };
@@ -197,6 +205,8 @@ export default function BossKeyOverlay({
       else if (e.key === '4') selectDisguise('ai');
       else if (e.key === '5') selectDisguise('update');
       else if (e.key === '6') selectDisguise('bsod');
+      else if (e.key === '7') selectDisguise('crackphone');
+      else if (e.key === '8') selectDisguise('crackpad');
       else if (disguise === 'terminal' && !ignoredKeys.has(e.key)) {
         handleAppendTerminalLog();
       }
@@ -204,6 +214,83 @@ export default function BossKeyOverlay({
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   });
+
+  if (CRACK_IDS.has(disguise)) {
+    const onCornerTap = (e) => {
+      e.stopPropagation();
+      const now = Date.now();
+      const c = cornerTapsRef.current;
+      c.n = now - c.t < 650 ? c.n + 1 : 1;
+      c.t = now;
+      if (c.n >= 3) {
+        c.n = 0;
+        setCrackSheet('menu');
+      }
+    };
+    return (
+      <div className="tm-boss-overlay tm-boss-overlay--crack" role="dialog" aria-label="Cracked screen prank">
+        <CrackedScreenPrank key={disguise} device={disguise === 'crackpad' ? 'tablet' : 'phone'} />
+        <button
+          type="button"
+          className="tm-crack-exit-hotspot"
+          aria-label="Triple-tap for prank controls"
+          onPointerUp={onCornerTap}
+        />
+        {crackSheet && (
+          <div className="tm-crack-start" onPointerUp={(e) => e.stopPropagation()}>
+            {crackSheet === 'start' ? (
+              <>
+                <h2>{disguise === 'crackpad' ? 'Cracked iPad prank' : 'Cracked iPhone prank'}</h2>
+                <ol>
+                  <li>Tap <strong>Start</strong>. On iPhone, add the site to your Home Screen first for a true full screen.</li>
+                  <li>Leave it on the table, or hand it over: &ldquo;I just dropped it&hellip;&rdquo;</li>
+                  <li>Every tap cracks it more and spits sparks.</li>
+                  <li>To get out: triple-tap the <strong>top-left corner</strong>, or press Esc.</li>
+                </ol>
+                <div className="tm-crack-start-actions">
+                  <button type="button" onClick={onExitBossMode}>
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    className="is-go"
+                    onClick={() => {
+                      setCrackSheet(null);
+                      if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen?.().catch(() => {});
+                      }
+                    }}
+                  >
+                    Start
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2>Prank controls</h2>
+                <div className="tm-crack-start-actions">
+                  <button type="button" onClick={() => selectDisguise(disguise === 'crackpad' ? 'crackphone' : 'crackpad')}>
+                    {disguise === 'crackpad' ? 'iPhone version' : 'iPad version'}
+                  </button>
+                  <button type="button" onClick={handleSharePrankScreen}>
+                    {copiedPrankLink ? 'Link copied' : 'Share'}
+                  </button>
+                </div>
+                <div className="tm-crack-start-actions" style={{ marginTop: 8 }}>
+                  <button type="button" onClick={() => setCrackSheet(null)}>
+                    Keep pranking
+                  </button>
+                  <button type="button" className="is-go" onClick={onExitBossMode}>
+                    Exit prank
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="tm-boss-overlay" role="dialog" aria-label="Enterprise Productivity Portal">

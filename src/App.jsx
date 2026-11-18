@@ -75,7 +75,7 @@ const ArcadeAiAssistant = lazyWithRetry(() => import('./components/ArcadeAiAssis
 const AuthModal = lazyWithRetry(() => import('./components/AuthModal'));
 const MemeTheaterModal = lazyWithRetry(() => import('./components/MemeTheaterModal'));
 const ShareMemeSheet = lazyWithRetry(() => import('./components/ShareMemeSheet'));
-const PRANK_SCREEN_IDS = new Set(['zoom', 'excel', 'bsod', 'update', 'terminal', 'ai']);
+const PRANK_SCREEN_IDS = new Set(['zoom', 'excel', 'bsod', 'update', 'terminal', 'ai', 'crackphone', 'crackpad']);
 const FULLSCREEN_GAME_IDS = new Set(
   ARCADE_GAMES_CATALOG.map((g) => g.id).filter((id) => !PRANK_SCREEN_IDS.has(id))
 );
@@ -396,11 +396,16 @@ export default function App() {
   const needsHandle = Boolean(user?.verified && user?.needsHandle);
   useEffect(() => {
     if (!needsHandle) return;
+    // Only nudge from the home page, and at most once every 3 days: phones (iOS home-screen
+    // apps especially) start a fresh session on almost every open, so a per-session nudge
+    // made the site open on the profile sheet instead of home.
+    if (typeof window !== 'undefined' && window.location.pathname !== '/') return;
     try {
-      if (sessionStorage.getItem('tm_handle_nudged') === '1') return;
-      sessionStorage.setItem('tm_handle_nudged', '1');
+      const last = Number(localStorage.getItem('tm_handle_nudged_at') || 0);
+      if (Date.now() - last < 3 * 24 * 60 * 60 * 1000) return;
+      localStorage.setItem('tm_handle_nudged_at', String(Date.now()));
     } catch {
-      // storage blocked: still nudge once for this render
+      return;
     }
     const t = setTimeout(() => setProfileUsername(user.username), 900);
     return () => clearTimeout(t);

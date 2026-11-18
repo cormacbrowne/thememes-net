@@ -31,7 +31,9 @@ const NEON_PALETTES = {
   bsod: { main: '#19f0ff', sec: '#8a3dff', hot: '#e2fdff' },
   update: { main: '#19f0ff', sec: '#3dff9a', hot: '#e2fdff' },
   terminal: { main: '#3dff9a', sec: '#ffb800', hot: '#d9ffec' },
-  ai: { main: '#8a3dff', sec: '#ff2e88', hot: '#efe2ff' }
+  ai: { main: '#8a3dff', sec: '#ff2e88', hot: '#efe2ff' },
+  crackphone: { main: '#19f0ff', sec: '#ffb800', hot: '#e2fdff' },
+  crackpad: { main: '#8a3dff', sec: '#ffb800', hot: '#efe2ff' }
 };
 
 function TubePath({ d, color, hot = '#ffffff', width = 2.4 }) {
@@ -290,6 +292,22 @@ function renderGameGlyph(id, p) {
         <>
           <TubePath d="M24 9 A15 15 0 1 1 11 31" color={p.main} hot={p.hot} width={2.4} />
           <TubePath d="M9 26 L11 32 L17 30 M20 24 L28 24 M24 20 L24 28" color={p.sec} hot="#d9ffec" width={2} />
+        </>
+      );
+
+    case 'crackphone':
+      return (
+        <>
+          <TubePath d="M15 6 L33 6 Q36 6 36 9 L36 39 Q36 42 33 42 L15 42 Q12 42 12 39 L12 9 Q12 6 15 6 Z" color={p.main} hot={p.hot} width={2.1} />
+          <TubePath d="M29 31 L24 24 L19 27 M29 31 L33 25 M29 31 L22 37 M24 24 L22 16" color={p.sec} hot="#fff1c9" width={1.7} />
+        </>
+      );
+
+    case 'crackpad':
+      return (
+        <>
+          <TubePath d="M9 9 L39 9 Q42 9 42 12 L42 36 Q42 39 39 39 L9 39 Q6 39 6 36 L6 12 Q6 9 9 9 Z" color={p.main} hot={p.hot} width={2.1} />
+          <TubePath d="M18 20 L24 26 L31 22 M18 20 L13 15 M18 20 L14 30 M24 26 L27 34 M31 22 L36 17" color={p.sec} hot="#fff1c9" width={1.7} />
         </>
       );
 

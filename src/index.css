@@ -17,12 +17,26 @@ body {
 }
 
 /* Phase 36 type roles: Oxanium for headings and numbers, Outfit for reading, Tilt Neon for lit words. */
-h1,
-h2,
 h3,
 h4 {
   font-family: var(--tm-font-display);
   letter-spacing: 0.01em;
+}
+
+/* Owner pick 18 Nov 2026: every page / game / modal title is Orbitron. Meme titles stay in the
+   reading font (user-written text). */
+h1,
+h2 {
+  font-family: var(--tm-font-title);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+h2.mc-title,
+h2.tm-reels-title,
+h2.tm-card-title {
+  font-family: var(--tm-font-body);
+  letter-spacing: 0;
 }
 
 button,

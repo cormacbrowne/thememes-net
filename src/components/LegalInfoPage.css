@@ -2,7 +2,7 @@
   min-height: 100dvh;
   background: radial-gradient(circle at top, rgba(0, 245, 255, 0.08), transparent 45%), var(--tm-night-0);
   color: var(--tm-text);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--tm-font-body);
   padding: 16px 14px 56px;
   box-sizing: border-box;
 }

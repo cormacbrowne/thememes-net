@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { sfx } from '../utils/soundEngine';
 import { pulse } from '../utils/analytics';
 import {
@@ -19,7 +20,6 @@ import {
   saveSlotDailyMissions,
   SLOT_DAILY_MISSION_DEFS
 } from './slots/slotVisualHelpers';
-import EightiesIconsStrip from './EightiesIconsStrip';
 import {
   SLOT_MACHINES,
   SLOT_MACHINE_BY_ID,
@@ -271,10 +271,20 @@ export default function VegasSlotMachine({
   onSpendTokens,
   onPayoutTokens,
   onRecordHighScore,
-  onOpenUpload,
-  onBackToFeed
+  onOpenUpload
 }) {
   const featuredMeme = memes && memes.length > 0 ? memes[0] : null;
+  // Owner brief 18 Nov 2026 (item 7): with the info bands moved to How to play, tall screens
+  // have room to spare, so the reels grow to use it.
+  const [bigReels, setBigReels] = useState(
+    () => typeof window !== 'undefined' && window.innerHeight >= 700 && !embedded
+  );
+  useEffect(() => {
+    if (embedded || typeof window === 'undefined') return undefined;
+    const onResize = () => setBigReels(window.innerHeight >= 700);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [embedded]);
 
   const [machineId, setMachineId] = useState(readInitialMachineId);
   const activeMachine = SLOT_MACHINE_BY_ID[machineId] || SLOT_MACHINES[0];
@@ -335,7 +345,7 @@ export default function VegasSlotMachine({
   });
   const [neonFreeSpins, setNeonFreeSpins] = useState(0);
   const [neonFreeSpinStake, setNeonFreeSpinStake] = useState(0);
-  const [neonSurgeBanner, setNeonSurgeBanner] = useState(
+  const [, setNeonSurgeBanner] = useState(
     '⚡ 6 NEON POWERUPS ONLINE — Charge reactor cells & fire laser combos!'
   );
 
@@ -346,7 +356,7 @@ export default function VegasSlotMachine({
   const [mustangFreeSpins, setMustangFreeSpins] = useState(0);
   const [freeSpinStake, setFreeSpinStake] = useState(0);
   const [mustangPot, setMustangPot] = useState(60); // Progressive pot display
-  const [dougieBanner, setDougieBanner] = useState(() => pickDougieQuote('idle'));
+  const [, setDougieBanner] = useState(() => pickDougieQuote('idle'));
   const [armedPowerups, setArmedPowerups] = useState({
     coffeeRush: false, // 1.5x next spin
     pieWild: false, // Full Wild Reel 3
@@ -1008,7 +1018,7 @@ export default function VegasSlotMachine({
     }
 
     spinSerialRef.current += 1;
-    const isSurgeSpin = useFever || spinSerialRef.current % 4 === 0;
+    const isSurgeSpin = useFever || Math.random() < 0.28;
     setSurgeRollActive(isSurgeSpin);
     advanceDailyMissions({ spinsDelta: 1, featureUsed: useFever });
     if (!useFever) triggerChargeSlosh();
@@ -1419,7 +1429,7 @@ export default function VegasSlotMachine({
     }
 
     spinSerialRef.current += 1;
-    const isSurgeRoll = usedAnyPowerup || isFreeSpinRound || spinSerialRef.current % 4 === 0;
+    const isSurgeRoll = usedAnyPowerup || isFreeSpinRound || Math.random() < 0.28;
     setSurgeRollActive(isSurgeRoll);
     advanceDailyMissions({ spinsDelta: 1, featureUsed: usedAnyPowerup });
     triggerChargeSlosh();
@@ -2022,6 +2032,17 @@ export default function VegasSlotMachine({
               isHighRollerNeon ? `tm-cabinet-highroller-neon tm-neon-theme-${activeMachine.neonTheme}` : ''
             }`}
           >
+            {/* Owner brief 18 Nov 2026 (item 7): electricity racing round the cabinet tube. */}
+            <span className="tm-slot-electric" aria-hidden="true" />
+            {surgeRollActive && isAnySpinning && (
+              <div className="tm-slot-surge-flash" aria-hidden="true">
+                ⚡ SURGE ⚡
+              </div>
+            )}
+            {isWinner && !isAnySpinning && ['big', 'mega', 'jackpot'].includes(lastOutcome?.tier) && (
+              <SlotLightningStorm tier={lastOutcome.tier} />
+            )}
+
             {/* TOP MEGA/JACKPOT BEACON DOME (unlit at rest, blazes on MEGA/JACKPOT) */}
             <div
               className={`tm-slot-top-beacon ${
@@ -2066,18 +2087,6 @@ export default function VegasSlotMachine({
                   />
                 ))}
               </div>
-              <div className="tm-bandit-marquee-sub">
-                {activeMachine.payGlassTitle || activeMachine.marqueeSub}
-              </div>
-              <div className="tm-slot-house-edge-strip">
-                <span>🎰 {activeMachine.coinDenom || '25¢'} COIN-OP ({activeMachine.eraYear || '1985'})</span>
-                <span>⚖️ {activeMachine.houseEdgeLabel || 'HOUSE ALWAYS WINS • VEGAS ODDS'}</span>
-              </div>
-              {featuredMeme && machineId === 'bandit85' && (
-                <div style={{ fontSize: '10px', color: 'var(--tm-amber)', fontWeight: 800, marginTop: '1px' }}>
-                  ★ FEATURED CREATOR: @{featuredMeme.author_name} ★
-                </div>
-              )}
               <div className="tm-slot-marquee-title-row">
                 <h2 className="tm-bandit-marquee-title">
                   {activeMachine.icon} {activeMachine.name.toUpperCase()}
@@ -2090,16 +2099,46 @@ export default function VegasSlotMachine({
                     setPaytableOpen((v) => !v);
                   }}
                 >
-                  {paytableOpen ? '✕ Close' : 'ℹ Rules'}
+                  ? How to play
                 </button>
               </div>
             </div>
 
-            {/* OPTIONAL COLLAPSIBLE RULES / PAYTABLE DRAWER */}
-            {paytableOpen && (
-              <div className="tm-slot-paytable-drawer">
-                <strong>{activeMachine.name} — 1980s Vegas Paytable &amp; House Odds</strong>
+            {/* Owner brief 18 Nov 2026 (item 7): everything that isn't needed to play lives here,
+                so the cabinet itself fits on one phone screen. */}
+            {paytableOpen && typeof document !== 'undefined' && createPortal(
+              <div
+                className="tm-slot-help"
+                role="dialog"
+                aria-modal="true"
+                aria-label={`How to play ${activeMachine.name}`}
+                onClick={() => setPaytableOpen(false)}
+              >
+                <div className="tm-slot-help-card" onClick={(e) => e.stopPropagation()}>
+                <div className="tm-slot-help-head">
+                  <h2>
+                    {activeMachine.icon} {activeMachine.name}
+                  </h2>
+                  <button
+                    type="button"
+                    className="tm-slot-help-close"
+                    onClick={() => {
+                      sfx.playToggle();
+                      setPaytableOpen(false);
+                    }}
+                  >
+                    ✕ Close
+                  </button>
+                </div>
                 <p>{activeMachine.description}</p>
+                <div className="tm-slot-help-facts">
+                  <span>🎰 {activeMachine.coinDenom || '25¢'} coin-op ({activeMachine.eraYear || '1985'})</span>
+                  <span>⚖️ {activeMachine.houseEdgeLabel || 'House always wins • Vegas odds'}</span>
+                  <span>Max win {activeMachine.maxMult}× • {activeMachine.volatility}</span>
+                  {featuredMeme && machineId === 'bandit85' && <span>★ Featured creator: @{featuredMeme.author_name}</span>}
+                </div>
+
+                <h3>Pays</h3>
                 <div className="tm-slot-paytable-grid">
                   {machineId === 'bandit85' && (
                     <>
@@ -2144,72 +2183,87 @@ export default function VegasSlotMachine({
                     </>
                   )}
                 </div>
-              </div>
+
+                <h3>How to play</h3>
+                <ul className="tm-slot-help-list">
+                  <li><strong>Pick a chip</strong> (or 🆓 Demo for free practice), then tap <strong>SPIN</strong>, press Space, or drag the chrome lever down.</li>
+                  <li><strong>Slam stop:</strong> tap SPIN or a reel while it spins to stop early.</li>
+                  <li><strong>Auto-spin:</strong> hold SPIN for half a second and choose 10, 25 or 50 spins.</li>
+                  <li><strong>Turbo</strong> makes every spin quicker. Watch for random <strong>⚡ SURGE</strong> spins: the reels go hyper-speed.</li>
+                  {machineId === 'bandit85' && (
+                    <>
+                      <li><strong>HOLD:</strong> after some spins the HOLD buttons light up. Hold a reel to keep it still on the next spin.</li>
+                      <li><strong>NUDGE:</strong> when you have nudges, tap ⏫ NUDGE under a reel to step it down one symbol after the spin. Use it to drop a 7 or a 💎 onto the line.</li>
+                      <li><strong>🔥 Fever 2×:</strong> every win fills the fever tube. At 5/5, tap FEVER to make your next spin pay double.</li>
+                    </>
+                  )}
+                  {machineId === 'neon_special' && (
+                    <li><strong>Reactor:</strong> spins charge the reactor (0–6 cells). Spend cells on power-ups, then spin. 3+ 🔮 orbs give 4 free spins.</li>
+                  )}
+                  {machineId === 'silver_mustang' && (
+                    <>
+                      <li><strong>Lines:</strong> tap 📏 to switch between 5, 15 and 25 paylines.</li>
+                      <li><strong>Coffee pot:</strong> 10 ☕ = 4 free spins. Charge (⚡) buys power-ups: ☕ 1.5× Rush (40), 🟢 Lock (50), 🥧 Wild reel 3 (60).</li>
+                      <li><strong>Mustang pot:</strong> 5 orbs on screen wins the progressive pot (now <Money tokens={mustangPot} compact zero="balance" />).</li>
+                    </>
+                  )}
+                  {machineId === 'lightning_vault' && (
+                    <>
+                      <li><strong>Hold &amp; Spin:</strong> 3+ ⚡ orbs lock in place and give 3 respins; every new orb resets them. Fill all 15 for GRAND.</li>
+                      <li><strong>Ante +25%:</strong> costs a quarter more per spin for better orb odds.</li>
+                      <li><strong>🔋 Surge:</strong> at 100% voltage, tap SURGE: reel 3 turns wild with a 1.5× boost.</li>
+                    </>
+                  )}
+                  {machineId === 'buffalo_stampede' && (
+                    <>
+                      <li><strong>1,024 ways:</strong> matching symbols on neighbouring reels pay from the left, any row.</li>
+                      <li><strong>⭐ Wilds</strong> carry 2× or 3× multipliers. 3+ 🎡 wheels start the bonus wheel.</li>
+                      <li><strong>Power charge:</strong> 🦬 Gold Up (60⚡) and 🛡️ second-chance Nudge (45⚡).</li>
+                    </>
+                  )}
+                </ul>
+
+                {machineId === 'neon_special' && (
+                  <>
+                    <h3>Power-ups</h3>
+                    <ul className="tm-slot-help-list">
+                      {NEON_SPECIAL_POWERUPS.map((pw) => (
+                        <li key={pw.id}>
+                          <strong>
+                            {pw.icon} {pw.short} ({pw.chargeCost}⚡):
+                          </strong>{' '}
+                          {pw.desc}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+
+                <h3>Today&apos;s missions</h3>
+                <ul className="tm-slot-help-list">
+                  {SLOT_DAILY_MISSION_DEFS.map((m) => {
+                    const prog = dailyMissions.progress[m.id] || 0;
+                    const done = Boolean(dailyMissions.claimed[m.id]);
+                    return (
+                      <li key={m.id}>
+                        {done ? '✓' : `${prog}/${m.target}`} · {m.label} · <strong>+{formatMoney(m.rewardTokens)}</strong>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <p className="tm-slot-help-record">
+                  🏆 Your record win: {formatMoney(bestWinTokens, { compact: true, zero: 'balance' })}
+                  {sessionWinnings > 0 && ` · This session: +${formatMoney(sessionWinnings, { compact: true })}`}
+                </p>
+                <p className="tm-slot-help-small">
+                  MemeDollarz (M$) are pretend money: free, just for fun, never bought or cashed out.
+                </p>
+                </div>
+              </div>,
+              document.body
             )}
 
             {/* MACHINE-SPECIFIC TOP METERS / JACKPOT LEDS */}
-            {machineId === 'bandit85' && (
-              <div className="tm-bandit-payglass-wrap">
-                <div className="tm-bandit-coin-bezel">
-                  <span>🎰 INSERT 25¢ QUARTER • MECHANICAL REEL STEPPER (1985)</span>
-                  <span>HOLD / NUDGE • ~88.5% PAYBACK</span>
-                </div>
-                <div className="tm-bandit-payglass" aria-label="Slot Machine Payout Multipliers">
-                  <div className="tm-bandit-paychip hot"><span>777×3</span> <strong>75×</strong></div>
-                  <div className="tm-bandit-paychip"><span>💎×3</span> <strong>36×</strong></div>
-                  <div className="tm-bandit-paychip"><span>BAR×3</span> <strong>22×</strong></div>
-                  <div className="tm-bandit-paychip"><span>🔔×3</span> <strong>15×</strong></div>
-                  <div className="tm-bandit-paychip"><span>🍒×3</span> <strong>9×</strong></div>
-                  <div className="tm-bandit-paychip"><span>2×🍒/Pair</span> <strong>2×</strong></div>
-                </div>
-              </div>
-            )}
-
-            {machineId === 'neon_special' && (
-              <div className="tm-slot-feature-strip neon-special">
-                <div className="tm-neon-chase-lights" aria-hidden="true">
-                  {Array.from({ length: 14 }).map((_, i) => (
-                    <span key={i} className={`tm-neon-chase-dot c${i % 5}`} />
-                  ))}
-                </div>
-                <div className="tm-slot-dougie-quote neon-surge">{neonSurgeBanner}</div>
-                <div className="tm-slot-meters-row">
-                  <div className="tm-slot-meter-pill cyan">
-                    <span>⚡ POWERUP REACTOR</span>
-                    <strong>{neonCharge}/6 CELLS</strong>
-                  </div>
-                  <div className="tm-slot-meter-pill gold">
-                    <span>🔮 FREE SPINS</span>
-                    <strong>{neonFreeSpins > 0 ? `🔥 ${neonFreeSpins} ACTIVE!` : '3+ ORBS = 4 SPINS'}</strong>
-                  </div>
-                  <div className="tm-slot-meter-pill">
-                    <span>⚖️ ODDS</span>
-                    <strong>HOUSE ALWAYS WINS (88.5%)</strong>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {machineId === 'silver_mustang' && (
-              <div className="tm-slot-feature-strip mustang">
-                <div className="tm-slot-dougie-quote">{dougieBanner}</div>
-                <div className="tm-slot-meters-row">
-                  <div className="tm-slot-meter-pill">
-                    <span>☕ COFFEE POT</span>
-                    <strong>{coffeePot}/10 {mustangFreeSpins > 0 ? `• 🆓 ${mustangFreeSpins} SPINS!` : ''}</strong>
-                  </div>
-                  <div className="tm-slot-meter-pill gold">
-                    <span>🏆 MUSTANG POT</span>
-                    <strong><Money tokens={mustangPot} compact zero="balance" /></strong>
-                  </div>
-                  <div className="tm-slot-meter-pill cyan">
-                    <span>⚡ CHARGE</span>
-                    <strong>{mustangCharge}%</strong>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {machineId === 'lightning_vault' && (
               <div className="tm-slot-feature-strip lightning">
                 <div className="tm-slot-jackpot-leds">
@@ -2219,35 +2273,12 @@ export default function VegasSlotMachine({
                   <div className="tm-jp-led grand"><span>GRAND</span><strong>{progressives.grand}×</strong></div>
                 </div>
                 <div className="tm-slot-meters-row">
-                  <div className="tm-slot-meter-pill cyan">
-                    <span>🔋 VOLTAGE SURGE</span>
-                    <strong>{voltageMeter}%</strong>
-                  </div>
                   {lockItState?.active && (
                     <div className="tm-slot-meter-pill gold">
                       <span>⚡ HOLD &amp; SPIN</span>
                       <strong>{lockItState.respinsLeft} RESPINS LEFT</strong>
                     </div>
                   )}
-                </div>
-              </div>
-            )}
-
-            {machineId === 'buffalo_stampede' && (
-              <div className="tm-slot-feature-strip buffalo">
-                <div className="tm-slot-meters-row">
-                  <div className="tm-slot-meter-pill gold">
-                    <span>🏆 GOLD STAMPEDE</span>
-                    <strong>{stampedeMeter}%</strong>
-                  </div>
-                  <div className="tm-slot-meter-pill cyan">
-                    <span>⚡ POWER CHARGE</span>
-                    <strong>{buffaloCharge}%</strong>
-                  </div>
-                  <div className="tm-slot-meter-pill">
-                    <span>WAYS</span>
-                    <strong>1,024 WAYS</strong>
-                  </div>
                 </div>
               </div>
             )}
@@ -2311,7 +2342,7 @@ export default function VegasSlotMachine({
                         <Reel
                           reelIndex={reelIdx}
                           strip={BANDIT_REEL_STRIP}
-                          cellHeight={embedded ? 44 : 54}
+                          cellHeight={embedded ? 44 : bigReels ? 66 : 54}
                           visibleRows={3}
                           centerRow={1}
                           stopIndex={banditStops[reelIdx]}
@@ -2322,7 +2353,7 @@ export default function VegasSlotMachine({
                           isAnticipating={isAnt}
                           isDimmed={isDim}
                           breathingRows={breatheRows}
-                          symbolSize={embedded ? 36 : 44}
+                          symbolSize={embedded ? 36 : bigReels ? 54 : 44}
                           onTapReel={isBanditSpinning ? handleSlamStop : undefined}
                         />
 
@@ -2394,7 +2425,7 @@ export default function VegasSlotMachine({
                           <Reel
                             reelIndex={colIdx}
                             strip={videoStrips[colIdx] || INITIAL_GRID_BY_MACHINE[machineId]?.[colIdx] || []}
-                            cellHeight={machineId === 'buffalo_stampede' ? (embedded ? 34 : 40) : embedded ? 40 : 48}
+                            cellHeight={machineId === 'buffalo_stampede' ? (embedded ? 34 : bigReels ? 48 : 40) : embedded ? 40 : bigReels ? 58 : 48}
                             visibleRows={rowCount}
                             centerRow={0}
                             stopIndex={videoStops[colIdx]}
@@ -2407,7 +2438,7 @@ export default function VegasSlotMachine({
                             breathingRows={colBreatheRows}
                             wildMultipliers={machineId === 'buffalo_stampede' ? wildMultipliers : null}
                             lockedCells={lockItState?.active ? lockItState.lockedMap : null}
-                            symbolSize={machineId === 'buffalo_stampede' ? (embedded ? 28 : 34) : embedded ? 32 : 40}
+                            symbolSize={machineId === 'buffalo_stampede' ? (embedded ? 28 : bigReels ? 40 : 34) : embedded ? 32 : bigReels ? 48 : 40}
                             onTapReel={isVideoSpinning ? handleSlamStop : undefined}
                           />
                         </div>
@@ -2644,21 +2675,6 @@ export default function VegasSlotMachine({
                 : statusBanner}
             </div>
 
-            {/* DAILY SLOT MISSIONS STRIP (35.7g) */}
-            <div className="tm-slot-missions-strip" aria-label="Daily Slot Missions">
-              {SLOT_DAILY_MISSION_DEFS.map((m) => {
-                const prog = dailyMissions.progress[m.id] || 0;
-                const done = Boolean(dailyMissions.claimed[m.id]);
-                return (
-                  <div key={m.id} className={`tm-slot-mission-pill ${done ? 'done' : ''}`}>
-                    <span>{done ? '✓' : `${prog}/${m.target}`}</span>
-                    <span>{m.label}</span>
-                    <strong>+{formatMoney(m.rewardTokens)}</strong>
-                  </div>
-                );
-              })}
-            </div>
-
             {/* 5. CASINO CHIP WAGER DECK + SPIN BUTTON */}
             <div className="tm-bandit-control-deck">
               <div className="tm-bandit-wallet-row">
@@ -2680,12 +2696,6 @@ export default function VegasSlotMachine({
                     {lastOutcome?.payout
                       ? formatMoney(lastOutcome.payout, { compact: true, sign: true })
                       : '0¢'}
-                  </strong>
-                </div>
-                <div className="tm-bandit-stat-box">
-                  <span>RECORD</span>
-                  <strong style={{ color: 'var(--tm-amber)' }}>
-                    🏆 {formatMoney(bestWinTokens, { compact: true, zero: 'balance' })}
                   </strong>
                 </div>
               </div>
@@ -2761,12 +2771,6 @@ export default function VegasSlotMachine({
               </div>
 
               <div className="tm-bandit-action-row">
-                {!embedded && onBackToFeed && (
-                  <button type="button" className="tm-bandit-back-btn" onClick={onBackToFeed}>
-                    ← Memes
-                  </button>
-                )}
-
                 {lockItState?.active ? (
                   <button
                     type="button"
@@ -2891,8 +2895,31 @@ export default function VegasSlotMachine({
             </div>
           </div>
         </div>
-        {!embedded && <EightiesIconsStrip compact />}
       </div>
     </section>
+  );
+}
+
+/**
+ * Owner brief 18 Nov 2026 (item 7): big-win surprise. Lightning forks strike the cabinet glass,
+ * more of them for MEGA and JACKPOT. Two strikes a second at most; off with reduced motion.
+ */
+const STORM_BOLTS = [
+  'M50 0 L44 22 L54 24 L40 52 L50 54 L36 100',
+  'M18 0 L24 18 L14 22 L26 46 L16 50 L28 78',
+  'M84 0 L78 20 L88 26 L74 50 L86 54 L72 84',
+  'M64 0 L60 14 L70 18 L58 40 L68 44 L56 66'
+];
+
+function SlotLightningStorm({ tier }) {
+  const count = tier === 'jackpot' ? 4 : tier === 'mega' ? 3 : 2;
+  return (
+    <div className={`tm-slot-storm is-${tier}`} aria-hidden="true">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+        {STORM_BOLTS.slice(0, count).map((d, i) => (
+          <path key={i} d={d} style={{ animationDelay: `${i * 520}ms` }} />
+        ))}
+      </svg>
+    </div>
   );
 }

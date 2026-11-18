@@ -132,7 +132,8 @@
 }
 
 .tm-delorean-mph {
-  font-family: Impact, "Arial Black", monospace;
+  font-family: var(--tm-font-title);
+  font-weight: 900;
   font-size: clamp(18px, 4vw, 26px);
   color: var(--tm-amber);
   text-shadow: 0 0 12px rgba(255, 184, 0, 0.8);
@@ -269,7 +270,7 @@
 .tm-delorean-modal-title {
   margin: 2px 0 0;
   font-family: var(--tm-font-neon);
-  font-weight: 400;
+  font-weight: 800;
   font-size: clamp(18px, 3vw, 23px);
   color: var(--tm-amber);
   letter-spacing: 0.7px;

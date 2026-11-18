@@ -1001,67 +1001,234 @@
   }
 }
 
-@media (max-width: 768px) {
+html.tm-game-fs .tm-bj-stage {
+  height: 100dvh;
+}
+
+@media (max-width: 860px) {
+  .tm-bj-stage {
+    height: calc(100dvh - 46px);
+    padding: 4px 6px calc(4px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .tm-bj-cabinet {
+    height: 100%;
+    max-height: 100%;
+    padding: 6px 8px;
+    gap: 5px;
+    border-radius: 14px;
+  }
+
   .tm-bj-eyebrow,
-  .tm-bj-felt-arc-text {
+  .tm-bj-felt-arc-text,
+  .tm-bj-act-btn small {
     display: none;
   }
 
   .tm-bj-header {
-    padding: 4px 6px;
-    gap: 4px;
+    padding: 5px 8px;
+    gap: 5px;
+    border-radius: 10px;
+  }
+
+  .tm-pin2-title-wrap {
+    gap: 6px;
+  }
+
+  .tm-bandit-back-btn {
+    min-height: 34px;
+    padding: 4px 9px;
+    font-size: 11px;
+    border-radius: 9px;
   }
 
   .tm-bj-title {
-    font-size: 13.5px;
+    font-size: 14px;
+    letter-spacing: 0.6px;
   }
 
-  .tm-bj-felt {
-    padding: 6px 8px;
-    gap: 4px;
+  .tm-bj-hud-pills {
+    width: 100%;
     justify-content: space-between;
-  }
-
-  .tm-bj-dealer-zone {
-    gap: 3px;
-    margin-bottom: 2px;
-  }
-
-  .tm-bj-dealer-cards {
-    min-height: 76px;
-    padding: 2px 0;
-  }
-
-  .tm-bj-controls {
-    padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
     gap: 4px;
   }
 
-  .tm-bj-visor-bottom-pill {
-    font-size: 9.5px;
+  .tm-bj-streak-pill {
+    padding: 2px 7px;
+    font-size: 10px;
+  }
+
+  .tm-bj-visor-toggle {
+    padding: 3px 8px;
+    font-size: 10px;
+  }
+
+  .tm-bj-dealer-bar {
+    flex-wrap: nowrap;
+    padding: 4px 8px;
+    gap: 6px;
+    min-height: 22px;
+    border-radius: 9px;
+  }
+
+  .tm-bj-dealer-avatar {
+    flex-shrink: 0;
     padding: 2px 8px;
-  }
-}
-
-@media (max-width: 640px) {
-  .tm-bj-card {
-    width: 54px;
-    height: 78px;
-    padding: 4px;
+    font-size: 10px;
   }
 
-  .tm-bj-card-rank {
+  .tm-bj-dealer-speech {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tm-bj-dealer-line {
     font-size: 11px;
+  }
+
+  .tm-bj-felt-table {
+    padding: 6px 8px;
+    gap: 5px;
+    justify-content: space-evenly;
+    border-radius: 12px;
+  }
+
+  .tm-bj-zone {
+    padding: 5px 8px;
+    gap: 4px;
+    border-radius: 10px;
+  }
+
+  .tm-bj-zone-head {
+    gap: 6px;
+  }
+
+  .tm-bj-zone-label {
+    font-size: 10.5px;
+  }
+
+  .tm-bj-score-pill {
+    padding: 1px 8px;
+    font-size: 10.5px;
+  }
+
+  .tm-bj-cards-row {
+    min-height: 74px;
+    gap: 5px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    max-width: 100%;
+    scrollbar-width: none;
+  }
+
+  .tm-bj-cards-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tm-bj-card {
+    flex-shrink: 0;
+    width: 54px;
+    height: 74px;
+    padding: 3px 5px;
+    border-radius: 8px;
+  }
+
+  .tm-bj-card-corner {
+    font-size: 10px;
+    line-height: 0.95;
+  }
+
+  .tm-bj-card-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
   }
 
   .tm-bj-card-suit {
     font-size: 16px;
   }
 
-  .tm-bj-act-btn,
-  .tm-bj-deal-btn,
+  .tm-bj-card-emblem {
+    font-size: 11px;
+  }
+
+  .tm-bj-hole-pattern span {
+    font-size: 18px;
+  }
+
+  .tm-bj-hole-pattern small {
+    font-size: 8px;
+  }
+
+  .tm-bj-empty-slot {
+    padding: 10px 12px;
+    font-size: 11px;
+    border-radius: 10px;
+  }
+
+  .tm-bj-controls {
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+    border-radius: 10px;
+  }
+
+  .tm-bj-visor-bottom-pill {
+    font-size: 9.5px;
+    padding: 2px 8px;
+    margin-bottom: 4px;
+  }
+
+  .tm-bj-betting-deck {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 5px;
+  }
+
+  .tm-bj-chips-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 5px;
+    scrollbar-width: none;
+    padding-bottom: 1px;
+  }
+
+  .tm-bj-chips-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tm-bj-mode-pill,
   .tm-bj-chip-btn,
-  .tm-bandit-back-btn {
+  .tm-bj-sidebet-btn {
+    flex-shrink: 0;
+    min-height: 36px;
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+
+  .tm-bj-deal-cta-row {
+    width: 100%;
+  }
+
+  .tm-bj-deal-btn {
+    width: 100%;
     min-height: 44px;
+    padding: 8px 12px;
+    font-size: 12.5px;
+    border-radius: 10px;
+  }
+
+  .tm-bj-action-row {
+    flex-wrap: nowrap;
+    gap: 5px;
+  }
+
+  .tm-bj-act-btn {
+    flex: 1 1 0;
+    min-height: 44px;
+    padding: 6px;
+    font-size: 11.5px;
+    border-radius: 10px;
+    white-space: nowrap;
   }
 }

@@ -2680,11 +2680,11 @@ export default function VegasPinballGame({
           </button>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
-            <div style={{ display: 'flex', gap: '4px' }}>
+            <div style={{ display: 'flex', gap: '4px', minWidth: 0 }}>
               <button
                 type="button"
                 className={`tm-pin2-launch-btn ${ballWaitingInShooter ? 'pulse-ready' : ''}`}
-                style={{ flex: 1 }}
+                style={{ flex: '1 1 0', minWidth: 0, whiteSpace: 'nowrap' }}
                 onClick={launchPlunger}
               >
                 🚀 LAUNCH
@@ -2694,7 +2694,7 @@ export default function VegasPinballGame({
                 className={`tm-pin2-magna-btn ${
                   hudMagnaActive ? 'active' : hudMagnaCharge >= 100 ? 'ready' : ''
                 }`}
-                style={{ width: 'auto', marginTop: 0, padding: '6px 7px' }}
+                style={{ flex: '0 0 auto', width: 'auto', minWidth: 0, marginTop: 0, padding: '6px 7px', whiteSpace: 'nowrap' }}
                 disabled={!hudMagnaActive && hudMagnaCharge < 100}
                 onClick={activateMagnaSave}
                 aria-label="Activate Magna-Save"

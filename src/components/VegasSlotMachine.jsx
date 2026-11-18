@@ -7,11 +7,18 @@ import {
   formatMoney
 } from '../utils/tokenEconomy';
 import { triggerWinCelebration } from '../utils/winCelebration';
-import { haptic, hitStop } from '../utils/juice';
+import { haptic, hitStop, shake, punch, slowMo } from '../utils/juice';
+import { burst, coinsTo } from './ui/JuiceLayer';
 import { Money, Wallet } from './ui/Money';
-import SlotSymbolArt from './SlotSymbolArt';
 import Reel from './slots/Reel';
 import { createMachineReelController, nudgeCabinetOnStop } from './slots/reelMotion';
+import {
+  buildInitialVideoStrips,
+  buildVideoColumnStrip,
+  loadSlotDailyMissions,
+  saveSlotDailyMissions,
+  SLOT_DAILY_MISSION_DEFS
+} from './slots/slotVisualHelpers';
 import EightiesIconsStrip from './EightiesIconsStrip';
 import {
   SLOT_MACHINES,
@@ -297,13 +304,24 @@ export default function VegasSlotMachine({
   const [banditFever, setBanditFever] = useState(0); // 0..5 accumulator
   const [banditFeverArmed, setBanditFeverArmed] = useState(false);
 
-  // Modern 5-Reel Video Slot Grid & Spin State
+  // Modern 5-Reel Video Slot Grid & Rolling Strip State
   const [videoGrid, setVideoGrid] = useState(
     () => INITIAL_GRID_BY_MACHINE[readInitialMachineId()] || INITIAL_GRID_BY_MACHINE.neon_special
   );
+  const [videoStops, setVideoStops] = useState([1, 1, 1, 1, 1]);
+  const [videoStrips, setVideoStrips] = useState(() => {
+    const initId = readInitialMachineId();
+    const grid = INITIAL_GRID_BY_MACHINE[initId] || INITIAL_GRID_BY_MACHINE.neon_special;
+    return buildInitialVideoStrips(initId === 'bandit85' ? 'neon_special' : initId, grid);
+  });
   const [videoReelsSpinning, setVideoReelsSpinning] = useState([false, false, false, false, false]);
   const [winningCells, setWinningCells] = useState(() => new Set());
   const [wildMultipliers, setWildMultipliers] = useState(DEFAULT_BUFFALO_WILDS);
+  const [surgeRollActive, setSurgeRollActive] = useState(false);
+  const [sessionWinnings, setSessionWinnings] = useState(0);
+  const [chargeSloshing, setChargeSloshing] = useState(false);
+  const [dailyMissions, setDailyMissions] = useState(loadSlotDailyMissions);
+  const [showStretchNotice, setShowStretchNotice] = useState(false);
 
   // Neon Supernova Special '86 State (6 Powerups + Neon Free Spins + House Edge)
   const [neonCharge, setNeonCharge] = useState(2); // 0..6 Reactor cells
@@ -371,8 +389,13 @@ export default function VegasSlotMachine({
 
   const timersRef = useRef([]);
   const cabinetRef = useRef(null);
+  const reelsStageRef = useRef(null);
+  const walletRef = useRef(null);
   const banditController = useMemo(() => createMachineReelController(), []);
+  const videoController = useMemo(() => createMachineReelController(), []);
   const activeBanditSpinRef = useRef(null);
+  const activeVideoSpinRef = useRef(null);
+  const spinSerialRef = useRef(0);
   const pulseBatchRef = useRef({ machine: 'bandit85', turbo: false, auto: false, spins: 0, wins: 0, biggest_mult: 0 });
 
   const flushSlotBatch = useCallback(() => {
@@ -430,13 +453,69 @@ export default function VegasSlotMachine({
     return () => {
       clearTimers();
       banditController.destroy();
+      videoController.destroy();
       sfx.stopSlotRiser();
       if (heartbeatIntervalRef.current) clearInterval(heartbeatIntervalRef.current);
       if (sirenTimerRef.current) clearTimeout(sirenTimerRef.current);
       if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
       if (spinHoldTimerRef.current) clearTimeout(spinHoldTimerRef.current);
     };
-  }, [clearTimers, banditController]);
+  }, [clearTimers, banditController, videoController]);
+
+  // 20-minute gentle session care notice (Phase 35.7g)
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setShowStretchNotice(true);
+    }, 20 * 60 * 1000);
+    return () => clearTimeout(t);
+  }, []);
+
+  const triggerChargeSlosh = useCallback(() => {
+    setChargeSloshing(true);
+    timersRef.current.push(setTimeout(() => setChargeSloshing(false), 620));
+  }, []);
+
+  const advanceDailyMissions = useCallback(
+    ({ spinsDelta = 0, winMult = 0, featureUsed = false } = {}) => {
+      setDailyMissions((prev) => {
+        const nextProg = {
+          spins10: Math.min(10, prev.progress.spins10 + spinsDelta),
+          win3x: Math.min(1, prev.progress.win3x + (winMult >= 3 ? 1 : 0)),
+          powerup: Math.min(1, prev.progress.powerup + (featureUsed ? 1 : 0))
+        };
+        const nextClaimed = { ...prev.claimed };
+        let bonusTokens = 0;
+        const completedLabels = [];
+
+        SLOT_DAILY_MISSION_DEFS.forEach((def) => {
+          if (!nextClaimed[def.id] && nextProg[def.id] >= def.target) {
+            nextClaimed[def.id] = true;
+            bonusTokens += def.rewardTokens;
+            completedLabels.push(def.label);
+          }
+        });
+
+        const nextState = { ...prev, progress: nextProg, claimed: nextClaimed };
+        saveSlotDailyMissions(nextState);
+
+        if (bonusTokens > 0 && onPayoutTokens) {
+          setTimeout(() => {
+            onPayoutTokens(bonusTokens, {
+              stakedTokens: 0,
+              maxMultiplier: 1,
+              category: 'quests',
+              xp: 15,
+              label: `Slot Mission: ${completedLabels.join(', ')}`,
+              emoji: '🎯',
+              skipCelebration: true
+            });
+          }, 0);
+        }
+        return nextState;
+      });
+    },
+    [onPayoutTokens]
+  );
 
   // Watchdog recovery: guarantee reels/bonus wheel never stay locked if a timer or callback stalls
   useEffect(() => {
@@ -470,7 +549,7 @@ export default function VegasSlotMachine({
     sirenTimerRef.current = setTimeout(() => {
       setSirenActive(false);
       setDougieCallout('');
-    }, mega ? 2400 : 1700);
+    }, mega ? 2600 : 1800);
   }, []);
 
   const awardSlotWin = useCallback(
@@ -490,42 +569,26 @@ export default function VegasSlotMachine({
         maxMultiplier
       });
 
-      const isMega = tier === 'jackpot' || mult >= 15;
-      const isBig = isMega || tier === 'big' || mult >= 6;
+      const isJackpotTier = tier === 'jackpot' || mult >= 50;
+      const isMega = isJackpotTier || mult >= 15;
+      const isBig = isMega || tier === 'big' || mult >= 5;
+      const isSubBet = mult > 0 && mult < 1;
 
       if (mult > 0) {
         pulseBatchRef.current.wins += 1;
         if (mult > pulseBatchRef.current.biggest_mult) {
           pulseBatchRef.current.biggest_mult = mult;
         }
+        advanceDailyMissions({ winMult: mult });
       }
 
-      if (isBig) {
-        fireBigWinSiren(isMega, dougiePhrase);
-      } else {
-        sfx.playSlotDingDing(mult >= 2 ? 3 : 2);
-      }
-
-      triggerWinCelebration({
-        amount: activeBet > 0 ? verifiedPayout : Number(mult.toFixed(1)),
-        unit: activeBet > 0 ? 'M$' : '× DEMO',
-        game: activeMachine.name,
-        headline: headline || '🎰 REEL WINNER!',
-        detail:
-          activeBet > 0
-            ? `${detail || `${mult}× Payline Payout!`} (${formatMoney(verifiedPayout)})`
-            : `Demo hit ${mult}× — Set a 1980s coin bet to win MemeDollarz!`,
-        multiplier: mult,
-        tier: isMega ? 'jackpot' : isBig ? 'big' : 'win',
-        chopperFlyby: isMega ? 'both' : isBig ? (Math.random() < 0.55 ? 'airwolf' : 'bluethunder') : null,
-        skipSound: true
-      });
-
+      // Credit payout immediately so closing tab never loses a win (35.7e)
       if (verifiedPayout > 0 && onPayoutTokens) {
+        setSessionWinnings((w) => w + verifiedPayout);
         onPayoutTokens(verifiedPayout, {
           stakedTokens: activeBet,
           maxMultiplier,
-          xp: isMega ? 150 : isBig ? 50 : 18,
+          xp: isMega ? 150 : isBig ? 50 : isSubBet ? 6 : 18,
           label: headline,
           emoji: isMega ? '🚨' : '🎰',
           skipCelebration: true
@@ -533,6 +596,84 @@ export default function VegasSlotMachine({
         if (onCreditCreator && featuredMeme?.author_name) {
           onCreditCreator(featuredMeme.author_name);
         }
+      }
+
+      // 35.7e Tiered Celebration Juice
+      const reelRect = reelsStageRef.current?.getBoundingClientRect?.();
+      const burstX = reelRect ? reelRect.left + reelRect.width / 2 : (typeof window !== 'undefined' ? window.innerWidth / 2 : 200);
+      const burstY = reelRect ? reelRect.top + reelRect.height / 2 : 240;
+
+      if (isSubBet) {
+        // Under 1x: quiet return, no sound sting, no particles
+        haptic('tap');
+      } else if (isJackpotTier) {
+        haptic('jackpot');
+        shake(cabinetRef.current, 4);
+        slowMo(0.45, 1800);
+        burst({ x: burstX, y: burstY, kind: 'coin', count: 48 });
+        coinsTo({ fromEl: reelsStageRef.current, toEl: walletRef.current, count: 24 });
+        fireBigWinSiren(true, dougiePhrase);
+        triggerWinCelebration({
+          amount: activeBet > 0 ? verifiedPayout : Number(mult.toFixed(1)),
+          unit: activeBet > 0 ? 'M$' : '× DEMO',
+          game: activeMachine.name,
+          headline: headline || '🚨 VEGAS JACKPOT!',
+          detail:
+            activeBet > 0
+              ? `${detail || `${mult}× Jackpot!`} (${formatMoney(verifiedPayout)})`
+              : `Demo hit ${mult}× — Set a coin bet to win MemeDollarz!`,
+          multiplier: mult,
+          tier: 'jackpot',
+          chopperFlyby: 'both',
+          skipSound: true
+        });
+      } else if (isMega) {
+        haptic('big');
+        shake(cabinetRef.current, 3);
+        slowMo(0.5, 1400);
+        burst({ x: burstX, y: burstY, kind: 'coin', count: 34 });
+        coinsTo({ fromEl: reelsStageRef.current, toEl: walletRef.current, count: 18 });
+        fireBigWinSiren(true, dougiePhrase);
+        triggerWinCelebration({
+          amount: activeBet > 0 ? verifiedPayout : Number(mult.toFixed(1)),
+          unit: activeBet > 0 ? 'M$' : '× DEMO',
+          game: activeMachine.name,
+          headline: headline || '🎆 MEGA WIN!',
+          detail:
+            activeBet > 0
+              ? `${detail || `${mult}× Mega Payout!`} (${formatMoney(verifiedPayout)})`
+              : `Demo hit ${mult}× — Set a coin bet to win MemeDollarz!`,
+          multiplier: mult,
+          tier: 'jackpot',
+          chopperFlyby: 'both',
+          skipSound: true
+        });
+      } else if (isBig) {
+        haptic('big');
+        shake(cabinetRef.current, 2);
+        burst({ x: burstX, y: burstY, kind: 'coin', count: 22 });
+        coinsTo({ fromEl: reelsStageRef.current, toEl: walletRef.current, count: 12 });
+        fireBigWinSiren(false, dougiePhrase);
+        triggerWinCelebration({
+          amount: activeBet > 0 ? verifiedPayout : Number(mult.toFixed(1)),
+          unit: activeBet > 0 ? 'M$' : '× DEMO',
+          game: activeMachine.name,
+          headline: headline || '🔥 BIG WIN!',
+          detail:
+            activeBet > 0
+              ? `${detail || `${mult}× Big Payout!`} (${formatMoney(verifiedPayout)})`
+              : `Demo hit ${mult}× — Set a coin bet to win MemeDollarz!`,
+          multiplier: mult,
+          tier: 'big',
+          chopperFlyby: Math.random() < 0.55 ? 'airwolf' : 'bluethunder',
+          skipSound: true
+        });
+      } else {
+        // 1x to < 5x: crisp cell punch + coins fly to wallet
+        haptic('win');
+        punch(cabinetRef.current, 1.02);
+        sfx.playSlotDingDing(mult >= 2 ? 3 : 2);
+        coinsTo({ fromEl: reelsStageRef.current, toEl: walletRef.current, count: 8 });
       }
 
       if (verifiedPayout > bestWinTokens) {
@@ -546,7 +687,7 @@ export default function VegasSlotMachine({
       }
 
       setLastOutcome({
-        tier,
+        tier: isJackpotTier ? 'jackpot' : isMega ? 'mega' : isBig ? 'big' : isSubBet ? 'quiet' : 'win',
         mult,
         headline,
         payout: verifiedPayout,
@@ -563,6 +704,7 @@ export default function VegasSlotMachine({
     },
     [
       activeMachine.name,
+      advanceDailyMissions,
       bestWinTokens,
       featuredMeme,
       fireBigWinSiren,
@@ -603,7 +745,10 @@ export default function VegasSlotMachine({
       setBetAmount(50);
     }
     if (nextId !== 'bandit85' && INITIAL_GRID_BY_MACHINE[nextId]) {
-      setVideoGrid(INITIAL_GRID_BY_MACHINE[nextId]);
+      const nextGrid = INITIAL_GRID_BY_MACHINE[nextId];
+      setVideoGrid(nextGrid);
+      setVideoStops([1, 1, 1, 1, 1]);
+      setVideoStrips(buildInitialVideoStrips(nextId, nextGrid));
     }
     if (nextId === 'silver_mustang') {
       setDougieBanner(pickDougieQuote('idle'));
@@ -862,17 +1007,26 @@ export default function VegasSlotMachine({
       return;
     }
 
+    spinSerialRef.current += 1;
+    const isSurgeSpin = useFever || spinSerialRef.current % 4 === 0;
+    setSurgeRollActive(isSurgeSpin);
+    advanceDailyMissions({ spinsDelta: 1, featureUsed: useFever });
+    if (!useFever) triggerChargeSlosh();
+
     banditController.startSpin({
       mask: nextSpinMask,
       targetStops,
       stopDelaysMs: baseDelays,
       turbo: turboOn,
+      surge: isSurgeSpin,
       windUpScale,
       crawlReels: [false, false, anticipationTarget === 2],
       onTickSymbol: (_idx, rawP) => sfx.playSlotTick(rawP),
       onReelStop: handleReelSettled
     });
   }, [
+    advanceDailyMissions,
+    triggerChargeSlosh,
     recordSlotSpinForPulse,
     banditController,
     banditFever,
@@ -1146,7 +1300,7 @@ export default function VegasSlotMachine({
     ]
   );
 
-  const triggerVideoSpin = useCallback(() => {
+  const triggerVideoSpin = useCallback(({ windUpScale = 1 } = {}) => {
     if (lockItState?.active || bonusWheelState) return;
 
     const isFreeSpinRound =
@@ -1198,6 +1352,15 @@ export default function VegasSlotMachine({
     const wasSurge = machineId === 'lightning_vault' && surgeArmed;
     const wasGoldUpgrade = machineId === 'buffalo_stampede' && goldStampedeArmed;
     const wasSecondChance = machineId === 'buffalo_stampede' && secondChanceArmed;
+    const usedAnyPowerup =
+      coffeeRushUsed ||
+      pieWildUsed ||
+      owlLockUsed ||
+      wasSurge ||
+      wasGoldUpgrade ||
+      wasSecondChance ||
+      isFreeSpinRound ||
+      (machineId === 'neon_special' && Object.values(armedNeonPowerups).some(Boolean));
 
     const spinResult = spinVideoSlot({
       machineId,
@@ -1246,12 +1409,20 @@ export default function VegasSlotMachine({
       wildMultipliers: nextWildMults,
       neonUsedPowerups,
       neonSpontaneousLabel,
-      usedSecondChance: nudged
+      usedSecondChance: nudged,
+      anticipation = [],
+      totalMult = 0
     } = spinResult;
 
     if (machineId === 'buffalo_stampede') {
       setWildMultipliers(nextWildMults);
     }
+
+    spinSerialRef.current += 1;
+    const isSurgeRoll = usedAnyPowerup || isFreeSpinRound || spinSerialRef.current % 4 === 0;
+    setSurgeRollActive(isSurgeRoll);
+    advanceDailyMissions({ spinsDelta: 1, featureUsed: usedAnyPowerup });
+    triggerChargeSlosh();
 
     setStatusBanner(
       isFreeSpinRound
@@ -1259,58 +1430,159 @@ export default function VegasSlotMachine({
           ? `🎆 NEON FREE SPIN! Plasma Overdrive (${Math.max(0, neonFreeSpins - 1)} left after this)`
           : `☕ FREE SPIN! Golden Orb active (${Math.max(0, mustangFreeSpins - 1)} left after this)`
         : fallbackBanner ||
-          (activeBet > 0
-            ? `${formatMoney(activeBet)} wagered — spinning 5 reels...`
-            : 'Demo spin — 5 reels spinning...')
+          (isSurgeRoll
+            ? `⚡ OVERDRIVE ROLL! High-speed reels engaged!`
+            : activeBet > 0
+              ? `${formatMoney(activeBet)} wagered — reels rolling!`
+              : 'Demo spin — 5 reels rolling!')
     );
 
     const spinMask = [0, 1, 2, 3, 4].map((c) => !(lockedCols && lockedCols[c]));
+    const nextStops = [0, 1, 2, 3, 4].map((c) =>
+      spinMask[c] ? (videoStops[c] === 1 ? 10 : 1) : videoStops[c]
+    );
+    const nextStrips = [0, 1, 2, 3, 4].map((c) =>
+      spinMask[c]
+        ? buildVideoColumnStrip(
+            machineId,
+            c,
+            generated?.[c] || [],
+            nextStops[c],
+            videoStrips[c],
+            videoStops[c],
+            videoGrid?.[c] || []
+          )
+        : videoStrips[c]
+    );
+
+    setVideoStrips(nextStrips);
     setVideoReelsSpinning(spinMask);
 
-    const delays = turboOn ? [180, 290, 400, 510, 620] : [340, 560, 780, 1000, 1220];
-    [0, 1, 2, 3, 4].forEach((colIdx) => {
-      if (!spinMask[colIdx]) return;
-      timersRef.current.push(
-        setTimeout(() => {
-          sfx.playSlotReelStop(colIdx % 3);
-          setVideoGrid((prev) => {
-            const base = Array.isArray(prev) ? prev : [];
-            const copy = base.map((c) => (Array.isArray(c) ? [...c] : []));
-            copy[colIdx] = Array.isArray(generated?.[colIdx]) ? generated[colIdx] : [];
-            return copy;
-          });
-          setVideoReelsSpinning((prev) => {
-            const copy = [...prev];
-            copy[colIdx] = false;
-            return copy;
-          });
-        }, delays[colIdx])
-      );
-    });
-
-    const lastDelay = delays[4] + 60;
-    timersRef.current.push(
-      setTimeout(() => {
-        try {
-          finalizeVideoSpin({
-            spinResult,
-            activeBet,
-            isFreeSpinRound,
-            coffeeRushUsed,
-            wasSurge,
-            usedSecondChance: nudged,
-            neonUsedPowerups,
-            neonSpontaneousLabel
-          });
-        } catch (err) {
-          console.warn('finalizeVideoSpin recovery:', err);
-          setVideoReelsSpinning([false, false, false, false, false]);
-          setAutoSpinsLeft(0);
-          setStatusBanner('Spin settled — pull again!');
-        }
-      }, lastDelay)
+    const antCol =
+      !turboOn && Array.isArray(anticipation) && anticipation.length > 0
+        ? anticipation.find((c) => spinMask[c]) ?? null
+        : null;
+    const baseDelays = turboOn
+      ? [140, 200, 260, 320, 380]
+      : [380, 520, 660, 800, 940];
+    const stopDelaysMs = baseDelays.map((d, c) =>
+      antCol !== null && c >= antCol ? d + (c === 4 ? 1500 : 1150) : d
     );
+    const crawlReels = [0, 1, 2, 3, 4].map((c) => antCol !== null && c === antCol);
+
+    let settled = false;
+    const remaining = new Set([0, 1, 2, 3, 4].filter((c) => spinMask[c]));
+
+    const stopSuspenseEffects = () => {
+      sfx.stopSlotRiser();
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current);
+        heartbeatIntervalRef.current = null;
+      }
+      setAnticipationReel(null);
+    };
+
+    const completeVideoSpin = async () => {
+      if (settled) return;
+      settled = true;
+      const slamRequested = Boolean(activeVideoSpinRef.current?.slamRequested);
+      stopSuspenseEffects();
+      activeVideoSpinRef.current = null;
+      setSurgeRollActive(false);
+
+      if (antCol !== null && !slamRequested) {
+        if (totalMult > 0) {
+          await hitStop(90);
+        } else {
+          sfx.playSlotAww();
+        }
+      }
+
+      try {
+        finalizeVideoSpin({
+          spinResult,
+          activeBet,
+          isFreeSpinRound,
+          coffeeRushUsed,
+          wasSurge,
+          usedSecondChance: nudged,
+          neonUsedPowerups,
+          neonSpontaneousLabel
+        });
+      } catch (err) {
+        console.warn('finalizeVideoSpin recovery:', err);
+        setVideoReelsSpinning([false, false, false, false, false]);
+        setAutoSpinsLeft(0);
+        setStatusBanner('Spin settled — pull again!');
+      }
+    };
+
+    const handleVideoReelSettled = (colIdx) => {
+      sfx.playSlotReelStop(colIdx % 3);
+      nudgeCabinetOnStop(cabinetRef.current);
+      setVideoStops((prev) => {
+        const copy = [...prev];
+        copy[colIdx] = nextStops[colIdx];
+        return copy;
+      });
+      setVideoGrid((prev) => {
+        const base = Array.isArray(prev) ? prev : [];
+        const copy = base.map((c) => (Array.isArray(c) ? [...c] : []));
+        copy[colIdx] = Array.isArray(generated?.[colIdx]) ? generated[colIdx] : [];
+        return copy;
+      });
+      setVideoReelsSpinning((prev) => {
+        const copy = [...prev];
+        copy[colIdx] = false;
+        return copy;
+      });
+      remaining.delete(colIdx);
+
+      if (
+        antCol !== null &&
+        colIdx === antCol - 1 &&
+        remaining.has(antCol) &&
+        !activeVideoSpinRef.current?.slamRequested
+      ) {
+        const riserMs = antCol === 4 ? 1500 : 1150;
+        setAnticipationReel(antCol);
+        sfx.playSlotRiser(riserMs);
+        haptic('heartbeat');
+        if (heartbeatIntervalRef.current) clearInterval(heartbeatIntervalRef.current);
+        heartbeatIntervalRef.current = setInterval(() => haptic('heartbeat'), 1000);
+      }
+
+      if (remaining.size === 0) {
+        if (antCol !== null) stopSuspenseEffects();
+        timersRef.current.push(setTimeout(completeVideoSpin, 40));
+      }
+    };
+
+    activeVideoSpinRef.current = {
+      targetStops: nextStops,
+      onReelStop: handleVideoReelSettled,
+      slamRequested: false
+    };
+
+    if (remaining.size === 0) {
+      completeVideoSpin();
+      return;
+    }
+
+    videoController.startSpin({
+      mask: spinMask,
+      targetStops: nextStops,
+      stopDelaysMs,
+      turbo: turboOn,
+      surge: isSurgeRoll,
+      windUpScale,
+      crawlReels,
+      onTickSymbol: (_idx, rawP) => sfx.playSlotTick(rawP),
+      onReelStop: handleVideoReelSettled
+    });
   }, [
+    advanceDailyMissions,
+    triggerChargeSlosh,
     recordSlotSpinForPulse,
     activeMachine.name,
     anteBetOn,
@@ -1339,43 +1611,65 @@ export default function VegasSlotMachine({
     surgeArmed,
     tokens,
     turboOn,
-    videoGrid
+    videoController,
+    videoGrid,
+    videoStops,
+    videoStrips
   ]);
 
-  const handleSlamStopBandit = useCallback(() => {
-    if (machineId !== 'bandit85' || !isBanditSpinning) return;
-    const active = activeBanditSpinRef.current;
-    if (!active || active.slamRequested) return;
-    active.slamRequested = true;
-    sfx.stopSlotRiser();
-    if (heartbeatIntervalRef.current) {
-      clearInterval(heartbeatIntervalRef.current);
-      heartbeatIntervalRef.current = null;
+  const handleSlamStop = useCallback(() => {
+    if (machineId === 'bandit85' && isBanditSpinning) {
+      const active = activeBanditSpinRef.current;
+      if (!active || active.slamRequested) return;
+      active.slamRequested = true;
+      sfx.stopSlotRiser();
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current);
+        heartbeatIntervalRef.current = null;
+      }
+      setAnticipationReel(null);
+      sfx.playToggle();
+      banditController.slamStop({
+        targetStops: active.targetStops,
+        onReelStop: active.onReelStop
+      });
+      return;
     }
-    setAnticipationReel(null);
-    sfx.playToggle();
-    banditController.slamStop({
-      targetStops: active.targetStops,
-      onReelStop: active.onReelStop
-    });
-  }, [banditController, isBanditSpinning, machineId]);
+
+    if (machineId !== 'bandit85' && isVideoSpinning) {
+      const active = activeVideoSpinRef.current;
+      if (!active || active.slamRequested) return;
+      active.slamRequested = true;
+      sfx.stopSlotRiser();
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current);
+        heartbeatIntervalRef.current = null;
+      }
+      setAnticipationReel(null);
+      sfx.playToggle();
+      videoController.slamStop({
+        targetStops: active.targetStops,
+        onReelStop: active.onReelStop
+      });
+    }
+  }, [banditController, isBanditSpinning, isVideoSpinning, machineId, videoController]);
 
   // Master spin dispatcher
   const handlePullSpin = useCallback((opts = {}) => {
     setAutoMenuOpen(false);
-    if (machineId === 'bandit85' && isBanditSpinning) {
-      handleSlamStopBandit();
+    if (isBanditSpinning || isVideoSpinning) {
+      handleSlamStop();
       return;
     }
     if (isAnySpinning) return;
     if (machineId === 'bandit85') {
       triggerBanditSpin(opts);
     } else {
-      triggerVideoSpin();
+      triggerVideoSpin(opts);
     }
-  }, [handleSlamStopBandit, isAnySpinning, isBanditSpinning, machineId, triggerBanditSpin, triggerVideoSpin]);
+  }, [handleSlamStop, isAnySpinning, isBanditSpinning, isVideoSpinning, machineId, triggerBanditSpin, triggerVideoSpin]);
 
-  // Space bar or Enter spins; Space while Bandit '85 spins triggers slam stop
+  // Space bar or Enter spins; Space while spinning triggers Slam Stop on ALL 5 machines
   useEffect(() => {
     const onKeyDown = (e) => {
       if (e.repeat) return;
@@ -1385,8 +1679,8 @@ export default function VegasSlotMachine({
 
       if (e.code === 'Space') {
         e.preventDefault();
-        if (machineId === 'bandit85' && isBanditSpinning) {
-          handleSlamStopBandit();
+        if (isBanditSpinning || isVideoSpinning) {
+          handleSlamStop();
         } else if (!isAnySpinning) {
           handlePullSpin();
         }
@@ -1400,7 +1694,7 @@ export default function VegasSlotMachine({
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [bonusWheelState, handlePullSpin, handleSlamStopBandit, isAnySpinning, isBanditSpinning, lockItState?.active, machineId]);
+  }, [bonusWheelState, handlePullSpin, handleSlamStop, isAnySpinning, isBanditSpinning, isVideoSpinning, lockItState?.active]);
 
   // Auto-spin scheduler
   useEffect(() => {
@@ -1719,11 +2013,25 @@ export default function VegasSlotMachine({
           <div
             ref={cabinetRef}
             className={`tm-bandit-cabinet tm-cabinet-${machineId} ${
+              isAnySpinning ? 'is-spinning' : ''
+            } ${surgeRollActive ? 'is-surge-roll' : ''} ${
+              isWinner ? 'is-win-lit' : ''
+            } ${
               anticipationReel !== null ? 'is-suspense' : ''
             } ${
               isHighRollerNeon ? `tm-cabinet-highroller-neon tm-neon-theme-${activeMachine.neonTheme}` : ''
             }`}
           >
+            {/* TOP MEGA/JACKPOT BEACON DOME (unlit at rest, blazes on MEGA/JACKPOT) */}
+            <div
+              className={`tm-slot-top-beacon ${
+                sirenActive || lastOutcome?.tier === 'mega' || isJackpot ? 'is-lit' : ''
+              }`}
+              aria-hidden="true"
+            >
+              <span className="tm-slot-beacon-cap" />
+            </div>
+
             {/* FLASHING SIREN BEACONS ON BIG WIN / JACKPOT */}
             {sirenActive && (
               <div className="tm-slot-siren-bar" aria-live="polite">
@@ -1944,9 +2252,45 @@ export default function VegasSlotMachine({
               </div>
             )}
 
+            {/* UNIFIED GLOWING LIQUID CHARGE TUBE (Phase 35.7g) */}
+            {(() => {
+              const tubeCfg =
+                machineId === 'bandit85'
+                  ? { label: '🔥 FEVER 2×', pct: (banditFever / 5) * 100, text: `${banditFever}/5`, tone: 'pink', full: banditFever >= 5 }
+                  : machineId === 'neon_special'
+                    ? { label: '⚡ REACTOR', pct: (neonCharge / 6) * 100, text: `${neonCharge}/6 CELLS`, tone: 'cyan', full: neonCharge >= 2 }
+                    : machineId === 'silver_mustang'
+                      ? { label: '☕ COFFEE POT', pct: (coffeePot / 10) * 100, text: `${coffeePot}/10`, tone: 'amber', full: coffeePot >= 10 }
+                      : machineId === 'lightning_vault'
+                        ? { label: '🔋 VOLTAGE', pct: voltageMeter, text: `${voltageMeter}%`, tone: 'cyan', full: voltageMeter >= 100 }
+                        : { label: '🏆 STAMPEDE', pct: stampedeMeter, text: `${stampedeMeter}%`, tone: 'amber', full: stampedeMeter >= 100 };
+              return (
+                <div
+                  className={`tm-slot-liquid-tube tone-${tubeCfg.tone} ${
+                    chargeSloshing ? 'is-sloshing' : ''
+                  } ${tubeCfg.full ? 'is-full' : ''}`}
+                  role="progressbar"
+                  aria-label={tubeCfg.label}
+                  aria-valuenow={Math.round(tubeCfg.pct)}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                >
+                  <span className="tm-liquid-label">{tubeCfg.label}</span>
+                  <div className="tm-liquid-glass">
+                    <div
+                      className="tm-liquid-fill"
+                      style={{ width: `${Math.max(4, Math.min(100, tubeCfg.pct))}%` }}
+                    />
+                  </div>
+                  <strong className="tm-liquid-value">{tubeCfg.text}</strong>
+                </div>
+              );
+            })()}
+
             {/* ==========================================
                 REELS WINDOW: 3-DRUM BANDIT OR 5-REEL VIDEO
                ========================================== */}
+            <div ref={reelsStageRef} className="tm-slot-reels-anchor">
             {machineId === 'bandit85' ? (
               <div className="tm-bandit-reel-bezel">
                 <div className="tm-bandit-payline-arrow left" aria-hidden="true">▶</div>
@@ -1979,7 +2323,7 @@ export default function VegasSlotMachine({
                           isDimmed={isDim}
                           breathingRows={breatheRows}
                           symbolSize={embedded ? 36 : 44}
-                          onTapReel={isBanditSpinning ? handleSlamStopBandit : undefined}
+                          onTapReel={isBanditSpinning ? handleSlamStop : undefined}
                         />
 
                         <div className="tm-bandit-drum-btns">
@@ -2029,59 +2373,47 @@ export default function VegasSlotMachine({
                     {[0, 1, 2, 3, 4].map((colIdx) => {
                       const colSpinning = videoReelsSpinning[colIdx];
                       const rowCount = machineId === 'buffalo_stampede' ? 4 : 3;
-                      const colSyms = Array.isArray(videoGrid?.[colIdx]) ? videoGrid[colIdx] : [];
-                    const previewPool =
-                      machineId === 'neon_special'
-                        ? ['ns_wild', 'ns_airwolf', 'ns_orb', 'ns_arcade', 'ns_synth', 'ns_shades']
-                        : machineId === 'silver_mustang'
-                          ? ['dougie', 'coffee', 'pie', 'orb', 'owlring', '777']
-                          : machineId === 'lightning_vault'
-                            ? ['bolt', 'volt7', 'vault', 'wildchip', 'diamond', 'bar']
-                            : ['buffalo', 'eagle', 'wolf', 'goldcoin', 'wild2x', 'wheel'];
+                      const isAnt = anticipationReel === colIdx;
+                      const isDim = anticipationReel !== null && anticipationReel !== colIdx;
+                      const colWinRows = new Set();
+                      if (!colSpinning) {
+                        for (let r = 0; r < rowCount; r += 1) {
+                          if (winningCells.has(`${colIdx},${r}`)) colWinRows.add(r);
+                        }
+                      }
+                      const colBreatheRows =
+                        anticipationReel !== null && colIdx < anticipationReel
+                          ? new Set(Array.from({ length: rowCount }, (_, i) => i))
+                          : null;
 
-                    return (
-                      <div
-                        key={colIdx}
-                        className={`tm-video-reel-col ${colSpinning ? 'spinning' : ''}`}
-                      >
-                        {Array.from({ length: rowCount }).map((_, rowIdx) => {
-                          const key = `${colIdx},${rowIdx}`;
-                          const lockedOrb = lockItState?.active ? lockItState.lockedMap[key] : null;
-                          const symId = colSpinning
-                            ? previewPool[(colIdx * 2 + rowIdx) % previewPool.length]
-                            : colSyms[rowIdx] || previewPool[0];
-                          const isCellWin = !colSpinning && winningCells.has(key);
-                          const wildMult =
-                            !colSpinning && machineId === 'buffalo_stampede' && symId === 'wild2x'
-                              ? `${wildMultipliers[key] || 2}×`
-                              : null;
-
-                          return (
-                            <div
-                              key={rowIdx}
-                              className={`tm-video-cell ${isCellWin ? 'win' : ''} ${
-                                lockedOrb ? 'orb-locked' : ''
-                              }`}
-                            >
-                              {lockedOrb ? (
-                                <div className="tm-locked-orb-badge" style={{ borderColor: lockedOrb.color }}>
-                                  <span>⚡</span>
-                                  <strong>{lockedOrb.label}</strong>
-                                </div>
-                              ) : (
-                                <SlotSymbolArt
-                                  symbolId={symId}
-                                  size={machineId === 'buffalo_stampede' ? (embedded ? 28 : 34) : embedded ? 32 : 40}
-                                  badge={wildMult}
-                                />
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  })}
-                </div>
+                      return (
+                        <div
+                          key={`${machineId}-${colIdx}`}
+                          className={`tm-video-reel-col ${colSpinning ? 'spinning' : ''}`}
+                        >
+                          <Reel
+                            reelIndex={colIdx}
+                            strip={videoStrips[colIdx] || INITIAL_GRID_BY_MACHINE[machineId]?.[colIdx] || []}
+                            cellHeight={machineId === 'buffalo_stampede' ? (embedded ? 34 : 40) : embedded ? 40 : 48}
+                            visibleRows={rowCount}
+                            centerRow={0}
+                            stopIndex={videoStops[colIdx]}
+                            controller={videoController}
+                            isWinner={colWinRows.size > 0 && !colSpinning}
+                            isSpinning={colSpinning}
+                            isAnticipating={isAnt}
+                            isDimmed={isDim}
+                            highlightRows={colWinRows.size > 0 ? colWinRows : null}
+                            breathingRows={colBreatheRows}
+                            wildMultipliers={machineId === 'buffalo_stampede' ? wildMultipliers : null}
+                            lockedCells={lockItState?.active ? lockItState.lockedMap : null}
+                            symbolSize={machineId === 'buffalo_stampede' ? (embedded ? 28 : 34) : embedded ? 32 : 40}
+                            onTapReel={isVideoSpinning ? handleSlamStop : undefined}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
 
                 {/* BONUS WHEEL OVERLAY INSIDE BUFFALO CABINET */}
                 {bonusWheelState && (
@@ -2122,32 +2454,21 @@ export default function VegasSlotMachine({
                 {isHighRollerNeon && <NeonSideRail side="right" theme={activeMachine.neonTheme} />}
               </div>
             )}
+            </div>
 
             {/* POWERUP & OPTION BUTTON DECK */}
             <div className="tm-slot-powerup-deck">
               {machineId === 'bandit85' && (
-                <>
-                  <button
-                    type="button"
-                    className={`tm-slot-power-btn ${banditFever >= 5 ? 'ready' : ''} ${
-                      banditFeverArmed ? 'armed' : ''
-                    }`}
-                    disabled={isAnySpinning || banditFever < 5 || banditFeverArmed}
-                    onClick={handleArmBanditFever}
-                  >
-                    🔥 FEVER 2× ({banditFever}/5)
-                  </button>
-                  <button
-                    type="button"
-                    className={`tm-slot-power-btn ${turboOn ? 'armed' : ''}`}
-                    onClick={() => {
-                      sfx.playToggle();
-                      setTurboOn((v) => !v);
-                    }}
-                  >
-                    ⚡ TURBO {turboOn ? 'ON' : 'OFF'}
-                  </button>
-                </>
+                <button
+                  type="button"
+                  className={`tm-slot-power-btn ${banditFever >= 5 ? 'ready' : ''} ${
+                    banditFeverArmed ? 'armed' : ''
+                  }`}
+                  disabled={isAnySpinning || banditFever < 5 || banditFeverArmed}
+                  onClick={handleArmBanditFever}
+                >
+                  🔥 FEVER 2× ({banditFever}/5)
+                </button>
               )}
 
               {machineId === 'neon_special' && (
@@ -2316,15 +2637,32 @@ export default function VegasSlotMachine({
               )}
             </div>
 
-            {/* 4. DIGITAL VFD LED PAYOUT DISPLAY */}
+            {/* 4. DIGITAL VFD LED PAYOUT DISPLAY + 20-MIN STRETCH NOTICE */}
             <div className={`tm-bandit-led-bar ${isWinner ? 'win' : ''}`} role="status">
-              {statusBanner}
+              {showStretchNotice
+                ? '⏱️ You’ve been spinning 20 minutes — stretch & grab water! (No real money)'
+                : statusBanner}
+            </div>
+
+            {/* DAILY SLOT MISSIONS STRIP (35.7g) */}
+            <div className="tm-slot-missions-strip" aria-label="Daily Slot Missions">
+              {SLOT_DAILY_MISSION_DEFS.map((m) => {
+                const prog = dailyMissions.progress[m.id] || 0;
+                const done = Boolean(dailyMissions.claimed[m.id]);
+                return (
+                  <div key={m.id} className={`tm-slot-mission-pill ${done ? 'done' : ''}`}>
+                    <span>{done ? '✓' : `${prog}/${m.target}`}</span>
+                    <span>{m.label}</span>
+                    <strong>+{formatMoney(m.rewardTokens)}</strong>
+                  </div>
+                );
+              })}
             </div>
 
             {/* 5. CASINO CHIP WAGER DECK + SPIN BUTTON */}
             <div className="tm-bandit-control-deck">
               <div className="tm-bandit-wallet-row">
-                <div className="tm-bandit-stat-box">
+                <div className="tm-bandit-stat-box" ref={walletRef}>
                   <span>WALLET</span>
                   <Wallet tokens={tokens} centz={centz} size="inline" compact />
                 </div>
@@ -2351,6 +2689,19 @@ export default function VegasSlotMachine({
                   </strong>
                 </div>
               </div>
+
+              {/* VISUAL SESSION COIN TRAY (35.7f) */}
+              {sessionWinnings > 0 && (
+                <div className="tm-slot-coin-tray" aria-label="Session Coin Tray">
+                  <span className="tm-coin-tray-label">COIN TRAY</span>
+                  <div className="tm-coin-tray-piles" aria-hidden="true">
+                    {Array.from({ length: Math.min(14, Math.max(1, Math.ceil(sessionWinnings / 4))) }).map((_, idx) => (
+                      <span key={idx} className="tm-tray-coin">M$</span>
+                    ))}
+                  </div>
+                  <strong className="tm-coin-tray-total">+{formatMoney(sessionWinnings, { compact: true })}</strong>
+                </div>
+              )}
 
               <div className="tm-bandit-bet-row" role="group" aria-label="Select Chip Wager">
                 <span className="tm-bandit-bet-label">COIN-OP BET:</span>
@@ -2457,10 +2808,10 @@ export default function VegasSlotMachine({
                     <button
                       type="button"
                       className="tm-bandit-spin-btn"
-                      disabled={(isAnySpinning && !(machineId === 'bandit85' && isBanditSpinning)) || Boolean(bonusWheelState)}
+                      disabled={(isAnySpinning && !(isBanditSpinning || isVideoSpinning)) || Boolean(bonusWheelState)}
                       onPointerDown={() => {
                         spinHoldTriggeredRef.current = false;
-                        if (isAnySpinning || machineId !== 'bandit85') return;
+                        if (isAnySpinning) return;
                         if (spinHoldTimerRef.current) clearTimeout(spinHoldTimerRef.current);
                         spinHoldTimerRef.current = setTimeout(() => {
                           spinHoldTriggeredRef.current = true;
@@ -2489,17 +2840,15 @@ export default function VegasSlotMachine({
                       }}
                       title="Space/Enter to spin • Tap while spinning to Slam Stop • Hold 600ms for Auto-Spin"
                     >
-                      {machineId === 'bandit85' && isBanditSpinning
+                      {isBanditSpinning || isVideoSpinning
                         ? '🛑 SLAM STOP (SPACE)'
-                        : isAnySpinning
-                          ? '🎰 SPINNING REELS...'
-                          : neonFreeSpins > 0
-                            ? `🎆 PULL NEON FREE SPIN (${neonFreeSpins} LEFT!)`
-                            : mustangFreeSpins > 0
-                              ? `☕ PULL FREE SPIN (${mustangFreeSpins} LEFT!)`
-                              : actualCost === 0
-                                ? '🕹️ PULL DEMO SPIN (FREE)'
-                                : `🎰 SPIN ${formatMoney(actualCost, { compact: true })} • MAX ${formatMoney(actualCost * activeMachine.maxMult, { compact: true })}`}
+                        : neonFreeSpins > 0
+                          ? `🎆 PULL NEON FREE SPIN (${neonFreeSpins} LEFT!)`
+                          : mustangFreeSpins > 0
+                            ? `☕ PULL FREE SPIN (${mustangFreeSpins} LEFT!)`
+                            : actualCost === 0
+                              ? '🕹️ PULL DEMO SPIN (FREE)'
+                              : `🎰 SPIN ${formatMoney(actualCost, { compact: true })} • MAX ${formatMoney(actualCost * activeMachine.maxMult, { compact: true })}`}
                     </button>
                   </div>
                 )}

@@ -570,7 +570,7 @@ export const SEO_ROUTES = [
     prerenderCategory: 'dank',
     introParagraphs: [
       'Dive into the #DANK feed on THE MEMES.net—home to absurdist reaction memes, chaotic late-night shitposts, stonks vs not-stonks energy, cyber-arcade humor, and fresh community uploads. Every meme loads instantaneously offline or online with lightweight WebP art, and real community uploads always rank automatically above starter classics once submitted.',
-      'Double-tap any meme card to fire an instant upvote combo, drop 🔥 💀 😂 🗿 emoji reactions, save your favorites, tap Share to send a meme straight to a group chat, or open the free meme generator to put your own punchline, stickers, and Deep Fry filters on any classic template. New uploads join the feed after a quick safety check.',
+      'Double-tap any meme card to fire an instant upvote combo, drop 🔥 💀 😂 🗿 emoji reactions, save your favorites, tap Share to send a meme straight to a group chat, or open the free meme generator to put your own punchline, bold Impact captions, and custom stickers on any classic template. New uploads join the feed after a quick safety check.',
       'Explore all 16 featured #DANK starter memes right below with full captions and alt descriptions, switch effortlessly between Latest and Top leaderboards, copy direct Theater share links for Discord and WhatsApp, or jump straight into Programming, Gaming, and Relatable meme categories and seven free retro arcade games.'
     ]
   },

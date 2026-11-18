@@ -255,21 +255,17 @@
 
   .tm-gs-right {
     gap: 4px;
-    flex-wrap: nowrap;
-    overflow-x: auto;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    width: 100%;
     max-width: 100%;
-    scrollbar-width: none;
-  }
-
-  .tm-gs-right::-webkit-scrollbar {
-    display: none;
   }
 
   .tm-gs-btn {
-    min-height: 36px;
-    min-width: 36px;
-    padding: 4px 8px;
-    font-size: 0.74rem;
+    min-height: 34px;
+    min-width: 34px;
+    padding: 3px 7px;
+    font-size: 0.72rem;
     flex-shrink: 0;
   }
 

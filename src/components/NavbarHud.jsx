@@ -149,10 +149,10 @@ export default function NavbarHud({
         )}
 
         <div className="tm-hud">
-          {/* 1. +CREATE PRIMARY BUTTON (Desktop) */}
+          {/* 1. +CREATE PRIMARY BUTTON (Desktop — unlit on home page so hero Make a meme leads) */}
           <button
             type="button"
-            className="ui-tube ui-tube--pink ui-tube-box ui-tube-box--solid tm-nav-create-btn tm-hide-mobile"
+            className={`ui-tube ui-tube--pink ui-tube-box ${viewMode === 'feed' ? 'ui-tube-box--off' : 'ui-tube-box--solid'} tm-nav-create-btn tm-hide-mobile`}
             onClick={onOpenBlankStudio}
             title="Create or Remix a Meme in the Studio"
           >

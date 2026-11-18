@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, Share2, Check, Volume2, VolumeX, HelpCircle, X } from 'lucide-react';
 import { sfx } from '../utils/soundEngine';
 import { getSettings, subscribeSettings, updateSettings } from '../utils/settingsStore';
 import { pulse } from '../utils/analytics';
@@ -77,9 +78,11 @@ export default function GameShell({
 
   const handleShareGame = () => {
     if (typeof window === 'undefined') return;
-    const targetUrl = sharePath
+    const baseUrl = sharePath
       ? `${window.location.origin}${sharePath.startsWith('/') ? sharePath : `/${sharePath}`}`
       : window.location.href;
+    const sep = baseUrl.includes('?') ? '&' : '?';
+    const targetUrl = baseUrl.includes('ref=') ? baseUrl : `${baseUrl}${sep}ref=game`;
     navigator.clipboard?.writeText(targetUrl).catch(() => {});
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       pulse('share', { surface: 'game_shell', method: 'native' });
@@ -115,7 +118,8 @@ export default function GameShell({
               }}
               aria-label="Back"
             >
-              ← Back
+              <ArrowLeft size={14} aria-hidden="true" />
+              <span>Back</span>
             </button>
           )}
           <div className="tm-gs-title-group">
@@ -158,7 +162,17 @@ export default function GameShell({
             aria-label={`Share link to ${title}`}
             title={`Copy or share direct link to ${title}`}
           >
-            {copiedLink ? '✅ Copied!' : '🔗 Share'}
+            {copiedLink ? (
+              <>
+                <Check size={14} aria-hidden="true" />
+                <span>Copied</span>
+              </>
+            ) : (
+              <>
+                <Share2 size={14} aria-hidden="true" />
+                <span>Share</span>
+              </>
+            )}
           </button>
 
           <button
@@ -168,7 +182,7 @@ export default function GameShell({
             aria-label={effectiveSoundOn ? 'Mute SFX' : 'Unmute SFX'}
             aria-pressed={!effectiveSoundOn}
           >
-            {effectiveSoundOn ? '🔊' : '🔇'}
+            {effectiveSoundOn ? <Volume2 size={15} aria-hidden="true" /> : <VolumeX size={15} aria-hidden="true" />}
           </button>
 
           {howToPlay.length > 0 && (
@@ -182,7 +196,7 @@ export default function GameShell({
               aria-label={`How to play ${title}`}
               aria-expanded={howToOpen}
             >
-              ?
+              <HelpCircle size={15} aria-hidden="true" />
             </button>
           )}
         </div>
@@ -206,7 +220,8 @@ export default function GameShell({
               onClick={() => setHowToOpen(false)}
               aria-label="Close instructions"
             >
-              ✕ Close
+              <X size={14} aria-hidden="true" />
+              <span>Close</span>
             </button>
           </div>
           <ul>

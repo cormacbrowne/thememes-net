@@ -286,7 +286,53 @@
 }
 
 @media (max-width: 860px) {
+  .tm-hilow-stage {
+    min-height: calc(100dvh - 46px);
+    padding: 6px 8px calc(12px + env(safe-area-inset-bottom, 0px));
+    gap: 6px;
+  }
+
+  .tm-hilow-header {
+    padding: 5px 8px;
+    gap: 5px;
+  }
+
+  .tm-hilow-title {
+    font-size: 14px;
+  }
+
+  .tm-hilow-arena {
+    gap: 6px;
+  }
+
+  .tm-hilow-img {
+    max-height: 148px;
+  }
+
+  .tm-hilow-card-body {
+    padding: 7px 10px;
+    gap: 4px;
+  }
+
+  .tm-hilow-title-link {
+    font-size: 13px;
+  }
+
+  .tm-hilow-vs {
+    width: 30px;
+    height: 30px;
+    font-size: 10px;
+    margin: -6px 0;
+    z-index: 2;
+  }
+
+  .tm-hilow-score-pill {
+    padding: 7px 10px;
+    font-size: 13.5px;
+  }
+
   .tm-hilow-btn {
     min-height: 44px;
+    padding: 8px 10px;
   }
 }

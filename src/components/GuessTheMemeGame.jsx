@@ -280,7 +280,7 @@ export default function GuessTheMemeGame({
   const shareGrid = results.map((r) => r.emoji).join('');
 
   const handleCopyShare = async () => {
-    const shareText = `${shareGrid} THE MEMES.net #${puzzleNumber} (${solvedCount}/5 · ${totalScore} pts)\n🔥 Streak: ${savedState.streak}\nhttps://thememes.net/games/guess-the-meme`;
+    const shareText = `${shareGrid} THE MEMES.net #${puzzleNumber} (${solvedCount}/5 · ${totalScore} pts)\n🔥 Streak: ${savedState.streak}\nhttps://thememes.net/games/guess-the-meme?ref=daily`;
     try {
       if (navigator.share && typeof window !== 'undefined' && window.innerWidth <= 860) {
         await navigator.share({ title: `Guess The Meme #${puzzleNumber}`, text: shareText });

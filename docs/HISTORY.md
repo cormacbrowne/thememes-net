@@ -757,4 +757,283 @@
   - [x] Upgraded upvote feedback with `.tm-screen-punch` (subtle 140ms pulse, off in `prefers-reduced-motion` / `litePerfMode`), combo-climbing layered pop synth (`_playComboRisingPop`), and `navigator.vibrate(10)` haptic feedback on Android; every 10th unique meme viewed in Reels triggers a claimable Golden Meme Drop (`handleClaimGoldenMeme`), and the end of both Feed and Reels displays `"You've reached the end of the internet 🫠"` with Remix, Games, and Back-to-Top CTAs.
 
 ---
+---
 
+## 00. 🧹 Phase 36: "Meme core first" — completed tasks (moved 18 Nov 2026)
+
+> Open items left in `instructions.md`: **36.6b** (deploy `submit-caption-entry`) and **36.V Stage 2** (owner choice of video transcoding service).
+
+> Owner's 12 points (first impressions + core meme functionality). All shipped on 17 Nov 2026 unless marked open.
+
+- [x] **36.1 Smooth start.** The prerendered shell for every route now opens with a static copy of the lit neon sign (`bootSplashHtml()` in `scripts/prerender-seo.mjs`, built from `neonSignPaths.js`) instead of the old-style "Featured Community Memes" block; `/` no longer preloads a seed image. The feed shows skeletons until the live feed answers (`isLoadingFeed` starts true in `useFeed.js`, 6 s fallback) instead of painting starter memes first.
+- [x] **36.2 Blank memes on iPhone.** Cause: `content-visibility: auto` on `.tm-card` + `loading="lazy"` images (also black in Chromium screenshots). Removed in `src/index.css`; the grid is already windowed.
+- [x] **36.3 Duplicated caption on share/download.** Cause: `sanitizeOverlayPayload()` (`securityGuard.js`) dropped `burned` and rewrote layers into another schema, so the feed drew captions again over images that already had them and exports redrew them. Fixed the sanitizer (keeps Forge schema + `burned`), added `normalizeOverlayLayers()` / `isOverlayBurnedIn()` in `forgeEngine.js`, fixed the 1 affected DB row, and export of a posted meme now uses the file as-is + logo (no title-to-caption invention). Bigger logo watermark (3.6% of short side). Video export: `burnInVideo()` now records **MP4 with sound** where supported (WebM fallback) with the logo on every frame. New `ShareMemeSheet.jsx` prepares the file first, then Share / Save / Copy link (iPhone needs a fresh tap for the share sheet).
+- [x] **36.4 Card buttons on PC.** `MemeCard.jsx` + new `MemeCard.css`: one-line header (@handle · time · category), image, then two aligned grid rows (vote + 4 reactions; comments / save / download / Share / report). lucide icons.
+- [x] **36.5 Full-screen games.** `GameFullscreenToggle.jsx`: real Fullscreen API where available, immersive "hide every bar" mode on iPhone (no page fullscreen API there) + one-time "Add to Home Screen" tip. Button in the fixed arcade bar (⤢) and floating on other games.
+- [x] **36.6 Handle not real name.** Handle field now sits above the Google button and survives the OAuth redirect (`tm_pending_handle`). `authorNameFor()` never uses Google `full_name`/`name` or email prefixes (falls back to the anonymous-style handle). One-time profile nudge when signed in without a handle. **Deployed** `publish-meme` (v14) and `post-comment` (v5). Owner's pizza meme renamed to the account's anon handle.
+- [ ] **36.6b Deploy `submit-caption-entry`** with the new `_shared/identity.js` (not redeployed yet; only matters for Google accounts with no handle entering the daily caption battle).
+- [x] **36.7 No remixes.** `REMIX_ENABLED = false` in `src/config/featureFlags.js` hides every Remix / Caption this / Mutate / Fork button, GEN pills and lineage panels. Card also loses Remix tree + AI Scan. Server already refuses edits to posted memes (33.1).
+- [x] **36.8 Categories.** New table `public.meme_categories` (migration `20261117000001_36_meme_categories.sql`, moderators write, everyone reads) seeded with Black Friday, Christmas, TikTok Trends + 14 more. `/admin` → Categories tab to add / mark trending / hide / reorder. `CategorySelect.jsx` in Quick upload, Studio and Forge; feed chips from `useMemeCategories()`; `publish-meme` accepts any active category.
+- [x] **36.9 Terms.** `/terms` section 2 now says memes may be shared/reposted elsewhere with the thememes.net logo, real names never shown, posts cannot be edited, removal on request. Upload screens link the Terms. (Owner to read the wording.)
+- [x] **36.10 Admin login.** `/admin`, `/administrator`, `/administrator/moderator`, `/moderator`, `/moderation` all open the moderation queue, which now has its own "Sign in with Google" button and says which account is signed in when it is not a moderator. Moderator shield link in the top bar and profile.
+- [x] **36.11 Video uploads re-opened (Stage 1 of 36.V, 17 Nov 2026).** Every video waits for a moderator.
+
+### 36.V Safe video uploads — plan (17 Nov 2026, waiting for owner's pick of Stage 2 option)
+
+**Why it is not a one-line switch.** A posted video must be (1) re-encoded so phone metadata (GPS location, device, owner name) and hidden payloads are gone, (2) checked for nudity/gore frame by frame, and (3) checked for sound. Supabase Edge Functions get **2 s CPU and 256 MB per request** (docs: functions/limits), so they cannot run ffmpeg. Anything the *browser* says about its own video (frames, "already re-encoded") cannot be trusted, because a bad actor can send clean frames with a bad video.
+
+**Stage 1 — ship now, no new services, no cost (owner approves every video).** ✅ Shipped 17 Nov 2026 (`publish-meme` v15, migration `20261117000002_36v_video_uploads_stage1.sql`). Verified end to end on the live project: a 10 s clip was re-recorded to a 1.8 MB 720p MP4 + 6 stills, passed the checks, stored in `videos/` + `posters/`, held `pending` (test row then set to `removed`). Notes: Chrome/Safari MediaRecorder MP4 is fragmented, so the server usually has no container duration and uses the browser's (clamped to 30 s, plus the 25 MB cap); recording plays the clip once in real time; Firefox records WebM.
+- [x] **V1 Client prep.** (`prepareVideoForUpload()` in `forgeEngine.js`; frames are 480 px WebP/JPEG.) In Quick upload / Forge, a picked video (≤ 30 s, ≤ 25 MB, MP4/MOV/WebM) is re-recorded in the browser with the existing `burnInVideo()` pipeline (canvas + MediaRecorder, MP4 where supported): output is a fresh file with no source metadata, max 720p, captions burned in, logo on. The browser also grabs 1 frame per second (max 30) as WebP and the first frame as the poster. Progress bar while it records (plays once, muted to the user).
+- [x] **V2 Upload.** (`publishVideo()` in `publishMeme.js`.) `sign-upload` accepts `kind: 'video'` and returns 1 video slot + up to 31 image slots in `quarantine`. Quarantine bucket MIME list gains `video/mp4`, `video/webm` (public `memes` bucket too, for the `videos/` prefix only via the function).
+- [x] **V3 Server checks in `publish-meme` (pure JS, well under 2 s CPU).** New `_shared/videoInspect.js`: magic bytes; parse MP4 boxes (`ftyp`/`moov`/`mvhd`) or WebM EBML header for duration, size and track list; refuse > 30 s, > 25 MB, > 1 video + 1 audio track; **remux-strip** any `udta`/`meta`/`©xyz` (location) boxes from MP4 at box level (no decode needed); refuse files it cannot parse. Frames go through the existing image path (re-encode + `moderateImage`). Title/captions through `moderateText`.
+- [x] **V4 Always pending.** (`/admin/moderation` shows "🎬 Video — tap to watch" and a player.) Because the frames come from the browser, a video is **never auto-approved** in Stage 1: status is `pending` even when every frame is clean (a frame that *fails* still rejects instantly and bans the hash). It appears in `/admin/moderation` with the video player (muted by default, ▶ with sound for the moderator) and the frame strip; Approve publishes it. The uploader sees "🎬 Your video is with the moderators — usually live within a few hours".
+- [x] **V5 Feed.** (Pulse events not added yet: `publish_ok` / `publish_refused` already fire with the status.) Videos autoplay muted (already true), tap for sound; poster first on lite/low-data. Pulse events `video_upload_start/ok/refused`.
+- [x] **V6 Tests.** (`tests/unit/videoInspect36.unit.mjs`; `mediaPolicy33_9` updated.) Unit tests for `videoInspect.js` (good MP4, MP4 with GPS box → stripped, MOV, WebM, AVI refused, truncated file, 31 s refused, polyglot). Flip `PUBLIC_UPLOADS` video copy in `publishMeme.js` (`video_paused` message) and `ACCEPT_MEDIA`.
+
+**Stage 2 — auto-approval with trusted server-side frames (needs one small outside service; owner picks).**
+- **Option A: Cloudflare Stream** (pay as you go, roughly $5 per 1,000 minutes stored + $1 per 1,000 minutes watched). Upload goes to Stream; it transcodes, strips metadata, serves adaptive video, and gives thumbnails at any timestamp, which the edge function fetches and moderates. Least code; videos then play from Cloudflare (CSP `media-src` update).
+- **Option B: Mux** (similar model and price; very good developer tools, thumbnails API, webhooks).
+- **Option C: own ffmpeg worker** (e.g. a tiny container on Fly.io / Render, a few £/month): quarantine → `ffmpeg -map_metadata -1` to H.264 720p MP4 + 1 fps frames → moderation → public bucket. Cheapest at scale, most to maintain.
+- With any option: clean frames → `approved` automatically; borderline → `pending`; audio stays muted-by-default (omni-moderation cannot hear; a Whisper transcript check can be added later for a few pence per hour of audio).
+
+**Recommendation:** build Stage 1 now (videos work this week, owner approves each one, no cost), then Stage 2 Option A once there are more than ~10 videos a day.
+- [x] **36.12 The big neon sign** now leads the home page (`DualDirectionHero.jsx`, flowing tubes, power-on stutter on a first visit) and the pre-app boot screen.
+- Known: `tests/vitest/safetyAndEconomy.test.js` "staging security assertions" fails on main before and after this phase (pre-existing).
+
+---
+
+---
+
+## 0. ⚡ Phase 35: "NEON TURBO" — completed tasks (moved 18 Nov 2026)
+
+### 35.1 Pulse: private, first-party stats
+
+**What it is.** A tiny event counter that the site sends to its own database, plus one private screen for the owner. It uses no cookies, stores nothing new on the visitor's device, and keeps no information that can identify a person. Because it is first-party and anonymous, ad blockers do not block it and it does not need a cookie banner.
+
+**Honesty rule (do not skip).** "Not flagged as tracking" must be true because the system does not track people, not because it is hidden. So: it is described in plain words on `/privacy`, it has an off switch in Settings, and it sends nothing when the browser sends `Sec-GPC: 1` or `navigator.doNotTrack === '1'`. Do not obfuscate the endpoint, do not fingerprint (no canvas, fonts, screen size, or full user-agent string), and do not send account ids, usernames, handles, meme titles, comment text, search text or full URLs with query strings.
+
+- [x] **35.1a Database.** New migration `supabase/migrations/<next number>_35_1_pulse.sql`:
+  - `public.pulse_events`: `id bigint identity pk`, `ts timestamptz default now()`, `day date`, `visitor text` (see below), `session text`, `name text`, `path text`, `ref_host text`, `src text`, `device text` (`phone` / `tablet` / `desktop`), `returning boolean`, `props jsonb default '{}'`. Index on `(day, name)`. RLS on, **no policies** (service role and definer functions only).
+  - `public.pulse_salts`: `day date pk`, `salt text`. A `pg_cron` job at 00:05 UTC inserts today's random salt and **deletes every older salt**. Once yesterday's salt is gone, yesterday's visitor hashes cannot be linked to anyone or to today.
+  - `public.pulse_daily`: one row per `(day, name, path, src, device)` with `events int`, `visitors int`, `sessions int`, and `sum_ms bigint` for timed events. A second cron job at 00:15 UTC rolls up yesterday and deletes `pulse_events` rows older than **30 days**.
+  - `public.pulse(p_session text, p_events jsonb) returns void`, `security definer`, `set search_path = ''`, granted to `anon` and `authenticated`. It must: accept at most 25 events per call; accept only names matching `^[a-z][a-z0-9_]{1,31}$` that are in an allow-list inside the function; cap `props` at 600 bytes and keep only string / number / boolean values; cut `path` to 80 characters with the query string removed; reduce a referrer to its host name; compute `visitor = left(encode(digest(public.request_ip_hash() || today's salt, 'sha256'), 'hex'), 16)` (reuse `request_ip_hash()` from migration 33.7; the raw IP is never stored); silently drop the call if this visitor already has more than 300 events in the last 10 minutes or if the user-agent header contains `bot`, `crawl`, `spider`, `headless` or `lighthouse`. It never raises an error to the caller.
+  - Read side: `public.pulse_report(p_days int default 14) returns jsonb`, `security definer`, first line `if not public.is_moderator() then raise exception 'forbidden'`. Returns everything the screen in 35.1d needs in one call.
+  - Unit test in `tests/unit/` in the style of `migrationsSchema33_12.unit.mjs`: the migration enables RLS, creates no policy, and grants `pulse` but not the tables.
+- [x] **35.1b Client.** New `src/utils/pulse.js` (target under 1.5 KB gzipped, no imports except `getSupabaseClient`):
+  - `pulse(name, props)` pushes to an in-memory queue. Flush every 15 s, when the queue reaches 20, and on `visibilitychange` → hidden and `pagehide`. The flush is a plain `fetch` to `${SUPABASE_URL}/rest/v1/rpc/pulse` with the publishable key header and `keepalive: true`, so it does not wait for the Supabase client to load (33.43 wants that client lazy).
+  - `session` is `crypto.randomUUID()` held in a module variable only. Not in `localStorage`, not in `sessionStorage`, not in a cookie.
+  - `returning` is read from a key the site already keeps for its own features (`tm_intro_seen`). Do not create a new key for stats.
+  - `src` comes from `?ref=` or `utm_source` on the landing URL (letters, digits, `-`, `_`, max 24 characters), read once.
+  - It does nothing at all if GPC or Do-Not-Track is on, if `navigator.webdriver` is true, if `import.meta.env.DEV` is true (unless `?pulse=debug`, which logs to the console instead of sending), or if the Settings switch is off.
+  - `pulseTimer(name, props)` returns a `stop()` function that sends `name` with `ms` (time while the tab was visible). Use it for game sessions and for the feed.
+- [x] **35.1c Wire it in, without touching call sites.** In `src/utils/analytics.js`, make `safeTrack` call both Vercel's `track` and `pulse`. Then add these events (name: where to call it, props):
+  - `view`: once on load and on every view-mode or route change (`useViewMode.js`), `{ mode }`. This is the page view.
+  - `first_action`: the first tap, key or scroll of a session, `{ kind, ms_since_load }`. Sessions with a `view` and no `first_action` are bounces.
+  - `feed_depth`: on leaving the feed, `{ cards_seen, ms }`.
+  - `game_start` / `game_end`: for every game in `arcadeGamesCatalog.js`, `{ game, ms, rounds, result }`. `rounds` = spins, hands, levels or lives used. Hook into `GameShell` and `GameRouter` so no game needs its own code.
+  - `slot_spin_batch`: every 10 spins, `{ machine, turbo, auto, spins, wins, biggest_mult }`. Batching keeps volume low.
+  - `forge_open`, `forge_export`, `publish_ok`, `publish_refused` `{ reason_class }`: the meme-making funnel.
+  - `share`: `{ surface, method }` (native share sheet, copy link, download).
+  - `feature_use`: one event the first time in a session that each toy is opened, `{ feature }`: radio, pet, soundboard, boss key, DeLorean, CRT TV, icons strip, 8-ball, AI assistant, rewards, leaderboard, caption battle. This is the data that 33.42 (feature cull) has been waiting for.
+  - `client_error`: from `ArcadeErrorBoundary` and `window.onerror`, `{ where, message }` with the message cut to 80 characters and any URL or email removed. (Covers the first half of 33.46.)
+  - `wallet_empty`: when a player cannot afford the smallest stake, `{ game }`.
+- [x] **35.1d The owner's screen.** New lazy route `/admin/pulse` in `src/main.jsx`, built like `ModerationPage.jsx` and open to moderators only. One call to `pulse_report`. Sections, each a plain table or a row of bars drawn with `<div>` widths (no chart library): **Today and the last 14 days** (visitors, sessions, bounce %, median session time, new vs returning); **Where they came from** (`src` and `ref_host`); **First screen** (which path people land on and the bounce % of each); **Games league table** (starts, median minutes, rounds per session, share of sessions that play a second game), sorted by total minutes; **Meme funnel** (feed view → forge open → export → publish); **Feature use** (% of sessions touching each toy); **Errors** (top 10). Add `<meta name="robots" content="noindex">` for this route.
+- [x] **35.1e Tell people.** Add a switch "Anonymous usage stats" (default on) to `SettingsSheet.jsx`, stored through `settingsStore.js`. Update the "Analytics & Anti-Bot Protection" block in `src/data/legalPages.js` (line ~92) to say, in plain words: the site counts page views and button presses without cookies, the count cannot be tied to a person or an account, IP addresses are never stored, raw counts are deleted after 30 days, and here is how to switch it off. **The owner signed off the legal pages on 16 Nov 2026, so show the owner the new paragraph before publishing it.**
+- [x] **35.1f Weekly digest.** Reuse the moderation digest webhook pattern (`moderation_digest_send`): every Monday 08:00 UTC, post to the same Discord webhook: visitors this week vs last, top 3 sources, top 3 games by minutes, memes published, and the one number that fell the most.
+- **Completion Note (2026-11-16):** Added `supabase/migrations/20261116000001_35_1_pulse.sql` (`pulse_events`, `pulse_salts`, `pulse_daily`, `pulse`, `pulse_report`, `pulse_weekly_digest_send`, and 3 `pg_cron` jobs), `src/utils/pulse.js`, wired events in `analytics.js` / `useViewMode.js` / `GameRouter.jsx` / `GameShell.jsx` / `VegasSlotMachine.jsx` / `MemeStudioModal.jsx` / `useFeed.js` / `ArcadeErrorBoundary.jsx` / `settingsStore.js`, added lazy `/admin/pulse` (`PulseReportPage.jsx` + `.css`, `noindex`), Settings toggle (`SettingsSheet.jsx`), `/privacy` disclosure (`legalPages.js`), `tests/security.spec.js` `pulse_*` check, `tests/unit/pulse35_1.unit.mjs`, and `tests/vitest/pulse35_1.test.js`.
+- **Done when:** playing two games and publishing one meme on the deployed site shows up on `/admin/pulse` within a minute; with uBlock Origin on, events still arrive; with GPC on, none do; `tests/security.spec.js` gains a test that the publishable key cannot `select` from any `pulse_*` table.
+- **Then leave it running for 48 hours before 35.4 ships**, so there is a baseline for bounce rate and first action.
+
+---
+
+---
+
+### 35.2 Neon identity: palette, tubes and type
+
+> **Reference file: [`docs/ui/neon-sign-prototype.html`](docs/ui/neon-sign-prototype.html).** Open it at `http://localhost:5173/docs/ui/neon-sign-prototype.html` with the dev server running. It is a working sketch of the sign, the palette and the tube buttons, checked in a browser on 16 Nov 2026. Copy from it; do not import it.
+>
+> This task **does 34.1 and 34.2** (tick them when it is done) and **replaces the colour list in 34.B.2**. The owner has asked for the logo and colours to change, so 34.G rule 9 ("stop and ask before changing the logo or colour roles") is satisfied for 35.2 to 35.4.
+
+**The idea: a real neon sign shop at night.** A real sign has only a few gas colours, the glass is visible when it is off, the light is hottest in the middle of the tube, and the room around it is dark. Copy those four facts and the site will look like neon instead of like a gradient.
+
+**The whole palette (nothing else is allowed in new CSS):**
+
+| Token | Value | Job |
+|-------|-------|-----|
+| `--tm-night-0` | `#07060f` | Page background |
+| `--tm-night-1` | `#110d22` | Cards |
+| `--tm-night-2` | `#1b1536` | Raised things: sheets, menus, cabinet bodies |
+| `--tm-night-3` | `#2c2452` | The one border colour; unlit details |
+| `--tm-pink` / `-hot` / `-off` | `#ff2e88` / `#ffd9ea` / `#3d1028` | **The main action.** One pink thing per screen. Also the sign's big word. |
+| `--tm-cyan` / `-hot` / `-off` | `#19f0ff` / `#e2fdff` / `#0b3440` | Navigation, links, selected state, focus ring |
+| `--tm-amber` / `-hot` / `-off` | `#ffb800` / `#fff1c9` / `#3d2c05` | **Money and wins only** (MemeDollarz, jackpots, prizes) |
+| `--tm-uv` | `#8a3dff` | Background glow only. Never text, never a button. |
+| `--tm-text` / `--tm-text-dim` | `#f4f1ff` / `#a59fc4` | Body text / secondary text |
+| `--tm-ok` / `--tm-danger` | `#3dff9a` / `#ff4d5e` | Small utility marks only: upvoted, success tick, report, delete. Never glowing. |
+
+Each neon colour has three forms, like a real tube: the gas colour (`--tm-pink`), the white-hot centre (`-hot`) and the unlit glass (`-off`). Text on a dark background that needs to "be neon" uses the `-hot` colour with a glow of the gas colour; it is never the raw gas colour on small text (it fails contrast).
+
+- [x] **35.2a Tokens.** Create `src/styles/tokens.css` exactly as 34.1 describes (type scale, spacing, radius, shadows, motion, layers, layout, breakpoints) but with the colour table above. Keep the five old `--tm-neon-*` names as aliases pointing at the new values (`--tm-neon-gold` → `--tm-amber`, `--tm-neon-purple` → `--tm-uv`, `--tm-neon-green` → `--tm-ok`). That alone re-tints much of the site. Screenshot the home page, lobby and slots before and after; fix anything that became unreadable.
+- [x] **35.2b The tube primitives.** New `src/styles/neon.css`, imported after `tokens.css`. Classes use the `ui-` prefix (34.3):
+  - `.ui-tube` + `.ui-tube--pink | --cyan | --amber`: sets `--c`, `--hot`, `--off` for whatever is inside.
+  - `.ui-tube-box`: a rounded outline that looks like a bent tube. Recipe (from the prototype's `.tube-btn`): `border: 2px solid var(--c)`; `box-shadow: 0 0 0 1px var(--off), 0 0 14px -2px var(--c), inset 0 0 12px -4px var(--c)`; text in `var(--hot)` with `text-shadow: 0 0 10px var(--c)`. The glow is **static**. Never animate `box-shadow`, `filter` or `text-shadow`.
+  - `.ui-tube-box--off`: the unlit state (border `--tm-night-3`, dim text, no glow). Disabled buttons and unselected tabs use this. A lit tab among unlit tabs reads instantly, which is the point.
+  - `.ui-tube-text`: for short headings (one to three words).
+  - `.ui-tube-rule`: a horizontal neon line used as a section divider, with an optional travelling pulse (a 40 px white gradient moved with `transform: translateX`, which is cheap).
+  - `.ui-flicker-on`: the one-time power-on stutter (keyframe `power-on` in the prototype, 900 ms, `steps(1)`). Use it when a screen or a game cabinet first appears, staggered 70 ms per element, at most 6 elements.
+  - **Glow budget:** at most three lit tube elements in view at once outside games (the sign, the primary button, the selected tab). Everything else is unlit glass or plain surface. This is what makes it look expensive.
+- [x] **35.2c Fonts.** Self-host as 34.2 says, two families, both SIL Open Font Licence (check the licence file in the download and commit it): **Audiowide** for headings and big numbers (subset to Latin, one weight; *replaced by Oxanium / Tilt Neon / Outfit in 35.2e*) and **Press Start 2P** for tiny arcade labels only (scores, "INSERT COIN", subset to `A–Z 0–9` and basic punctuation). Body text is the system font stack. The site currently names `Inter` and `Press Start 2P` in CSS but loads neither. Remove the Google Fonts hosts from the CSP in **both** `index.html` and `vercel.json` once the files are local.
+- [x] **35.2d Background.** Keep the synthwave grid as the single ambient loop, re-tinted: grid lines in `--tm-cyan` at 14% opacity, horizon glow in `--tm-uv`, and a slow pink "sun" only on the home page and lobby. Remove the two extra radial gradients on `.tm-app`. Add a faint film-grain layer (one 128×128 PNG noise tile, 4% opacity, `pointer-events: none`) to kill colour banding in the dark gradients; off under `.tm-lite-perf`.
+- **Done when:** the kit page `/__ui` (34.3) shows every primitive lit and unlit; the count of different hex colours in `src/index.css` has gone down (record the number); nothing on the home page, lobby or slots uses a colour outside the table for a newly written rule.
+- **Completion Note (2026-11-16):** Added `src/styles/tokens.css`, `src/styles/neon.css`, dev-only `/__ui` (`src/components/UiKitPage.jsx`), self-hosted `Audiowide` + `Press Start 2P` (`public/fonts/`, 26.6 KB total + OFL licences) with tightened CSP in `index.html` and `vercel.json`, re-tinted synthwave grid + UV horizon + pink sun (`data-view="feed|arcade"`) + `public/noise-128.png` film grain in `src/index.css` & `src/App.jsx`. Distinct hex colours in `src/index.css` reduced from 56 to 52. Before/after screenshots saved in `docs/ui/35.2/`.
+
+---
+
+### 35.2e Neon Refine (owner brief, 16 Nov 2026: "pink upload button looks tacky, the cyber-arcade font isn't great")
+
+- **Type system replaced.** Audiowide is gone. `--tm-font-display` = **Oxanium** (variable 200–800: headings, numbers, tube buttons), `--tm-font-neon` = **Tilt Neon** (lit words only: hero "MEMES / CYBER-ARCADE", lobby title, game signs), `--tm-font-body` = **Outfit** (variable). Press Start 2P stays for tiny arcade labels. All SIL OFL, self-hosted in `public/fonts/` (79 KB total); Oxanium is the preloaded one. Courier / ui-monospace font stacks in component CSS now point at `--tm-font-display` (BossKey, Moderation and Pulse pages keep monospace on purpose).
+- **Primary buttons are lit glass, not paint.** `.ui-tube-box--solid`, `.tm-btn-primary` and `.tm-mutate-btn` are a pink tube over smoked glass with a one-pass sheen on hover. Never bring back a flat pink fill or a yellow→pink→purple gradient. Selected tabs and pills (`.tm-tab.active`, lobby filters, game mode pills) are lit cyan tubes. Staked-game CTAs (deal / spin) are amber gold.
+- **Legacy colours mapped to tokens.** ~1,800 hard-coded Tailwind-era hexes and rgba() values in CSS (`#00f3ff`, `#facc15`, `#ec4899`, slate greys…) now resolve to the palette tokens; new token `--tm-text-soft` (#d2cceb) sits between `--tm-text` and `--tm-text-dim`. Inline colours inside `.jsx` files and canvas drawing code were **not** touched.
+- **Completion Note (2026-11-16):** `tokens.css`, `neon.css`, `index.css`, `DualDirectionHero`, `ArcadeLobby`, `QuickUploadBar` (lucide icons instead of emoji), modal chrome, meme-card action bar, casino CTAs. `npm run lint` and `npm run build` exit 0; checked at 390×844 and 1280×800.
+
+---
+
+---
+
+### 35.3 The sign: the new logo
+
+**What it is.** The words THE MEMES.net as a neon sign made of bent glass tubes: small cyan "THE", big pink "MEMES", small cyan ".net", and an amber underline with one "zap" in it. A short bright pulse of light travels along each tube, the sign stutters on when the page loads, and the middle "M" has a loose connection and buzzes every few seconds. There is **no box** around it.
+
+- [x] **35.3a Build `src/components/NeonSign.jsx`** from the prototype. How it works (keep all of this):
+  - Every letter is **one SVG path drawn as a single centre line** with `stroke-linecap: round` and `stroke-linejoin: round`. Never use an outlined font glyph and never `<text>`: a font outline cannot look like a tube.
+  - Each tube is the same path drawn five times, back to front: **glass** (`-off` colour, 1.5 px wider), **glow** (gas colour, 2 px wider, `filter: blur(5px)`, static), **core** (gas colour), **hot** (`-hot` colour, one third of the width) and **flow** (white, `stroke-dasharray: 5 95` on a path with `pathLength="100"`, animating `stroke-dashoffset` from 100 to 0, linear, infinite). The flow layer is the neon moving through the tube.
+  - Each tube gets a slightly different flow duration (2.4 s to 3.9 s) so the pulses never line up.
+  - Props: `size` (`hero` | `nav` | `icon`), `flow` (default true for hero, false for nav), `powerOn` (default true once per session, tracked in a module variable), `title`. Root element: `<svg role="img" aria-label="THE MEMES.net">`.
+  - `nav` size (about 132 px wide): no flow layer, glow layer kept. `icon` size (square, for places under 48 px): just the pink "M" with its underline.
+  - Under `prefers-reduced-motion`, the `data-reduced-motion` setting or `.tm-lite-perf`: no flow, no power-on, no buzz. The sign is simply lit.
+  - Pause the flow animation when the sign is off screen (`IntersectionObserver` toggling a class that sets `animation-play-state: paused`) and when the tab is hidden.
+  - The letter shapes in the prototype are a good first draft. Improve them by eye: real tube letters have slightly rounded corners where the glass bends, and small gaps where one tube ends and the next begins. Take a screenshot after each change. Stop when it looks like something you would photograph in a bar.
+- [x] **35.3b Put it in the top bar.** In `NavbarHud.jsx`, replace `.tm-mascot-logo-wrap` and `.tm-logo-badge` with `<NeonSign size="nav" />`. Keep the click handler, the title and the 5-tap secret on the wrapper. Delete the old `.tm-logo-badge` and `.tm-mascot-logo-*` rules. Do the same in `FixedArcadeTopBar` (in `GameRouter.jsx` or `GameShell.jsx`; search for the second place the logo is drawn) using `size="icon"`.
+- [x] **35.3c Hero moment.** On a first visit, the home page opens with the hero-size sign powering on over the dark grid (900 ms), then the first screen of 35.4 fades up under it. On later visits the sign is already lit and smaller. `InsertCoinIntro.jsx` already owns a first-visit moment: merge with it instead of adding a second intro.
+- [x] **35.3d Everywhere else the logo lives.** Regenerate from the same paths, as static files: `public/favicon.svg` (the pink "M" tube on `--tm-night-0`, readable at 16 px, so drop the glow blur at that size), `favicon-48.png`, `favicon-192.png`, `apple-touch-icon.png`, `logo-512.png`, `og-card.png` (1200×630: the lit sign, centred, on the grid) and the frame used by `scripts/generate-og-cards.mjs` for the 29 per-page cards. Update `theme-color` in `index.html` and the colours in `manifest.webmanifest` to `#07060f`. Update the image `alt` text and the file-tree comments in Section 3 that still describe a "Cyber-Jester Skull" and an "Arcade Crest".
+- [x] **35.3e The meme watermark.** `stampArcadeCartridgeFooter()` in `src/utils/canvasMutator.js` stamps every exported meme. Redraw that stamp with the new mark (pink "M" tube + `thememes.net` in the heading font) so every meme that leaves the site carries the new brand. Keep it the same height so existing layouts do not shift.
+- **Done when:** screenshots of the top bar at 390 px and 1280 px, the hero, the favicon in a browser tab and one exported meme are saved in `docs/ui/35.3/`; Lighthouse performance on the home page is no worse than before; with reduced motion on, nothing in the sign moves.
+- **Completion Note (2026-11-16):** Built `NeonSign.jsx` + `NeonSign.css` + `neonSignPaths.js` (rounded glass bends, 5-layer SVG tubes, 2.4–3.9s flow, once-per-session power-on, middle-M buzz, IntersectionObserver/visibility pause, reduced-motion & lite-perf off), replaced top-bar/footer badges in `NavbarHud.jsx`, `GameRouter.jsx` (`FixedArcadeTopBar`), and `SeoDiscoveryFooter.jsx`, updated `InsertCoinIntro.jsx` & `DualDirectionHero.jsx` for first-visit hero power-on, regenerated `favicon.svg`/`favicon-48.png`/`favicon-192.png`/`apple-touch-icon.png`/`logo-512.png`/`og-card.png` via `scripts/generate-brand-assets.mjs` & updated `manifest.webmanifest`/`index.html`/`generate-og-cards.mjs`, and redrew `stampArcadeCartridgeFooter()` in `src/utils/canvasMutator.js`. Screenshots & exported meme saved in `docs/ui/35.3/`.
+
+---
+
+---
+
+### 35.4 The first screen, in neon
+
+This **is tasks 34.4 and 34.5** (read them; their measurements and "done when" numbers still apply; tick them and 33.41 when this is done). What Phase 35 adds:
+
+- [x] **35.4a Top bar (34.5) with the new parts.** One 56 px row on phones: `NeonSign` (nav), the wallet (amber, see 35.5), one "more" button. The selected tab is a lit cyan tube; the others are unlit glass.
+- [x] **35.4b The first screen (34.4).** Under the top bar on a phone: one line of welcome, **Make a meme** (the screen's one pink tube button) and **Play** (cyan outline), then the first meme. All the pills and the "TWO 80s WORLDS" banner move as 34.4 says.
+- [x] **35.4c Dock.** Five unlit glass icons; the centre Create button is the only pink tube; the current tab is lit cyan.
+- [ ] **35.4d Check with Pulse.** Compare bounce % and `first_action` time for the 48 hours before and after. Put both numbers in the completion note. If bounce went up, say so and stop for the owner.
+- **Completion Note (2026-11-16, 35.4a–35.4c):** Rebuilt `NavbarHud.jsx` (56 px single row on phones with `NeonSign`, amber wallet, `More` button, phone scroll-hide listener; single row on desktop with cyan lit/unlit tube tabs), `DualDirectionHero.jsx` + `.css` (compact welcome `<h1>` + solid pink `Make a meme` + cyan `Play`; desktop single horizontal Explore row; hidden Explore/QuickUploadBar on `<= 860px` where dock `+Create` is always reachable), `LazyCompanionRow.jsx` + `VirtualizedMemeGrid.jsx` (`EightiesIconsStrip` + `VintageCrtNewsTv` moved after the 6th meme on `< 1181px` and lazy-mounted via `IntersectionObserver`, kept above feed only from `>= 1181px`), `App.jsx` mobile `Filter` collapse for category pills & search, and `MobileArcadeDock.jsx` (`lucide-react` icons, unlit glass inactive tabs, lit cyan active tab, solid pink centre `Create`). Measured at `390×844`: `.tm-nav` = `56 px`, first meme image top = `293.3 px` (`< 320 px`), visible tappable items above first meme = `8` (`<= 8`), main JS bundle gzipped dropped `153.89 KB -> 145.31 KB`. `35.4d` remains open until 48h production Pulse data is collected.
+
+---
+
+---
+
+### 35.5 One money: MemeDollarz
+
+**The decision.** The currency is the **MemeDollar**, written **`M$`**, with cents written **`¢`**. Prices are 1980s prices: a game is a quarter, a slot pull starts at M$1.25, a new player gets five dollars. Everywhere on the site, the same amount is written the same way.
+
+**The rule that makes this safe:** nothing about the economy changes. The stored number stays a whole number of "tokens" in `localStorage`, and **1 token is shown as 25¢** (one quarter). So 20 tokens is `M$5.00`, a 5-token bet is `M$1.25`, the 65-token daily cap is `M$16.25`. This is what `formatEightiesPrice()` already does; it becomes the only way.
+
+- [x] **35.5a One formatter.** In `src/utils/tokenEconomy.js`:
+  - Set `CURRENCY_BRAND = { name: 'MemeDollarz', symbol: 'M$', cent: '¢', centsPerToken: 25 }`.
+  - Add `formatMoney(tokens, { centz = 0, compact = false, sign = false })`: total cents = `tokens × 25 + centz`. Under 100 cents → `75¢`. Otherwise `M$1.25`; with `compact`, whole dollars drop the decimals above M$100 (`M$250`) and thousands get a separator. `sign: true` gives `+M$2.50` / `−75¢` for wins and costs. Zero → `FREE` only where a price is being shown, `M$0.00` where a balance is being shown (add a `zero: 'free' | 'balance'` option).
+  - Make `formatEightiesPrice` and `formatMemeCurrency` thin wrappers around it, then remove them once nothing calls them.
+  - **MemeCentz** (`handleEarnMemeCentz` in `src/hooks/useTokenEconomy.js` line ~348) currently rolls over at 100 centz = 1 token, which only made sense when a token was a dollar. Change the rollover to **25 centz = 1 token**, change the stored balance range to 0–24, divide every centz award and the daily cap by 4 (round down, minimum 1; `maxDailyCentz` 500 → 125), and migrate a saved balance once with `Math.floor(old / 4)` under a new storage key `tm_memecentz_balance_v2`. The amount of real play needed to earn a token is unchanged.
+  - Add Vitest cases to `tests/vitest/safetyAndEconomy.test.js`: `formatMoney(0)`, `(1)` → `25¢`, `(3)` → `75¢`, `(4)` → `M$1.00`, `(5)` → `M$1.25`, `(20, {centz: 6})` → `M$5.06`, `(4000, {compact: true})` → `M$1,000`; and the centz migration.
+- [x] **35.5b One wallet.** New `src/components/ui/Money.jsx`: `<Money tokens={n} />` renders the formatted amount in the amber colour with `font-variant-numeric: tabular-nums`, and when the value changes it counts up or down over 400 ms (instant under reduced motion). New `<Wallet />` built on it replaces the three different wallet displays (top bar `tm-token-wallet-pill`, lobby header, each game's own balance box). The coin icon is a small inline SVG of an amber coin with an "M" on it, not the 🪙 emoji.
+- [x] **35.5c Sweep the words.** Go through `src/` one file per commit, worst first: `ArcadeAiAssistant.jsx`, `RewardsModal.jsx`, `VegasCoinPusherGame.jsx`, `MemeStockMarketGame.jsx`, `GameRouter.jsx`, `VegasBlackjackGame.jsx`, `VegasSlotMachine.jsx`, `VegasPokerGame.jsx`, `NeonDerbyGame.jsx`, `MemeCrushGame.jsx`, then the rest, then `slotMachinesCatalog.js`, `arcadeGamesCatalog.js`, `seoRoutes.js`, `legalPages.js`, `index.html`, `manifest.webmanifest`, `scripts/prerender-seo.mjs` and the OG card generator. In every string a visitor can read:
+  - An amount is always `formatMoney(...)` or `<Money />`. Never `5 🪙`, `5 Tokens`, `$1.25 (5🪙)`, `M$5` for 5 tokens, or a bare `$`.
+  - The currency is called "MemeDollarz" (or "M$"). Not tokens, coins, credits or chips. "Chip" is fine for the physical object on a roulette or blackjack table ("drag a chip"), but its face value is in M$. "Coin" is fine for the physical object in the coin pusher and for "insert coin".
+  - Bet buttons show 1980s amounts: `25¢`, `50¢`, `M$1.25`, `M$2.50`, `M$6.25`, `M$12.50`, `M$25`.
+  - **Do not rename code identifiers** (`tokens`, `onSpendTokens`, storage keys). Only what people read changes.
+  - Tickets (task 33.27) stay a separate, later thing and are not MemeDollarz.
+- [x] **35.5d A guard so it stays fixed.** New `scripts/check-currency.mjs`, run by `npm run lint`: fails if a `.jsx` file under `src/` contains `🪙`, or a JSX text or string literal matching `/\b\d+\s*(tokens?|coins?|credits?)\b/i`, outside a short allow-list file. Add it to the Safety CI workflow.
+- [x] **35.5e 1980s prices as flavour.** One place, the Rewards/Vault screen, gets a small "1986 price list" so the money feels real: arcade game 25¢, can of cola 50¢, cinema ticket M$3.50, cassette album M$8.99, pair of high-tops M$65. Original wording only; no brand names.
+- **Done when:** the top bar, the lobby and all five slot machines show the same balance in the same format at the same time (screenshot all three); `npm run lint` runs the new check and passes; the Vitest cases pass.
+  > Completion Note (35.5, 2026-11-16): Unified currency under `formatMoney()` and `<Money />`/`<Wallet />` (`25¢` per token, 25 centz rollover migrated to `tm_memecentz_balance_v2`), swept `src/` + catalogs + SEO routes + OG generator, wired `scripts/check-currency.mjs` (85 JSX files, 0 violations) into `npm run lint` and Safety CI, added the 1986 price list to `RewardsModal.jsx`, and verified `M$5.06` across top bar, `/games`, and all 5 slot machines (`docs/ui/35.5/`).
+
+---
+
+### 35.6 The juice kit (build once, use in every game)
+
+"Juice" is the feedback that makes a tap feel like it did something: a tiny shake, a burst of sparks, a number that counts up, a buzz in the hand. Today each game has its own version or none. Build one kit, then every game calls it.
+
+- [x] **35.6a `src/utils/juice.js`** (no React, no imports except `SoundEngine` and `settingsStore`). Every function is a no-op that returns immediately when Calm mode, reduced motion or `.tm-lite-perf` forbids it, so games never have to check.
+  - `haptic(name)`: named patterns, played through one place. `tap` 8 ms; `tick` 4 ms; `thunk` 14 ms; `double` `[10, 40, 10]`; `win` `[20, 30, 20, 30, 60]`; `big` `[40, 40, 40, 40, 120]`; `jackpot` `[60, 30, 60, 30, 60, 30, 200]`; `heartbeat` `[18, 110, 28]`; `fail` `[30, 60, 80]`. Uses `navigator.vibrate` (Android, and desktop where present) through the existing `SoundEngine.triggerHaptic` gate (user gesture + haptics setting). **iPhone Safari has no `navigator.vibrate`.** There is a known approach that makes iOS 18+ tick by programmatically toggling a hidden `<input type="checkbox" switch>` through its `<label>`; try it behind a feature check, **test it on a real iPhone**, and remove it if it does not work. Never throw.
+  - `shake(el, power)`: `power` 1–5 maps to 2–14 px and 120–420 ms, done with the Web Animations API on `transform` only, decaying. A new shake on the same element replaces the old one.
+  - `punch(el, scale = 1.08)`: quick scale up and spring back (160 ms). For buttons, counters, symbols.
+  - `hitStop(ms)`: returns a promise; games `await` it to freeze for 40–120 ms on a big impact. A freeze before a payoff is the cheapest drama there is.
+  - `countUp(el, from, to, { ms, format, onTick })`: eased number roll; `onTick` lets the caller play a rising tick sound; a tap on the element finishes it at once.
+  - `flash(el, colour, ms)`: one soft flash of an overlay's opacity. The kit keeps a global clock and **refuses to flash more than 3 times a second**.
+  - `slowMo(factor, ms)`: sets a shared time-scale number that game loops may read.
+- [x] **35.6b `src/components/ui/JuiceLayer.jsx`**: one full-viewport `<canvas>`, `pointer-events: none`, mounted once in `App.jsx` beside `ParticleOverlay`. `burst({ x, y, kind, count, colour })` with kinds `spark`, `coin` (the amber M$ coin, spinning, with gravity and one bounce), `confetti`, `star`, `ring` (expanding neon ring) and `float` (a "+M$2.50" label that rises and fades). Pool the particles (no allocation per frame); hard cap 400 (120 under lite); the loop stops when there are none. `coinsTo({ fromEl, toEl, count })` flies coins along curved paths from a win to the wallet, and the wallet `punch`es and ticks up as each coin lands. That one effect is the Candy Crush "reward travels to your total" trick, and it ties wins to the wallet on every game.
+- [x] **35.6c Rewire what exists.** `ParticleOverlay.jsx` and `WinCelebrationOverlay.jsx` keep their public functions but draw through `JuiceLayer` where they overlap. The upvote in `useFeed.js` (line ~783) calls `haptic('tap')` instead of `navigator.vibrate(10)` directly.
+- **Done when:** the kit page `/__ui` has a "Juice" section with a button for every function; each one visibly does nothing with reduced motion on; a unit test proves `flash` refuses a fourth flash inside one second.
+  > Completion Note (35.6, 2026-11-16): Built `src/utils/juice.js` (named haptics + iOS 18 switch fallback, WAAPI shake/punch, hitStop, countUp, 3/sec flash limiter, slowMo) and pooled canvas `JuiceLayer.jsx` (`burst` + curved `coinsTo`), rewired `ParticleOverlay.jsx`, `WinCelebrationOverlay.jsx`, and `useFeed.js`, added the interactive section on `/__ui` (`docs/ui/35.6/`), and verified normal + reduced-motion no-op + Vitest `juice35_6.test.js` + `npm run lint` + `npm run build`.
+
+---
+
+---
+
+### 35.7 Slots Turbo (35.7a–35.7f & core 35.7g completed 17–18 Nov 2026)
+
+**Goal:** the reels really spin, fast; stopping them feels heavy; the last reel makes you hold your breath; a win pours into your wallet. Then 35.8 makes it strange.
+
+**Before changing feel, make it safe to change (this is the slot half of 33.47):**
+
+- [x] **35.7a Extract the logic.** Move everything in `VegasSlotMachine.jsx` that decides an outcome (target stops, grids, wild placement, power-ups, free spins, hold-and-spin, bonus wheel result) into pure functions in `src/utils/slotEngine.js`, taking a random-number function as an argument so tests can fix the seed. Each returns a **spin result object** made *before* any animation starts: `{ stops or grid, wins: [{ line, cells, mult }], totalMult, payout, features: [...], anticipation: [...] }`. Add `tests/vitest/slotEngine35_7.test.js`: over 200,000 seeded spins per machine, return-to-player is within one percentage point of today's value (measure today's first and write it in the test), and no payout exceeds `maxMult`. **No behaviour change in this step.**
+- [x] **35.7b One reel component.** New `src/components/slots/Reel.jsx` + `reelMotion.js`, used by all five machines (3-reel, 5×3 and 5×4): *(wired to `bandit85` first; 4 video machines follow after `35.7e` per order below)*
+  - A reel is a **tall strip** of symbol cells inside a window with `overflow: hidden`. The strip moves with `transform: translate3d(0, y, 0)` and wraps. Motion is driven by **one `requestAnimationFrame` loop for the whole machine** that writes `style.transform` through refs. No React state changes per frame, and delete the `setInterval`/`spinTickOffset` mechanism and the `tmVegasDrumSpin` / `tmDrumSpinTick` jiggle keyframes.
+  - **Motion blur without `filter`:** each symbol has a second, pre-blurred version (render `SlotSymbolArt` once to an offscreen canvas at start-up, stretch it vertically 3×, 55% opacity). Above about 1,400 px/s the strip shows the blurred set and gets `scaleY(1.06)`. Animated CSS `filter: blur()` is banned here: it is the main cause of dropped frames on phones.
+  - **The spin has five phases:** (1) **wind-up**: the strip pulls *back* 14 px over 90 ms, like a spring being loaded; (2) **launch**: accelerate to top speed in 160 ms; (3) **cruise** at about 2,600 px/s (3,600 in turbo); today's effective speed is roughly a third of that; (4) **brake**: decelerate over the last 1.5 symbols so the target lands on the line; (5) **settle**: overshoot 10–16 px past the line and spring back in 180 ms. On settle: `SoundEngine.playSlotReelStop(i)`, `haptic('thunk')`, and the cabinet nudges 2 px down and back.
+  - Each reel starts 60 ms after the one before it.
+- [x] **35.7c Timing.** Normal play: reels stop at **450 / 700 / 950 ms** (3-reel) and **380 / 520 / 660 / 800 / 940 ms** (5-reel). Turbo: **160 / 260 / 360** and **140 / 200 / 260 / 320 / 380**. A spin with nothing to wait for is over in about one second. All the extra time is spent only where there is suspense (35.7d). *(done on `bandit85`)*
+  - **Slam stop:** tapping the spin button, the reels or the space bar while they spin stops all reels at once (each on its already-decided target, 40 ms apart). Players who want speed get it; nothing about the result changes.
+  - **Controls:** space bar or Enter spins; holding the spin button for 600 ms opens auto-spin (10 / 25 / 50, stops on any feature or any win over 10× the bet); the lever can be dragged down with a finger or mouse and its pull distance sets the wind-up.
+- [x] **35.7d Suspense (the important part).** The engine's result object lists **anticipation reels**: a reel is one if, given the reels already stopped, it can still complete a top-tier win, a scatter/bonus trigger or a progressive. For each of those reels: *(done on `bandit85`)*
+  - It keeps spinning 1.2 s longer (1.8 s for the last reel when a jackpot is alive), and for the final 600 ms it slows to a **crawl** in which single symbols can be read as they tick past the line, each with a `tick` haptic and a tick sound that rises in pitch.
+  - The rest of the cabinet dims to 60%, a soft spotlight sits on that reel, the reel window zooms to 1.04, the payline tube pulses, and a rising synth tone plays (new `SoundEngine.playSlotRiser(ms)`), with `haptic('heartbeat')` once a second.
+  - Symbols already landed that are part of the possible win glow and "breathe".
+  - If it hits: `hitStop(90)` and silence for those 90 ms, then the win. If it misses: one soft low "aww" tone, the dim lifts in 150 ms, and the next spin is ready immediately. Do not punish a miss with a delay.
+  - **Honest suspense only.** The result is fixed before the reels move. Anticipation plays only when the win is truly still possible on that reel. **Do not add, weight or stage near-misses** (for example, never choose a losing stop because it puts a jackpot symbol next to the line). A win smaller than the bet is shown as a small quiet return, never as a celebration.
+  > Pause/Resume Note (2026-11-16): Completed `35.6` (pushed) and `35.7a` (`slotEngine.js` + 1M-spin `slotEngine35_7.test.js`), `35.7b` (`Reel.jsx`, `reelMotion.js`, `Reel.css` on `bandit85`), `35.7c` (`bandit85` timing/slam-stop/Space/Enter/600ms-auto-spin/lever-drag), and `35.7d` (`bandit85` honest anticipation, 600ms crawl, dim/spotlight/zoom/breathing, `playSlotRiser`/`playSlotTick`/`playSlotAww`, `hitStop(90)`). **Resume next at `35.7e` (Wins that pour on `bandit85`), then roll `b–e` out to the 4 video machines one per commit (`neon_special`, `silver_mustang`, `lightning_vault`, `buffalo_stampede`), then `35.7f`–`35.7h`, `35.8`, `35.9`, `35.10`.**
+- [x] **35.7e Wins that pour.** Tiers by how many times the bet was won, all through the juice kit:
+  - **Under 1×:** amount ticks quietly into the wallet. No sound sting, no particles.
+  - **1× to 5×:** winning cells `punch` in turn along the line, the line is drawn as a lit tube, 0.6 s count-up, 8 coins fly to the wallet (`coinsTo`), `haptic('win')`.
+  - **5× to 15× "BIG WIN":** 2 s. `shake(cabinet, 2)`, coin fountain from the tray, the words in tube lettering power on, count-up with rising ticks, `haptic('big')`.
+  - **15× to 50× "MEGA":** 4 s. The cabinet lights chase, `slowMo` on the coin fountain, the count-up pauses twice ("…and more…") before finishing.
+  - **50× and over "JACKPOT":** up to 7 s. Full takeover using the existing `WinCelebrationOverlay` and siren, `haptic('jackpot')`, then a share card (35.9c).
+  - Any celebration is skipped by a tap, and the money is credited at the *start* of the celebration, so closing the tab never loses a win.
+- [x] **35.7f Bells and whistles on the cabinet.** Chase lights round the cabinet built as real `NeonSign`-style tubes that speed up with the spin and run in the win colour afterwards; a mechanical credit counter in the heading font; a coin tray that fills visibly with the session's winnings; the pay glass lit from behind; a beacon on top that only ever lights for MEGA and JACKPOT. Idle cabinet = almost dark, with only the marquee tube lit and the spin button pulsing slowly. Everything else lights **when the player acts**.
+- [x] **35.7g Things to do, the Candy Crush lessons (tube meter, daily missions, session care — Sticker album & The Strip remain open in `instructions.md`).** All of these use only pretend money and the existing daily caps:
+  - **A meter that is always filling.** Each machine already has one (Fever, Reactor charge, Coffee pot, Voltage, Stampede). Give them one shared look: a glass tube that fills with glowing liquid, sloshes when it gains, and pulses when it is full.
+  - **Three daily missions per machine** ("land BAR-BAR-BAR", "trigger free spins", "win 10 spins in a row with Hold"), each paying a small fixed amount inside the existing `quests` cap, with a tick-off animation.
+  - **A sticker album** of every symbol and every feature seen on each machine (feeds 33.34), with the count shown on the machine picker ("14 / 22 found").
+  - **The Strip:** the machine picker becomes a street at night seen side-on, one neon-fronted building per machine, scrolled sideways. New machines are dark until unlocked by play (spins made, not money spent).
+  - **A streak that is kind:** consecutive days played light one more letter of a tube sign; missing a day dims one letter instead of resetting to zero.
+  - **Session care:** after 20 minutes of continuous spinning, one gentle line in the status area ("You've been here 20 minutes. Stretch?"), once per session. Auto-spin never runs for more than 50 spins without a tap. The "no real money, can't be bought or cashed out" line stays visible on the cabinet.
+- [ ] **35.7h Performance and proof.** 60 frames a second during a 5-reel turbo spin on a mid-range Android phone profile (Chrome dev-tools, 4× CPU slowdown): record a performance trace and put the frame-time summary in the completion note. No layout or style recalculation inside the animation loop. Pulse's `slot_spin_batch` and `game_end` for slots, compared with the week before, go in the note: median session length, spins per session, share of sessions using turbo.
+- **Order inside 35.7:** a → b → c on `bandit85` only → d → e → roll b–e out to the four video machines one per commit → f → g → h.
+
+---
+- **Completion Note (35.7b–35.7g rollout, 18 Nov 2026):** Rolled `Reel.jsx` + `reelMotion.js` (`createMachineReelController()`) out from `bandit85` to all four video machines (`neon_special`, `silver_mustang`, `lightning_vault`, `buffalo_stampede`) with 18-symbol rolling strips, dark smoked cyber-glass reel windows, occasional speed surges (`1.38×`), slam-stop, 600ms hold auto-spin, and honest anticipation crawl; implemented `35.7e` tiered pouring wins (`<1×` quiet, `1×–5×` punch + `coinsTo`, `5×–15×` shake + coin tray fountain, `15×–50×` `slowMo` + chase, `50×+` jackpot + beacon, pre-credited payout, tap-to-skip); added `35.7f` cabinet top beacon dome, perimeter neon chase bulbs keyed to spin/surge/win, idle dark mode, and visual session coin tray (`slotVisualHelpers.js`); added unified `LiquidChargeTube`, 3 daily slot missions per machine (`tm_slot_daily_missions_v1`), and 20-minute stretch reminder in `VegasSlotMachine.jsx` / `.css`. Verified via browser subagent at `402×874` and `1280×800`.
+
+---
+
+### Post-Phase-36 Polish, Ratings, Neon Artwork & Analytics (17–18 Nov 2026)
+
+- [x] **Microsoft Clarity Tracking & Strict CSP (`index.html`, `vercel.json`):** Added Clarity snippet (`zfajfhq6r9`) in `<head>` and updated `script-src` (SHA-256 hash + `https://www.clarity.ms` / `https://*.clarity.ms`), `img-src`, and `connect-src` (`https://*.clarity.ms`, `https://c.bing.com`) without `'unsafe-inline'`. Verified: `tests/unit/mediaOriginCsp33_10.unit.mjs` 3/3 pass; build hash matched.
+- [x] **iPhone Music Bar Close Button & In-Game Pill Containment (`src/components/MemesRadio.css`, `MemesRadio.jsx`):** Fixed `.tm-mobile-now-playing` flex/box-sizing overflow so the close (`X`) button stays inside the bubble on `402×874`, replaced Unicode controls with crisp `lucide-react` icons, and suppressed auto-open during active games unless explicitly pinned.
+- [x] **Mobile `402×874` / `390×844` Layout & `FixedArcadeTopBar` Fit (`src/index.css`, `GameRouter.jsx`, `VegasBlackjackGame.jsx/.css`, `VegasPokerGame.css`, `Magic8BallOracle.css`, `GameShell.css`, `HigherOrLowerGame.css`, `MemeInvadersGame.css`, `VegasPinballGame.jsx/.css`, `MemeStockMarketGame.css`):** Compacted `.tm-fixed-arcade-bar` so all 10 buttons fit cleanly inside `<= 397px` without overlap or clipping; tuned mobile layouts so 21's Blackjack, Poker, Magic 8-Ball, Pinball (`LAUNCH` + `SAVE` non-overlapping), Higher or Lower, Meme Invaders, and MEMEDAQ '86 (including `SELL ALL` & 4 wire buttons) fit cleanly within the mobile viewport with zero horizontal overflow.
+- [x] **Separate Prank Screens, Lobby Order, 1–5★ User Ratings & 27 Bespoke Neon Game Icons (`src/components/GameIcon.jsx`, `ArcadeLobby.jsx/.css`, `arcadeGamesCatalog.js`, `gameRatings.js`, `supabase/migrations/20261117000003_game_ratings.sql`, `GameRouter.jsx`):** Separated Boss/Prank Screens from games (`Prank Screens (6)` filter tab + dedicated bottom section); ordered lobby Skill Cabinets → Meme Games → Market Sim → Vegas Room; added 1–5★ user rating buttons + default `Top Rated` sort pushing higher-rated games to the top; replaced duplicate emoji icons with 27 unique multi-layer neon tube SVGs in `GameIcon.jsx`; added `20261117000003_game_ratings.sql` + resilient client fallback with single-probe RPC suppression.
+- [x] **Glow Budget, Hero Explore Icons & Search Copy (`NavbarHud.jsx`, `DualDirectionHero.jsx`, `SeoDiscoveryFooter.jsx`, `seoRoutes.js`, `BossKeyOverlay.jsx`, `GuessTheMemeGame.jsx`, `HigherOrLowerGame.jsx`, `useViewMode.js`):** Dimmed navbar `+ Create` (`ui-tube-box--off`) on home `feed` view so Hero `Make a meme` owns the single pink beacon; swapped hero Explore pill emojis for `lucide-react` + `<GameIcon>`; removed remaining stale Deep Fry / Glitch filter copy; added `?ref=` surface tags on outgoing share links; added `document.startViewTransition` guarded by `!isJuiceDisabled()` in `useViewMode.js`.

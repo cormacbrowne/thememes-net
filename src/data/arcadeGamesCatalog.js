@@ -7,10 +7,10 @@ export const RECENT_GAMES_KEY = 'tm_recent_games_v1';
 export const FAV_GAMES_KEY = 'tm_fav_games_v1';
 
 export const ARCADE_LOBBY_GROUPS = [
-  { id: 'casino', label: '🎰 Casino & Oracle', desc: 'MemeDollarz ($) tables & odds games' },
-  { id: 'skill', label: '🕹️ Skill', desc: 'Reflex & puzzle arcade cabinets' },
-  { id: 'meme', label: '🧠 Meme Games', desc: 'Daily challenges & crowd battles' },
-  { id: 'sim', label: '📈 Sim', desc: 'Live market & ticker chaos' }
+  { id: 'skill', label: 'Skill Cabinets', desc: 'Free reflex, shooter & puzzle cabinets' },
+  { id: 'meme', label: 'Meme Games', desc: 'Daily challenges & crowd battles' },
+  { id: 'sim', label: 'Market Sim', desc: 'Live MEMEDAQ ticker trading' },
+  { id: 'casino', label: 'Vegas Room', desc: 'MemeDollarz (M$) tables, slots & oracle' }
 ];
 
 export const ARCADE_GAMES_CATALOG = [

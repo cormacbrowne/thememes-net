@@ -1,4 +1,4 @@
-import { Maximize2 } from 'lucide-react';
+import { Maximize2, Gamepad2, Trophy, Share2, Check, SlidersHorizontal } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, Suspense } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { formatMoney } from '../utils/tokenEconomy';
@@ -18,7 +18,30 @@ import MemeSkeletonGrid from './MemeSkeletonGrid';
 import VerticalReelsView from './VerticalReelsView';
 import { RadioToggleButton } from './MemesRadio';
 import NeonSign from './NeonSign';
+import GameIcon from './GameIcon';
 import { Wallet } from './ui/Money';
+
+const QUICK_ARCADE_PILLS = [
+  { id: 'invaders', label: 'Invaders' },
+  { id: 'serpent', label: 'Serpent' },
+  { id: 'blaster', label: 'Blaster' },
+  { id: 'sunset', label: 'Sunset' },
+  { id: 'void', label: 'Vector' },
+  { id: 'riders', label: 'Riders' },
+  { id: 'pinball', label: 'Pinball' },
+  { id: 'crush', label: 'Crush' },
+  { id: 'slots', label: 'Slots' },
+  { id: 'blackjack', label: "21's" },
+  { id: 'poker', label: 'Poker' },
+  { id: 'roulette', label: 'Roulette' },
+  { id: 'bingo', label: "Bingo '86" },
+  { id: 'pusher', label: 'Dozer' },
+  { id: 'stocks', label: 'Stocks' },
+  { id: 'derby', label: 'Derby' },
+  { id: 'guess', label: 'Guess' },
+  { id: 'eightball', label: '8-Ball' },
+  { id: 'hilow', label: 'Hi/Lo' }
+];
 
 const ArcadeInitialsModal = lazyWithRetry(() => import('./ArcadeInitialsModal'));
 
@@ -71,14 +94,15 @@ export function FixedArcadeTopBar({
   const handleShareCurrentGame = () => {
     if (typeof window === 'undefined') return;
     const canonical = GAME_VIEW_MODE_TO_PATH[viewMode] || window.location.pathname;
-    const shareUrl = `${window.location.origin || SITE_ORIGIN}${canonical}`;
+    const sep = canonical.includes('?') ? '&' : '?';
+    const shareUrl = `${window.location.origin || SITE_ORIGIN}${canonical}${sep}ref=game`;
     const gameMeta = getArcadeGameById(viewMode);
     const shareTitle = gameMeta
-      ? `${gameMeta.icon} ${gameMeta.label} | THE MEMES.net`
+      ? `${gameMeta.label} | THE MEMES.net`
       : `80s Cyber-Arcade | THE MEMES.net`;
     const shareText = gameMeta
-      ? `${gameMeta.icon} ${gameMeta.label} — ${gameMeta.pitch}`
-      : `Play 15 free 80s neon arcade games on THE MEMES.net! 🕹️`;
+      ? `${gameMeta.label} — ${gameMeta.pitch}`
+      : `Play free 80s neon arcade games on THE MEMES.net!`;
     navigator.clipboard?.writeText(shareUrl).catch(() => {});
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       navigator
@@ -98,7 +122,7 @@ export function FixedArcadeTopBar({
     <header className="tm-fixed-arcade-bar" aria-label="Fixed Arcade Cabinet Bar">
       <button
         type="button"
-        className="tm-fixed-back-btn"
+        className="tm-fixed-back-btn tm-fixed-home-btn"
         onClick={() => {
           sfx.playToggle();
           setExtrasDrawerOpen?.(false);
@@ -106,6 +130,7 @@ export function FixedArcadeTopBar({
           window.scrollTo?.({ top: 0, left: 0, behavior: 'auto' });
         }}
         title="Return to Home Page"
+        aria-label="Return to Home Page"
       >
         <NeonSign size="icon" powerOn={false} />
         <span>Home</span>
@@ -121,200 +146,25 @@ export function FixedArcadeTopBar({
         }}
         title="Back to Cyber-Arcade Lobby"
       >
-        🕹️ Lobby
+        <Gamepad2 size={14} aria-hidden="true" />
+        <span>Lobby</span>
       </button>
 
       <nav className="tm-fixed-game-pills" aria-label="Switch Arcade Game">
-        <button
-          type="button"
-          className={`tm-fixed-game-pill ${viewMode === 'bingo' ? 'active' : ''}`}
-          onClick={() => {
-            sfx.playBingoBallPop?.();
-            setViewMode('bingo');
-          }}
-        >
-          🎱 Bingo &apos;86
-        </button>
-        <button
-          type="button"
-          className={`tm-fixed-game-pill ${viewMode === 'pusher' ? 'active' : ''}`}
-          onClick={() => {
-            sfx.playCoinDrop?.();
-            setViewMode('pusher');
-          }}
-        >
-          🎰 Dozer
-        </button>
-        <button
-          type="button"
-          className={`tm-fixed-game-pill ${viewMode === 'pinball' ? 'active' : ''}`}
-          onClick={() => {
-            sfx.playPinballBumper(0);
-            setViewMode('pinball');
-          }}
-        >
-          🎱 Pinball
-        </button>
-        <button
-          type="button"
-          className={`tm-fixed-game-pill ${viewMode === 'blackjack' ? 'active' : ''}`}
-          onClick={() => {
-            sfx.playCardDeal();
-            setViewMode('blackjack');
-          }}
-        >
-          🃏 21&apos;s
-        </button>
-        <button
-          type="button"
-          className={`tm-fixed-game-pill ${viewMode === 'poker' ? 'active' : ''}`}
-          onClick={() => {
-            sfx.playPokerChip?.(2);
-            setViewMode('poker');
-          }}
-        >
-          🟡 Poker
-        </button>
-        <button
-          type="button"
-          className={`tm-fixed-game-pill ${viewMode === 'roulette' ? 'active' : ''}`}
-          onClick={() => {
-            sfx.playRouletteSpin();
-            setViewMode('roulette');
-          }}
-        >
-          🎡 Roulette
-        </button>
-        <button
-          type="button"
-          className={`tm-fixed-game-pill ${viewMode === 'slots' ? 'active' : ''}`}
-          onClick={() => {
-            sfx.playToggle();
-            setViewMode('slots');
-          }}
-        >
-          🎰 Slots
-        </button>
-        <button
-          type="button"
-          className={`tm-fixed-game-pill ${viewMode === 'stocks' ? 'active' : ''}`}
-          onClick={() => {
-            sfx.playToggle();
-            setViewMode('stocks');
-          }}
-        >
-          📈 Stocks
-        </button>
-        <button
-          type="button"
-          className={`tm-fixed-game-pill ${viewMode === 'derby' ? 'active' : ''}`}
-          onClick={() => {
-            sfx.playToggle();
-            setViewMode('derby');
-          }}
-        >
-          🏇 Derby
-        </button>
-        <button
-          type="button"
-          className={`tm-fixed-game-pill ${viewMode === 'guess' ? 'active' : ''}`}
-          onClick={() => {
-            sfx.playToggle();
-            setViewMode('guess');
-          }}
-        >
-          🧠 Guess
-        </button>
-        <button
-          type="button"
-          className={`tm-fixed-game-pill ${viewMode === 'eightball' ? 'active' : ''}`}
-          onClick={() => {
-            sfx.playMagic8BallShake?.();
-            setViewMode('eightball');
-          }}
-        >
-          🎱 8-Ball
-        </button>
-        <button
-          type="button"
-          className={`tm-fixed-game-pill ${viewMode === 'hilow' ? 'active' : ''}`}
-          onClick={() => {
-            sfx.playToggle();
-            setViewMode('hilow');
-          }}
-        >
-          ⬆️ Hi/Lo
-        </button>
-        <button
-          type="button"
-          className={`tm-fixed-game-pill ${viewMode === 'invaders' ? 'active' : ''}`}
-          onClick={() => {
-            sfx.playToggle();
-            setViewMode('invaders');
-          }}
-        >
-          👾 Invaders
-        </button>
-        <button
-          type="button"
-          className={`tm-fixed-game-pill ${viewMode === 'serpent' ? 'active' : ''}`}
-          onClick={() => {
-            sfx.playToggle();
-            setViewMode('serpent');
-          }}
-        >
-          🐍 Serpent
-        </button>
-        <button
-          type="button"
-          className={`tm-fixed-game-pill ${viewMode === 'blaster' ? 'active' : ''}`}
-          onClick={() => {
-            sfx.playToggle();
-            setViewMode('blaster');
-          }}
-        >
-          🧱 Blaster
-        </button>
-        <button
-          type="button"
-          className={`tm-fixed-game-pill ${viewMode === 'sunset' ? 'active' : ''}`}
-          onClick={() => {
-            sfx.playToggle();
-            setViewMode('sunset');
-          }}
-        >
-          🌅 Sunset
-        </button>
-        <button
-          type="button"
-          className={`tm-fixed-game-pill ${viewMode === 'void' ? 'active' : ''}`}
-          onClick={() => {
-            sfx.playToggle();
-            setViewMode('void');
-          }}
-        >
-          🛸 Vector
-        </button>
-        <button
-          type="button"
-          className={`tm-fixed-game-pill ${viewMode === 'riders' ? 'active' : ''}`}
-          onClick={() => {
-            sfx.playToggle();
-            setViewMode('riders');
-          }}
-        >
-          🏍️ Riders
-        </button>
-        <button
-          type="button"
-          className={`tm-fixed-game-pill ${viewMode === 'crush' ? 'active' : ''}`}
-          onClick={() => {
-            sfx.playToggle();
-            setViewMode('crush');
-          }}
-        >
-          🍬 Crush
-        </button>
+        {QUICK_ARCADE_PILLS.map((pill) => (
+          <button
+            key={pill.id}
+            type="button"
+            className={`tm-fixed-game-pill ${viewMode === pill.id ? 'active' : ''}`}
+            onClick={() => {
+              sfx.playToggle();
+              setViewMode(pill.id);
+            }}
+          >
+            <GameIcon id={pill.id} size={15} />
+            <span>{pill.label}</span>
+          </button>
+        ))}
       </nav>
 
       <div className="tm-fixed-bar-right">
@@ -329,7 +179,7 @@ export function FixedArcadeTopBar({
             aria-label="Open Cabinet High Scores"
             title="Open Cabinet High Scores (Today / Week / All-time)"
           >
-            🏆
+            <Trophy size={15} aria-hidden="true" />
           </button>
         )}
         <button
@@ -348,7 +198,7 @@ export function FixedArcadeTopBar({
           title="Copy or Share Direct Link to This Game"
           aria-label="Share direct link to this game"
         >
-          {sharedGame ? '✅' : '🔗'}
+          {sharedGame ? <Check size={15} aria-hidden="true" /> : <Share2 size={15} aria-hidden="true" />}
         </button>
         <Wallet
           tokens={tokens}
@@ -373,7 +223,7 @@ export function FixedArcadeTopBar({
           aria-label="Open Extras drawer"
           title="Open Extras Drawer: Soundboard, WTF?!, Payphone, Boss Key, CRT, Turbo & AI"
         >
-          🎛️
+          <SlidersHorizontal size={15} aria-hidden="true" />
         </button>
       </div>
     </header>

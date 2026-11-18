@@ -97,7 +97,7 @@ export default function BossKeyOverlay({
     if (typeof window === 'undefined') return;
     const path = PRANK_DISGUISE_TO_PATH[disguise] || '/fake-excel-boss-screen';
     const route = getSeoRouteByPath(path);
-    const shareUrl = `${window.location.origin || SITE_ORIGIN}${path}`;
+    const shareUrl = `${window.location.origin || SITE_ORIGIN}${path}?ref=prank`;
     const label = DISGUISE_MODES.find((d) => d.id === disguise)?.label || 'Prank Screen';
     const shareTitle = route?.title || `Boss Key Disguise: ${label}`;
     const shareText = route?.description || 'Check out this interactive prank/boss screen on THE MEMES.net! 💼';

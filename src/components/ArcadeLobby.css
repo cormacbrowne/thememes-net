@@ -126,14 +126,26 @@
   margin-bottom: 14px;
 }
 
-.tm-lobby-filters {
+.tm-lobby-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   margin-bottom: 18px;
 }
 
+.tm-lobby-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
 .tm-lobby-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   min-height: 44px;
   padding: 8px 14px;
   border-radius: 999px;
@@ -145,6 +157,54 @@
   cursor: pointer;
   touch-action: manipulation;
   transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease;
+}
+
+.tm-lobby-filter-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--tm-night-3);
+  margin: 0 2px;
+}
+
+.tm-lobby-filter-pill.is-prank-tab {
+  border-style: dashed;
+}
+
+.tm-lobby-filter-pill.is-prank-tab.active {
+  border-style: solid;
+  border-color: var(--tm-uv);
+  background: color-mix(in srgb, var(--tm-uv) 16%, var(--tm-night-1));
+  color: var(--tm-text);
+  box-shadow: 0 0 14px -4px var(--tm-uv);
+}
+
+.tm-lobby-sort-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--tm-night-3);
+  background: var(--tm-night-1);
+  color: var(--tm-text-dim);
+}
+
+.tm-lobby-sort-btn {
+  min-height: 36px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--tm-text-dim);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.tm-lobby-sort-btn.active {
+  background: color-mix(in srgb, var(--tm-amber) 16%, var(--tm-night-2));
+  color: var(--tm-amber-hot);
 }
 
 .tm-lobby-filter-pill:hover {
@@ -176,6 +236,9 @@
 
 .tm-lobby-section-title {
   margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   font-family: var(--tm-font-display);
   font-size: 1.05rem;
   font-weight: 700;
@@ -251,9 +314,90 @@
 }
 
 .tm-lobby-card-icon {
-  font-size: 2.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--card-accent, var(--tm-cyan)) 48%, transparent));
+}
+
+.tm-game-neon-icon {
+  display: block;
+}
+
+.tm-lobby-card-rating {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 12px 10px;
+  border-top: 1px solid color-mix(in srgb, var(--tm-night-3) 75%, transparent);
+  background: color-mix(in srgb, var(--tm-night-0) 45%, transparent);
+}
+
+.tm-lobby-stars-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.tm-lobby-star-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--tm-night-3);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.12s ease, color 0.12s ease;
+}
+
+.tm-lobby-star-btn:hover {
+  transform: scale(1.15);
+  color: var(--tm-amber);
+}
+
+.tm-lobby-star-btn.is-lit {
+  color: var(--tm-amber);
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--tm-amber) 55%, transparent));
+}
+
+.tm-lobby-star-btn.is-user {
+  color: var(--tm-amber-hot);
+}
+
+.tm-lobby-rating-meta {
+  font-family: var(--tm-font-display);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--tm-text-dim);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tm-lobby-pranks-section {
+  margin-top: 28px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px dashed var(--tm-night-3);
+  background: color-mix(in srgb, var(--tm-night-1) 65%, transparent);
+}
+
+.tm-lobby-badge-prank {
+  border-color: var(--tm-uv);
+  color: var(--tm-text-soft);
+}
+
+.tm-lobby-companions {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .tm-lobby-card-badges {
@@ -384,6 +528,12 @@
   .tm-lobby-grid,
   .tm-lobby-continue-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .tm-lobby-filter-divider {
+    display: none;
   }
 }
 

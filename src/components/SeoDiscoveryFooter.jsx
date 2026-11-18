@@ -17,7 +17,8 @@ export default function SeoDiscoveryFooter({
   const [sharedSite, setSharedSite] = useState(false);
 
   const handleShareSite = () => {
-    const shareUrl = window.location.origin;
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.thememes.net';
+    const shareUrl = `${origin}/?ref=footer`;
     const shareText =
       '🔥 Check out THE MEMES.net — Community Meme Feed, Free Meme Generator, Soundboard & Retro Arcade Games!';
     navigator.clipboard?.writeText(`${shareText} ${shareUrl}`).catch(() => {});
@@ -360,7 +361,7 @@ export default function SeoDiscoveryFooter({
               <p>
                 Open the <a href="/meme-generator" onClick={(e) => handleSpaLinkClick(e, onOpenBlankStudio)} style={{ color: 'var(--tm-cyan)' }}>Meme Generator</a> to launch
                 the HTML5 Meme Forge 3.0 studio. Pick from 20 blank meme templates, paste from clipboard (Ctrl+V),
-                apply Deep Fry or VHS Glitch filters, and download or publish your meme (downloads carry a small thememes.net logo).
+                add bold custom captions, custom stickers, and animated GIF exports, and download or publish your meme (downloads carry a small thememes.net logo).
               </p>
             </details>
             <details className="tm-faq-item">

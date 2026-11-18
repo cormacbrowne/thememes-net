@@ -560,6 +560,8 @@
   z-index: 940;
   display: flex;
   justify-content: center;
+  padding: 0 8px;
+  box-sizing: border-box;
   pointer-events: none;
 }
 
@@ -569,12 +571,15 @@
 
 .tm-mobile-now-playing {
   pointer-events: auto;
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  max-width: calc(100vw - 18px);
-  padding: 4px 8px;
+  width: auto;
+  max-width: min(440px, calc(100vw - 16px));
+  padding: 4px 6px;
   border-radius: 999px;
+  overflow: hidden;
   background: rgba(10, 14, 30, 0.95);
   border: 1.5px solid rgba(255, 46, 136, 0.72);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.78), 0 0 16px rgba(255, 46, 136, 0.34);
@@ -589,10 +594,11 @@
 }
 
 .tm-now-playing-grip {
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 5px;
+  padding: 4px 3px;
   color: var(--tm-pink);
   font-size: 14px;
   cursor: grab;
@@ -601,6 +607,8 @@
 }
 
 .tm-now-playing-label {
+  flex: 1 1 auto;
+  min-width: 0;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -611,36 +619,72 @@
   padding: 2px 4px;
   cursor: pointer;
   max-width: 185px;
+  overflow: hidden;
   touch-action: manipulation;
 }
 
+.tm-now-playing-label span:first-child {
+  flex-shrink: 0;
+}
+
 .tm-now-playing-label span:last-child {
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .tm-now-playing-btn {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: rgba(255, 255, 255, 0.12);
   border: 1.5px solid rgba(255, 255, 255, 0.28);
   color: #ffffff;
   border-radius: 999px;
   min-width: 34px;
   min-height: 34px;
-  padding: 4px 7px;
+  padding: 0 6px;
   font-size: 12.5px;
   font-weight: 900;
+  line-height: 1;
   cursor: pointer;
   touch-action: manipulation;
+}
+
+.tm-now-playing-close {
+  border-color: rgba(255, 46, 136, 0.45);
+  background: rgba(255, 46, 136, 0.16);
 }
 
 @media (max-width: 860px) {
   .tm-radio-chevron-btn,
   .tm-radio-pop-icon-btn,
-  .tm-radio-pop-station,
-  .tm-now-playing-btn {
+  .tm-radio-pop-station {
     min-height: 44px;
     min-width: 44px;
+  }
+
+  .tm-mobile-now-playing {
+    gap: 3px;
+    padding: 4px 6px;
+    max-width: calc(100vw - 16px);
+  }
+
+  .tm-now-playing-btn {
+    min-width: 38px;
+    min-height: 38px;
+    padding: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .tm-now-playing-btn {
+    min-width: 34px;
+    min-height: 36px;
+    font-size: 12px;
   }
 }
 

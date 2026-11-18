@@ -24,6 +24,7 @@ export default function Reel({
   highlightRows = null,
   breathingRows = null,
   wildMultipliers = null,
+  lockedCells = null,
   symbolSize = 48,
   peekPerspective = false,
   className = '',
@@ -157,20 +158,28 @@ export default function Reel({
             !isSpinning && breathingRows && isVisible && breathingRows.has(visibleRow)
           );
           const wildMult = isVisible && wildMultipliers ? wildMultipliers[`${reelIndex},${visibleRow}`] : null;
+          const lockedOrb = isVisible && lockedCells ? lockedCells[`${reelIndex},${visibleRow}`] : null;
 
           return (
             <div
               key={`${reelIndex}-c-${cellIdx}`}
               className={`tm-reel-cell ${rowWin ? 'is-win-cell' : ''} ${
                 isBreathing ? 'is-breathing-cell' : ''
-              }`}
+              } ${lockedOrb ? 'is-orb-locked' : ''}`}
               style={{ height: `${cellHeight}px` }}
             >
-              <SlotSymbolArt
-                symbolId={symId}
-                size={symbolSize}
-                badge={wildMult ? `${wildMult}×` : null}
-              />
+              {lockedOrb ? (
+                <div className="tm-locked-orb-badge" style={{ borderColor: lockedOrb.color }}>
+                  <span>⚡</span>
+                  <strong>{lockedOrb.label}</strong>
+                </div>
+              ) : (
+                <SlotSymbolArt
+                  symbolId={symId}
+                  size={symbolSize}
+                  badge={wildMult ? `${wildMult}×` : null}
+                />
+              )}
             </div>
           );
         })}

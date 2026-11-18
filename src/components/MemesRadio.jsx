@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { X, Play, Pause, SkipForward, Sliders, Radio } from 'lucide-react';
 import useRadio from '../hooks/useRadio';
 import { useDraggableFloating } from '../hooks/useDraggableFloating';
 import {
@@ -406,7 +407,9 @@ function MobileNowPlayingInner({ radio, isGameLayout, onHide }) {
           }}
           title={radio.on ? 'Tap to pause THE MEMES FM' : 'Tap to play THE MEMES FM'}
         >
-          <span aria-hidden="true">{radio.on ? '⏸' : '▶'}</span>
+          <span aria-hidden="true">
+            {radio.on ? <Pause size={13} /> : <Play size={13} />}
+          </span>
           <span>{label}</span>
         </button>
         <button
@@ -416,7 +419,7 @@ function MobileNowPlayingInner({ radio, isGameLayout, onHide }) {
           aria-label="Next radio station"
           title={`Station: ${station.name} (Tap to switch)`}
         >
-          📻
+          <Radio size={15} aria-hidden="true" />
         </button>
         <button
           type="button"
@@ -425,7 +428,7 @@ function MobileNowPlayingInner({ radio, isGameLayout, onHide }) {
           aria-label="Open Fullscreen Music Equalizer"
           title="Fullscreen Equalizer"
         >
-          🎛️
+          <Sliders size={15} aria-hidden="true" />
         </button>
         <button
           type="button"
@@ -434,16 +437,16 @@ function MobileNowPlayingInner({ radio, isGameLayout, onHide }) {
           aria-label="Next track"
           title="Skip track"
         >
-          ⏭
+          <SkipForward size={15} aria-hidden="true" />
         </button>
         <button
           type="button"
-          className="tm-now-playing-btn"
+          className="tm-now-playing-btn tm-now-playing-close"
           onClick={onHide}
           aria-label="Hide floating music bar"
           title="Hide"
         >
-          ✕
+          <X size={15} aria-hidden="true" />
         </button>
       </div>
     </div>
@@ -466,6 +469,7 @@ export function MobileNowPlayingPill({ isGameLayout = false }) {
   }, []);
 
   if (dismissed) return null;
+  if (isGameLayout && !pinned) return null;
   if (!radio.on && !pinned) return null;
   return (
     <MobileNowPlayingInner

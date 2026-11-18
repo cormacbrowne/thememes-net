@@ -1664,11 +1664,10 @@
 .tm-video-reel-col {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  background: linear-gradient(180deg, var(--tm-night-1) 0%, var(--tm-text) 16%, #ffffff 50%, var(--tm-text) 84%, var(--tm-night-1) 100%);
-  border-radius: 9px;
-  padding: 3px;
-  border: 1px solid var(--tm-night-3);
+  background: #060512;
+  border-radius: 11px;
+  padding: 2px;
+  border: 1px solid color-mix(in srgb, var(--tm-cyan) 24%, var(--tm-night-3));
   overflow: hidden;
 }
 
@@ -2331,7 +2330,9 @@
 .tm-lite-perf .tm-neon-chase-dot,
 .tm-lite-perf .tm-neon-pw-btn.ready,
 .tm-lite-perf .tm-slot-neon-crown,
-.tm-lite-perf .tm-neon-tube {
+.tm-lite-perf .tm-neon-tube,
+.tm-lite-perf .tm-slot-top-beacon.is-lit .tm-slot-beacon-cap,
+.tm-lite-perf .tm-slot-liquid-tube.is-sloshing .tm-liquid-fill {
   animation: none !important;
 }
 
@@ -2340,7 +2341,291 @@
   .tm-neon-chase-dot,
   .tm-neon-pw-btn.ready,
   .tm-slot-neon-crown,
-  .tm-neon-tube {
+  .tm-neon-tube,
+  .tm-slot-top-beacon.is-lit .tm-slot-beacon-cap,
+  .tm-slot-liquid-tube.is-sloshing .tm-liquid-fill {
     animation: none !important;
+  }
+}
+
+/* ==========================================
+   PHASE 35.7e-g: BEACON, LIQUID TUBE, COIN TRAY & MISSIONS
+   ========================================== */
+.tm-slot-reels-anchor {
+  position: relative;
+}
+
+.tm-slot-top-beacon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: -4px;
+}
+
+.tm-slot-beacon-cap {
+  width: 34px;
+  height: 10px;
+  border-radius: 999px 999px 2px 2px;
+  background: var(--tm-night-2);
+  border: 1px solid var(--tm-night-3);
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tm-slot-top-beacon.is-lit .tm-slot-beacon-cap {
+  background: linear-gradient(90deg, var(--tm-pink), var(--tm-amber), var(--tm-pink));
+  border-color: var(--tm-amber-hot);
+  box-shadow: 0 0 18px var(--tm-amber), 0 0 32px var(--tm-pink);
+  animation: tmBeaconPulse 0.45s ease-in-out infinite alternate;
+}
+
+@keyframes tmBeaconPulse {
+  0% { opacity: 0.72; transform: scaleX(0.96); }
+  100% { opacity: 1; transform: scaleX(1.06); }
+}
+
+.tm-bandit-cabinet.is-spinning .tm-bandit-bulb {
+  animation-duration: 0.28s;
+}
+
+.tm-bandit-cabinet.is-surge-roll .tm-bandit-bulb {
+  animation-duration: 0.16s;
+  background: var(--tm-cyan-hot);
+  box-shadow: 0 0 10px var(--tm-cyan);
+}
+
+.tm-bandit-cabinet.is-win-lit .tm-bandit-bulb {
+  background: var(--tm-amber);
+  box-shadow: 0 0 12px var(--tm-amber);
+}
+
+.tm-slot-liquid-tube {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(7, 6, 15, 0.85);
+  border: 1px solid var(--tm-night-3);
+}
+
+.tm-liquid-label {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: var(--tm-text-soft);
+  white-space: nowrap;
+}
+
+.tm-liquid-glass {
+  flex: 1;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(17, 13, 34, 0.95);
+  border: 1px solid rgba(165, 159, 196, 0.35);
+  overflow: hidden;
+  position: relative;
+}
+
+.tm-liquid-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  background: linear-gradient(90deg, var(--tm-cyan-off), var(--tm-cyan));
+  box-shadow: 0 0 10px var(--tm-cyan);
+}
+
+.tm-slot-liquid-tube.tone-pink .tm-liquid-fill {
+  background: linear-gradient(90deg, var(--tm-pink-off), var(--tm-pink));
+  box-shadow: 0 0 10px var(--tm-pink);
+}
+
+.tm-slot-liquid-tube.tone-amber .tm-liquid-fill {
+  background: linear-gradient(90deg, var(--tm-amber-off), var(--tm-amber));
+  box-shadow: 0 0 10px var(--tm-amber);
+}
+
+.tm-slot-liquid-tube.is-sloshing .tm-liquid-fill {
+  animation: tmLiquidSlosh 0.45s ease-in-out;
+}
+
+@keyframes tmLiquidSlosh {
+  0% { transform: scaleX(1); }
+  45% { transform: scaleX(1.06); }
+  100% { transform: scaleX(1); }
+}
+
+.tm-slot-liquid-tube.is-full {
+  border-color: var(--tm-amber);
+  box-shadow: 0 0 12px -3px var(--tm-amber);
+}
+
+.tm-liquid-value {
+  font-family: var(--tm-font-display);
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--tm-cyan-hot);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tm-slot-liquid-tube.tone-pink .tm-liquid-value { color: var(--tm-pink-hot); }
+.tm-slot-liquid-tube.tone-amber .tm-liquid-value { color: var(--tm-amber-hot); }
+
+.tm-slot-missions-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+}
+
+.tm-slot-mission-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--tm-night-3);
+  background: rgba(7, 6, 15, 0.78);
+  color: var(--tm-text-dim);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.tm-slot-mission-pill strong {
+  color: var(--tm-amber);
+  font-weight: 900;
+}
+
+.tm-slot-mission-pill.done {
+  border-color: var(--tm-ok);
+  color: var(--tm-ok);
+  background: rgba(61, 255, 154, 0.12);
+}
+
+.tm-slot-coin-tray {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--tm-amber) 45%, var(--tm-night-3));
+  background: linear-gradient(180deg, rgba(17, 13, 34, 0.9), rgba(61, 44, 5, 0.35));
+}
+
+.tm-coin-tray-label {
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: var(--tm-text-dim);
+}
+
+.tm-coin-tray-piles {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.tm-tray-coin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--tm-amber-hot), var(--tm-amber));
+  border: 1px solid #fff;
+  color: var(--tm-night-0);
+  font-size: 7px;
+  font-weight: 900;
+  flex-shrink: 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.65);
+}
+
+.tm-coin-tray-total {
+  font-family: var(--tm-font-display);
+  font-size: 11.5px;
+  font-weight: 900;
+  color: var(--tm-amber-hot);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 860px) {
+  .tm-bandit-stage {
+    padding: 4px 6px calc(6px + env(safe-area-inset-bottom, 0px));
+    overflow-x: hidden;
+  }
+  .tm-slot-arcade-shell,
+  .tm-bandit-cabinet-wrap,
+  .tm-bandit-cabinet {
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+  .tm-bandit-cabinet-wrap {
+    gap: 4px;
+  }
+  .tm-bandit-arm-housing {
+    width: 22px;
+  }
+  .tm-bandit-arm-track {
+    width: 20px;
+    left: 1px;
+  }
+  .tm-bandit-arm-ball {
+    width: 22px;
+    height: 22px;
+    font-size: 5.5px;
+  }
+  .tm-bandit-marquee-sub,
+  .tm-slot-neon-crown-sub {
+    display: none;
+  }
+  .tm-slot-neon-crown-title {
+    font-size: 8.5px;
+    letter-spacing: 0.2px;
+  }
+  .tm-slot-neon-crown-text {
+    padding: 0 38px;
+  }
+  .tm-slot-house-edge-strip {
+    font-size: 8.5px;
+    gap: 4px;
+  }
+  .tm-slot-neon-crown-svg {
+    height: 34px;
+  }
+  .tm-bandit-marquee {
+    padding: 5px 8px;
+  }
+  .tm-bandit-marquee-title {
+    font-size: 13.5px;
+  }
+  .tm-slot-missions-strip {
+    gap: 4px;
+  }
+  .tm-slot-mission-pill {
+    font-size: 9px;
+    padding: 2px 6px;
+  }
+  .tm-bandit-bet-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    justify-content: flex-start;
+    max-width: 100%;
+  }
+  .tm-bandit-bet-row::-webkit-scrollbar {
+    display: none;
+  }
+  .tm-bandit-chip-btn {
+    flex-shrink: 0;
+    min-height: 36px;
+    padding: 4px 9px;
+    font-size: 11px;
+  }
+  .tm-bandit-action-row {
+    gap: 6px;
   }
 }

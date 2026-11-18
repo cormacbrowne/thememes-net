@@ -1,27 +1,29 @@
 import { useEffect, useState } from 'react';
+import { Crown, Film, Smartphone, Swords, Volume2 } from 'lucide-react';
 import { sfx } from '../utils/soundEngine';
+import GameIcon from './GameIcon';
 import NeonSign from './NeonSign';
 import './DualDirectionHero.css';
 
 const MEME_EXPLORE_PILLS = [
-  { id: 'reels', label: '🎬 Reels', type: 'view' },
-  { id: 'caption_battle', label: '👑 Caption Battle', type: 'battle', testId: 'hero-caption-battle-btn' },
-  { id: 'soundboard', label: '🔊 Soundboard', type: 'soundboard' },
-  { id: 'battle', label: '⚔️ 1v1 Battle', type: 'view' },
-  { id: 'guess', label: '🧠 Guess Meme', type: 'view' }
+  { id: 'reels', label: 'Reels', Icon: Film, type: 'view' },
+  { id: 'caption_battle', label: 'Caption Battle', Icon: Crown, type: 'battle', testId: 'hero-caption-battle-btn' },
+  { id: 'soundboard', label: 'Soundboard', Icon: Volume2, type: 'soundboard' },
+  { id: 'battle', label: '1v1 Battle', Icon: Swords, type: 'view' },
+  { id: 'guess', label: 'Guess Meme', gameIcon: 'guess', type: 'view' }
 ];
 
 const ARCADE_EXPLORE_PILLS = [
-  { id: 'bingo', label: "🎱 Bingo '86" },
-  { id: 'slots', label: '🎰 Slots' },
-  { id: 'pinball', label: '🛸 Pinball' },
-  { id: 'pusher', label: '🎰 Coin Dozer' },
-  { id: 'blackjack', label: '🃏 Blackjack' },
-  { id: 'poker', label: '🤠 Poker' },
-  { id: 'roulette', label: '🎡 Roulette' },
-  { id: 'derby', label: '🏇 Derby' },
-  { id: 'stocks', label: '📈 MEMEDAQ' },
-  { id: 'eightball', label: '🎱 8-Ball' }
+  { id: 'bingo', label: "Bingo '86" },
+  { id: 'slots', label: 'Slots' },
+  { id: 'pinball', label: 'Pinball' },
+  { id: 'pusher', label: 'Coin Dozer' },
+  { id: 'blackjack', label: 'Blackjack' },
+  { id: 'poker', label: 'Poker' },
+  { id: 'roulette', label: 'Roulette' },
+  { id: 'derby', label: 'Derby' },
+  { id: 'stocks', label: 'MEMEDAQ' },
+  { id: 'eightball', label: '8-Ball' }
 ];
 
 export default function DualDirectionHero({
@@ -122,22 +124,30 @@ export default function DualDirectionHero({
           </div>
 
           {realmFocus !== 'arcade' &&
-            MEME_EXPLORE_PILLS.map((pill) => (
-              <button
-                key={pill.id}
-                type="button"
-                data-testid={pill.testId}
-                className="tm-portal-quick-pill"
-                onClick={() => {
-                  sfx.playToggle?.();
-                  if (pill.type === 'battle') onOpenCaptionBattle?.();
-                  else if (pill.type === 'soundboard') onOpenSoundboard?.();
-                  else onSelectViewMode?.(pill.id);
-                }}
-              >
-                {pill.label}
-              </button>
-            ))}
+            MEME_EXPLORE_PILLS.map((pill) => {
+              const IconComp = pill.Icon;
+              return (
+                <button
+                  key={pill.id}
+                  type="button"
+                  data-testid={pill.testId}
+                  className="tm-portal-quick-pill"
+                  onClick={() => {
+                    sfx.playToggle?.();
+                    if (pill.type === 'battle') onOpenCaptionBattle?.();
+                    else if (pill.type === 'soundboard') onOpenSoundboard?.();
+                    else onSelectViewMode?.(pill.id);
+                  }}
+                >
+                  {IconComp ? (
+                    <IconComp size={13} aria-hidden="true" />
+                  ) : (
+                    <GameIcon id={pill.gameIcon || pill.id} size={14} />
+                  )}
+                  <span>{pill.label}</span>
+                </button>
+              );
+            })}
 
           {realmFocus !== 'memes' &&
             ARCADE_EXPLORE_PILLS.map((g) => (
@@ -150,7 +160,8 @@ export default function DualDirectionHero({
                   onSelectViewMode?.(g.id);
                 }}
               >
-                {g.label}
+                <GameIcon id={g.id} size={14} />
+                <span>{g.label}</span>
               </button>
             ))}
 
@@ -163,7 +174,8 @@ export default function DualDirectionHero({
                 onOpenInstallModal();
               }}
             >
-              📲 iPhone App
+              <Smartphone size={13} aria-hidden="true" />
+              <span>iPhone App</span>
             </button>
           )}
         </div>

@@ -835,9 +835,9 @@
 
   .tm-pin2-mobile-controls {
     display: grid;
-    grid-template-columns: 1.25fr 0.9fr 1.25fr;
+    grid-template-columns: 0.95fr 1.5fr 0.95fr;
     padding: 4px 4px calc(4px + env(safe-area-inset-bottom, 0px));
-    gap: 6px;
+    gap: 5px;
     flex-shrink: 0;
   }
 
@@ -848,9 +848,10 @@
   .tm-pin2-magna-btn,
   .tm-pin2-slim-topbar button {
     min-height: 44px;
-    min-width: 44px;
-    padding: 8px 8px;
-    font-size: 11px;
+    min-width: 0;
+    padding: 6px 5px;
+    font-size: 10.5px;
+    white-space: nowrap;
     touch-action: manipulation;
   }
 

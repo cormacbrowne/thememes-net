@@ -1,11 +1,30 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import {
+  Trophy,
+  Settings,
+  Bot,
+  ArrowLeft,
+  Star,
+  Heart,
+  Share2,
+  Check,
+  Gamepad2,
+  Brain,
+  TrendingUp,
+  Coins,
+  EyeOff,
+  Play,
+  ArrowUpDown
+} from 'lucide-react';
 import { sfx } from '../utils/soundEngine';
 import { formatMoney } from '../utils/tokenEconomy';
+import { haptic } from '../utils/juice';
 import { SITE_ORIGIN } from '../data/seoRoutes';
 import { RadioStationStrip } from './MemesRadio';
 import { DeLoreanDockBanner } from './DeLoreanTimeMachine';
 import { Wallet } from './ui/Money';
 import EightiesIconsStrip from './EightiesIconsStrip';
+import GameIcon from './GameIcon';
 import {
   ARCADE_GAMES_CATALOG,
   ARCADE_LOBBY_GROUPS,
@@ -14,7 +33,22 @@ import {
   getFavoriteArcadeGameIds,
   toggleFavoriteArcadeGameId
 } from '../data/arcadeGamesCatalog';
+import {
+  loadUserGameRatings,
+  loadCachedCommunityRatings,
+  buildRatingsSummaryMap,
+  sortGamesByRating,
+  fetchCommunityGameRatings,
+  saveGameRating
+} from '../utils/gameRatings';
 import './ArcadeLobby.css';
+
+const GROUP_ICONS = {
+  skill: Gamepad2,
+  meme: Brain,
+  sim: TrendingUp,
+  casino: Coins
+};
 
 export default function ArcadeLobby({
   tokens = 0,
@@ -33,15 +67,43 @@ export default function ArcadeLobby({
   onOpenPrankDisguise
 }) {
   const [activeFilter, setActiveFilter] = useState('all');
+  const [sortMode, setSortMode] = useState('top-rated'); // 'top-rated' | 'grouped'
   const [favoriteIds, setFavoriteIds] = useState(() => getFavoriteArcadeGameIds());
   const [copiedId, setCopiedId] = useState(null);
+  const [userRatings, setUserRatings] = useState(() => loadUserGameRatings());
+  const [communityRatings, setCommunityRatings] = useState(() => loadCachedCommunityRatings());
   const recentGames = useMemo(() => getRecentArcadeGames(), []);
 
+  useEffect(() => {
+    let active = true;
+    fetchCommunityGameRatings().then((agg) => {
+      if (active && agg && typeof agg === 'object') {
+        setCommunityRatings(agg);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const favSet = useMemo(() => new Set(favoriteIds), [favoriteIds]);
+  const ratingsSummary = useMemo(
+    () => buildRatingsSummaryMap(communityRatings, userRatings),
+    [communityRatings, userRatings]
+  );
 
   const handleToggleFavorite = (gameId) => {
     sfx.playToggle();
+    haptic('tap');
     setFavoriteIds(toggleFavoriteArcadeGameId(gameId));
+  };
+
+  const handleRateGame = async (gameId, stars) => {
+    sfx.playPop?.(Math.min(4, Math.max(1, stars - 1)));
+    haptic('tap');
+    const result = await saveGameRating(gameId, stars, communityRatings);
+    setUserRatings(result.userRatings);
+    setCommunityRatings(result.community);
   };
 
   const handlePlay = (gameId) => {
@@ -51,13 +113,15 @@ export default function ArcadeLobby({
 
   const handleShareItem = (item) => {
     if (typeof window === 'undefined' || !item?.path) return;
-    const shareUrl = `${window.location.origin || SITE_ORIGIN}${item.path}`;
+    const sep = item.path.includes('?') ? '&' : '?';
+    const refTag = item.group ? 'arcade' : 'prank';
+    const shareUrl = `${window.location.origin || SITE_ORIGIN}${item.path}${sep}ref=${refTag}`;
     navigator.clipboard?.writeText(shareUrl).catch(() => {});
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       navigator
         .share({
           title: `${item.label} — THE MEMES.net`,
-          text: `${item.pitch} 🔗`,
+          text: `${item.pitch}`,
           url: shareUrl
         })
         .catch(() => {});
@@ -67,21 +131,49 @@ export default function ArcadeLobby({
     setTimeout(() => setCopiedId((curr) => (curr === item.id ? null : curr)), 2000);
   };
 
+  const sortedAllGames = useMemo(
+    () => sortGamesByRating(ARCADE_GAMES_CATALOG, ratingsSummary),
+    [ratingsSummary]
+  );
+
   const visibleGroups = useMemo(() => {
+    if (activeFilter === 'pranks') {
+      return [];
+    }
+
     if (activeFilter === 'favs') {
-      const favGames = ARCADE_GAMES_CATALOG.filter((g) => favSet.has(g.id));
+      const favGames = sortGamesByRating(
+        ARCADE_GAMES_CATALOG.filter((g) => favSet.has(g.id)),
+        ratingsSummary
+      );
       return favGames.length > 0
-        ? [{ id: 'favs', label: '★ Favourites', desc: 'Your pinned cabinets', games: favGames }]
+        ? [{ id: 'favs', label: 'Favourites', desc: 'Your pinned cabinets (sorted by rating)', games: favGames }]
         : [];
+    }
+
+    if (activeFilter === 'all' && sortMode === 'top-rated') {
+      return [
+        {
+          id: 'top-rated',
+          label: 'All Arcade Games — Top Rated First',
+          desc: 'Rate any game 1–5 stars; higher-rated games rise straight to the top',
+          games: sortedAllGames
+        }
+      ];
     }
 
     return ARCADE_LOBBY_GROUPS.filter(
       (grp) => activeFilter === 'all' || activeFilter === grp.id
     ).map((grp) => ({
       ...grp,
-      games: ARCADE_GAMES_CATALOG.filter((g) => g.group === grp.id)
+      games: sortGamesByRating(
+        ARCADE_GAMES_CATALOG.filter((g) => g.group === grp.id),
+        ratingsSummary
+      )
     }));
-  }, [activeFilter, favSet]);
+  }, [activeFilter, sortMode, favSet, ratingsSummary, sortedAllGames]);
+
+  const showPrankSection = activeFilter === 'pranks' || activeFilter === 'all';
 
   return (
     <section className="tm-lobby" aria-label="Cyber Arcade Lobby">
@@ -91,7 +183,8 @@ export default function ArcadeLobby({
             <span className="is-cyan">Cyber-Arcade</span> <span className="is-pink">Lobby</span>
           </h1>
           <p className="tm-lobby-sub">
-            {ARCADE_GAMES_CATALOG.length} retro cabinets, MemeDollarz ($) casino tables &amp; shareable prank screens.
+            {ARCADE_GAMES_CATALOG.length} retro skill cabinets &amp; MemeDollarz (M$) tables ·{' '}
+            {BOSS_SCREENS_CATALOG.length} separate office prank disguises
           </p>
         </div>
 
@@ -117,7 +210,8 @@ export default function ArcadeLobby({
                 onOpenLeaderboard();
               }}
             >
-              🏆 Ranks
+              <Trophy size={15} aria-hidden="true" />
+              <span>Ranks</span>
             </button>
           )}
           {onOpenExtras && (
@@ -129,7 +223,8 @@ export default function ArcadeLobby({
                 onOpenExtras();
               }}
             >
-              ⚙️ Settings &amp; SFX
+              <Settings size={15} aria-hidden="true" />
+              <span>Settings</span>
             </button>
           )}
           {onToggleAiAssistant && (
@@ -141,7 +236,8 @@ export default function ArcadeLobby({
                 onToggleAiAssistant();
               }}
             >
-              🤖 AI
+              <Bot size={15} aria-hidden="true" />
+              <span>AI</span>
             </button>
           )}
           {onBackToFeed && (
@@ -153,67 +249,93 @@ export default function ArcadeLobby({
                 onBackToFeed();
               }}
             >
-              ← Feed
+              <ArrowLeft size={15} aria-hidden="true" />
+              <span>Feed</span>
             </button>
           )}
         </div>
       </header>
 
-      <div className="tm-lobby-radio-wrap">
-        <RadioStationStrip autoStart compact />
-      </div>
-
-      {onOpenTimeCircuits && (
-        <DeLoreanDockBanner
-          activeEra={deloreanEra}
-          activeCarId={activeCarId}
-          onSelectCar={onSelectCar}
-          onOpenModal={onOpenTimeCircuits}
-          onQuickWarp={onTriggerDeLoreanWarp}
-        />
-      )}
-
-      <EightiesIconsStrip compact />
-
-      {/* Category Filter Pills */}
-      <div className="tm-lobby-filters" role="tablist" aria-label="Filter Arcade Games">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeFilter === 'all'}
-          className={`tm-lobby-filter-pill ${activeFilter === 'all' ? 'active' : ''}`}
-          onClick={() => setActiveFilter('all')}
-        >
-          All ({ARCADE_GAMES_CATALOG.length})
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeFilter === 'favs'}
-          className={`tm-lobby-filter-pill ${activeFilter === 'favs' ? 'active' : ''}`}
-          onClick={() => setActiveFilter('favs')}
-        >
-          ★ Favourites ({favoriteIds.length})
-        </button>
-        {ARCADE_LOBBY_GROUPS.map((grp) => (
+      {/* Category Filter Pills — Games vs Prank Screens clearly separated */}
+      <div className="tm-lobby-toolbar">
+        <div className="tm-lobby-filters" role="tablist" aria-label="Filter Arcade Games and Prank Screens">
           <button
-            key={grp.id}
             type="button"
             role="tab"
-            aria-selected={activeFilter === grp.id}
-            className={`tm-lobby-filter-pill ${activeFilter === grp.id ? 'active' : ''}`}
-            onClick={() => setActiveFilter(grp.id)}
+            aria-selected={activeFilter === 'all'}
+            className={`tm-lobby-filter-pill ${activeFilter === 'all' ? 'active' : ''}`}
+            onClick={() => setActiveFilter('all')}
           >
-            {grp.label}
+            <Gamepad2 size={14} aria-hidden="true" />
+            <span>All Games ({ARCADE_GAMES_CATALOG.length})</span>
           </button>
-        ))}
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeFilter === 'favs'}
+            className={`tm-lobby-filter-pill ${activeFilter === 'favs' ? 'active' : ''}`}
+            onClick={() => setActiveFilter('favs')}
+          >
+            <Heart size={14} aria-hidden="true" />
+            <span>Favourites ({favoriteIds.length})</span>
+          </button>
+          {ARCADE_LOBBY_GROUPS.map((grp) => {
+            const GroupIcon = GROUP_ICONS[grp.id] || Gamepad2;
+            return (
+              <button
+                key={grp.id}
+                type="button"
+                role="tab"
+                aria-selected={activeFilter === grp.id}
+                className={`tm-lobby-filter-pill ${activeFilter === grp.id ? 'active' : ''}`}
+                onClick={() => setActiveFilter(grp.id)}
+              >
+                <GroupIcon size={14} aria-hidden="true" />
+                <span>{grp.label}</span>
+              </button>
+            );
+          })}
+          <span className="tm-lobby-filter-divider" aria-hidden="true" />
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeFilter === 'pranks'}
+            className={`tm-lobby-filter-pill is-prank-tab ${activeFilter === 'pranks' ? 'active' : ''}`}
+            onClick={() => setActiveFilter('pranks')}
+          >
+            <EyeOff size={14} aria-hidden="true" />
+            <span>Prank Screens ({BOSS_SCREENS_CATALOG.length})</span>
+          </button>
+        </div>
+
+        {activeFilter === 'all' && (
+          <div className="tm-lobby-sort-toggle" role="group" aria-label="Games list order">
+            <ArrowUpDown size={13} aria-hidden="true" />
+            <button
+              type="button"
+              className={`tm-lobby-sort-btn ${sortMode === 'top-rated' ? 'active' : ''}`}
+              onClick={() => setSortMode('top-rated')}
+            >
+              Top Rated
+            </button>
+            <button
+              type="button"
+              className={`tm-lobby-sort-btn ${sortMode === 'grouped' ? 'active' : ''}`}
+              onClick={() => setSortMode('grouped')}
+            >
+              By Category
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Continue Playing Row */}
       {activeFilter === 'all' && recentGames.length > 0 && (
         <div className="tm-lobby-section">
           <div className="tm-lobby-section-head">
-            <h2 className="tm-lobby-section-title">⏯️ Continue playing</h2>
+            <h2 className="tm-lobby-section-title">
+              <Play size={15} aria-hidden="true" /> Continue playing
+            </h2>
             <span className="tm-lobby-section-desc">Your last {recentGames.length} cabinets</span>
           </div>
           <div className="tm-lobby-continue-grid">
@@ -221,10 +343,12 @@ export default function ArcadeLobby({
               <CabinetCard
                 key={`recent-${game.id}`}
                 game={game}
+                ratingInfo={ratingsSummary[game.id]}
                 isFav={favSet.has(game.id)}
                 copied={copiedId === game.id}
                 onPlay={handlePlay}
                 onToggleFav={handleToggleFavorite}
+                onRate={handleRateGame}
                 onShare={handleShareItem}
               />
             ))}
@@ -232,59 +356,65 @@ export default function ArcadeLobby({
         </div>
       )}
 
-      {/* Grouped Sections */}
-      {visibleGroups.length === 0 ? (
-        <div className="tm-lobby-empty">
-          Tap the ☆ star on any cabinet to pin it to your Favourites row.
-        </div>
-      ) : (
-        visibleGroups.map((group) => (
-          <div key={group.id} className="tm-lobby-section">
-            <div className="tm-lobby-section-head">
-              <h2 className="tm-lobby-section-title">{group.label}</h2>
-              <span className="tm-lobby-section-desc">{group.desc}</span>
-            </div>
-            <div className="tm-lobby-grid">
-              {group.games.map((game) => (
-                <CabinetCard
-                  key={game.id}
-                  game={game}
-                  isFav={favSet.has(game.id)}
-                  copied={copiedId === game.id}
-                  onPlay={handlePlay}
-                  onToggleFav={handleToggleFavorite}
-                  onShare={handleShareItem}
-                />
-              ))}
-            </div>
+      {/* Arcade & Casino Games Sections (Higher star ratings at the top) */}
+      {activeFilter !== 'pranks' && (
+        visibleGroups.length === 0 ? (
+          <div className="tm-lobby-empty">
+            Tap the heart on any cabinet to pin it to your Favourites row.
           </div>
-        ))
+        ) : (
+          visibleGroups.map((group) => (
+            <div key={group.id} className="tm-lobby-section">
+              <div className="tm-lobby-section-head">
+                <h2 className="tm-lobby-section-title">{group.label}</h2>
+                <span className="tm-lobby-section-desc">{group.desc}</span>
+              </div>
+              <div className="tm-lobby-grid">
+                {group.games.map((game) => (
+                  <CabinetCard
+                    key={game.id}
+                    game={game}
+                    ratingInfo={ratingsSummary[game.id]}
+                    isFav={favSet.has(game.id)}
+                    copied={copiedId === game.id}
+                    onPlay={handlePlay}
+                    onToggleFav={handleToggleFavorite}
+                    onRate={handleRateGame}
+                    onShare={handleShareItem}
+                  />
+                ))}
+              </div>
+            </div>
+          ))
+        )
       )}
 
-      {/* Shareable Funny Boss & Prank Disguise Screens */}
-      {activeFilter === 'all' && (
-        <div className="tm-lobby-section">
+      {/* Separate Office Disguise & Prank Screens Section */}
+      {showPrankSection && (
+        <div className="tm-lobby-section tm-lobby-pranks-section">
           <div className="tm-lobby-section-head">
-            <h2 className="tm-lobby-section-title">🕵️ Funny Boss Key &amp; Prank Screens (Direct Links)</h2>
+            <h2 className="tm-lobby-section-title">
+              <EyeOff size={15} aria-hidden="true" /> Office Disguises &amp; Prank Screens
+            </h2>
             <span className="tm-lobby-section-desc">
-              Launch fullscreen disguises or copy direct prank links for coworkers &amp; friends
+              Separate from arcade games — fullscreen Boss-Key tools &amp; shareable pranks
             </span>
           </div>
           <div className="tm-lobby-grid">
             {BOSS_SCREENS_CATALOG.map((item) => (
               <article
                 key={item.id}
-                className="tm-lobby-card"
+                className="tm-lobby-card tm-lobby-prank-card"
                 style={{ '--card-accent': item.accent }}
               >
                 <button
                   type="button"
-                  className="tm-lobby-share-btn"
+                  className={`tm-lobby-share-btn ${copiedId === item.id ? 'is-copied' : ''}`}
                   onClick={() => handleShareItem(item)}
                   aria-label={`Copy shareable link for ${item.label}`}
                   title={`Copy link: ${SITE_ORIGIN}${item.path}`}
                 >
-                  {copiedId === item.id ? '✅' : '🔗'}
+                  {copiedId === item.id ? <Check size={15} aria-hidden="true" /> : <Share2 size={15} aria-hidden="true" />}
                 </button>
                 <button
                   type="button"
@@ -299,10 +429,10 @@ export default function ArcadeLobby({
                 >
                   <div className="tm-lobby-card-thumb">
                     <span className="tm-lobby-card-icon" aria-hidden="true">
-                      {item.icon}
+                      <GameIcon id={item.id} size={42} />
                     </span>
                     <div className="tm-lobby-card-badges">
-                      <span className="tm-lobby-badge">PRANK / BOSS KEY</span>
+                      <span className="tm-lobby-badge tm-lobby-badge-prank">PRANK SCREEN</span>
                     </div>
                   </div>
                   <div className="tm-lobby-card-body">
@@ -316,14 +446,38 @@ export default function ArcadeLobby({
         </div>
       )}
 
+      {/* Companion Radio, DeLorean & 80s Icons sit below the games (Phase 34.9) */}
+      <div className="tm-lobby-companions">
+        <div className="tm-lobby-radio-wrap">
+          <RadioStationStrip autoStart compact />
+        </div>
+
+        {onOpenTimeCircuits && (
+          <DeLoreanDockBanner
+            activeEra={deloreanEra}
+            activeCarId={activeCarId}
+            onSelectCar={onSelectCar}
+            onOpenModal={onOpenTimeCircuits}
+            onQuickWarp={onTriggerDeLoreanWarp}
+          />
+        )}
+
+        <EightiesIconsStrip compact />
+      </div>
+
       <p className="tm-lobby-compliance">
-        Tokens are free, just for fun, can&apos;t be bought or cashed out.
+        MemeDollarz (M$) are free, just for fun, and can&apos;t be bought or cashed out.
       </p>
     </section>
   );
 }
 
-function CabinetCard({ game, isFav, copied, onPlay, onToggleFav, onShare }) {
+function CabinetCard({ game, ratingInfo, isFav, copied, onPlay, onToggleFav, onRate, onShare }) {
+  const avgStars = ratingInfo?.avgStars || 0;
+  const ratingCount = ratingInfo?.count || 0;
+  const userStars = ratingInfo?.userStars || 0;
+  const activeStars = userStars || Math.round(avgStars);
+
   return (
     <article className="tm-lobby-card" style={{ '--card-accent': game.accent }}>
       {game.path && onShare && (
@@ -334,7 +488,7 @@ function CabinetCard({ game, isFav, copied, onPlay, onToggleFav, onShare }) {
           aria-label={`Copy direct share link for ${game.label}`}
           title={`Share direct link: ${SITE_ORIGIN}${game.path}`}
         >
-          {copied ? '✅' : '🔗'}
+          {copied ? <Check size={15} aria-hidden="true" /> : <Share2 size={15} aria-hidden="true" />}
         </button>
       )}
       <button
@@ -344,7 +498,7 @@ function CabinetCard({ game, isFav, copied, onPlay, onToggleFav, onShare }) {
         aria-label={isFav ? `Remove ${game.label} from favourites` : `Pin ${game.label} to favourites`}
         aria-pressed={isFav}
       >
-        {isFav ? '★' : '☆'}
+        <Heart size={15} fill={isFav ? 'currentColor' : 'none'} aria-hidden="true" />
       </button>
 
       <button
@@ -354,7 +508,7 @@ function CabinetCard({ game, isFav, copied, onPlay, onToggleFav, onShare }) {
       >
         <div className="tm-lobby-card-thumb">
           <span className="tm-lobby-card-icon" aria-hidden="true">
-            {game.icon}
+            <GameIcon id={game.id} size={42} />
           </span>
           <div className="tm-lobby-card-badges">
             {game.isNew && <span className="tm-lobby-badge tm-lobby-badge-new">NEW</span>}
@@ -368,6 +522,34 @@ function CabinetCard({ game, isFav, copied, onPlay, onToggleFav, onShare }) {
           <p className="tm-lobby-card-pitch">{game.pitch}</p>
         </div>
       </button>
+
+      <div className="tm-lobby-card-rating" aria-label={`Rate ${game.label} 1 to 5 stars`}>
+        <div className="tm-lobby-stars-row" role="group" aria-label={`Star rating for ${game.label}`}>
+          {[1, 2, 3, 4, 5].map((star) => {
+            const lit = star <= activeStars;
+            return (
+              <button
+                key={star}
+                type="button"
+                className={`tm-lobby-star-btn ${lit ? 'is-lit' : ''} ${
+                  userStars >= star ? 'is-user' : ''
+                }`}
+                onClick={() => onRate(game.id, star)}
+                aria-label={`Rate ${game.label} ${star} out of 5 stars`}
+                aria-pressed={userStars === star}
+                title={`Rate ${star}/5 stars`}
+              >
+                <Star size={14} fill={lit ? 'currentColor' : 'none'} aria-hidden="true" />
+              </button>
+            );
+          })}
+        </div>
+        <span className="tm-lobby-rating-meta">
+          {avgStars > 0
+            ? `${avgStars.toFixed(1)}★ (${ratingCount})`
+            : 'Rate 1–5★'}
+        </span>
+      </div>
     </article>
   );
 }

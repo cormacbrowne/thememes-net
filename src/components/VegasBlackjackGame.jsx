@@ -1129,7 +1129,7 @@ export default function VegasBlackjackGame({
               className="tm-bj-visor-bottom-pill"
               style={{ '--visor-col': visorTip.color }}
             >
-              <span className="tm-bj-visor-badge">🥽 HINT: {visorTip.action}</span>
+              <span className="tm-bj-visor-badge">🥽 HINT: {visorTip.action}</span>{' '}
               <span className="tm-bj-visor-sub">{visorTip.reason}</span>
             </div>
           )}
@@ -1147,7 +1147,7 @@ export default function VegasBlackjackGame({
                 className="tm-bj-act-btn stand"
                 onClick={handleStand}
               >
-                🛑 STAND <small>(S)</small>
+                ✋ STAND <small>(S)</small>
               </button>
               <button
                 type="button"

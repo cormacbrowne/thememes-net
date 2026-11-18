@@ -198,7 +198,7 @@ export function createMachineReelController() {
     const L = r.stripLen * r.cellH;
     const wrapped = ((r.targetStopIndex % r.stripLen) + r.stripLen) % r.stripLen;
     const baseTargetMod = (L - wrapped * r.cellH) % L;
-    const minDist = Math.max(r.cellH * 1.5, L * 0.12);
+    const minDist = Math.max(r.cellH * 2.5, L * 0.18);
     const currMod = ((r.posPx % L) + L) % L;
     let delta = baseTargetMod - currMod;
     while (delta < minDist) {
@@ -215,6 +215,7 @@ export function createMachineReelController() {
     targetStops = [],
     stopDelaysMs = [],
     turbo = false,
+    surge = false,
     windUpScale = 1,
     crawlReels = [],
     onReelStop = null,
@@ -234,9 +235,9 @@ export function createMachineReelController() {
       }
 
       const stopDelay = Math.max(80, Number(stopDelaysMs[idx]) || 450);
-      const startDelay = turbo ? idx * 35 : idx * 60;
+      const startDelay = turbo ? idx * 32 : idx * 55;
       const windUpMs = disabled ? 0 : turbo ? 36 : 90;
-      const launchMs = disabled ? 0 : turbo ? 60 : 160;
+      const launchMs = disabled ? 0 : turbo ? 60 : 150;
       const settleMs = disabled ? 0 : turbo ? 105 : 180;
       const hasCrawl = Boolean(crawlReels[idx]) && !disabled && !turbo;
 
@@ -248,7 +249,10 @@ export function createMachineReelController() {
       r.windUpMs = windUpMs;
       r.windUpPx = Math.round(14 * Math.max(0.7, Math.min(1.6, windUpScale)));
       r.launchMs = launchMs;
-      r.cruiseSpeed = turbo ? 3600 : 2600;
+      // Exciting surge spins accelerate past standard cruise speed!
+      const baseCruise = turbo ? 3650 : 2750;
+      r.cruiseSpeed = surge ? Math.round(baseCruise * 1.38) : baseCruise;
+      r.surgeMode = Boolean(surge) && !disabled;
       r.settleMs = settleMs;
       r.overshootPx = disabled ? 0 : 12 + (idx % 3);
       r.targetStopIndex = targetStops[idx] ?? 0;
@@ -343,7 +347,10 @@ export function createMachineReelController() {
         r.posPx += r.speedPx * dtSec;
       } else if (r.elapsedMs < r.brakeStartMs && r.phase !== 'brake' && r.phase !== 'settle') {
         r.phase = 'cruise';
-        r.speedPx = r.cruiseSpeed;
+        const surgeBoost = r.surgeMode
+          ? 1 + 0.25 * Math.max(0, Math.sin(((r.elapsedMs - launchEnd) / 140) * Math.PI))
+          : 1;
+        r.speedPx = r.cruiseSpeed * surgeBoost;
         r.posPx += r.speedPx * dtSec;
       } else if (r.elapsedMs < brakeEnd && r.phase !== 'settle') {
         if (r.phase !== 'brake') {

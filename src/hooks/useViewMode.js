@@ -17,6 +17,7 @@ import {
 } from '../utils/analytics';
 import { getDeviceProfileSnapshot } from '../utils/deviceProfile';
 import { recordLocalMemeView } from '../utils/notifications';
+import { isJuiceDisabled } from '../utils/juice';
 
 const FIXED_ARCADE_GAMES = [
   'blackjack',
@@ -83,7 +84,18 @@ export function useViewMode() {
   );
 
   const [category, setCategory] = useState(initialRoute.category);
-  const [viewMode, setViewMode] = useState(initialRoute.viewMode);
+  const [viewMode, setViewModeRaw] = useState(initialRoute.viewMode);
+  const setViewMode = useCallback((nextMode) => {
+    if (
+      typeof document !== 'undefined' &&
+      typeof document.startViewTransition === 'function' &&
+      !isJuiceDisabled()
+    ) {
+      document.startViewTransition(() => setViewModeRaw(nextMode));
+      return;
+    }
+    setViewModeRaw(nextMode);
+  }, []);
   const [creatorHandle, setCreatorHandle] = useState(initialRoute.creatorHandle || null);
   const [searchQuery, setSearchQuery] = useState(initialRoute.searchQuery);
   const [showSavedOnly, setShowSavedOnly] = useState(false);
@@ -158,7 +170,7 @@ export function useViewMode() {
     setShowStudio(false);
     setShowLeaderboard(false);
     setShowRewardsModal(false);
-  }, []);
+  }, [setViewMode]);
 
   const hasCanonicalSubpath = canonicalPath !== '/';
 
@@ -291,6 +303,7 @@ export function useViewMode() {
     showStudio,
     theaterMemeId,
     handleCloseTheater,
+    setViewMode,
     viewMode,
     category,
     searchQuery

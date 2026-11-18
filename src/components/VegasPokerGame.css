@@ -491,15 +491,106 @@
   color: var(--tm-cyan-hot);
 }
 
-@media (max-width: 520px) {
+@media (max-width: 860px) {
+  .tm-pk-cabinet {
+    padding: 6px 8px 8px;
+    gap: 5px;
+    border-radius: 14px;
+  }
+
+  .tm-pk-topbar {
+    gap: 4px;
+  }
+
+  .tm-pk-pill {
+    font-size: 10px;
+    padding: 2px 7px;
+  }
+
+  .tm-pk-cashout-btn {
+    min-height: 32px;
+    padding: 3px 10px;
+    font-size: 11px;
+  }
+
+  .tm-pk-opponents {
+    gap: 5px;
+  }
+
+  .tm-pk-seat,
+  .tm-pk-player-seat {
+    padding: 5px 8px;
+    border-radius: 11px;
+  }
+
+  .tm-pk-seat-head {
+    font-size: 11px;
+    margin-bottom: 3px;
+  }
+
+  .tm-pk-felt {
+    padding: 7px 6px;
+    gap: 6px;
+    border-radius: 16px;
+  }
+
+  .tm-pk-board {
+    gap: 4px;
+  }
+
   .tm-pk-card,
   .tm-pk-card-slot {
-    width: 46px;
-    height: 66px;
+    width: 44px;
+    height: 62px;
     padding: 3px 4px;
   }
 
+  .tm-pk-seat.bot .tm-pk-card,
+  .tm-pk-seat.bot .tm-pk-card-slot {
+    width: 34px;
+    height: 48px;
+  }
+
+  .tm-pk-controls,
+  .tm-pk-idle-controls,
+  .tm-pk-turn-controls {
+    gap: 5px;
+  }
+
+  .tm-pk-buyin-row,
+  .tm-pk-raise-sizes {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    scrollbar-width: none;
+  }
+
+  .tm-pk-buyin-row::-webkit-scrollbar,
+  .tm-pk-raise-sizes::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tm-pk-chip-btn,
+  .tm-pk-size-pill {
+    flex-shrink: 0;
+    min-height: 36px;
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+
+  .tm-pk-deal-btn {
+    min-height: 44px;
+    font-size: 13px;
+  }
+
   .tm-pk-action-buttons {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .tm-pk-act-btn {
+    min-height: 44px;
+    font-size: 11px;
+    padding: 4px;
   }
 }

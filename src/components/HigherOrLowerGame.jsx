@@ -148,7 +148,7 @@ export default function HigherOrLowerGame({
   };
 
   const handleShareStreak = async () => {
-    const shareText = `⬆️⬇️ HIGHER OR LOWER — Meme Edition\n🔥 Streak: ${streak} (Best: ${bestStreak})\nCan you beat me? https://thememes.net/games/higher-or-lower`;
+    const shareText = `⬆️⬇️ HIGHER OR LOWER — Meme Edition\n🔥 Streak: ${streak} (Best: ${bestStreak})\nCan you beat me? https://thememes.net/games/higher-or-lower?ref=score`;
     try {
       if (navigator.share && typeof window !== 'undefined' && window.innerWidth <= 860) {
         await navigator.share({ title: 'Meme Higher or Lower Streak', text: shareText });

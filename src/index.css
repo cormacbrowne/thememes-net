@@ -3808,6 +3808,9 @@ html {
 }
 
 .tm-fixed-game-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   background: transparent;
   border: 1px solid var(--tm-night-3);
   color: var(--tm-text-dim);
@@ -3864,8 +3867,11 @@ html {
 
 @media (max-width: 640px) {
   .tm-fixed-arcade-bar {
-    gap: 5px;
-    padding: 0 6px;
+    gap: 3px;
+    padding: 0 5px;
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow: hidden;
   }
 
   .tm-fixed-game-pills {
@@ -3873,13 +3879,47 @@ html {
   }
 
   .tm-fixed-back-btn {
-    padding: 4px 8px;
+    padding: 4px 6px;
     font-size: 11px;
+    gap: 3px;
+    flex-shrink: 0;
+  }
+
+  .tm-fixed-bar-right {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: flex-end;
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tm-fixed-bar-right::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tm-fixed-bar-right .tm-fixed-icon-btn {
+    min-width: 30px;
+    width: 30px;
+    min-height: 32px;
+    height: 32px;
+    flex-shrink: 0;
   }
 
   .tm-fixed-wallet-pill {
-    padding: 3px 7px;
-    font-size: 11px;
+    padding: 3px 6px;
+    font-size: 10.5px;
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .tm-fixed-home-btn span {
+    display: none;
+  }
+
+  .tm-fixed-home-btn {
+    padding: 4px 7px;
   }
 }
 

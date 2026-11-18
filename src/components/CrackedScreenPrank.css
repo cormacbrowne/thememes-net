@@ -322,3 +322,63 @@
   width: 30vmin;
   height: 24vmin;
 }
+
+/* Holes in the glass: circuit board with arcing chips (owner brief 18 Nov 2026) */
+.tm-crack-chip.is-arcing .tm-crack-chip-glow {
+  animation: tmChipArc 2.6s steps(1) infinite;
+}
+
+@keyframes tmChipArc {
+  0%,
+  70%,
+  100% {
+    fill: rgba(255, 190, 90, 0);
+  }
+  72% {
+    fill: rgba(150, 220, 255, 0.85);
+  }
+  76% {
+    fill: rgba(255, 190, 90, 0.4);
+  }
+  82% {
+    fill: rgba(255, 190, 90, 0);
+  }
+}
+
+.tm-crack.is-still .tm-crack-chip-glow {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tm-crack-chip-glow {
+    animation: none;
+  }
+}
+
+.tm-crack-fs-note {
+  margin: 0 0 10px;
+  padding: 9px 11px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 184, 0, 0.45);
+  background: rgba(255, 184, 0, 0.08);
+  font-size: 13px;
+  line-height: 1.45;
+  color: #fff1c9;
+}
+
+.tm-crack-fs-note.is-good {
+  border-color: rgba(61, 255, 154, 0.45);
+  background: rgba(61, 255, 154, 0.08);
+  color: #d9ffec;
+}
+
+.tm-crack-fs-note ol {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  color: inherit;
+}
+
+.tm-crack-start {
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+}

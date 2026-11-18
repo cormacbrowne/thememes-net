@@ -115,7 +115,36 @@ function buildImpact(cx, cy, w, h, seed, scale = 1) {
     for (let i = 1; i < Math.min(pts.length, 6); i += 1) sparkPoints.push(pts[i]);
   });
 
-  return { id: seed, cx, cy, lines, branches, rings, shards, sparkPoints, radials };
+  // Owner brief 18 Nov 2026: a hole where the glass and screen have fallen out, showing the
+  // circuit board with a couple of chips arcing. Bigger for the first impact than for taps.
+  const holeR = (scale >= 1 ? 92 : 40) * Math.max(0.8, Math.min(1.4, scale));
+  const holeN = 20;
+  const hole = [];
+  for (let i = 0; i < holeN; i += 1) {
+    const ang = (i / holeN) * Math.PI * 2 + (rand() - 0.5) * 0.35;
+    const r = holeR * (i % 2 ? 0.5 + rand() * 0.25 : 0.8 + rand() * 0.45);
+    hole.push([cx + Math.cos(ang) * r, cy + Math.sin(ang) * r]);
+  }
+  const holePoints = hole.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+  const chipCount = scale >= 1 ? 3 : 1;
+  const chips = [];
+  for (let i = 0; i < chipCount; i += 1) {
+    const ang = rand() * Math.PI * 2;
+    const r = holeR * (i === 0 ? 0.1 : 0.36 + rand() * 0.12);
+    const cw = (i === 0 ? 40 : 22) * Math.min(1.2, Math.max(0.7, scale));
+    chips.push({
+      x: cx + Math.cos(ang) * r,
+      y: cy + Math.sin(ang) * r,
+      w: cw,
+      h: cw * (i === 0 ? 1 : 0.7),
+      rot: Math.round((rand() - 0.5) * 30),
+      label: ['A19', 'PMU', 'NAND', 'RF', 'U2'][Math.floor(rand() * 5)],
+      arc: i < 2
+    });
+  }
+  const chipPoints = chips.filter((c) => c.arc).map((c) => [c.x, c.y]);
+
+  return { id: seed, cx, cy, lines, branches, rings, shards, sparkPoints, radials, holePoints, chips, chipPoints };
 }
 
 function pointAtDistance(pts, dist) {
@@ -179,6 +208,19 @@ export default function CrackedScreenPrank({ device = 'phone' }) {
   }, [w, h, isTablet]);
 
   const [extraImpacts, setExtraImpacts] = useState([]);
+
+  // Black browser bars / status bar while the prank runs, so whatever chrome Safari keeps blends in.
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    const prev = meta?.getAttribute('content');
+    meta?.setAttribute('content', '#000000');
+    const prevBg = document.documentElement.style.backgroundColor;
+    document.documentElement.style.backgroundColor = '#000';
+    return () => {
+      if (meta && prev) meta.setAttribute('content', prev);
+      document.documentElement.style.backgroundColor = prevBg;
+    };
+  }, []);
   const impacts = useMemo(() => [firstImpact, ...extraImpacts], [firstImpact, extraImpacts]);
 
   useEffect(() => {
@@ -223,6 +265,10 @@ export default function CrackedScreenPrank({ device = 'phone' }) {
     const randomSparkPoint = () => {
       const list = impactsRef.current;
       const imp = list[Math.floor(Math.random() * list.length)];
+      if (imp?.chipPoints?.length && Math.random() < 0.6) {
+        const c = imp.chipPoints[Math.floor(Math.random() * imp.chipPoints.length)];
+        return [c[0] + (Math.random() - 0.5) * 10, c[1] + (Math.random() - 0.5) * 10];
+      }
       if (!imp?.sparkPoints.length) return null;
       return imp.sparkPoints[Math.floor(Math.random() * imp.sparkPoints.length)];
     };
@@ -230,6 +276,11 @@ export default function CrackedScreenPrank({ device = 'phone' }) {
     burstRef.current = (x, y) => emit(x, y, 70, 1.5);
 
     const makeArc = () => {
+      const first = impactsRef.current[0];
+      if (first?.chipPoints?.length >= 2 && Math.random() < 0.65) {
+        const [p, q] = first.chipPoints;
+        return { a: p, b: q, life: 0, max: 0.2 + Math.random() * 0.2 };
+      }
       const a = randomSparkPoint();
       if (!a) return null;
       const ang = Math.random() * Math.PI * 2;
@@ -370,6 +421,60 @@ export default function CrackedScreenPrank({ device = 'phone' }) {
 
       {/* Glass */}
       <svg className="tm-crack-glass" viewBox={`0 0 ${w} ${h}`} width={w} height={h} aria-hidden="true">
+        <defs>
+          <pattern id="tm-pcb" width="90" height="90" patternUnits="userSpaceOnUse">
+            <rect width="90" height="90" fill="#0a3a22" />
+            <path
+              d="M0 12 H34 L44 22 H90 M8 0 V30 L18 40 V90 M60 0 V18 L70 28 V58 L82 70 H90 M0 64 H24 L34 74 H54 V90 M40 38 H58 L66 46"
+              stroke="#c9a640"
+              strokeWidth="1.4"
+              fill="none"
+              opacity="0.85"
+            />
+            <path d="M0 48 H14 M74 0 V10 M50 52 V64 M28 84 H40" stroke="#6fbf73" strokeWidth="0.8" opacity="0.6" />
+            {[[34, 12], [8, 30], [70, 58], [24, 64], [58, 38], [44, 22]].map(([x, y]) => (
+              <circle key={`${x}-${y}`} cx={x} cy={y} r="2.2" fill="#0a3a22" stroke="#e2c15a" strokeWidth="1.2" />
+            ))}
+            <rect x="48" y="66" width="10" height="5" fill="#2b2b2b" />
+            <rect x="12" y="44" width="6" height="3" fill="#8a6d3b" />
+            <rect x="76" y="34" width="4" height="8" fill="#555" />
+          </pattern>
+          <radialGradient id="tm-hole-shade">
+            <stop offset="55%" stopColor="rgba(0,0,0,0)" />
+            <stop offset="100%" stopColor="rgba(0,0,0,0.75)" />
+          </radialGradient>
+          <mask id="tm-glass-mask" maskUnits="userSpaceOnUse" x="0" y="0" width={w} height={h}>
+            <rect width={w} height={h} fill="#fff" />
+            {impacts.map((imp) => (
+              <polygon key={imp.id} points={imp.holePoints} fill="#000" />
+            ))}
+          </mask>
+        </defs>
+        {impacts.map((imp) => (
+          <g key={`hole-${imp.id}`} className="tm-crack-hole">
+            <polygon points={imp.holePoints} fill="url(#tm-pcb)" />
+            <polygon points={imp.holePoints} fill="url(#tm-hole-shade)" />
+            {imp.chips.map((c, i) => (
+              <g
+                key={i}
+                transform={`translate(${c.x.toFixed(1)} ${c.y.toFixed(1)}) rotate(${c.rot})`}
+                className={c.arc ? 'tm-crack-chip is-arcing' : 'tm-crack-chip'}
+                style={{ animationDelay: `${i * 0.9}s` }}
+              >
+                <rect x={-c.w / 2 - 3} y={-c.h / 2 - 3} width={c.w + 6} height={c.h + 6} fill="none" stroke="#b8b8b8" strokeWidth="1.2" strokeDasharray="1.5 2" />
+                <rect x={-c.w / 2} y={-c.h / 2} width={c.w} height={c.h} rx="1.5" fill="#141414" stroke="#333" />
+                <circle cx={-c.w / 2 + 3} cy={-c.h / 2 + 3} r="1.2" fill="#555" />
+                <text x="0" y="2" textAnchor="middle" fontSize={Math.max(4, c.w / 5)} fill="#9a9a9a" fontFamily="monospace">
+                  {c.label}
+                </text>
+                {c.arc && <circle className="tm-crack-chip-glow" r={c.w * 0.45} fill="rgba(255,190,90,0.0)" />}
+              </g>
+            ))}
+            <polygon points={imp.holePoints} fill="none" stroke="rgba(0,0,0,0.9)" strokeWidth="3.5" />
+            <polygon points={imp.holePoints} fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="0.9" />
+          </g>
+        ))}
+        <g mask="url(#tm-glass-mask)">
         {impacts.map((imp) => (
           <g key={imp.id}>
             {imp.shards.map((s, i) => (
@@ -394,9 +499,9 @@ export default function CrackedScreenPrank({ device = 'phone' }) {
                 <path key={`r${i}`} d={d} className="is-thin" />
               ))}
             </g>
-            <circle cx={imp.cx} cy={imp.cy} r="5" className="tm-crack-core" />
           </g>
         ))}
+        </g>
       </svg>
 
       <canvas ref={canvasRef} className="tm-crack-sparks" style={{ width: w, height: h }} aria-hidden="true" />

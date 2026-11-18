@@ -17,6 +17,34 @@ const DISGUISE_MODES = [
 
 const CRACK_IDS = new Set(['crackphone', 'crackpad']);
 
+// Full screen for the cracked-screen pranks. iPhone Safari does not let web pages go full screen
+// (iPad, Android and desktop do), so there we explain the Home Screen / Hide Toolbar routes.
+const fsElement = () =>
+  typeof document !== 'undefined' ? document.fullscreenElement || document.webkitFullscreenElement || null : null;
+const canGoFullscreen = () =>
+  typeof document !== 'undefined' && Boolean(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+const isStandaloneApp = () =>
+  typeof window !== 'undefined' &&
+  (window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true);
+function enterFullscreen() {
+  const el = document.documentElement;
+  try {
+    if (el.requestFullscreen) return el.requestFullscreen({ navigationUI: 'hide' }).catch(() => {});
+    if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  } catch {
+    // ignore
+  }
+  return undefined;
+}
+function exitFullscreen() {
+  try {
+    if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  } catch {
+    // ignore
+  }
+}
+
 const INITIAL_EXCEL_ROWS = [
   ['Q1-2026', 'North America Cloud Ops', '$1,420,690.00', '$1,380,110.00', '+2.94%', 'On Track', 'A. Vance'],
   ['Q2-2026', 'Cross-Platform Synergy KPI', '$892,400.00', '$910,000.00', '-1.93%', 'Under Review', 'S. Jenkins'],
@@ -227,6 +255,9 @@ export default function BossKeyOverlay({
         setCrackSheet('menu');
       }
     };
+    const fsOk = canGoFullscreen();
+    const inApp = isStandaloneApp();
+    const deviceName = disguise === 'crackpad' ? 'iPad' : 'iPhone';
     return (
       <div className="tm-boss-overlay tm-boss-overlay--crack" role="dialog" aria-label="Cracked screen prank">
         <CrackedScreenPrank key={disguise} device={disguise === 'crackpad' ? 'tablet' : 'phone'} />
@@ -240,9 +271,27 @@ export default function BossKeyOverlay({
           <div className="tm-crack-start" onPointerUp={(e) => e.stopPropagation()}>
             {crackSheet === 'start' ? (
               <>
-                <h2>{disguise === 'crackpad' ? 'Cracked iPad prank' : 'Cracked iPhone prank'}</h2>
+                <h2>Cracked {deviceName} prank</h2>
+                {inApp ? (
+                  <p className="tm-crack-fs-note is-good">✓ You&apos;re in the Home Screen app, so it&apos;s already full screen.</p>
+                ) : fsOk ? (
+                  <p className="tm-crack-fs-note is-good">Tap <strong>Full screen</strong>: every bar disappears and the cracks go edge to edge.</p>
+                ) : (
+                  <div className="tm-crack-fs-note">
+                    <strong>iPhone Safari won&apos;t let websites go full screen.</strong> Two ways round it:
+                    <ol>
+                      <li>
+                        <strong>Best:</strong> tap Share <span aria-hidden="true">⬆</span> ▸ <strong>Add to Home Screen</strong>. Open
+                        THE MEMES from your Home Screen, then Play ▸ Pranks ▸ Cracked {deviceName}. No bars at all.
+                      </li>
+                      <li>
+                        <strong>Quick:</strong> tap the <strong>aA</strong> / <strong>⋯</strong> button in Safari&apos;s address bar ▸{' '}
+                        <strong>Hide Toolbar</strong>.
+                      </li>
+                    </ol>
+                  </div>
+                )}
                 <ol>
-                  <li>Tap <strong>Start</strong>. On iPhone, add the site to your Home Screen first for a true full screen.</li>
                   <li>Leave it on the table, or hand it over: &ldquo;I just dropped it&hellip;&rdquo;</li>
                   <li>Every tap cracks it more and spits sparks.</li>
                   <li>To get out: triple-tap the <strong>top-left corner</strong>, or press Esc.</li>
@@ -251,18 +300,27 @@ export default function BossKeyOverlay({
                   <button type="button" onClick={onExitBossMode}>
                     Back
                   </button>
-                  <button
-                    type="button"
-                    className="is-go"
-                    onClick={() => {
-                      setCrackSheet(null);
-                      if (!document.fullscreenElement) {
-                        document.documentElement.requestFullscreen?.().catch(() => {});
-                      }
-                    }}
-                  >
-                    Start
-                  </button>
+                  {fsOk && !inApp ? (
+                    <>
+                      <button type="button" onClick={() => setCrackSheet(null)}>
+                        Start
+                      </button>
+                      <button
+                        type="button"
+                        className="is-go"
+                        onClick={() => {
+                          setCrackSheet(null);
+                          if (!fsElement()) enterFullscreen();
+                        }}
+                      >
+                        ⛶ Full screen
+                      </button>
+                    </>
+                  ) : (
+                    <button type="button" className="is-go" onClick={() => setCrackSheet(null)}>
+                      Start
+                    </button>
+                  )}
                 </div>
               </>
             ) : (
@@ -275,12 +333,31 @@ export default function BossKeyOverlay({
                   <button type="button" onClick={handleSharePrankScreen}>
                     {copiedPrankLink ? 'Link copied' : 'Share'}
                   </button>
+                  {fsOk && !inApp && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (fsElement()) exitFullscreen();
+                        else enterFullscreen();
+                        setCrackSheet(null);
+                      }}
+                    >
+                      {fsElement() ? 'Exit full screen' : '⛶ Full screen'}
+                    </button>
+                  )}
                 </div>
                 <div className="tm-crack-start-actions" style={{ marginTop: 8 }}>
                   <button type="button" onClick={() => setCrackSheet(null)}>
                     Keep pranking
                   </button>
-                  <button type="button" className="is-go" onClick={onExitBossMode}>
+                  <button
+                    type="button"
+                    className="is-go"
+                    onClick={() => {
+                      if (fsElement()) exitFullscreen();
+                      onExitBossMode();
+                    }}
+                  >
                     Exit prank
                   </button>
                 </div>

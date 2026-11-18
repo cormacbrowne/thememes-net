@@ -28,7 +28,7 @@
 ## 00. 🧹 Phase 36: "Meme core first" — remaining items (completed 36.1–36.12 moved to `docs/HISTORY.md`)
 
 - [ ] **36.6b Deploy `submit-caption-entry`** with the new `_shared/identity.js` (not redeployed yet; only matters for Google accounts with no handle entering the daily caption battle).
-- [ ] **Live DB migration pending apply:** `supabase/migrations/20261117000003_game_ratings.sql` (1–5★ community game ratings table & `rate_game` / `get_game_ratings` RPCs; client works offline/localStorage until pushed via `supabase db push`).
+- [x] **Game ratings DB migration applied live (18 Nov 2026):** Applied `supabase/migrations/20261117000003_game_ratings.sql` to `otvvphmjojqyjaznjzyo` production (`game_ratings` RLS enabled, `rate_game` + `get_game_ratings` RPCs active, REST `get_game_ratings` verified HTTP 200).
 - **36.V Safe video uploads — Stage 2 (waiting for owner pick):** Stage 1 (`V1`–`V6`, moderator review queue) is shipped & archived in `docs/HISTORY.md`. Stage 2 auto-approval options remain: Cloudflare Stream (Option A, recommended >10 videos/day), Mux (Option B), or own ffmpeg worker (Option C).
 
 ---

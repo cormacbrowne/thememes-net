@@ -460,7 +460,8 @@ thememes-net/
 ├── eslint.config.js                   # Flat ESLint 10 config for JS/JSX + React Hooks/Refresh
 ├── instructions.md                    # This architectural summary, decisions log & phased roadmap
 ├── public/
-│   ├── favicon.svg                    # Pink "M" neon tube + amber zap underline vector icon (from neonSignPaths.js)
+│   ├── favicon.svg                    # 1:1 square pink "M" neon tube + amber zap vector icon (from neonSignPaths.js)
+│   ├── favicon.ico                    # Multi-resolution 16/32/48px ICO for Bing & legacy crawlers
 │   ├── logo-512.png                   # High-Res 512x512 Neon "M" Tube Logo for PWA & Schema.org
 │   ├── favicon-192.png                # 192x192 PWA & Android Chrome Icon
 │   ├── favicon-48.png                 # 48x48 Google Search SERP Favicon

@@ -22,16 +22,18 @@ function buildFaviconSvg() {
       pink: { off: '#3d1028', core: '#ff2e88', hot: '#ffd9ea' },
       amber: { off: '#3d2c05', core: '#ffb800', hot: '#fff1c9' }
     }[colour];
-    return `  <g transform="translate(${x} ${y})" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <path d="${d}" stroke="${map.off}" stroke-width="${w + 1.8}" />
-    <path d="${d}" stroke="${map.core}" stroke-width="${w}" />
-    <path d="${d}" stroke="${map.hot}" stroke-width="${(w * 0.36).toFixed(2)}" />
-  </g>`;
+    return `    <g transform="translate(${x} ${y})" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="${d}" stroke="${map.off}" stroke-width="${w + 1.8}" />
+      <path d="${d}" stroke="${map.core}" stroke-width="${w}" />
+      <path d="${d}" stroke="${map.hot}" stroke-width="${(w * 0.36).toFixed(2)}" />
+    </g>`;
   }).join('\n');
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 76" role="img" aria-label="THE MEMES.net">
-  <rect x="0" y="0" width="64" height="76" rx="14" fill="#07060f" />
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 92 92" role="img" aria-label="THE MEMES.net">
+  <rect x="0" y="0" width="92" height="92" rx="20" fill="#07060f" />
+  <g transform="translate(14 8)">
 ${tubeGroups}
+  </g>
 </svg>
 `;
 }
@@ -333,8 +335,51 @@ function renderOgCard() {
   return encodePng(W, H, buf);
 }
 
+function encodeIco(entries) {
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(entries.length, 4);
+
+  const dir = Buffer.alloc(entries.length * 16);
+  let offset = header.length + dir.length;
+  const images = [];
+
+  for (let i = 0; i < entries.length; i += 1) {
+    const { size, png } = entries[i];
+    const base = i * 16;
+    dir[base] = size >= 256 ? 0 : size;
+    dir[base + 1] = size >= 256 ? 0 : size;
+    dir[base + 2] = 0;
+    dir[base + 3] = 0;
+    dir.writeUInt16LE(1, base + 4);
+    dir.writeUInt16LE(32, base + 6);
+    dir.writeUInt32LE(png.length, base + 8);
+    dir.writeUInt32LE(offset, base + 12);
+    offset += png.length;
+    images.push(png);
+  }
+
+  return Buffer.concat([header, dir, ...images]);
+}
+
 fs.writeFileSync(path.join(PUBLIC_DIR, 'favicon.svg'), buildFaviconSvg(), 'utf8');
 console.log('Wrote public/favicon.svg');
+
+const iconPngBySize = new Map();
+for (const size of [16, 32, 48, 180, 192, 512]) {
+  iconPngBySize.set(size, renderTubeIcon(size));
+}
+
+fs.writeFileSync(
+  path.join(PUBLIC_DIR, 'favicon.ico'),
+  encodeIco([
+    { size: 16, png: iconPngBySize.get(16) },
+    { size: 32, png: iconPngBySize.get(32) },
+    { size: 48, png: iconPngBySize.get(48) }
+  ])
+);
+console.log('Wrote public/favicon.ico');
 
 for (const [name, sz] of [
   ['favicon-48.png', 48],
@@ -342,7 +387,7 @@ for (const [name, sz] of [
   ['favicon-192.png', 192],
   ['logo-512.png', 512]
 ]) {
-  fs.writeFileSync(path.join(PUBLIC_DIR, name), renderTubeIcon(sz));
+  fs.writeFileSync(path.join(PUBLIC_DIR, name), iconPngBySize.get(sz));
   console.log(`Wrote public/${name}`);
 }
 

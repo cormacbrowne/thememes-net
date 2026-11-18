@@ -17,6 +17,7 @@ export default function MobileArcadeDock({
     'pusher',
     'blackjack',
     'poker',
+    'thousand',
     'roulette',
     'slots',
     'crush',

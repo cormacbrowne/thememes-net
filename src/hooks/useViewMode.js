@@ -22,6 +22,7 @@ import { isJuiceDisabled } from '../utils/juice';
 const FIXED_ARCADE_GAMES = [
   'blackjack',
   'poker',
+  'thousand',
   'roulette',
   'pusher',
   'slots',

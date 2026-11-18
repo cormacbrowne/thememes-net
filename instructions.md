@@ -25,6 +25,16 @@
 
 ---
 
+## 000-1000. 1000 (Tysiąc) card game — 18 Nov 2026 (late) — done
+
+- [x] **New game `thousand`** at `/games/1000-card-game` (Vegas Room lobby card, quick pill "1000", SEO route, footer link, GameIcon). Solo: you + 1–3 computers, Relaxed / Sharp; auto-saves to `tm_1000_save_v1` (Resume on the setup screen), win record in `tm_1000_stats_v1`. Free play, no MemeDollarz.
+- **Multiplayer:** `MP_GAMES.thousand` (2–4 seats). First game with **computer players in rooms**: generic `maxBots` on a game def shows a "Computer players" picker to the host and passes `{ bots }` as the third arg of `def.start`; bots are seats with `bot: true` run by the host's tick. `hasRules` → 📖 Rules button in the lobby (`RULES` map in `MultiplayerRoom.jsx`). 60 s turn timer; timed-out / away humans are played by the AI.
+- **Code:** rules `src/utils/thousand/thousandRules.js`, engine `thousandEngine.js` (pure, same code for solo + rooms), AI + Hint coach `thousandAI.js` (Sharp = Monte Carlo over the cards the seat can't see, using only what it legitimately knows; ~40 ms worst case). UI `src/components/ThousandGame.jsx` + `src/components/thousand/` (table, rules, cards, portal modal, one CSS file). Tests `tests/vitest/thousand.test.js`.
+- **Rules used:** Polish Tysiąc — 24 cards, compulsory 100 opening, >120 only with a marriage, musik shown then one card to each opponent (2p: two 2-card musiks, discard 2 that count for the declarer; 4p: dealer sits out), follow suit / must trump / no need to beat, marriages from the 2nd trick, defenders round to 10, barrel at 800 (defence points stop), first to 1000. Not used: bomb, 3-strikes barrel penalty, four-9s redeal.
+- [ ] **Follow-ups (not done):** no OG card (`/og/1000-card-game.png`) yet — route uses `games.png`; optional house-rule toggles (barrel penalty, bomb).
+
+---
+
 ## 000a. Play with friends (multiplayer) — 18 Nov 2026 (night) — done
 
 - [x] **Rooms:** pink **👥 Play Friends** pill on Poker, 21's and Neon Serpent opens a room; the invite link is the game's normal URL + `?room=CODE` (e.g. `/games/poker?room=K7QZP`), shared with the native share sheet / copied. No new routes, no DB tables, no migration.

@@ -71,6 +71,17 @@ export const ARCADE_GAMES_CATALOG = [
     path: '/games/poker'
   },
   {
+    id: 'thousand',
+    group: 'casino',
+    icon: '🃏',
+    label: '1000 (Tysiąc)',
+    pitch: 'The classic bidding card game: musik, marriages & race to 1000. Free vs computer or 2–4 friends.',
+    badge: '2–4 Players',
+    isNew: true,
+    accent: '#ffb800',
+    path: '/games/1000-card-game'
+  },
+  {
     id: 'slots',
     group: 'casino',
     icon: '🎰',

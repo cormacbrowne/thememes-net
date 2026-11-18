@@ -35,6 +35,7 @@ const QUICK_ARCADE_PILLS = [
   { id: 'slots', label: 'Slots' },
   { id: 'blackjack', label: "21's" },
   { id: 'poker', label: 'Poker' },
+  { id: 'thousand', label: '1000' },
   { id: 'roulette', label: 'Roulette' },
   { id: 'bingo', label: "Bingo '86" },
   { id: 'pusher', label: 'Dozer' },
@@ -62,6 +63,7 @@ const VegasPinballGame = lazyWithRetry(() => import('./VegasPinballGame'));
 const VegasSlotMachine = lazyWithRetry(() => import('./VegasSlotMachine'));
 const VegasBlackjackGame = lazyWithRetry(() => import('./VegasBlackjackGame'));
 const VegasPokerGame = lazyWithRetry(() => import('./VegasPokerGame'));
+const ThousandGame = lazyWithRetry(() => import('./ThousandGame'));
 const VegasRouletteGame = lazyWithRetry(() => import('./VegasRouletteGame'));
 const VegasCoinPusherGame = lazyWithRetry(() => import('./VegasCoinPusherGame'));
 const MemeStockMarketGame = lazyWithRetry(() => import('./MemeStockMarketGame'));
@@ -1015,6 +1017,29 @@ export default function GameRouter({
               setViewMode('feed');
             }}
           />
+        </Suspense>
+      )}
+
+      {viewMode === 'thousand' && (
+        <Suspense fallback={<MemeSkeletonGrid count={3} />}>
+          {activeRoom ? (
+            <MultiplayerRoom key={activeRoom.code} game={activeRoom.game} code={activeRoom.code} onLeave={leaveMpRoom} />
+          ) : (
+            <ThousandGame
+              onPlayWithFriends={() => openMpRoom('thousand')}
+              soundOn={soundOn}
+              onToggleSound={() => {
+                const nextState = !soundOn;
+                sfx.enabled = nextState;
+                setSoundOn(nextState);
+                if (nextState) sfx.playToggle();
+              }}
+              onBackToFeed={() => {
+                sfx.playToggle();
+                setViewMode('feed');
+              }}
+            />
+          )}
         </Suspense>
       )}
 

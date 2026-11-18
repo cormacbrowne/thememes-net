@@ -97,6 +97,7 @@ export const GAME_VIEW_MODE_TO_PATH = {
   slots: '/games/slots',
   blackjack: '/games/blackjack',
   poker: '/games/poker',
+  thousand: '/games/1000-card-game',
   roulette: '/games/roulette',
   crush: '/games/meme-crush',
   stocks: '/games/meme-stock-market',
@@ -451,6 +452,24 @@ export const SEO_ROUTES = [
       "Pull up a chair at Neon Hold'em '86, our fast-paced No-Limit Texas Hold'em poker table right inside THE MEMES.net Cyber-Arcade. Stack free MemeDollarz into glowing neon casino chips, rotate the Dealer button automatically against two distinct AI card sharks, and compete across full Pre-Flop, Flop, Turn, River, and Showdown streets without downloads, deposits, or sign-ups.",
       'Built with a crisp 52-card deck shuffler and complete 7-card best-five hand evaluator spanning High Card through Royal Flush, every hand gives you instant best-hand hints alongside authentic Check, Call, Bet, Raise, Fold, and ALL IN controls. Choose stacked chip buy-ins starting at M$2.50, track live pot sizes visually in stacked casino chips, and hear crisp felt knocks and chip clinks.',
       "Cash out your table chip stack back into your Wallet at any break between hands, or flip effortlessly into risk-free Free Practice mode whenever you want unlimited demo chips to sharpen your Texas Hold'em bluffing, pot-odds sizing, and aggressive showdown strategy on iPhone, iPad, or desktop screens."
+    ]
+  },
+  {
+    path: '/games/1000-card-game',
+    title: '1000 Card Game Online — Play Tysiąc Free vs Computer or Friends | THE MEMES.net',
+    description:
+      'Play 1000 (Tysiąc / Thousand), the classic bidding and trick-taking card game, free online. 2–4 players vs a smart computer or friends with an invite link, plus full rules, card values and a hint coach.',
+    h1: '1000 (Tysiąc) — Free Online Card Game for 2–4 Players',
+    kicker: 'Bid • Musik • Marriages • Race to 1000',
+    changefreq: 'weekly',
+    priority: '0.85',
+    viewMode: 'thousand',
+    category: 'all',
+    ogImage: 'https://www.thememes.net/og/games.png',
+    introParagraphs: [
+      "1000 (Tysiąc in Polish, Тысяча in Russian) is the family card game played with a 24-card deck of nines up to aces. Players bid for how many points they can win, the winner takes the musik and has to make their bid, and King-Queen marriages score bonus points and set the trump suit. First to a thousand wins.",
+      'Play solo against one, two or three computer opponents — relaxed or sharp — or tap Play Friends to send a link and play together in real time with up to four people, filling empty seats with computer players if you like.',
+      'Not sure of the rules? The built-in rules page explains card values (Ace 11, Ten 10, King 4, Queen 3, Jack 2, Nine 0), marriages, bidding, the musik, scoring and the barrel at 800, and the Hint button suggests a move and explains why — a great way to brush up before the next family game night.'
     ]
   },
   {
@@ -1079,6 +1098,7 @@ export function resolveRouteFromLocation(pathname = '/', search = '') {
     'bingo',
     'blackjack',
     'poker',
+    'thousand',
     'roulette',
     'pusher',
     'slots',

@@ -267,6 +267,13 @@ export default function SeoDiscoveryFooter({
                 🟡 Neon Hold&apos;em &apos;86 Texas Poker (Chips &amp; Tokens)
               </a>
               <a
+                href="/games/1000-card-game"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('thousand'))}
+              >
+                🃏 1000 (Tysiąc) Card Game — vs Computer or Friends
+              </a>
+              <a
                 href="/games/roulette"
                 className="tm-seo-link"
                 onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('roulette'))}

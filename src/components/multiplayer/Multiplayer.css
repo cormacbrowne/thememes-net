@@ -155,6 +155,16 @@
   color: var(--tm-text-dim);
 }
 
+.tm-mp-bots {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 12px;
+}
+.tm-mp-bots .tm-mp-label {
+  margin: 0 4px 0 0;
+}
 .tm-mp-lobby-actions {
   display: flex;
   flex-wrap: wrap;

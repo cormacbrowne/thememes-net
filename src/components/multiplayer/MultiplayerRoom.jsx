@@ -9,8 +9,11 @@ import './Multiplayer.css';
 const MpPokerTable = lazy(() => import('./MpPokerTable'));
 const MpTwentyOneTable = lazy(() => import('./MpTwentyOneTable'));
 const MpSerpentArena = lazy(() => import('./MpSerpentArena'));
+const MpThousandTable = lazy(() => import('./MpThousandTable'));
+const ThousandRules = lazy(() => import('../thousand/ThousandRules'));
 
-const BOARDS = { poker: MpPokerTable, blackjack: MpTwentyOneTable, serpent: MpSerpentArena };
+const BOARDS = { poker: MpPokerTable, blackjack: MpTwentyOneTable, serpent: MpSerpentArena, thousand: MpThousandTable };
+const RULES = { thousand: ThousandRules };
 const HEARTBEAT_MS = 4000;
 
 function InviteButton({ game, code, myName, compact = false }) {
@@ -66,6 +69,13 @@ export default function MultiplayerRoom({ game, code, onLeave }) {
 
   const { seated, watching } = useMemo(() => splitSeats(players, def.maxPlayers), [players, def.maxPlayers]);
   const host = players.find((p) => p.id === hostId);
+  // Computer players the host adds to fill empty seats (games with `maxBots` only).
+  const [botPick, setBotPick] = useState(0);
+  const [rulesOpen, setRulesOpen] = useState(false);
+  const botRoom = def.maxBots ? Math.max(0, Math.min(def.maxBots, def.maxPlayers - seated.length)) : 0;
+  const prevBots = gameState?.seats ? gameState.seats.filter((x) => x.bot).length : null;
+  const bots = Math.min(botRoom, prevBots ?? botPick);
+  const tableSize = seated.length + bots;
   const lastPublishRef = useRef(0);
 
   const publish = useCallback(
@@ -77,11 +87,11 @@ export default function MultiplayerRoom({ game, code, onLeave }) {
   );
 
   const startGame = useCallback(() => {
-    if (!isHost || seated.length < def.minPlayers) return;
+    if (!isHost || tableSize < def.minPlayers) return;
     sfx.playCoinInsert?.();
-    pulse('game_start', { game: `mp_${game}`, players: seated.length });
-    publish(def.start(seated, Date.now()));
-  }, [isHost, seated, def, game, publish]);
+    pulse('game_start', { game: `mp_${game}`, players: seated.length, bots });
+    publish(def.start(seated, Date.now(), { bots }));
+  }, [isHost, seated, def, game, publish, bots, tableSize]);
 
   const backToLobby = useCallback(() => {
     if (!isHost) return;
@@ -214,19 +224,51 @@ export default function MultiplayerRoom({ game, code, onLeave }) {
               </p>
             )}
 
+            {isHost && botRoom > 0 && (
+              <div className="tm-mp-bots" role="radiogroup" aria-label="Computer players">
+                <span className="tm-mp-label">Computer players</span>
+                {Array.from({ length: botRoom + 1 }, (_, n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    role="radio"
+                    aria-checked={bots === n}
+                    className={`tm-mp-chip-btn ${bots === n ? 'is-on' : ''}`}
+                    onClick={() => {
+                      sfx.playPop?.(1);
+                      setBotPick(n);
+                    }}
+                    data-testid={`mp-bots-${n}`}
+                  >
+                    {n === 0 ? 'None' : `🤖 ${n}`}
+                  </button>
+                ))}
+              </div>
+            )}
+            {!isHost && def.maxBots > 0 && (
+              <p className="tm-mp-fine">The host can add computer players to fill empty seats.</p>
+            )}
+
             <div className="tm-mp-lobby-actions">
               <InviteButton game={game} code={code} myName={profile.name} />
+              {RULES[game] && (
+                <button type="button" className="tm-mp-chip-btn" onClick={() => setRulesOpen(true)} data-testid="mp-rules-btn">
+                  📖 Rules
+                </button>
+              )}
               {isHost ? (
                 <button
                   type="button"
                   className="tm-mp-go"
-                  disabled={seated.length < def.minPlayers}
+                  disabled={tableSize < def.minPlayers}
                   onClick={startGame}
                   data-testid="mp-start-btn"
                 >
-                  {seated.length < def.minPlayers
-                    ? `Need ${def.minPlayers - seated.length} more player${def.minPlayers - seated.length === 1 ? '' : 's'}`
-                    : `▶ Start with ${seated.length}`}
+                  {tableSize < def.minPlayers
+                    ? `Need ${def.minPlayers - tableSize} more player${def.minPlayers - tableSize === 1 ? '' : 's'}`
+                    : bots > 0
+                      ? `▶ Start with ${seated.length} + ${bots} 🤖`
+                      : `▶ Start with ${seated.length}`}
                 </button>
               ) : (
                 <p className="tm-mp-waiting" data-testid="mp-waiting">
@@ -289,12 +331,23 @@ export default function MultiplayerRoom({ game, code, onLeave }) {
             sendAction={sendAction}
             onRematch={startGame}
             onLobby={backToLobby}
-            canRematch={isHost && seated.length >= def.minPlayers}
+            canRematch={isHost && tableSize >= def.minPlayers}
           />
+        </Suspense>
+      )}
+
+      {rulesOpen && RULES[game] && (
+        <Suspense fallback={null}>
+          <RulesPanel game={game} onClose={() => setRulesOpen(false)} />
         </Suspense>
       )}
     </section>
   );
+}
+
+function RulesPanel({ game, onClose }) {
+  const Rules = RULES[game];
+  return <Rules onClose={onClose} />;
 }
 
 function isSeatedInState(state, id) {

@@ -9,6 +9,7 @@ const NEON_PALETTES = {
   roulette: { main: '#ff2e88', sec: '#ffb800', hot: '#ffd9ea' },
   blackjack: { main: '#19f0ff', sec: '#ff2e88', hot: '#e2fdff' },
   poker: { main: '#ffb800', sec: '#ff2e88', hot: '#fff1c9' },
+  thousand: { main: '#ffb800', sec: '#19f0ff', hot: '#fff1c9' },
   slots: { main: '#ff2e88', sec: '#ffb800', hot: '#ffd9ea' },
   eightball: { main: '#19f0ff', sec: '#8a3dff', hot: '#e2fdff' },
   derby: { main: '#19f0ff', sec: '#ffb800', hot: '#e2fdff' },
@@ -100,6 +101,16 @@ function renderGameGlyph(id, p) {
           <TubePath d="M24 6 A18 18 0 1 1 23.9 6 Z" color={p.main} hot={p.hot} />
           <TubePath d="M24 6 L24 10 M24 38 L24 42 M6 24 L10 24 M38 24 L42 24 M11 11 L14 14 M34 34 L37 37 M37 11 L34 14 M14 34 L11 37" color={p.sec} hot="#ffd9ea" width={2} />
           <TubePath d="M24 15 C20 20 17 22 17 25.5 C17 28 19.5 29.5 22 28.5 L21 33 L27 33 L26 28.5 C28.5 29.5 31 28 31 25.5 C31 22 28 20 24 15 Z" color={p.sec} hot="#ffd9ea" width={1.9} />
+        </>
+      );
+
+    case 'thousand':
+      // Fanned pair of cards (King + Queen = a marriage) with a heart
+      return (
+        <>
+          <TubePath d="M8 14 L22 10 L27 36 L13 40 Z" color={p.sec} hot="#e2fdff" width={2.1} />
+          <TubePath d="M21 10 L36 12 L34 38 L19 36 Z" color={p.main} hot={p.hot} width={2.2} />
+          <TubePath d="M27.5 28 C23 24.5 23 20.5 25.5 20 C26.8 19.8 27.5 21 27.5 21 C27.5 21 28.3 19.8 29.6 20.1 C32 20.8 31.8 24.6 27.5 28 Z" color="#ff2e88" hot="#ffd9ea" width={1.8} />
         </>
       );
 

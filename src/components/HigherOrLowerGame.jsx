@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef } from 'react';
 import { STARTER_MEMES } from '../data/starterMemes';
+import { readCachedHiddenSeeds } from '../utils/hiddenSeeds';
 import { sfx } from '../utils/soundEngine';
 import { triggerWinCelebration } from '../utils/winCelebration';
 import GameShell from './GameShell';
@@ -35,7 +36,10 @@ function buildMemePool(feedMemes = []) {
     });
   };
   feedMemes.forEach(addItem);
-  STARTER_MEMES.forEach(addItem);
+  // Skip built-in memes hidden in Curate, unless that leaves too few to play with.
+  const hidden = readCachedHiddenSeeds();
+  const seeds = STARTER_MEMES.filter((m) => !hidden.has(String(m.id)));
+  (combined.length + seeds.length >= 6 ? seeds : STARTER_MEMES).forEach(addItem);
   return combined;
 }
 

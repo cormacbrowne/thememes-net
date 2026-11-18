@@ -116,7 +116,9 @@ export async function fetchMemesFeedPage(
   const effectiveCursor = cursor ? { ...cursor, mode } : null;
   const limit = Math.max(1, Math.min(100, Number(pageSize) || FEED_PAGE_SIZE));
 
-  let query = client.from(FEED_VIEW_NAME).select('*');
+  // Approved only. The view runs with the viewer's rights, and moderators / authors may read
+  // removed or pending rows, so without this a moderator's feed showed memes hidden in Curate.
+  let query = client.from(FEED_VIEW_NAME).select('*').eq('status', 'approved');
 
   if (category && category !== 'all' && category !== 'remixes') {
     query = query.eq('category', String(category));

@@ -42,7 +42,7 @@ export default function IphoneAppModal({ onClose }) {
         <div className="tm-modal-sticky-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <img
-              src="/favicon.svg"
+              src="/favicon.svg?v=2"
               alt="THE MEMES 80s Neon App Icon"
               width="34"
               height="34"
@@ -68,7 +68,7 @@ export default function IphoneAppModal({ onClose }) {
         <div className="tm-iphone-hero-preview">
           <div className="tm-iphone-icon-showcase">
             <img
-              src="/favicon.svg"
+              src="/favicon.svg?v=2"
               alt="80s Neon App Home Screen Icon Preview"
               className="tm-iphone-preview-img"
               width="92"

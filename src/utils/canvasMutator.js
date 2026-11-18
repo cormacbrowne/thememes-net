@@ -279,22 +279,33 @@ export function stampArcadeCartridgeFooter(ctx, W, H, opts = {}) {
     ctx.strokeRect(x, y, pillW, pillH);
   }
 
-  // Pink "M" neon tube mark + tiny amber underline
+  // Chrome Outrun "M" mark + amber-to-cyan horizon underline
   const mx = x + pad;
   const cy = y + pillH / 2;
   const mh = fs * 0.92;
   const topY = cy - mh * 0.52;
   const botY = cy + mh * 0.34;
   const midY = cy + mh * 0.02;
+  const hasGrad = typeof ctx.createLinearGradient === 'function';
   ctx.globalAlpha = 0.98;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
 
-  // Pink M outer core + glow + white-hot centre
-  ctx.shadowColor = 'rgba(255, 46, 136, 0.7)';
+  // Chrome Outrun gradient stroke + pink backlight + crisp cyan-white rim
+  let mStroke = '#ff2e88';
+  if (hasGrad) {
+    const mGrad = ctx.createLinearGradient(mx, topY, mx, botY);
+    mGrad.addColorStop(0, '#45e3ff');
+    mGrad.addColorStop(0.46, '#ffffff');
+    mGrad.addColorStop(0.56, '#ff2e88');
+    mGrad.addColorStop(1, '#ffe787');
+    mStroke = mGrad;
+  }
+
+  ctx.shadowColor = 'rgba(255, 46, 136, 0.72)';
   ctx.shadowBlur = Math.max(3, Math.round(fs * 0.32));
-  ctx.strokeStyle = '#ff2e88';
-  ctx.lineWidth = Math.max(1.8, fs * 0.17);
+  ctx.strokeStyle = mStroke;
+  ctx.lineWidth = Math.max(1.8, fs * 0.18);
   ctx.beginPath();
   ctx.moveTo(mx + markW * 0.08, botY);
   ctx.lineTo(mx + markW * 0.08, topY);
@@ -304,13 +315,21 @@ export function stampArcadeCartridgeFooter(ctx, W, H, opts = {}) {
   ctx.stroke();
 
   ctx.shadowBlur = 0;
-  ctx.strokeStyle = '#ffd9ea';
-  ctx.lineWidth = Math.max(0.8, fs * 0.065);
+  ctx.strokeStyle = '#e2fdff';
+  ctx.lineWidth = Math.max(0.75, fs * 0.06);
   ctx.stroke();
 
-  // Tiny amber underline under the M
+  // Amber-to-cyan horizon underline under the M
   const underY = botY + Math.max(2, fs * 0.16);
-  ctx.strokeStyle = '#ffb800';
+  let barStroke = '#ffb800';
+  if (hasGrad) {
+    const barGrad = ctx.createLinearGradient(mx, underY, mx + markW, underY);
+    barGrad.addColorStop(0, '#ffb800');
+    barGrad.addColorStop(0.55, '#ff2e88');
+    barGrad.addColorStop(1, '#19f0ff');
+    barStroke = barGrad;
+  }
+  ctx.strokeStyle = barStroke;
   ctx.lineWidth = Math.max(1.1, fs * 0.1);
   ctx.beginPath();
   ctx.moveTo(mx + markW * 0.06, underY);

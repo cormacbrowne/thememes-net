@@ -86,7 +86,7 @@
 }
 
 .tm-portal-sign .tm-neon-sign--hero {
-  width: min(560px, 88vw);
+  width: min(600px, 90vw);
   filter: drop-shadow(0 0 26px color-mix(in srgb, var(--tm-pink) 30%, transparent));
 }
 
@@ -363,7 +363,7 @@
   }
 
   .tm-portal-sign .tm-neon-sign--hero {
-    width: min(360px, 84vw);
+    width: min(380px, 88vw);
   }
 
   .tm-portal-doors {
@@ -395,7 +395,7 @@
     min-height: 76px;
   }
   .tm-portal-sign .tm-neon-sign--hero {
-    width: min(300px, 74vw);
+    width: min(310px, 78vw);
   }
   .tm-portal-scroll {
     display: none;

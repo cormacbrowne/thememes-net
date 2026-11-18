@@ -1,15 +1,55 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 92 92" role="img" aria-label="THE MEMES.net">
-  <rect x="0" y="0" width="92" height="92" rx="20" fill="#07060f" />
-  <g transform="translate(14 8)">
-    <g transform="translate(10 6)" fill="none" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M0 60 V4 Q0 0 3 4 L21 33 Q22 35 23 33 L41 4 Q44 0 44 4 V60" stroke="#3d1028" stroke-width="7" />
-      <path d="M0 60 V4 Q0 0 3 4 L21 33 Q22 35 23 33 L41 4 Q44 0 44 4 V60" stroke="#ff2e88" stroke-width="5.2" />
-      <path d="M0 60 V4 Q0 0 3 4 L21 33 Q22 35 23 33 L41 4 Q44 0 44 4 V60" stroke="#ffd9ea" stroke-width="1.87" />
-    </g>
-    <g transform="translate(10 70)" fill="none" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M0 0 H17 L21 -4 L25 4 L29 0 H44" stroke="#3d2c05" stroke-width="4.8" />
-      <path d="M0 0 H17 L21 -4 L25 4 L29 0 H44" stroke="#ffb800" stroke-width="3" />
-      <path d="M0 0 H17 L21 -4 L25 4 L29 0 H44" stroke="#fff1c9" stroke-width="1.08" />
-    </g>
+  <defs>
+    <radialGradient id="tmf-halo" cx="50%" cy="44%" r="52%">
+      <stop offset="0%" stop-color="#8a3dff" stop-opacity="0.34"/>
+      <stop offset="58%" stop-color="#ff2e88" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#07060f" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="tmf-sun" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffb800"/>
+      <stop offset="55%" stop-color="#ff2e88"/>
+      <stop offset="100%" stop-color="#8a3dff"/>
+    </linearGradient>
+    <pattern id="tmf-stripes" width="92" height="6" patternUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="92" height="3.8" fill="#ffffff"/>
+      <rect x="0" y="3.8" width="92" height="2.2" fill="#000000"/>
+    </pattern>
+    <mask id="tmf-sunmask">
+      <rect x="0" y="0" width="92" height="92" fill="url(#tmf-stripes)"/>
+    </mask>
+    <linearGradient id="tmf-frame" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#19f0ff"/>
+      <stop offset="50%" stop-color="#8a3dff"/>
+      <stop offset="100%" stop-color="#ff2e88"/>
+    </linearGradient>
+    <linearGradient id="tmf-chrome" gradientUnits="userSpaceOnUse" x1="0" y1="14" x2="0" y2="66"><stop offset="0%" stop-color="#2c1d6e"/><stop offset="28%" stop-color="#45e3ff"/><stop offset="47%" stop-color="#ffffff"/><stop offset="51%" stop-color="#22082e"/><stop offset="58%" stop-color="#ff2e88"/><stop offset="82%" stop-color="#ff8a3d"/><stop offset="100%" stop-color="#ffe787"/></linearGradient>
+    <linearGradient id="tmf-rim" gradientUnits="userSpaceOnUse" x1="0" y1="14" x2="0" y2="66"><stop offset="0%" stop-color="#c9fbff"/><stop offset="48%" stop-color="#ffffff"/><stop offset="54%" stop-color="#ff6cb0"/><stop offset="100%" stop-color="#ffd269"/></linearGradient>
+    <linearGradient id="tmf-extrude" gradientUnits="userSpaceOnUse" x1="0" y1="14" x2="0" y2="66"><stop offset="0%" stop-color="#5a198f"/><stop offset="100%" stop-color="#ff1a75"/></linearGradient>
+    <linearGradient id="tmf-bar" gradientUnits="userSpaceOnUse" x1="14" y1="76" x2="78" y2="76">
+      <stop offset="0%" stop-color="#ffb800"/>
+      <stop offset="52%" stop-color="#ff2e88"/>
+      <stop offset="100%" stop-color="#19f0ff"/>
+    </linearGradient>
+    <filter id="tmf-pink" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="tmf-cyan" x="-30%" y="-40%" width="160%" height="180%">
+      <feGaussianBlur stdDeviation="2.2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect x="0" y="0" width="92" height="92" rx="20" fill="#07060f"/>
+  <circle cx="46" cy="42" r="42" fill="url(#tmf-halo)"/>
+  <circle cx="46" cy="41" r="29" fill="url(#tmf-sun)" mask="url(#tmf-sunmask)" opacity="0.24"/>
+  <rect x="1.5" y="1.5" width="89" height="89" rx="18.5" fill="none" stroke="url(#tmf-frame)" stroke-width="2" opacity="0.72"/>
+  <g transform="translate(46 40) skewX(-8) translate(-46 -40)">
+    <path d="M15 66 V19 L20 14 H31 L46 36 L61 14 H72 L77 19 V66 H64 V34 L46 56 L28 34 V66 Z" fill="#ff2e88" opacity="0.48" filter="url(#tmf-pink)"/>
+    <path transform="translate(0 4.5)" d="M15 66 V19 L20 14 H31 L46 36 L61 14 H72 L77 19 V66 H64 V34 L46 56 L28 34 V66 Z" fill="#210938" stroke="#210938" stroke-width="2" stroke-linejoin="round"/>
+    <path transform="translate(0 2.5)" d="M15 66 V19 L20 14 H31 L46 36 L61 14 H72 L77 19 V66 H64 V34 L46 56 L28 34 V66 Z" fill="url(#tmf-extrude)" stroke="url(#tmf-extrude)" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M15 66 V19 L20 14 H31 L46 36 L61 14 H72 L77 19 V66 H64 V34 L46 56 L28 34 V66 Z" fill="url(#tmf-chrome)" stroke="url(#tmf-rim)" stroke-width="1.7" stroke-linejoin="round" paint-order="stroke"/>
   </g>
+  <path d="M22 9 L23.8 14.2 L29 16 L23.8 17.8 L22 23 L20.2 17.8 L15 16 L20.2 14.2 Z" fill="#ffffff" filter="url(#tmf-cyan)"/>
+  <path d="M14 76 H44 L49 69 L55 82 L60 76 H78" fill="none" stroke="url(#tmf-bar)" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" filter="url(#tmf-cyan)"/>
+  <path d="M14 76 H44 L49 69 L55 82 L60 76 H78" fill="none" stroke="#fff7dc" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
 </svg>

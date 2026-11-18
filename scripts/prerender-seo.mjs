@@ -6,7 +6,7 @@ import { STARTER_MEMES, STUDIO_TEMPLATES } from '../src/data/starterMemes.js';
 import { buildRouteJsonLd } from '../src/utils/seoEngine.js';
 import { buildMemeJsonLd, memeSeoDescription } from '../src/utils/memeSeo.js';
 import { extractUniqueCreatorHandles } from '../src/utils/creatorProfiles.js';
-import { SIGN_TUBES, SIGN_VIEWBOX } from '../src/components/neonSignPaths.js';
+import { buildChromeSignSvg } from '../src/components/chromeBrandSvg.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -152,37 +152,25 @@ function buildPrerenderMainHtml(route) {
     </main>`;
 }
 
-const TUBE_COLOURS = {
-  pink: ['#ff2e88', '#ffd9ea', '#3d1028'],
-  cyan: ['#19f0ff', '#e2fdff', '#0b3440'],
-  amber: ['#ffb800', '#fff1c9', '#3d2c05']
-};
-
-/** Static copy of <NeonSign size="hero" flow /> plus its CSS, for the pre-app boot screen. */
+/** Static copy of the Chrome Outrun <NeonSign size="hero" flow /> plus its CSS, for the pre-app boot screen. */
 function bootSplashHtml() {
-  const flows = [2.4, 2.7, 3.0, 3.3, 3.6, 3.9];
-  const tubes = SIGN_TUBES.map(([colour, x, y, w, d, extra], idx) => {
-    const [c, hot, off] = TUBE_COLOURS[colour] || TUBE_COLOURS.cyan;
-    return `<g transform="translate(${x} ${y})"${extra ? ` class="${extra}"` : ''}><path pathLength="100" stroke="${off}" stroke-width="${w + 1.5}" d="${d}"/><g class="lit" style="animation-delay:${idx * 70}ms"><path class="gl" pathLength="100" stroke="${c}" stroke-width="${w + 2}" d="${d}"/><path pathLength="100" stroke="${c}" stroke-width="${w}" d="${d}"/><path pathLength="100" stroke="${hot}" stroke-width="${(w * 0.34).toFixed(2)}" d="${d}"/><path class="fl" pathLength="100" stroke="#fff" stroke-width="${(w * 0.5).toFixed(2)}" style="animation-duration:${flows[idx % flows.length]}s" d="${d}"/></g></g>`;
-  }).join('');
+  const signSvg = buildChromeSignSvg({ uid: 'tmboot', showFlow: true });
   return `<style>
-.tm-boot{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:24px;background:radial-gradient(70% 50% at 50% 42%,rgba(255,46,136,.10),transparent 70%),#07060f}
-.tm-boot svg{width:min(420px,82vw);height:auto;overflow:visible}
-.tm-boot path{fill:none;stroke-linecap:round;stroke-linejoin:round}
-.tm-boot .gl{filter:blur(5px);opacity:.85}
-.tm-boot .fl{stroke-dasharray:5 95;opacity:.92;animation:tmBootFlow 3s linear infinite}
-.tm-boot .lit{animation:tmBootOn 900ms steps(1,end) both}
-.tm-boot .is-buzz .lit{animation:tmBootOn 900ms steps(1,end) both,tmBootBuzz 9s steps(1,end) 3s infinite}
+@font-face{font-family:'Orbitron';font-style:normal;font-weight:400 900;font-display:swap;src:url('/fonts/orbitron-latin-wght.woff2') format('woff2')}
+.tm-boot{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:24px;background:radial-gradient(70% 50% at 50% 42%,rgba(255,46,136,.12),transparent 70%),#07060f}
+.tm-boot svg{width:min(480px,88vw);height:auto;overflow:visible}
+.tm-boot .tm-chrome-sheen{animation:tmBootSheen 4.8s ease-in-out infinite}
+.tm-boot .tm-chrome-star-1{transform-origin:122px 76px;animation:tmBootTwinkle 2.8s ease-in-out infinite}
+.tm-boot .tm-chrome-star-2{transform-origin:558px 80px;animation:tmBootTwinkle 3.4s ease-in-out 1.1s infinite}
 .tm-boot p{margin:0;color:#9d98c2;font-size:14px;letter-spacing:.14em;text-transform:uppercase}
 .tm-boot p span{display:inline-block;width:6px;height:6px;margin-left:8px;border-radius:50%;background:#19f0ff;box-shadow:0 0 10px #19f0ff;animation:tmBootDot 1.2s ease-in-out infinite}
-@keyframes tmBootFlow{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
-@keyframes tmBootOn{0%{opacity:0}12%{opacity:1}18%{opacity:0}30%{opacity:1}36%{opacity:.2}48%,100%{opacity:1}}
-@keyframes tmBootBuzz{0%,91%,93%,95.5%,100%{opacity:1}92%,94%,95%{opacity:.16}}
+@keyframes tmBootSheen{0%{transform:translateX(-120px) skewX(-24deg);opacity:0}18%{opacity:.9}42%{transform:translateX(660px) skewX(-24deg);opacity:0}100%{transform:translateX(660px) skewX(-24deg);opacity:0}}
+@keyframes tmBootTwinkle{0%,100%{transform:scale(.75) rotate(0deg);opacity:.65}50%{transform:scale(1.18) rotate(18deg);opacity:1}}
 @keyframes tmBootDot{0%,100%{opacity:.25}50%{opacity:1}}
-@media (prefers-reduced-motion:reduce){.tm-boot .fl{display:none}.tm-boot .lit,.tm-boot p span{animation:none}}
+@media (prefers-reduced-motion:reduce){.tm-boot .tm-chrome-sheen{display:none}.tm-boot .tm-chrome-star-1,.tm-boot .tm-chrome-star-2,.tm-boot p span{animation:none}}
 </style>
       <section class="tm-boot" aria-label="THE MEMES.net is loading">
-        <svg viewBox="${SIGN_VIEWBOX}" role="img" aria-label="THE MEMES.net">${tubes}</svg>
+        ${signSvg}
         <p>Loading fresh memes<span></span></p>
       </section>`;
 }

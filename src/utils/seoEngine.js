@@ -12,6 +12,8 @@ import {
 } from '../data/seoRoutes.js';
 import { buildMemeJsonLd, memeSeoDescription } from './memeSeo.js';
 import { sanitizeMediaUrl } from './securityGuard.js';
+import { getTemplateBySlug } from '../data/memeTemplates.js';
+import { TEMPLATES_INDEX_META, buildTemplateJsonLd, buildTemplatesIndexJsonLd } from './templateSeo.js';
 
 const NON_PATH_VIEW_MODES = {
   reels: {
@@ -57,6 +59,7 @@ export function updateDynamicSeo({
   category = 'all',
   viewMode = 'feed',
   creatorHandle = null,
+  templateSlug = null,
   showStudio = false,
   forgeIntent = null,
   extrasDrawerOpen = false,
@@ -82,6 +85,7 @@ export function updateDynamicSeo({
     viewMode,
     category,
     creatorHandle,
+    templateSlug,
     showStudio,
     forgeIntent,
     extrasDrawerOpen,
@@ -96,7 +100,12 @@ export function updateDynamicSeo({
   let canonicalUrl = `${SITE_ORIGIN}${canonicalPath === '/' ? '/' : canonicalPath}`;
   let ogImageUrl = routeMeta.ogImage || DEFAULT_OG_IMAGE;
 
-  if (!activeMeme && viewMode === 'creator' && creatorHandle) {
+  const template = viewMode === 'templates' && templateSlug ? getTemplateBySlug(templateSlug) : null;
+  if (!activeMeme && viewMode === 'templates') {
+    pageTitle = template ? template.title : TEMPLATES_INDEX_META.title;
+    pageDesc = template ? template.description : TEMPLATES_INDEX_META.description;
+    if (template) ogImageUrl = `${SITE_ORIGIN}${template.image}`;
+  } else if (!activeMeme && viewMode === 'creator' && creatorHandle) {
     const clean = String(creatorHandle).trim().replace(/^@+/, '');
     pageTitle = `@${clean} — Creator Profile, Memes & High Scores | THE MEMES.net`;
     pageDesc = `Browse @${clean}'s memes, 8-bit pixel avatar, earned badges, followers, and 80s Cyber-Arcade high scores on THE MEMES.net.`;
@@ -126,9 +135,11 @@ export function updateDynamicSeo({
   upsertMeta('meta[property="og:description"]', 'property', 'og:description', pageDesc);
   upsertMeta('meta[property="og:url"]', 'property', 'og:url', canonicalUrl);
   const isBannerOg = ogImageUrl === DEFAULT_OG_IMAGE || ogImageUrl.startsWith(`${SITE_ORIGIN}/og/`);
+  const ogW = template && !activeMeme ? String(template.width) : isBannerOg ? '1200' : '540';
+  const ogH = template && !activeMeme ? String(template.height) : isBannerOg ? '630' : '480';
   upsertMeta('meta[property="og:image"]', 'property', 'og:image', ogImageUrl);
-  upsertMeta('meta[property="og:image:width"]', 'property', 'og:image:width', isBannerOg ? '1200' : '540');
-  upsertMeta('meta[property="og:image:height"]', 'property', 'og:image:height', isBannerOg ? '630' : '480');
+  upsertMeta('meta[property="og:image:width"]', 'property', 'og:image:width', ogW);
+  upsertMeta('meta[property="og:image:height"]', 'property', 'og:image:height', ogH);
   upsertMeta('meta[name="twitter:title"]', 'name', 'twitter:title', pageTitle);
   upsertMeta('meta[name="twitter:description"]', 'name', 'twitter:description', pageDesc);
   upsertMeta('meta[name="twitter:image"]', 'name', 'twitter:image', ogImageUrl);
@@ -154,6 +165,10 @@ export function updateDynamicSeo({
   }
   if (activeMeme) {
     ldScript.textContent = JSON.stringify(buildMemeJsonLd(activeMeme, canonicalUrl, ogImageUrl));
+  } else if (viewMode === 'templates') {
+    ldScript.textContent = JSON.stringify(
+      template ? buildTemplateJsonLd(template, SITE_ORIGIN) : buildTemplatesIndexJsonLd(SITE_ORIGIN)
+    );
   } else if (viewMode === 'creator' && creatorHandle) {
     const clean = String(creatorHandle).trim().replace(/^@+/, '');
     ldScript.textContent = JSON.stringify({

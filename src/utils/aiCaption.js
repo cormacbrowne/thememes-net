@@ -40,7 +40,7 @@ export async function fetchAiCaptionQuota(client) {
  *   → { ok: true, options: [{ top, bottom }], quota }
  *   | { ok: false, error, message, quota? }
  */
-export async function requestAiCaptions(client, { idea, picture = '', template = '' }) {
+export async function requestAiCaptions(client, { idea, picture = '', template = '', slots = null }) {
   const text = String(idea ?? '').trim();
   if (text.length < 2) return { ok: false, error: 'idea_required', message: AI_CAPTION_MESSAGES.idea_required };
   if (text.length > AI_CAPTION.ideaMax) return { ok: false, error: 'too_long', message: AI_CAPTION_MESSAGES.too_long };
@@ -53,7 +53,13 @@ export async function requestAiCaptions(client, { idea, picture = '', template =
   const turnstileToken = await getTurnstileToken('ai_caption');
   try {
     const { data, error } = await client.functions.invoke(AI_CAPTION_FUNCTION, {
-      body: { idea: text, picture, template, ...(turnstileToken ? { turnstileToken } : {}) }
+      body: {
+        idea: text,
+        picture,
+        template,
+        ...(Array.isArray(slots) && slots.length ? { slots } : {}),
+        ...(turnstileToken ? { turnstileToken } : {})
+      }
     });
     if (!error && data?.ok && Array.isArray(data.options)) {
       return { ok: true, options: data.options, quota: data.quota || null };

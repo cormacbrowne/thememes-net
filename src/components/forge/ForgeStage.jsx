@@ -150,7 +150,7 @@ export default function ForgeStage({ editor, images, tab, onPanelTap, imageVersi
       <div
         ref={boxRef}
         className="tm-forge-stage"
-        style={{ aspectRatio: `${ratio}` }}
+        style={{ aspectRatio: `${ratio}`, "--tm-stage-ratio": ratio }}
         onPointerDown={startStageGesture}
         onPointerMove={onMove}
         onPointerUp={onUp}

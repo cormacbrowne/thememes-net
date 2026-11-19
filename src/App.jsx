@@ -82,6 +82,7 @@ const FULLSCREEN_GAME_IDS = new Set(
 const LeaderboardModal = lazyWithRetry(() => import('./components/LeaderboardModal'));
 const PlayerProfileModal = lazyWithRetry(() => import('./components/PlayerProfileModal'));
 const CreatorProfilePage = lazyWithRetry(() => import('./components/CreatorProfilePage'));
+const TemplateLibraryPage = lazyWithRetry(() => import('./components/TemplateLibraryPage'));
 const ExtrasDrawerModal = lazyWithRetry(() => import('./components/ExtrasDrawerModal'));
 const RewardsModal = lazyWithRetry(() => import('./components/RewardsModal'));
 const AiRoastModal = lazyWithRetry(() => import('./components/AiRoastModal'));
@@ -130,6 +131,8 @@ export default function App() {
     creatorHandle,
     setCreatorHandle,
     openCreatorProfile,
+    templateSlug,
+    openTemplatePage,
     searchQuery,
     setSearchQuery,
     showSavedOnly,
@@ -1679,6 +1682,24 @@ export default function App() {
         </>
       )}
 
+      {/* MEME TEMPLATE LIBRARY (/templates, /templates/<slug>-meme-template) */}
+      {viewMode === 'templates' && (
+        <Suspense fallback={<div style={{ padding: '18px' }}><MemeSkeletonGrid count={3} /></div>}>
+          <TemplateLibraryPage
+            slug={templateSlug}
+            onOpen={(slug) => {
+              openTemplatePage(slug);
+              window.scrollTo?.({ top: 0, behavior: 'auto' });
+            }}
+            onUse={(tpl, texts) => {
+              sfx.playToggle();
+              setForgeIntent({ mode: 'template', templateId: tpl.id, texts: Array.isArray(texts) ? texts : undefined });
+              setShowStudio(true);
+            }}
+          />
+        </Suspense>
+      )}
+
       {/* CREATOR PROFILE PAGE (/u/<handle>) */}
       {viewMode === 'creator' && creatorHandle && (
         <Suspense fallback={<div style={{ padding: '18px' }}><MemeSkeletonGrid count={3} /></div>}>
@@ -1970,6 +1991,11 @@ export default function App() {
             }}
             onPublish={handleForgePublish}
             onRequireAuth={() => setShowAuthModal(true)}
+            onBrowseTemplates={() => {
+              setShowStudio(false);
+              setForgeIntent(null);
+              openTemplatePage(null);
+            }}
           />
         </Suspense>
       )}
@@ -2390,11 +2416,9 @@ export default function App() {
             closeAllModals();
             handleOpenBlankStudio();
           }}
-          onOpenGifStudio={() => {
-            sfx.playToggle();
+          onOpenTemplates={() => {
             closeAllModals();
-            setForgeIntent({ mode: 'gif' });
-            setShowStudio(true);
+            openTemplatePage(null);
           }}
           onOpenTemplateStudio={(templateId) => {
             sfx.playToggle();

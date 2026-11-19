@@ -1,8 +1,8 @@
 // ==========================================
 // Supabase Edge Function: ai-caption  (AI Caption Writer)
 //
-// POST { idea, picture?, template?, turnstileToken? }
-//   → 200 { ok: true, options: [{ top, bottom }], quota: { tier, limit, used, remaining, resets_at } }
+// POST { idea, picture?, template?, slots?: string[] (caption box labels), turnstileToken? }
+//   → 200 { ok: true, options: [{ lines, top, bottom }], quota: { tier, limit, used, remaining, resets_at } }
 // POST { action: 'quota' }  → 200 { ok: true, quota }   (no use taken; for the "N left" badge)
 //
 // Order of checks (cheapest first, nothing is charged until the AI actually answers):
@@ -62,7 +62,7 @@ function quotaView(q: Record<string, unknown>) {
   return { tier: q.tier, limit: q.limit, used: q.used, remaining: q.remaining, resets_at: q.resets_at };
 }
 
-async function callOpenAi(parsed: { idea: string; picture: string; template: string }) {
+async function callOpenAi(parsed: { idea: string; picture: string; template: string; slots: string[] }) {
   const key = Deno.env.get('OPENAI_API_KEY');
   if (!key) return { error: 'missing_api_key' };
   const model = Deno.env.get('AI_CAPTION_MODEL') || AI_CAPTION.defaultModel;
@@ -94,7 +94,7 @@ async function callOpenAi(parsed: { idea: string; picture: string; template: str
       console.error('ai-caption openai error', r.status, r.body?.error?.code ?? r.body?.error?.type ?? '');
       return { error: `http_${r.status}` };
     }
-    return { options: parseCompletion(r.body), usage: r.body?.usage ?? null, model };
+    return { options: parseCompletion(r.body, parsed.slots.length), usage: r.body?.usage ?? null, model };
   } catch (err) {
     return { error: (err as Error)?.name === 'AbortError' ? 'timeout' : 'network' };
   }
@@ -149,7 +149,7 @@ Deno.serve(async (req: Request) => {
   }
 
   // 1. Moderate what the user typed, before spending anything.
-  const ideaVerdict = await moderateText({ texts: [parsed.idea, parsed.picture, parsed.template], env: Deno.env });
+  const ideaVerdict = await moderateText({ texts: [parsed.idea, parsed.picture, parsed.template, ...parsed.slots], env: Deno.env });
   if (ideaVerdict.decision === 'reject') {
     return json(req, 422, { ok: false, error: 'rejected', detail: ideaVerdict.category ?? 'rules' });
   }
@@ -184,7 +184,7 @@ Deno.serve(async (req: Request) => {
 
   // 4. Moderate every caption the AI wrote; keep only clean ones.
   const checks = await Promise.all(
-    ai.options.map((o) => moderateText({ texts: [o.top, o.bottom], env: Deno.env }))
+    ai.options.map((o) => moderateText({ texts: o.lines, env: Deno.env }))
   );
   const options = ai.options.filter((_, i) => checks[i].decision === 'approve');
   if (!options.length) {

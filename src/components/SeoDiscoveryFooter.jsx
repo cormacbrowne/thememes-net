@@ -7,7 +7,7 @@ import NeonSign from './NeonSign';
 export default function SeoDiscoveryFooter({
   onSelectCategory,
   onOpenBlankStudio,
-  onOpenGifStudio,
+  onOpenTemplates,
   onOpenSoundboard,
   onOpenPrankDisguise,
   onSelectViewMode,
@@ -128,11 +128,11 @@ export default function SeoDiscoveryFooter({
                 🎨 Free Online Meme Generator (Top &amp; Bottom Text)
               </a>
               <a
-                href="/gif-meme-maker"
+                href="/templates"
                 className="tm-seo-link"
-                onClick={(e) => handleSpaLinkClick(e, onOpenGifStudio || onOpenBlankStudio)}
+                onClick={(e) => (onOpenTemplates ? handleSpaLinkClick(e, onOpenTemplates) : undefined)}
               >
-                🎞️ Free Animated GIF Meme Maker
+                🖼️ Free Meme Templates (Drake-style, Two Buttons, Expanding Brain…)
               </a>
               <a
                 href="/meme-soundboard"

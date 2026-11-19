@@ -142,13 +142,108 @@
       "statusCode": 301
     },
     {
-      "source": "/templates",
+      "source": "/gif-meme-maker",
       "destination": "/meme-generator",
       "statusCode": 301
     },
     {
-      "source": "/templates/:slug",
-      "destination": "/meme-generator",
+      "source": "/templates/drake-meme-generator",
+      "destination": "/templates/drake-reject-approve-meme-template",
+      "statusCode": 301
+    },
+    {
+      "source": "/templates/expanding-brain-meme-generator",
+      "destination": "/templates/expanding-brain-meme-template",
+      "statusCode": 301
+    },
+    {
+      "source": "/templates/two-buttons-meme-generator",
+      "destination": "/templates/two-buttons-meme-template",
+      "statusCode": 301
+    },
+    {
+      "source": "/templates/distracted-boyfriend-meme-generator",
+      "destination": "/templates",
+      "statusCode": 301
+    },
+    {
+      "source": "/templates/this-is-fine-meme-generator",
+      "destination": "/templates/this-is-fine-meme-template",
+      "statusCode": 301
+    },
+    {
+      "source": "/templates/change-my-mind-meme-generator",
+      "destination": "/templates/change-my-mind-meme-template",
+      "statusCode": 301
+    },
+    {
+      "source": "/templates/stonks-meme-generator",
+      "destination": "/templates/stonks-meme-template",
+      "statusCode": 301
+    },
+    {
+      "source": "/templates/not-stonks-meme-generator",
+      "destination": "/templates/stonks-meme-template",
+      "statusCode": 301
+    },
+    {
+      "source": "/templates/woman-yelling-at-cat-meme-generator",
+      "destination": "/templates/woman-yelling-at-cat-meme-template",
+      "statusCode": 301
+    },
+    {
+      "source": "/templates/gigachad-meme-generator",
+      "destination": "/templates/gigachad-meme-template",
+      "statusCode": 301
+    },
+    {
+      "source": "/templates/clown-makeup-meme-generator",
+      "destination": "/templates/clown-makeup-meme-template",
+      "statusCode": 301
+    },
+    {
+      "source": "/templates/surprised-pikachu-shock-meme-generator",
+      "destination": "/templates/surprised-face-meme-template",
+      "statusCode": 301
+    },
+    {
+      "source": "/templates/trade-offer-meme-generator",
+      "destination": "/templates/trade-offer-meme-template",
+      "statusCode": 301
+    },
+    {
+      "source": "/templates/iq-bell-curve-meme-generator",
+      "destination": "/templates/bell-curve-meme-template",
+      "statusCode": 301
+    },
+    {
+      "source": "/templates/left-exit-off-ramp-meme-generator",
+      "destination": "/templates/exit-ramp-meme-template",
+      "statusCode": 301
+    },
+    {
+      "source": "/templates/spiderman-pointing-meme-generator",
+      "destination": "/templates/pointing-at-each-other-meme-template",
+      "statusCode": 301
+    },
+    {
+      "source": "/templates/buff-doge-vs-cheems-meme-generator",
+      "destination": "/templates",
+      "statusCode": 301
+    },
+    {
+      "source": "/templates/always-has-been-meme-generator",
+      "destination": "/templates",
+      "statusCode": 301
+    },
+    {
+      "source": "/templates/sleeping-brain-3am-meme-generator",
+      "destination": "/templates",
+      "statusCode": 301
+    },
+    {
+      "source": "/templates/3rd-place-trophy-meme-generator",
+      "destination": "/templates",
       "statusCode": 301
     },
     {

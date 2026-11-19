@@ -6,7 +6,7 @@ import { AI_IDEA_MAX, fetchAiCaptionQuota, requestAiCaptions } from '../../utils
  * AI Caption Writer: the user types an idea, the AI writes 3 top/bottom caption options,
  * one tap puts an option onto the meme. Free uses: 25/month signed in, 3 for anonymous visitors.
  */
-export default function AiCaptionWriter({ onApply, templateHint = '', onRequireAuth }) {
+export default function AiCaptionWriter({ onApply, templateHint = '', slots = null, onRequireAuth }) {
   const [idea, setIdea] = useState('');
   const [busy, setBusy] = useState(false);
   const [options, setOptions] = useState([]);
@@ -33,12 +33,12 @@ export default function AiCaptionWriter({ onApply, templateHint = '', onRequireA
     setBusy(true);
     setMessage('');
     setNeedsSignIn(false);
-    const res = await requestAiCaptions(supabase, { idea, template: templateHint });
+    const res = await requestAiCaptions(supabase, { idea, template: templateHint, slots });
     setBusy(false);
     if (res.quota) setQuota(res.quota);
     if (res.ok) {
       setOptions(res.options);
-      onApply(res.options[0].top, res.options[0].bottom);
+      onApply(res.options[0]);
       return;
     }
     setMessage(res.message);
@@ -82,20 +82,21 @@ export default function AiCaptionWriter({ onApply, templateHint = '', onRequireA
 
       {options.length > 1 && (
         <div className="tm-ai-options" role="list">
-          {options.map((o, i) => (
-            <button
-              key={`${o.top}|${o.bottom}|${i}`}
-              type="button"
-              role="listitem"
-              className="tm-btn tm-ai-option"
-              onClick={() => onApply(o.top, o.bottom)}
-              title="Use this caption"
-            >
-              {o.top && <span>{o.top}</span>}
-              {o.top && o.bottom && <span aria-hidden="true"> / </span>}
-              {o.bottom && <span>{o.bottom}</span>}
-            </button>
-          ))}
+          {options.map((o, i) => {
+            const shown = (o.lines?.length ? o.lines : [o.top, o.bottom]).filter(Boolean);
+            return (
+              <button
+                key={`${shown.join('|')}|${i}`}
+                type="button"
+                role="listitem"
+                className="tm-btn tm-ai-option"
+                onClick={() => onApply(o)}
+                title="Use this caption"
+              >
+                {shown.join(' / ')}
+              </button>
+            );
+          })}
         </div>
       )}
 

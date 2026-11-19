@@ -1,6 +1,7 @@
 import process from 'node:process';
 import { SEO_ROUTES, SITE_ORIGIN } from '../src/data/seoRoutes.js';
 import { STARTER_MEMES } from '../src/data/starterMemes.js';
+import { MEME_TEMPLATES, TEMPLATES_INDEX_PATH } from '../src/data/memeTemplates.js';
 import { extractUniqueCreatorHandles } from '../src/utils/creatorProfiles.js';
 
 function escapeXml(value = '') {
@@ -66,6 +67,25 @@ export default async function handler(req, res) {
   </url>`;
   });
 
+  // Meme template library: high-intent search pages, each with its template picture for Google Images.
+  const templateUrlXml = [
+    `  <url>
+    <loc>${escapeXml(`${SITE_ORIGIN}${TEMPLATES_INDEX_PATH}`)}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>`,
+    ...MEME_TEMPLATES.map(
+      (t) => `  <url>
+    <loc>${escapeXml(`${SITE_ORIGIN}${t.path}`)}</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>${escapeXml(`${SITE_ORIGIN}${t.image}`)}</image:loc>
+    </image:image>
+  </url>`
+    )
+  ];
+
   const seenIds = new Set();
   const memeUrlXml = [];
 
@@ -109,7 +129,7 @@ export default async function handler(req, res) {
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-${[...staticRouteXml, ...creatorUrlsXml, ...memeUrlXml].join('\n')}
+${[...staticRouteXml, ...templateUrlXml, ...creatorUrlsXml, ...memeUrlXml].join('\n')}
 </urlset>
 `;
 

@@ -98,6 +98,7 @@ export function useViewMode() {
     setViewModeRaw(nextMode);
   }, []);
   const [creatorHandle, setCreatorHandle] = useState(initialRoute.creatorHandle || null);
+  const [templateSlug, setTemplateSlug] = useState(initialRoute.templateSlug || null);
   const [searchQuery, setSearchQuery] = useState(initialRoute.searchQuery);
   const [showSavedOnly, setShowSavedOnly] = useState(false);
   const [sortBy, setSortBy] = useState('hot');
@@ -138,6 +139,7 @@ export function useViewMode() {
         viewMode,
         category,
         creatorHandle,
+        templateSlug,
         showStudio,
         forgeIntent,
         extrasDrawerOpen,
@@ -150,6 +152,7 @@ export function useViewMode() {
       viewMode,
       category,
       creatorHandle,
+      templateSlug,
       showStudio,
       forgeIntent,
       extrasDrawerOpen,
@@ -171,6 +174,16 @@ export function useViewMode() {
     setShowStudio(false);
     setShowLeaderboard(false);
     setShowRewardsModal(false);
+  }, [setViewMode]);
+
+  /** Open the template library (no slug) or one template page. */
+  const openTemplatePage = useCallback((slug = null) => {
+    sfx.playToggle();
+    setTemplateSlug(slug || null);
+    setViewMode('templates');
+    setTheaterMemeId(null);
+    setShowStudio(false);
+    setForgeIntent(null);
   }, [setViewMode]);
 
   const hasCanonicalSubpath = canonicalPath !== '/';
@@ -316,6 +329,9 @@ export function useViewMode() {
     creatorHandle,
     setCreatorHandle,
     openCreatorProfile,
+    templateSlug,
+    setTemplateSlug,
+    openTemplatePage,
     setCategory,
     viewMode,
     setViewMode,
@@ -390,6 +406,7 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
     initialRoute,
     viewMode,
     creatorHandle,
+    templateSlug,
     category,
     searchQuery,
     showStudio,
@@ -411,6 +428,7 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
     handleNavigateBack,
     setCategory,
     setCreatorHandle,
+    setTemplateSlug,
     setViewMode,
     setSearchQuery,
     setShowStudio,
@@ -436,6 +454,7 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
       category,
       viewMode,
       creatorHandle,
+      templateSlug,
       showStudio,
       forgeIntent,
       extrasDrawerOpen,
@@ -450,6 +469,7 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
     category,
     viewMode,
     creatorHandle,
+    templateSlug,
     showStudio,
     forgeIntent,
     extrasDrawerOpen,
@@ -532,6 +552,7 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
         lastSyncedPathRef.current = resolved.matchedPath;
         setCategory(resolved.category);
         setCreatorHandle(resolved.creatorHandle || null);
+        setTemplateSlug(resolved.templateSlug || null);
         setViewMode(resolved.viewMode);
         setSearchQuery(resolved.searchQuery);
         setShowStudio(resolved.showStudio);
@@ -554,6 +575,7 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
     setBossKeyActive,
     setCategory,
     setCreatorHandle,
+    setTemplateSlug,
     setExtrasDrawerOpen,
     setExtrasFocus,
     setForgeIntent,

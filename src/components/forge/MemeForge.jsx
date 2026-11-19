@@ -29,6 +29,7 @@ import {
   makePoster
 } from '../../utils/mediaPipeline';
 import { VIRAL_CAPTIONS } from '../../data/starterMemes';
+import { getTemplateById, getTemplateBySlug, templateTextLayers } from '../../data/memeTemplates';
 import { publishErrorMessage, CHECKING_MESSAGE, RULES_PATH } from '../../utils/publishMeme';
 import { sfx } from '../../utils/soundEngine';
 import {
@@ -170,6 +171,20 @@ async function buildFromIntent(intent = {}) {
     }
     return out;
   }
+  if (intent.mode === 'template') {
+    const tpl = getTemplateById(intent.templateId) || getTemplateBySlug(intent.templateSlug);
+    if (tpl) {
+      out.title = intent.title || '';
+      out.category = tpl.category || 'dank';
+      out.template = tpl;
+      out.tip = `🖼️ ${tpl.name}: type in the boxes, or let the AI Caption Writer fill them in!`;
+      out.doc = makeDoc({
+        panels: [{ src: tpl.image }],
+        layers: templateTextLayers(tpl, makeTextLayer, intent.texts || [])
+      });
+      return out;
+    }
+  }
   if (intent.mode === 'gif') {
     out.tip = '🎞️ Upload or drop any GIF to add Top & Bottom meme text!';
     out.doc = makeDoc();
@@ -184,7 +199,7 @@ async function buildFromIntent(intent = {}) {
  * Simplified Classic Meme & GIF Maker:
  * Upload or drop an image/GIF, add Top & Bottom text, download or share with www.thememes.net watermark.
  */
-export default function MemeForge({ intent, user, onClose, onPublish, onRequireAuth }) {
+export default function MemeForge({ intent, user, onClose, onPublish, onRequireAuth, onBrowseTemplates }) {
   const editor = useMemeEditor(makeDoc());
   const { doc, set, live, undo, redo, reset, selectedId, setSelectedId } = editor;
   const [title, setTitle] = useState('');
@@ -197,6 +212,7 @@ export default function MemeForge({ intent, user, onClose, onPublish, onRequireA
   const [activePanel, setActivePanel] = useState(0);
   const [imageVersion, setImageVersion] = useState(0);
   const [images, setImages] = useState(() => new Map());
+  const [template, setTemplate] = useState(null);
   const inFlightRef = useRef(new Set());
   const fileRef = useRef(null);
   const stickerRef = useRef(null);
@@ -215,6 +231,7 @@ export default function MemeForge({ intent, user, onClose, onPublish, onRequireA
       setCategory(res.category);
       setError(res.error);
       setStatus(res.tip);
+      setTemplate(res.template || null);
       const firstText = res.doc?.layers?.find((l) => l.type === 'text');
       if (firstText) setSelectedId(firstText.id);
       const saved = await loadDraft();
@@ -511,6 +528,15 @@ export default function MemeForge({ intent, user, onClose, onPublish, onRequireA
 
   const handleRandomizeCaption = useCallback(() => {
     sfx.playBoing(2);
+    if (template?.examples?.length) {
+      const ex = template.examples[Math.floor(Math.random() * template.examples.length)];
+      set((d) => {
+        let i = 0;
+        return { ...d, layers: d.layers.map((l) => (l.type === 'text' && l.label ? { ...l, text: ex[i++] ?? '' } : l)) };
+      });
+      setStatus('🎲 Loaded an example caption. Make it your own!');
+      return;
+    }
     const pair = VIRAL_CAPTIONS[Math.floor(Math.random() * VIRAL_CAPTIONS.length)] || [
       'WHEN THE CODE COMPILES',
       'ZERO ERRORS ON FIRST TRY'
@@ -527,13 +553,29 @@ export default function MemeForge({ intent, user, onClose, onPublish, onRequireA
     setSelectedId(topLayer.id);
     setTitle(`${pair[0]} — ${pair[1]}`);
     setStatus('🎲 Loaded a random meme caption!');
-  }, [set, setSelectedId]);
+  }, [set, setSelectedId, template]);
 
   // AI Caption Writer: put one top/bottom option onto the meme, keeping the current text style.
   const applyCaption = useCallback(
-    (top, bottom) => {
+    (option) => {
       sfx.playPop?.(2);
+      const lines = Array.isArray(option?.lines) && option.lines.length ? option.lines : [option?.top || '', option?.bottom || ''];
+      const top = lines[0] || '';
+      const bottom = lines.length > 1 ? lines[lines.length - 1] : '';
       let firstId = null;
+      // Template with labelled caption boxes: fill them in order.
+      if (template) {
+        set((d) => {
+          let i = 0;
+          const layers = d.layers.map((l) => (l.type === 'text' && l.label ? { ...l, text: lines[i++] ?? '' } : l));
+          firstId = layers.find((l) => l.type === 'text')?.id || null;
+          return { ...d, layers };
+        });
+        if (firstId) setSelectedId(firstId);
+        setTitle((t) => t || lines.filter(Boolean).join(' — ').slice(0, 100));
+        setStatus('🤖 AI caption added! Tap another option or edit the text.');
+        return;
+      }
       set((d) => {
         const texts = d.layers.filter((l) => l.type === 'text');
         const byY = [...texts].sort((a, b) => (a.y ?? 0.5) - (b.y ?? 0.5));
@@ -554,7 +596,7 @@ export default function MemeForge({ intent, user, onClose, onPublish, onRequireA
       setTitle((t) => t || [top, bottom].filter(Boolean).join(' — ').slice(0, 100));
       setStatus('🤖 AI caption added! Tap another option or edit the text.');
     },
-    [set, setSelectedId]
+    [set, setSelectedId, template]
   );
 
   const handlePublish = async (e) => {
@@ -686,14 +728,16 @@ export default function MemeForge({ intent, user, onClose, onPublish, onRequireA
       handleMediaFile,
       handleRandomizeCaption,
       applyCaption,
-      templateHint: parent?.title || intent?.title || '',
+      templateHint: template?.aiHint || parent?.title || intent?.title || '',
+      templateSlots: template ? template.slots.map((s) => s.label) : null,
       requireAuth: onRequireAuth,
+      browseTemplates: onBrowseTemplates,
       removeSelected,
       openFile: () => fileRef.current?.click(),
       openSticker: () => stickerRef.current?.click()
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activePanel, removeSelected, handleRandomizeCaption, applyCaption, onRequireAuth]
+    [activePanel, removeSelected, handleRandomizeCaption, applyCaption, onRequireAuth, onBrowseTemplates, template]
   );
 
   const handleDropFile = (e) => {

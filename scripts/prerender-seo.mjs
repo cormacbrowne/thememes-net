@@ -1,8 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SEO_ROUTES, SITE_ORIGIN, DEFAULT_OG_IMAGE, getTemplateRoutePath } from '../src/data/seoRoutes.js';
-import { STARTER_MEMES, STUDIO_TEMPLATES } from '../src/data/starterMemes.js';
+import { SEO_ROUTES, SITE_ORIGIN, DEFAULT_OG_IMAGE } from '../src/data/seoRoutes.js';
+import { STARTER_MEMES } from '../src/data/starterMemes.js';
+import { MEME_TEMPLATES, TEMPLATES_INDEX_PATH, relatedTemplates } from '../src/data/memeTemplates.js';
+import { TEMPLATES_INDEX_META, buildTemplateJsonLd, buildTemplatesIndexJsonLd } from '../src/utils/templateSeo.js';
 import { buildRouteJsonLd } from '../src/utils/seoEngine.js';
 import { buildMemeJsonLd, memeSeoDescription } from '../src/utils/memeSeo.js';
 import { extractUniqueCreatorHandles } from '../src/utils/creatorProfiles.js';
@@ -72,41 +74,6 @@ function buildPrerenderMainHtml(route) {
           ${itemsHtml}
         </div>
       </section>`;
-  } else if (route.prerenderTemplates) {
-    const templatesHtml = STUDIO_TEMPLATES.map(
-      (tpl, idx) => `
-        <figure style="margin:0;background:#110d22;border:1px solid #2c2452;border-radius:12px;overflow:hidden;">
-          <a href="${escapeHtml(getTemplateRoutePath(tpl))}" style="text-decoration:none;color:inherit;display:block;">
-            <img src="${escapeHtml(tpl.src)}" alt="${escapeHtml(tpl.name)} blank meme template" width="540" height="480" loading="${idx < 4 ? 'eager' : 'lazy'}" style="display:block;width:100%;height:auto;background:#07060f;" />
-            <figcaption style="padding:10px 12px;font-size:13px;line-height:1.4;color:#e2e8f0;">
-              <strong>${escapeHtml(tpl.name)}</strong>
-              <span style="display:block;font-size:12px;color:#94a3b8;margin-top:4px;">${escapeHtml(tpl.defaultTop || '')} / ${escapeHtml(tpl.defaultBottom || '')}</span>
-            </figcaption>
-          </a>
-        </figure>`
-    ).join('');
-
-    showcaseHtml = `
-      <section aria-label="20 Blank Meme Templates" style="margin-top:24px;">
-        <h2 style="font-size:20px;margin:0 0 14px;color:#19f0ff;">20 Ready-to-Caption Blank Meme Templates</h2>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
-          ${templatesHtml}
-        </div>
-      </section>`;
-  } else if (route.studioTemplateId) {
-    const tpl = STUDIO_TEMPLATES.find((t) => t.id === route.studioTemplateId);
-    if (tpl) {
-      showcaseHtml = `
-        <section aria-label="${escapeHtml(tpl.name)} Preview" style="margin-top:24px;max-width:520px;">
-          <figure style="margin:0;background:#110d22;border:1px solid #2c2452;border-radius:12px;overflow:hidden;">
-            <img src="${escapeHtml(tpl.src)}" alt="${escapeHtml(tpl.name)} blank meme template" width="540" height="480" loading="eager" style="display:block;width:100%;height:auto;background:#07060f;" />
-            <figcaption style="padding:12px;font-size:14px;color:#e2e8f0;">
-              <strong>Example Top Text:</strong> ${escapeHtml(tpl.defaultTop || '')}<br />
-              <strong>Example Bottom Text:</strong> ${escapeHtml(tpl.defaultBottom || '')}
-            </figcaption>
-          </figure>
-        </section>`;
-    }
   } else if (route.path === '/') {
     const topPreviewMemes = STARTER_MEMES.slice(0, 4);
     const previewHtml = topPreviewMemes
@@ -188,9 +155,6 @@ function renderRouteHtml(baseHtml, route) {
   if (route.prerenderCategory) {
     const firstCatMeme = STARTER_MEMES.find((m) => m.category === route.prerenderCategory);
     preloadHref = firstCatMeme?.image_url || null;
-  } else if (route.studioTemplateId) {
-    const tpl = STUDIO_TEMPLATES.find((t) => t.id === route.studioTemplateId);
-    preloadHref = tpl?.src || null;
   }
   // '/' no longer paints a starter meme first (owner brief 17 Nov 2026), so nothing to preload there.
 
@@ -418,6 +382,128 @@ function renderCreatorHtml(baseHtml, creator) {
   return html.replace(/<div\s+id="root"><\/div>/i, `<div id="root">${prerenderMain}</div>`);
 }
 
+/** Shared <head> rewrite for pages that are not in SEO_ROUTES. */
+function applyHeadMeta(baseHtml, { title, description, canonicalUrl, ogImage, ogW, ogH, jsonLd, preload }) {
+  let html = baseHtml;
+  const t = escapeHtml(title);
+  const d = escapeHtml(description);
+  const u = escapeHtml(canonicalUrl);
+  const img = escapeHtml(ogImage);
+  const preloadPattern = /\s*<link\s+rel="preload"\s+as="image"[^>]*>/i;
+  html = preload
+    ? html.replace(preloadPattern, `\n    <link rel="preload" as="image" href="${escapeHtml(preload)}" type="image/webp" fetchpriority="high" />`)
+    : html.replace(preloadPattern, '');
+  html = replaceOrThrow(html, /<title>[\s\S]*?<\/title>/i, `<title>${t}</title>`, `title on ${canonicalUrl}`);
+  html = html.replace(/<meta\s+name="description"\s+content="[^"]*"\s*\/?>/i, `<meta name="description" content="${d}" />`);
+  html = html.replace(/<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${u}" />`);
+  html = html.replace(/<meta\s+property="og:title"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${t}" />`);
+  html = html.replace(/<meta\s+property="og:description"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${d}" />`);
+  html = html.replace(/<meta\s+property="og:url"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${u}" />`);
+  html = html.replace(/<meta\s+property="og:image"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${img}" />`);
+  if (ogW && ogH) {
+    html = html.replace(/<meta\s+property="og:image:width"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:image:width" content="${ogW}" />`);
+    html = html.replace(/<meta\s+property="og:image:height"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:image:height" content="${ogH}" />`);
+  }
+  html = html.replace(/<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${t}" />`);
+  html = html.replace(/<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${d}" />`);
+  html = html.replace(/<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${img}" />`);
+  const ld = JSON.stringify(jsonLd).replaceAll('<', '\\u003c');
+  html = html.replace(/\s*<script[^>]*id="tm-dynamic-jsonld"[^>]*>[\s\S]*?<\/script>/i, '');
+  html = replaceOrThrow(html, /<\/head>/i, `  <script id="tm-dynamic-jsonld" type="application/ld+json">${ld}</script>\n  </head>`, `json-ld on ${canonicalUrl}`);
+  return html;
+}
+
+const TPL_STYLE = `<style>
+.tm-pre-tpl{min-height:100vh;background:#07060f;color:#e9e6ff;font-family:system-ui,-apple-system,sans-serif}
+.tm-pre-tpl .w{max-width:1040px;margin:0 auto;padding:20px 16px 64px}
+.tm-pre-tpl header.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid #2c2452}
+.tm-pre-tpl header.bar a{color:#19f0ff;text-decoration:none;font-weight:800}
+.tm-pre-tpl .brand{font-size:18px;letter-spacing:.06em}
+.tm-pre-tpl h1{margin:0 0 12px;font-size:32px;line-height:1.2;color:#fff}
+.tm-pre-tpl h2{margin:28px 0 10px;font-size:21px;color:#ffb800}
+.tm-pre-tpl p,.tm-pre-tpl li{color:#cbd5e1;line-height:1.65;font-size:16px}
+.tm-pre-tpl .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.tm-pre-tpl .card{display:block;background:#110d22;border:1px solid #2c2452;border-radius:12px;overflow:hidden;color:inherit;text-decoration:none}
+.tm-pre-tpl .card img{display:block;width:100%;height:auto;aspect-ratio:1/1}
+.tm-pre-tpl .card span{display:block;padding:8px 10px;font-size:14px;color:#fff;font-weight:700}
+.tm-pre-tpl .hero{display:grid;grid-template-columns:1.1fr 1fr;gap:22px;align-items:start}
+.tm-pre-tpl .hero img{display:block;width:100%;height:auto;border-radius:14px;border:1px solid #2c2452}
+.tm-pre-tpl .cta{display:inline-block;margin:10px 0;padding:14px 20px;border-radius:12px;background:#19f0ff;color:#07060f;font-weight:900;text-decoration:none}
+.tm-pre-tpl nav.crumbs{font-size:13px;margin-bottom:12px}
+.tm-pre-tpl nav.crumbs a{color:#19f0ff;text-decoration:none}
+@media (max-width:760px){.tm-pre-tpl .hero{grid-template-columns:1fr}.tm-pre-tpl .grid{grid-template-columns:repeat(2,1fr)}}
+</style>`;
+
+function preTplShell(inner, route) {
+  return `<main class="tm-seo-prerender tm-pre-tpl" data-seo-route="${escapeHtml(route)}">${TPL_STYLE}
+      <header class="bar"><a class="brand" href="/">THE MEMES.net</a><a href="/meme-generator">Meme Generator</a></header>
+      <div class="w">${inner}</div>
+    </main>`;
+}
+
+function templateCardHtml(t, eager) {
+  return `<a class="card" href="${escapeHtml(t.path)}"><img src="${escapeHtml(t.thumb)}" alt="${escapeHtml(t.name)} meme template" width="360" height="360" loading="${eager ? 'eager' : 'lazy'}" /><span>${escapeHtml(t.name)}</span></a>`;
+}
+
+function renderTemplatesIndexHtml(baseHtml) {
+  const canonicalUrl = `${SITE_ORIGIN}${TEMPLATES_INDEX_PATH}`;
+  let html = applyHeadMeta(baseHtml, {
+    title: TEMPLATES_INDEX_META.title,
+    description: TEMPLATES_INDEX_META.description,
+    canonicalUrl,
+    ogImage: `${SITE_ORIGIN}${MEME_TEMPLATES[0].image}`,
+    ogW: String(MEME_TEMPLATES[0].width),
+    ogH: String(MEME_TEMPLATES[0].height),
+    jsonLd: buildTemplatesIndexJsonLd(SITE_ORIGIN),
+    preload: MEME_TEMPLATES[0].thumb
+  });
+  const inner = `<h1>${escapeHtml(TEMPLATES_INDEX_META.h1)}</h1>
+        <p>${escapeHtml(TEMPLATES_INDEX_META.intro)}</p>
+        <div class="grid">${MEME_TEMPLATES.map((t, i) => templateCardHtml(t, i < 6)).join('')}</div>`;
+  return replaceOrThrow(html, /<div\s+id="root"><\/div>/i, `<div id="root">${preTplShell(inner, TEMPLATES_INDEX_PATH)}</div>`, 'root on /templates');
+}
+
+function renderTemplateHtml(baseHtml, t) {
+  const canonicalUrl = `${SITE_ORIGIN}${t.path}`;
+  let html = applyHeadMeta(baseHtml, {
+    title: t.title,
+    description: t.description,
+    canonicalUrl,
+    ogImage: `${SITE_ORIGIN}${t.image}`,
+    ogW: String(t.width),
+    ogH: String(t.height),
+    jsonLd: buildTemplateJsonLd(t, SITE_ORIGIN),
+    preload: t.image
+  });
+  const examples = t.examples
+    .map((ex) => `<li>${ex.map((line, j) => (line ? `<strong>${escapeHtml(t.slots[j]?.label || 'Text')}:</strong> ${escapeHtml(line)}` : '')).filter(Boolean).join(' · ')}</li>`)
+    .join('');
+  const faq = t.faq.map((f) => `<h3 style="font-size:17px;color:#fff;margin:16px 0 6px">${escapeHtml(f.q)}</h3><p>${escapeHtml(f.a)}</p>`).join('');
+  const inner = `<nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> › <a href="${TEMPLATES_INDEX_PATH}">Meme Templates</a> › ${escapeHtml(t.name)}</nav>
+        <div class="hero">
+          <img src="${escapeHtml(t.image)}" alt="${escapeHtml(t.name)} meme template, blank" width="${t.width}" height="${t.height}" fetchpriority="high" />
+          <div>
+            <h1>${escapeHtml(t.name)} Meme Template</h1>
+            <p>${escapeHtml(t.summary)}</p>
+            ${t.aka?.length ? `<p style="font-size:13px;color:#94a3b8">Also known as: ${escapeHtml(t.aka.join(', '))}</p>` : ''}
+            <a class="cta" href="${escapeHtml(t.path)}">✏️ Use this template</a>
+            <p style="font-size:13px;color:#94a3b8">Free, no sign-up. Type your own text or let AI write the joke.</p>
+          </div>
+        </div>
+        <h2>What the ${escapeHtml(t.name)} meme means</h2>
+        <p>${escapeHtml(t.meaning)}</p>
+        <h2>How to make a ${escapeHtml(t.name)} meme</h2>
+        <p>${escapeHtml(t.howTo)}</p>
+        <h2>${escapeHtml(t.name)} meme examples</h2>
+        <ul>${examples}</ul>
+        <h2>${escapeHtml(t.name)} meme FAQ</h2>
+        ${faq}
+        <h2>More meme templates</h2>
+        <div class="grid">${relatedTemplates(t, 6).map((r) => templateCardHtml(r, false)).join('')}</div>
+        <p><a href="${TEMPLATES_INDEX_PATH}" style="color:#19f0ff;font-weight:700">See all ${MEME_TEMPLATES.length} meme templates →</a></p>`;
+  return replaceOrThrow(html, /<div\s+id="root"><\/div>/i, `<div id="root">${preTplShell(inner, t.path)}</div>`, `root on ${t.path}`);
+}
+
 function writeDualCleanUrlFiles(relativeRoutePath, renderedHtml) {
   const cleanRel = relativeRoutePath.replace(/^\/+/, '');
   if (!cleanRel) return;
@@ -452,6 +538,11 @@ function main() {
     writeDualCleanUrlFiles(`/m/${encodeURIComponent(String(meme.id))}`, renderedMeme);
   }
 
+  writeDualCleanUrlFiles(TEMPLATES_INDEX_PATH, renderTemplatesIndexHtml(baseHtml));
+  for (const t of MEME_TEMPLATES) {
+    writeDualCleanUrlFiles(t.path, renderTemplateHtml(baseHtml, t));
+  }
+
   const creators = extractUniqueCreatorHandles(STARTER_MEMES);
   for (const creator of creators) {
     const renderedCreator = renderCreatorHtml(baseHtml, creator);
@@ -463,7 +554,7 @@ function main() {
   fs.rmSync(path.join(DIST_DIR, 'sitemap.xml'), { force: true });
 
   console.log(
-    `[prerender-seo] Generated ${SEO_ROUTES.length} static SEO routes + ${creators.length} creator profiles + ${STARTER_MEMES.length} static meme pages in dist/ (${todayIso}).`
+    `[prerender-seo] Generated ${SEO_ROUTES.length} static SEO routes + ${MEME_TEMPLATES.length + 1} template pages + ${creators.length} creator profiles + ${STARTER_MEMES.length} static meme pages in dist/ (${todayIso}).`
   );
 }
 

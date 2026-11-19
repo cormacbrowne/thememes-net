@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { FONT_PACK, makeTextLayer, makeSticker } from './forgeEngine';
 import { STUDIO_FILTERS } from '../../utils/canvasMutator';
 import AiCaptionWriter from './AiCaptionWriter';
+import { MEME_TEMPLATES } from '../../data/memeTemplates';
+
+const MEME_TEMPLATE_COUNT = MEME_TEMPLATES.length;
 
 const COLOR_SWATCHES = ['#ffffff', '#facc15', '#00f3ff', '#ff0055', '#22c55e', '#000000'];
 const EMOJI_PALETTE = ['🔥', '💀', '😂', '🗿', '🚀', '⚡', '👑', '🦆', '💎', '🤡', '💯', '🍿'];
@@ -20,6 +23,7 @@ export default function ForgeToolPanel({
   const [showExtras, setShowExtras] = useState(false);
 
   const textLayers = doc.layers.filter((l) => l.type === 'text');
+  const labelledLayers = textLayers.filter((l) => l.label);
   const sortedByY = [...textLayers].sort((a, b) => (a.y ?? 0.5) - (b.y ?? 0.5));
   const topLayer = textLayers.find((l) => l.slot === 'top') || sortedByY[0] || null;
   const bottomLayer =
@@ -85,16 +89,48 @@ export default function ForgeToolPanel({
               🎲 Random Text
             </button>
           </div>
+          {tools.browseTemplates && (
+            <button type="button" className="tm-btn tm-w-full tm-forge-templates-btn" onClick={tools.browseTemplates}>
+              🖼️ Browse {MEME_TEMPLATE_COUNT} meme templates
+            </button>
+          )}
 
           {tools.applyCaption && (
             <AiCaptionWriter
               onApply={tools.applyCaption}
               templateHint={tools.templateHint || ''}
+              slots={tools.templateSlots}
               onRequireAuth={tools.requireAuth}
             />
           )}
 
+          {/* Template caption boxes: one labelled input per box */}
+          {labelledLayers.length > 0 && (
+            <div className="tm-tool-section">
+              {labelledLayers.map((l, i) => (
+                <div key={l.id}>
+                  <label className="tm-label" htmlFor={`tm-forge-slot-${i}`} style={i ? { marginTop: 4 } : undefined}>
+                    {l.label}
+                  </label>
+                  <input
+                    id={`tm-forge-slot-${i}`}
+                    type="text"
+                    className="tm-input tm-w-full"
+                    value={l.text || ''}
+                    onChange={(e) => {
+                      updateLayer(l.id, { text: e.target.value });
+                      setSelectedId(l.id);
+                    }}
+                    onFocus={() => setSelectedId(l.id)}
+                    placeholder={`${l.label}…`}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Step 2: Direct Top & Bottom Meme Inputs */}
+          {labelledLayers.length === 0 && (
           <div className="tm-tool-section">
             <label className="tm-label" htmlFor="tm-forge-top-text">
               TOP TEXT
@@ -122,6 +158,7 @@ export default function ForgeToolPanel({
               placeholder="BOTTOM MEME TEXT..."
             />
           </div>
+          )}
 
           {/* Classic Meme Styling Row */}
           <div className="tm-tool-section">

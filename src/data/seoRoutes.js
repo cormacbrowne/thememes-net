@@ -5,6 +5,10 @@
 // ==========================================
 
 import { MEME_TEMPLATES, getTemplateByPath, getTemplateBySlug, TEMPLATES_INDEX_PATH } from './memeTemplates.js';
+import { ARCADE_GAMES_CATALOG } from './arcadeGamesCatalog.js';
+
+/** Real number of games in the arcade, so every page says the same thing. */
+export const ARCADE_GAME_COUNT = ARCADE_GAMES_CATALOG.length;
 
 export const SITE_ORIGIN = 'https://www.thememes.net';
 export const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/og-card.png`;
@@ -152,10 +156,10 @@ export const SEO_ROUTES = [
   },
   {
     path: '/games',
-    title: 'Free Cyber-Arcade Lobby — 15 Retro & Meme Games | THE MEMES.net',
+    title: `Free Cyber-Arcade Lobby — ${ARCADE_GAME_COUNT} Retro & Meme Games | THE MEMES.net`,
     description:
-      "Explore all 15 free browser arcade games on THE MEMES.net: Neon Bingo '86 (90 UK calls), Neon Coin Dozer, Lightning Roulette, Pinball, Magic 8-Ball, Neon Derby, Guess The Meme & MEMEDAQ.",
-    h1: 'Cyber-Arcade Lobby — Play 15 Free Retro & Meme Games',
+      `Explore all ${ARCADE_GAME_COUNT} free browser arcade games on THE MEMES.net: Neon Bingo '86 (90 UK calls), Neon Coin Dozer, Lightning Roulette, Pinball, Magic 8-Ball, Neon Derby, Guess The Meme & MEMEDAQ.`,
+    h1: `Cyber-Arcade Lobby — Play ${ARCADE_GAME_COUNT} Free Retro & Meme Games`,
     kicker: 'THE MEMES.net // Casino, Skill, Daily Meme Games & Market Sim',
     changefreq: 'daily',
     priority: '0.95',
@@ -408,7 +412,7 @@ export const SEO_ROUTES = [
     category: 'all',
     introParagraphs: [
       "Put your meme taste to the test in Higher or Lower: Meme Edition, an endless free-to-play prediction game built right on top of the live THE MEMES.net meme catalog. Two posts appear side by side with the first meme's verified community upvote score revealed, and your job is simply to call whether the next meme has higher or lower upvotes.",
-      'Pulling dynamically from real community uploads alongside classic seed memes across dank, tech, gaming, and relatable categories, every round tests how well you know what makes the internet laugh. Streak along effortlessly on desktop or mobile portrait screens with large one-tap Higher and Lower buttons and zero cost or login walls required.',
+      'Pulling dynamically from real community uploads alongside classic memes across dank, tech, gaming, and relatable categories, every round tests how well you know what makes the internet laugh. Streak along effortlessly on desktop or mobile portrait screens with large one-tap Higher and Lower buttons and zero cost or login walls required.',
       'Beat your personal high score saved in local storage, generate a shareable streak card when a run ends, and click any meme title right inside the matchup to open its theater view, upvote it, or make your own meme in the free meme generator.'
     ]
   },
@@ -499,6 +503,25 @@ export const SEO_ROUTES = [
     ]
   },
   {
+    path: '/prank-screens',
+    title: 'Fake Prank Screens — Fake Update, Blue Screen, Cracked Phone & Hacker Pranks | THE MEMES.net',
+    description:
+      'Free fullscreen prank screens: fake system update, fake blue screen crash, cracked phone and tablet glass, hacker terminal, fake video call and boss spreadsheet. One tap, full screen, harmless.',
+    h1: 'Fake Prank Screens — Fullscreen Pranks for Any Device',
+    kicker: 'Prank Screens // Tap, Go Fullscreen, Hand It Over',
+    changefreq: 'weekly',
+    priority: '0.95',
+    viewMode: 'pranks',
+    category: 'all',
+    prerenderPranks: true,
+    schemaType: 'CollectionPage',
+    introParagraphs: [
+      'Pick a prank screen, tap it, go fullscreen and hand over the computer or phone. THE MEMES.net has a whole collection of harmless fake screens that look real enough to fool friends, family and coworkers for a few seconds: a fake system update stuck at 69%, a fake blue screen crash, a cracked phone or tablet screen with sparks, a scrolling hacker terminal, a fake video meeting with an incoming call, an AI workspace and a very serious boss spreadsheet.',
+      'Every prank runs in your browser with nothing to install and no sign-up. On a computer press F11 (or use the Fullscreen button) to hide the tabs and address bar; on iPad, Android and desktop the pages go fullscreen with one tap, and on iPhone add the page to your Home Screen for an edge-to-edge prank. Tap anywhere to make the progress move so it looks alive.',
+      'The pranks are completely harmless: nothing is installed, deleted or changed on any device, and Escape or the close button ends the joke instantly. They are our own designs, not real system screens, and are not affiliated with any operating system or app maker. Please only prank people who will laugh about it afterwards.'
+    ]
+  },
+  {
     path: '/fake-windows-update-screen',
     title: 'Fake Windows Update Screen (Interactive Fullscreen Prank) | THE MEMES.net',
     description:
@@ -507,7 +530,7 @@ export const SEO_ROUTES = [
     kicker: 'Prank & Boss Screen Suite // Press F11 For Fullscreen',
     changefreq: 'weekly',
     priority: '0.9',
-    viewMode: 'feed',
+    viewMode: 'pranks',
     category: 'all',
     bossDisguise: 'update',
     introParagraphs: [
@@ -525,7 +548,7 @@ export const SEO_ROUTES = [
     kicker: 'Prank & Boss Screen Suite // Press F11 For Fullscreen',
     changefreq: 'weekly',
     priority: '0.9',
-    viewMode: 'feed',
+    viewMode: 'pranks',
     category: 'all',
     bossDisguise: 'bsod',
     introParagraphs: [
@@ -543,7 +566,7 @@ export const SEO_ROUTES = [
     kicker: 'Prank Screens // Tap To Crack It More',
     changefreq: 'weekly',
     priority: '0.9',
-    viewMode: 'feed',
+    viewMode: 'pranks',
     category: 'all',
     bossDisguise: 'crackphone',
     introParagraphs: [
@@ -562,7 +585,7 @@ export const SEO_ROUTES = [
     kicker: 'Prank Screens // Big-Screen Smash',
     changefreq: 'weekly',
     priority: '0.8',
-    viewMode: 'feed',
+    viewMode: 'pranks',
     category: 'all',
     bossDisguise: 'crackpad',
     introParagraphs: [
@@ -581,7 +604,7 @@ export const SEO_ROUTES = [
     kicker: 'Boss Key Panic Suite // Clickable Cells & Audit Macro',
     changefreq: 'weekly',
     priority: '0.9',
-    viewMode: 'feed',
+    viewMode: 'pranks',
     category: 'all',
     bossDisguise: 'excel',
     introParagraphs: [
@@ -603,9 +626,9 @@ export const SEO_ROUTES = [
     category: 'dank',
     prerenderCategory: 'dank',
     introParagraphs: [
-      'Dive into the #DANK feed on THE MEMES.net—home to absurdist reaction memes, chaotic late-night shitposts, stonks vs not-stonks energy, cyber-arcade humor, and fresh community uploads. Every meme loads instantaneously offline or online with lightweight WebP art, and real community uploads always rank automatically above starter classics once submitted.',
+      'Dive into the #DANK feed on THE MEMES.net—home to absurdist reaction memes, chaotic late-night shitposts, stonks vs not-stonks energy, cyber-arcade humor, and fresh community uploads. Every meme loads instantaneously offline or online with lightweight WebP art, and fresh community uploads rise to the top as people vote.',
       'Double-tap any meme card to fire an instant upvote combo, drop 🔥 💀 😂 🗿 emoji reactions, save your favorites, tap Share to send a meme straight to a group chat, or open the free meme generator to put your own punchline, bold Impact captions, and custom stickers on any classic template. New uploads join the feed after a quick safety check.',
-      'Explore all 16 featured #DANK starter memes right below with full captions and alt descriptions, switch effortlessly between Latest and Top leaderboards, copy direct Theater share links for Discord and WhatsApp, or jump straight into Programming, Gaming, and Relatable meme categories and seven free retro arcade games.'
+      `Explore the top #DANK memes right below with full captions and alt descriptions, switch effortlessly between Latest and Top leaderboards, copy direct Theater share links for Discord and WhatsApp, or jump straight into Programming, Gaming, and Relatable meme categories and ${ARCADE_GAME_COUNT} free retro arcade games.`
     ]
   },
   {
@@ -623,7 +646,7 @@ export const SEO_ROUTES = [
     introParagraphs: [
       'Take a well-earned break from production incidents, pull requests, and endless code reviews with our curated #TECH and programming meme feed. From Friday 4:59 PM production deploys and git blame plot twists to CSS centering struggles, 63 open StackOverflow tabs, light-mode IDE flashbangs, and npm install dependency trees, every post captures real software engineering life.',
       'Double-tap to upvote your favorite developer jokes, save the ones that hit too close to home, or open the free meme generator to drop your engineering team’s latest inside joke onto classic Expanding Brain, This Is Fine, IQ Bell Curve, and Spiderman Pointing formats with zero file uploads needed.',
-      'Browse all 16 featured programming and developer memes right below, download crisp PNGs stamped with www.thememes.net, or share direct Theater links straight into your engineering Slack, Microsoft Teams, and Discord channels with one quick tap on desktop or phone. Fresh developer memes from the community land here as soon as they pass a quick safety check.'
+      'Browse the top programming and developer memes right below, download crisp PNGs stamped with www.thememes.net, or share direct Theater links straight into your engineering Slack, Microsoft Teams, and Discord channels with one quick tap on desktop or phone. Fresh developer memes from the community land here as soon as they pass a quick safety check.'
     ]
   },
   {
@@ -641,7 +664,7 @@ export const SEO_ROUTES = [
     introParagraphs: [
       'Level up your scroll break with the #GAMING meme feed on THE MEMES.net. Celebrate every universal gamer habit—ignoring the main quest for 80 hours of side quests, immediately testing fall damage in every new RPG, reloading after firing a single bullet, leaning 45 degrees closer during a clutch round, and hearing boss-fight Latin choir music right after an autosave icon appears.',
       'Vote head-to-head in the 1v1 King of the Hill Meme Battle Arena, double-tap meme cards to stack 5x overdrive combos on your favorite squad jokes, or open the free meme generator to caption a classic template for your clan Discord server in under 20 seconds.',
-      'Check out all 16 featured gaming and esports memes below, share direct permalinks with your friends and party teammates, and jump straight into 5-table Retro Pinball, Neon Coin Dozer 86, or Meme Crush Saga whenever you want to play. New gaming memes from players join this page as soon as they pass a quick safety check.'
+      'Check out the top gaming and esports memes below, share direct permalinks with your friends and party teammates, and jump straight into 5-table Retro Pinball, Neon Coin Dozer 86, or Meme Crush Saga whenever you want to play. New gaming memes from players join this page as soon as they pass a quick safety check.'
     ]
   },
   {
@@ -659,7 +682,7 @@ export const SEO_ROUTES = [
     introParagraphs: [
       'Scroll the #RELATABLE meme feed for instant "why is this literally me?" comedy—covering 3:47 AM sleep-schedule math, six consecutive morning alarms, checking the fridge for the sixth time hoping new snacks spawned, turning down the car radio to see street signs better, quick 5-minute work meetings that last an hour, and the pure bliss of cancelled weekend plans.',
       'Every card lets you double-tap to upvote, react with emojis, bookmark posts to your personal Saved favorites collection, or tap Share for a direct Theater permalink you can drop straight into group chats on WhatsApp, iMessage, and Discord. Spot a format you want to personalize? Open the free meme generator and add your own top and bottom text.',
-      'Browse all 16 featured relatable memes below, switch cleanly between desktop masonry grid and mobile fullscreen vertical Reels views, explore trending daily caption bounties, or upload your own slice-of-life joke in seconds with zero sign-up hurdles.'
+      'Browse the top relatable memes below, switch cleanly between desktop masonry grid and mobile fullscreen vertical Reels views, explore trending daily caption bounties, or upload your own slice-of-life joke in seconds with zero sign-up hurdles.'
     ]
   },
   {
@@ -718,19 +741,19 @@ export const SEO_ROUTES = [
   },
   {
     path: '/fake-teams-zoom-call-screen',
-    title: 'Fake Microsoft Teams & Zoom Call Screen — Boss Key Meeting Simulator | THE MEMES.net',
+    title: 'Fake Video Call Screen (Teams & Zoom Style) — Boss Key Meeting Prank | THE MEMES.net',
     description:
-      'Open a realistic fake Microsoft Teams & Zoom standup video call screen with 4 coworkers, live corporate transcript captions, incoming Boss Call ringtone prank, and Wi-Fi freeze button.',
-    h1: 'Fake Microsoft Teams & Zoom Call Screen — Boss Key Meeting Simulator',
+      'Open a realistic fake Teams- or Zoom-style standup video call screen with 4 coworkers, live corporate transcript captions, incoming Boss Call ringtone prank, and Wi-Fi freeze button.',
+    h1: 'Fake Video Call Screen (Teams & Zoom Style) — Boss Key Meeting Prank',
     kicker: 'Boss Key Panic Suite // Fake Video Call & Incoming Boss Ringer',
     changefreq: 'weekly',
     priority: '0.92',
-    viewMode: 'feed',
+    viewMode: 'pranks',
     category: 'all',
     bossDisguise: 'zoom',
     introParagraphs: [
-      'Look completely locked into a high-stakes corporate video meeting in one split second with our realistic Fake Microsoft Teams & Zoom Call Screen. Designed to pass an immediate over-the-shoulder glance or pull off hilarious office pranks, the simulator displays a crisp multi-participant standup call grid complete with live speaker borders, muted icons, shared screen badges, and rolling closed-caption buzzwords.',
-      'Toggle seamlessly between authentic Microsoft Teams and Zoom Meeting layouts, trigger a hyper-realistic Incoming Boss Call video ringtone alert from the VP of Synergy complete with Decline or busy auto-reply options, or click Fake Tunnel Lag to switch your tile into a convincing Low Bandwidth Reconnecting state while mining secret Stealth XP.',
+      'Look completely locked into a high-stakes corporate video meeting in one split second with our realistic fake Teams- and Zoom-style call screen. Designed to pass an immediate over-the-shoulder glance or pull off hilarious office pranks, the simulator displays a crisp multi-participant standup call grid complete with live speaker borders, muted icons, shared screen badges, and rolling closed-caption buzzwords.',
+      'Toggle seamlessly between Teams-style and Zoom-style meeting layouts, trigger a hyper-realistic Incoming Boss Call video ringtone alert from the VP of Synergy complete with Decline or busy auto-reply options, or click Fake Tunnel Lag to switch your tile into a convincing Low Bandwidth Reconnecting state while mining secret Stealth XP.',
       'Hit F11 Fullscreen and Hide Bar for a completely edge-to-edge enterprise video call window, or share this exact URL directly with friends and coworkers. Tap keys 1 through 6 anytime to swap into Excel spreadsheets, DevOps Kubernetes terminals, Enterprise AI, Windows Update, or Blue Screen pranks.'
     ]
   },
@@ -743,13 +766,13 @@ export const SEO_ROUTES = [
     kicker: 'Boss Key Panic Suite // Live Type-To-Compile Terminal',
     changefreq: 'weekly',
     priority: '0.9',
-    viewMode: 'feed',
+    viewMode: 'pranks',
     category: 'all',
     bossDisguise: 'terminal',
     introParagraphs: [
       'Channel instant elite sysadmin and hacker energy with the Fake Hacker Terminal & Linux DevOps Compiler Screen on THE MEMES.net. Crafted with glowing phosphor green telemetry on deep Ubuntu server dark gray, it streams live Kubernetes pod rebalancing notices, Terraform apply confirmations, Rust release optimization logs, zero-trust cluster checks, and SOC2 handshake diagnostics.',
       'Want to sell the illusion in front of coworkers or friends during a surprise desk check? Every single key you press—or tap on mobile—types realistic new production microservice compilation lines with live CPU and memory bar readouts, turning casual keyboard mashing into high-intensity DevOps release theater while secretly banking Stealth Arcade XP.',
-      'Use F11 Fullscreen alongside the Hide Bar toggle for an unmistakable full-monitor SSH terminal display, share this direct URL link with teammates for harmless office pranks, or press number keys 1 to 6 anytime to pivot instantly into Excel Q4 sheets, Microsoft Teams calls, Blue Screen crashes, or Windows Update screens.'
+      'Use F11 Fullscreen alongside the Hide Bar toggle for an unmistakable full-monitor SSH terminal display, share this direct URL link with teammates for harmless office pranks, or press number keys 1 to 6 anytime to pivot instantly into Excel-style Q4 sheets, fake video calls, Blue Screen crashes, or Windows Update screens.'
     ]
   },
   {
@@ -761,13 +784,13 @@ export const SEO_ROUTES = [
     kicker: 'Boss Key Panic Suite // Q4 Executive AI Strategy Console',
     changefreq: 'weekly',
     priority: '0.88',
-    viewMode: 'feed',
+    viewMode: 'pranks',
     category: 'all',
     bossDisguise: 'ai',
     introParagraphs: [
       'Blend effortlessly into the modern corporate workday with our Fake Enterprise AI Copilot Workspace (SynergyGPT v5.4). Featuring a crisp light-mode internal dashboard connected to mock Jira tickets, Confluence wikis, and Executive OKR graphs, it displays confidential Q4 architecture alignment summaries, latency reports, and ROI projections that look right at home on any office laptop.',
       'Click Generate Q4 Executive Deliverable anytime someone walks by your monitor to stream fresh corporate memos—from Kubernetes EBITDA guardrail briefings to polite sprint-delay emails packed with holistic scope calibration and stakeholder synergy phrases—while quietly collecting bonus Stealth Arcade XP in the background.',
-      'Switch cleanly to fullscreen with Hide Bar enabled for a completely distraction-free enterprise AI tab on any laptop or desktop screen, share this direct screen link with friends and colleagues for instant office humor, or press number keys 1 through 6 to flip immediately into fake Excel spreadsheets, Microsoft Teams calls, DevOps Linux terminals, Windows Updates, or Blue Screen crashes.'
+      'Switch cleanly to fullscreen with Hide Bar enabled for a completely distraction-free enterprise AI tab on any laptop or desktop screen, share this direct screen link with friends and colleagues for instant office humor, or press number keys 1 through 6 to flip immediately into fake spreadsheets, fake video calls, DevOps Linux terminals, Windows Updates, or Blue Screen crashes.'
     ]
   },
   {
@@ -1164,6 +1187,7 @@ export function getCanonicalPathForState({
   if (bossKeyActive && prankDisguise && PRANK_DISGUISE_TO_PATH[prankDisguise]) {
     return PRANK_DISGUISE_TO_PATH[prankDisguise];
   }
+  if (viewMode === 'pranks') return '/prank-screens';
   if (showStudio) {
     if (forgeIntent?.mode === 'gif') {
       return '/meme-generator';

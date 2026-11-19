@@ -269,7 +269,7 @@ export const BOSS_SCREENS_CATALOG = [
   {
     id: 'zoom',
     icon: '📹',
-    label: 'Fake Microsoft Teams & Zoom Call',
+    label: 'Fake Video Call (Teams / Zoom style)',
     pitch: 'Realistic 4-person standup meeting, incoming Boss Call ringtone & bad Wi-Fi camera freeze.',
     path: '/fake-teams-zoom-call-screen',
     accent: '#6366f1'
@@ -277,7 +277,7 @@ export const BOSS_SCREENS_CATALOG = [
   {
     id: 'excel',
     icon: '📊',
-    label: 'Fake Excel Q4 Boss Spreadsheet',
+    label: 'Fake Boss Spreadsheet (Excel style)',
     pitch: 'Interactive Q4 Cloud Synergy financial sheet with clickable cells & Monte Carlo audit.',
     path: '/fake-excel-boss-screen',
     accent: '#10b981'
@@ -286,14 +286,14 @@ export const BOSS_SCREENS_CATALOG = [
     id: 'bsod',
     icon: '💀',
     label: 'Fake Blue Screen of Death (BSOD)',
-    pitch: 'Classic Windows ":(" crash screen with live % recovery & IT support QR prank.',
+    pitch: 'Classic ":(" blue crash screen with live % recovery & IT support QR prank.',
     path: '/fake-blue-screen-prank',
     accent: '#0284c7'
   },
   {
     id: 'update',
     icon: '🔄',
-    label: 'Fake Windows Update Screen',
+    label: 'Fake System Update Screen',
     pitch: 'Fullscreen "Working on updates 69% complete" prank — click anywhere to advance %.',
     path: '/fake-windows-update-screen',
     accent: '#0ea5e9'

@@ -155,6 +155,13 @@ export default function SeoDiscoveryFooter({
                 🕹️ Cyber-Arcade Lobby (All {ARCADE_GAMES_CATALOG.length} Games)
               </a>
               <a
+                href="/prank-screens"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('pranks'))}
+              >
+                😈 All Fake Prank Screens (Update, Crash, Cracked Phone…)
+              </a>
+              <a
                 href="/games/neon-bingo"
                 className="tm-seo-link"
                 onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('bingo'))}

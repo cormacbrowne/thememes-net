@@ -5,6 +5,7 @@ import { SEO_ROUTES, SITE_ORIGIN, DEFAULT_OG_IMAGE } from '../src/data/seoRoutes
 import { STARTER_MEMES } from '../src/data/starterMemes.js';
 import { MEME_TEMPLATES, TEMPLATES_INDEX_PATH, relatedTemplates } from '../src/data/memeTemplates.js';
 import { TEMPLATES_INDEX_META, buildTemplateJsonLd, buildTemplatesIndexJsonLd } from '../src/utils/templateSeo.js';
+import { BOSS_SCREENS_CATALOG } from '../src/data/arcadeGamesCatalog.js';
 import { buildRouteJsonLd } from '../src/utils/seoEngine.js';
 import { buildMemeJsonLd, memeSeoDescription } from '../src/utils/memeSeo.js';
 import { extractUniqueCreatorHandles } from '../src/utils/creatorProfiles.js';
@@ -69,10 +70,23 @@ function buildPrerenderMainHtml(route) {
 
     showcaseHtml = `
       <section aria-label="${escapeHtml(route.h1)} Gallery" style="margin-top:24px;">
-        <h2 style="font-size:20px;margin:0 0 14px;color:#ffb800;">Featured ${escapeHtml(route.category.toUpperCase())} Seed Memes (${categoryMemes.length})</h2>
+        <h2 style="font-size:20px;margin:0 0 14px;color:#ffb800;">Top ${escapeHtml(route.category.charAt(0).toUpperCase() + route.category.slice(1))} Memes</h2>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">
           ${itemsHtml}
         </div>
+      </section>`;
+  } else if (route.prerenderPranks) {
+    const cards = BOSS_SCREENS_CATALOG.map(
+      (p) => `
+          <a href="${escapeHtml(p.path)}" style="display:block;background:#110d22;border:1px solid #2c2452;border-radius:12px;padding:14px;color:inherit;text-decoration:none;">
+            <strong style="display:block;color:#fff;font-size:16px;margin-bottom:6px;">${escapeHtml(p.icon)} ${escapeHtml(p.label)}</strong>
+            <span style="display:block;color:#94a3b8;font-size:14px;line-height:1.5;">${escapeHtml(p.pitch)}</span>
+          </a>`
+    ).join('');
+    showcaseHtml = `
+      <section aria-label="All prank screens" style="margin-top:24px;">
+        <h2 style="font-size:20px;margin:0 0 14px;color:#ff2e88;">All ${BOSS_SCREENS_CATALOG.length} Prank Screens</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;">${cards}</div>
       </section>`;
   } else if (route.path === '/') {
     const topPreviewMemes = STARTER_MEMES.slice(0, 4);
@@ -129,17 +143,19 @@ function bootSplashHtml() {
 .tm-boot .tm-chrome-sheen{animation:tmBootSheen 4.8s ease-in-out infinite}
 .tm-boot .tm-chrome-star-1{transform-origin:122px 76px;animation:tmBootTwinkle 2.8s ease-in-out infinite}
 .tm-boot .tm-chrome-star-2{transform-origin:558px 80px;animation:tmBootTwinkle 3.4s ease-in-out 1.1s infinite}
-.tm-boot p{margin:0;color:#9d98c2;font-size:14px;letter-spacing:.14em;text-transform:uppercase}
-.tm-boot p span{display:inline-block;width:6px;height:6px;margin-left:8px;border-radius:50%;background:#19f0ff;box-shadow:0 0 10px #19f0ff;animation:tmBootDot 1.2s ease-in-out infinite}
+.tm-boot .tm-boot-dots{display:flex;gap:8px}
+.tm-boot .tm-boot-dots span{display:block;width:7px;height:7px;border-radius:50%;background:#19f0ff;box-shadow:0 0 10px #19f0ff;animation:tmBootDot 1.2s ease-in-out infinite}
+.tm-boot .tm-boot-dots span:nth-child(2){animation-delay:.2s}
+.tm-boot .tm-boot-dots span:nth-child(3){animation-delay:.4s}
 @keyframes tmBootSheen{0%{transform:translateX(-120px) skewX(-24deg);opacity:0}18%{opacity:.9}42%{transform:translateX(660px) skewX(-24deg);opacity:0}100%{transform:translateX(660px) skewX(-24deg);opacity:0}}
 @keyframes tmBootTwinkle{0%,100%{transform:scale(.75) rotate(0deg);opacity:.65}50%{transform:scale(1.18) rotate(18deg);opacity:1}}
 @keyframes tmBootDot{0%,100%{opacity:.25}50%{opacity:1}}
-@media (prefers-reduced-motion:reduce){.tm-boot .tm-chrome-sheen{display:none}.tm-boot .tm-chrome-star-1,.tm-boot .tm-chrome-star-2,.tm-boot p span{animation:none}}
+@media (prefers-reduced-motion:reduce){.tm-boot .tm-chrome-sheen{display:none}.tm-boot .tm-chrome-star-1,.tm-boot .tm-chrome-star-2,.tm-boot .tm-boot-dots span{animation:none}}
 </style>
-      <section class="tm-boot" aria-label="THE MEMES.net is loading">
+      <div class="tm-boot" aria-hidden="true">
         ${signSvg}
-        <p>Loading fresh memes<span></span></p>
-      </section>`;
+        <div class="tm-boot-dots"><span></span><span></span><span></span></div>
+      </div>`;
 }
 
 function renderRouteHtml(baseHtml, route) {

@@ -5,9 +5,9 @@ import CrackedScreenPrank from './CrackedScreenPrank';
 import './BossKeyOverlay.css';
 
 const DISGUISE_MODES = [
-  { id: 'excel', label: '📊 1. Excel Sheet' },
+  { id: 'excel', label: '📊 1. Spreadsheet' },
   { id: 'terminal', label: '💻 2. DevOps Terminal' },
-  { id: 'zoom', label: '📹 3. Teams / Zoom' },
+  { id: 'zoom', label: '📹 3. Video Call' },
   { id: 'ai', label: '🤖 4. Enterprise AI' },
   { id: 'update', label: '🔄 5. OS Update' },
   { id: 'bsod', label: '💀 6. Blue Screen' },
@@ -690,7 +690,7 @@ export default function BossKeyOverlay({
         </div>
       )}
 
-      {/* DISGUISE 3: CORPORATE MICROSOFT TEAMS / ZOOM STANDUP CALL */}
+      {/* DISGUISE 3: GENERIC VIDEO MEETING STANDUP CALL (no real app names or logos) */}
       {disguise === 'zoom' && (
         <div
           style={{
@@ -717,18 +717,18 @@ export default function BossKeyOverlay({
               padding: '8px 12px',
               borderRadius: '8px',
               background: meetingApp === 'teams' ? '#29293a' : '#1e293b',
-              border: `1px solid ${meetingApp === 'teams' ? '#6264a7' : '#2563eb'}`
+              border: `1px solid ${meetingApp === 'teams' ? '#6d4fc2' : '#2563eb'}`
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 700 }}>
               <span
                 style={{
-                  background: meetingApp === 'teams' ? '#6264a7' : '#2d8cff',
+                  background: meetingApp === 'teams' ? '#6d4fc2' : '#2d8cff',
                   padding: '2px 8px',
                   borderRadius: '4px'
                 }}
               >
-                {meetingApp === 'teams' ? 'Microsoft Teams' : 'Zoom Enterprise'}
+                {meetingApp === 'teams' ? 'Team Call' : 'Video Meeting'}
               </span>
               <span>🔴 REC 00:42:19 · Q4 Architecture &amp; Budget Alignment (4)</span>
             </div>
@@ -747,7 +747,7 @@ export default function BossKeyOverlay({
                   cursor: 'pointer'
                 }}
               >
-                🔄 Switch to {meetingApp === 'teams' ? 'Zoom UI' : 'Microsoft Teams UI'}
+                🔄 Switch to {meetingApp === 'teams' ? 'Video Meeting style' : 'Team Call style'}
               </button>
               <button
                 type="button"
@@ -758,7 +758,7 @@ export default function BossKeyOverlay({
                   setIncomingBossCall(true);
                 }}
                 style={{
-                  background: '#6264a7',
+                  background: '#6d4fc2',
                   color: '#fff',
                   border: 'none',
                   padding: '4px 10px',
@@ -803,13 +803,13 @@ export default function BossKeyOverlay({
                 padding: '16px',
                 borderRadius: '12px',
                 background: meetingApp === 'teams' ? '#242436' : '#1e293b',
-                border: `2px solid ${meetingApp === 'teams' ? '#7b83eb' : '#38bdf8'}`,
+                border: `2px solid ${meetingApp === 'teams' ? '#8b6ff0' : '#38bdf8'}`,
                 boxShadow: '0 14px 36px rgba(0, 0, 0, 0.75)',
                 color: '#ffffff'
               }}
             >
               <div style={{ fontSize: '11px', color: '#a5b4fc', fontWeight: 800, marginBottom: '4px' }}>
-                {meetingApp === 'teams' ? '🟣 MICROSOFT TEAMS INCOMING CALL' : '🔵 ZOOM INCOMING MEETING INVITE'}
+                {meetingApp === 'teams' ? '🟣 INCOMING TEAM CALL' : '🔵 INCOMING MEETING INVITE'}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
                 <div
@@ -1137,7 +1137,7 @@ export default function BossKeyOverlay({
         </div>
       )}
 
-      {/* DISGUISE 6: FAKE WINDOWS BLUE SCREEN OF DEATH (BSOD) */}
+      {/* DISGUISE 6: FAKE BLUE CRASH SCREEN (generic, no OS logos or links) */}
       {disguise === 'bsod' && (
         <div
           onClick={() => {
@@ -1185,7 +1185,7 @@ export default function BossKeyOverlay({
               [QR: IT TICKET #42069]
             </div>
             <div style={{ fontSize: '13px', lineHeight: 1.6, opacity: 0.92 }}>
-              <div>For more information about this issue and possible fixes, visit https://windows.com/stopcode</div>
+              <div>For more information about this issue and possible fixes, visit thememes.net/prank-screens</div>
               <div>If you call a support person, give them this info:</div>
               <div style={{ fontWeight: 700 }}>
                 Stop code: CRITICAL_SYNERGY_OVERFLOW_EXCEPTION (0x00000420)

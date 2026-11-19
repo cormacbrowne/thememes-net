@@ -83,6 +83,7 @@ const LeaderboardModal = lazyWithRetry(() => import('./components/LeaderboardMod
 const PlayerProfileModal = lazyWithRetry(() => import('./components/PlayerProfileModal'));
 const CreatorProfilePage = lazyWithRetry(() => import('./components/CreatorProfilePage'));
 const TemplateLibraryPage = lazyWithRetry(() => import('./components/TemplateLibraryPage'));
+const PrankScreensPage = lazyWithRetry(() => import('./components/PrankScreensPage'));
 const ExtrasDrawerModal = lazyWithRetry(() => import('./components/ExtrasDrawerModal'));
 const RewardsModal = lazyWithRetry(() => import('./components/RewardsModal'));
 const AiRoastModal = lazyWithRetry(() => import('./components/AiRoastModal'));
@@ -1136,7 +1137,8 @@ export default function App() {
             onSelectViewMode={(mode) => {
               sfx.playToggle();
               closeAllModals();
-              setViewMode(mode);
+              if (mode === 'templates') openTemplatePage(null);
+              else setViewMode(mode);
               window.scrollTo?.({ top: 0, left: 0, behavior: 'auto' });
             }}
             onOpenBlankStudio={() => {
@@ -1680,6 +1682,19 @@ export default function App() {
             <ArcadeLoungePromo setViewMode={setViewMode} />
           </Suspense>
         </>
+      )}
+
+      {/* PRANK SCREENS HUB (/prank-screens) */}
+      {viewMode === 'pranks' && (
+        <Suspense fallback={<div style={{ padding: '18px' }}><MemeSkeletonGrid count={3} /></div>}>
+          <PrankScreensPage
+            onOpen={(id) => {
+              sfx.playToggle();
+              setPrankDisguise(id);
+              setBossKeyActive(true);
+            }}
+          />
+        </Suspense>
       )}
 
       {/* MEME TEMPLATE LIBRARY (/templates, /templates/<slug>-meme-template) */}

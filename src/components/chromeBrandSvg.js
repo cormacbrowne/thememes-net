@@ -116,18 +116,19 @@ export function buildChromeSignSvg({
       <feGaussianBlur stdDeviation="${cyanBlur}" result="b"/>
       <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
-    <clipPath id="${safeUid}-clip">
-      <text transform="translate(340, 156) skewX(-12)" x="0" y="0" text-anchor="middle" font-family="Orbitron, Oxanium, sans-serif" font-weight="900" font-size="108" letter-spacing="4">MEMES</text>
-    </clipPath>
+    <!-- Each word exists once so the readable text is "THE MEMES .NET"; layers reuse it -->
+    <text id="${safeUid}-the" x="${theW / 2}" y="${theY}" text-anchor="middle" font-family="Orbitron, Oxanium, sans-serif" font-weight="800" font-size="${theFont}" letter-spacing="${theSpacing}" fill="#e2fdff">THE</text>
+    <text id="${safeUid}-word" transform="translate(340, 156) skewX(-12)" x="0" y="0" text-anchor="middle" font-family="Orbitron, Oxanium, sans-serif" font-weight="900" font-size="108" letter-spacing="4">MEMES</text>
+    <clipPath id="${safeUid}-clip"><use href="#${safeUid}-word"/></clipPath>
   </defs>
   <g transform="${theTransform}">
     <rect x="0" y="0" width="${theW}" height="${theH}" rx="${compact ? 9 : 8}" fill="rgba(12, 34, 52, 0.82)" stroke="#19f0ff" stroke-width="2" filter="url(#${safeUid}-cyan)"/>
-    <text x="${theW / 2}" y="${theY}" text-anchor="middle" font-family="Orbitron, Oxanium, sans-serif" font-weight="800" font-size="${theFont}" letter-spacing="${theSpacing}" fill="#e2fdff">THE</text>
+    <use href="#${safeUid}-the"/>
   </g>
-  <text transform="translate(340, 160) skewX(-12)" x="0" y="0" text-anchor="middle" font-family="Orbitron, Oxanium, sans-serif" font-weight="900" font-size="108" letter-spacing="4" fill="#ff2e88" opacity="0.45" filter="url(#${safeUid}-pink)">MEMES</text>
-  <text transform="translate(340, 164) skewX(-12)" x="0" y="0" text-anchor="middle" font-family="Orbitron, Oxanium, sans-serif" font-weight="900" font-size="108" letter-spacing="4" fill="#210938" stroke="#210938" stroke-width="5">MEMES</text>
-  <text transform="translate(340, 160) skewX(-12)" x="0" y="0" text-anchor="middle" font-family="Orbitron, Oxanium, sans-serif" font-weight="900" font-size="108" letter-spacing="4" fill="url(#${safeUid}-extrude)" stroke="url(#${safeUid}-extrude)" stroke-width="3">MEMES</text>
-  <text transform="translate(340, 156) skewX(-12)" x="0" y="0" text-anchor="middle" font-family="Orbitron, Oxanium, sans-serif" font-weight="900" font-size="108" letter-spacing="4" fill="url(#${safeUid}-chrome)" stroke="url(#${safeUid}-rim)" stroke-width="2.4" paint-order="stroke">MEMES</text>
+  <use href="#${safeUid}-word" transform="translate(0, 4)" fill="#ff2e88" opacity="0.45" filter="url(#${safeUid}-pink)"/>
+  <use href="#${safeUid}-word" transform="translate(0, 8)" fill="#210938" stroke="#210938" stroke-width="5"/>
+  <use href="#${safeUid}-word" transform="translate(0, 4)" fill="url(#${safeUid}-extrude)" stroke="url(#${safeUid}-extrude)" stroke-width="3"/>
+  <use href="#${safeUid}-word" fill="url(#${safeUid}-chrome)" stroke="url(#${safeUid}-rim)" stroke-width="2.4" paint-order="stroke"/>
   ${flowLayer}
   ${starLayer}
   <path d="${CHROME_PULSE_PATH}" fill="none" stroke="url(#${safeUid}-bar)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" filter="url(#${safeUid}-cyan)"/>

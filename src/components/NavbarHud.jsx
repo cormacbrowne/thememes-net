@@ -145,6 +145,22 @@ export default function NavbarHud({
             >
               {activeGame ? activeGame.label : 'Games'}
             </button>
+            <button
+              type="button"
+              className={`ui-tube ui-tube--cyan ui-tube-box tm-nav-mode-pill tm-nav-extra-pill ${viewMode === 'templates' ? 'active' : 'ui-tube-box--off'}`}
+              onClick={() => onSelectViewMode('templates')}
+              title="Free meme templates"
+            >
+              Templates
+            </button>
+            <button
+              type="button"
+              className={`ui-tube ui-tube--cyan ui-tube-box tm-nav-mode-pill tm-nav-extra-pill ${viewMode === 'pranks' ? 'active' : 'ui-tube-box--off'}`}
+              onClick={() => onSelectViewMode('pranks')}
+              title="Fullscreen prank screens"
+            >
+              Pranks
+            </button>
           </nav>
         )}
 

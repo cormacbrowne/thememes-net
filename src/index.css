@@ -5119,3 +5119,10 @@ a.tm-btn {
 .tm-tab svg {
   flex-shrink: 0;
 }
+
+/* Templates / Pranks shortcuts: only where the header has room (footer links cover smaller screens). */
+@media (max-width: 1279px) {
+  .tm-nav-extra-pill {
+    display: none !important;
+  }
+}

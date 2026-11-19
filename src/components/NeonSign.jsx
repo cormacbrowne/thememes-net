@@ -234,19 +234,35 @@ export default function NeonSign({
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
+        {/* Each word exists once (readable text: "THE MEMES .NET"); every glow/extrusion layer is a <use> copy. */}
+        <text
+          id={`${uid}-the`}
+          x={theW / 2}
+          y={theY}
+          textAnchor="middle"
+          fontFamily="Orbitron, Oxanium, sans-serif"
+          fontWeight="800"
+          fontSize={theFont}
+          letterSpacing={theSpacing}
+          fill="#e2fdff"
+        >
+          THE
+        </text>
+        <text
+          id={`${uid}-word`}
+          transform="translate(340, 156) skewX(-12)"
+          x="0"
+          y="0"
+          textAnchor="middle"
+          fontFamily="Orbitron, Oxanium, sans-serif"
+          fontWeight="900"
+          fontSize="108"
+          letterSpacing="4"
+        >
+          MEMES
+        </text>
         <clipPath id={`${uid}-clip`}>
-          <text
-            transform="translate(340, 156) skewX(-12)"
-            x="0"
-            y="0"
-            textAnchor="middle"
-            fontFamily="Orbitron, Oxanium, sans-serif"
-            fontWeight="900"
-            fontSize="108"
-            letterSpacing="4"
-          >
-            MEMES
-          </text>
+          <use href={`#${uid}-word`} />
         </clipPath>
       </defs>
 
@@ -263,86 +279,30 @@ export default function NeonSign({
           strokeWidth="2"
           filter={`url(#${uid}-cyan)`}
         />
-        <text
-          x={theW / 2}
-          y={theY}
-          textAnchor="middle"
-          fontFamily="Orbitron, Oxanium, sans-serif"
-          fontWeight="800"
-          fontSize={theFont}
-          letterSpacing={theSpacing}
-          fill="#e2fdff"
-        >
-          THE
-        </text>
+        <use href={`#${uid}-the`} />
       </g>
 
       {/* Ambient Pink Backlight */}
-      <text
-        transform="translate(340, 160) skewX(-12)"
-        x="0"
-        y="0"
-        textAnchor="middle"
-        fontFamily="Orbitron, Oxanium, sans-serif"
-        fontWeight="900"
-        fontSize="108"
-        letterSpacing="4"
-        fill="#ff2e88"
-        opacity="0.45"
-        filter={`url(#${uid}-pink)`}
-      >
-        MEMES
-      </text>
+      <use href={`#${uid}-word`} transform="translate(0, 4)" fill="#ff2e88" opacity="0.45" filter={`url(#${uid}-pink)`} />
 
       {/* 3D Extrusion Layers */}
-      <text
-        transform="translate(340, 164) skewX(-12)"
-        x="0"
-        y="0"
-        textAnchor="middle"
-        fontFamily="Orbitron, Oxanium, sans-serif"
-        fontWeight="900"
-        fontSize="108"
-        letterSpacing="4"
-        fill="#210938"
-        stroke="#210938"
-        strokeWidth="5"
-      >
-        MEMES
-      </text>
-      <text
-        transform="translate(340, 160) skewX(-12)"
-        x="0"
-        y="0"
-        textAnchor="middle"
-        fontFamily="Orbitron, Oxanium, sans-serif"
-        fontWeight="900"
-        fontSize="108"
-        letterSpacing="4"
+      <use href={`#${uid}-word`} transform="translate(0, 8)" fill="#210938" stroke="#210938" strokeWidth="5" />
+      <use
+        href={`#${uid}-word`}
+        transform="translate(0, 4)"
         fill={`url(#${uid}-extrude)`}
         stroke={`url(#${uid}-extrude)`}
         strokeWidth="3"
-      >
-        MEMES
-      </text>
+      />
 
       {/* Primary Chrome Wordmark */}
-      <text
-        transform="translate(340, 156) skewX(-12)"
-        x="0"
-        y="0"
-        textAnchor="middle"
-        fontFamily="Orbitron, Oxanium, sans-serif"
-        fontWeight="900"
-        fontSize="108"
-        letterSpacing="4"
+      <use
+        href={`#${uid}-word`}
         fill={`url(#${uid}-chrome)`}
         stroke={`url(#${uid}-rim)`}
         strokeWidth="2.4"
         paintOrder="stroke"
-      >
-        MEMES
-      </text>
+      />
 
       {/* Animated Specular Sheen Sweep */}
       {showFlow && (

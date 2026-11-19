@@ -4,7 +4,7 @@ import process from 'node:process';
 import { STARTER_MEMES } from '../src/data/starterMemes.js';
 import { SITE_ORIGIN, DEFAULT_OG_IMAGE, CATEGORY_ID_TO_SLUG } from '../src/data/seoRoutes.js';
 import { replaceRootContent, replaceRouteJsonLd, sendNotFound, sendTryLater } from './_seoShell.js';
-import { buildMemeJsonLd, memeSeoDescription } from '../src/utils/memeSeo.js';
+import { buildMemeJsonLd, memeSeoDescription, shareCardUrl, shareCardAlt } from '../src/utils/memeSeo.js';
 
 function escapeHtml(value = '') {
   return String(value)
@@ -234,6 +234,11 @@ export default async function handler(req, res) {
     const safeDesc = escapeHtml(descText);
     const safeUrl = escapeHtml(canonicalUrl);
     const safeImg = escapeHtml(ogImg);
+    // Link previews get the 1200×630 JPEG share card (meme + "make your own" bar); the page
+    // itself and the structured data keep the original meme picture.
+    const cardUrl = shareCardUrl(meme.id);
+    const safePreview = escapeHtml(cardUrl || ogImg);
+    const safeAlt = escapeHtml(shareCardAlt(meme));
 
     html = replaceMeta(html, /<title>[\s\S]*?<\/title>/i, `<title>${safeTitle}</title>`);
     html = replaceMeta(
@@ -264,8 +269,19 @@ export default async function handler(req, res) {
     html = replaceMeta(
       html,
       /<meta\s+property="og:image"\s+content="[^"]*"\s*\/?>/i,
-      `<meta property="og:image" content="${safeImg}" />`
+      `<meta property="og:image" content="${safePreview}" />${
+        cardUrl ? '\n    <meta property="og:image:type" content="image/jpeg" />' : ''
+      }`
     );
+    if (cardUrl) {
+      html = replaceMeta(html, /<meta\s+property="og:image:width"\s+content="[^"]*"\s*\/?>/i, '<meta property="og:image:width" content="1200" />');
+      html = replaceMeta(html, /<meta\s+property="og:image:height"\s+content="[^"]*"\s*\/?>/i, '<meta property="og:image:height" content="630" />');
+    } else {
+      // Unknown size: drop the homepage card's 1200×630 claim rather than lie about it.
+      html = html.replace(/\s*<meta\s+property="og:image:(?:width|height)"\s+content="[^"]*"\s*\/?>/gi, '');
+    }
+    html = replaceMeta(html, /<meta\s+property="og:image:alt"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:image:alt" content="${safeAlt}" />`);
+    html = replaceMeta(html, /<meta\s+name="twitter:image:alt"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:image:alt" content="${safeAlt}" />`);
     html = replaceMeta(
       html,
       /<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/?>/i,
@@ -279,7 +295,7 @@ export default async function handler(req, res) {
     html = replaceMeta(
       html,
       /<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/?>/i,
-      `<meta name="twitter:image" content="${safeImg}" />`
+      `<meta name="twitter:image" content="${safePreview}" />`
     );
 
     const catSlug = CATEGORY_ID_TO_SLUG[String(meme.category || '').toLowerCase()] || '';

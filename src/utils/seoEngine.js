@@ -10,7 +10,7 @@ import {
   getSeoRouteForState,
   getCanonicalPathForState
 } from '../data/seoRoutes.js';
-import { buildMemeJsonLd, memeSeoDescription } from './memeSeo.js';
+import { buildMemeJsonLd, memeSeoDescription, shareCardUrl, shareCardAlt } from './memeSeo.js';
 import { sanitizeMediaUrl } from './securityGuard.js';
 import { getTemplateBySlug } from '../data/memeTemplates.js';
 import { TEMPLATES_INDEX_META, buildTemplateJsonLd, buildTemplatesIndexJsonLd } from './templateSeo.js';
@@ -126,6 +126,9 @@ export function updateDynamicSeo({
       ogImageUrl = safeOg.startsWith('/') ? `${SITE_ORIGIN}${safeOg}` : safeOg;
     }
   }
+  // Link previews: the 1200×630 share card (meme + "make your own" bar) when the meme has one.
+  const memeCard = activeMeme ? shareCardUrl(activeMeme.id) : null;
+  const previewImageUrl = memeCard || ogImageUrl;
 
   document.title = pageTitle;
   upsertCanonical(canonicalUrl);
@@ -134,15 +137,27 @@ export function updateDynamicSeo({
   upsertMeta('meta[property="og:title"]', 'property', 'og:title', pageTitle);
   upsertMeta('meta[property="og:description"]', 'property', 'og:description', pageDesc);
   upsertMeta('meta[property="og:url"]', 'property', 'og:url', canonicalUrl);
-  const isBannerOg = ogImageUrl === DEFAULT_OG_IMAGE || ogImageUrl.startsWith(`${SITE_ORIGIN}/og/`);
+  const isBannerOg = Boolean(memeCard) || ogImageUrl === DEFAULT_OG_IMAGE || ogImageUrl.startsWith(`${SITE_ORIGIN}/og/`);
   const ogW = template && !activeMeme ? String(template.width) : isBannerOg ? '1200' : '540';
   const ogH = template && !activeMeme ? String(template.height) : isBannerOg ? '630' : '480';
-  upsertMeta('meta[property="og:image"]', 'property', 'og:image', ogImageUrl);
+  upsertMeta('meta[property="og:image"]', 'property', 'og:image', previewImageUrl);
   upsertMeta('meta[property="og:image:width"]', 'property', 'og:image:width', ogW);
   upsertMeta('meta[property="og:image:height"]', 'property', 'og:image:height', ogH);
   upsertMeta('meta[name="twitter:title"]', 'name', 'twitter:title', pageTitle);
   upsertMeta('meta[name="twitter:description"]', 'name', 'twitter:description', pageDesc);
-  upsertMeta('meta[name="twitter:image"]', 'name', 'twitter:image', ogImageUrl);
+  upsertMeta('meta[name="twitter:image"]', 'name', 'twitter:image', previewImageUrl);
+  upsertMeta(
+    'meta[property="og:image:alt"]',
+    'property',
+    'og:image:alt',
+    activeMeme ? shareCardAlt(activeMeme) : 'THE MEMES.net — Free Meme Generator, Soundboard & Retro Arcade Games'
+  );
+  upsertMeta(
+    'meta[name="twitter:image:alt"]',
+    'name',
+    'twitter:image:alt',
+    activeMeme ? shareCardAlt(activeMeme) : 'THE MEMES.net — Free Meme & GIF Maker & Funny Memes'
+  );
 
   if (activeMeme?.media_type === 'video') {
     const safeVid = sanitizeMediaUrl(activeMeme.image_url, '');

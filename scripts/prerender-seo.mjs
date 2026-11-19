@@ -7,7 +7,7 @@ import { MEME_TEMPLATES, TEMPLATES_INDEX_PATH, relatedTemplates } from '../src/d
 import { TEMPLATES_INDEX_META, buildTemplateJsonLd, buildTemplatesIndexJsonLd } from '../src/utils/templateSeo.js';
 import { BOSS_SCREENS_CATALOG } from '../src/data/arcadeGamesCatalog.js';
 import { buildRouteJsonLd } from '../src/utils/seoEngine.js';
-import { buildMemeJsonLd, memeSeoDescription } from '../src/utils/memeSeo.js';
+import { buildMemeJsonLd, memeSeoDescription, shareCardUrl, shareCardAlt } from '../src/utils/memeSeo.js';
 import { extractUniqueCreatorHandles } from '../src/utils/creatorProfiles.js';
 import { buildChromeSignSvg } from '../src/components/chromeBrandSvg.js';
 
@@ -305,6 +305,10 @@ function renderMemeHtml(baseHtml, meme) {
   const safeDesc = escapeHtml(descText);
   const safeUrl = escapeHtml(canonicalUrl);
   const safeImg = escapeHtml(ogImg);
+  // Link previews use the 1200×630 JPEG share card; the page and JSON-LD keep the meme itself.
+  const cardUrl = shareCardUrl(meme.id);
+  const safePreview = escapeHtml(cardUrl || ogImg);
+  const safeAlt = escapeHtml(shareCardAlt(meme));
 
   html = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>${safeTitle}</title>`);
   html = html.replace(/<meta\s+name="description"\s+content="[^"]*"\s*\/?>/i, `<meta name="description" content="${safeDesc}" />`);
@@ -312,10 +316,17 @@ function renderMemeHtml(baseHtml, meme) {
   html = html.replace(/<meta\s+property="og:title"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${safeTitle}" />`);
   html = html.replace(/<meta\s+property="og:description"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${safeDesc}" />`);
   html = html.replace(/<meta\s+property="og:url"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${safeUrl}" />`);
-  html = html.replace(/<meta\s+property="og:image"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${safeImg}" />`);
+  html = html.replace(
+    /<meta\s+property="og:image"\s+content="[^"]*"\s*\/?>/i,
+    `<meta property="og:image" content="${safePreview}" />${cardUrl ? '\n    <meta property="og:image:type" content="image/jpeg" />' : ''}`
+  );
   html = html.replace(/<meta\s+name="twitter:title"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${safeTitle}" />`);
   html = html.replace(/<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${safeDesc}" />`);
-  html = html.replace(/<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${safeImg}" />`);
+  html = html.replace(/<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${safePreview}" />`);
+
+  if (!cardUrl) html = html.replace(/\s*<meta\s+property="og:image:(?:width|height)"\s+content="[^"]*"\s*\/?>/gi, '');
+  html = html.replace(/<meta\s+property="og:image:alt"\s+content="[^"]*"\s*\/?>/i, `<meta property="og:image:alt" content="${safeAlt}" />`);
+  html = html.replace(/<meta\s+name="twitter:image:alt"\s+content="[^"]*"\s*\/?>/i, `<meta name="twitter:image:alt" content="${safeAlt}" />`);
 
   const memeJsonLd = JSON.stringify(buildMemeJsonLd(meme, canonicalUrl, ogImg)).replaceAll('<', '\\u003c');
   html = html.replace(/\s*<script[^>]*id="tm-dynamic-jsonld"[^>]*>[\s\S]*?<\/script>/i, '');

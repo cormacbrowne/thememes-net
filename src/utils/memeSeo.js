@@ -63,3 +63,26 @@ export function buildMemeJsonLd(meme = {}, canonicalUrl, imageUrl) {
     publisher: { '@id': `${ORIGIN}/#organization` }
   };
 }
+
+/** Supabase project that serves the `share-card` Edge Function. */
+const SHARE_CARD_ENDPOINT = 'https://otvvphmjojqyjaznjzyo.supabase.co/functions/v1/share-card';
+
+/** Memes that have a share card: uploaded memes (UUID) and the built-in starter memes. */
+export function hasShareCard(id) {
+  const s = String(id || '');
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s) || /^seed-[a-z]+-\d{1,3}$/.test(s);
+}
+
+/**
+ * 1200×630 JPEG link-preview picture for a meme (the meme + a THE MEMES.net "make your own" bar).
+ * WhatsApp, iMessage, Discord, X and Facebook all show it when someone pastes /m/<id>.
+ */
+export function shareCardUrl(id) {
+  return hasShareCard(id) ? `${SHARE_CARD_ENDPOINT}?id=${encodeURIComponent(String(id).toLowerCase())}` : null;
+}
+
+/** Alt text for the preview picture. */
+export function shareCardAlt(meme = {}) {
+  const title = String(meme.title || 'Funny meme').slice(0, 120);
+  return `${title} (meme on THE MEMES.net)`;
+}

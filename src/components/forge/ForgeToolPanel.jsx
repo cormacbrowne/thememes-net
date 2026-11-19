@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { FONT_PACK, makeTextLayer, makeSticker } from './forgeEngine';
 import { STUDIO_FILTERS } from '../../utils/canvasMutator';
+import AiCaptionWriter from './AiCaptionWriter';
 
 const COLOR_SWATCHES = ['#ffffff', '#facc15', '#00f3ff', '#ff0055', '#22c55e', '#000000'];
 const EMOJI_PALETTE = ['🔥', '💀', '😂', '🗿', '🚀', '⚡', '👑', '🦆', '💎', '🤡', '💯', '🍿'];
@@ -84,6 +85,14 @@ export default function ForgeToolPanel({
               🎲 Random Text
             </button>
           </div>
+
+          {tools.applyCaption && (
+            <AiCaptionWriter
+              onApply={tools.applyCaption}
+              templateHint={tools.templateHint || ''}
+              onRequireAuth={tools.requireAuth}
+            />
+          )}
 
           {/* Step 2: Direct Top & Bottom Meme Inputs */}
           <div className="tm-tool-section">

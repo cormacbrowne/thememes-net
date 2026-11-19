@@ -184,7 +184,7 @@ async function buildFromIntent(intent = {}) {
  * Simplified Classic Meme & GIF Maker:
  * Upload or drop an image/GIF, add Top & Bottom text, download or share with www.thememes.net watermark.
  */
-export default function MemeForge({ intent, user, onClose, onPublish }) {
+export default function MemeForge({ intent, user, onClose, onPublish, onRequireAuth }) {
   const editor = useMemeEditor(makeDoc());
   const { doc, set, live, undo, redo, reset, selectedId, setSelectedId } = editor;
   const [title, setTitle] = useState('');
@@ -529,6 +529,34 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
     setStatus('🎲 Loaded a random meme caption!');
   }, [set, setSelectedId]);
 
+  // AI Caption Writer: put one top/bottom option onto the meme, keeping the current text style.
+  const applyCaption = useCallback(
+    (top, bottom) => {
+      sfx.playPop?.(2);
+      let firstId = null;
+      set((d) => {
+        const texts = d.layers.filter((l) => l.type === 'text');
+        const byY = [...texts].sort((a, b) => (a.y ?? 0.5) - (b.y ?? 0.5));
+        const topL = texts.find((l) => l.slot === 'top') || byY[0] || null;
+        const botL =
+          texts.find((l) => l.slot === 'bottom') || (byY.length > 1 ? byY[byY.length - 1] : null);
+        let layers = d.layers.map((l) => {
+          if (topL && l.id === topL.id) return { ...l, text: top };
+          if (botL && l.id === botL.id) return { ...l, text: bottom };
+          return l;
+        });
+        if (!topL) layers = [makeTextLayer({ slot: 'top', text: top, y: 0.1, h: 0.18, fill: '#ffffff' }), ...layers];
+        if (!botL) layers = [...layers, makeTextLayer({ slot: 'bottom', text: bottom, y: 0.89, h: 0.18, fill: '#ffffff' })];
+        firstId = (topL || layers.find((l) => l.type === 'text'))?.id || null;
+        return { ...d, layers };
+      });
+      if (firstId) setSelectedId(firstId);
+      setTitle((t) => t || [top, bottom].filter(Boolean).join(' — ').slice(0, 100));
+      setStatus('🤖 AI caption added! Tap another option or edit the text.');
+    },
+    [set, setSelectedId]
+  );
+
   const handlePublish = async (e) => {
     e?.preventDefault?.();
     if (!hasMedia) {
@@ -657,12 +685,15 @@ export default function MemeForge({ intent, user, onClose, onPublish }) {
     () => ({
       handleMediaFile,
       handleRandomizeCaption,
+      applyCaption,
+      templateHint: parent?.title || intent?.title || '',
+      requireAuth: onRequireAuth,
       removeSelected,
       openFile: () => fileRef.current?.click(),
       openSticker: () => stickerRef.current?.click()
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activePanel, removeSelected, handleRandomizeCaption]
+    [activePanel, removeSelected, handleRandomizeCaption, applyCaption, onRequireAuth]
   );
 
   const handleDropFile = (e) => {

@@ -613,3 +613,35 @@
   font-weight: 700;
   white-space: nowrap;
 }
+
+/* AI Caption Writer */
+.tm-ai-caption {
+  border: 1px solid rgba(0, 243, 255, 0.35);
+  border-radius: 10px;
+  padding: 8px;
+  background: rgba(0, 243, 255, 0.05);
+}
+.tm-ai-quota {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--tm-cyan);
+  white-space: nowrap;
+}
+.tm-ai-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+.tm-ai-option {
+  text-align: left;
+  font-size: 12px;
+  line-height: 1.3;
+  white-space: normal;
+  justify-content: flex-start;
+}
+.tm-ai-msg {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--tm-amber, #facc15);
+}

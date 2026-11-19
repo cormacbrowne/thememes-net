@@ -1969,6 +1969,7 @@ export default function App() {
               setForgeIntent(null);
             }}
             onPublish={handleForgePublish}
+            onRequireAuth={() => setShowAuthModal(true)}
           />
         </Suspense>
       )}

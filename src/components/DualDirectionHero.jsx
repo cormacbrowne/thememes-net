@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { startTransition, useEffect, useRef, useState } from 'react';
 import { ChevronDown, Crown, Gamepad2, Laugh, PenLine, Skull } from 'lucide-react';
 import { sfx } from '../utils/soundEngine';
 import NeonSign from './NeonSign';
+import ArcadeLobby from './arcadeLobbyLazy';
 import './DualDirectionHero.css';
 
 /**
@@ -12,6 +13,20 @@ import './DualDirectionHero.css';
  * the first screen; scroll past it and the small sign fades back in top left.
  */
 const WARP_MS = 380;
+// PLAY leaves the page, so it gets a longer dive (see .is-warping-play in the CSS) and the
+// lobby fades in on arrival, instead of a hard cut (owner brief 19 Nov 2026).
+const PLAY_WARP_MS = 600;
+const ARRIVE_MS = 900;
+
+let lobbyPrefetched = false;
+function prefetchLobby() {
+  if (lobbyPrefetched) return;
+  lobbyPrefetched = true;
+  Promise.all([import('./GameRouter'), ArcadeLobby.preload()])
+    .catch(() => {
+      lobbyPrefetched = false;
+    });
+}
 
 export default function DualDirectionHero({
   onSelectViewMode,
@@ -42,6 +57,18 @@ export default function DualDirectionHero({
     return () => window.clearTimeout(t);
   }, [isFirstVisit]);
 
+  // Fetch the arcade lobby code while the visitor looks at the portal, so PLAY never waits on it.
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const idle = window.requestIdleCallback
+      ? window.requestIdleCallback(prefetchLobby, { timeout: 2500 })
+      : window.setTimeout(prefetchLobby, 1500);
+    return () => {
+      if (window.cancelIdleCallback && window.requestIdleCallback) window.cancelIdleCallback(idle);
+      else window.clearTimeout(idle);
+    };
+  }, []);
+
   // Hide the top-bar sign while the giant one is in view.
   useEffect(() => {
     const el = rootRef.current;
@@ -71,13 +98,24 @@ export default function DualDirectionHero({
       typeof window !== 'undefined' &&
       (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ||
         document.documentElement.getAttribute('data-reduced-motion') === 'on');
+    if (which === 'play') prefetchLobby();
     window.setTimeout(
       () => {
-        setWarping(null);
-        if (which === 'memes') onScrollToMemes?.();
-        else onSelectViewMode?.('lobby');
+        if (which === 'memes') {
+          setWarping(null);
+          onScrollToMemes?.();
+          return;
+        }
+        if (!reduced) {
+          const docEl = document.documentElement;
+          docEl.classList.add('tm-arrive-play');
+          window.setTimeout(() => docEl.classList.remove('tm-arrive-play'), ARRIVE_MS);
+        }
+        // Keep the pink-washed portal on screen (no reset, no Suspense blank) until the lobby is
+        // ready, then swap in one go; the lobby fades in via .tm-arrive-play.
+        startTransition(() => onSelectViewMode?.('lobby'));
       },
-      reduced ? 0 : WARP_MS
+      reduced ? 0 : which === 'play' ? PLAY_WARP_MS : WARP_MS
     );
   };
 
@@ -121,6 +159,7 @@ export default function DualDirectionHero({
             type="button"
             className="tm-portal-door is-play"
             data-testid="portal-play-btn"
+            onPointerDown={prefetchLobby}
             onClick={() => go('play')}
           >
             <span className="tm-portal-door-arc" aria-hidden="true" />

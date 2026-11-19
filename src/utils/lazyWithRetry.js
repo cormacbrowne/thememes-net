@@ -55,5 +55,29 @@ export default function lazyWithRetry(importer, exportPicker = null) {
     }
   };
 
-  return lazy(load);
+  // preload(): fetch + remember the module. Once remembered, React gets a thenable that settles
+  // synchronously, so the component renders straight away with no Suspense fallback and no
+  // ~300ms reveal throttle (smooth PLAY portal -> lobby, owner brief 19 Nov 2026).
+  let resolved = null;
+  let pending = null;
+  const preload = () => {
+    if (resolved) return Promise.resolve(resolved);
+    if (!pending) {
+      pending = load().then(
+        (mod) => {
+          resolved = mod;
+          return mod;
+        },
+        (err) => {
+          pending = null;
+          throw err;
+        }
+      );
+    }
+    return pending;
+  };
+
+  const Component = lazy(() => (resolved ? { then: (onFulfilled) => onFulfilled(resolved) } : preload()));
+  Component.preload = preload;
+  return Component;
 }

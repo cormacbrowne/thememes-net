@@ -50,7 +50,7 @@ const ArcadeInitialsModal = lazyWithRetry(() => import('./ArcadeInitialsModal'))
 
 const SwipeDeck = lazyWithRetry(() => import('./SwipeDeck'));
 const BattleArena = lazyWithRetry(() => import('./BattleArena'));
-const ArcadeLobby = lazyWithRetry(() => import('./ArcadeLobby'));
+import ArcadeLobby from './arcadeLobbyLazy';
 const NeonBingoGame = lazyWithRetry(() => import('./NeonBingoGame'));
 const MemeCrushGame = lazyWithRetry(() => import('./MemeCrushGame'));
 const MemeInvadersGame = lazyWithRetry(() => import('./MemeInvadersGame'));

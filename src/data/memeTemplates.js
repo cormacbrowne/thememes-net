@@ -70,21 +70,19 @@ const RAW_TEMPLATES = [
   },
   {
     slug: 'distracted-boyfriend',
-    // Image not generated/saved yet: hidden until public/meme-templates/distracted-boyfriend.webp exists.
-    hidden: true,
     name: 'Distracted Boyfriend',
     aka: ['Guy Looking At Another Girl', 'Jealous Girlfriend Meme', 'Man Looking Back'],
     category: 'relatable',
-    summary: 'A man turns to stare at someone new while his girlfriend glares at him.',
+    summary: 'A man holding his girlfriend’s hand turns to stare at a woman in red while his girlfriend glares at him.',
     meaning:
       'Distracted Boyfriend is about being tempted away from what you already have. The boyfriend is you (or anyone), the woman walking past is the shiny new temptation, and the outraged girlfriend is the responsibility you should be paying attention to. It works for hobbies, brands, games, habits and anything with a loyal option and a tempting new one.',
     howTo:
       'Label the new temptation (left), the distracted person (middle) and the thing being neglected (right). One or two words per label is ideal.',
     aiHint: 'Distracted Boyfriend: three labels: the new temptation (woman passing), the distracted person (boyfriend), the neglected thing (girlfriend).',
     slots: [
-      { label: 'Temptation (left)', style: 'impact', x: 0.2, y: 0.6, w: 0.36, h: 0.14 },
-      { label: 'Distracted person', style: 'impact', x: 0.55, y: 0.42, w: 0.3, h: 0.12 },
-      { label: 'Neglected (right)', style: 'impact', x: 0.84, y: 0.6, w: 0.3, h: 0.14 }
+      { label: 'Temptation (left)', style: 'impact', x: 0.25, y: 0.66, w: 0.4, h: 0.14 },
+      { label: 'Distracted person', style: 'impact', x: 0.61, y: 0.6, w: 0.3, h: 0.12 },
+      { label: 'Neglected (right)', style: 'impact', x: 0.85, y: 0.74, w: 0.28, h: 0.14 }
     ],
     examples: [
       ['A new game', 'Me', 'The 40 games I already own'],

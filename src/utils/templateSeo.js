@@ -9,7 +9,7 @@ export const TEMPLATES_INDEX_META = {
   path: TEMPLATES_INDEX_PATH,
   title: `Meme Templates — ${MEME_TEMPLATES.length} Free Original Meme Templates & Generator | THE MEMES.net`,
   description:
-    `Browse ${MEME_TEMPLATES.length} free, high-quality meme templates: Two Buttons, Drake-style, Expanding Brain, Change My Mind, Stonks and more. Caption them online, let AI write the joke, and share.`,
+    `Browse ${MEME_TEMPLATES.length} free, high-quality meme templates: Two Buttons, Distracted Boyfriend, Drake-style, Expanding Brain, Change My Mind and more. Caption them online, let AI write the joke, and share.`,
   h1: 'Free Meme Templates',
   intro:
     'Pick a meme template, type your text (or let the AI Caption Writer suggest a joke), then download or share it in seconds. Every template here is our own original, high-quality artwork of a classic meme format, so you get crisp pictures that are free to use and share. No sign-up needed.'

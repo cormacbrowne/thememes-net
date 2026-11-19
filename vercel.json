@@ -163,7 +163,7 @@
     },
     {
       "source": "/templates/distracted-boyfriend-meme-generator",
-      "destination": "/templates",
+      "destination": "/templates/distracted-boyfriend-meme-template",
       "statusCode": 301
     },
     {

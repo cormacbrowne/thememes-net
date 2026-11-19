@@ -137,7 +137,7 @@ function buildPrerenderMainHtml(route) {
 function bootSplashHtml() {
   const signSvg = buildChromeSignSvg({ uid: 'tmboot', showFlow: true });
   return `<style>
-@font-face{font-family:'Orbitron';font-style:normal;font-weight:400 900;font-display:swap;src:url('/fonts/orbitron-latin-wght.woff2') format('woff2')}
+@font-face{font-family:'TM Logo';font-style:normal;font-weight:400 900;font-display:block;src:url('/fonts/orbitron-latin-wght.woff2') format('woff2')}
 .tm-boot{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:24px;background:radial-gradient(70% 50% at 50% 42%,rgba(255,46,136,.12),transparent 70%),#07060f}
 .tm-boot svg{width:min(480px,88vw);height:auto;overflow:visible}
 .tm-boot .tm-chrome-sheen{animation:tmBootSheen 4.8s ease-in-out infinite}

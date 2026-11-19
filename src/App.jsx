@@ -71,7 +71,6 @@ const ArcadeLoungePromo = lazyWithRetry(
 );
 const MemeForge = lazyWithRetry(() => import('./components/forge/MemeForge'));
 const MemeEvolutionModal = lazyWithRetry(() => import('./components/MemeEvolutionModal'));
-const ArcadeAiAssistant = lazyWithRetry(() => import('./components/ArcadeAiAssistant'));
 const AuthModal = lazyWithRetry(() => import('./components/AuthModal'));
 const MemeTheaterModal = lazyWithRetry(() => import('./components/MemeTheaterModal'));
 const ShareMemeSheet = lazyWithRetry(() => import('./components/ShareMemeSheet'));
@@ -178,8 +177,6 @@ export default function App() {
     setEvolutionModalMeme,
     payphoneModalOpen,
     setPayphoneModalOpen,
-    aiAssistantOpen,
-    setAiAssistantOpen,
     showIntro,
     setShowIntro,
     showInstallModal,
@@ -446,8 +443,6 @@ export default function App() {
     loadMoreSentinelRef,
     userVotes,
     petUnlocked,
-    aiUnlocked,
-    setAiUnlocked,
     isDraggingFile,
     loadFileIntoStudio,
     openComments,
@@ -1780,8 +1775,6 @@ export default function App() {
         setExtrasDrawerOpen={setExtrasDrawerOpen}
         setShowLeaderboard={setShowLeaderboard}
         onOpenCabinetLeaderboard={handleOpenCabinetLeaderboard}
-        setAiUnlocked={setAiUnlocked}
-        setAiAssistantOpen={setAiAssistantOpen}
         swipeIndex={swipeIndex}
         swipeAnim={swipeAnim}
         triggerSwipe={triggerSwipe}
@@ -1915,57 +1908,7 @@ export default function App() {
             }
           }}
           onNavigateBack={handleNavigateBack}
-          onToggleAiAssistant={() => {
-            sfx.playAiAssistantChime();
-            setAiAssistantOpen((prev) => !prev);
-          }}
         />
-      )}
-
-      {/* PHASE 21 & 28.4: CYBER-ORACLE '86 — PROGRESSIVELY UNLOCKED AI ASSISTANT */}
-      {!bossKeyActive && (aiAssistantOpen || (aiUnlocked && viewMode === 'feed')) && (
-        <Suspense fallback={null}>
-          <ArcadeAiAssistant
-            isOpen={aiAssistantOpen}
-            fabUnlocked={aiUnlocked}
-            onToggleOpen={(val) => {
-              if (typeof val === 'boolean') {
-                setAiAssistantOpen(val);
-              } else {
-                setAiAssistantOpen((prev) => !prev);
-              }
-            }}
-            tokens={tokens}
-            xp={xp}
-            currentRank={currentRank}
-            tokenLedger={tokenLedger}
-            xpConversionState={xpConversionState}
-            unclaimedRewardsCount={unclaimedRewardsCount}
-            pioneerBonusAvailable={pioneerBonusAvailable}
-            payphoneClaimedToday={payphoneClaimedToday}
-            pinataClaimedToday={pinataClaimedToday}
-            viewMode={viewMode}
-            memes={memes}
-            onSelectViewMode={(mode) => {
-              sfx.playToggle();
-              closeAllModals();
-              setViewMode(mode);
-              window.scrollTo?.({ top: 0, left: 0, behavior: 'auto' });
-            }}
-            onOpenUpload={() => {
-              sfx.playToggle();
-              closeAllModals();
-              handleOpenBlankStudio();
-            }}
-            onOpenRewards={() => {
-              sfx.playToggle();
-              closeAllModals();
-              setShowRewardsModal(true);
-            }}
-            onExchangeXpForTokens={handleExchangeXpForTokens}
-            onClaimPayphoneCoinReturn={handleClaimPayphoneCoinReturn}
-          />
-        </Suspense>
       )}
 
       {/* MODAL 0: FULLSCREEN THEATER LIGHTBOX & DEEP-LINK PERMALINK (/?m=<id> or /m/<id>) */}
@@ -2319,11 +2262,6 @@ export default function App() {
               setGoblinFortuneToast(`🛡️ ${rep.status}: ${detail}`);
               setTimeout(() => setGoblinFortuneToast(''), 5000);
             }}
-            onToggleAiAssistant={() => {
-              sfx.playAiAssistantChime();
-              setAiAssistantOpen((prev) => !prev);
-            }}
-            aiPersonaId={typeof window !== 'undefined' ? localStorage.getItem('tm_ai_persona') || 'kitt' : 'kitt'}
             onOpenLeaderboard={() => {
               sfx.playToggle();
               setShowLeaderboard(true);

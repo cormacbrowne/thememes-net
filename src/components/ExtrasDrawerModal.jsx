@@ -27,8 +27,6 @@ export default function ExtrasDrawerModal({
   deviceOverride,
   onOpenDeviceOptimizer,
   onCheckSecurityStatus,
-  onToggleAiAssistant,
-  aiPersonaId,
   onOpenLeaderboard,
   onOpenCaptionBattle,
   onRandomMeme,
@@ -180,20 +178,6 @@ export default function ExtrasDrawerModal({
               <span className="tm-extras-tile-desc">6 Fake Work Screens</span>
             </button>
 
-            <button
-              type="button"
-              className="tm-extras-tile tm-extras-tile-ai"
-              onClick={() => {
-                onClose();
-                if (onToggleAiAssistant) onToggleAiAssistant();
-              }}
-            >
-              <span className="tm-extras-tile-icon">{aiPersonaId === 'hal' ? '🔴' : '🚗'}</span>
-              <span className="tm-extras-tile-name">
-                {aiPersonaId === 'hal' ? 'HAL 9000 AI' : 'K.I.T.T. AI'}
-              </span>
-              <span className="tm-extras-tile-desc">Voice Co-Pilot &amp; Jokes</span>
-            </button>
 
             <button
               type="button"

@@ -366,14 +366,19 @@
     width: min(380px, 88vw);
   }
 
+  /* Breathing room between the sign and the two doors (owner brief 19 Nov 2026). */
+  .tm-portal-sign {
+    margin-bottom: clamp(10px, 3.2vh, 30px);
+  }
+
   .tm-portal-doors {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: clamp(16px, 2.4vh, 22px);
     width: min(420px, 100%);
   }
 
   .tm-portal-door {
-    min-height: 92px;
+    min-height: clamp(92px, 12vh, 108px);
   }
 
   .tm-portal-door-inner {
@@ -391,6 +396,9 @@
 }
 
 @media (max-height: 700px) and (max-width: 860px) {
+  .tm-portal-sign {
+    margin-bottom: 4px;
+  }
   .tm-portal-door {
     min-height: 76px;
   }

@@ -117,8 +117,8 @@ export function buildChromeSignSvg({
       <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
     <!-- Each word exists once so the readable text is "THE MEMES .NET"; layers reuse it -->
-    <text id="${safeUid}-the" x="${theW / 2}" y="${theY}" text-anchor="middle" font-family="Orbitron, Oxanium, sans-serif" font-weight="800" font-size="${theFont}" letter-spacing="${theSpacing}" fill="#e2fdff">THE</text>
-    <text id="${safeUid}-word" transform="translate(340, 156) skewX(-12)" x="0" y="0" text-anchor="middle" font-family="Orbitron, Oxanium, sans-serif" font-weight="900" font-size="108" letter-spacing="4">MEMES</text>
+    <text id="${safeUid}-the" x="${theW / 2}" y="${theY}" text-anchor="middle" font-family="'TM Logo', Orbitron, Oxanium, sans-serif" font-weight="800" font-size="${theFont}" letter-spacing="${theSpacing}" fill="#e2fdff">THE</text>
+    <text id="${safeUid}-word" transform="translate(340, 156) skewX(-12)" x="0" y="0" text-anchor="middle" font-family="'TM Logo', Orbitron, Oxanium, sans-serif" font-weight="900" font-size="108" letter-spacing="4">MEMES</text>
     <clipPath id="${safeUid}-clip"><use href="#${safeUid}-word"/></clipPath>
   </defs>
   <g transform="${theTransform}">
@@ -135,7 +135,7 @@ export function buildChromeSignSvg({
   <path d="${CHROME_PULSE_PATH}" fill="none" stroke="#fff7dc" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.88"/>
   <g transform="${netTransform}">
     <rect x="0" y="0" width="${netW}" height="${netH}" rx="${compact ? 9 : 8}" fill="rgba(8, 28, 44, 0.9)" stroke="#19f0ff" stroke-width="2" filter="url(#${safeUid}-cyan)"/>
-    <text x="${netW / 2}" y="${netY}" text-anchor="middle" font-family="Orbitron, Oxanium, sans-serif" font-weight="800" font-size="${netFont}" letter-spacing="${netSpacing}" fill="#e2fdff">.NET</text>
+    <text x="${netW / 2}" y="${netY}" text-anchor="middle" font-family="'TM Logo', Orbitron, Oxanium, sans-serif" font-weight="800" font-size="${netFont}" letter-spacing="${netSpacing}" fill="#e2fdff">.NET</text>
   </g>
 </svg>`;
 }

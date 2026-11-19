@@ -240,7 +240,7 @@ export default function NeonSign({
           x={theW / 2}
           y={theY}
           textAnchor="middle"
-          fontFamily="Orbitron, Oxanium, sans-serif"
+          fontFamily="'TM Logo', Orbitron, Oxanium, sans-serif"
           fontWeight="800"
           fontSize={theFont}
           letterSpacing={theSpacing}
@@ -254,7 +254,7 @@ export default function NeonSign({
           x="0"
           y="0"
           textAnchor="middle"
-          fontFamily="Orbitron, Oxanium, sans-serif"
+          fontFamily="'TM Logo', Orbitron, Oxanium, sans-serif"
           fontWeight="900"
           fontSize="108"
           letterSpacing="4"
@@ -366,7 +366,7 @@ export default function NeonSign({
           x={netW / 2}
           y={netY}
           textAnchor="middle"
-          fontFamily="Orbitron, Oxanium, sans-serif"
+          fontFamily="'TM Logo', Orbitron, Oxanium, sans-serif"
           fontWeight="800"
           fontSize={netFont}
           letterSpacing={netSpacing}

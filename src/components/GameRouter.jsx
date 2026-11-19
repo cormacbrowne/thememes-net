@@ -704,8 +704,6 @@ export default function GameRouter({
   setExtrasDrawerOpen,
   setShowLeaderboard,
   onOpenCabinetLeaderboard,
-  setAiUnlocked,
-  setAiAssistantOpen,
   swipeIndex,
   swipeAnim,
   triggerSwipe,
@@ -1402,11 +1400,6 @@ export default function GameRouter({
             onOpenLeaderboard={() => {
               closeAllModals();
               setShowLeaderboard(true);
-            }}
-            onToggleAiAssistant={() => {
-              closeAllModals();
-              setAiUnlocked(true);
-              setAiAssistantOpen((prev) => !prev);
             }}
             onBackToFeed={() => {
               closeAllModals();

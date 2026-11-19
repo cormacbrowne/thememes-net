@@ -2,7 +2,6 @@ import { useState, useMemo, useEffect } from 'react';
 import {
   Trophy,
   Settings,
-  Bot,
   ArrowLeft,
   Star,
   Heart,
@@ -60,7 +59,6 @@ export default function ArcadeLobby({
   onOpenRewards,
   onOpenExtras,
   onOpenLeaderboard,
-  onToggleAiAssistant,
   onBackToFeed,
   deloreanEra = 'present',
   activeCarId = 'delorean',
@@ -241,19 +239,6 @@ export default function ArcadeLobby({
             >
               <Settings size={15} aria-hidden="true" />
               <span>Settings</span>
-            </button>
-          )}
-          {onToggleAiAssistant && (
-            <button
-              type="button"
-              className="tm-lobby-util-btn"
-              onClick={() => {
-                sfx.playToggle();
-                onToggleAiAssistant();
-              }}
-            >
-              <Bot size={15} aria-hidden="true" />
-              <span>AI</span>
             </button>
           )}
           {onBackToFeed && (

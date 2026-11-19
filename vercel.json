@@ -228,12 +228,12 @@
     },
     {
       "source": "/templates/buff-doge-vs-cheems-meme-generator",
-      "destination": "/templates",
+      "destination": "/templates/buff-doge-vs-cheems-meme-template",
       "statusCode": 301
     },
     {
       "source": "/templates/always-has-been-meme-generator",
-      "destination": "/templates",
+      "destination": "/templates/always-has-been-meme-template",
       "statusCode": 301
     },
     {

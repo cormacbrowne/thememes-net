@@ -24,6 +24,13 @@ export function slotLayerStyle(style = 'impact') {
   return SLOT_STYLES[style] || SLOT_STYLES.impact;
 }
 
+// Classic top + bottom Impact captions.
+const topBottom = (top = 'Top text', bottom = 'Bottom text') => [
+  { label: top, style: 'impact', x: 0.5, y: 0.08, w: 0.94, h: 0.14 },
+  { label: bottom, style: 'impact', x: 0.5, y: 0.92, w: 0.94, h: 0.14 }
+];
+
+// Templates without `height` are 1080x1080; the rest are 1080 wide.
 const RAW_TEMPLATES = [
   {
     slug: 'two-buttons',
@@ -442,6 +449,643 @@ const RAW_TEMPLATES = [
       ['*slaps roof of phone*', 'This bad boy can fit so many screenshots you’ll never look at'],
       ['*slaps roof of backpack*', 'This bad boy can fit so many crumpled worksheets']
     ]
+  },
+  {
+    slug: 'four-step-plan',
+    name: 'Four-Step Plan',
+    aka: ['Plan Meme', 'Flip Chart Plan', 'Presentation Plan Meme', 'Step 4 Plan'],
+    category: 'relatable',
+    summary: 'An inventor proudly presents a plan on a flip chart, then spots the flaw in step four.',
+    meaning:
+      'The Four-Step Plan meme shows a plan that sounds great for three steps. In the fourth panel the presenter repeats step three and finally notices the problem, staring at the chart in horror. The joke is that the flaw was obvious all along.',
+    howTo:
+      'Write steps one to three on the first three flip charts, then repeat step three (or the obvious catch) on the fourth. Keep each step short so it fits the chart.',
+    aiHint: 'Four-step plan: three plan steps that sound fine, then a fourth that repeats step three or reveals the obvious flaw.',
+    slots: [
+      { label: 'Step 1', style: 'dark', x: 0.14, y: 0.18, w: 0.18, h: 0.28 },
+      { label: 'Step 2', style: 'dark', x: 0.64, y: 0.18, w: 0.17, h: 0.28 },
+      { label: 'Step 3', style: 'dark', x: 0.385, y: 0.69, w: 0.19, h: 0.26 },
+      { label: 'Step 4 (the flaw)', style: 'dark', x: 0.875, y: 0.69, w: 0.17, h: 0.26 }
+    ],
+    examples: [
+      ['Start a diet', 'Buy healthy food', 'Feel great', 'Feel great so order pizza'],
+      ['Wake up early', 'Go for a run', 'Be productive', 'Be productive tomorrow instead'],
+      ['Save money', 'Stop buying coffee', 'Have more money', 'Have more money for coffee']
+    ]
+  },
+  {
+    slug: 'once-again-asking',
+    name: 'I Am Once Again Asking',
+    aka: ['Bernie Once Again Asking', 'Once Again Asking Meme', 'Bernie Sanders Meme', 'I Am Once Again Asking For'],
+    category: 'dank',
+    summary: 'A weary man at a podium looks into the camera and pleads for the same thing yet again.',
+    meaning:
+      'I Am Once Again Asking is for a request you have made many, many times before. The tired, earnest speaker makes it clear they are fed up of asking, which makes the request funnier the smaller it is.',
+    howTo:
+      'Keep the top line as “I am once again asking” and put the thing you keep asking for at the bottom.',
+    aiHint: 'Once again asking: top = “I am once again asking”, bottom = the small thing being asked for yet again.',
+    slots: topBottom(),
+    height: 603,
+    examples: [
+      ['I am once again asking', 'for someone to reply in the group chat'],
+      ['I am once again asking', 'for you to put the lid back on the milk'],
+      ['I am once again asking', 'for one weekend without homework']
+    ]
+  },
+  {
+    slug: 'is-this-a-pigeon',
+    name: 'Is This a Pigeon?',
+    aka: ['Is This A Butterfly', 'Butterfly Meme', 'Anime Butterfly Guy', 'Is This A Meme'],
+    category: 'dank',
+    summary: 'A puzzled anime man gestures at a butterfly and gets completely the wrong idea.',
+    meaning:
+      'Is This a Pigeon? is about confidently misunderstanding something. Label the man (who is confused), the butterfly (what he sees) and the bottom question (his wrong conclusion). The bigger the misunderstanding, the better.',
+    howTo:
+      'Label the man, label the butterfly, then write his wrong conclusion as a question along the bottom, such as “Is this a …?”.',
+    aiHint: 'Is this a pigeon: line 1 = the confused person, line 2 = the thing they see, line 3 = their wrong “Is this a …?” question.',
+    slots: [
+      { label: 'The person', style: 'impact', x: 0.4, y: 0.62, w: 0.32, h: 0.12 },
+      { label: 'The butterfly', style: 'impact', x: 0.8, y: 0.45, w: 0.34, h: 0.12 },
+      { label: 'The question', style: 'dark', x: 0.5, y: 0.91, w: 0.94, h: 0.14 }
+    ],
+    height: 603,
+    examples: [
+      ['Me', 'One sunny day', 'Is this summer?'],
+      ['My dad', 'Any button on the remote', 'Is this the internet?'],
+      ['Me', 'A slightly hard question', 'Is this an exam?']
+    ]
+  },
+  {
+    slug: 'disaster-girl',
+    name: 'Disaster Girl',
+    aka: ['Girl Smiling At Fire', 'House On Fire Girl', 'Burning House Girl'],
+    category: 'relatable',
+    summary: 'A little girl smiles knowingly at the camera while a house burns behind her.',
+    meaning:
+      'Disaster Girl is for quietly enjoying chaos you may (or may not) have caused. The child looks pleased and innocent while everything behind her goes up in flames.',
+    howTo: 'Put the chaos at the top and the smug, guilty reaction at the bottom.',
+    aiHint: 'Disaster Girl: top = the chaos that happened, bottom = the smug, guilty or innocent reaction.',
+    slots: topBottom(),
+    height: 806,
+    examples: [
+      ['When you reply-all by accident', 'and it wasn’t even your fault'],
+      ['Told the group chat “someone” ate the cake', 'Watching it unfold'],
+      ['Mentioned pineapple pizza at dinner', 'and walked away']
+    ]
+  },
+  {
+    slug: 'success-kid',
+    name: 'Success Kid',
+    aka: ['Fist Pump Baby', 'Victory Baby', 'I Hate Sandcastles'],
+    category: 'relatable',
+    summary: 'A toddler on the beach clenches a fist of sand in a proud, determined fist pump.',
+    meaning:
+      'Success Kid celebrates small, satisfying wins. The tinier and more everyday the victory, the funnier the determined fist pump becomes.',
+    howTo: 'Set up the situation at the top and the small win at the bottom.',
+    aiHint: 'Success Kid: top = the situation, bottom = the small, satisfying win.',
+    slots: topBottom(),
+    examples: [
+      ['Found chips in the cupboard', 'that I forgot I bought'],
+      ['Teacher forgot to set homework', 'Nobody reminded her'],
+      ['Phone at 1%', 'Made it home']
+    ]
+  },
+  {
+    slug: 'roll-safe',
+    name: 'Roll Safe (Think About It)',
+    aka: ['Think About It Meme', 'Tapping Head Meme', 'Smart Guy Meme', 'Big Brain Logic'],
+    category: 'dank',
+    summary: 'A smirking man taps his temple as he shares a “genius” idea.',
+    meaning:
+      'Roll Safe shares a life hack that sounds clever but is obviously terrible logic. The confident smirk and the finger on the temple sell the idea as genius.',
+    howTo: 'Write the problem at the top and the terrible “clever” solution at the bottom.',
+    aiHint: 'Roll Safe: top = a problem, bottom = a smug, terrible-logic solution.',
+    slots: topBottom(),
+    height: 603,
+    examples: [
+      ['Can’t be late for school', 'if you never go home'],
+      ['Can’t fail the test', 'if you don’t take it'],
+      ['Can’t lose your phone', 'if you never put it down']
+    ]
+  },
+  {
+    slug: 'hero-slaps-sidekick',
+    name: 'Hero Slaps Sidekick',
+    aka: ['Superhero Slap Meme', 'Slapping Sidekick', 'Comic Slap Meme', 'Shut Up Slap'],
+    category: 'dank',
+    summary: 'A caped hero slaps his sidekick mid-sentence in a retro comic panel.',
+    meaning:
+      'Hero Slaps Sidekick shuts down a bad take. The sidekick starts saying something silly, and the hero interrupts with a slap and the correct answer.',
+    howTo:
+      'Put the sidekick’s bad take in the left bubble and the hero’s correction in the right bubble.',
+    aiHint: 'Hero slaps sidekick: line 1 = the sidekick’s silly or wrong statement (cut off), line 2 = the hero’s firm correction.',
+    slots: [
+      { label: 'Sidekick says', style: 'dark', x: 0.27, y: 0.115, w: 0.42, h: 0.13 },
+      { label: 'Hero replies', style: 'dark', x: 0.76, y: 0.115, w: 0.3, h: 0.13 }
+    ],
+    examples: [
+      ['Can we skip the sequel and just—', 'NO'],
+      ['Let’s just do the homework tomorr—', 'TODAY'],
+      ['Pineapple on pizza is—', 'DON’T']
+    ]
+  },
+  {
+    slug: 'mocking-chicken',
+    name: 'Mocking Chicken (aLtErNaTiNg CaPs)',
+    aka: ['Mocking Meme', 'Alternating Caps Meme', 'Mocking Text Meme', 'Mocking SpongeBob Style'],
+    category: 'dank',
+    summary: 'A goofy yellow chicken bends over in a lopsided, mocking pose.',
+    meaning:
+      'The mocking meme repeats something annoying someone said in alternating caps, as if said in a silly voice. Quote it normally at the top, then mock it at the bottom.',
+    howTo:
+      'Write the quote normally at the top, then repeat it at the bottom in aLtErNaTiNg CaPs.',
+    aiHint: 'Mocking: top = an annoying quote, bottom = the same quote in alternating caps (e.g. “yOu ShOuLd…”).',
+    slots: topBottom('The quote', 'Mocking version'),
+    height: 603,
+    examples: [
+      ['You should drink more water', 'yOu ShOuLd DrInK mOrE wAtEr'],
+      ['Have you tried turning it off and on?', 'HaVe YoU tRiEd TuRnInG iT oFf'],
+      ['Back in my day', 'BaCk In My DaY']
+    ]
+  },
+  {
+    slug: 'fancy-hamster',
+    name: 'Fancy Hamster (Tuxedo Meme)',
+    aka: ['Tuxedo Meme', 'Fancy Meme', 'Classy Hamster', 'Tuxedo Winnie The Pooh Style'],
+    category: 'dank',
+    summary: 'A plain hamster in a T-shirt, then the same hamster in a tuxedo looking very refined.',
+    meaning:
+      'The fancy meme compares a normal way of saying something with a ridiculously posh way of saying exactly the same thing. The tuxedo panel is the pretentious version.',
+    howTo: 'Write the normal wording in the top box and the fancy, over-the-top version in the bottom box.',
+    aiHint: 'Fancy/tuxedo: line 1 = the plain way to say something, line 2 = a pretentious, fancy way to say the same thing.',
+    slots: [
+      { label: 'Plain version', style: 'dark', x: 0.76, y: 0.255, w: 0.4, h: 0.4 },
+      { label: 'Fancy version', style: 'dark', x: 0.76, y: 0.745, w: 0.4, h: 0.4 }
+    ],
+    height: 1341,
+    examples: [
+      ['Chips', 'Artisanal hand-cut potato batons'],
+      ['Being lazy', 'Energy conservation strategy'],
+      ['Leftover pizza for breakfast', 'Reheated Italian morning cuisine']
+    ]
+  },
+  {
+    slug: 'waiting-skeleton',
+    name: 'Waiting Skeleton',
+    aka: ['Skeleton On Bench', 'Still Waiting Meme', 'Me Waiting Skeleton'],
+    category: 'relatable',
+    summary: 'A cobweb-covered skeleton sits on a park bench, still holding its phone.',
+    meaning:
+      'Waiting Skeleton is for anything that is taking forever: replies, deliveries, updates, decisions. You waited so long you turned into a skeleton.',
+    howTo: 'Write who is waiting at the top and what they are waiting for at the bottom.',
+    aiHint: 'Waiting skeleton: top = who is waiting, bottom = the thing that is taking forever.',
+    slots: topBottom(),
+    examples: [
+      ['Me waiting for the group chat', 'to agree on a restaurant'],
+      ['Me waiting', 'for my game to finish updating'],
+      ['Still waiting', 'for that “quick” 5-minute meeting to end']
+    ]
+  },
+  {
+    slug: 'cheers-toast',
+    name: 'Cheers Toast',
+    aka: ['Leonardo DiCaprio Cheers', 'Raising Glass Meme', 'Cheers Meme', 'Toast Meme'],
+    category: 'relatable',
+    summary: 'A grinning man in a tuxedo raises his glass to the camera at a lavish party.',
+    meaning:
+      'The Cheers meme toasts someone or something, sincerely or sarcastically. It is perfect for congratulating people on tiny achievements or saluting a fellow sufferer.',
+    howTo: 'Write who you are toasting at the top and why at the bottom.',
+    aiHint: 'Cheers: top = who is being toasted, bottom = the reason (sincere or sarcastic).',
+    slots: topBottom(),
+    height: 603,
+    examples: [
+      ['To everyone who said they’d bring snacks', 'and actually did'],
+      ['Here’s to the people', 'who read the instructions first'],
+      ['Cheers to the one teacher', 'who never sets weekend homework']
+    ]
+  },
+  {
+    slug: 'always-has-been',
+    name: 'Always Has Been',
+    aka: ['Wait It’s All', 'Astronaut Meme', 'Ohio Astronaut Meme', 'Always Has Been Astronaut'],
+    category: 'dank',
+    summary: 'An astronaut realises something about Earth while another floats behind him.',
+    meaning:
+      'Always Has Been is a shocking discovery that was obvious all along. The first astronaut says “Wait, it’s all …?” and the second confirms: “Always has been.”',
+    howTo:
+      'Write “Wait, it’s all …?” for the front astronaut and “Always has been” for the one behind.',
+    aiHint: 'Always has been: line 1 = “Wait, it’s all …?” discovery, line 2 = “Always has been”.',
+    slots: [
+      { label: 'Front astronaut', style: 'impact', x: 0.3, y: 0.08, w: 0.56, h: 0.14 },
+      { label: 'Astronaut behind', style: 'impact', x: 0.75, y: 0.9, w: 0.46, h: 0.14 }
+    ],
+    height: 603,
+    examples: [
+      ['Wait, it’s all just checking your phone?', 'Always has been'],
+      ['Wait, school is just group projects?', 'Always has been'],
+      ['Wait, it’s all reruns?', 'Always has been']
+    ]
+  },
+  {
+    slug: 'for-the-better-right',
+    name: 'For the Better, Right?',
+    aka: ['Four Panel Smirk Meme', 'Right? Meme', 'Hopeful Question Meme'],
+    category: 'dank',
+    summary: 'A couple in a meadow: he states a plan, she asks hopefully, he smirks silently, she asks again.',
+    meaning:
+      'This four-panel meme is about a worrying plan. One person announces something, the other asks a hopeful question, gets only a silent smirk, and asks again, now nervous.',
+    howTo:
+      'Write the plan in panel 1, the hopeful question in panel 2, leave panel 3 blank (or “…”), and repeat the question in panel 4.',
+    aiHint: 'For the better, right: line 1 = a plan, line 2 = a hopeful question, line 3 = “…”, line 4 = the same question again, worried.',
+    slots: [
+      { label: 'The plan', style: 'dark', x: 0.255, y: 0.46, w: 0.44, h: 0.055 },
+      { label: 'Hopeful question', style: 'dark', x: 0.745, y: 0.46, w: 0.44, h: 0.055 },
+      { label: 'Silence', style: 'dark', x: 0.255, y: 0.945, w: 0.44, h: 0.055 },
+      { label: 'Asks again', style: 'dark', x: 0.745, y: 0.945, w: 0.44, h: 0.055 }
+    ],
+    examples: [
+      ['I’m going to the shop', 'You’ll buy what’s on the list, right?', '…', 'You’ll buy what’s on the list, right?'],
+      ['I’m going to fix the Wi-Fi', 'You know how, right?', '…', 'You know how, right?'],
+      ['I’m cooking tonight', 'Something we can eat, right?', '…', 'Something we can eat, right?']
+    ]
+  },
+  {
+    slug: 'epic-handshake',
+    name: 'Epic Handshake',
+    aka: ['Arm Wrestling Handshake', 'Predator Handshake', 'Agreement Handshake Meme'],
+    category: 'relatable',
+    summary: 'Two muscular arms clasp in a powerful handshake against a jungle background.',
+    meaning:
+      'Epic Handshake shows two very different groups agreeing on one thing. Label each arm with a group and the handshake with what they have in common.',
+    howTo: 'Label the left arm, the right arm, then the shared thing above the handshake.',
+    aiHint: 'Epic handshake: line 1 = group one, line 2 = group two, line 3 = the surprising thing they agree on.',
+    slots: [
+      { label: 'Left arm', style: 'impact', x: 0.18, y: 0.78, w: 0.34, h: 0.14 },
+      { label: 'Right arm', style: 'impact', x: 0.82, y: 0.78, w: 0.34, h: 0.14 },
+      { label: 'Shared thing', style: 'impact', x: 0.5, y: 0.14, w: 0.5, h: 0.14 }
+    ],
+    height: 603,
+    examples: [
+      ['Cats', 'Toddlers', 'Knocking things off tables'],
+      ['Students', 'Teachers', 'Wanting the holidays'],
+      ['Gamers', 'Parents', 'One more minute']
+    ]
+  },
+  {
+    slug: 'buff-doge-vs-cheems',
+    name: 'Buff Doge vs Cheems',
+    aka: ['Swole Doge Vs Cheems', 'Then Vs Now Doge', 'Strong Dog Weak Dog'],
+    category: 'dank',
+    summary: 'A huge muscular Shiba Inu stands beside a small, sad, hunched one.',
+    meaning:
+      'Buff Doge vs Cheems compares a strong past with a weak present (or a tough version with a soft one). The buff dog shows how things used to be; the small dog shows how they are now.',
+    howTo: 'Write the strong “then” above the buff dog and the weak “now” above the small dog.',
+    aiHint: 'Buff Doge vs Cheems: line 1 = the strong past version, line 2 = the weak present version.',
+    slots: [
+      { label: 'Buff dog (then)', style: 'dark', x: 0.27, y: 0.06, w: 0.5, h: 0.1 },
+      { label: 'Small dog (now)', style: 'dark', x: 0.75, y: 0.25, w: 0.44, h: 0.3 }
+    ],
+    height: 603,
+    examples: [
+      ['Phones in 2005: survive falling off a building', 'Phones now: crack if you look at them'],
+      ['Kids in 1995: played outside all day', 'Kids now: Wi-Fi is slow, day ruined'],
+      ['Me at 9 AM: ready to work', 'Me at 3 PM: need a nap']
+    ]
+  },
+  {
+    slug: 'lonely-waiting',
+    name: 'Lonely Waiting',
+    aka: ['Sad Pablo Escobar', 'Waiting Alone Meme', 'Lonely Man Meme', 'Sad Waiting Meme'],
+    category: 'relatable',
+    summary: 'Three frames of a lonely man waiting: on a swing, on a sofa, on a bench.',
+    meaning:
+      'Lonely Waiting is about boredom and loneliness: waiting for someone, something, or anything to happen. One caption covers all three sad frames.',
+    howTo: 'Write one caption along the bottom describing the lonely, boring wait.',
+    aiHint: 'Lonely waiting: one line describing a lonely, boring wait.',
+    slots: [{ label: 'Caption', style: 'dark', x: 0.5, y: 0.93, w: 0.96, h: 0.11 }],
+    height: 603,
+    examples: [
+      ['Me waiting for someone to like my meme'],
+      ['Me waiting for my friends to finish their game'],
+      ['Me after everyone leaves the group chat']
+    ]
+  },
+  {
+    slug: 'no-question-face',
+    name: 'No …? Smug Face',
+    aka: ['No Meme', 'No Bitches Meme', 'Megamind No Style', 'Smug No Face'],
+    category: 'dank',
+    summary: 'A smug big-headed cartoon cat raises an eyebrow with a sly half-smile.',
+    meaning:
+      'The “No …?” meme teases someone for clearly missing out on something. The smug face asks “No ___?” as if it is the most obvious thing in the world.',
+    howTo: 'Write a single “No ___?” question at the top. Leave the bottom blank or add a follow-up.',
+    aiHint: 'No …? face: top = a smug “No ___?” question, bottom = optional short follow-up.',
+    slots: topBottom(),
+    examples: [
+      ['No snacks?', ''],
+      ['No weekend plans?', ''],
+      ['No charger?', '']
+    ]
+  },
+  {
+    slug: 'it-was-aliens',
+    name: 'It Was Aliens',
+    aka: ['Aliens Guy Meme', 'Aliens Meme', 'History Aliens Guy', 'I’m Not Saying It Was Aliens'],
+    category: 'dank',
+    summary: 'A man with wild, spiky hair explains something intensely in a documentary interview.',
+    meaning:
+      'It Was Aliens blames any mystery on aliens. The intense explanation and wild hair make even the most everyday mystery sound like a conspiracy.',
+    howTo: 'Describe the mystery at the top and blame aliens at the bottom.',
+    aiHint: 'Aliens: top = an everyday mystery, bottom = “Aliens” or “I’m not saying it was aliens, but…”.',
+    slots: topBottom(),
+    height: 603,
+    examples: [
+      ['Odd socks in the wash?', 'Aliens'],
+      ['Who ate the last biscuit?', 'Aliens'],
+      ['I’m not saying my homework was taken', 'but it was aliens']
+    ]
+  },
+  {
+    slug: 'bad-luck-brian',
+    name: 'Bad Luck Brian',
+    aka: ['Unlucky Kid Meme', 'School Photo Meme', 'Bad Luck Meme'],
+    category: 'relatable',
+    summary: 'An awkward kid with braces and a bowl cut grins in his school photo.',
+    meaning:
+      'Bad Luck Brian is the unluckiest kid alive. The top line sets up something good, and the bottom line is the unlucky twist that ruins it.',
+    howTo: 'Write something good at the top and the unlucky twist at the bottom.',
+    aiHint: 'Bad Luck Brian: top = something good that happens, bottom = the unlucky twist.',
+    slots: topBottom(),
+    examples: [
+      ['Finally gets a day off', 'It rains'],
+      ['Wins a free pizza', 'Allergic to cheese'],
+      ['Studies all night', 'Wrong exam']
+    ]
+  },
+  {
+    slug: 'grumpy-kitty',
+    name: 'Grumpy Kitty',
+    aka: ['Grumpy Cat Meme', 'Unimpressed Cat', 'Angry Cat Meme', 'No Cat'],
+    category: 'relatable',
+    summary: 'A small tabby cat stares at the camera looking deeply unimpressed.',
+    meaning:
+      'Grumpy Kitty says no to everything. Flat, grumpy refusals and complaints are the whole joke.',
+    howTo: 'Write a cheerful setup at the top and a flat, grumpy response at the bottom.',
+    aiHint: 'Grumpy cat: top = something fun or a question, bottom = a flat, grumpy refusal.',
+    slots: topBottom(),
+    examples: [
+      ['I had fun once', 'It was awful'],
+      ['You want a hug?', 'No'],
+      ['Monday', 'Why']
+    ]
+  },
+  {
+    slug: 'workshop-argument',
+    name: 'Workshop Argument',
+    aka: ['American Chopper Argument', 'Five Panel Argument', 'Chair Throw Meme', 'Shouting Argument Meme'],
+    category: 'tech',
+    summary: 'Two men in a motorbike workshop shout at each other across five panels until a chair goes flying.',
+    meaning:
+      'The Workshop Argument stages an escalating debate about something trivial. Each panel is a louder comeback, and the last panel ends it with a flying chair.',
+    howTo:
+      'Write the argument as five lines, alternating between the two speakers. Make it more heated each panel.',
+    aiHint: 'Workshop argument: five escalating lines alternating between two people arguing about something trivial.',
+    slots: [
+      { label: 'Panel 1', style: 'impact', x: 0.5, y: 0.16, w: 0.94, h: 0.05 },
+      { label: 'Panel 2', style: 'impact', x: 0.5, y: 0.365, w: 0.94, h: 0.05 },
+      { label: 'Panel 3', style: 'impact', x: 0.5, y: 0.565, w: 0.94, h: 0.05 },
+      { label: 'Panel 4', style: 'impact', x: 0.5, y: 0.765, w: 0.94, h: 0.05 },
+      { label: 'Panel 5', style: 'impact', x: 0.5, y: 0.945, w: 0.94, h: 0.05 }
+    ],
+    height: 1935,
+    examples: [
+      ['Tabs are better', 'Spaces are better', 'Tabs save bytes', 'Spaces look the same everywhere', 'JUST USE A FORMATTER'],
+      ['Cereal first', 'Milk first', 'Cereal stays crunchy', 'Milk first is efficient', 'IT’S SOUP EITHER WAY'],
+      ['It’s pronounced GIF', 'It’s JIF', 'The creator said JIF', 'Graphics starts with G', 'NOBODY CARES']
+    ]
+  },
+  {
+    slug: 'blinking-guy',
+    name: 'Blinking Guy',
+    aka: ['Blinking White Guy', 'Disbelief Blink', 'Confused Blink Meme'],
+    category: 'relatable',
+    summary: 'A man in a grey hoodie blinks mid-turn in total disbelief.',
+    meaning:
+      'Blinking Guy is pure “did that just happen?” disbelief. Use it when someone says or does something so strange you have to blink twice.',
+    howTo: 'Write the unbelievable thing in the white strip at the top.',
+    aiHint: 'Blinking guy: one line describing something unbelievable someone said or did.',
+    slots: [{ label: 'Caption', style: 'dark', x: 0.5, y: 0.065, w: 0.96, h: 0.12 }],
+    height: 603,
+    examples: [
+      ['When they say reply-all was the plan all along'],
+      ['When someone says they don’t like chips'],
+      ['When the teacher says the test is today']
+    ]
+  },
+  {
+    slug: 'hard-to-swallow-pills',
+    name: 'Hard to Swallow Pills',
+    aka: ['Pill Bottle Meme', 'Hard Truth Meme', 'Truth Pill Meme'],
+    category: 'relatable',
+    summary: 'A hand holds an orange pill bottle with a blank label next to a single large pill.',
+    meaning:
+      'Hard to Swallow Pills delivers an uncomfortable truth. The bottle says “Hard to swallow pills”, and the caption is the truth nobody wants to hear.',
+    howTo: 'Keep “Hard to swallow pills” on the bottle label and write the uncomfortable truth at the top.',
+    aiHint: 'Hard to swallow pills: line 1 = “Hard to swallow pills” (bottle label), line 2 = an uncomfortable truth.',
+    slots: [
+      { label: 'Bottle label', style: 'dark', x: 0.455, y: 0.47, w: 0.22, h: 0.2 },
+      { label: 'The hard truth', style: 'dark', x: 0.5, y: 0.08, w: 0.9, h: 0.13 }
+    ],
+    examples: [
+      ['Hard to swallow pills', 'You don’t need another notebook'],
+      ['Hard to swallow pills', 'The shortcut took longer'],
+      ['Hard to swallow pills', 'Nobody reads the terms and conditions']
+    ]
+  },
+  {
+    slug: 'am-i-out-of-touch',
+    name: 'Am I Out of Touch?',
+    aka: ['Am I So Out Of Touch', 'No It’s The Children Who Are Wrong', 'Out Of Touch Meme'],
+    category: 'dank',
+    summary: 'A man in a suit doubts himself for a moment, then confidently decides everyone else is wrong.',
+    meaning:
+      'Am I Out of Touch? is about refusing to admit you are wrong. In the first panel there is a moment of self-doubt; in the second, the person confidently blames everyone else.',
+    howTo: 'Write the moment of doubt on the left and the confident wrong conclusion on the right.',
+    aiHint: 'Am I out of touch: line 1 = a moment of self-doubt, line 2 = deciding confidently that everyone else is wrong.',
+    slots: [
+      { label: 'Self-doubt', style: 'dark', x: 0.25, y: 0.07, w: 0.46, h: 0.12 },
+      { label: 'Everyone else is wrong', style: 'dark', x: 0.75, y: 0.07, w: 0.46, h: 0.12 }
+    ],
+    height: 603,
+    examples: [
+      ['Am I wrong for replying “k”?', 'No, it’s everyone else who is rude'],
+      ['Am I bad at this game?', 'No, the controller is broken'],
+      ['Should I have started earlier?', 'No, the deadline is unfair']
+    ]
+  },
+  {
+    slug: 'sleeping-then-awake',
+    name: 'Sleeping Then Awake',
+    aka: ['Sleeping Shaq', 'Wake Up Meme', 'Asleep Then Awake Meme'],
+    category: 'relatable',
+    summary: 'A huge man in a tracksuit dozes courtside, then sits up wide awake.',
+    meaning:
+      'Sleeping Then Awake compares something boring you ignore with something exciting that wakes you up instantly.',
+    howTo: 'Write the boring thing on the top panel and the exciting thing on the bottom panel.',
+    aiHint: 'Sleeping then awake: line 1 = something boring that sends you to sleep, line 2 = something that wakes you up instantly.',
+    slots: [
+      { label: 'Asleep for', style: 'impact', x: 0.5, y: 0.44, w: 0.66, h: 0.09 },
+      { label: 'Awake for', style: 'impact', x: 0.5, y: 0.94, w: 0.66, h: 0.09 }
+    ],
+    height: 1341,
+    examples: [
+      ['My alarm', 'Someone opens a crisp packet'],
+      ['The lesson', 'The bell'],
+      ['Being asked to tidy up', 'Pizza arrives']
+    ]
+  },
+  {
+    slug: 'kombucha-girl',
+    name: 'Kombucha Girl',
+    aka: ['Disgust To Approval Meme', 'Unsure Reaction Meme', 'Kombucha Meme'],
+    category: 'relatable',
+    summary: 'A woman with pink hair grimaces at a drink, hesitates, then decides she likes it.',
+    meaning:
+      'Kombucha Girl shows a reaction moving from disgust to uncertainty to approval. Use it for things you hated at first but secretly grew to like.',
+    howTo: 'Write the first try, the second thought and the final verdict, one per panel.',
+    aiHint: 'Kombucha Girl: line 1 = first try (disgust), line 2 = unsure second thought, line 3 = grudging approval.',
+    slots: [
+      { label: 'Disgust', style: 'impact', x: 0.5, y: 0.29, w: 0.94, h: 0.07 },
+      { label: 'Unsure', style: 'impact', x: 0.5, y: 0.62, w: 0.94, h: 0.07 },
+      { label: 'Approval', style: 'impact', x: 0.5, y: 0.955, w: 0.94, h: 0.07 }
+    ],
+    height: 1341,
+    examples: [
+      ['Trying a new song', 'Second listen', 'The 40th listen'],
+      ['First day of the diet', 'Day two', 'Week three'],
+      ['Olives at 8', 'Olives at 16', 'Olives at 25']
+    ]
+  },
+  {
+    slug: 'yes-chad',
+    name: 'Yes Chad',
+    aka: ['Nordic Gamer Meme', 'Yes Meme', 'Chad Yes', 'Average Enjoyer Yes'],
+    category: 'dank',
+    summary: 'A crude frowning cartoon man points accusingly at a calm, bearded blond man.',
+    meaning:
+      'Yes Chad owns an accusation with total confidence. The angry character points out something “embarrassing”, and the calm, bearded man simply says “Yes.”',
+    howTo: 'Write the accusation over the angry cartoon and “Yes.” over the calm man.',
+    aiHint: 'Yes Chad: line 1 = an accusing or mocking question, line 2 = a calm, confident “Yes.”',
+    slots: [
+      { label: 'Accusation', style: 'dark', x: 0.25, y: 0.1, w: 0.46, h: 0.16 },
+      { label: 'Calm reply', style: 'impact', x: 0.75, y: 0.1, w: 0.46, h: 0.16 }
+    ],
+    height: 603,
+    examples: [
+      ['You still use a wired mouse?', 'Yes.'],
+      ['You actually read the manual?', 'Yes.'],
+      ['You eat cereal for dinner?', 'Yes.']
+    ]
+  },
+  {
+    slug: 'absolute-cinema',
+    name: 'Absolute Cinema',
+    aka: ['This Is Cinema', 'Cinema Meme', 'Hands Up Cinema Meme'],
+    category: 'dank',
+    summary: 'An elderly man in a black turtleneck raises both hands, eyes closed, overwhelmed by a masterpiece.',
+    meaning:
+      'Absolute Cinema praises something everyday as if it were a cinematic masterpiece. The more ordinary the thing, the funnier the reverence.',
+    howTo: 'Describe the everyday moment at the top and write “Absolute cinema” at the bottom.',
+    aiHint: 'Absolute cinema: top = an everyday moment, bottom = “Absolute cinema”.',
+    slots: topBottom(),
+    height: 603,
+    examples: [
+      ['When the toast lands butter side up', 'Absolute cinema'],
+      ['Bus arrives the second you reach the stop', 'Absolute cinema'],
+      ['Cable untangles in one pull', 'Absolute cinema']
+    ]
+  },
+  {
+    slug: 'boardroom-meeting',
+    name: 'Boardroom Meeting Suggestion',
+    aka: ['Boardroom Meme', 'Thrown Out Window Meme', 'Meeting Suggestion Meme'],
+    category: 'tech',
+    summary: 'A boss asks the team for ideas and throws the one with the honest answer out of the window.',
+    meaning:
+      'The Boardroom Meeting meme mocks bosses who ignore the obvious answer. The boss asks a question, someone gives the safe answer, and whoever says the honest (correct) answer gets thrown out of the window.',
+    howTo:
+      'Write the boss’s question in bubble one, a safe suggestion in bubble two, and the honest answer in bubble three.',
+    aiHint: 'Boardroom meeting: line 1 = the boss’s question, line 2 = a safe, boring suggestion, line 3 = the honest answer that gets the person thrown out.',
+    slots: [
+      { label: 'Boss asks', style: 'dark', x: 0.315, y: 0.1, w: 0.25, h: 0.12 },
+      { label: 'Safe suggestion', style: 'dark', x: 0.76, y: 0.1, w: 0.28, h: 0.12 },
+      { label: 'Honest answer', style: 'dark', x: 0.25, y: 0.59, w: 0.33, h: 0.12 }
+    ],
+    examples: [
+      ['How do we fix the bug?', 'Add more logging', 'Read the error message'],
+      ['How do we get more sales?', 'A new logo', 'Lower the prices'],
+      ['How do we save time?', 'Another meeting', 'Fewer meetings']
+    ]
+  },
+  {
+    slug: 'evil-inner-voice',
+    name: 'Evil Inner Voice',
+    aka: ['Me Vs Also Me', 'Hooded Puppet Meme', 'Dark Side Meme', 'Evil Kermit Style'],
+    category: 'relatable',
+    summary: 'A knitted lizard puppet faces its twin in a dark hooded cloak, like a sinister inner voice.',
+    meaning:
+      'Evil Inner Voice is the battle between good intentions and temptation. The normal puppet is you trying to be sensible; the hooded twin is the voice in your head suggesting the bad idea.',
+    howTo: 'Write your sensible plan on the left and the tempting bad idea on the right.',
+    aiHint: 'Evil inner voice: line 1 = “Me: …” a sensible plan, line 2 = “Also me: …” the tempting bad idea.',
+    slots: [
+      { label: 'Me', style: 'impact', x: 0.25, y: 0.08, w: 0.46, h: 0.14 },
+      { label: 'Also me (hooded)', style: 'impact', x: 0.75, y: 0.08, w: 0.46, h: 0.14 }
+    ],
+    height: 603,
+    examples: [
+      ['Me: I should go to bed', 'Also me: one more video'],
+      ['Me: I’ll save money', 'Also me: free delivery over £20'],
+      ['Me: I’ll start revising', 'Also me: tidy your whole room first']
+    ]
+  },
+  {
+    slug: 'not-sure-if',
+    name: 'Not Sure If',
+    aka: ['Not Sure If Meme', 'Squinting Suspicious Meme', 'Futurama Fry Style'],
+    category: 'relatable',
+    summary: 'A cartoon man with a messy black quiff squints in deep suspicion.',
+    meaning:
+      'Not Sure If is for two possibilities you can’t tell apart. The squinting face is trying very hard to work out which one it is.',
+    howTo: 'Write “Not sure if …” at the top and “or …” at the bottom.',
+    aiHint: 'Not sure if: top = “Not sure if …”, bottom = “or …” with an alternative that looks the same.',
+    slots: topBottom(),
+    height: 603,
+    examples: [
+      ['Not sure if hungry', 'or just bored'],
+      ['Not sure if they’re joking', 'or I’m in trouble'],
+      ['Not sure if the Wi-Fi is slow', 'or my laptop is dying']
+    ]
+  },
+  {
+    slug: 'draw-25',
+    name: 'Draw 25',
+    aka: ['Or Draw 25', 'Draw 25 Cards Meme', 'Card Game Meme'],
+    category: 'dank',
+    summary: 'A hand offers one blank card, then a smug man holds an enormous fan of cards.',
+    meaning:
+      'Draw 25 is for something people would rather suffer than do. The card offers a simple task “or draw 25”, and the bottom panel shows them choosing to draw an absurd pile of cards instead.',
+    howTo: 'Write “Do X or draw 25” on the card and a label for the person who drew 25 at the bottom.',
+    aiHint: 'Draw 25: line 1 = “[simple task] or draw 25” on the card, line 2 = who chose to draw 25.',
+    slots: [
+      { label: 'The card', style: 'dark', x: 0.495, y: 0.22, w: 0.22, h: 0.16 },
+      { label: 'Person who drew 25', style: 'impact', x: 0.5, y: 0.95, w: 0.94, h: 0.07 }
+    ],
+    height: 1341,
+    examples: [
+      ['Admit you’re wrong or draw 25', 'Me'],
+      ['Say sorry first or draw 25', 'Every sibling ever'],
+      ['Read the instructions or draw 25', 'Dads building furniture']
+    ]
   }
 ];
 
@@ -473,7 +1117,7 @@ export const MEME_TEMPLATES = RAW_TEMPLATES.filter((t) => !t.hidden).map((t) => 
   image: `${TEMPLATE_IMAGE_DIR}/${t.slug}.webp`,
   thumb: `${TEMPLATE_IMAGE_DIR}/${t.slug}-thumb.webp`,
   width: 1080,
-  height: 1080,
+  height: t.height || 1080,
   title: `${t.name} Meme Template — Free Meme Generator | THE MEMES.net`,
   description: `Make a ${t.name} meme free online. ${t.summary} Add your own text or let AI write it, then download or share. No sign-up.`.slice(
     0,

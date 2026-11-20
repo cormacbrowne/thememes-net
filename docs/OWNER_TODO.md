@@ -7,6 +7,7 @@ Last updated: 20 Nov 2026 (end of Phase 1).
 - [x] Privacy policy analytics section published on `/privacy`. It goes live with the next deploy.
 - [x] The 3 old JPG memes were converted to WebP, about 2.5× smaller. The old `.jpg` files are still in Storage, unused; you can delete them any time.
 - [x] Lookalike slot names renamed (Mr. Jackpots kept).
+- [x] Edge Function `submit-caption-entry` deployed for Daily Caption Battle v2.
 
 ## Decide or do now
 - [ ] **Deploy.** Nothing from Phase 1 is on the live site until `main` is pushed and Vercel deploys it.
@@ -31,3 +32,10 @@ Last updated: 20 Nov 2026 (end of Phase 1).
 ## Later
 - [ ] Stripe account (test mode first), ad network applications, an email provider, and push VAPID keys.
 - [ ] **Get legal advice before any real-money feature touches the arcade or MemeDollarz.**
+
+## Share preview checks (Phase 2.2)
+After the next deploy, paste one `/m/<id>/<slug>`, one `/battle/<battleId>`, and one `/battle/<battleId>/e/<entryId>` link into each app and verify the title, description, and preview image render cleanly:
+- [ ] **WhatsApp** (paste in a private chat and wait ~2s before sending)
+- [ ] **iMessage** (paste in Messages on iPhone/Mac)
+- [ ] **Discord** (paste in a private channel)
+- [ ] **X (Twitter)** (test in X Card Validator or a draft post with `summary_large_image`)

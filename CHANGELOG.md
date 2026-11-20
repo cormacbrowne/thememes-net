@@ -1,5 +1,17 @@
 # Changelog
 
+## Phase 2: The core loop (20 Nov 2026)
+
+### 2.1 Daily Caption Battle v2
+- Scheduled daily battles (09:00 Europe/London, 24 h window) with `pg_cron`, one entry per player (editable until close), swipe voting with hidden totals until voting, podium rewards, and `/admin/battles`.
+- Deployed updated `submit-caption-entry` Edge Function.
+
+### 2.2 Meme pages, battle pages & share previews
+- Readable `/m/<id>/<slug>` URLs with slug canonicals and quick-share buttons (WhatsApp, X, Reddit, Discord).
+- Meme viewer "Make your own" opens the matching template when `base_image_url` uses `/meme-templates/<slug>.webp`, plus a "More like this" row (up to 6 same-category memes) and Today's Caption Battle card.
+- Server-rendered battle OG pages (`/battle/<battleId>` and `/battle/<battleId>/e/<entryId>`) via `api/battle-og.js`, client route deep-linking, entry sharing, and sitemap entries.
+- Tidier corner watermark pill (`globalAlpha = 0.72`) while preserving readable text size.
+
 ## Phase 1: Credibility and speed (20 Nov 2026)
 
 ### 1.1 Real numbers only

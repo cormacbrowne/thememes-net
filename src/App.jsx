@@ -169,8 +169,11 @@ export default function App() {
     setProfileUsername,
     showAuthModal,
     setShowAuthModal,
+    battleId,
+    battleEntryId,
     battleModalOpen,
     setBattleModalOpen,
+    handleCloseBattle,
     liveCelebrationData,
     setLiveCelebrationData,
     roastModalMeme,
@@ -1949,6 +1952,14 @@ export default function App() {
             onTriggerStudioMutate={handleTriggerStudioMutate}
             onCaptionThis={handleCaptionThis}
             onOpenBlankStudio={handleOpenBlankStudio}
+            onOpenTemplateStudio={(templateSlug) => {
+              setForgeIntent({ mode: 'template', templateSlug });
+              setShowStudio(true);
+            }}
+            onOpenBattle={(tab) => {
+              handleCloseTheater();
+              setBattleModalOpen(tab || true);
+            }}
             openedFromShareLink={openedFromShareLink}
             onSelectMeme={handleOpenTheater}
             onClose={handleCloseTheater}
@@ -2349,14 +2360,16 @@ export default function App() {
       {battleModalOpen && (
         <Suspense fallback={MODAL_SKELETON_FALLBACK}>
           <DailyCaptionBattleModal
+            battleId={battleId}
+            highlightEntryId={battleEntryId}
             initialTab={typeof battleModalOpen === 'string' ? battleModalOpen : null}
             onClaimPrize={handleClaimBattlePrize}
             onOpenProfile={(username) => {
-              setBattleModalOpen(false);
+              handleCloseBattle();
               setProfileUsername(username);
             }}
             onKingsUpdated={setActiveCaptionKings}
-            onClose={() => setBattleModalOpen(false)}
+            onClose={handleCloseBattle}
           />
         </Suspense>
       )}

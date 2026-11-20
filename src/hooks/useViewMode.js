@@ -122,7 +122,9 @@ export function useViewMode() {
   const [rewardsInitialTab, setRewardsInitialTab] = useState('vault');
   const [profileUsername, setProfileUsername] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [battleModalOpen, setBattleModalOpen] = useState(false);
+  const [battleId, setBattleId] = useState(initialRoute.battleId || null);
+  const [battleEntryId, setBattleEntryId] = useState(initialRoute.battleEntryId || null);
+  const [battleModalOpen, setBattleModalOpen] = useState(Boolean(initialRoute.battleId));
   const [liveCelebrationData, setLiveCelebrationData] = useState(null);
   const [roastModalMeme, setRoastModalMeme] = useState(null);
   const [evolutionModalMeme, setEvolutionModalMeme] = useState(null);
@@ -142,6 +144,8 @@ export function useViewMode() {
         category,
         creatorHandle,
         templateSlug,
+        battleId,
+        battleEntryId,
         showStudio,
         forgeIntent,
         extrasDrawerOpen,
@@ -155,6 +159,8 @@ export function useViewMode() {
       category,
       creatorHandle,
       templateSlug,
+      battleId,
+      battleEntryId,
       showStudio,
       forgeIntent,
       extrasDrawerOpen,
@@ -230,6 +236,19 @@ export function useViewMode() {
     }
   }, []);
 
+  const handleCloseBattle = useCallback(() => {
+    setBattleModalOpen(false);
+    setBattleId(null);
+    setBattleEntryId(null);
+    if (typeof window !== 'undefined' && window.history?.replaceState) {
+      const url = new URL(window.location.href);
+      if (/^\/battle\//i.test(url.pathname)) {
+        url.pathname = '/';
+        window.history.replaceState(window.history.state, '', url.toString());
+      }
+    }
+  }, []);
+
   const closeAllModals = useCallback(() => {
     setShowStudio(false);
     setForgeIntent(null);
@@ -240,6 +259,8 @@ export function useViewMode() {
     setShowRewardsModal(false);
     setRewardsInitialTab('vault');
     setBattleModalOpen(false);
+    setBattleId(null);
+    setBattleEntryId(null);
     setLiveCelebrationData(null);
     setRoastModalMeme(null);
     setProfileUsername(null);
@@ -257,7 +278,7 @@ export function useViewMode() {
         url.searchParams.delete('meme');
         changed = true;
       }
-      if (/^\/m\/[^/?#]+/i.test(url.pathname)) {
+      if (/^\/(?:m|battle)\/[^/?#]+/i.test(url.pathname)) {
         url.pathname = '/';
         changed = true;
       }
@@ -284,7 +305,7 @@ export function useViewMode() {
     } else if (liveCelebrationData) {
       setLiveCelebrationData(null);
     } else if (battleModalOpen) {
-      setBattleModalOpen(false);
+      handleCloseBattle();
     } else if (showRewardsModal) {
       setShowRewardsModal(false);
     } else if (evolutionModalMeme) {
@@ -312,6 +333,7 @@ export function useViewMode() {
     roastModalMeme,
     liveCelebrationData,
     battleModalOpen,
+    handleCloseBattle,
     showRewardsModal,
     evolutionModalMeme,
     profileUsername,
@@ -373,8 +395,13 @@ export function useViewMode() {
     setProfileUsername,
     showAuthModal,
     setShowAuthModal,
+    battleId,
+    setBattleId,
+    battleEntryId,
+    setBattleEntryId,
     battleModalOpen,
     setBattleModalOpen,
+    handleCloseBattle,
     liveCelebrationData,
     setLiveCelebrationData,
     roastModalMeme,
@@ -423,6 +450,7 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
     showLeaderboard,
     showRewardsModal,
     battleModalOpen,
+    battleId,
     aiAssistantOpen,
     canonicalPath,
     isFixedArcadeGame,
@@ -440,7 +468,10 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
     setBossKeyActive,
     setPrankDisguise,
     setSurpriseOpen,
-    setTheaterMemeId
+    setTheaterMemeId,
+    setBattleId,
+    setBattleEntryId,
+    setBattleModalOpen
   } = router;
 
   useEffect(() => {
@@ -500,7 +531,7 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.history?.replaceState) return;
-    if (theaterMemeId) return;
+    if (theaterMemeId || battleId) return;
 
     const url = new URL(window.location.href);
     const currentNorm = normalizeRoutePath(url.pathname);
@@ -529,7 +560,7 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
     hasMountedPathSyncRef.current = true;
     skipNextPushRef.current = false;
     lastSyncedPathRef.current = canonicalPath;
-  }, [canonicalPath, searchQuery, theaterMemeId]);
+  }, [canonicalPath, searchQuery, theaterMemeId, battleId]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.history?.pushState) return;
@@ -565,6 +596,9 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
         setPrankDisguise(resolved.prankDisguise);
         setSurpriseOpen(resolved.surpriseOpen);
         setTheaterMemeId(resolved.theaterMemeId);
+        setBattleId(resolved.battleId || null);
+        setBattleEntryId(resolved.battleEntryId || null);
+        setBattleModalOpen(Boolean(resolved.battleId));
         return;
       }
       historyDepthRef.current = Math.max(0, historyDepthRef.current - 1);
@@ -586,6 +620,9 @@ export function useViewModeEffects({ router, theaterMeme, isAnyModalOpen }) {
     setShowStudio,
     setSurpriseOpen,
     setTheaterMemeId,
+    setBattleId,
+    setBattleEntryId,
+    setBattleModalOpen,
     setViewMode
   ]);
 

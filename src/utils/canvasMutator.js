@@ -263,8 +263,8 @@ export function stampArcadeCartridgeFooter(ctx, W, H, opts = {}) {
     // Tainted/CORS canvases skip pixel inspection safely
   }
 
-  // Dark night-0 pill + subtle cyan glass border
-  ctx.globalAlpha = 0.88;
+  // Dark night-0 pill + subtle cyan glass border (alpha 0.72 keeps watermark tidy and readable)
+  ctx.globalAlpha = 0.72;
   ctx.fillStyle = '#07060f';
   if (typeof ctx.roundRect === 'function') {
     ctx.beginPath();

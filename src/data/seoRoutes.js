@@ -746,6 +746,32 @@ function resolveRouteFromLocationRaw(pathname = '/', search = '') {
   const normPath = normalizeRoutePath(pathname);
   const params = new URLSearchParams(search || '');
 
+  // Caption Battle deep links (/battle/<battleId> or /battle/<battleId>/e/<entryId>)
+  const pathBattleMatch = (pathname || '').match(
+    /^\/battle\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\/e\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}))?\/?$/i
+  );
+  if (pathBattleMatch && pathBattleMatch[1]) {
+    const battleId = pathBattleMatch[1];
+    const battleEntryId = pathBattleMatch[2] || null;
+    return {
+      matchedPath: battleEntryId ? `/battle/${battleId}/e/${battleEntryId}` : `/battle/${battleId}`,
+      isDedicatedLanding: true,
+      viewMode: 'feed',
+      category: 'all',
+      battleId,
+      battleEntryId,
+      searchQuery: '',
+      showStudio: false,
+      forgeIntent: null,
+      extrasDrawerOpen: false,
+      extrasFocus: null,
+      bossKeyActive: false,
+      prankDisguise: null,
+      surpriseOpen: false,
+      theaterMemeId: null
+    };
+  }
+
   // Creator profile deep links (/u/<handle>)
   const pathCreatorMatch = (pathname || '').match(/^\/u\/([^/?#]+)/i);
   if (pathCreatorMatch && pathCreatorMatch[1]) {
@@ -958,6 +984,8 @@ export function getCanonicalPathForState({
   category = 'all',
   creatorHandle = null,
   templateSlug = null,
+  battleId = null,
+  battleEntryId = null,
   showStudio = false,
   forgeIntent = null,
   extrasDrawerOpen = false,
@@ -968,6 +996,11 @@ export function getCanonicalPathForState({
 } = {}) {
   if (theaterMemeId) {
     return `/m/${encodeURIComponent(String(theaterMemeId))}`;
+  }
+  if (battleId) {
+    return battleEntryId
+      ? `/battle/${encodeURIComponent(String(battleId))}/e/${encodeURIComponent(String(battleEntryId))}`
+      : `/battle/${encodeURIComponent(String(battleId))}`;
   }
   if (viewMode === 'creator' && creatorHandle) {
     const clean = String(creatorHandle).trim().replace(/^@+/, '');

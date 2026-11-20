@@ -115,3 +115,9 @@ export function memePath(meme = {}) {
 export function memeUrl(meme = {}, origin = ORIGIN) {
   return `${origin}${memePath(meme)}`;
 }
+
+/** Extracts template slug if a meme's base_image_url points to `/meme-templates/<slug>.webp`. */
+export function extractTemplateSlug(url = '') {
+  const m = String(url || '').match(/\/meme-templates\/([a-z0-9-]+)\.webp(?:\?|$)/i);
+  return m ? m[1].toLowerCase() : null;
+}

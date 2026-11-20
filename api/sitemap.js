@@ -39,8 +39,36 @@ async function fetchLiveMemeEntries(limit = 500) {
   }
 }
 
+async function fetchBattleEntries(limit = 100) {
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+  const supabaseKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.VITE_SUPABASE_ANON_KEY ||
+    process.env.SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseKey) return [];
+
+  try {
+    const endpoint = `${supabaseUrl.replace(/\/+$/, '')}/rest/v1/battles?status=in.(live,complete)&select=id,battle_day,image_url,closed_at,starts_at&order=battle_day.desc&limit=${limit}`;
+    const res = await fetch(endpoint, {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        Accept: 'application/json'
+      }
+    });
+    if (!res.ok) return [];
+    const rows = await res.json();
+    return Array.isArray(rows) ? rows : [];
+  } catch {
+    return [];
+  }
+}
+
 export default async function handler(req, res) {
-  const liveRows = await fetchLiveMemeEntries(500);
+  const [liveRows, battleRows] = await Promise.all([
+    fetchLiveMemeEntries(500),
+    fetchBattleEntries(100)
+  ]);
   // Google only trusts <lastmod> when it is accurate, so never stamp "today" on everything:
   // memes use their own date, the home feed uses the newest meme's date, other pages omit it.
   const newestMemeIso = liveRows
@@ -128,9 +156,21 @@ export default async function handler(req, res) {
   </url>`
   );
 
+  const battleUrlsXml = battleRows
+    .filter((b) => b?.id)
+    .map((b) => {
+      const modSource = b.closed_at || b.starts_at || b.battle_day || '';
+      const mod = modSource ? String(modSource).slice(0, 10) : '';
+      return `  <url>
+    <loc>${escapeXml(`${SITE_ORIGIN}/battle/${encodeURIComponent(String(b.id))}`)}</loc>${lastmodTag(mod)}
+    <changefreq>daily</changefreq>
+    <priority>0.75</priority>${imageTag({ image_url: b.image_url })}
+  </url>`;
+    });
+
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-${[...staticRouteXml, ...templateUrlXml, ...creatorUrlsXml, ...memeUrlXml].join('\n')}
+${[...staticRouteXml, ...templateUrlXml, ...creatorUrlsXml, ...battleUrlsXml, ...memeUrlXml].join('\n')}
 </urlset>
 `;
 

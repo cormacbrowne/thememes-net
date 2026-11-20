@@ -1,9 +1,11 @@
 import { REMIX_ENABLED } from '../config/featureFlags';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import MemeMedia from './MemeMedia';
 import MemeLiveEmotes from './MemeLiveEmotes';
+import BattleHeroCard from './BattleHeroCard';
 import { getMemeRarityTier, formatMemeUploadDate } from '../data/starterMemes';
 import { formatUpvotesLastHourSignal } from '../utils/liveSignals';
+import { extractTemplateSlug } from '../utils/memeSeo';
 import { exportMemeWithWatermark, triggerBlobDownload } from './forge/forgeEngine';
 import './MemeTheaterModal.css';
 
@@ -22,6 +24,8 @@ export default function MemeTheaterModal({
   onTriggerStudioMutate,
   onCaptionThis,
   onOpenBlankStudio,
+  onOpenTemplateStudio,
+  onOpenBattle,
   openedFromShareLink = false,
   onSelectMeme,
   onClose,
@@ -65,7 +69,31 @@ export default function MemeTheaterModal({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [meme, currentIndex, filteredMemes, onSelectMeme, onClose]);
 
+  const relatedMemes = useMemo(() => {
+    if (!meme || !Array.isArray(memes)) return [];
+    const targetCat = String(meme.category || '').toLowerCase();
+    return memes
+      .filter(
+        (m) =>
+          m &&
+          String(m.id) !== String(meme.id) &&
+          (!targetCat || String(m.category || '').toLowerCase() === targetCat)
+      )
+      .slice(0, 6);
+  }, [meme, memes]);
+
   if (!meme) return null;
+
+  const templateSlug = extractTemplateSlug(meme.base_image_url);
+  const canMakeYourOwn = Boolean((templateSlug && onOpenTemplateStudio) || onOpenBlankStudio);
+  const handleMakeYourOwn = () => {
+    onClose();
+    if (templateSlug && onOpenTemplateStudio) {
+      onOpenTemplateStudio(templateSlug);
+    } else {
+      onOpenBlankStudio?.();
+    }
+  };
 
   const rarity = getMemeRarityTier(meme);
   const uploadInfo = formatMemeUploadDate(meme.created_at);
@@ -202,14 +230,11 @@ export default function MemeTheaterModal({
             <button type="button" className="tm-btn" onClick={handleCopyPermalink}>
               {copiedLink ? '✅ Link Copied!' : '🔗 Share'}
             </button>
-            {onOpenBlankStudio && (
+            {canMakeYourOwn && (
               <button
                 type="button"
                 className="tm-btn tm-btn-primary tm-make-your-own-cta"
-                onClick={() => {
-                  onClose();
-                  onOpenBlankStudio();
-                }}
+                onClick={handleMakeYourOwn}
                 title="Create your own meme in < 15 seconds!"
               >
                 ✨ Make your own →
@@ -241,14 +266,11 @@ export default function MemeTheaterModal({
                   ✏️ Remix this
                 </button>
               )}
-              {onOpenBlankStudio && (
+              {canMakeYourOwn && (
                 <button
                   type="button"
                   className="tm-btn tm-btn-primary tm-make-your-own-cta"
-                  onClick={() => {
-                    onClose();
-                    onOpenBlankStudio();
-                  }}
+                  onClick={handleMakeYourOwn}
                 >
                   Make your own →
                 </button>
@@ -327,14 +349,11 @@ export default function MemeTheaterModal({
                 </button>
               )}
 
-              {onOpenBlankStudio && (
+              {canMakeYourOwn && (
                 <button
                   type="button"
                   className="tm-btn tm-btn-primary tm-make-your-own-cta"
-                  onClick={() => {
-                    onClose();
-                    onOpenBlankStudio();
-                  }}
+                  onClick={handleMakeYourOwn}
                 >
                   Make your own →
                 </button>
@@ -465,6 +484,33 @@ export default function MemeTheaterModal({
             </div>
           </div>
         </div>
+
+        {/* Plan 2.2: More like this (same category) + Today's Caption Battle */}
+        {relatedMemes.length > 0 && (
+          <section className="tm-theater-related" data-testid="theater-related-memes" aria-label="More like this">
+            <h3 className="tm-theater-section-title">🔥 More like this (#{meme.category || 'meme'})</h3>
+            <div className="tm-theater-related-grid">
+              {relatedMemes.map((rel) => {
+                const thumb = rel.media_type === 'video' ? rel.poster_url || rel.image_url : rel.image_url;
+                return (
+                  <button
+                    key={rel.id}
+                    type="button"
+                    className="tm-theater-related-card"
+                    onClick={() => onSelectMeme(rel)}
+                  >
+                    <img src={thumb} alt={rel.title || 'Related meme'} loading="lazy" decoding="async" />
+                    <span className="tm-theater-related-title">{rel.title || 'Meme'}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        <section className="tm-theater-battle" data-testid="theater-battle-section" aria-label="Today's Caption Battle">
+          <BattleHeroCard onOpenBattle={(tab) => onOpenBattle?.(tab)} />
+        </section>
       </div>
     </div>
   );

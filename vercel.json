@@ -309,6 +309,9 @@
     "api/meme-og.js": {
       "includeFiles": "dist/index.html"
     },
+    "api/battle-og.js": {
+      "includeFiles": "dist/index.html"
+    },
     "api/creator-og.js": {
       "includeFiles": "dist/index.html"
     },
@@ -332,6 +335,14 @@
     {
       "source": "/u/:handle",
       "destination": "/api/creator-og?handle=:handle"
+    },
+    {
+      "source": "/battle/:battleId/e/:entryId",
+      "destination": "/api/battle-og?battleId=:battleId&entryId=:entryId"
+    },
+    {
+      "source": "/battle/:battleId",
+      "destination": "/api/battle-og?battleId=:battleId"
     },
     {
       "source": "/:section(admin|administrator|moderator|moderation)",

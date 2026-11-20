@@ -84,6 +84,8 @@ function SwipeCard({ entry, imageUrl, onDecide, busy }) {
 }
 
 export default function DailyCaptionBattleModal({
+  battleId = null,
+  highlightEntryId = null,
   initialTab = null,
   onOpenProfile,
   onKingsUpdated,
@@ -101,24 +103,26 @@ export default function DailyCaptionBattleModal({
   const celebratedRef = useRef(false);
 
   const load = useCallback(async () => {
-    const res = await fetchBattleState();
+    const res = await fetchBattleState(battleId || null);
     setState(res);
     if (res.myEntry) {
       setTopText((t) => t || res.myEntry.top_text || '');
       setBottomText((b) => b || res.myEntry.bottom_text || '');
     }
     return res;
-  }, []);
+  }, [battleId]);
 
   useEffect(() => {
     let alive = true;
     supabase?.auth?.getSession?.().then(({ data }) => {
       if (alive && data?.session?.user?.id) setSeed(data.session.user.id);
     });
-    fetchBattleState().then((res) => {
+    fetchBattleState(battleId || null).then((res) => {
       if (!alive) return;
       setState(res);
-      if (res.myEntry) {
+      if (res.battle?.status === 'complete' && !initialTab) {
+        setTab('ranking');
+      } else if (res.myEntry) {
         setTopText(res.myEntry.top_text || '');
         setBottomText(res.myEntry.bottom_text || '');
         // First open: if you already entered, go straight to voting.
@@ -129,9 +133,13 @@ export default function DailyCaptionBattleModal({
     return () => {
       alive = false;
     };
-  }, [load, initialTab, onKingsUpdated]);
+  }, [battleId, initialTab, onKingsUpdated]);
 
   const battle = state?.battle || null;
+  const highlightedEntry = useMemo(() => {
+    if (!highlightEntryId || !Array.isArray(state?.entries)) return null;
+    return state.entries.find((e) => String(e.id) === String(highlightEntryId)) || null;
+  }, [highlightEntryId, state]);
   const captionMax = state?.captionMax || 120;
   const used = topText.trim().length + bottomText.trim().length;
   const voteQueue = useMemo(() => (state ? entriesToVoteOn(state, seed) : []), [state, seed]);
@@ -210,6 +218,36 @@ export default function DailyCaptionBattleModal({
     }
   };
 
+  const shareBattleLink = async (entryId = null, customText = '') => {
+    if (!battle?.id) return;
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.thememes.net';
+    const path = entryId
+      ? `/battle/${encodeURIComponent(battle.id)}/e/${encodeURIComponent(entryId)}`
+      : `/battle/${encodeURIComponent(battle.id)}`;
+    const url = `${origin}${path}?ref=share`;
+    const title = battle.title ? `${battle.title} — Daily Caption Battle` : 'Daily Caption Battle | THE MEMES.net';
+    const text = customText || `Compete in "${battle.title || 'Daily Caption Battle'}" on THE MEMES.net`;
+    track('meme_shared', {
+      channel: 'battle_link',
+      battle: String(battle.id),
+      ...(entryId ? { entry: String(entryId) } : {})
+    });
+    try {
+      if (typeof navigator !== 'undefined' && typeof navigator.share === 'function' && window.innerWidth <= 860) {
+        await navigator.share({ title, text, url });
+        return;
+      }
+    } catch (err) {
+      if (err?.name === 'AbortError') return;
+    }
+    try {
+      await navigator.clipboard?.writeText(url);
+      setMsg({ type: 'ok', text: entryId ? '🔗 Entry link copied!' : '🔗 Battle link copied!' });
+    } catch {
+      setMsg({ type: 'ok', text: url });
+    }
+  };
+
   return (
     <div className="tm-modal-backdrop" onClick={onClose}>
       <div
@@ -227,6 +265,16 @@ export default function DailyCaptionBattleModal({
             </button>
             <h2 className="tm-cb-title">⚔️ Daily Caption Battle</h2>
             {battle && <BattleCountdown endsAt={battle.ends_at} prefix="⏳ " />}
+            {battle && (
+              <button
+                type="button"
+                className="tm-btn tm-cb-share-btn"
+                onClick={() => shareBattleLink()}
+                title="Share this battle"
+              >
+                🔗 Share
+              </button>
+            )}
           </div>
           <div className="tm-cb-tabs" role="tablist" aria-label="Caption Battle sections">
             {TABS.map((t) => (
@@ -248,6 +296,24 @@ export default function DailyCaptionBattleModal({
             ))}
           </div>
         </div>
+
+        {highlightedEntry && battle && (
+          <div className="tm-cb-shared-entry" data-testid="battle-highlighted-entry">
+            <div className="tm-cb-shared-entry-head">
+              <span>🔥 Shared entry by <strong>@{highlightedEntry.author_name}</strong></span>
+              <button
+                type="button"
+                className="tm-btn tm-cb-entry-share"
+                onClick={() => shareBattleLink(highlightedEntry.id, `"${entryCaption(highlightedEntry)}" — @${highlightedEntry.author_name}`)}
+              >
+                🔗 Share entry
+              </button>
+            </div>
+            <div className="tm-cb-shared-entry-media">
+              <CaptionedImage imageUrl={battle.image_url} top={highlightedEntry.top_text} bottom={highlightedEntry.bottom_text} />
+            </div>
+          </div>
+        )}
 
         {!state ? (
           <div className="tm-cb-empty">⏳ Loading today’s battle…</div>
@@ -371,7 +437,18 @@ export default function DailyCaptionBattleModal({
                           </button>
                           {e.status === 'pending' && <em> (waiting for review)</em>}
                         </span>
-                        <span className="tm-cb-rank-score">{state.showTotals ? `😂 ${e.score ?? 0}` : '🔒'}</span>
+                        <div className="tm-cb-rank-actions">
+                          <span className="tm-cb-rank-score">{state.showTotals ? `😂 ${e.score ?? 0}` : '🔒'}</span>
+                          <button
+                            type="button"
+                            className="tm-btn tm-cb-entry-share"
+                            onClick={() => shareBattleLink(e.id, `"${entryCaption(e)}" — @${e.author_name}`)}
+                            aria-label="Share this entry"
+                            title="Share this entry"
+                          >
+                            🔗
+                          </button>
+                        </div>
                       </li>
                     ))}
                   </ol>
@@ -414,7 +491,18 @@ export default function DailyCaptionBattleModal({
                               <button type="button" className="tm-link-btn" onClick={() => onOpenProfile?.(e.author_name)}>
                                 @{e.author_name}
                               </button>
-                              <span>😂 {e.score}</span>
+                              <div className="tm-cb-rank-actions">
+                                <span>😂 {e.score}</span>
+                                <button
+                                  type="button"
+                                  className="tm-btn tm-cb-entry-share"
+                                  onClick={() => shareBattleLink(e.id, `"${entryCaption(e)}" — @${e.author_name}`)}
+                                  aria-label="Share this entry"
+                                  title="Share this entry"
+                                >
+                                  🔗
+                                </button>
+                              </div>
                             </div>
                           </article>
                         ))}

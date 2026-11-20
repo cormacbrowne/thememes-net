@@ -347,7 +347,7 @@ async function handlePublishVideo(
       image_url: videoUrl,
       author_name: authorNameFor(user, profile),
       user_id: user.id,
-      score: 1,
+      score: 0, // real counts only: DB trigger also forces 0 on insert (plan 1.1)
       generation: 0,
       media_type: 'video',
       poster_url: posterUrl,
@@ -526,7 +526,7 @@ async function handlePublish(
       image_url: imageUrl,
       author_name: authorNameFor(user, profile),
       user_id: user.id,
-      score: 1,
+      score: 0, // real counts only: DB trigger also forces 0 on insert (plan 1.1)
       parent_meme_id: parentId,
       root_meme_id: rootId,
       generation,

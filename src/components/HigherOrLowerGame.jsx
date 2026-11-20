@@ -1,6 +1,5 @@
 import { useState, useMemo, useRef } from 'react';
-import { STARTER_MEMES } from '../data/starterMemes';
-import { readCachedHiddenSeeds } from '../utils/hiddenSeeds';
+import { isSeedMeme } from '../data/starterMemes';
 import { sfx } from '../utils/soundEngine';
 import { triggerWinCelebration } from '../utils/winCelebration';
 import GameShell from './GameShell';
@@ -11,7 +10,7 @@ import './HigherOrLowerGame.css';
 //
 // ECONOMY & HOUSE EDGE NOTE:
 //   - 100% Free-to-Play endless upvote prediction game (0 tokens wagered, 0% house edge).
-//   - Combines live community feed memes with STARTER_MEMES seed scores.
+//   - Real community memes only, with their real vote counts (plan 1.1: no seeded numbers).
 //   - Any equal-upvote tie resolves in the player's favor so streak runs stay fair.
 //   - Tracks best endless streak in localStorage (`tm_hilow_best_v1`).
 // ==========================================
@@ -25,21 +24,18 @@ function buildMemePool(feedMemes = []) {
     if (!m || !m.id || seen.has(m.id)) return;
     if (!m.image_url) return;
     seen.add(m.id);
-    const score = Math.max(12, Math.floor(Number(m.votes ?? m.score ?? 50) || 50));
+    if (isSeedMeme(m)) return;
+    const score = Math.max(0, Math.floor(Number(m.score) || 0));
     combined.push({
       id: m.id,
       title: m.title || 'Community Meme',
       image_url: m.image_url,
-      author_name: m.author_name || 'TheMemesHQ',
+      author_name: m.author_name || 'anon',
       category: m.category || 'dank',
       votes: score
     });
   };
   feedMemes.forEach(addItem);
-  // Skip built-in memes hidden in Curate, unless that leaves too few to play with.
-  const hidden = readCachedHiddenSeeds();
-  const seeds = STARTER_MEMES.filter((m) => !hidden.has(String(m.id)));
-  (combined.length + seeds.length >= 6 ? seeds : STARTER_MEMES).forEach(addItem);
   return combined;
 }
 
@@ -193,7 +189,11 @@ export default function HigherOrLowerGame({
     >
       <div className="tm-hilow-stage">
 
-      {!gameOver && leftMeme && rightMeme ? (
+      {pool.length < 2 ? (
+        <div className="tm-hilow-arena" role="status">
+          <p className="tm-hilow-meta">Not enough community memes loaded yet to compare real upvotes. Check back once the feed has loaded.</p>
+        </div>
+      ) : !gameOver && leftMeme && rightMeme ? (
         <div className="tm-hilow-arena">
           {/* Card A: Known Score */}
           <article className="tm-hilow-card">

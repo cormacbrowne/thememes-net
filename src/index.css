@@ -5133,3 +5133,8 @@ a.tm-btn {
     display: none !important;
   }
 }
+.tm-rarity-badge.fresh {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(233, 230, 255, 0.28);
+  color: var(--tm-text, #e9e6ff);
+}

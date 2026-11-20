@@ -28,3 +28,10 @@ export const UPLOADS_PAUSED_ERROR = 'UPLOADS_PAUSED';
  *         edits"). Making a brand-new meme in the editor is unaffected.
  */
 export const REMIX_ENABLED = false;
+
+/**
+ * The 60 built-in @TheMemesHQ sample memes in the community feed.
+ * false = OFF (owner decision 20 Nov 2026: real memes only in the feed). Sample memes still
+ *         have their own static /m/seed-… pages and are used as game art, with zero counts.
+ */
+export const SAMPLE_MEMES_IN_FEED = false;

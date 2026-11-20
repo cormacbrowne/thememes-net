@@ -80,7 +80,7 @@ export default function BattleArena({
 
         {crowdAgreement !== null && (
           <div className="tm-crowd-meter">
-            📊 <strong>{crowdAgreement}%</strong> of arcade players agreed with your pick!
+            📊 <strong>{crowdAgreement}%</strong> of the real upvotes on these two memes went to your pick
           </div>
         )}
         {checkDailyPerk('arena') && (

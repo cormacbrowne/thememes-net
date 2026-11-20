@@ -58,7 +58,14 @@ import {
   deleteComment as deleteCommentRpc
 } from '../utils/serverWrites';
 import { submitReport } from '../utils/reports';
-import { PUBLIC_UPLOADS_ENABLED, UPLOADS_PAUSED_ERROR } from '../config/featureFlags';
+import {
+  PUBLIC_UPLOADS_ENABLED,
+  UPLOADS_PAUSED_ERROR,
+  SAMPLE_MEMES_IN_FEED
+} from '../config/featureFlags';
+
+// Sample memes only join the feed when the owner switches them on (plan 1.1).
+const FEED_SAMPLE_MEMES = SAMPLE_MEMES_IN_FEED ? STARTER_MEMES : [];
 import { validateFile, canvasToCompressedBlob, makePoster } from '../utils/mediaPipeline';
 import { sanitizeMediaUrl } from '../utils/securityGuard';
 
@@ -137,9 +144,9 @@ export function useFeed({
         ? saved.filter((m) => m && !isSeedMeme(m)).map(sanitizeMemeUrls).filter((m) => m.image_url)
         : [];
       const seen = new Set(userUploads.map((m) => String(m.id)));
-      return [...userUploads, ...STARTER_MEMES.filter((m) => !seen.has(String(m.id)))];
+      return [...userUploads, ...FEED_SAMPLE_MEMES.filter((m) => !seen.has(String(m.id)))];
     } catch {
-      return [...STARTER_MEMES];
+      return [...FEED_SAMPLE_MEMES];
     }
   });
   const [hiddenSeeds, setHiddenSeeds] = useState(() => readCachedHiddenSeeds());
@@ -434,7 +441,7 @@ export function useFeed({
 
           const liveIds = new Set(serverRows.map((m) => String(m.id)));
           const dedupedLocal = localUserUploads.filter((m) => !liveIds.has(String(m.id)));
-          const mergedSeeds = STARTER_MEMES
+          const mergedSeeds = FEED_SAMPLE_MEMES
             .filter((m) => !liveIds.has(String(m.id)))
             .map((m) => prevSeedsById.get(String(m.id)) || m);
 
@@ -1833,9 +1840,11 @@ export function useFeed({
 
     const otherMemeIdx = battlePair[slotIdx === 0 ? 1 : 0];
     const otherMeme = memes[otherMemeIdx % memes.length];
-    const s1 = Math.max(10, Number(pickedMeme.score || 100));
-    const s2 = Math.max(10, Number(otherMeme?.score || 100));
-    const pct = Math.min(96, Math.max(51, Math.round((s1 / (s1 + s2)) * 100)));
+    // Real votes only (plan 1.1): share of the two memes' real upvotes that went to the pick.
+    // No number is shown until the pair has at least 2 real upvotes between them.
+    const s1 = Math.max(0, Number(pickedMeme.score) || 0);
+    const s2 = Math.max(0, Number(otherMeme?.score) || 0);
+    const pct = s1 + s2 >= 2 ? Math.round((s1 / (s1 + s2)) * 100) : null;
 
     setCrowdAgreement(pct);
     setBattleWinner(pickedMemeIdx);
@@ -1844,7 +1853,7 @@ export function useFeed({
     setChampionWins((prev) => (slotIdx === 0 ? prev + 1 : 1));
     handleVote(pickedMeme.id, 1, e);
 
-    if (nextStreak % 3 === 0 || pct >= 75) {
+    if (nextStreak % 3 === 0 || (pct !== null && pct >= 75)) {
       triggerWinCelebration({
         amount: nextStreak,
         unit: '🔥 STREAK',

@@ -727,6 +727,7 @@ export function normalizeRoutePath(pathname = '/') {
   if (cleaned === '/fake-terminal' || cleaned === '/fake-hacker-screen') return '/fake-hacker-terminal-screen';
   if (cleaned === '/fake-ai-screen' || cleaned === '/fake-ai-workspace') return '/fake-ai-workspace-boss-screen';
   if (cleaned === '/boss-screen') return '/fake-excel-boss-screen';
+  if (cleaned === '/daily') return '/games/guess-the-meme';
   return cleaned || '/';
 }
 

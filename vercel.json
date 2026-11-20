@@ -303,6 +303,11 @@
       "source": "/memes/tech",
       "destination": "/memes/programming",
       "statusCode": 301
+    },
+    {
+      "source": "/daily",
+      "destination": "/games/guess-the-meme",
+      "statusCode": 301
     }
   ],
   "functions": {

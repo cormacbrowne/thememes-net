@@ -12,6 +12,11 @@
 - Server-rendered battle OG pages (`/battle/<battleId>` and `/battle/<battleId>/e/<entryId>`) via `api/battle-og.js`, client route deep-linking, entry sharing, and sitemap entries.
 - Tidier corner watermark pill (`globalAlpha = 0.72`) while preserving readable text size.
 
+### 2.3 Guess the Meme daily share & sync
+- Spoiler-free Wordle-style result card (`THE MEMES #N 🎯 X/5`, `🟥🟩🟨` grid, streak, `thememes.net/daily`) with 1-tap Copy Result and native Share actions tracking `share_card_copied`.
+- Live `HH:MM:SS` countdown to the next puzzle and Today's Caption Battle nudge on completion, plus `/daily` 301 redirect to `/games/guess-the-meme`.
+- Added `daily_puzzle_results` table + RPCs (`save_daily_puzzle_result`, `get_my_daily_puzzle_state`) to store per-user puzzle results and merge guest history on sign-in.
+
 ## Phase 1: Credibility and speed (20 Nov 2026)
 
 ### 1.1 Real numbers only

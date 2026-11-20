@@ -1823,6 +1823,12 @@ export default function App() {
           setPrankDisguise(disguise);
           setBossKeyActive(true);
         }}
+        currentUser={user}
+        onRequireAuth={() => setShowAuthModal(true)}
+        onOpenBattle={() => {
+          closeAllModals();
+          setBattleModalOpen(true);
+        }}
           />
         </Suspense>
       </ArcadeErrorBoundary>

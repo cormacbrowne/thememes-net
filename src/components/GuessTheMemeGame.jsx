@@ -3,20 +3,31 @@ import { track } from '../utils/analytics';
 import { STUDIO_TEMPLATES } from '../data/starterMemes';
 import { sfx } from '../utils/soundEngine';
 import { triggerWinCelebration } from '../utils/winCelebration';
+import { getSupabaseClient } from '../supabaseClient';
+import {
+  formatCountdownHms,
+  formatGuessShareCard,
+  getLocalDateKey,
+  getPuzzleNumber,
+  loadGuessState,
+  msUntilNextMidnight,
+  recordLocalPuzzleResult,
+  saveGuessState,
+  syncGuestGuessResultsToServer
+} from '../utils/guessTheMeme';
 import GameShell from './GameShell';
 import './GuessTheMemeGame.css';
 
 // ==========================================
-// GUESS THE MEME: DAILY (Phase 29.9)
+// GUESS THE MEME: DAILY (Phase 29.9 / 2.3)
 //
 // ECONOMY & HOUSE EDGE NOTE:
 //   - 100% Free-to-Play daily trivia / growth loop (0 tokens wagered, 0% house edge).
 //   - Date-seeded deterministic PRNG gives every visitor on earth the exact same
 //     5 meme templates each day, with progressive 5-step canvas pixelation.
-//   - Tracks current/best daily streak in localStorage (`tm_guess_meme_v1`).
+//   - Tracks current/best daily streak in localStorage (`tm_guess_meme_v1`) and syncs per user.
 // ==========================================
 
-const STORAGE_KEY = 'tm_guess_meme_v1';
 const CLARITY_SIZES = [
   [10, 9],
   [18, 16],
@@ -34,21 +45,6 @@ function createSeededRng(seed) {
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
-}
-
-function getLocalDateKey() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-function getPuzzleNumber(dateKey) {
-  const epoch = Date.UTC(2026, 0, 1);
-  const [y, m, d] = dateKey.split('-').map(Number);
-  const target = Date.UTC(y, (m || 1) - 1, d || 1);
-  return Math.max(1, Math.floor((target - epoch) / 86400000) + 1);
 }
 
 function dateHash(str) {
@@ -83,39 +79,18 @@ function generateRoundSet(seedNum) {
   });
 }
 
-function loadSavedProgress(todayKey) {
-  const fresh = {
-    streak: 0,
-    bestStreak: 0,
-    lastCompletedDate: null,
-    dailyDate: todayKey,
-    dailyResults: null // array of { won, stepUsed, points, emoji }
-  };
-  if (typeof window === 'undefined') return fresh;
-  try {
-    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-    if (!raw || typeof raw !== 'object') return fresh;
-    return {
-      streak: Math.max(0, Number(raw.streak) || 0),
-      bestStreak: Math.max(0, Number(raw.bestStreak) || 0),
-      lastCompletedDate: typeof raw.lastCompletedDate === 'string' ? raw.lastCompletedDate : null,
-      dailyDate: raw.dailyDate === todayKey ? todayKey : todayKey,
-      dailyResults: raw.dailyDate === todayKey && Array.isArray(raw.dailyResults) ? raw.dailyResults : null
-    };
-  } catch {
-    return fresh;
-  }
-}
-
 export default function GuessTheMemeGame({
   soundOn = true,
   onToggleSound,
-  onBackToFeed
+  onBackToFeed,
+  currentUser = null,
+  onOpenBattle,
+  onDailyCompleted
 }) {
   const todayKey = useMemo(() => getLocalDateKey(), []);
   const puzzleNumber = useMemo(() => getPuzzleNumber(todayKey), [todayKey]);
 
-  const [savedState, setSavedState] = useState(() => loadSavedProgress(todayKey));
+  const [savedState, setSavedState] = useState(() => loadGuessState(todayKey));
   const [practiceRunSeed, setPracticeRunSeed] = useState(0); // 0 = Today's Daily; >0 = Endless Practice
   const isPracticeRun = practiceRunSeed > 0;
 
@@ -133,6 +108,7 @@ export default function GuessTheMemeGame({
   );
   const [copiedNotice, setCopiedNotice] = useState(false);
   const [imgLoadedTick, setImgLoadedTick] = useState(0);
+  const [msLeft, setMsLeft] = useState(() => msUntilNextMidnight());
 
   const canvasRef = useRef(null);
   const loadedImgRef = useRef(null);
@@ -148,6 +124,33 @@ export default function GuessTheMemeGame({
       rounds: rounds.length
     });
   }, [isFinished, rounds.length, results, puzzleNumber]);
+
+  // Sync per-user puzzle history when signed in
+  useEffect(() => {
+    const client = getSupabaseClient();
+    if (!client || !currentUser?.id || currentUser?.isAnonymous) return undefined;
+    let active = true;
+    syncGuestGuessResultsToServer(client, todayKey).then((res) => {
+      if (!active || !res?.ok || !res.state) return;
+      setSavedState(res.state);
+      if (!isPracticeRun && Array.isArray(res.state.dailyResults) && res.state.dailyResults.length >= rounds.length) {
+        setResults((prev) => (prev.length === 0 ? res.state.dailyResults : prev));
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [currentUser?.id, currentUser?.isAnonymous, todayKey, isPracticeRun, rounds.length]);
+
+  // Live countdown to midnight next puzzle while on completion summary
+  useEffect(() => {
+    if (!isFinished) return undefined;
+    const t = setInterval(() => {
+      setMsLeft(msUntilNextMidnight());
+    }, 1000);
+    return () => clearInterval(t);
+  }, [isFinished]);
+
   const activeRound = rounds[Math.min(roundIdx, rounds.length - 1)];
 
   // Load current round image cleanly for canvas pixelation
@@ -203,32 +206,30 @@ export default function GuessTheMemeGame({
 
     if (!isPracticeRun && nextResults.length >= rounds.length) {
       const wonCount = nextResults.filter((r) => r.won).length;
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yKey = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
-
-      const nextStreak =
-        wonCount >= 3
-          ? savedState.lastCompletedDate === yKey
-            ? savedState.streak + 1
-            : savedState.lastCompletedDate === todayKey
-              ? Math.max(1, savedState.streak)
-              : 1
-          : 0;
-      const nextBest = Math.max(savedState.bestStreak, nextStreak);
-      const nextSaved = {
-        streak: nextStreak,
-        bestStreak: nextBest,
-        lastCompletedDate: todayKey,
-        dailyDate: todayKey,
-        dailyResults: nextResults
-      };
+      const totalPts = nextResults.reduce((s, r) => s + (Number(r.points) || 0), 0);
+      const grid = nextResults.map((r) => r.emoji || '🟥').join('');
+      const nextSaved = recordLocalPuzzleResult(savedState, {
+        dateKey: todayKey,
+        puzzleNumber,
+        solved: wonCount,
+        total: rounds.length,
+        score: totalPts,
+        grid,
+        results: nextResults
+      });
       setSavedState(nextSaved);
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(nextSaved));
-      } catch {
-        // ignore storage quota errors
-      }
+      saveGuessState(nextSaved);
+      syncGuestGuessResultsToServer(getSupabaseClient(), todayKey).then((res) => {
+        if (res?.ok && res.state) {
+          setSavedState(res.state);
+        }
+      });
+      onDailyCompleted?.({
+        puzzleNumber,
+        solvedCount: wonCount,
+        totalRounds: rounds.length,
+        score: totalPts
+      });
     }
   };
 
@@ -255,7 +256,7 @@ export default function GuessTheMemeGame({
     setWrongIds(nextWrong);
     if (nextWrong.length >= 3) {
       // Missed all 3 guesses for this meme
-      recordRoundComplete({ won: false, stepUsed: 5, points: 0, emoji: '⬛' });
+      recordRoundComplete({ won: false, stepUsed: 5, points: 0, emoji: '🟥' });
     } else {
       setClarityStep((s) => Math.min(5, s + 1));
     }
@@ -288,21 +289,42 @@ export default function GuessTheMemeGame({
 
   const totalScore = results.reduce((s, r) => s + r.points, 0);
   const solvedCount = results.filter((r) => r.won).length;
-  const shareGrid = results.map((r) => r.emoji).join('');
+  const shareGrid = results.map((r) => r.emoji || '🟥').join('');
+  const shareCardText = formatGuessShareCard({
+    puzzleNumber,
+    solvedCount,
+    totalRounds: rounds.length,
+    shareGrid,
+    streak: savedState.streak
+  });
 
-  const handleCopyShare = async () => {
-    const shareText = `${shareGrid} THE MEMES.net #${puzzleNumber} (${solvedCount}/5 · ${totalScore} pts)\n🔥 Streak: ${savedState.streak}\nhttps://thememes.net/games/guess-the-meme?ref=daily`;
-    track('share_card_copied', { game: 'guess_the_meme', puzzle: puzzleNumber });
+  const handleCopyResult = async () => {
+    track('share_card_copied', { game: 'guess_the_meme', puzzle: puzzleNumber, method: 'copy' });
     try {
-      if (navigator.share && typeof window !== 'undefined' && window.innerWidth <= 860) {
-        await navigator.share({ title: `Guess The Meme #${puzzleNumber}`, text: shareText });
+      await navigator.clipboard?.writeText(shareCardText);
+      setCopiedNotice(true);
+      setTimeout(() => setCopiedNotice(false), 2200);
+    } catch {
+      setCopiedNotice(false);
+    }
+  };
+
+  const handleNativeShare = async () => {
+    track('share_card_copied', {
+      game: 'guess_the_meme',
+      puzzle: puzzleNumber,
+      method: typeof navigator?.share === 'function' ? 'native' : 'copy'
+    });
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `THE MEMES #${puzzleNumber}`, text: shareCardText });
         return;
       }
     } catch {
       // fallback to clipboard
     }
     try {
-      await navigator.clipboard?.writeText(shareText);
+      await navigator.clipboard?.writeText(shareCardText);
       setCopiedNotice(true);
       setTimeout(() => setCopiedNotice(false), 2200);
     } catch {
@@ -371,7 +393,7 @@ export default function GuessTheMemeGame({
               <strong>
                 {roundOutcome.won
                   ? `${roundOutcome.emoji} Nailed it! +${roundOutcome.points} pts`
-                  : `⬛ Out of tries — it was "${activeRound.answer.name}"`}
+                  : `🟥 Out of tries — it was "${activeRound.answer.name}"`}
               </strong>
               <button type="button" className="tm-guess-next-btn" onClick={handleNextMeme}>
                 {roundIdx + 1 >= rounds.length ? '📊 See Final Score →' : 'Next Meme →'}
@@ -422,15 +444,46 @@ export default function GuessTheMemeGame({
               <strong>{solvedCount}/5 solved</strong> · {totalScore} pts · 🔥 Streak: {savedState.streak} (Best:{' '}
               {savedState.bestStreak})
             </p>
+            {!isPracticeRun && (
+              <pre className="tm-guess-share-preview" data-testid="guess-share-card">
+                {shareCardText}
+              </pre>
+            )}
           </div>
           <div className="tm-guess-summary-actions">
-            <button type="button" className="tm-guess-share-btn" onClick={handleCopyShare}>
-              {copiedNotice ? '✅ Copied Share Grid!' : '📋 Share Result Grid'}
+            <button type="button" className="tm-guess-share-btn" onClick={handleCopyResult}>
+              {copiedNotice ? '✅ Copied!' : '📋 Copy Result'}
+            </button>
+            <button type="button" className="tm-guess-native-share-btn" onClick={handleNativeShare}>
+              📤 Share
             </button>
             <button type="button" className="tm-guess-practice-btn" onClick={startEndlessPractice}>
-              🎲 Play Practice Set
+              🎲 Practice Set
             </button>
           </div>
+          {!isPracticeRun && (
+            <>
+              <div className="tm-guess-countdown" data-testid="guess-next-countdown">
+                <span>⏳ Next puzzle in</span>
+                <strong>{formatCountdownHms(msLeft)}</strong>
+              </div>
+              {onOpenBattle && (
+                <div className="tm-guess-battle-nudge">
+                  <div>
+                    <strong>⚔️ Today&apos;s Caption Battle is live!</strong>
+                    <p>Drop a funny caption on today&apos;s template and stack your daily streak.</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="tm-guess-battle-btn"
+                    onClick={onOpenBattle}
+                  >
+                    Enter Battle →
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
       </div>

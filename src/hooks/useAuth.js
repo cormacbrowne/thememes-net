@@ -4,6 +4,7 @@ import { anonymousHandleFor, validateUsername } from '../../supabase/functions/_
 import { claimUsername, USERNAME_ERROR_MESSAGES, textRejectionMessage } from '../utils/serverWrites';
 import { sfx } from '../utils/soundEngine';
 import { track } from '../utils/analytics';
+import { syncGuestGuessResultsToServer } from '../utils/guessTheMeme';
 
 const PENDING_HANDLE_KEY = 'tm_pending_handle';
 
@@ -159,6 +160,7 @@ export function useAuth({ setShowAuthModal, awardXpAndCombo }) {
     } catch {
       // Ignore storage errors
     }
+    syncGuestGuessResultsToServer(client).catch(() => {});
     return u;
   }, []);
 

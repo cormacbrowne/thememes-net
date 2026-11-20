@@ -307,7 +307,11 @@ export default function GameRouter({
   onSelectCar,
   onOpenTimeCircuits,
   onTriggerDeLoreanWarp,
-  onOpenPrankDisguise
+  onOpenPrankDisguise,
+  currentUser = null,
+  onRequireAuth,
+  onOpenBattle,
+  onDailyPuzzleCompleted
 }) {
   const [initialsPrompt, setInitialsPrompt] = useState(null);
   // Play with friends: { game, viewMode, code } while a multiplayer room is open (invite link = ?room=CODE).
@@ -578,6 +582,13 @@ export default function GameRouter({
               sfx.playToggle();
               setViewMode('feed');
             }}
+            currentUser={currentUser}
+            onRequireAuth={onRequireAuth}
+            onOpenBattle={() => {
+              sfx.playToggle();
+              onOpenBattle?.();
+            }}
+            onDailyCompleted={onDailyPuzzleCompleted}
           />
         </Suspense>
       )}

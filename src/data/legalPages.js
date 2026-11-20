@@ -95,10 +95,10 @@ export const LEGAL_PAGES = {
         bullets: [
           'No cookies and no cross-site tracking: we do not use advertising trackers, session recordings or fingerprinting, and we do not sell your personal information.',
           'Our own anonymous usage stats (Pulse): we count things like page views, memes made, shares, votes, game plays and caption-battle entries, without cookies or tracking IDs. The counts cannot be tied to you or your account. Your IP address is never stored (it is only used, scrambled with a key that changes every day, to tell today’s visits apart), and raw events are deleted after 30 days.',
-          'Plausible Analytics: we also use Plausible (plausible.io), a privacy-friendly analytics service based in the EU. It counts page views and the same anonymous events without cookies and without storing personal data or IP addresses. See plausible.io/data-policy.',
-          'Vercel Web Analytics: aggregate page-view totals, again without cookies.',
+          'Umami Analytics: we also use Umami Cloud (umami.is), a privacy-friendly analytics service. It counts page views and a few anonymous events (meme made, battle entry, game or prank started, share clicked) without cookies and without storing personal data or IP addresses. See umami.is/privacy.',
+          'Vercel Web Analytics and Speed Insights: aggregate page-view totals and page-speed measurements from our host, again without cookies.',
           'Share links: when you share a meme, the link includes "?ref=share" and the meme’s ID, so we can count visits that came from a share. It does not say who shared it.',
-          'How to switch it off: toggle "Anonymous usage stats" off in Settings (⚙️), or enable Global Privacy Control (GPC) / Do-Not-Track in your browser. We honour both, and that switches off Pulse and Plausible.',
+          'How to switch it off: toggle "Anonymous usage stats" off in Settings (⚙️), or enable Global Privacy Control (GPC) / Do-Not-Track in your browser. We honour both, and that switches off Pulse and Umami.',
           'Bot protection: we may use Cloudflare Turnstile on upload and comment checks to stop automated bots.'
         ]
       },

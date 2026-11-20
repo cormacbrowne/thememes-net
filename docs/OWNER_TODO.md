@@ -11,11 +11,12 @@ Last updated: 20 Nov 2026 (end of Phase 1).
 
 ## Decide or do now
 - [ ] **Deploy.** Nothing from Phase 1 is on the live site until `main` is pushed and Vercel deploys it.
-- [ ] **Plausible** (paid after a 30-day free trial; check plausible.io/#pricing):
-  1. Create an account at https://plausible.io/register.
-  2. Add the site `thememes.net`.
-  3. Add `VITE_PLAUSIBLE_DOMAIN=thememes.net` in Vercel → Project → Settings → Environment Variables (Production).
-  4. Redeploy.
+- [ ] **Analytics (Umami + Vercel)**:
+  1. Vercel → Project → Settings → Environment Variables: add `VITE_UMAMI_WEBSITE_ID` (your Umami website ID) for **Production** and **Preview**, and delete `VITE_PLAUSIBLE_DOMAIN` (and `VITE_PLAUSIBLE_SRC` if present). Then redeploy, because `VITE_` variables are baked in at build time.
+  2. Vercel → Project → **Analytics** → **Enable**. Vercel → Project → **Speed Insights** → **Enable**.
+  3. Umami Cloud → Settings → Websites: check the domain is `www.thememes.net`.
+  4. Cancel the Plausible trial/account if you made one.
+  5. Before turning on ads or affiliate links, move the Vercel team to **Pro**. Hobby is for personal or non-commercial use only.
 - [ ] **Casino games:** keep them or retire them? To retire them, set `FEATURE_CASINO_GAMES = false` in `src/config/featureFlags.js`.
 - [ ] Optional: delete the retired one-off Edge Function `one-off-legacy-jpg-to-webp` in Supabase → Edge Functions. It's already disabled and only returns "gone".
 

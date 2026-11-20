@@ -1,0 +1,99 @@
+/* Plan 2.1 / 2.7 — homepage "Today's Caption Battle" hero card (mobile-first). */
+.tm-battle-hero {
+  display: grid;
+  gap: 0;
+  max-width: 1240px;
+  margin: 0 auto 14px;
+  border-radius: var(--tm-radius-sheet, 18px);
+  overflow: hidden;
+  border: 1px solid rgba(255, 184, 0, 0.45);
+  background: linear-gradient(160deg, rgba(255, 184, 0, 0.1), rgba(255, 46, 136, 0.08) 60%, rgba(7, 6, 15, 0.9));
+  box-shadow: 0 0 22px rgba(255, 184, 0, 0.15);
+}
+@media (min-width: 720px) {
+  .tm-battle-hero {
+    grid-template-columns: minmax(260px, 420px) 1fr;
+  }
+}
+.tm-battle-hero-media {
+  position: relative;
+  aspect-ratio: 540 / 480;
+  background: #0d0a1c;
+}
+.tm-battle-hero-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.tm-battle-hero-skeleton {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #110d22, #1b1533, #110d22);
+}
+.tm-battle-hero-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(7, 6, 15, 0.82);
+  border: 1px solid var(--tm-amber);
+  color: var(--tm-amber);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+.tm-battle-hero-body {
+  display: grid;
+  gap: 10px;
+  align-content: center;
+  padding: 14px 16px 16px;
+}
+.tm-battle-hero-title {
+  margin: 0;
+  font-size: clamp(19px, 5.4vw, 26px);
+  color: #fff;
+  line-height: 1.15;
+}
+.tm-battle-hero-theme {
+  justify-self: start;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(25, 240, 255, 0.12);
+  color: var(--tm-cyan);
+  font-size: 12px;
+  font-weight: 800;
+}
+.tm-battle-hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tm-battle-hero-stat {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--tm-text);
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.tm-battle-hero-cta {
+  min-height: 52px;
+  font-size: clamp(16px, 4.4vw, 18px);
+  justify-content: center;
+}
+.tm-battle-hero-winner {
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 184, 0, 0.35);
+  background: rgba(255, 184, 0, 0.08);
+  color: var(--tm-text);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}

@@ -1,118 +1,214 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import MemeMedia from './MemeMedia';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import MemeOverlay from './MemeOverlay';
 import BattleCountdown from './BattleCountdown';
+import { supabase } from '../supabaseClient';
 import {
   buildCaptionOverlay,
-  fetchDailyCaptionBattle,
-  getDayOneSampleCaptions,
-  getTemplateById,
-  submitCaptionBattleEntry,
-  voteCaptionBattleEntry
+  castBattleVote,
+  claimBattlePrize,
+  entriesToVoteOn,
+  entryCaption,
+  fetchActiveCaptionKings,
+  fetchBattleState,
+  shuffleForVoter,
+  submitBattleEntry
 } from '../utils/dailyCaptionBattle';
+import { track } from '../utils/analytics';
+import { triggerWinCelebration } from '../utils/winCelebration';
 import './DailyCaptionBattleModal.css';
 
+// Plan 2.1 — Daily Caption Battle v2: Enter / Vote / Ranking / Results.
+const TABS = [
+  { id: 'enter', label: '✏️ Enter' },
+  { id: 'vote', label: '😂 Vote' },
+  { id: 'ranking', label: '🏆 Ranking' },
+  { id: 'results', label: '👑 Results' }
+];
+const SWIPE_THRESHOLD = 90;
+
+/**
+ * Battle image with the caption drawn live on top, using the meme maker's own overlay renderer
+ * (MemeMedia skips overlays on still images because their captions are normally baked in).
+ */
+function CaptionedImage({ imageUrl, top, bottom, alt }) {
+  const hasText = Boolean(top || bottom);
+  return (
+    <div className="tm-cb-captioned">
+      <img src={imageUrl} alt={alt || [top, bottom].filter(Boolean).join(' / ') || 'Caption Battle image'} draggable={false} />
+      {/* Remount when text first appears so the overlay measures its box. */}
+      <MemeOverlay key={hasText ? 'on' : 'off'} overlay={buildCaptionOverlay(top, bottom)} />
+    </div>
+  );
+}
+
+/** Swipe card: drag right = Funny, left = Skip. Touch AND mouse; buttons for everyone else. */
+function SwipeCard({ entry, imageUrl, onDecide, busy }) {
+  const [dx, setDx] = useState(0);
+  const startX = useRef(null);
+  const begin = (x) => {
+    if (busy) return;
+    startX.current = x;
+  };
+  const move = (x) => {
+    if (startX.current === null) return;
+    setDx(x - startX.current);
+  };
+  const end = () => {
+    if (startX.current === null) return;
+    const d = dx;
+    startX.current = null;
+    setDx(0);
+    if (d > SWIPE_THRESHOLD) onDecide(true);
+    else if (d < -SWIPE_THRESHOLD) onDecide(false);
+  };
+  const hint = dx > 30 ? 'funny' : dx < -30 ? 'skip' : '';
+  return (
+    <div
+      className={`tm-swipe-card ${hint ? `is-${hint}` : ''}`}
+      style={{ transform: `translateX(${dx}px) rotate(${dx / 24}deg)` }}
+      onTouchStart={(e) => begin(e.touches[0].clientX)}
+      onTouchMove={(e) => move(e.touches[0].clientX)}
+      onTouchEnd={end}
+      onTouchCancel={end}
+      onMouseDown={(e) => begin(e.clientX)}
+      onMouseMove={(e) => move(e.clientX)}
+      onMouseUp={end}
+      onMouseLeave={end}
+      data-testid="battle-swipe-card"
+    >
+      {hint && <span className={`tm-swipe-stamp is-${hint}`}>{hint === 'funny' ? '😂 FUNNY' : 'SKIP'}</span>}
+      <CaptionedImage imageUrl={imageUrl} top={entry.top_text} bottom={entry.bottom_text} />
+      <div className="tm-swipe-card-caption">“{entryCaption(entry)}”</div>
+    </div>
+  );
+}
+
 export default function DailyCaptionBattleModal({
-  battle,
-  onEnterBattle,
+  initialTab = null,
   onOpenProfile,
   onKingsUpdated,
+  onClaimPrize,
   onClose
 }) {
-  const [loading, setLoading] = useState(true);
-  const [liveEntries, setLiveEntries] = useState([]);
-  const [yesterdayWinner, setYesterdayWinner] = useState(null);
-  const [myVotes, setMyVotes] = useState(() => new Set());
+  const [state, setState] = useState(null);
+  const [tab, setTab] = useState(initialTab || 'enter');
   const [topText, setTopText] = useState('');
   const [bottomText, setBottomText] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [formFeedback, setFormFeedback] = useState({ type: '', text: '' });
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState({ type: '', text: '' });
+  const [seed, setSeed] = useState('anon');
+  const [claimed, setClaimed] = useState(null);
+  const celebratedRef = useRef(false);
 
-  const samplePreviews = useMemo(() => getDayOneSampleCaptions(battle), [battle]);
-
-  const loadBattleState = useCallback(async () => {
-    setLoading(true);
-    const res = await fetchDailyCaptionBattle();
-    setLoading(false);
-    if (!res.ok) return;
-    setLiveEntries(res.entries || []);
-    setYesterdayWinner(res.yesterdayWinner || null);
-    setMyVotes(new Set((res.myVotedEntryIds || []).map((id) => String(id))));
-    onKingsUpdated?.(res.activeKings || []);
-  }, [onKingsUpdated]);
+  const load = useCallback(async () => {
+    const res = await fetchBattleState();
+    setState(res);
+    if (res.myEntry) {
+      setTopText((t) => t || res.myEntry.top_text || '');
+      setBottomText((b) => b || res.myEntry.bottom_text || '');
+    }
+    return res;
+  }, []);
 
   useEffect(() => {
-    let active = true;
-    fetchDailyCaptionBattle().then((res) => {
-      if (!active) return;
-      setLoading(false);
-      if (!res.ok) return;
-      setLiveEntries(res.entries || []);
-      setYesterdayWinner(res.yesterdayWinner || null);
-      setMyVotes(new Set((res.myVotedEntryIds || []).map((id) => String(id))));
-      onKingsUpdated?.(res.activeKings || []);
+    let alive = true;
+    supabase?.auth?.getSession?.().then(({ data }) => {
+      if (alive && data?.session?.user?.id) setSeed(data.session.user.id);
     });
+    fetchBattleState().then((res) => {
+      if (!alive) return;
+      setState(res);
+      if (res.myEntry) {
+        setTopText(res.myEntry.top_text || '');
+        setBottomText(res.myEntry.bottom_text || '');
+        // First open: if you already entered, go straight to voting.
+        if (!initialTab) setTab('vote');
+      }
+    });
+    fetchActiveCaptionKings().then((kings) => alive && onKingsUpdated?.(Array.isArray(kings) ? kings : []));
     return () => {
-      active = false;
+      alive = false;
     };
-  }, [onKingsUpdated]);
+  }, [load, initialTab, onKingsUpdated]);
 
-  if (!battle) return null;
+  const battle = state?.battle || null;
+  const captionMax = state?.captionMax || 120;
+  const used = topText.trim().length + bottomText.trim().length;
+  const voteQueue = useMemo(() => (state ? entriesToVoteOn(state, seed) : []), [state, seed]);
+  const rankingList = useMemo(() => {
+    if (!state) return [];
+    const list = state.entries.filter((e) => e.status === 'approved' || e.is_mine);
+    return state.showTotals ? list : shuffleForVoter(list, `${seed}:rank:${battle?.id || ''}`);
+  }, [state, seed, battle?.id]);
+  const previous = state?.previous || null;
+  const myAward = previous?.my_award || null;
 
-  const handleQuickSubmit = async (e) => {
-    e.preventDefault();
-    if (submitting) return;
-    setSubmitting(true);
-    setFormFeedback({ type: '', text: '' });
-    const res = await submitCaptionBattleEntry({
-      battleDate: battle.dateStr,
-      templateId: battle.template?.id || 'tpl-drake-compare',
-      topText,
-      bottomText
-    });
-    setSubmitting(false);
-    if (!res.ok) {
-      setFormFeedback({
-        type: 'error',
-        text: res.message || 'Could not submit caption right now.'
+  useEffect(() => {
+    if (tab !== 'results' || !previous) return;
+    track('battle_result_viewed', { placed: myAward ? myAward.rank : 0 });
+    if (myAward && !celebratedRef.current) {
+      celebratedRef.current = true;
+      triggerWinCelebration({
+        amount: myAward.mdollarz,
+        unit: 'M$',
+        game: 'Caption Battle',
+        headline: myAward.rank === 1 ? '👑 YOU WON THE CAPTION BATTLE!' : `🏆 You placed #${myAward.rank}!`,
+        detail: 'Your caption made the podium',
+        multiplier: myAward.rank === 1 ? 5 : 3,
+        tier: myAward.rank === 1 ? 'jackpot' : 'win'
       });
+    }
+  }, [tab, previous, myAward]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (busy || !battle) return;
+    setBusy(true);
+    setMsg({ type: '', text: '' });
+    const res = await submitBattleEntry({ battleId: battle.id, topText, bottomText, captionMax });
+    setBusy(false);
+    if (!res.ok) {
+      setMsg({ type: 'error', text: res.message || 'Could not submit your caption.' });
       return;
     }
-
-    setTopText('');
-    setBottomText('');
-    setFormFeedback({
+    setMsg({
       type: 'ok',
       text:
         res.status === 'pending'
-          ? '⏳ Submitted! Waiting for moderator approval — only you see it until approved.'
-          : '✅ Caption Battle entry is live! Community votes crown tomorrow’s 👑 Caption King.'
+          ? '⏳ Saved! A moderator will check it before others can see it.'
+          : res.edited
+            ? '✏️ Entry updated! (Votes on your old caption were reset.)'
+            : '✅ You’re in! Now go vote on the others.'
     });
-    await loadBattleState();
+    await load();
   };
 
-  const handleToggleVote = async (entry) => {
-    if (!entry?.id || entry.status === 'pending') return;
-    const entryId = String(entry.id);
-    const nextActive = !myVotes.has(entryId);
-    const res = await voteCaptionBattleEntry(entryId, nextActive);
+  const handleDecide = async (entry, funny) => {
+    if (busy) return;
+    setBusy(true);
+    const res = await castBattleVote(entry.id, funny);
+    setBusy(false);
     if (!res.ok) {
-      setFormFeedback({ type: 'error', text: res.message || 'Could not vote right now.' });
+      setMsg({ type: 'error', text: res.message || 'Could not record your vote.' });
       return;
     }
-    setMyVotes((prev) => {
-      const next = new Set(prev);
-      if (res.voted) next.add(entryId);
-      else next.delete(entryId);
-      return next;
-    });
-    setLiveEntries((prev) =>
-      prev
-        .map((item) => (String(item.id) === entryId ? { ...item, score: res.score } : item))
-        .sort((a, b) => (b.score || 0) - (a.score || 0))
-    );
+    if (funny) track('battle_vote', { battle: String(battle?.id || '') });
+    await load();
   };
 
-  const yesterdayTpl = yesterdayWinner ? getTemplateById(yesterdayWinner.template_id) : null;
+  const handleClaim = async () => {
+    if (!previous || busy) return;
+    setBusy(true);
+    const res = await claimBattlePrize(previous.id);
+    setBusy(false);
+    if (res.ok) {
+      const credited = onClaimPrize?.(previous.id, res.mdollarz, res.rank) ?? res.mdollarz;
+      setClaimed(credited);
+      await load();
+    } else {
+      setMsg({ type: 'error', text: 'Prize already claimed, or nothing to claim.' });
+    }
+  };
 
   return (
     <div className="tm-modal-backdrop" onClick={onClose}>
@@ -125,290 +221,220 @@ export default function DailyCaptionBattleModal({
         data-testid="daily-caption-battle-modal"
       >
         <div className="tm-modal-sticky-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <div className="tm-cb-head">
             <button type="button" className="tm-btn tm-back-pill" onClick={onClose}>
               ← Back
             </button>
-            <h2 style={{ margin: 0, fontSize: '19px', color: 'var(--tm-amber)' }}>⚔️ Daily Caption Battle</h2>
-            <BattleCountdown />
+            <h2 className="tm-cb-title">⚔️ Daily Caption Battle</h2>
+            {battle && <BattleCountdown endsAt={battle.ends_at} prefix="⏳ " />}
           </div>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <a
-              href="/hall-of-fame"
-              className="tm-btn"
-              style={{ textDecoration: 'none' }}
-              data-testid="hall-of-fame-link"
-            >
-              👑 Hall of Fame
-            </a>
-            <button type="button" className="tm-btn" onClick={onClose}>
-              ✕ Close
-            </button>
-          </div>
-        </div>
-
-        {/* Yesterday's Real Caption King Banner */}
-        <div
-          className={`tm-caption-king-banner ${yesterdayWinner ? 'crowned' : ''}`}
-          data-testid="yesterday-caption-king-banner"
-        >
-          {yesterdayWinner ? (
-            <>
-              <div className="tm-caption-king-left">
-                {yesterdayTpl?.src && (
-                  <img
-                    src={yesterdayTpl.src}
-                    alt={yesterdayTpl.name}
-                    style={{ width: '48px', height: '44px', objectFit: 'cover', borderRadius: '8px' }}
-                  />
-                )}
-                <div>
-                  <div className="tm-caption-king-kicker">
-                    👑 YESTERDAY&apos;S CAPTION KING ({yesterdayWinner.battle_date})
-                  </div>
-                  <div className="tm-caption-king-name">
-                    <button
-                      type="button"
-                      className="tm-link-btn"
-                      style={{ color: 'var(--tm-amber)', fontWeight: 900, fontSize: '15px' }}
-                      onClick={() => {
-                        onClose();
-                        onOpenProfile?.(yesterdayWinner.author_name);
-                      }}
-                    >
-                      @{yesterdayWinner.author_name}
-                    </button>{' '}
-                    won with <strong>{yesterdayWinner.winning_score}</strong> votes — wearing the{' '}
-                    <strong>👑 24h Caption King Frame</strong>!
-                  </div>
-                  {(yesterdayWinner.top_text || yesterdayWinner.bottom_text) && (
-                    <div style={{ fontSize: '11.5px', color: 'var(--tm-text-soft)', marginTop: '2px' }}>
-                      “{[yesterdayWinner.top_text, yesterdayWinner.bottom_text].filter(Boolean).join(' / ')}”
-                    </div>
-                  )}
-                </div>
-              </div>
-              <a href="/hall-of-fame" className="tm-btn tm-btn-primary" style={{ textDecoration: 'none' }}>
-                👑 Hall of Fame
-              </a>
-            </>
-          ) : (
-            <div className="tm-caption-king-left">
-              <span style={{ fontSize: '22px' }}>👑</span>
-              <div>
-                <div className="tm-caption-king-kicker">CROWN UP FOR GRABS TODAY</div>
-                <div style={{ fontSize: '13px', color: 'var(--tm-text-soft)' }}>
-                  Highest-voted moderated caption before UTC midnight wins the{' '}
-                  <strong style={{ color: 'var(--tm-amber)' }}>👑 24h Caption King Frame</strong> &amp; a permanent spot on{' '}
-                  <a href="/hall-of-fame" style={{ color: 'var(--tm-cyan)' }}>
-                    /hall-of-fame
-                  </a>
-                  !
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Today's Featured Template + Direct Quick Submit */}
-        <div className="tm-battle-hero-card">
-          <div className="tm-battle-hero-preview">
-            <img
-              src={battle.template?.src}
-              alt={battle.template?.name || 'Daily Caption Battle template'}
-              className="tm-battle-hero-thumb"
-            />
-            {topText.trim() && <div className="tm-battle-preview-caption top">{topText}</div>}
-            {bottomText.trim() && <div className="tm-battle-preview-caption bottom">{bottomText}</div>}
-          </div>
-
-          <div className="tm-battle-hero-info">
-            <span className="tm-bounty-pill">🎯 TODAY&apos;S TEMPLATE • {battle.dateStr} UTC</span>
-            <h3 style={{ margin: '6px 0 4px', fontSize: '17px', color: '#fff' }}>
-              {battle.template?.name}
-            </h3>
-            <p style={{ margin: '0 0 10px', fontSize: '12px', color: 'var(--tm-text-soft)' }}>
-              Submit your caption directly below (checked by server text moderation) or remix inside the full
-              Meme Forge.
-            </p>
-
-            <form className="tm-battle-composer" onSubmit={handleQuickSubmit}>
-              <input
-                type="text"
-                className="tm-battle-input"
-                maxLength={140}
-                placeholder={`Top text (e.g. ${battle.defaultTop})`}
-                value={topText}
-                onChange={(e) => setTopText(e.target.value)}
-                data-testid="battle-top-input"
-              />
-              <input
-                type="text"
-                className="tm-battle-input"
-                maxLength={140}
-                placeholder={`Bottom text (e.g. ${battle.defaultBottom})`}
-                value={bottomText}
-                onChange={(e) => setBottomText(e.target.value)}
-                data-testid="battle-bottom-input"
-              />
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <button
-                  type="submit"
-                  className="tm-btn tm-btn-primary"
-                  disabled={submitting || (!topText.trim() && !bottomText.trim())}
-                  data-testid="battle-submit-btn"
-                >
-                  {submitting ? '⏳ Checking Rules…' : '⚔️ Enter Battle'}
-                </button>
-                <button
-                  type="button"
-                  className="tm-btn"
-                  onClick={() => {
-                    onClose();
-                    onEnterBattle?.(battle);
-                  }}
-                >
-                  🎨 Open Full Meme Forge
-                </button>
-              </div>
-              <div style={{ fontSize: '11px', color: 'var(--tm-text-dim)' }}>
-                By posting you agree to our <a href="/rules" style={{ color: 'var(--tm-cyan)' }}>House Rules</a>.
-              </div>
-            </form>
-
-            {formFeedback.text && (
-              <div
-                className={`tm-battle-form-msg ${formFeedback.type === 'error' ? 'is-error' : ''}`}
-                role="status"
-                style={{ marginTop: '8px' }}
-                data-testid="battle-form-feedback"
+          <div className="tm-cb-tabs" role="tablist" aria-label="Caption Battle sections">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={tab === t.id}
+                className={`tm-cb-tab ${tab === t.id ? 'active' : ''}`}
+                onClick={() => {
+                  setTab(t.id);
+                  setMsg({ type: '', text: '' });
+                }}
+                data-testid={`battle-tab-${t.id}`}
               >
-                {formFeedback.text}
+                {t.label}
+                {t.id === 'vote' && voteQueue.length > 0 && <span className="tm-cb-tab-count">{voteQueue.length}</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {!state ? (
+          <div className="tm-cb-empty">⏳ Loading today’s battle…</div>
+        ) : !battle && tab !== 'results' ? (
+          <div className="tm-cb-empty" data-testid="battle-none-live">
+            No battle is live right now. The next one starts at 9:00 (UK time).
+          </div>
+        ) : (
+          <>
+            {tab === 'enter' && battle && (
+              <div className="tm-cb-enter">
+                <div className="tm-cb-preview">
+                  <CaptionedImage imageUrl={battle.image_url} top={topText.trim()} bottom={bottomText.trim()} />
+                </div>
+                <form className="tm-cb-form" onSubmit={handleSubmit}>
+                  <div className="tm-cb-kicker">
+                    {battle.theme ? `🏷️ ${battle.theme} · ` : ''}
+                    {state.entryCount} {state.entryCount === 1 ? 'entry' : 'entries'} so far
+                  </div>
+                  <h3 className="tm-cb-battle-name">{battle.title}</h3>
+                  {battle.prompt && <p className="tm-cb-prompt">{battle.prompt}</p>}
+                  <input
+                    className="tm-battle-input"
+                    value={topText}
+                    onChange={(e) => setTopText(e.target.value)}
+                    placeholder="Top text"
+                    aria-label="Top caption"
+                    maxLength={captionMax}
+                    data-testid="battle-top-input"
+                  />
+                  <input
+                    className="tm-battle-input"
+                    value={bottomText}
+                    onChange={(e) => setBottomText(e.target.value)}
+                    placeholder="Bottom text (optional)"
+                    aria-label="Bottom caption"
+                    maxLength={captionMax}
+                    data-testid="battle-bottom-input"
+                  />
+                  <div className={`tm-cb-counter ${used > captionMax ? 'over' : ''}`} aria-live="polite">
+                    {used}/{captionMax}
+                  </div>
+                  <button
+                    type="submit"
+                    className="tm-btn tm-btn-primary tm-cb-submit"
+                    disabled={busy || used === 0 || used > captionMax}
+                    data-testid="battle-submit-btn"
+                  >
+                    {busy ? '⏳ Checking…' : state.myEntry ? '✏️ Update my entry' : '⚔️ Enter the battle'}
+                  </button>
+                  <p className="tm-cb-fine">
+                    One entry each; you can edit it until the battle closes (editing resets its votes). Top 3 win a
+                    badge and play-money M$. By entering you agree to the <a href="/rules">House Rules</a>.
+                  </p>
+                  {state.myEntry?.status === 'pending' && (
+                    <p className="tm-cb-fine">⏳ Your entry is waiting for a moderator.</p>
+                  )}
+                </form>
               </div>
             )}
-          </div>
-        </div>
 
-        {/* Live Community Entries */}
-        <div style={{ marginTop: '16px' }}>
-          <div className="tm-studio-label" style={{ marginBottom: '10px' }}>
-            🏆 Today&apos;s Community Captions ({liveEntries.length})
-          </div>
-
-          {loading ? (
-            <div style={{ padding: '16px', color: 'var(--tm-text-dim)', fontSize: '13px' }}>
-              ⏳ Loading today&apos;s Supabase battle entries…
-            </div>
-          ) : liveEntries.length === 0 ? (
-            <div style={{ marginBottom: '12px' }}>
-              <div
-                data-testid="battle-empty-state"
-                style={{
-                  padding: '14px',
-                  borderRadius: '12px',
-                  border: '1px dashed rgba(148, 163, 184, 0.35)',
-                  background: 'rgba(15, 23, 42, 0.65)',
-                  color: 'var(--tm-text-soft)',
-                  fontSize: '13px',
-                  marginBottom: '12px'
-                }}
-              >
-                No community captions yet today. Enter above to set the score to beat!
+            {tab === 'vote' && battle && (
+              <div className="tm-cb-vote">
+                {voteQueue.length === 0 ? (
+                  <div className="tm-cb-empty" data-testid="battle-vote-done">
+                    {state.entryCount === 0
+                      ? 'No captions yet. Be the first to enter!'
+                      : '🎉 You’ve seen every caption. Check the ranking, or come back later for new ones.'}
+                  </div>
+                ) : (
+                  <>
+                    <SwipeCard
+                      key={voteQueue[0].id}
+                      entry={voteQueue[0]}
+                      imageUrl={battle.image_url}
+                      busy={busy}
+                      onDecide={(funny) => handleDecide(voteQueue[0], funny)}
+                    />
+                    <div className="tm-cb-vote-buttons">
+                      <button type="button" className="tm-btn tm-cb-skip" disabled={busy} onClick={() => handleDecide(voteQueue[0], false)}>
+                        👋 Skip
+                      </button>
+                      <button
+                        type="button"
+                        className="tm-btn tm-btn-primary tm-cb-funny"
+                        disabled={busy}
+                        onClick={() => handleDecide(voteQueue[0], true)}
+                        data-testid="battle-funny-btn"
+                      >
+                        😂 Funny
+                      </button>
+                    </div>
+                    <p className="tm-cb-fine">
+                      Swipe right for funny, left to skip. {voteQueue.length} left.
+                      {state.votesNeeded > 0 && ` Vote on ${state.votesNeeded} more to unlock the live scores.`}
+                    </p>
+                  </>
+                )}
               </div>
-              <div className="tm-battle-entries-grid">
-                {samplePreviews.map((sample) => {
-                  const tpl = getTemplateById(sample.template_id);
-                  return (
-                    <article key={sample.id} className="tm-battle-entry-card">
-                      <div className="tm-battle-entry-head">
-                        <span className="tm-battle-entry-author">@{sample.author_name}</span>
-                        <span className="tm-sample-seed-pill">🤖 Sample Preview</span>
-                      </div>
-                      <div className="tm-battle-entry-media">
-                        <MemeMedia
-                          meme={{
-                            id: sample.id,
-                            title: sample.top_text || sample.bottom_text,
-                            media_type: 'image',
-                            image_url: tpl.src,
-                            overlay: buildCaptionOverlay(sample.top_text, sample.bottom_text)
-                          }}
-                          mode="feed"
-                        />
-                      </div>
-                      <div className="tm-battle-entry-foot">
-                        <span className="tm-battle-entry-title">
-                          {[sample.top_text, sample.bottom_text].filter(Boolean).join(' / ')}
+            )}
+
+            {tab === 'ranking' && battle && (
+              <div className="tm-cb-ranking">
+                {!state.showTotals && (
+                  <p className="tm-cb-note" data-testid="battle-scores-hidden">
+                    🔒 Scores are hidden until you’ve voted on {state.votesNeeded} more{' '}
+                    {state.votesNeeded === 1 ? 'caption' : 'captions'} (keeps it fair).
+                  </p>
+                )}
+                {rankingList.length === 0 ? (
+                  <div className="tm-cb-empty">No captions yet.</div>
+                ) : (
+                  <ol className="tm-cb-rank-list">
+                    {rankingList.map((e, i) => (
+                      <li key={e.id} className={`tm-cb-rank-row ${e.is_mine ? 'is-mine' : ''}`}>
+                        <span className="tm-cb-rank-pos">{state.showTotals ? `#${i + 1}` : '•'}</span>
+                        <span className="tm-cb-rank-text">
+                          “{entryCaption(e)}”
+                          <button type="button" className="tm-link-btn" onClick={() => onOpenProfile?.(e.author_name)}>
+                            @{e.author_name}
+                          </button>
+                          {e.status === 'pending' && <em> (waiting for review)</em>}
                         </span>
-                        <span style={{ fontSize: '11px', color: 'var(--tm-text-dim)' }}>Not votable</span>
-                      </div>
-                    </article>
-                  );
-                })}
+                        <span className="tm-cb-rank-score">{state.showTotals ? `😂 ${e.score ?? 0}` : '🔒'}</span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
               </div>
-            </div>
-          ) : (
-            <div className="tm-battle-entries-grid">
-              {liveEntries.map((entry, idx) => {
-                const tpl = getTemplateById(entry.template_id);
-                const voted = myVotes.has(String(entry.id));
-                const isPending = entry.status === 'pending';
-                return (
-                  <article
-                    key={entry.id}
-                    data-testid={`battle-entry-${entry.id}`}
-                    className={`tm-battle-entry-card ${idx === 0 && !isPending ? 'leading' : ''}`}
-                  >
-                    <div className="tm-battle-entry-head">
-                      <button
-                        type="button"
-                        className="tm-link-btn tm-battle-entry-author"
-                        onClick={() => {
-                          onClose();
-                          onOpenProfile?.(entry.author_name);
-                        }}
-                      >
-                        {idx === 0 && !isPending ? '👑 ' : ''}@{entry.author_name || 'AnonMemer'}
-                      </button>
-                      {isPending ? (
-                        <span className="tm-sample-seed-pill">⏳ Pending Review</span>
-                      ) : (
-                        <span className="tm-community-entry-pill">🔥 Community</span>
-                      )}
-                    </div>
-                    <div className="tm-battle-entry-media">
-                      <MemeMedia
-                        meme={{
-                          id: entry.id,
-                          title: [entry.top_text, entry.bottom_text].filter(Boolean).join(' / '),
-                          media_type: 'image',
-                          image_url: tpl.src,
-                          overlay: buildCaptionOverlay(entry.top_text, entry.bottom_text)
-                        }}
-                        mode="feed"
-                      />
-                    </div>
-                    <div className="tm-battle-entry-foot">
-                      <span className="tm-battle-entry-title">
-                        {[entry.top_text, entry.bottom_text].filter(Boolean).join(' / ')}
-                      </span>
-                      <button
-                        type="button"
-                        className={`tm-btn ${voted ? 'tm-btn-primary' : ''}`}
-                        style={{ padding: '5px 10px', fontSize: '12px' }}
-                        disabled={isPending}
-                        data-testid={`battle-vote-btn-${entry.id}`}
-                        onClick={() => void handleToggleVote(entry)}
-                      >
-                        🔥 {entry.score || 0}
-                      </button>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          )}
-        </div>
+            )}
+
+            {tab === 'results' && (
+              <div className="tm-cb-results">
+                {!previous ? (
+                  <div className="tm-cb-empty">The first results arrive when today’s battle closes at 9:00 (UK time).</div>
+                ) : (
+                  <>
+                    <h3 className="tm-cb-battle-name">
+                      Results: {previous.title} ({previous.battle_day})
+                    </h3>
+                    {myAward && (
+                      <div className="tm-cb-award" data-testid="battle-my-award">
+                        <strong>
+                          {myAward.rank === 1 ? '👑 You won!' : `🏆 You placed #${myAward.rank}!`}
+                        </strong>{' '}
+                        {myAward.claimed_at || claimed !== null ? (
+                          <span>Prize claimed{claimed ? `: +${claimed} M$` : ''}. Badge added to your profile.</span>
+                        ) : (
+                          <button type="button" className="tm-btn tm-btn-primary" disabled={busy} onClick={handleClaim}>
+                            Claim {myAward.mdollarz} M$ (play money)
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    {previous.top.length === 0 ? (
+                      <div className="tm-cb-empty">Nobody entered that battle.</div>
+                    ) : (
+                      <div className="tm-cb-podium">
+                        {previous.top.map((e) => (
+                          <article key={e.id} className={`tm-cb-podium-card rank-${e.rank}`}>
+                            <div className="tm-cb-podium-rank">{['👑 1st', '🥈 2nd', '🥉 3rd'][e.rank - 1]}</div>
+                            <CaptionedImage imageUrl={previous.image_url} top={e.top_text} bottom={e.bottom_text} />
+                            <div className="tm-cb-podium-foot">
+                              <button type="button" className="tm-link-btn" onClick={() => onOpenProfile?.(e.author_name)}>
+                                @{e.author_name}
+                              </button>
+                              <span>😂 {e.score}</span>
+                            </div>
+                          </article>
+                        ))}
+                      </div>
+                    )}
+                    <a href="/hall-of-fame" className="tm-btn" data-testid="hall-of-fame-link">
+                      👑 Hall of Fame
+                    </a>
+                  </>
+                )}
+              </div>
+            )}
+          </>
+        )}
+
+        {msg.text && (
+          <div className={`tm-battle-form-msg ${msg.type === 'error' ? 'is-error' : ''}`} role="status" data-testid="battle-form-feedback">
+            {msg.text}
+          </div>
+        )}
       </div>
     </div>
   );

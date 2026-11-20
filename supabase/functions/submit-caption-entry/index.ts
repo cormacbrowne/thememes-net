@@ -6,6 +6,10 @@
 //   - Blocks suspended accounts, verifies Turnstile & 'upload' rate limits (33.7).
 //   - Checks both top & bottom captions through `moderateText` (33.4, fail closed).
 //   - Inserts into `public.caption_battle_entries` with server-derived `author_name`.
+//   - Plan 2.1 (v2, when the body has `battleId`): enters the battle that is LIVE right now
+//     (public.battles), one entry per user per battle, editable until the battle closes
+//     (an edit is re-moderated and resets that entry's votes), total caption length capped
+//     by battle_settings.caption_max.
 //
 // Deploy: supabase functions deploy submit-caption-entry --no-verify-jwt
 // ==========================================
@@ -13,7 +17,12 @@ import { createClient } from 'npm:@supabase/supabase-js@2.49.4';
 import { authorNameFor, isProfileSuspended } from '../_shared/identity.js';
 import { moderateText } from '../_shared/moderation.js';
 import { BOT_ERROR_MESSAGES, extractClientIp, ipHashFor, verifyTurnstile } from '../_shared/rateLimitAndBot.js';
-import { decideCaptionEntryStatus, validateCaptionEntryRequest } from '../_shared/captionBattleCore.js';
+import {
+  decideCaptionEntryStatus,
+  decideEntryWrite,
+  validateBattleEntryRequest,
+  validateCaptionEntryRequest
+} from '../_shared/captionBattleCore.js';
 
 const admin = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '', {
   auth: { persistSession: false, autoRefreshToken: false }
@@ -82,9 +91,40 @@ Deno.serve(async (req: Request) => {
     return json(req, 400, { ok: false, error: 'bad_request' });
   }
 
-  const parsed = validateCaptionEntryRequest(body);
-  if (!parsed.ok) {
-    return json(req, 400, { ok: false, error: parsed.error });
+  // v2 (plan 2.1): the battle comes from the server, never from the client's clock.
+  const isV2 = typeof body?.battleId === 'string';
+  let live: { id: string; battle_day: string; template_id: string | null } | null = null;
+  // deno-lint-ignore no-explicit-any
+  let parsed: any;
+  if (isV2) {
+    const [{ data: liveRow }, { data: settings }] = await Promise.all([
+      admin
+        .from('battles')
+        .select('id, battle_day, template_id')
+        .eq('status', 'live')
+        .order('starts_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      admin.from('battle_settings').select('caption_max').eq('id', true).maybeSingle()
+    ]);
+    live = liveRow ?? null;
+    const v2 = validateBattleEntryRequest(body, live?.id, settings?.caption_max);
+    if (!v2.ok) return json(req, 400, { ok: false, error: v2.error, max: v2.max });
+    parsed = {
+      ok: true,
+      value: {
+        battleDate: String(live!.battle_day),
+        templateId: live!.template_id || 'custom',
+        topText: v2.value.topText,
+        bottomText: v2.value.bottomText,
+        texts: v2.value.texts
+      }
+    };
+  } else {
+    parsed = validateCaptionEntryRequest(body);
+    if (!parsed.ok) {
+      return json(req, 400, { ok: false, error: parsed.error });
+    }
   }
 
   const bot = await verifyTurnstile({
@@ -141,6 +181,45 @@ Deno.serve(async (req: Request) => {
     status,
     moderation: { text: verdict, checked_at: new Date().toISOString() }
   };
+
+  if (isV2 && live) {
+    const { data: existing } = await admin
+      .from('caption_battle_entries')
+      .select('id, status')
+      .eq('battle_id', live.id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+    const action = decideEntryWrite(existing);
+    if (action === 'refuse') return json(req, 403, { ok: false, error: 'entry_removed' });
+    const select = 'id, battle_id, battle_date, template_id, user_id, author_name, top_text, bottom_text, score, status, created_at, updated_at';
+    if (action === 'update') {
+      // Edits are allowed until close, but votes cast on the old caption no longer count.
+      await admin.from('caption_battle_votes').delete().eq('entry_id', existing!.id);
+      const { data: updated, error: upErr } = await admin
+        .from('caption_battle_entries')
+        .update({
+          top_text: row.top_text,
+          bottom_text: row.bottom_text,
+          author_name: row.author_name,
+          status,
+          score: 0,
+          moderation: row.moderation,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existing!.id)
+        .select(select)
+        .single();
+      if (upErr || !updated) return json(req, 500, { ok: false, error: 'server_error' });
+      return json(req, 200, { ok: true, status, entry: updated, edited: true });
+    }
+    const { data: created, error: insErr } = await admin
+      .from('caption_battle_entries')
+      .insert({ ...row, battle_id: live.id })
+      .select(select)
+      .single();
+    if (insErr || !created) return json(req, 500, { ok: false, error: 'server_error' });
+    return json(req, 200, { ok: true, status, entry: created, edited: false });
+  }
 
   const { data: entry, error } = await admin
     .from('caption_battle_entries')

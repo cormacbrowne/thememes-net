@@ -98,7 +98,7 @@ export default function HallOfFamePage() {
                   </div>
 
                   <div className="tm-hof-media">
-                    <img src={tpl.src} alt={tpl.name} loading="lazy" />
+                    <img src={w.image_url || tpl.src} alt={`Winning caption from ${w.battle_date}`} loading="lazy" />
                     {w.top_text && <div className="tm-hof-cap top">{w.top_text}</div>}
                     {w.bottom_text && <div className="tm-hof-cap bottom">{w.bottom_text}</div>}
                   </div>

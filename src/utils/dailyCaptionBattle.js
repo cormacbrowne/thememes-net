@@ -370,3 +370,168 @@ export async function fetchActiveCaptionKings(client = supabase) {
     return [];
   }
 }
+
+// ==========================================
+// PLAN 2.1 — DAILY CAPTION BATTLE v2 (server-scheduled battles)
+//   One battle a day (09:00 Europe/London → 24 h), opened/closed by pg_cron.
+//   One entry per player, editable until close. Live totals stay hidden until the
+//   voter has voted on a few entries. Top 3 get a badge + play-money M$ to claim.
+// ==========================================
+export const BATTLE_CAPTION_MAX_DEFAULT = 120;
+
+const EMPTY_STATE = Object.freeze({
+  ok: false,
+  battle: null,
+  entries: [],
+  entryCount: 0,
+  showTotals: false,
+  votesNeeded: 0,
+  myVotes: [],
+  mySkips: [],
+  myEntry: null,
+  previous: null,
+  captionMax: BATTLE_CAPTION_MAX_DEFAULT
+});
+
+export function normalizeBattleState(data) {
+  if (!data?.ok) return { ...EMPTY_STATE, error: data?.error || 'fetch_failed' };
+  return {
+    ok: true,
+    battle: data.battle || null,
+    entries: Array.isArray(data.entries) ? data.entries : [],
+    entryCount: Number(data.entry_count) || 0,
+    showTotals: Boolean(data.show_totals),
+    votesNeeded: Math.max(0, Number(data.votes_needed) || 0),
+    myVotes: (data.my_votes || []).map(String),
+    mySkips: (data.my_skips || []).map(String),
+    myEntry: data.my_entry || null,
+    previous: data.previous || null,
+    captionMax: Number(data.settings?.caption_max) || BATTLE_CAPTION_MAX_DEFAULT
+  };
+}
+
+export async function fetchBattleState(battleId = null, client = supabase) {
+  if (!client?.rpc) return { ...EMPTY_STATE, error: 'offline' };
+  try {
+    const { data, error } = await client.rpc('get_battle_state', battleId ? { p_battle_id: battleId } : {});
+    if (error) return { ...EMPTY_STATE, error: error.message || 'fetch_failed' };
+    return normalizeBattleState(data);
+  } catch (err) {
+    return { ...EMPTY_STATE, error: err?.message || 'network' };
+  }
+}
+
+const ENTRY_ERROR_MESSAGES = {
+  battle_closed: '⏰ That battle has closed. Refresh for today’s battle!',
+  caption_too_long: '✂️ Too long: keep your caption under the character limit.',
+  entry_removed: '🚫 Your entry for this battle was removed by a moderator.',
+  empty_caption: '✏️ Write a caption first!',
+  sign_in_required: '🔑 Could not start your player session. Try again.',
+  suspended: '⛔ Your account is suspended, so you can’t enter right now.'
+};
+
+/** Enter (or edit) today's battle. Same moderation and limits as the server. */
+export async function submitBattleEntry({ battleId, topText, bottomText, captionMax }, client = supabase) {
+  const cleanTop = String(topText || '').trim();
+  const cleanBottom = String(bottomText || '').trim();
+  if (!cleanTop && !cleanBottom) return { ok: false, error: 'empty_caption', message: ENTRY_ERROR_MESSAGES.empty_caption };
+  const max = Number(captionMax) || BATTLE_CAPTION_MAX_DEFAULT;
+  if (cleanTop.length + cleanBottom.length > max) {
+    return { ok: false, error: 'caption_too_long', message: ENTRY_ERROR_MESSAGES.caption_too_long };
+  }
+  const problem = precheckTexts([cleanTop, cleanBottom]);
+  if (problem) return { ok: false, error: 'rejected', detail: problem, message: textRejectionMessage(problem) };
+  if (!client?.functions?.invoke) return { ok: false, error: 'network', message: '📡 Server unavailable right now.' };
+
+  const sess = await ensureWriteSession(client);
+  if (!sess) return { ok: false, error: 'sign_in_required', message: ENTRY_ERROR_MESSAGES.sign_in_required };
+
+  const turnstileToken = await getTurnstileToken('upload');
+  const { data, error } = await client.functions.invoke(CAPTION_BATTLE_FUNCTION, {
+    body: { battleId, topText: cleanTop, bottomText: cleanBottom, ...(turnstileToken ? { turnstileToken } : {}) }
+  });
+  if (error) {
+    let payload;
+    try {
+      payload = (await error.context?.json?.()) || {};
+    } catch {
+      payload = {};
+    }
+    const code = payload.error || 'network';
+    if (code === 'rejected') {
+      return { ok: false, error: 'rejected', detail: payload.detail || 'rules', message: textRejectionMessage(payload.detail) };
+    }
+    if (code === 'rate_limited') {
+      return { ok: false, error: code, message: payload.message || formatRateLimitMessage(payload.retry_after_seconds) };
+    }
+    return { ok: false, error: code, message: ENTRY_ERROR_MESSAGES[code] || '📡 Could not submit your caption right now.' };
+  }
+  if (!data?.ok) return { ok: false, error: data?.error || 'submit_failed', message: '📡 Could not submit your caption.' };
+  track('battle_entry', { edited: Boolean(data.edited), status: data.status || 'unknown' });
+  return data;
+}
+
+/** "Funny" (true) scores a point; "Skip" (false) is recorded as seen, no point. */
+export async function castBattleVote(entryId, funny = true, client = supabase) {
+  const res = await voteCaptionBattleEntry(entryId, funny, client);
+  if (!res.ok && res.error === 'own_entry') return { ...res, message: '🙈 You can’t vote on your own caption.' };
+  if (!res.ok && res.error === 'battle_closed') return { ...res, message: '⏰ Voting has closed for this battle.' };
+  return res;
+}
+
+export async function claimBattlePrize(battleId, client = supabase) {
+  if (!client?.rpc || !battleId) return { ok: false, error: 'offline' };
+  const { data, error } = await client.rpc('claim_battle_award', { p_battle_id: battleId });
+  if (error) return { ok: false, error: error.message || 'claim_failed' };
+  return data || { ok: false, error: 'claim_failed' };
+}
+
+function seededRandom(seedStr) {
+  let h = 2166136261;
+  for (let i = 0; i < seedStr.length; i += 1) {
+    h ^= seedStr.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return () => {
+    h += 0x6d2b79f5;
+    let t = h;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * Per-voter shuffle (stable for the same voter + battle) so early entries get no head start.
+ */
+export function shuffleForVoter(entries = [], seed = 'anon') {
+  const rand = seededRandom(String(seed));
+  const out = [...entries];
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(rand() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+/** Entries still waiting for this voter's Funny/Skip (never their own). */
+export function entriesToVoteOn(state, seed) {
+  if (!state?.entries) return [];
+  const seen = new Set([...(state.myVotes || []), ...(state.mySkips || [])]);
+  const pool = state.entries.filter((e) => e.status === 'approved' && !e.is_mine && !seen.has(String(e.id)));
+  return shuffleForVoter(pool, `${seed}:${state.battle?.id || ''}`);
+}
+
+export function formatCountdown(endsAt, now = Date.now()) {
+  const end = Date.parse(endsAt || '');
+  if (!Number.isFinite(end)) return '--:--:--';
+  const total = Math.max(0, Math.floor((end - now) / 1000));
+  const h = String(Math.floor(total / 3600)).padStart(2, '0');
+  const m = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
+  const s = String(total % 60).padStart(2, '0');
+  return `${h}:${m}:${s}`;
+}
+
+export function entryCaption(entry) {
+  return [entry?.top_text, entry?.bottom_text].filter(Boolean).join(' / ');
+}

@@ -594,6 +594,27 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
     [awardFairReward]
   );
 
+  /**
+   * Plan 2.1: Daily Caption Battle podium prize. Only called with the amount the SERVER
+   * returned from claim_battle_award() (which pays out once per battle per player), so it
+   * sits outside the daily earning caps; still de-duplicated per battle locally and capped.
+   */
+  const handleClaimBattlePrize = useCallback(
+    (battleId, mdollarz, rank) => {
+      const amount = Math.max(0, Math.min(ARCADE_ECONOMY_RULES.MAX_BATTLE_PRIZE, Math.floor(Number(mdollarz) || 0)));
+      const actionKey = `battle_prize:${battleId}`;
+      if (!battleId || amount <= 0 || tokenLedger?.rewardedActionKeys?.includes(actionKey)) return 0;
+      setTokenLedger((prev) => ({
+        ...prev,
+        rewardedActionKeys: [...(prev?.rewardedActionKeys || []), actionKey]
+      }));
+      setTokens((prev) => prev + amount);
+      awardXpOnly(rank === 1 ? 150 : 75, null, '🏆', `${formatMoney(amount, { sign: true })} battle prize!`);
+      return amount;
+    },
+    [tokenLedger, awardXpOnly]
+  );
+
   const handleBossSecretXp = useCallback(() => {
     if (bossStealthCountRef.current >= 12) return;
     bossStealthCountRef.current += 1;
@@ -978,6 +999,7 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
     handleWinPinataReward,
     handleClaimPayphoneCoinReturn,
     handleClaimDeLoreanFluxBonus,
+    handleClaimBattlePrize,
     handleBossSecretXp,
     handleExchangeXpForTokens,
     handleToggleXpAutoConvert,

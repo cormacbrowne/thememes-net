@@ -42,6 +42,7 @@ export const MEMEDOLLARZ_RULES = Object.freeze({
 export const ARCADE_ECONOMY_RULES = {
   STARTER_WELCOME_TOKENS: 20,
   STARTER_FIRST_PLAY_BONUS: 10,
+  MAX_BATTLE_PRIZE: 100, // Plan 2.1: Caption Battle podium prize (server-awarded once per battle; outside daily caps)
   MAX_DAILY_EARNED_TOKENS: 65, // Exact sum of category caps: 35 upload + 10 engagement + 10 quests + 10 xpConversion
   CATEGORY_DAILY_CAPS: {
     upload: 35,        // Primary token engine: ~2-3 rewarded meme uploads/remixes per day

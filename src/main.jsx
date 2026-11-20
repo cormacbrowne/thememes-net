@@ -14,6 +14,8 @@ const ModerationPage = lazy(() => import('./components/ModerationPage.jsx'))
 // eslint-disable-next-line react-refresh/only-export-components
 const PulseReportPage = lazy(() => import('./components/PulseReportPage.jsx'))
 // eslint-disable-next-line react-refresh/only-export-components
+const AdminBattlesPage = lazy(() => import('./components/AdminBattlesPage.jsx'))
+// eslint-disable-next-line react-refresh/only-export-components
 const LegalInfoPage = lazy(() => import('./components/LegalInfoPage.jsx'))
 // eslint-disable-next-line react-refresh/only-export-components
 const HallOfFamePage = lazy(() => import('./components/HallOfFamePage.jsx'))
@@ -23,6 +25,7 @@ const pathname = typeof window !== 'undefined' ? window.location.pathname : '/'
 const isModerationRoute =
   /^\/(?:admin(?:istrator)?(?:\/(?:moderation|moderator|mod|queue))?|moderat(?:ion|or))\/?$/i.test(pathname)
 const isPulseRoute = /^\/admin\/pulse\/?$/i.test(pathname)
+const isBattleAdminRoute = /^\/admin\/battles\/?$/i.test(pathname)
 const isLegalRoute = /^\/(?:rules|terms|privacy|takedown|contact)\/?$/i.test(pathname)
 const isHallOfFameRoute = /^\/hall-of-fame\/?$/i.test(pathname)
 const isUiKitRoute = Boolean(import.meta.env.DEV && UiKitPage && /^\/__ui\/?$/i.test(pathname))
@@ -43,6 +46,10 @@ createRoot(document.getElementById('root')).render(
     ) : isModerationRoute ? (
       <Suspense fallback={<div style={{ minHeight: '100dvh', background: 'var(--tm-night-0)' }} />}>
         <ModerationPage />
+      </Suspense>
+    ) : isBattleAdminRoute ? (
+      <Suspense fallback={<div style={{ minHeight: '100dvh', background: '#07060f' }} />}>
+        <AdminBattlesPage />
       </Suspense>
     ) : isPulseRoute ? (
       <Suspense fallback={<div style={{ minHeight: '100dvh', background: '#07060f' }} />}>

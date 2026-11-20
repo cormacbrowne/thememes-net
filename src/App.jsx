@@ -82,6 +82,7 @@ const DankPetWidget = lazyWithRetry(() => import('./components/DankPetWidget'));
 const UnhandledGooseSurprise = lazyWithRetry(() => import('./components/UnhandledGooseSurprise'));
 const MemeLiveCelebrationModal = lazyWithRetry(() => import('./components/MemeLiveCelebrationModal'));
 const DailyCaptionBattleModal = lazyWithRetry(() => import('./components/DailyCaptionBattleModal'));
+const BattleHeroCard = lazyWithRetry(() => import('./components/BattleHeroCard'));
 const FullscreenMusicEqualizer = lazyWithRetry(
   () => import('./components/MusicEqualizer'),
   (m) => ({ default: m.FullscreenMusicEqualizer })
@@ -306,6 +307,7 @@ export default function App() {
     handleWinPinataReward,
     handleClaimPayphoneCoinReturn,
     handleClaimDeLoreanFluxBonus,
+    handleClaimBattlePrize,
     handleBossSecretXp,
     handleExchangeXpForTokens,
     handleToggleXpAutoConvert,
@@ -455,7 +457,6 @@ export default function App() {
     battleStreak,
     championWins,
     crowdAgreement,
-    dailyBattle,
     filteredMemes,
     visibleMemes,
     visibleCount,
@@ -466,7 +467,6 @@ export default function App() {
     theaterMeme,
     handleMarkNotificationsRead,
     handleOpenBlankStudio,
-    handleAcceptBounty,
     handleTriggerStudioMutate,
     handleCaptionThis,
     handleVote,
@@ -1232,6 +1232,21 @@ export default function App() {
                   ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }}
             />
+          )}
+
+          {/* Plan 2.1: today's Caption Battle, straight under the portal. */}
+          {viewMode === 'feed' && (
+            <Suspense fallback={null}>
+              <div style={{ padding: '0 14px' }}>
+                <BattleHeroCard
+                  onOpenBattle={(tab) => {
+                    sfx.playToggle?.();
+                    closeAllModals();
+                    setBattleModalOpen(tab || 'enter');
+                  }}
+                />
+              </div>
+            </Suspense>
           )}
 
           {viewMode === 'feed' && isWideDesktop && <LazyCompanionRow eager />}
@@ -2334,11 +2349,8 @@ export default function App() {
       {battleModalOpen && (
         <Suspense fallback={MODAL_SKELETON_FALLBACK}>
           <DailyCaptionBattleModal
-            battle={dailyBattle}
-            onEnterBattle={(battle) => {
-              setBattleModalOpen(false);
-              handleAcceptBounty(battle);
-            }}
+            initialTab={typeof battleModalOpen === 'string' ? battleModalOpen : null}
+            onClaimPrize={handleClaimBattlePrize}
             onOpenProfile={(username) => {
               setBattleModalOpen(false);
               setProfileUsername(username);

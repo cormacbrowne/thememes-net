@@ -277,6 +277,7 @@ export default function ModerationPage() {
           <span>{counts.reported} reported</span>
           {counts.child > 0 && <span className="is-alert">{counts.child} child-safety</span>}
           <a href="/admin/battles" className="tm-mod-link">⚔️ Battles</a>
+          <a href="/admin/house" className="tm-mod-link">🤖 House queue</a>
           <a href="/admin/social" className="tm-mod-link">📱 Social Kit</a>
         </div>
         <nav className="tm-mod-tabs" aria-label="Moderation views">

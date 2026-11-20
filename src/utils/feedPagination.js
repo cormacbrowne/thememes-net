@@ -38,10 +38,38 @@ export function computeHotScore(meme, nowMs = Date.now()) {
   if (!meme || typeof meme !== 'object') return 0;
   const serverHot = Number(meme.hot_score);
   if (Number.isFinite(serverHot) && serverHot > 0) return serverHot;
-  const score = Math.max(0, Number(meme.score || 0));
+  // Same formula as memes_feed_view.hot_score: (reactions + 2×comments + 1) / (hours + 2)^1.5
+  const reactions = Object.values(meme.reactions || {}).reduce((s, v) => s + Math.max(0, Number(v) || 0), 0);
+  const comments = Math.max(0, Number(meme.comments_count ?? (meme.comments || []).length) || 0);
   const createdMs = meme.created_at ? Date.parse(meme.created_at) : nowMs;
   const ageHours = Math.max(0, (nowMs - (Number.isFinite(createdMs) ? createdMs : nowMs)) / 3600000);
-  return Number(((score + 1) / Math.pow(ageHours + 2, 1.5)).toFixed(6));
+  return Number(((reactions + 2 * comments + 1) / Math.pow(ageHours + 2, 1.5)).toFixed(6));
+}
+
+export const HOT_FEED_RPC = 'get_hot_feed';
+
+/**
+ * Hot tab via the get_hot_feed RPC: ranked on the server (engagement score, at most 1 house
+ * meme in any 4 cards). Offset paging. Returns null when the RPC is unavailable so the caller
+ * can fall back to the plain view query.
+ */
+async function fetchHotFeedPage(client, { category, cursor, limit }) {
+  if (typeof client?.rpc !== 'function') return null;
+  const offset = Math.max(0, Math.trunc(Number(cursor?.offset) || 0));
+  const { data, error } = await client.rpc(HOT_FEED_RPC, {
+    p_category: category && category !== 'all' ? String(category) : null,
+    p_offset: offset,
+    p_limit: limit + 1
+  });
+  if (error || !Array.isArray(data)) return null;
+  const hasMore = data.length === limit + 1;
+  const items = hasMore ? data.slice(0, limit) : data;
+  return {
+    ok: true,
+    items,
+    hasMore,
+    nextCursor: items.length ? { mode: 'hot', offset: offset + items.length, source: 'rpc' } : null
+  };
 }
 
 export function extractFeedCursor(meme, sortBy) {
@@ -115,6 +143,11 @@ export async function fetchMemesFeedPage(
   const mode = normalizeSortMode(sortBy);
   const effectiveCursor = cursor ? { ...cursor, mode } : null;
   const limit = Math.max(1, Math.min(100, Number(pageSize) || FEED_PAGE_SIZE));
+
+  if (mode === 'hot' && (!cursor || cursor.source === 'rpc')) {
+    const hot = await fetchHotFeedPage(client, { category, cursor, limit });
+    if (hot) return hot;
+  }
 
   // Approved only. The view runs with the viewer's rights, and moderators / authors may read
   // removed or pending rows, so without this a moderator's feed showed memes hidden in Curate.

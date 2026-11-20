@@ -51,8 +51,10 @@ export default function BattleHeroCard({ battleState = null, hideInlineWinner = 
         <div className="tm-battle-hero-stats">
           {battle && <BattleCountdown endsAt={battle.ends_at} prefix="⏳ Closes in " className="tm-battle-hero-stat" />}
           {battle && (
-            <span className="tm-battle-hero-stat">
-              ✍️ {state.entryCount} {state.entryCount === 1 ? 'entry' : 'entries'}
+            <span className="tm-battle-hero-stat" data-testid="battle-hero-entries">
+              {state.humanEntryCount > 0
+                ? `✍️ ${state.humanEntryCount} ${state.humanEntryCount === 1 ? 'entry' : 'entries'}`
+                : '✍️ Be the first to enter'}
             </span>
           )}
         </div>

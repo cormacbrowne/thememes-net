@@ -7,6 +7,8 @@ import { getMemeRarityTier, formatMemeUploadDate } from '../data/starterMemes';
 import { formatUpvotesLastHourSignal } from '../utils/liveSignals';
 import { extractTemplateSlug } from '../utils/memeSeo';
 import { exportMemeWithWatermark, triggerBlobDownload } from './forge/forgeEngine';
+import HouseBadge from './HouseBadge';
+import { isHouseItem } from '../utils/house';
 import './MemeTheaterModal.css';
 
 export default function MemeTheaterModal({
@@ -192,6 +194,7 @@ export default function MemeTheaterModal({
             <span style={{ fontSize: '12px', color: 'var(--tm-text-dim)' }}>
               by <strong style={{ color: 'var(--tm-cyan)' }}>@{meme.author_name || 'Anon'}</strong>
             </span>
+            {isHouseItem(meme) && <HouseBadge />}
             <span className="tm-upload-date-badge">
               📅 Uploaded {uploadInfo.dateTime} ({uploadInfo.relative})
             </span>

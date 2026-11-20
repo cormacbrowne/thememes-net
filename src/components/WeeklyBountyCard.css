@@ -1,0 +1,52 @@
+.tm-weekly-bounty {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.12), rgba(255, 0, 170, 0.08));
+}
+.tm-weekly-bounty-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+.tm-weekly-bounty-kicker {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--tm-amber, #facc15);
+}
+.tm-weekly-bounty-prompt {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.tm-weekly-bounty-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--tm-text-soft, #b9b3d9);
+}
+.tm-weekly-bounty-cta,
+.tm-weekly-bounty-award .tm-btn {
+  min-height: 44px;
+}
+.tm-weekly-bounty-award {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+}
+.tm-weekly-bounty-note {
+  margin: 0;
+  font-size: 13px;
+}

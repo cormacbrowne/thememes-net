@@ -188,7 +188,7 @@ export default function NavbarHud({
             aria-label={`Daily activity streak: ${streakDays} days`}
           >
             <span aria-hidden="true">🔥</span>
-            <span>{streakDays}</span>
+            {streakDays > 0 && <span>{streakDays}</span>}
           </button>
 
           {/* 2. UNIFIED MEMEDOLLARZ & MEMECENTZ WALLET PILL */}

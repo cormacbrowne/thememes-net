@@ -481,6 +481,7 @@ export default function App() {
     handleOpenBlankStudio,
     handleTriggerStudioMutate,
     handleCaptionThis,
+    handleAcceptBounty,
     handleVote,
     handleReaction,
     handleToggleComments,
@@ -1225,6 +1226,11 @@ export default function App() {
         <div className="tm-home-layout" data-testid="home-layout">
           <div className="tm-home-daily">
             <HomeDailyHub
+              onAcceptBounty={(bounty) => {
+                closeAllModals();
+                handleAcceptBounty(bounty);
+              }}
+              onClaimBountyPrize={handleClaimBattlePrize}
               onOpenBattle={(tab) => {
                 sfx.playToggle?.();
                 closeAllModals();

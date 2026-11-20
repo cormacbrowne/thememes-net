@@ -16,6 +16,8 @@ const PulseReportPage = lazy(() => import('./components/PulseReportPage.jsx'))
 // eslint-disable-next-line react-refresh/only-export-components
 const AdminBattlesPage = lazy(() => import('./components/AdminBattlesPage.jsx'))
 // eslint-disable-next-line react-refresh/only-export-components
+const AdminHousePage = lazy(() => import('./components/AdminHousePage.jsx'))
+// eslint-disable-next-line react-refresh/only-export-components
 const AdminSocialKitPage = lazy(() => import('./components/AdminSocialKitPage.jsx'))
 // eslint-disable-next-line react-refresh/only-export-components
 const LegalInfoPage = lazy(() => import('./components/LegalInfoPage.jsx'))
@@ -31,6 +33,7 @@ const isModerationRoute =
 const isPulseRoute = /^\/admin\/pulse\/?$/i.test(pathname)
 const isBattleAdminRoute = /^\/admin\/battles\/?$/i.test(pathname)
 const isSocialAdminRoute = /^\/admin\/social\/?$/i.test(pathname)
+const isHouseAdminRoute = /^\/admin\/house\/?$/i.test(pathname)
 const isLegalRoute = /^\/(?:rules|terms|privacy|takedown|contact)\/?$/i.test(pathname)
 const isHallOfFameRoute = /^\/hall-of-fame\/?$/i.test(pathname)
 const isYearInMemesRoute = /^\/year-in-memes\/?$/i.test(pathname)
@@ -56,6 +59,10 @@ createRoot(document.getElementById('root')).render(
     ) : isBattleAdminRoute ? (
       <Suspense fallback={<div style={{ minHeight: '100dvh', background: '#07060f' }} />}>
         <AdminBattlesPage />
+      </Suspense>
+    ) : isHouseAdminRoute ? (
+      <Suspense fallback={<div style={{ minHeight: '100dvh', background: '#07060f' }} />}>
+        <AdminHousePage />
       </Suspense>
     ) : isSocialAdminRoute ? (
       <Suspense fallback={<div style={{ minHeight: '100dvh', background: '#07060f' }} />}>

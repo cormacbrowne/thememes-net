@@ -1,0 +1,206 @@
+/* Workstream 1 — /admin/house. Plain, readable, mobile-first; 44px touch targets. */
+.tm-hq-page {
+  min-height: 100dvh;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(32px, env(safe-area-inset-bottom));
+  background: var(--tm-night-0, #07060f);
+  color: var(--tm-text, #e9e6ff);
+  font-family: system-ui, -apple-system, sans-serif;
+  box-sizing: border-box;
+}
+.tm-hq-page a {
+  color: var(--tm-cyan, #19f0ff);
+}
+.tm-hq-top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.tm-hq-top h1 {
+  font-size: clamp(20px, 5vw, 26px);
+  margin: 0;
+}
+.tm-hq-help {
+  color: var(--tm-text-soft, #b9b3d9);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.tm-hq-note {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(0, 245, 255, 0.1);
+  border: 1px solid rgba(0, 245, 255, 0.35);
+}
+.tm-hq-section {
+  margin-top: 18px;
+}
+.tm-hq-section h2 {
+  font-size: 17px;
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.tm-hq-section h3 {
+  font-size: 15px;
+  margin: 16px 0 8px;
+}
+.tm-hq-count {
+  min-width: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(250, 204, 21, 0.2);
+  color: var(--tm-amber, #facc15);
+  font-size: 13px;
+  text-align: center;
+}
+.tm-hq-switches {
+  display: grid;
+  gap: 8px;
+}
+.tm-hq-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 14px;
+}
+.tm-hq-switch input {
+  width: 24px;
+  height: 24px;
+  flex: none;
+}
+.tm-hq-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+  align-items: end;
+}
+.tm-hq-form label {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--tm-text-soft, #b9b3d9);
+}
+.tm-hq-form label.is-wide {
+  grid-column: 1 / -1;
+}
+.tm-hq-form input {
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.35);
+  color: inherit;
+  font-size: 16px;
+  box-sizing: border-box;
+  width: 100%;
+}
+.tm-hq-btn {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+}
+.tm-hq-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.tm-hq-btn.is-approve {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.6);
+}
+.tm-hq-btn.is-reject {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+.tm-hq-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.tm-hq-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+.tm-hq-card {
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.tm-hq-media {
+  position: relative;
+}
+.tm-hq-media img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.tm-hq-body {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+.tm-hq-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--tm-text-soft, #b9b3d9);
+}
+.tm-hq-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.tm-hq-caption {
+  display: grid;
+  gap: 2px;
+  margin: 6px 0 0;
+  font-weight: 700;
+}
+.tm-hq-runs {
+  display: grid;
+  gap: 6px;
+}
+.tm-hq-run {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 13px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.tm-hq-run-key {
+  font-family: ui-monospace, monospace;
+  word-break: break-all;
+}
+.tm-hq-run-err {
+  color: #fca5a5;
+  flex-basis: 100%;
+}

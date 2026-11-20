@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import BattleHeroCard from './BattleHeroCard';
+import WeeklyBountyCard from './WeeklyBountyCard';
 import { fetchBattleState, entryCaption } from '../utils/dailyCaptionBattle';
 import { getLocalDateKey, getPuzzleNumber, loadGuessState } from '../utils/guessTheMeme';
 import './HomeDailyHub.css';
@@ -10,7 +11,7 @@ import './HomeDailyHub.css';
  * 2. Yesterday's winner strip (link to results & /hall-of-fame)
  * 3. Daily Guess the Meme tile (showing streak / solved count if played)
  */
-export default function HomeDailyHub({ onOpenBattle, onOpenGuess }) {
+export default function HomeDailyHub({ onOpenBattle, onOpenGuess, onAcceptBounty, onClaimBountyPrize }) {
   const [battleState, setBattleState] = useState(null);
   const [guessInfo] = useState(() => {
     const today = getLocalDateKey();
@@ -44,6 +45,8 @@ export default function HomeDailyHub({ onOpenBattle, onOpenGuess }) {
         hideInlineWinner
         onOpenBattle={onOpenBattle}
       />
+
+      <WeeklyBountyCard onAcceptBounty={onAcceptBounty} onClaimPrize={onClaimBountyPrize} />
 
       {/* Yesterday's winner strip */}
       <div className="tm-yesterday-strip" data-testid="home-yesterday-winner">

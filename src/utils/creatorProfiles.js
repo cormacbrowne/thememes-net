@@ -190,6 +190,7 @@ export function mergeCreatorProfilePayload({
     isMe,
     found: Boolean(serverData?.found || memes.length > 0 || scoresByGame.size > 0 || isMe),
     verified: Boolean(serverData?.verified || (isMe && currentUser?.verified)),
+    isHouse: Boolean(serverData?.is_house),
     avatarId: resolvedAvatar,
     bio: String((serverData?.bio ?? (isMe ? currentUser?.bio : '')) || ''),
     joinedAt: serverData?.joined_at || null,

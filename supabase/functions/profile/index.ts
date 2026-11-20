@@ -82,23 +82,58 @@ Deno.serve(async (req: Request) => {
     return json(req, 400, { ok: false, error: 'bad_request' });
   }
 
-  const v = validateUsername(payload?.username);
-  if (!v.ok) {
-    return json(req, 422, { ok: false, error: v.error, detail: v.detail ?? null });
+  const hasUsername = Object.prototype.hasOwnProperty.call(payload ?? {}, 'username');
+  const hasBio = Object.prototype.hasOwnProperty.call(payload ?? {}, 'bio');
+  if (!hasUsername && !hasBio) {
+    return json(req, 400, { ok: false, error: 'bad_request' });
   }
 
-  const verdict = await moderateText({ texts: [v.username], env: Deno.env });
-  if (verdict.decision === 'reject') {
-    return json(req, 422, { ok: false, error: 'rejected', detail: verdict.category ?? 'rules' });
+  let nextUsername: string | undefined;
+  const textsToCheck: string[] = [];
+
+  if (hasUsername) {
+    const v = validateUsername(payload?.username);
+    if (!v.ok) {
+      return json(req, 422, { ok: false, error: v.error, detail: v.detail ?? null });
+    }
+    nextUsername = v.username;
+    textsToCheck.push(v.username);
   }
-  if (verdict.decision !== 'approve') {
-    return json(req, 503, { ok: false, error: 'moderation_unavailable' });
+
+  let nextBio: string | undefined;
+  if (hasBio) {
+    if (typeof payload?.bio !== 'string') {
+      return json(req, 400, { ok: false, error: 'bad_request' });
+    }
+    const cleanBio = Array.from(payload.bio, (c) => (c.charCodeAt(0) < 32 || c.charCodeAt(0) === 127 ? ' ' : c))
+      .join('')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (cleanBio.length > 160) {
+      return json(req, 422, { ok: false, error: 'bio_too_long' });
+    }
+    nextBio = cleanBio;
+    if (cleanBio) textsToCheck.push(cleanBio);
   }
+
+  if (textsToCheck.length > 0) {
+    const verdict = await moderateText({ texts: textsToCheck, env: Deno.env });
+    if (verdict.decision === 'reject') {
+      return json(req, 422, { ok: false, error: 'rejected', detail: verdict.category ?? 'rules' });
+    }
+    if (verdict.decision !== 'approve') {
+      return json(req, 503, { ok: false, error: 'moderation_unavailable' });
+    }
+  }
+
+  const updates: Record<string, unknown> = {};
+  if (nextUsername !== undefined) updates.username = nextUsername;
+  if (nextBio !== undefined) updates.bio = nextBio;
 
   const { error: updateErr } = await admin
     .from('profiles')
-    // profiles has no updated_at column: writing one made every handle claim a 500.
-    .update({ username: v.username })
+    // profiles has no updated_at column: writing one made every update a 500.
+    .update(updates)
     .eq('id', user.id);
 
   if (updateErr) {
@@ -111,9 +146,15 @@ Deno.serve(async (req: Request) => {
     return json(req, 500, { ok: false, error: 'server_error' });
   }
 
-  // Keep existing authored rows in sync with the claimed handle.
-  await admin.from('memes').update({ author_name: v.username }).eq('user_id', user.id);
-  await admin.from('comments').update({ author_name: v.username }).eq('user_id', user.id);
+  if (nextUsername !== undefined) {
+    // Keep existing authored rows in sync with the claimed handle.
+    await admin.from('memes').update({ author_name: nextUsername }).eq('user_id', user.id);
+    await admin.from('comments').update({ author_name: nextUsername }).eq('user_id', user.id);
+  }
 
-  return json(req, 200, { ok: true, username: v.username });
+  return json(req, 200, {
+    ok: true,
+    ...(nextUsername !== undefined ? { username: nextUsername } : {}),
+    ...(nextBio !== undefined ? { bio: nextBio } : {})
+  });
 });

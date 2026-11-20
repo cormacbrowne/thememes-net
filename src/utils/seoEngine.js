@@ -107,9 +107,10 @@ export function updateDynamicSeo({
     if (template) ogImageUrl = `${SITE_ORIGIN}${template.image}`;
   } else if (!activeMeme && viewMode === 'creator' && creatorHandle) {
     const clean = String(creatorHandle).trim().replace(/^@+/, '');
-    pageTitle = `@${clean} — Creator Profile, Memes & High Scores | THE MEMES.net`;
-    pageDesc = `Browse @${clean}'s memes, 8-bit pixel avatar, earned badges, followers, and 80s Cyber-Arcade high scores on THE MEMES.net.`;
+    pageTitle = `@${clean} — Creator Profile, Level & Battle Wins | THE MEMES.net`;
+    pageDesc = `Browse @${clean}'s level, daily streak, battle wins, memes, badges & 80s Cyber-Arcade high scores on THE MEMES.net.`;
     canonicalUrl = `${SITE_ORIGIN}/u/${encodeURIComponent(clean)}`;
+    ogImageUrl = `${SITE_ORIGIN}/api/profile-og-image?handle=${encodeURIComponent(clean)}`;
   } else if (!showStudio && !extrasDrawerOpen && !(bossKeyActive && prankDisguise) && NON_PATH_VIEW_MODES[viewMode]) {
     pageTitle = NON_PATH_VIEW_MODES[viewMode].title;
     pageDesc = NON_PATH_VIEW_MODES[viewMode].description;
@@ -137,7 +138,11 @@ export function updateDynamicSeo({
   upsertMeta('meta[property="og:title"]', 'property', 'og:title', pageTitle);
   upsertMeta('meta[property="og:description"]', 'property', 'og:description', pageDesc);
   upsertMeta('meta[property="og:url"]', 'property', 'og:url', canonicalUrl);
-  const isBannerOg = Boolean(memeCard) || ogImageUrl === DEFAULT_OG_IMAGE || ogImageUrl.startsWith(`${SITE_ORIGIN}/og/`);
+  const isBannerOg =
+    Boolean(memeCard) ||
+    ogImageUrl === DEFAULT_OG_IMAGE ||
+    ogImageUrl.startsWith(`${SITE_ORIGIN}/og/`) ||
+    ogImageUrl.startsWith(`${SITE_ORIGIN}/api/profile-og-image`);
   const ogW = template && !activeMeme ? String(template.width) : isBannerOg ? '1200' : '540';
   const ogH = template && !activeMeme ? String(template.height) : isBannerOg ? '630' : '480';
   upsertMeta('meta[property="og:image"]', 'property', 'og:image', previewImageUrl);

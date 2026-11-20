@@ -1,9 +1,14 @@
+import { REMIX_ENABLED } from '../config/featureFlags';
 import { useEffect, useState } from 'react';
 import { getSupabaseClient } from '../supabaseClient';
-import { RANKS, formatMemeUploadDate } from '../data/starterMemes';
+import { getLevelForXp } from '../config/progression';
+import { formatMemeUploadDate } from '../data/starterMemes';
+import { formatMoney } from '../utils/tokenEconomy';
+import { track } from '../utils/analytics';
 import {
   fetchCreatorProfile,
   getCreatorProfilePath,
+  saveMyBio,
   saveMyPixelAvatar,
   toggleFollowCreator
 } from '../utils/creatorProfiles';
@@ -11,12 +16,32 @@ import PixelAvatar from './PixelAvatar';
 import PixelAvatarPicker from './PixelAvatarPicker';
 import './CreatorProfilePage.css';
 
+const NOTIF_PREFS_KEY = 'tm_notif_prefs_v1';
+const DEFAULT_NOTIF_PREFS = {
+  battleResults: true,
+  memeMilestones: true,
+  streakReminder: true,
+  dailyBattleLive: false
+};
+
+function loadNotifPrefs() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(NOTIF_PREFS_KEY) || 'null');
+    return raw && typeof raw === 'object' ? { ...DEFAULT_NOTIF_PREFS, ...raw } : DEFAULT_NOTIF_PREFS;
+  } catch {
+    return DEFAULT_NOTIF_PREFS;
+  }
+}
+
 export default function CreatorProfilePage({
   handle,
   memes = [],
   currentUser = null,
   activeCaptionKings = [],
   localHighScores = {},
+  tokens = 0,
+  memeCentz = 0,
+  tokenLedger = null,
   onBackToFeed,
   onSelectMeme,
   onRemixMeme,
@@ -29,6 +54,11 @@ export default function CreatorProfilePage({
   const [followMessage, setFollowMessage] = useState('');
   const [avatarBusy, setAvatarBusy] = useState(false);
   const [avatarMessage, setAvatarMessage] = useState('');
+  const [bioDraft, setBioDraft] = useState('');
+  const [bioBusy, setBioBusy] = useState(false);
+  const [bioMessage, setBioMessage] = useState('');
+  const [shareCopied, setShareCopied] = useState(false);
+  const [notifPrefs, setNotifPrefs] = useState(() => loadNotifPrefs());
 
   useEffect(() => {
     let active = true;
@@ -44,6 +74,7 @@ export default function CreatorProfilePage({
     }).then((res) => {
       if (!active) return;
       setProfile(res?.ok ? res : null);
+      if (res?.ok) setBioDraft(res.bio || '');
       setLoading(false);
     });
     return () => {
@@ -51,11 +82,64 @@ export default function CreatorProfilePage({
     };
   }, [handle, memes, currentUser, activeCaptionKings, localHighScores]);
 
-  const playerXp = profile?.stats?.playerXp || 0;
-  let rankObj = RANKS[0];
-  for (const r of RANKS) {
-    if (playerXp >= r.minXp) rankObj = r;
-  }
+  const rankObj = profile?.levelInfo || getLevelForXp(profile?.stats?.playerXp || 0);
+
+  const handleSaveBio = async (e) => {
+    e.preventDefault();
+    if (!profile?.isMe || bioBusy) return;
+    if (!currentUser?.verified) {
+      setBioMessage('Sign in first to save a bio.');
+      onRequireAuth?.();
+      return;
+    }
+    setBioBusy(true);
+    setBioMessage('');
+    const res = await saveMyBio(getSupabaseClient(), bioDraft);
+    setBioBusy(false);
+    if (!res.ok) {
+      setBioMessage(res.message || 'Could not save bio.');
+      return;
+    }
+    setProfile((prev) => (prev ? { ...prev, bio: res.bio } : prev));
+    setBioDraft(res.bio || '');
+    setBioMessage('✅ Bio saved!');
+  };
+
+  const handleShareProfile = async () => {
+    const cleanHandle = profile?.handle || handle;
+    const path = getCreatorProfilePath(cleanHandle);
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://thememes.net';
+    const url = `${origin}${path}?ref=profile`;
+    const title = `@${cleanHandle} — Level ${rankObj.level} ${rankObj.title} | THE MEMES.net`;
+    track('meme_shared', { channel: 'profile_link' });
+    try {
+      if (typeof navigator !== 'undefined' && typeof navigator.share === 'function' && window.innerWidth <= 860) {
+        await navigator.share({ title, url });
+        return;
+      }
+    } catch (err) {
+      if (err?.name === 'AbortError') return;
+    }
+    try {
+      await navigator.clipboard?.writeText(url);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2200);
+    } catch {
+      setShareCopied(false);
+    }
+  };
+
+  const toggleNotifPref = (key) => {
+    setNotifPrefs((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      try {
+        localStorage.setItem(NOTIF_PREFS_KEY, JSON.stringify(next));
+      } catch {
+        // ignore storage errors
+      }
+      return next;
+    });
+  };
 
   const handleFollowClick = async () => {
     if (!profile || followBusy) return;
@@ -164,12 +248,26 @@ export default function CreatorProfilePage({
                     <strong data-testid="creator-follower-count">
                       {profile.followerCount.toLocaleString()}
                     </strong>{' '}
-                    Followers • {profile.stats.memesCount} Memes • {profile.stats.totalScore.toLocaleString()} Upvote Score
+                    Followers • 🔥 {profile.streakDays || 0}d Streak • 🏆 {profile.captionWins || 0} Battle Wins •{' '}
+                    {profile.stats.totalScore.toLocaleString()} Upvotes
                   </div>
+                  {profile.bio && (
+                    <p className="tm-creator-bio" data-testid="creator-profile-bio">
+                      {profile.bio}
+                    </p>
+                  )}
                 </div>
               </div>
 
               <div className="tm-creator-actions">
+                <button
+                  type="button"
+                  className="tm-btn"
+                  data-testid="creator-share-btn"
+                  onClick={handleShareProfile}
+                >
+                  {shareCopied ? '✅ Link Copied!' : '🔗 Share Profile'}
+                </button>
                 {!profile.isMe && (
                   <button
                     type="button"
@@ -197,27 +295,121 @@ export default function CreatorProfilePage({
               </div>
               <div className="tm-creator-kpi">
                 <strong style={{ color: 'var(--tm-amber)' }}>{profile.stats.totalScore.toLocaleString()}</strong>
-                <span>Total Score</span>
+                <span>Total Upvotes</span>
               </div>
               <div className="tm-creator-kpi">
-                <strong style={{ color: 'var(--tm-pink)' }}>{profile.stats.totalRemixes}</strong>
-                <span>Remixes Spawned</span>
+                <strong style={{ color: '#fb923c' }}>🔥 {profile.streakDays || 0}d</strong>
+                <span>Daily Streak</span>
               </div>
               <div className="tm-creator-kpi">
-                <strong style={{ color: 'var(--tm-cyan)' }}>{profile.highScores.length}</strong>
-                <span>Arcade Records</span>
+                <strong style={{ color: 'var(--tm-cyan)' }}>🏆 {profile.captionWins || 0}</strong>
+                <span>Battle Wins</span>
               </div>
             </div>
 
             {profile.isMe && (
-              <PixelAvatarPicker
-                selectedAvatarId={profile.avatarId}
-                saving={avatarBusy}
-                statusMessage={avatarMessage}
-                onSelectAvatar={handlePickAvatar}
-              />
+              <>
+                <PixelAvatarPicker
+                  selectedAvatarId={profile.avatarId}
+                  saving={avatarBusy}
+                  statusMessage={avatarMessage}
+                  onSelectAvatar={handlePickAvatar}
+                />
+
+                <form className="tm-creator-bio-form" onSubmit={handleSaveBio} data-testid="creator-bio-form">
+                  <div className="tm-avatar-picker-head">
+                    <label htmlFor="tm-creator-bio-input">✍️ YOUR PROFILE BIO</label>
+                    <span className="tm-avatar-picker-hint">{bioDraft.length}/160</span>
+                  </div>
+                  <div className="tm-creator-bio-row">
+                    <input
+                      id="tm-creator-bio-input"
+                      type="text"
+                      className="tm-input"
+                      value={bioDraft}
+                      maxLength={160}
+                      placeholder="Write a short bio (no links or personal info)..."
+                      onChange={(e) => setBioDraft(e.target.value)}
+                    />
+                    <button type="submit" className="tm-btn tm-btn-primary" disabled={bioBusy}>
+                      {bioBusy ? 'Saving...' : 'Save Bio'}
+                    </button>
+                  </div>
+                  {bioMessage && <div className="tm-avatar-picker-status">{bioMessage}</div>}
+                </form>
+              </>
             )}
           </div>
+
+          {profile.isMe && (
+            <div className="tm-creator-own-grid">
+              <section className="tm-creator-section" data-testid="creator-mdollarz-history">
+                <h2>💵 MEMEDOLLARZ LEDGER (JUST FOR FUN)</h2>
+                <div style={{ fontSize: '14px', marginBottom: '10px', color: 'var(--tm-text-soft)' }}>
+                  Balance:{' '}
+                  <strong style={{ color: 'var(--tm-amber)' }}>
+                    {formatMoney(tokens, { centz: memeCentz, zero: 'balance' })}
+                  </strong>{' '}
+                  · Earned today:{' '}
+                  <strong style={{ color: 'var(--tm-ok)' }}>
+                    {formatMoney(tokenLedger?.totalToday || 0, { zero: 'balance' })}
+                  </strong>
+                </div>
+                <div className="tm-creator-ledger-cats">
+                  <div>
+                    <span>Uploads &amp; Entries</span>
+                    <strong>{formatMoney(tokenLedger?.byCategory?.upload || 0, { zero: 'balance' })}</strong>
+                  </div>
+                  <div>
+                    <span>Upvotes &amp; Shares</span>
+                    <strong>{formatMoney(tokenLedger?.byCategory?.engagement || 0, { zero: 'balance' })}</strong>
+                  </div>
+                  <div>
+                    <span>Quests &amp; Streak</span>
+                    <strong>{formatMoney(tokenLedger?.byCategory?.quests || 0, { zero: 'balance' })}</strong>
+                  </div>
+                  <div>
+                    <span>XP Reactor</span>
+                    <strong>{formatMoney(tokenLedger?.byCategory?.xpConversion || 0, { zero: 'balance' })}</strong>
+                  </div>
+                </div>
+                {Array.isArray(tokenLedger?.rewardedActionKeys) && tokenLedger.rewardedActionKeys.length > 0 && (
+                  <ul className="tm-creator-ledger-keys">
+                    {tokenLedger.rewardedActionKeys
+                      .slice(-6)
+                      .reverse()
+                      .map((k, idx) => (
+                        <li key={`${k}-${idx}`}>{String(k).replace(/[:_-]/g, ' · ')}</li>
+                      ))}
+                  </ul>
+                )}
+              </section>
+
+              <section className="tm-creator-section" data-testid="creator-notif-prefs">
+                <h2>🔔 NOTIFICATION SETTINGS</h2>
+                <p style={{ fontSize: '12px', color: 'var(--tm-text-dim)', margin: '0 0 10px' }}>
+                  Saved on this device for Phase 3 push alerts.
+                </p>
+                <div className="tm-creator-notif-list">
+                  {[
+                    { key: 'battleResults', label: '🏆 Battle results are in' },
+                    { key: 'memeMilestones', label: '🔥 My meme hits 10 / 100 upvotes' },
+                    { key: 'streakReminder', label: '⏰ Evening streak saver reminder' },
+                    { key: 'dailyBattleLive', label: '⚔️ Today’s Caption Battle goes live' }
+                  ].map((item) => (
+                    <label key={item.key} className="tm-creator-notif-toggle">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(notifPrefs[item.key])}
+                        onChange={() => toggleNotifPref(item.key)}
+                      />
+                      <span>{item.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </section>
+            </div>
+          )}
 
           {/* Badges */}
           <div className="tm-creator-section" data-testid="creator-badges-section">
@@ -293,14 +485,16 @@ export default function CreatorProfilePage({
                         <span>🔥 {Number(meme.score || 0).toLocaleString()}</span>
                         <span>{formatMemeUploadDate(meme.created_at).relative}</span>
                       </div>
-                      <button
-                        type="button"
-                        className="tm-btn"
-                        style={{ fontSize: '11px', padding: '5px 8px' }}
-                        onClick={() => onRemixMeme?.(meme)}
-                      >
-                        🎨 Remix
-                      </button>
+                      {REMIX_ENABLED && (
+                        <button
+                          type="button"
+                          className="tm-btn"
+                          style={{ fontSize: '11px', padding: '5px 8px' }}
+                          onClick={() => onRemixMeme?.(meme)}
+                        >
+                          🎨 Remix
+                        </button>
+                      )}
                     </div>
                   </article>
                 ))}

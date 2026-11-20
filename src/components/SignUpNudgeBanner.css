@@ -1,0 +1,45 @@
+.tm-signup-nudge {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(25, 240, 255, 0.12), rgba(255, 43, 214, 0.12));
+  border: 1px solid rgba(25, 240, 255, 0.38);
+  text-align: left;
+  margin-top: 10px;
+}
+
+.tm-signup-nudge-copy {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.tm-signup-nudge-title {
+  font-size: 13px;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.3;
+}
+
+.tm-signup-nudge-body {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--tm-text-soft);
+  line-height: 1.4;
+}
+
+.tm-signup-nudge-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.tm-signup-nudge-cta,
+.tm-signup-nudge-dismiss {
+  min-height: 44px;
+  white-space: nowrap;
+}

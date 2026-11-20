@@ -3,6 +3,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { STARTER_MEMES } from '../src/data/starterMemes.js';
 import { SITE_ORIGIN, DEFAULT_OG_IMAGE } from '../src/data/seoRoutes.js';
+import { getLevelForXp } from '../src/config/progression.js';
 import { replaceRootContent, replaceRouteJsonLd, sendNotFound, sendTryLater } from './_seoShell.js';
 import { memePath } from '../src/utils/memeSeo.js';
 
@@ -114,17 +115,25 @@ export default async function handler(req, res) {
   const totalScore = Number(
     live?.stats?.total_score ?? seedMemes.reduce((acc, m) => acc + Number(m.score || 0), 0)
   );
+  const totalRemixes = Number(live?.stats?.total_remixes ?? 0);
+  const fallbackXp = Math.round(totalScore * 0.65) + totalRemixes * 50 + memesCount * 100;
+  const xp = Math.max(Number(live?.xp || 0), fallbackXp);
+  const levelInfo = getLevelForXp(xp);
+  const battleWins = Number(live?.caption_wins || 0);
+  const streakDays = Number(live?.streak_days || 0);
   const followers = Number(live?.follower_count || 0);
   const canonicalUrl = `${SITE_ORIGIN}/u/${encodeURIComponent(displayHandle)}`;
-  const titleText = `@${displayHandle} — Creator Profile, Memes & High Scores | THE MEMES.net`;
-  const descText = `View @${displayHandle}'s profile on THE MEMES.net: ${memesCount} memes, ${totalScore} total score, ${followers} followers, built-in 8-bit pixel avatar, badges & arcade high scores.`;
+  const profileOgImage = `${SITE_ORIGIN}/api/profile-og-image?handle=${encodeURIComponent(displayHandle)}`;
+  const winsLabel = `${battleWins} battle ${battleWins === 1 ? 'win' : 'wins'}`;
+  const titleText = `@${displayHandle} — Level ${levelInfo.level} ${levelInfo.title} — ${winsLabel} | THE MEMES.net`;
+  const descText = `${live?.bio ? `${live.bio} · ` : ''}Level ${levelInfo.level} ${levelInfo.title}, ${winsLabel}, 🔥 ${streakDays}d streak, ${memesCount} memes, ${totalScore} score, ${followers} followers on THE MEMES.net.`;
 
   const baseHtml = await loadBaseIndexHtml();
   let html = baseHtml;
   const safeTitle = escapeHtml(titleText);
   const safeDesc = escapeHtml(descText);
   const safeUrl = escapeHtml(canonicalUrl);
-  const safeImg = escapeHtml(DEFAULT_OG_IMAGE);
+  const safeImg = escapeHtml(profileOgImage);
 
   html = replaceMeta(html, /<title>[\s\S]*?<\/title>/i, `<title>${safeTitle}</title>`);
   html = replaceMeta(html, /<meta\s+name="description"\s+content="[^"]*"\s*\/?>/i, `<meta name="description" content="${safeDesc}" />`);

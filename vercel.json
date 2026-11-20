@@ -320,6 +320,10 @@
     "api/creator-og.js": {
       "includeFiles": "dist/index.html"
     },
+    "api/profile-og-image.js": {
+      "memory": 512,
+      "maxDuration": 10
+    },
     "api/not-found.js": {
       "includeFiles": "dist/index.html"
     }

@@ -22,6 +22,12 @@
 - Replaced level rank names in `src/config/progression.js` with 10 family-friendly titles (`Arcade Lurker` → `Cosmic Supernova`) and added declarative `BADGE_CONFIG` in `src/config/badges.js`.
 - Added `📅 Weekly` tab to `LeaderboardModal` powered by `get_weekly_leaderboards()` (Monday 00:00 Europe/London reset): Top Creators, Battle Points, Daily Puzzle, and Hall of Fame.
 
+### 2.5 Public & own profiles (`/u/<username>`), PNG OG image & guest nudges
+- Added profile `bio` column + stats (`xp`, `streak_days`, `best_streak`, `battle_entries`, `podium_finishes`, `wholesome_memes`) to Supabase `get_my_profile` / `get_creator_profile`, plus bio validation & saving in the `profile` Edge Function.
+- Added pure-Node 1200×630 PNG OG image generator (`api/_pngCard.js` + `api/profile-og-image.js`) and wired `og:image`, level, streak, and battle wins into `api/creator-og.js` and `src/utils/seoEngine.js`.
+- Upgraded `/u/<username>` (`CreatorProfilePage`) with level, daily streak, battle wins, bio editor, Share Profile action, local MemeDollarz ledger history, Phase 3 notification prefs preview, and `REMIX_ENABLED` gating.
+- Added dismissible `SignUpNudgeBanner` for guests at Caption Battle, Guess the Meme streak, and post-meme celebration moments.
+
 ## Phase 1: Credibility and speed (20 Nov 2026)
 
 ### 1.1 Real numbers only

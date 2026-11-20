@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { memeShareUrl } from '../utils/analytics';
 import MemeMedia from './MemeMedia';
+import SignUpNudgeBanner from './SignUpNudgeBanner';
 import { exportMemeWithWatermark, shareExportedMeme, triggerBlobDownload } from './forge/forgeEngine';
 import './MemeLiveCelebrationModal.css';
 
@@ -21,6 +22,8 @@ export default function MemeLiveCelebrationModal({
   meme,
   rewardSummary = '+M$3.00 & +120 XP',
   litePerfMode = false,
+  currentUser = null,
+  onRequireAuth,
   onShareMeme,
   onOpenTheater,
   onClose
@@ -161,6 +164,14 @@ export default function MemeLiveCelebrationModal({
             ✨ Back to Feed
           </button>
         </div>
+        <SignUpNudgeBanner
+          reason="upvotes"
+          currentUser={currentUser}
+          onSignIn={() => {
+            onClose();
+            onRequireAuth?.();
+          }}
+        />
       </div>
     </div>
   );

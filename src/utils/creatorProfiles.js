@@ -3,7 +3,9 @@
 // FOLLOWS, BADGES & ARCADE HIGH SCORES (/u/<handle>)
 // ==========================================
 
-import { STARTER_MEMES, computePlayerBadges } from '../data/starterMemes.js';
+import { STARTER_MEMES } from '../data/starterMemes.js';
+import { getLevelForXp } from '../config/progression.js';
+import { evaluateBadges } from '../config/badges.js';
 import { getArcadeGameById } from '../data/arcadeGamesCatalog.js';
 import { defaultPixelAvatarForHandle, getPixelAvatarById, PIXEL_AVATAR_IDS } from './pixelAvatars.js';
 
@@ -101,20 +103,53 @@ export function mergeCreatorProfilePayload({
     memes.reduce((acc, m) => acc + Number(m.mutation_count || 0), 0)
   );
   const memesCount = Math.max(Number(serverData?.stats?.memes_count || 0), memes.length);
+  const wholesomeMemes = Math.max(
+    Number(serverData?.stats?.wholesome_memes || 0),
+    memes.filter((m) => String(m?.category || '').toLowerCase() === 'wholesome').length
+  );
 
   const isCaptionKing = Boolean(
     serverData?.is_caption_king ||
       (Array.isArray(activeCaptionKings) &&
         activeCaptionKings.some((k) => String(k?.author_name || '').toLowerCase() === norm))
   );
+  const captionWins = Math.max(0, Number(serverData?.caption_wins || 0));
+  const battleEntries = Math.max(
+    Number(serverData?.battle_entries || 0),
+    memes.filter((m) => m?.is_bounty).length
+  );
+  const podiumFinishes = Math.max(Number(serverData?.podium_finishes || 0), captionWins);
+  const streakDays = Math.max(
+    0,
+    isMe ? Number(currentUser?.streakDays || 0) : 0,
+    Number(serverData?.streak_days || 0)
+  );
+  const bestStreak = Math.max(
+    streakDays,
+    isMe ? Number(currentUser?.bestStreak || 0) : 0,
+    Number(serverData?.best_streak || 0)
+  );
 
-  const playerXp = Math.round(totalScore * 0.65) + totalRemixes * 50 + memesCount * 100;
-  const badges = computePlayerBadges({
-    authoredMemes: memes,
-    totalScore,
-    totalRemixesSpawned: totalRemixes,
-    xp: playerXp,
-    isCaptionKing
+  const fallbackXp = Math.round(totalScore * 0.65) + totalRemixes * 50 + memesCount * 100;
+  const playerXp = Math.max(
+    fallbackXp,
+    Number(serverData?.xp || 0),
+    isMe ? Number(currentUser?.xp || 0) : 0
+  );
+  const levelInfo = getLevelForXp(playerXp);
+
+  const badges = evaluateBadges({
+    memeCount: memesCount,
+    battleEntries,
+    podiumFinishes,
+    captionWins,
+    isCaptionKing,
+    streakDays,
+    bestStreak,
+    totalUpvotes: totalScore,
+    remixesSpawned: totalRemixes,
+    remixesCreated: memes.filter((m) => (m?.generation || 0) > 0 || m?.parent_meme_id).length,
+    wholesomeMemes
   });
 
   // High scores: server authoritativeness first, enriched with local session scores if viewing own profile
@@ -156,15 +191,23 @@ export function mergeCreatorProfilePayload({
     found: Boolean(serverData?.found || memes.length > 0 || scoresByGame.size > 0 || isMe),
     verified: Boolean(serverData?.verified || (isMe && currentUser?.verified)),
     avatarId: resolvedAvatar,
+    bio: String((serverData?.bio ?? (isMe ? currentUser?.bio : '')) || ''),
     joinedAt: serverData?.joined_at || null,
     followerCount: Math.max(0, Number(serverData?.follower_count || 0)),
     isFollowing: Boolean(serverData?.is_following),
     isCaptionKing,
-    captionWins: Number(serverData?.caption_wins || 0),
+    captionWins,
+    battleEntries,
+    podiumFinishes,
+    battleAwards: Array.isArray(serverData?.battle_awards) ? serverData.battle_awards : [],
+    streakDays,
+    bestStreak,
+    levelInfo,
     stats: {
       memesCount,
       totalScore,
       totalRemixes,
+      wholesomeMemes,
       playerXp
     },
     badges,
@@ -284,5 +327,50 @@ export async function saveMyPixelAvatar(client, avatarId) {
       error: err?.message || 'network_error',
       message: 'Could not reach server to save pixel avatar.'
     };
+  }
+}
+
+export async function saveMyBio(client, rawBio) {
+  const cleanBio = String(rawBio || '').replace(/\s+/g, ' ').trim();
+  if (cleanBio.length > 160) {
+    return {
+      ok: false,
+      error: 'bio_too_long',
+      message: 'Bio must be 160 characters or fewer.'
+    };
+  }
+  if (!client?.functions?.invoke) {
+    return { ok: false, error: 'offline', message: 'Connect to save your bio.' };
+  }
+  try {
+    const { data, error } = await client.functions.invoke('profile', {
+      body: { bio: cleanBio }
+    });
+    if (error) {
+      let payload = {};
+      try {
+        payload = (await error.context?.json?.()) || {};
+      } catch {
+        payload = {};
+      }
+      if (payload.error === 'rejected') {
+        return {
+          ok: false,
+          error: 'rejected',
+          message: '🚫 Bio breaks the House Rules (no links, personal info or slurs).'
+        };
+      }
+      return {
+        ok: false,
+        error: payload.error || 'bio_failed',
+        message: 'Could not save bio right now.'
+      };
+    }
+    if (!data?.ok) {
+      return { ok: false, error: data?.error || 'bio_failed', message: 'Could not save bio.' };
+    }
+    return { ok: true, bio: data.bio ?? cleanBio };
+  } catch {
+    return { ok: false, error: 'network_error', message: 'Could not reach server to save bio.' };
   }
 }

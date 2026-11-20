@@ -1750,6 +1750,9 @@ export default function App() {
             memes={memes}
             currentUser={user}
             activeCaptionKings={activeCaptionKings}
+            tokens={tokens}
+            memeCentz={memeCentz}
+            tokenLedger={tokenLedger}
             onBackToFeed={() => {
               sfx.playToggle();
               setCreatorHandle(null);
@@ -2362,6 +2365,8 @@ export default function App() {
             meme={liveCelebrationData.meme}
             rewardSummary={liveCelebrationData.rewardSummary}
             litePerfMode={litePerfMode}
+            currentUser={user}
+            onRequireAuth={() => setShowAuthModal(true)}
             onShareMeme={handleShareMeme}
             onOpenTheater={(meme) => {
               setLiveCelebrationData(null);
@@ -2379,6 +2384,8 @@ export default function App() {
             battleId={battleId}
             highlightEntryId={battleEntryId}
             initialTab={typeof battleModalOpen === 'string' ? battleModalOpen : null}
+            currentUser={user}
+            onRequireAuth={() => setShowAuthModal(true)}
             onClaimPrize={handleClaimBattlePrize}
             onOpenProfile={(username) => {
               handleCloseBattle();

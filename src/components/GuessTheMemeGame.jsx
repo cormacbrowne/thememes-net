@@ -16,6 +16,7 @@ import {
   syncGuestGuessResultsToServer
 } from '../utils/guessTheMeme';
 import GameShell from './GameShell';
+import SignUpNudgeBanner from './SignUpNudgeBanner';
 import './GuessTheMemeGame.css';
 
 // ==========================================
@@ -84,6 +85,7 @@ export default function GuessTheMemeGame({
   onToggleSound,
   onBackToFeed,
   currentUser = null,
+  onRequireAuth,
   onOpenBattle,
   onDailyCompleted
 }) {
@@ -467,6 +469,11 @@ export default function GuessTheMemeGame({
                 <span>⏳ Next puzzle in</span>
                 <strong>{formatCountdownHms(msLeft)}</strong>
               </div>
+              <SignUpNudgeBanner
+                reason="streak"
+                currentUser={currentUser}
+                onSignIn={onRequireAuth}
+              />
               {onOpenBattle && (
                 <div className="tm-guess-battle-nudge">
                   <div>

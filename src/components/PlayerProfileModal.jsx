@@ -196,14 +196,19 @@ export default function PlayerProfileModal({
                 </span>
               </div>
               <div style={{ fontSize: '12px', color: 'var(--tm-text-dim)', marginTop: '4px' }}>
-                ⚡ <strong>{playerXp} XP</strong> • 🔥 <strong>{totalScore}</strong> Score • 🧬{' '}
-                <strong style={{ color: '#a3e635' }}>+{royaltyBonus} XP</strong> Royalties
+                ⚡ <strong>{playerXp} XP</strong> • 🔥 <strong>{totalScore}</strong> Score •{' '}
+                <strong>🏆 {serverSummary?.captionWins || 0}</strong> Battle Wins
                 {serverSummary && (
                   <>
                     {' '}• 👥 <strong>{serverSummary.followerCount}</strong> Followers
                   </>
                 )}
               </div>
+              {serverSummary?.bio && (
+                <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#e2e8f0', maxWidth: '460px' }}>
+                  {serverSummary.bio}
+                </p>
+              )}
             </div>
           </div>
 

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import SignUpNudgeBanner from './SignUpNudgeBanner';
 import MemeOverlay from './MemeOverlay';
 import BattleCountdown from './BattleCountdown';
 import { supabase } from '../supabaseClient';
@@ -87,6 +88,8 @@ export default function DailyCaptionBattleModal({
   battleId = null,
   highlightEntryId = null,
   initialTab = null,
+  currentUser = null,
+  onRequireAuth,
   onOpenProfile,
   onKingsUpdated,
   onClaimPrize,
@@ -299,6 +302,17 @@ export default function DailyCaptionBattleModal({
             ))}
           </div>
         </div>
+
+        {!currentUser?.verified && onRequireAuth && (
+          <SignUpNudgeBanner
+            reason="battle"
+            currentUser={currentUser}
+            onSignIn={() => {
+              onClose();
+              onRequireAuth();
+            }}
+          />
+        )}
 
         {highlightedEntry && battle && (
           <div className="tm-cb-shared-entry" data-testid="battle-highlighted-entry">

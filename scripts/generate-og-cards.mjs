@@ -128,10 +128,10 @@ const CARD_THEMES = {
     accent: '#ff2a85',
     accent2: '#facc15',
     gold: '#00f5ff',
-    badge: 'LIGHTNING WHEEL // 500X MULTIPLIERS',
-    headline: 'LIGHTNING\nROULETTE ‘86',
-    sub: 'Stack neon chips on red, black, dozens or lucky numbers and watch Lightning strikes bolt payouts.',
-    pills: ['500X LIGHTNING', 'SPINNING WHEEL', 'LASER BET BOARD'],
+    badge: 'JUST FOR FUN // NO REAL MONEY',
+    headline: 'NEON STRIKE\nROULETTE ‘86',
+    sub: 'Stack neon chips on red, black, dozens or lucky numbers and watch neon strikes boost payouts.',
+    pills: ['500X NEON STRIKES', 'SPINNING WHEEL', 'LASER BET BOARD'],
     scene: 'roulette'
   },
   '/games/meme-crush': {
@@ -472,7 +472,7 @@ function renderScene(scene, cfg) {
       return `
         <div class="stage game-stage">
           <div class="bezel neon-pink">
-            <div class="bezel-hdr">⚡ LIGHTNING STRIKE: 17 BLACK ×500</div>
+            <div class="bezel-hdr">⚡ NEON STRIKE: 17 BLACK ×500</div>
             <div class="roul-wrap">
               <div class="roul-wheel"><div class="roul-core">17</div></div>
               <div class="roul-grid">

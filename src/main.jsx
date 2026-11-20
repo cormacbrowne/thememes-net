@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { Analytics } from '@vercel/analytics/react'
 import './index.css'
 import App from './App.jsx'
+import RootErrorBoundary from './components/RootErrorBoundary.jsx'
 
 // Task 33.5, 33.11 & 33.15: moderator queue, legal pages, and daily caption Hall of Fame lazy-loaded.
 // eslint-disable-next-line react-refresh/only-export-components
@@ -25,6 +26,7 @@ const isUiKitRoute = Boolean(import.meta.env.DEV && UiKitPage && /^\/__ui\/?$/i.
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
+    <RootErrorBoundary>
     {isUiKitRoute ? (
       <Suspense fallback={<div style={{ minHeight: '100dvh', background: '#07060f' }} />}>
         <UiKitPage />
@@ -48,6 +50,7 @@ createRoot(document.getElementById('root')).render(
     ) : (
       <App />
     )}
+    </RootErrorBoundary>
     <Analytics />
   </StrictMode>,
 )

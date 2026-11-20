@@ -15,7 +15,7 @@ create table if not exists public.pulse_events (
   ref_host text,
   src text,
   device text check (device in ('phone', 'tablet', 'desktop')),
-  returning boolean not null default false,
+  returning_visitor boolean not null default false,
   props jsonb not null default '{}'::jsonb
 );
 
@@ -272,7 +272,7 @@ begin
       end if;
     end loop;
 
-    insert into public.pulse_events (day, visitor, session, name, path, ref_host, src, device, returning, props)
+    insert into public.pulse_events (day, visitor, session, name, path, ref_host, src, device, returning_visitor, props)
     values (v_day, v_visitor, v_session, v_name, v_path, v_ref_host, v_src, v_device, v_returning, v_clean_props);
   end loop;
 exception when others then
@@ -313,7 +313,7 @@ begin
   with sess as (
     select
       session,
-      bool_or(returning) as is_returning,
+      bool_or(returning_visitor) as is_returning,
       bool_or(name = 'first_action') as has_action,
       extract(epoch from (max(ts) - min(ts))) * 1000.0 as dur_ms
     from public.pulse_events
@@ -335,7 +335,7 @@ begin
   with sess as (
     select
       session,
-      bool_or(returning) as is_returning,
+      bool_or(returning_visitor) as is_returning,
       bool_or(name = 'first_action') as has_action,
       extract(epoch from (max(ts) - min(ts))) * 1000.0 as dur_ms
     from public.pulse_events

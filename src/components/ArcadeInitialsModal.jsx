@@ -139,7 +139,7 @@ export default function ArcadeInitialsModal({
   }, [activeSlot, handleSubmit, onClose, stepSlot, submittedResult]);
 
   return (
-    <div className="tm-modal-backdrop" onClick={onClose}>
+    <div className="tm-modal-backdrop tm-initials-backdrop" onClick={onClose}>
       <div
         className="tm-modal tm-initials-modal"
         role="dialog"

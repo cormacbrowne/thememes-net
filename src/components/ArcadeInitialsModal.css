@@ -1,3 +1,12 @@
+/* Opens over a live, still-animating game (slots reels, sparks, bulbs). A backdrop-filter blur there
+   re-blurs the whole screen every frame and blacked out the page on some Windows PCs, so this
+   backdrop is a plain (slightly darker) tint instead. */
+.tm-modal-backdrop.tm-initials-backdrop {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: color-mix(in srgb, var(--tm-night-0) 90%, transparent);
+}
+
 .tm-initials-modal {
   max-width: 460px;
   width: min(94vw, 460px);

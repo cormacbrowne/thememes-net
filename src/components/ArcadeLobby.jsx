@@ -13,7 +13,9 @@ import {
   Coins,
   EyeOff,
   Play,
-  ArrowUpDown
+  ArrowUpDown,
+  Search,
+  X
 } from 'lucide-react';
 import { sfx } from '../utils/soundEngine';
 import { formatMoney } from '../utils/tokenEconomy';
@@ -44,6 +46,24 @@ import './ArcadeLobby.css';
 
 /** sessionStorage key the home portal sets to open the lobby on the Prank Screens list. */
 export const LOBBY_REALM_KEY = 'tm_lobby_realm';
+
+/** Lower-case and strip accents/apostrophes so "tysiac" finds "Tysiąc" and "21s" finds "21's". */
+const normalizeSearch = (text) =>
+  String(text || '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/ł/gi, 'l')
+    .toLowerCase()
+    .replace(/[’'`]/g, '');
+
+const GROUP_LABELS = Object.fromEntries(ARCADE_LOBBY_GROUPS.map((g) => [g.id, g.label]));
+
+const gameMatchesSearch = (game, terms) => {
+  const haystack = normalizeSearch(
+    [game.label, game.pitch, game.id, game.group, GROUP_LABELS[game.group], game.badge].join(' ')
+  );
+  return terms.every((t) => haystack.includes(t));
+};
 
 const GROUP_ICONS = {
   skill: Gamepad2,
@@ -78,6 +98,12 @@ export default function ArcadeLobby({
   });
   const [activeFilter, setActiveFilter] = useState('all');
   const [sortMode, setSortMode] = useState('top-rated'); // 'top-rated' | 'grouped'
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchTerms = useMemo(
+    () => normalizeSearch(searchQuery).split(/s+/).filter(Boolean),
+    [searchQuery]
+  );
+  const isSearching = searchTerms.length > 0;
   const [favoriteIds, setFavoriteIds] = useState(() => getFavoriteArcadeGameIds());
   const [copiedId, setCopiedId] = useState(null);
   const [userRatings, setUserRatings] = useState(() => loadUserGameRatings());
@@ -147,6 +173,21 @@ export default function ArcadeLobby({
   );
 
   const visibleGroups = useMemo(() => {
+    // Search looks across every game, whatever filter pill is active.
+    if (isSearching) {
+      const hits = sortedAllGames.filter((g) => gameMatchesSearch(g, searchTerms));
+      return hits.length > 0
+        ? [
+            {
+              id: 'search',
+              label: `Search results (${hits.length})`,
+              desc: 'Matching every category, top rated first',
+              games: hits
+            }
+          ]
+        : [];
+    }
+
     if (activeFilter === 'favs') {
       const favGames = sortGamesByRating(
         ARCADE_GAMES_CATALOG.filter((g) => favSet.has(g.id)),
@@ -177,7 +218,7 @@ export default function ArcadeLobby({
         ratingsSummary
       )
     }));
-  }, [activeFilter, sortMode, favSet, ratingsSummary, sortedAllGames]);
+  }, [activeFilter, sortMode, favSet, ratingsSummary, sortedAllGames, isSearching, searchTerms]);
 
 
   return (
@@ -292,6 +333,37 @@ export default function ArcadeLobby({
       </div>
 
       {realm === 'games' && (
+        <div className="tm-lobby-search" role="search">
+          <Search size={16} className="tm-lobby-search-icon" aria-hidden="true" />
+          <input
+            type="search"
+            className="tm-lobby-search-input"
+            placeholder={`Search ${ARCADE_GAMES_CATALOG.length} games…`}
+            aria-label="Search arcade games"
+            data-testid="lobby-search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setSearchQuery('');
+            }}
+            autoComplete="off"
+            spellCheck={false}
+            enterKeyHint="search"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              className="tm-lobby-search-clear"
+              aria-label="Clear search"
+              onClick={() => setSearchQuery('')}
+            >
+              <X size={15} aria-hidden="true" />
+            </button>
+          )}
+        </div>
+      )}
+
+      {realm === 'games' && !isSearching && (
       <div className="tm-lobby-toolbar">
         <div className="tm-lobby-filters" role="tablist" aria-label="Filter Arcade Games and Prank Screens">
           <button
@@ -355,7 +427,7 @@ export default function ArcadeLobby({
       )}
 
       {/* Continue Playing Row */}
-      {realm === 'games' && activeFilter === 'all' && recentGames.length > 0 && (
+      {realm === 'games' && !isSearching && activeFilter === 'all' && recentGames.length > 0 && (
         <div className="tm-lobby-section">
           <div className="tm-lobby-section-head">
             <h2 className="tm-lobby-section-title">
@@ -385,7 +457,16 @@ export default function ArcadeLobby({
       {realm === 'games' && (
         visibleGroups.length === 0 ? (
           <div className="tm-lobby-empty">
-            Tap the heart on any cabinet to pin it to your Favourites row.
+            {isSearching ? (
+              <>
+                No games match &ldquo;{searchQuery.trim()}&rdquo;.{' '}
+                <button type="button" className="tm-lobby-empty-link" onClick={() => setSearchQuery('')}>
+                  Clear search
+                </button>
+              </>
+            ) : (
+              'Tap the heart on any cabinet to pin it to your Favourites row.'
+            )}
           </div>
         ) : (
           visibleGroups.map((group) => (

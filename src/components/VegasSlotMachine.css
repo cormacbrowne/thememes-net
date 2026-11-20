@@ -2640,24 +2640,44 @@
 }
 
 /* Electricity racing round the cabinet tube: two sparks chase each other; faster while spinning,
-   gold and frantic on a win. Uses the @property --tm-arc registered by the home portal CSS, with a
-   local fallback registration so slots work when loaded directly. */
-@property --tm-slot-arc {
-  syntax: '<angle>';
-  inherits: false;
-  initial-value: 0deg;
-}
-
+   gold and frantic on a win.
+   PC black-screen fix (20 Nov 2026): the sparks used to move by animating a registered angle inside a
+   conic-gradient under a mask, which repainted the whole cabinet-sized layer every frame (faster once
+   the lever was pulled) and blacked out the page on some Windows GPUs. Now the gradient is painted once
+   on an oversized square that spins with transform: rotate (compositor-only, no repaints); the static
+   mask on the parent trims it to the 4px ring. Rotating a conic gradient about its centre is exactly the
+   same picture as shifting its start angle. */
 .tm-slot-electric {
   position: absolute;
   inset: 0;
   border-radius: 23px 23px 15px 15px;
-  padding: 4px;
   pointer-events: none;
   z-index: 3;
+  overflow: hidden;
+  container-type: size;
+  contain: strict;
   --spark: #7fe9ff;
+  /* 4px ring: everything except the inner box is kept. */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 4px;
+}
+
+.tm-slot-electric::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  /* width + height is always at least the diagonal, so the square covers every corner as it turns. */
+  width: calc(100cqw + 100cqh);
+  aspect-ratio: 1;
+  margin-left: calc((100cqw + 100cqh) / -2);
+  margin-top: calc((100cqw + 100cqh) / -2);
   background: conic-gradient(
-    from var(--tm-slot-arc),
+    from 0deg,
     transparent 0deg 44deg,
     color-mix(in srgb, var(--spark) 35%, transparent) 60deg,
     var(--spark) 70deg,
@@ -2672,34 +2692,33 @@
     color-mix(in srgb, var(--spark) 35%, transparent) 268deg,
     transparent 284deg 360deg
   );
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  /* No filter here: an animated drop-shadow over the whole cabinet blacked out the page on some
-     Windows PCs (GPU). The soft stops in the gradient carry the glow instead. */
-  contain: paint;
+  will-change: transform;
   animation: tmSlotArc 3.2s linear infinite;
 }
 
-.tm-bandit-cabinet.is-spinning .tm-slot-electric {
+.tm-bandit-cabinet.is-spinning .tm-slot-electric::before {
   animation-duration: 1.1s;
 }
 
 .tm-bandit-cabinet.is-surge-roll.is-spinning .tm-slot-electric {
   --spark: #ffffff;
+}
+
+.tm-bandit-cabinet.is-surge-roll.is-spinning .tm-slot-electric::before {
   animation-duration: 0.7s;
 }
 
 .tm-bandit-cabinet.is-win-lit .tm-slot-electric {
   --spark: var(--tm-amber);
+}
+
+.tm-bandit-cabinet.is-win-lit .tm-slot-electric::before {
   animation-duration: 0.8s;
 }
 
 @keyframes tmSlotArc {
   to {
-    --tm-slot-arc: 360deg;
+    transform: rotate(360deg);
   }
 }
 
@@ -2821,9 +2840,8 @@
   align-items: flex-end;
   justify-content: center;
   padding: 12px;
-  background: rgba(7, 6, 15, 0.72);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  /* No backdrop-filter: blurring the live, animating cabinet every frame can black out Windows GPUs. */
+  background: rgba(7, 6, 15, 0.84);
 }
 
 .tm-slot-help-card {

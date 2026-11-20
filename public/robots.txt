@@ -1,13 +1,15 @@
+# THE MEMES.net — robots.txt
+# Private / non-page routes are blocked; everything else is open.
+# (/api/ only holds server functions: meme pages, creator pages and the sitemap are served
+#  from their public URLs via rewrites, so blocking /api/ hides nothing crawlers need.)
+
 User-agent: *
 Allow: /
-Disallow: /admin/
-
-User-agent: Googlebot
-Allow: /
-Disallow: /admin/
-
-User-agent: Googlebot-Image
-Allow: /
-Disallow: /admin/
+Disallow: /admin
+Disallow: /administrator
+Disallow: /moderation
+Disallow: /moderator
+Disallow: /api/
+Disallow: /__ui
 
 Sitemap: https://www.thememes.net/sitemap.xml

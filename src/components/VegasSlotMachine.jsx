@@ -363,7 +363,7 @@ export default function VegasSlotMachine({
     owlLock: false // Lock Dougie/Orb columns
   });
 
-  // Lightning Vault 5000 Options, Accumulators & Hold-and-Spin
+  // Thunder Vault 5000 Options, Accumulators & Hold-and-Spin
   const [anteBetOn, setAnteBetOn] = useState(false);
   const [voltageMeter, setVoltageMeter] = useState(15); // 0..100
   const [surgeArmed, setSurgeArmed] = useState(false);
@@ -376,7 +376,7 @@ export default function VegasSlotMachine({
   const [lockItState, setLockItState] = useState(null);
   // lockItState = { active, respinsLeft, lockedMap: { "c,r": { label, mult, color } }, stake }
 
-  // Cyber Buffalo Stampede '86 State
+  // Cyber Stampede Stampede '86 State
   const [stampedeMeter, setStampedeMeter] = useState(10); // 0..100
   const [buffaloCharge, setBuffaloCharge] = useState(15); // 0..100
   const [goldStampedeArmed, setGoldStampedeArmed] = useState(false);
@@ -1281,7 +1281,7 @@ export default function VegasSlotMachine({
             activeBet,
             mult: totalMult,
             headline: isBig
-              ? `🦬🚨 BUFFALO STAMPEDE MEGA WAYS! (${totalMult}×)`
+              ? `🦬🚨 GOLD STAMPEDE MEGA WAYS! (${totalMult}×)`
               : `🦬 ${evalRes.matchedWays.length} STAMPEDE WAYS! (${totalMult}×)`,
             detail: usedSecondChance
               ? '🛡️ 2nd-Chance Nudge checked + Ways paid!'
@@ -1741,7 +1741,7 @@ export default function VegasSlotMachine({
   ]);
 
   // ==========================================
-  // LIGHTNING VAULT HOLD & SPIN RESPIN STEP
+  // THUNDER VAULT HOLD & SPIN RESPIN STEP
   // ==========================================
   const handleLockItRespin = () => {
     if (!lockItState || !lockItState.active || isAnySpinning) return;
@@ -1821,7 +1821,7 @@ export default function VegasSlotMachine({
             activeBet: stake,
             mult: segment.mult,
             headline: `🎡🚨 BONUS WHEEL LANDED ${segment.label}!`,
-            detail: `Cyber Buffalo Prize Wheel ${segment.mult}× Payout!`,
+            detail: `Cyber Stampede Prize Wheel ${segment.mult}× Payout!`,
             tier: segment.mult >= 35 ? 'jackpot' : 'big',
             maxMultiplier: 140,
             dougiePhrase: segment.mult >= 35 ? 'HELLOOOOO-O-O!!' : ''
@@ -1863,7 +1863,7 @@ export default function VegasSlotMachine({
       sfx.playSlotPowerup('boost');
       setBuffaloCharge((c) => Math.max(0, c - 60));
       setGoldStampedeArmed(true);
-      setStatusBanner('🦬 GOLD STAMPEDE ARMED! High Buffalo & Gold Coin odds next spin!');
+      setStatusBanner('🦬 GOLD STAMPEDE ARMED! High Bison & Gold Coin odds next spin!');
     } else if (kind === 'nudge' && buffaloCharge >= 45 && !secondChanceArmed) {
       sfx.playSlotPowerup('boost');
       setBuffaloCharge((c) => Math.max(0, c - 45));

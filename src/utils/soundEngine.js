@@ -2361,7 +2361,7 @@ export class SoundEngine {
   }
 
   /**
-   * ⚡ NEON LIGHTNING MULTIPLIER STRIKE (Lightning Roulette & Pinball Fever)
+   * ⚡ NEON LIGHTNING MULTIPLIER STRIKE (Neon Strike Roulette & Pinball Fever)
    */
   playLightningStrike() {
     if (!this.enabled) return;

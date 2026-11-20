@@ -7,7 +7,7 @@ import GameShell from './GameShell';
 import './VegasRouletteGame.css';
 
 // ==========================================
-// 80s NEON LIGHTNING ROULETTE '86 — 60FPS CANVAS PHYSICS WHEEL,
+// 80s NEON NEON STRIKE ROULETTE '86 — 60FPS CANVAS PHYSICS WHEEL,
 // LIGHTNING MULTIPLIERS (50x / 100x / 150x) & FULL INTERACTIVE BETTING BOARD
 // ==========================================
 
@@ -199,7 +199,7 @@ export default function VegasRouletteGame({
       const straightBet = activeBets[`n_${landedNum}`] || 0;
       const struckMult = activeLightning[landedNum] || null;
       if (straightBet > 0) {
-        // Real Lightning Roulette math: 30x (29:1 + stake) keeps ~5% house edge with 3x 50-150x strikes
+        // Real Neon Strike Roulette math: 30x (29:1 + stake) keeps ~5% house edge with 3x 50-150x strikes
         const mult = struckMult || 30;
         rawPayout += straightBet * mult;
       }
@@ -257,7 +257,7 @@ export default function VegasRouletteGame({
         triggerWinCelebration({
           amount: verifiedPayout,
           unit: isFreePractice ? 'CHIPS' : 'M$',
-          game: "Lightning Roulette '86",
+          game: "Neon Strike Roulette '86",
           headline: hitLightning
             ? `⚡ ${struckMult}× LIGHTNING HIT #${landedNum}!`
             : `🎡 #${landedNum} ${colName.toUpperCase()} WINNER!`,
@@ -318,7 +318,7 @@ export default function VegasRouletteGame({
           return;
         }
         if (onSpendTokens) {
-          const ok = onSpendTokens(totalBetAmount, 'Neon Lightning Roulette Spin');
+          const ok = onSpendTokens(totalBetAmount, 'Neon Strike Roulette Spin');
           if (!ok) return;
         }
       }
@@ -735,10 +735,10 @@ export default function VegasRouletteGame({
 
   return (
     <GameShell
-      title="NEON LIGHTNING ROULETTE '86"
+      title="NEON NEON STRIKE ROULETTE '86"
       fitToScreen={false}
       eyebrow="European single-zero wheel • Lightning up to 150×"
-      ariaLabel="80s Neon Lightning Roulette Wheel and Table"
+      ariaLabel="80s Neon Strike Roulette Wheel and Table"
       onBack={onBackToFeed}
       tokens={tokens}
       hasPractice

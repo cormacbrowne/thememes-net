@@ -1501,7 +1501,7 @@ export default function App() {
                   </h3>
                   <p style={{ margin: '0 0 12px', fontSize: '12.5px', color: 'var(--tm-text-soft)', lineHeight: 1.5 }}>
                     Dab all 90 classic comedy calls in <strong>🎱 Neon Bingo &apos;86</strong>, drop coins in{' '}
-                    <strong>🎰 Coin Dozer &apos;86</strong>, spin <strong>🎡 Lightning Roulette (150×)</strong>, pull the{' '}
+                    <strong>🎰 Coin Dozer &apos;86</strong>, spin <strong>🎡 Neon Strike Roulette (150×)</strong>, pull the{' '}
                     <strong>🎰 One-Arm Bandit</strong>, or fire up <strong>🎱 Upgraded 80s Pinball</strong>!
                   </p>
                   <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -1553,7 +1553,7 @@ export default function App() {
                         setViewMode('roulette');
                       }}
                     >
-                      🎡 Lightning Roulette
+                      🎡 Neon Strike Roulette
                     </button>
                     <button
                       type="button"

@@ -366,7 +366,7 @@ export default function SeoDiscoveryFooter({
                     className="tm-seo-link"
                     onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('roulette'))}
                   >
-                    🎡 Neon Lightning Roulette &apos;86 (150× Multipliers)
+                    🎡 Neon Strike Roulette &apos;86 (150× Multipliers)
                   </a>
                 </div>
               </>

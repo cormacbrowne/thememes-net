@@ -261,7 +261,7 @@ const RAW_SEED_MEMES = [
   { id: 'seed-relatable-14', category: 'relatable', tpl: 'tpl-not-stonks', title: 'Checking your bank account on Monday after saying "Treat yourself" all weekend', comments: [] },
 
   { id: 'seed-tech-15', category: 'tech', tpl: 'tpl-clown-makeup', title: 'No need to write unit tests, this hotfix is only 2 lines', comments: [] },
-  { id: 'seed-dank-15', category: 'dank', tpl: 'tpl-not-stonks', title: 'Wagering all my tokens on 0 Green in Lightning Roulette', comments: [] },
+  { id: 'seed-dank-15', category: 'dank', tpl: 'tpl-not-stonks', title: 'Wagering all my tokens on 0 Green in Neon Strike Roulette', comments: [] },
   { id: 'seed-gaming-15', category: 'gaming', tpl: 'tpl-change-my-mind', title: 'Testing if fall damage is enabled in every new game', comments: [] },
   { id: 'seed-relatable-15', category: 'relatable', tpl: 'tpl-spiderman-point', title: 'Me and my coworker both pretending we know what the acronym means', comments: [] },
 

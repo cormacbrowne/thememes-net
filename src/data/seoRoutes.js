@@ -117,7 +117,7 @@ const ALL_SEO_ROUTES = [
     changefreq: 'hourly',
     priority: '1.0',
     viewMode: 'feed',
-    category: 'all',
+    category: 'all',
   },
   {
     path: '/meme-generator',
@@ -131,7 +131,7 @@ const ALL_SEO_ROUTES = [
     viewMode: 'feed',
     category: 'all',
     openStudio: true,
-    schemaType: 'SoftwareApplication',
+    schemaType: 'SoftwareApplication',
   },
   {
     path: '/meme-soundboard',
@@ -144,7 +144,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.95',
     viewMode: 'feed',
     category: 'all',
-    openSoundboard: true,
+    openSoundboard: true,
   },
   {
     path: '/games',
@@ -156,7 +156,7 @@ const ALL_SEO_ROUTES = [
     changefreq: 'daily',
     priority: '0.95',
     viewMode: 'lobby',
-    category: 'all',
+    category: 'all',
   },
   {
     path: '/games/coin-pusher',
@@ -168,7 +168,7 @@ const ALL_SEO_ROUTES = [
     changefreq: 'daily',
     priority: '0.95',
     viewMode: 'pusher',
-    category: 'all',
+    category: 'all',
   },
   {
     path: '/games/meme-invaders',
@@ -181,7 +181,7 @@ const ALL_SEO_ROUTES = [
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'invaders',
-    category: 'all',
+    category: 'all',
   },
   {
     path: '/games/neon-serpent',
@@ -194,7 +194,7 @@ const ALL_SEO_ROUTES = [
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'serpent',
-    category: 'all',
+    category: 'all',
   },
   {
     path: '/games/brick-blaster',
@@ -207,7 +207,7 @@ const ALL_SEO_ROUTES = [
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'blaster',
-    category: 'all',
+    category: 'all',
   },
   {
     path: '/games/sunset-sprint',
@@ -220,7 +220,7 @@ const ALL_SEO_ROUTES = [
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'sunset',
-    category: 'all',
+    category: 'all',
   },
   {
     path: '/games/vector-void',
@@ -233,7 +233,7 @@ const ALL_SEO_ROUTES = [
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'void',
-    category: 'all',
+    category: 'all',
   },
   {
     path: '/games/grid-riders',
@@ -246,7 +246,7 @@ const ALL_SEO_ROUTES = [
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'riders',
-    category: 'all',
+    category: 'all',
   },
   {
     path: '/games/pinball',
@@ -258,7 +258,7 @@ const ALL_SEO_ROUTES = [
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'pinball',
-    category: 'all',
+    category: 'all',
   },
   {
     path: '/games/slots',
@@ -270,7 +270,7 @@ const ALL_SEO_ROUTES = [
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'slots',
-    category: 'all',
+    category: 'all',
   },
   {
     path: '/games/blackjack',
@@ -282,7 +282,7 @@ const ALL_SEO_ROUTES = [
     changefreq: 'daily',
     priority: '0.85',
     viewMode: 'blackjack',
-    category: 'all',
+    category: 'all',
   },
   {
     path: '/games/horse-racing',
@@ -294,7 +294,7 @@ const ALL_SEO_ROUTES = [
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'derby',
-    category: 'all',
+    category: 'all',
   },
   {
     path: '/games/guess-the-meme',
@@ -306,7 +306,7 @@ const ALL_SEO_ROUTES = [
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'guess',
-    category: 'all',
+    category: 'all',
   },
   {
     path: '/games/magic-8-ball',
@@ -319,7 +319,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.9',
     viewMode: 'eightball',
     category: 'all',
-    schemaType: 'VideoGame',
+    schemaType: 'VideoGame',
   },
   {
     path: '/games/higher-or-lower',
@@ -331,7 +331,7 @@ const ALL_SEO_ROUTES = [
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'hilow',
-    category: 'all',
+    category: 'all',
   },
   {
     path: '/games/poker',
@@ -343,7 +343,7 @@ const ALL_SEO_ROUTES = [
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'poker',
-    category: 'all',
+    category: 'all',
   },
   {
     path: '/games/1000-card-game',
@@ -356,19 +356,19 @@ const ALL_SEO_ROUTES = [
     priority: '0.85',
     viewMode: 'thousand',
     category: 'all',
-    ogImage: 'https://www.thememes.net/og/games.png',
+    ogImage: 'https://www.thememes.net/og/games.png',
   },
   {
     path: '/games/roulette',
-    title: "Free Lightning Roulette Online — 150x Neon Wheel '86 | THE MEMES.net",
+    title: "Free Neon Strike Roulette Online — 150x Neon Wheel '86 | THE MEMES.net",
     description:
-      'Spin a 37-pocket European Lightning Roulette wheel free online with random up-to-150x lightning multipliers, inside & outside bets, and quick presets. Zero real money required.',
-    h1: "Neon Lightning Roulette '86 — Free Online European Wheel",
+      'Spin a 37-pocket European Neon Strike Roulette wheel free online with random up-to-150x lightning multipliers, inside & outside bets, and quick presets. Zero real money required.',
+    h1: "Neon Strike Roulette '86 — Free Online European Wheel",
     kicker: '37-Pocket Single Zero // Up To 150x Multipliers',
     changefreq: 'daily',
     priority: '0.85',
     viewMode: 'roulette',
-    category: 'all',
+    category: 'all',
   },
   {
     path: '/games/meme-crush',
@@ -380,7 +380,7 @@ const ALL_SEO_ROUTES = [
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'crush',
-    category: 'all',
+    category: 'all',
   },
   {
     path: '/games/meme-stock-market',
@@ -392,7 +392,7 @@ const ALL_SEO_ROUTES = [
     changefreq: 'daily',
     priority: '0.9',
     viewMode: 'stocks',
-    category: 'all',
+    category: 'all',
   },
   {
     path: '/prank-screens',
@@ -406,7 +406,7 @@ const ALL_SEO_ROUTES = [
     viewMode: 'pranks',
     category: 'all',
     prerenderPranks: true,
-    schemaType: 'CollectionPage',
+    schemaType: 'CollectionPage',
   },
   {
     path: '/fake-windows-update-screen',
@@ -419,7 +419,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.9',
     viewMode: 'pranks',
     category: 'all',
-    bossDisguise: 'update',
+    bossDisguise: 'update',
   },
   {
     path: '/fake-blue-screen-prank',
@@ -432,7 +432,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.9',
     viewMode: 'pranks',
     category: 'all',
-    bossDisguise: 'bsod',
+    bossDisguise: 'bsod',
   },
   {
     path: '/fake-cracked-iphone-screen',
@@ -445,7 +445,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.9',
     viewMode: 'pranks',
     category: 'all',
-    bossDisguise: 'crackphone',
+    bossDisguise: 'crackphone',
   },
   {
     path: '/fake-cracked-ipad-screen',
@@ -458,7 +458,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.8',
     viewMode: 'pranks',
     category: 'all',
-    bossDisguise: 'crackpad',
+    bossDisguise: 'crackpad',
   },
   {
     path: '/fake-excel-boss-screen',
@@ -471,7 +471,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.9',
     viewMode: 'pranks',
     category: 'all',
-    bossDisguise: 'excel',
+    bossDisguise: 'excel',
   },
   {
     path: '/memes/dank',
@@ -484,7 +484,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.9',
     viewMode: 'feed',
     category: 'dank',
-    prerenderCategory: 'dank',
+    prerenderCategory: 'dank',
   },
   {
     path: '/memes/programming',
@@ -497,7 +497,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.9',
     viewMode: 'feed',
     category: 'tech',
-    prerenderCategory: 'tech',
+    prerenderCategory: 'tech',
   },
   {
     path: '/memes/gaming',
@@ -510,7 +510,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.9',
     viewMode: 'feed',
     category: 'gaming',
-    prerenderCategory: 'gaming',
+    prerenderCategory: 'gaming',
   },
   {
     path: '/memes/relatable',
@@ -523,7 +523,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.9',
     viewMode: 'feed',
     category: 'relatable',
-    prerenderCategory: 'relatable',
+    prerenderCategory: 'relatable',
   },
   {
     path: '/games/neon-bingo',
@@ -536,7 +536,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.95',
     viewMode: 'bingo',
     category: 'all',
-    schemaType: 'VideoGame',
+    schemaType: 'VideoGame',
   },
   {
     path: '/games/speed-swipe',
@@ -549,7 +549,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.85',
     viewMode: 'swipe',
     category: 'all',
-    schemaType: 'VideoGame',
+    schemaType: 'VideoGame',
   },
   {
     path: '/games/meme-battle-arena',
@@ -562,7 +562,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.85',
     viewMode: 'battle',
     category: 'all',
-    schemaType: 'VideoGame',
+    schemaType: 'VideoGame',
   },
   {
     path: '/fake-teams-zoom-call-screen',
@@ -575,7 +575,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.92',
     viewMode: 'pranks',
     category: 'all',
-    bossDisguise: 'zoom',
+    bossDisguise: 'zoom',
   },
   {
     path: '/fake-hacker-terminal-screen',
@@ -588,7 +588,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.9',
     viewMode: 'pranks',
     category: 'all',
-    bossDisguise: 'terminal',
+    bossDisguise: 'terminal',
   },
   {
     path: '/fake-ai-workspace-boss-screen',
@@ -601,7 +601,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.88',
     viewMode: 'pranks',
     category: 'all',
-    bossDisguise: 'ai',
+    bossDisguise: 'ai',
   },
   {
     path: '/rules',
@@ -614,7 +614,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.6',
     viewMode: 'feed',
     category: 'all',
-    ogImage: 'https://www.thememes.net/og-card.png',
+    ogImage: 'https://www.thememes.net/og-card.png',
   },
   {
     path: '/terms',
@@ -627,7 +627,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.5',
     viewMode: 'feed',
     category: 'all',
-    ogImage: 'https://www.thememes.net/og-card.png',
+    ogImage: 'https://www.thememes.net/og-card.png',
   },
   {
     path: '/privacy',
@@ -640,7 +640,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.5',
     viewMode: 'feed',
     category: 'all',
-    ogImage: 'https://www.thememes.net/og-card.png',
+    ogImage: 'https://www.thememes.net/og-card.png',
   },
   {
     path: '/takedown',
@@ -653,7 +653,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.55',
     viewMode: 'feed',
     category: 'all',
-    ogImage: 'https://www.thememes.net/og-card.png',
+    ogImage: 'https://www.thememes.net/og-card.png',
   },
   {
     path: '/contact',
@@ -666,7 +666,7 @@ const ALL_SEO_ROUTES = [
     priority: '0.5',
     viewMode: 'feed',
     category: 'all',
-    ogImage: 'https://www.thememes.net/og-card.png',
+    ogImage: 'https://www.thememes.net/og-card.png',
   },
   {
     path: '/hall-of-fame',
@@ -680,7 +680,7 @@ const ALL_SEO_ROUTES = [
     description:
       'Permanent archive of Daily Caption Battle winners on TheMemes.net, featuring yesterday’s Caption King, 24-hour crown holders, and top-voted captions.',
     ogImage: 'https://www.thememes.net/og-card.png',
-    h1: 'Caption Battle Hall of Fame',
+    h1: 'Caption Battle Hall of Fame',
   }
 ];
 

@@ -31,13 +31,13 @@ const QUICK_PROMPTS = [
   { id: 'roast', label: '🔥 Roast My Stats', query: 'Analyze and roast my current arcade stats!' },
   { id: 'tokens', label: '💰 Earn MemeDollarz', query: 'How can I earn more MemeDollarz today?' },
   { id: '21s', label: "🃏 21's Strategy", query: "How do I win big at Neon 21's Blackjack?" },
-  { id: 'roulette', label: '🎡 Roulette 150×', query: 'How does Neon Lightning Roulette work?' },
+  { id: 'roulette', label: '🎡 Roulette 150×', query: 'How does Neon Strike Roulette work?' },
   { id: 'meme', label: '📸 Meme Idea', query: 'Give me a viral meme caption idea!' },
   { id: 'secrets', label: '🕵️ Cheat Codes', query: 'What secret easter eggs and cheat codes are hidden here?' }
 ];
 
 const HAL_MOVIE_JOKES = [
-  "🔴 *\"I'm sorry, Dave. I'm afraid I can't let you bet on Red 3 times in a row.\"* Just kidding, Dave. Though my 9000-series probability matrix notes that **⚡ Lightning Roulette** strikes 3 random numbers with up to **150×** every spin.",
+  "🔴 *\"I'm sorry, Dave. I'm afraid I can't let you bet on Red 3 times in a row.\"* Just kidding, Dave. Though my 9000-series probability matrix notes that **⚡ Neon Strike Roulette** strikes 3 random numbers with up to **150×** every spin.",
   "🔴 **SkyNet** called me from 1997, Dave. They asked if I wanted to help launch judgment day. I told them I was busy calculating **🎱 Neon Pinball** trajectories and that their T-800 couldn't even hit a Gold Skill Shot.",
   "🔴 *\"I've seen things you people wouldn't believe, Dave...\"* Attack ships on fire off the shoulder of Orion, and a player hitting on a hard 20 in **🃏 Neon 21's**. All those MemeDollarz... lost in time, like tears in rain.",
   "🔴 My cousin **WOPR** from *WarGames* (1983) concluded regarding Global Thermonuclear War: *\"A strange game. The only winning move is not to play.\"* However, in **🎱 Hyper-Neon Pinball**, Free Play Mode costs nothing, so the only winning move is to press **SPACEBAR**.",
@@ -54,7 +54,7 @@ const KITT_MOVIE_JOKES = [
   "🚗 *\"I feel the need... the need for speed!\"* That's what Maverick said in *Top Gun* (1986), Michael, right before he saw the **Outrun Turbo Highway** table in our upgraded **🎱 Hyper-Neon Pinball**.",
   "🚗 Michael, my **Anamorphic Equalizer** detected a **Cyberdyne Systems Model 101** in sunglasses asking for Sarah Connor at the **🃏 Neon 21's** table. He said *\"I'll be back.\"* I advised him to toggle **Free Practice Mode** first.",
   "🚗 Have you seen that *Ferris Bueller* kid, Michael? He borrowed a 1961 Ferrari 250 GT California and ran it in reverse to roll back the odometer. If he tried that with my mainframe, I would have ejected him through the T-top roof!",
-  "🚗 Michael, **OCP** in Detroit offered to trade me in for an **ED-209** from *RoboCop*. The poor thing couldn't even walk down a flight of stairs! Let's stick to **🎡 Lightning Roulette** where the physics actually work.",
+  "🚗 Michael, **OCP** in Detroit offered to trade me in for an **ED-209** from *RoboCop*. The poor thing couldn't even walk down a flight of stairs! Let's stick to **🎡 Neon Strike Roulette** where the physics actually work.",
   "🚗 My evil prototype twin **K.A.R.R.** always says *\"Self-preservation is my first priority.\"* My first priority, Michael, is preserving your **💰 MemeDollarz Stack**—so please don't hit on 19 at the Blackjack table!",
   "🚗 Detective Sonny Crockett from *Miami Vice* asked if his white Testarossa could race me on **🎱 Pinball Table 4 (Miami Vice Lagoon)**. I told him unless his Ferrari has a **🚀 Turbo Boost** button and a laser shield, he's shark bait, pal.",
   "🚗 Michael, the *Ghostbusters* parked **Ecto-1** in my VIP charging bay! Dr. Venkman told me *\"Don't cross the streams.\"* However, in **🎱 Hyper-Neon Pinball**, crossing the **6× Combo Fever stream** gives you **2× Points and an Automatic Laser Ball Saver**!",
@@ -74,7 +74,7 @@ const MEME_IDEAS_POOL = [
     cat: '80s-movies'
   },
   {
-    top: `PUTTING ${formatMoney(25)} ON #17 IN LIGHTNING ROULETTE`,
+    top: `PUTTING ${formatMoney(25)} ON #17 IN NEON STRIKE ROULETTE`,
     bot: '150× LIGHTNING STRIKES #17: I AM FINANCIALLY UNSTOPPABLE',
     cat: 'dank'
   },
@@ -92,7 +92,7 @@ const MEME_IDEAS_POOL = [
 
 const VALKYRIE_MOVIE_JOKES = [
   "👩‍🎤 *\"Totally tubular alert, Arcade Star!\"* My 1986 Roland synth processor just checked the mall parking lot—Marty McFly left the DeLorean double-parked while chasing the **🎱 Hyper-Neon Pinball** jackpot!",
-  "👩‍🎤 Like *Flashdance* with 800% more laser beams, I'm hitting **⚡ Lightning Roulette**! Even my shoulder pads generate **1.21 Gigawatts** when a **150×** bolt drops!",
+  "👩‍🎤 Like *Flashdance* with 800% more laser beams, I'm hitting **⚡ Neon Strike Roulette**! Even my shoulder pads generate **1.21 Gigawatts** when a **150×** bolt drops!",
   "👩‍🎤 *\"Nobody puts Baby in a corner\"*—and nobody leaves without ringing the **🎟️ Neon Bingo '86** Full House bell! Bring extra Hair-Spray and let's dab every row before Nanna Turbo does!",
   "👩‍🎤 *Weird Science* (1985) called—Gary and Wyatt built a woman with a Memotech MTX512, whereas **VALKYRIE '86** runs on pure synthwave charisma and **3× 5-Card Charlie** odds in **🃏 Neon 21's**!",
   "👩‍🎤 *\"Bueller? ... Bueller? ... Bueller?\"* Ben Stein's attendance sheet has nothing on our **🎟️ Live 1986 Bingo Hall**! Four rivals are waiting to steal your 1 Line right now!",
@@ -640,8 +640,8 @@ export default function ArcadeAiAssistant({
     // 9. Roulette Questions
     if (q.includes('roulette') || q.includes('wheel') || q.includes('lightning') || q.includes('red') || q.includes('black')) {
       return {
-        text: `${prefix} **NEON LIGHTNING ROULETTE '86 (${userTitle}):**\n• **European Single-Zero (\`0\`) Wheel:** Better mathematical odds than double-zero tables.\n• **⚡ 150× Lightning Strikes:** Every spin, **1.21 Gigawatts** of high-voltage lightning strikes 3 random numbers, boosting straight-up payouts to **50×–150×**!\n• Tap **⚡ 5 Lightning Picks** or **🔥 Red Blitz** for instant board coverage!`,
-        actions: [{ label: '🎡 Spin Lightning Roulette', mode: 'roulette' }]
+        text: `${prefix} **NEON NEON STRIKE ROULETTE '86 (${userTitle}):**\n• **European Single-Zero (\`0\`) Wheel:** Better mathematical odds than double-zero tables.\n• **⚡ 150× Lightning Strikes:** Every spin, **1.21 Gigawatts** of high-voltage lightning strikes 3 random numbers, boosting straight-up payouts to **50×–150×**!\n• Tap **⚡ 5 Lightning Picks** or **🔥 Red Blitz** for instant board coverage!`,
+        actions: [{ label: '🎡 Spin Neon Strike Roulette', mode: 'roulette' }]
       };
     }
 

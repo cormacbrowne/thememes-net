@@ -499,7 +499,7 @@ export default function RewardsModal({
                   onLaunchSubGame('roulette');
                 }}
               >
-                🎡 Lightning Roulette
+                🎡 Neon Strike Roulette
               </button>
               <button
                 type="button"

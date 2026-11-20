@@ -4,8 +4,8 @@
 //   1. bandit85         — Classic 1985 3-Reel One-Arm Bandit (Authentic Stepper, Hold/Nudge + Fever Accumulator)
 //   2. neon_special     — Neon Supernova Special '86 (5x3, 6 Interactive Powerups, Laser Chase Lights)
 //   3. silver_mustang   — Mr. Jackpots: Silver Mustang (5x3, 5/15/25 Lines, Twin Peaks S3 Dougie Jones)
-//   4. lightning_vault  — Neon Lightning Vault 5000 (5x3, 4 Progressives, Hold & Spin Lock-It)
-//   5. buffalo_stampede — Cyber Buffalo Stampede '86 (5x4, 1024 Ways, Bonus Wheel & Cascade Wilds)
+//   4. lightning_vault  — Neon Thunder Vault 5000 (5x3, 4 Progressives, Hold & Spin Lock-It)
+//   5. buffalo_stampede — Cyber Stampede Stampede '86 (5x4, 1024 Ways, Bonus Wheel & Cascade Wilds)
 // ==========================================
 
 export const NEON_SPECIAL_POWERUPS = [
@@ -126,7 +126,7 @@ export const SLOT_MACHINES = [
   },
   {
     id: 'lightning_vault',
-    name: 'Neon Lightning Vault 5000',
+    name: 'Neon Thunder Vault 5000',
     shortName: 'Lightning 5000',
     badge: '💎 VIP HIGH-ROLLER',
     tag: '5×3 • 4 Progressives • M$1–M$25 VIP Lock-It Orbs',
@@ -135,7 +135,7 @@ export const SLOT_MACHINES = [
     marqueeSub: '★ 1986 VIP HIGH-ROLLER • DUAL NEON PLASMA CABINET ★',
     eraYear: '1986',
     coinDenom: 'M$1.00 / M$25 VIP',
-    payGlassTitle: 'LIGHTNING VAULT 5000 • HIGH-ROLLER PROGRESSIVE LOCK-IT CABINET (1986)',
+    payGlassTitle: 'THUNDER VAULT 5000 • HIGH-ROLLER PROGRESSIVE LOCK-IT CABINET (1986)',
     houseEdgeLabel: '~11.8% house edge • play-money only, just for fun',
     isHighRollerNeon: true,
     isFlagshipHighRoller: true,
@@ -148,8 +148,8 @@ export const SLOT_MACHINES = [
   },
   {
     id: 'buffalo_stampede',
-    name: "Cyber Buffalo Stampede '86",
-    shortName: "Buffalo '86",
+    name: "Cyber Stampede Stampede '86",
+    shortName: "Stampede '86",
     badge: '🔥 HIGH-ROLLER 1024',
     tag: '5×4 • 2×/3× Wilds • M$1–M$25 VIP Bonus Wheel',
     icon: '🦬',
@@ -157,7 +157,7 @@ export const SLOT_MACHINES = [
     marqueeSub: '★ 1986 1,024-WAYS HIGH-ROLLER NEON MEGA CABINET ★',
     eraYear: '1986',
     coinDenom: 'M$1.00 / M$25 VIP',
-    payGlassTitle: "CYBER BUFFALO '86 • 1,024-WAYS HIGH-ROLLER WIDEBODY CABINET (1986)",
+    payGlassTitle: "CYBER STAMPEDE '86 • 1,024-WAYS HIGH-ROLLER WIDEBODY CABINET (1986)",
     houseEdgeLabel: '~12.0% house edge • play-money only, just for fun',
     isHighRollerNeon: true,
     neonTheme: 'solar-gold',
@@ -192,7 +192,7 @@ export const SLOT_SYMBOLS = {
   owlring: { id: 'owlring', label: 'OWL CAVE RING', short: 'OWL RING', color: '#22c55e' },
   redshoes: { id: 'redshoes', label: 'RED SHOES', short: 'SHOES', color: '#ef4444' },
 
-  // Lightning Vault 5000
+  // Thunder Vault 5000
   volt7: { id: 'volt7', label: 'VOLT 777', short: 'VOLT 7', color: '#38bdf8' },
   vault: { id: 'vault', label: 'CYBER VAULT', short: 'VAULT', color: '#a855f7' },
   bolt: { id: 'bolt', label: 'LIGHTNING ORB', short: 'ORB', color: '#00f3ff', isOrb: true },
@@ -208,8 +208,8 @@ export const SLOT_SYMBOLS = {
   ns_cassette: { id: 'ns_cassette', label: 'MAXELL CHROME 90', short: 'TAPE', color: '#4ade80' },
   ns_quarter: { id: 'ns_quarter', label: '1986 25¢ QUARTER', short: '25¢', color: '#cbd5e1' },
 
-  // Cyber Buffalo Stampede '86
-  buffalo: { id: 'buffalo', label: 'CYBER BUFFALO', short: 'BUFFALO', color: '#f97316' },
+  // Cyber Stampede Stampede '86
+  buffalo: { id: 'buffalo', label: 'CYBER STAMPEDE', short: 'BISON', color: '#f97316' },
   eagle: { id: 'eagle', label: 'NEON EAGLE', short: 'EAGLE', color: '#38bdf8' },
   wolf: { id: 'wolf', label: 'SYNTH WOLF', short: 'WOLF', color: '#c084fc' },
   goldcoin: { id: 'goldcoin', label: 'GOLD STAMPEDE', short: 'GOLD', color: '#facc15' },
@@ -646,7 +646,7 @@ export function evaluate5x3Paylines(machineId, grid, activeLines = 25, spinMult 
 }
 
 /**
- * Evaluates a 5x4 Cyber Buffalo Stampede grid using 1,024 Ways to Win (left-to-right adjacent columns).
+ * Evaluates a 5x4 Cyber Stampede Stampede grid using 1,024 Ways to Win (left-to-right adjacent columns).
  */
 export function evaluateBuffalo1024Ways(grid, wildMultipliers = {}, spinMult = 1) {
   const cols = 5;
@@ -702,7 +702,7 @@ export function evaluateBuffalo1024Ways(grid, wildMultipliers = {}, spinMult = 1
 }
 
 // ==========================================
-// 4. LIGHTNING VAULT HOLD & SPIN ORB GENERATOR
+// 4. THUNDER VAULT HOLD & SPIN ORB GENERATOR
 // ==========================================
 export function rollLightningOrbValue(rng = Math.random) {
   const r = rng();
@@ -715,7 +715,7 @@ export function rollLightningOrbValue(rng = Math.random) {
 }
 
 // ==========================================
-// 5. CYBER BUFFALO 8-WEDGE BONUS WHEEL
+// 5. CYBER STAMPEDE 8-WEDGE BONUS WHEEL
 // ==========================================
 export const BUFFALO_WHEEL_SEGMENTS = [
   { label: '2×', mult: 2, color: '#0284c7', weight: 30 },

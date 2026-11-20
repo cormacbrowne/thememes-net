@@ -2,7 +2,7 @@ import { memo, useId } from 'react';
 
 /**
  * Crisp inline SVG Las Vegas Slot Machine Reel Graphics
- * Covers Classic Bandit '85 + Silver Mustang (Dougie S3) + Lightning Vault + Cyber Buffalo '86
+ * Covers Classic Bandit '85 + Silver Mustang (Dougie S3) + Thunder Vault + Cyber Stampede '86
  */
 const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge = null }) {
   const uid = useId().replace(/:/g, '');
@@ -294,10 +294,10 @@ const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge =
           </svg>
         );
 
-      // ===== LIGHTNING VAULT 5000 =====
+      // ===== THUNDER VAULT 5000 =====
       case 'bolt':
         return (
-          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Lightning Vault Orb">
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Thunder Vault Orb">
             <defs>
               <radialGradient id={`gbolt-${uid}`} cx="40%" cy="35%" r="65%">
                 <stop offset="0%" stopColor="#ecfeff" />
@@ -479,10 +479,10 @@ const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge =
           </svg>
         );
 
-      // ===== CYBER BUFFALO STAMPEDE '86 =====
+      // ===== CYBER STAMPEDE STAMPEDE '86 =====
       case 'buffalo':
         return (
-          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Cyber Buffalo">
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Cyber Stampede">
             <path d="M10 22 C8 12, 16 10, 20 18" fill="none" stroke="#fde047" strokeWidth="4" strokeLinecap="round" />
             <path d="M54 22 C56 12, 48 10, 44 18" fill="none" stroke="#fde047" strokeWidth="4" strokeLinecap="round" />
             <ellipse cx="32" cy="34" rx="20" ry="18" fill="#7c2d12" stroke="#f97316" strokeWidth="2.4" />

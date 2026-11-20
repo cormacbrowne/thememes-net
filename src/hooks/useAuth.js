@@ -152,7 +152,13 @@ export function useAuth({ setShowAuthModal, awardXpAndCombo }) {
       needsHandle: Boolean(profile) && !claimedUsername,
       role: profile?.role || 'user',
       strikes: profile?.strikes || 0,
-      suspendedUntil: profile?.suspended_until || null
+      suspendedUntil: profile?.suspended_until || null,
+      xp: Number(profile?.xp || 0),
+      streakDays: Number(profile?.streak_days || 0),
+      bestStreak: Number(profile?.best_streak || 0),
+      lastActiveDay: profile?.last_active_day || null,
+      freezeUsedWeek: profile?.freeze_used_week || null,
+      bio: profile?.bio || ''
     };
     setUser(u);
     try {

@@ -14,6 +14,8 @@ export default function NavbarHud({
   onlineCount = 0,
   unreadNotificationsCount = 0,
   currentRank,
+  streakDays = 0,
+  streakFreezeAvailable = true,
   tokens = 50,
   memeCentz = 25,
   xpConversionState = null,
@@ -174,6 +176,19 @@ export default function NavbarHud({
           >
             <Plus size={16} strokeWidth={2.5} aria-hidden="true" />
             <span>Create</span>
+          </button>
+
+          {/* 1.9 DAILY STREAK PILL */}
+          <button
+            type="button"
+            className="tm-streak-pill"
+            data-testid="navbar-streak-pill"
+            onClick={onOpenRewards}
+            title={`Daily activity streak: ${streakDays} day${streakDays === 1 ? '' : 's'} (${streakFreezeAvailable ? 'Weekly Streak Freeze ready ❄️' : 'Weekly Streak Freeze used this week'})`}
+            aria-label={`Daily activity streak: ${streakDays} days`}
+          >
+            <span aria-hidden="true">🔥</span>
+            <span>{streakDays}</span>
           </button>
 
           {/* 2. UNIFIED MEMEDOLLARZ & MEMECENTZ WALLET PILL */}

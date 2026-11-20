@@ -90,6 +90,7 @@ export default function DailyCaptionBattleModal({
   onOpenProfile,
   onKingsUpdated,
   onClaimPrize,
+  onActivityRecorded,
   onClose
 }) {
   const [state, setState] = useState(null);
@@ -179,6 +180,7 @@ export default function DailyCaptionBattleModal({
       setMsg({ type: 'error', text: res.message || 'Could not submit your caption.' });
       return;
     }
+    onActivityRecorded?.('battle_entry');
     setMsg({
       type: 'ok',
       text:
@@ -201,6 +203,7 @@ export default function DailyCaptionBattleModal({
       return;
     }
     if (funny) track('battle_vote', { battle: String(battle?.id || '') });
+    onActivityRecorded?.('battle_vote');
     await load();
   };
 

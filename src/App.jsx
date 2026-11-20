@@ -285,6 +285,7 @@ export default function App() {
     goblinsLeftInWindow,
     goblinResetMs,
     streakDays,
+    streakFreezeAvailable,
     streakClaimedToday,
     unlockedFlairs,
     equippedFlair,
@@ -318,7 +319,9 @@ export default function App() {
     handleCompleteWheelSpin,
     handleClaimQuestReward,
     handleTriggerKonamiGodMode,
-    recordWildGoblinReward
+    recordWildGoblinReward,
+    recordMeaningfulActivity,
+    syncProgressionFromProfile
   } = economy;
 
   const handleSelectEightiesCar = useCallback((carId) => {
@@ -396,6 +399,10 @@ export default function App() {
     handleLogout
   } = auth;
   const authUserId = profileStatus?.id || user?.id || null;
+  useEffect(() => {
+    if (!user) return;
+    Promise.resolve().then(() => syncProgressionFromProfile(user));
+  }, [user, syncProgressionFromProfile]);
   const memeCategories = useMemeCategories();
 
   // Signed in (e.g. with Google) but no @handle yet: open the profile once per session so the
@@ -1124,6 +1131,8 @@ export default function App() {
             onlineCount={onlineCount}
             unreadNotificationsCount={unreadNotificationsCount}
             currentRank={currentRank}
+            streakDays={streakDays}
+            streakFreezeAvailable={streakFreezeAvailable}
             tokens={tokens}
             memeCentz={memeCentz}
             xpConversionState={xpConversionState}
@@ -1829,6 +1838,7 @@ export default function App() {
           closeAllModals();
           setBattleModalOpen(true);
         }}
+        onDailyPuzzleCompleted={() => recordMeaningfulActivity('daily_puzzle')}
           />
         </Suspense>
       </ArcadeErrorBoundary>
@@ -2375,6 +2385,7 @@ export default function App() {
               setProfileUsername(username);
             }}
             onKingsUpdated={setActiveCaptionKings}
+            onActivityRecorded={recordMeaningfulActivity}
             onClose={handleCloseBattle}
           />
         </Suspense>

@@ -17,6 +17,11 @@
 - Live `HH:MM:SS` countdown to the next puzzle and Today's Caption Battle nudge on completion, plus `/daily` 301 redirect to `/games/guess-the-meme`.
 - Added `daily_puzzle_results` table + RPCs (`save_daily_puzzle_result`, `get_my_daily_puzzle_state`) to store per-user puzzle results and merge guest history on sign-in.
 
+### 2.4 Streaks, family-friendly levels, badges & weekly leaderboards
+- Daily activity streak (`tm_activity_streak_v1` + Supabase `record_daily_activity` RPC) tracks meme creation, battle entries, battle votes, and daily puzzle completions with 1 free weekly streak freeze (Europe/London) and displays the live `🔥` counter in `NavbarHud`.
+- Replaced level rank names in `src/config/progression.js` with 10 family-friendly titles (`Arcade Lurker` → `Cosmic Supernova`) and added declarative `BADGE_CONFIG` in `src/config/badges.js`.
+- Added `📅 Weekly` tab to `LeaderboardModal` powered by `get_weekly_leaderboards()` (Monday 00:00 Europe/London reset): Top Creators, Battle Points, Daily Puzzle, and Hall of Fame.
+
 ## Phase 1: Credibility and speed (20 Nov 2026)
 
 ### 1.1 Real numbers only

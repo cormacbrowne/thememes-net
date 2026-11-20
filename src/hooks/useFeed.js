@@ -135,7 +135,8 @@ export function useFeed({
     incrementQuest,
     addCappedWheelSpins,
     awardUploadTokensWithPioneerCheck,
-    claimStarterPackIfFirst
+    claimStarterPackIfFirst,
+    recordMeaningfulActivity
   } = economy;
 
   const [memes, setMemes] = useState(() => {
@@ -1391,6 +1392,7 @@ export function useFeed({
     }
     trackMemePublished(insertedMeme, 'quick_upload');
     recordPublishDailyPerk();
+    recordMeaningfulActivity?.('meme_created');
     if (!aiUnlocked) {
       consumeJustCreatedAnonHandle();
       setAiUnlocked(true);
@@ -1500,6 +1502,7 @@ export function useFeed({
     }
 
     recordPublishDailyPerk();
+    recordMeaningfulActivity?.('meme_created');
     if (!aiUnlocked) {
       consumeJustCreatedAnonHandle();
       setAiUnlocked(true);

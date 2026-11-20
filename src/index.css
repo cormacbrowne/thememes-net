@@ -2932,7 +2932,31 @@ html {
    - PHASE 4: LAS VEGAS RETRO PINBALL MACHINE
    ========================================== */
 
-/* Token Wallet Pill & Sub-Game Quick Pills in Top Navbar */
+/* Daily Activity Streak Pill & Token Wallet Pill in Top Navbar */
+.tm-streak-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 38px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(249, 115, 22, 0.55);
+  background: rgba(249, 115, 22, 0.14);
+  color: #fed7aa;
+  font-size: 13px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.tm-streak-pill:hover {
+  border-color: rgba(251, 146, 60, 0.9);
+  background: rgba(249, 115, 22, 0.24);
+}
+
 .tm-token-wallet-pill {
   min-height: 38px;
   padding: 5px 12px;

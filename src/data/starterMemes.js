@@ -5,6 +5,8 @@
 // ==========================================
 
 import { ENGAGEMENT_TIERS } from '../config/engagementTiers.js';
+import { LEVELS } from '../config/progression.js';
+import { evaluateBadges } from '../config/badges.js';
 export const STUDIO_TEMPLATES = [
   {
     id: 'tpl-drake-compare',
@@ -387,18 +389,7 @@ export const VIRAL_CAPTIONS = [
   ['WHEN THE WIFI DROPS', 'FOR 0.5 SECONDS MID-MATCH']
 ];
 
-export const RANKS = [
-  { level: 1, title: 'Arcade Newcomer', minXp: 0 },
-  { level: 2, title: 'Meme Rookie', minXp: 150 },
-  { level: 3, title: 'Meme Tactician', minXp: 400 },
-  { level: 4, title: 'Vibe Inspector', minXp: 800 },
-  { level: 5, title: 'Remix Hero', minXp: 1400 },
-  { level: 6, title: 'Meme Champion', minXp: 2200 },
-  { level: 7, title: 'Joy Architect', minXp: 3200 },
-  { level: 8, title: 'Grandmaster of Memes', minXp: 4500 },
-  { level: 9, title: 'Supernova Creator', minXp: 6500 },
-  { level: 10, title: 'Cosmic Meme Legend', minXp: 9000 }
-];
+export const RANKS = LEVELS;
 
 export const WHEEL_REWARDS = [
   {
@@ -823,101 +814,37 @@ export const DAILY_BOUNTIES = [
 ];
 
 /**
- * Computes unlocked Cyber-Arcade achievement badges for a given player profile.
+ * Computes achievement badges for a given player profile using config-driven rules.
  */
 export function computePlayerBadges({
   authoredMemes = [],
   totalScore = 0,
   totalRemixesSpawned = 0,
-  xp = 0,
-  battleStreak = 0,
   bountiesCompleted = 0,
-  unlockedFlairs = [],
-  roastsRun = 0,
-  goblinsCaught = 0,
-  konamiUnlocked = false,
+  streakDays = 0,
+  bestStreak = 0,
+  battleEntries = 0,
+  podiumFinishes = 0,
+  captionWins = 0,
+  wholesomeMemes = 0,
   isCaptionKing = false
 }) {
-  const hasMutation = authoredMemes.some((m) => (m.generation || 0) > 0) || totalRemixesSpawned > 0;
-  const hasBountyMeme = authoredMemes.some((m) => m.is_bounty) || bountiesCompleted > 0;
+  const remixesCreated = authoredMemes.filter((m) => (m?.generation || 0) > 0 || m?.parent_meme_id).length;
+  const bountyMemesCount = authoredMemes.filter((m) => m?.is_bounty).length;
+  const wholesomeCount =
+    wholesomeMemes || authoredMemes.filter((m) => String(m?.category || '').toLowerCase() === 'wholesome').length;
 
-  return [
-    {
-      id: 'caption-king',
-      icon: '👑',
-      name: 'Caption King',
-      desc: 'Won a Daily Caption Battle crown',
-      unlocked: Boolean(isCaptionKing)
-    },
-    {
-      id: 'first-drop',
-      icon: '🚀',
-      name: 'First Upload',
-      desc: 'Uploaded an original meme to the community feed',
-      unlocked: authoredMemes.length >= 1
-    },
-    {
-      id: 'dna-architect',
-      icon: '🧬',
-      name: 'Remix Architect',
-      desc: 'Remixed a meme or inspired a community remix tree',
-      unlocked: hasMutation
-    },
-    {
-      id: 'supernova-club',
-      icon: '🔥',
-      name: '1K Supernova',
-      desc: 'Reached 1,000+ total score across uploaded memes',
-      unlocked: totalScore >= 1000
-    },
-    {
-      id: 'bounty-hunter',
-      icon: '🎯',
-      name: 'Bounty Champion',
-      desc: 'Completed a Daily Meme Bounty challenge',
-      unlocked: hasBountyMeme
-    },
-    {
-      id: 'overdrive-lord',
-      icon: '⚡',
-      name: 'Arcade Regular',
-      desc: 'Earned 400+ XP in the Cyber-Arcade',
-      unlocked: xp >= 400 || totalScore >= 1800
-    },
-    {
-      id: 'arena-gladiator',
-      icon: '👑',
-      name: 'King of the Hill',
-      desc: 'Achieved a 3+ win streak in the 1v1 Battle Arena',
-      unlocked: battleStreak >= 3 || totalScore >= 1400
-    },
-    {
-      id: 'chaos-roller',
-      icon: '🎰',
-      name: 'Lucky Spinner',
-      desc: 'Spun the Wheel of Chaos & unlocked a Custom Flair',
-      unlocked: unlockedFlairs.length > 0 || xp >= 1200
-    },
-    {
-      id: 'ai-roaster',
-      icon: '🤖',
-      name: 'AI Vibe Inspector',
-      desc: 'Analyzed memes with the AI Scanner',
-      unlocked: roastsRun >= 1 || totalScore >= 2000
-    },
-    {
-      id: 'goblin-catcher',
-      icon: '👾',
-      name: 'Golden Goblin Catcher',
-      desc: 'Caught a roaming Golden Loot Goblin in the feed',
-      unlocked: goblinsCaught >= 1 || xp >= 2500
-    },
-    {
-      id: 'konami-god',
-      icon: '🕹️',
-      name: 'Secret Code Finder',
-      desc: 'Triggered Secret Bonus Mode (↑↑↓↓←→←→BA or 5x Logo Tap)',
-      unlocked: Boolean(konamiUnlocked) || xp >= 5000
-    }
-  ];
+  return evaluateBadges({
+    memeCount: authoredMemes.length,
+    battleEntries: Math.max(battleEntries, bountiesCompleted, bountyMemesCount),
+    podiumFinishes: Math.max(podiumFinishes, captionWins),
+    captionWins,
+    isCaptionKing,
+    streakDays,
+    bestStreak,
+    totalUpvotes: totalScore,
+    remixesSpawned: totalRemixesSpawned,
+    remixesCreated,
+    wholesomeMemes: wholesomeCount
+  });
 }

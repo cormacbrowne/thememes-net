@@ -27,6 +27,14 @@ import {
   getTodayDateString
 } from '../utils/tokenEconomy';
 import { setRadioStation, radioEvent } from '../utils/radioBus';
+import { getSupabaseClient } from '../supabaseClient';
+import {
+  XP_AWARDS,
+  applyDailyActivity,
+  getLevelForXp,
+  getLondonDateKey,
+  getLondonIsoWeek
+} from '../config/progression';
 import {
   loadUnlockedCosmetics,
   saveUnlockedCosmetics,
@@ -105,9 +113,36 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
   });
   const [windowNow, setWindowNow] = useState(() => Date.now());
 
-  const [streakDays, setStreakDays] = useState(() =>
-    Number(localStorage.getItem('tm_streak_days') || 3)
-  );
+  const [streakDays, setStreakDays] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('tm_activity_streak_v1') || 'null');
+      if (saved && typeof saved.streakDays === 'number') return Math.max(0, saved.streakDays);
+    } catch {
+      // ignore
+    }
+    return Number(localStorage.getItem('tm_streak_days') || 0);
+  });
+  const [bestStreak, setBestStreak] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('tm_activity_streak_v1') || 'null');
+      if (saved && typeof saved.bestStreak === 'number') return Math.max(0, saved.bestStreak);
+    } catch {
+      // ignore
+    }
+    return Number(localStorage.getItem('tm_streak_days') || 0);
+  });
+  const [activityMeta, setActivityMeta] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('tm_activity_streak_v1') || 'null');
+      return {
+        lastActiveDay: saved?.lastActiveDay || null,
+        freezeUsedWeek: saved?.freezeUsedWeek || null,
+        actionsToday: saved?.actionsToday || {}
+      };
+    } catch {
+      return { lastActiveDay: null, freezeUsedWeek: null, actionsToday: {} };
+    }
+  });
   const [streakClaimedToday, setStreakClaimedToday] = useState(() => {
     const today = new Date().toISOString().slice(0, 10);
     return localStorage.getItem('tm_streak_date') === today;
@@ -140,13 +175,30 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
     () => localStorage.getItem('tm_konami') === 'true'
   );
 
-  const currentRank = useMemo(() => {
-    let r = RANKS[0];
-    for (const item of RANKS) {
-      if (xp >= item.minXp) r = item;
+  const currentRank = useMemo(() => getLevelForXp(xp), [xp]);
+  const levelInfo = currentRank;
+  const streakFreezeAvailable = useMemo(
+    () => activityMeta.freezeUsedWeek !== getLondonIsoWeek(getLondonDateKey()),
+    [activityMeta.freezeUsedWeek]
+  );
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('tm_streak_days', String(streakDays));
+      localStorage.setItem(
+        'tm_activity_streak_v1',
+        JSON.stringify({
+          streakDays,
+          bestStreak,
+          lastActiveDay: activityMeta.lastActiveDay,
+          freezeUsedWeek: activityMeta.freezeUsedWeek,
+          actionsToday: activityMeta.actionsToday || {}
+        })
+      );
+    } catch {
+      // ignore storage quota errors
     }
-    return r;
-  }, [xp]);
+  }, [streakDays, bestStreak, activityMeta]);
 
   useEffect(() => {
     localStorage.setItem('tm_xp', String(xp));
@@ -944,6 +996,87 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
     [awardFairReward, awardXpOnly, setGoblinFortuneToast]
   );
 
+  const syncProgressionFromProfile = useCallback((profile) => {
+    if (!profile) return;
+    if (typeof profile.xp === 'number' && profile.xp > 0) {
+      setXp((prev) => Math.max(prev, profile.xp));
+    }
+    if (typeof profile.streakDays === 'number' && profile.streakDays > 0) {
+      setStreakDays((prev) => Math.max(prev, profile.streakDays));
+    }
+    if (typeof profile.bestStreak === 'number' && profile.bestStreak > 0) {
+      setBestStreak((prev) => Math.max(prev, profile.bestStreak));
+    }
+    if (profile.lastActiveDay || profile.freezeUsedWeek) {
+      setActivityMeta((prev) => ({
+        ...prev,
+        lastActiveDay: profile.lastActiveDay || prev.lastActiveDay,
+        freezeUsedWeek: profile.freezeUsedWeek || prev.freezeUsedWeek
+      }));
+    }
+  }, []);
+
+  const recordMeaningfulActivity = useCallback(
+    async (action) => {
+      const cleanAction = String(action || '').toLowerCase();
+      if (!XP_AWARDS[cleanAction]) return null;
+      const londonDay = getLondonDateKey();
+      const nextStreakResult = applyDailyActivity(
+        {
+          streakDays,
+          bestStreak,
+          lastActiveDay: activityMeta.lastActiveDay,
+          freezeUsedWeek: activityMeta.freezeUsedWeek
+        },
+        londonDay
+      );
+
+      setStreakDays(nextStreakResult.streakDays);
+      setBestStreak(nextStreakResult.bestStreak);
+      const alreadyDoneToday = Boolean(activityMeta.actionsToday?.[`${londonDay}:${cleanAction}`]);
+      setActivityMeta((prev) => ({
+        lastActiveDay: nextStreakResult.lastActiveDay,
+        freezeUsedWeek: nextStreakResult.freezeUsedWeek,
+        actionsToday: {
+          [`${londonDay}:${cleanAction}`]: true,
+          ...(prev.actionsToday || {})
+        }
+      }));
+      if (!alreadyDoneToday) {
+        awardXpOnly(XP_AWARDS[cleanAction], null, '🔥', `+${XP_AWARDS[cleanAction]} XP`);
+      }
+
+      if (nextStreakResult.freezeUsed) {
+        setGoblinFortuneToast('❄️ Weekly Streak Freeze used automatically — your 🔥 streak survived!');
+        setTimeout(() => setGoblinFortuneToast(''), 4500);
+      }
+
+      const client = getSupabaseClient();
+      if (client?.rpc && client?.auth?.getSession) {
+        try {
+          const { data: sess } = await client.auth.getSession();
+          if (sess?.session?.user && !sess.session.user.is_anonymous) {
+            const { data } = await client.rpc('record_daily_activity', { p_action: cleanAction });
+            if (data?.ok) {
+              if (typeof data.xp === 'number') setXp((p) => Math.max(p, data.xp));
+              if (typeof data.streak_days === 'number') setStreakDays(data.streak_days);
+              if (typeof data.best_streak === 'number') setBestStreak(data.best_streak);
+              setActivityMeta((prev) => ({
+                ...prev,
+                lastActiveDay: data.last_active_day || prev.lastActiveDay,
+                freezeUsedWeek: data.freeze_used_week ?? prev.freezeUsedWeek
+              }));
+            }
+          }
+        } catch {
+          // non-fatal offline fallback
+        }
+      }
+      return nextStreakResult;
+    },
+    [streakDays, bestStreak, activityMeta, awardXpOnly, setGoblinFortuneToast]
+  );
+
   return {
     xp,
     setXp,
@@ -958,6 +1091,7 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
     comboTimer,
     levelUpBanner,
     currentRank,
+    levelInfo,
     unlockedCosmetics,
     equippedFrame,
     equippedCassetteSkin,
@@ -970,6 +1104,8 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
     goblinsLeftInWindow,
     goblinResetMs,
     streakDays,
+    bestStreak,
+    streakFreezeAvailable,
     streakClaimedToday,
     unlockedFlairs,
     equippedFlair,
@@ -1008,6 +1144,8 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
     handleCompleteWheelSpin,
     handleClaimQuestReward,
     handleTriggerKonamiGodMode,
-    recordWildGoblinReward
+    recordWildGoblinReward,
+    recordMeaningfulActivity,
+    syncProgressionFromProfile
   };
 }

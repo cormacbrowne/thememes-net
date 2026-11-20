@@ -1,6 +1,8 @@
 import { REMIX_ENABLED } from '../config/featureFlags';
 import { useEffect, useMemo, useState } from 'react';
 import { RANKS, formatMemeUploadDate } from '../data/starterMemes';
+import { getSupabaseClient } from '../supabaseClient';
+import PixelAvatar from './PixelAvatar';
 import {
   EMPTY_LEADERBOARD_COPY,
   LEADERBOARD_FOR_FUN_COPY,
@@ -45,10 +47,37 @@ export default function LeaderboardModal({
   onOpenProfile,
   onLaunchSubGame
 }) {
-  const [tab, setTab] = useState(initialTab); // 'creators' | 'subgames' | 'memes' | 'origins'
+  const [tab, setTab] = useState(initialTab); // 'creators' | 'weekly' | 'subgames' | 'memes' | 'origins'
   const [selectedGame, setSelectedGame] = useState(initialGame);
   const [period, setPeriod] = useState('all_time'); // 'today' | 'week' | 'all_time'
   const [boardState, setBoardState] = useState({ key: '', entries: [], error: '' });
+  const [weeklySubTab, setWeeklySubTab] = useState('top_creators'); // 'top_creators' | 'battle_points' | 'daily_puzzle' | 'hall_of_fame'
+  const [weeklyState, setWeeklyState] = useState({ loaded: false, data: null, error: '' });
+
+  useEffect(() => {
+    if (tab !== 'weekly') return undefined;
+    let cancelled = false;
+    const client = getSupabaseClient();
+    if (!client?.rpc) {
+      Promise.resolve().then(() => {
+        if (!cancelled) setWeeklyState({ loaded: true, data: null, error: 'Offline: weekly boards unavailable.' });
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+    client.rpc('get_weekly_leaderboards', { p_limit: 20 }).then(({ data, error }) => {
+      if (cancelled) return;
+      if (error || !data?.ok) {
+        setWeeklyState({ loaded: true, data: null, error: 'Could not load weekly leaderboards.' });
+      } else {
+        setWeeklyState({ loaded: true, data, error: '' });
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [tab]);
 
   const activeGameMeta = useMemo(
     () => LEADERBOARD_GAMES.find((g) => g.id === selectedGame) || LEADERBOARD_GAMES[0],
@@ -170,6 +199,14 @@ export default function LeaderboardModal({
         <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
           <button
             type="button"
+            className={`tm-tab ${tab === 'weekly' ? 'active' : ''}`}
+            data-testid="leaderboard-weekly-tab"
+            onClick={() => setTab('weekly')}
+          >
+            📅 Weekly
+          </button>
+          <button
+            type="button"
             className={`tm-tab ${tab === 'creators' ? 'active' : ''}`}
             onClick={() => setTab('creators')}
           >
@@ -198,6 +235,107 @@ export default function LeaderboardModal({
             🧬 Most Mutated Origins
           </button>
         </div>
+
+        {/* TAB W: WEEKLY EUROPE/LONDON LEADERBOARDS & ALL-TIME HALL OF FAME */}
+        {tab === 'weekly' && (
+          <div>
+            <div className="tm-weekly-reset-bar" data-testid="weekly-reset-note">
+              <span>🇬🇧 {weeklyState.data?.reset_label || 'Resets Monday 00:00 Europe/London'}</span>
+              <a href="/hall-of-fame" className="tm-link-btn">
+                👑 Full Hall of Fame →
+              </a>
+            </div>
+
+            <div className="tm-cabinet-pill-strip" role="tablist" aria-label="Weekly leaderboard categories">
+              {[
+                { id: 'top_creators', label: '🔥 Top Creators' },
+                { id: 'battle_points', label: '⚔️ Battle Points' },
+                { id: 'daily_puzzle', label: '🧠 Daily Puzzle' },
+                { id: 'hall_of_fame', label: '👑 Hall of Fame' }
+              ].map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={weeklySubTab === s.id}
+                  data-testid={`weekly-subtab-${s.id}`}
+                  className={`tm-cabinet-pill ${weeklySubTab === s.id ? 'active' : ''}`}
+                  onClick={() => setWeeklySubTab(s.id)}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+
+            {!weeklyState.loaded ? (
+              <div className="tm-cabinet-empty">⏳ Loading weekly rankings…</div>
+            ) : weeklyState.error ? (
+              <div className="tm-cabinet-empty">{weeklyState.error}</div>
+            ) : (
+              (() => {
+                const rows = Array.isArray(weeklyState.data?.[weeklySubTab])
+                  ? weeklyState.data[weeklySubTab]
+                  : [];
+                if (rows.length === 0) {
+                  return (
+                    <div className="tm-cabinet-empty">
+                      No entries logged for this board yet — jump in and claim #1!
+                    </div>
+                  );
+                }
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {rows.map((row, idx) => (
+                      <div
+                        key={`${weeklySubTab}-${row.handle || idx}`}
+                        className={`tm-leaderboard-row ${idx < 3 ? `podium-${idx + 1}` : ''}`}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                          <span className="tm-medal-badge">
+                            {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`}
+                          </span>
+                          <PixelAvatar
+                            avatarId={row.avatar_id || 'pixel-alien'}
+                            handle={row.handle}
+                            size={32}
+                          />
+                          <div style={{ minWidth: 0 }}>
+                            <button
+                              type="button"
+                              className="tm-link-btn"
+                              style={{ fontWeight: 900, fontSize: '14px', padding: 0 }}
+                              onClick={() => {
+                                onClose();
+                                onOpenProfile(row.handle);
+                              }}
+                            >
+                              @{row.handle}
+                            </button>
+                            <div style={{ fontSize: '11px', color: 'var(--tm-text-dim)' }}>
+                              {weeklySubTab === 'top_creators' && `${row.memes_count || 0} memes this week`}
+                              {weeklySubTab === 'battle_points' &&
+                                `${row.entries_count || 0} entries · ${row.wins_count || 0} wins`}
+                              {weeklySubTab === 'daily_puzzle' &&
+                                `${row.solved || 0} solved · ${row.days_played || 0} days`}
+                              {weeklySubTab === 'hall_of_fame' &&
+                                `Best: ${row.best_score || 0} votes${row.last_won_date ? ` · ${row.last_won_date}` : ''}`}
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{ fontWeight: 900, fontSize: '15px', color: 'var(--tm-amber)', flexShrink: 0 }}>
+                          {weeklySubTab === 'top_creators' && `▲ ${(row.upvotes || 0).toLocaleString()}`}
+                          {weeklySubTab === 'battle_points' && `${(row.points || 0).toLocaleString()} pts`}
+                          {weeklySubTab === 'daily_puzzle' && `${(row.points || 0).toLocaleString()} pts`}
+                          {weeklySubTab === 'hall_of_fame' && `👑 ${row.wins || 0}x`}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()
+            )}
+          </div>
+        )}
 
         {/* TAB 0: GLOBAL ARCADE CABINET LEADERBOARDS */}
         {tab === 'subgames' && (

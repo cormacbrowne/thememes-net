@@ -124,3 +124,18 @@
   border: 1px dashed rgba(165, 159, 196, 0.35);
   color: var(--tm-text-soft);
 }
+
+.tm-weekly-reset-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 9px 12px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  background: rgba(25, 240, 255, 0.08);
+  border: 1px solid rgba(25, 240, 255, 0.25);
+  font-size: 12px;
+  color: var(--tm-text-soft);
+}

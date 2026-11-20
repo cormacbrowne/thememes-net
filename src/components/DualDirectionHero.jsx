@@ -134,7 +134,11 @@ export default function DualDirectionHero({
 
       <div className="tm-portal-body">
         <div className="tm-portal-sign">
-          <NeonSign size="hero" flow powerOn={isFirstVisit} />
+          <NeonSign
+            size="hero"
+            flow
+            powerOn={isFirstVisit && !(typeof window !== 'undefined' && window.__TM_STATIC_PORTAL_SHOWN)}
+          />
         </div>
         <h1 className="tm-dual-hero-heading tm-dual-hero-heading--sr">
           THE MEMES.net: two 80s worlds in one site, memes and a free neon arcade
@@ -166,7 +170,7 @@ export default function DualDirectionHero({
             <span className="tm-portal-door-inner">
               <Gamepad2 className="tm-portal-door-icon" size={26} strokeWidth={2.2} aria-hidden="true" />
               <span className="tm-portal-door-word">PLAY</span>
-              <span className="tm-portal-door-sub">Arcade · Vegas · Pranks</span>
+              <span className="tm-portal-door-sub">Arcade · Retro · Pranks</span>
             </span>
           </button>
         </div>

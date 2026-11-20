@@ -25,6 +25,12 @@ const isLegalRoute = /^\/(?:rules|terms|privacy|takedown|contact)\/?$/i.test(pat
 const isHallOfFameRoute = /^\/hall-of-fame\/?$/i.test(pathname)
 const isUiKitRoute = Boolean(import.meta.env.DEV && UiKitPage && /^\/__ui\/?$/i.test(pathname))
 
+// Plan 1.3: the home page's static HTML portal is already lit when React takes over, so the
+// React sign must not replay its power-on flicker.
+if (typeof window !== 'undefined') {
+  window.__TM_STATIC_PORTAL_SHOWN = Boolean(document.querySelector('[data-tm-static-portal]'))
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <RootErrorBoundary>

@@ -34,18 +34,12 @@ import { getSecurityAuditReport } from './utils/securityGuard';
 import { ACCEPT_MEDIA } from './utils/mediaPipeline';
 import ParticleOverlay from './components/ParticleOverlay';
 import JuiceLayer from './components/ui/JuiceLayer';
-import WinCelebrationOverlay from './components/WinCelebrationOverlay';
 import ArcadeErrorBoundary from './components/ArcadeErrorBoundary';
-import {
-  DeLoreanTimeWarpStage,
-  DeLoreanDockBanner
-} from './components/DeLoreanTimeMachine';
 import { DELOREAN_ERAS, EIGHTIES_CARS } from './data/deloreanEras';
 import DualDirectionHero from './components/DualDirectionHero';
 import LazyCompanionRow from './components/LazyCompanionRow';
 import MemeSkeletonGrid from './components/MemeSkeletonGrid';
 import MobileArcadeDock from './components/MobileArcadeDock';
-import SeoDiscoveryFooter from './components/SeoDiscoveryFooter';
 import { MobileNowPlayingPill } from './components/MemesRadio';
 import {
   setRadioContextStation,
@@ -97,6 +91,17 @@ const FullscreenMusicEqualizer = lazyWithRetry(
   (m) => ({ default: m.FullscreenMusicEqualizer })
 );
 const IphoneAppModal = lazyWithRetry(() => import('./components/IphoneAppModal'));
+// Plan 1.3: not needed for the first screen, so kept out of the main bundle.
+const WinCelebrationOverlay = lazyWithRetry(() => import('./components/WinCelebrationOverlay'));
+const DeLoreanTimeWarpStage = lazyWithRetry(
+  () => import('./components/DeLoreanTimeMachine'),
+  (m) => ({ default: m.DeLoreanTimeWarpStage })
+);
+const DeLoreanDockBanner = lazyWithRetry(
+  () => import('./components/DeLoreanTimeMachine'),
+  (m) => ({ default: m.DeLoreanDockBanner })
+);
+const SeoDiscoveryFooter = lazyWithRetry(() => import('./components/SeoDiscoveryFooter'));
 
 const MODAL_SKELETON_FALLBACK = (
   <div className="tm-modal-backdrop" role="status" aria-live="polite">
@@ -1049,6 +1054,7 @@ export default function App() {
       <JuiceLayer />
 
       {/* GLOBAL VARIED WIN CELEBRATION OVERLAY */}
+      <Suspense fallback={null}>
       <WinCelebrationOverlay
         litePerfMode={litePerfMode}
         compactPlayfieldMode={viewMode === 'pinball'}
@@ -1065,6 +1071,7 @@ export default function App() {
         onTriggerWarp={handleTriggerDeLoreanWarp}
         bonusClaimedToday={fluxBonusClaimedToday}
       />
+      </Suspense>
 
       {/* LEVEL UP BANNER */}
       {levelUpBanner && (
@@ -1450,7 +1457,9 @@ export default function App() {
               renderMemeCard={(meme, idx) => (
                 <MemeCard
                   meme={meme}
-                  priority={idx < 2}
+                  // On the home feed the portal fills the first screen, so no card is above the
+                  // fold: let the browser lazy-load them all (plan 1.3).
+                  priority={viewMode !== 'feed' && idx < 2}
                   myVote={userVotes[meme.id] || 0}
                   isBookmarked={bookmarkedIds.includes(String(meme.id))}
                   onToggleBookmark={handleToggleBookmark}
@@ -1660,6 +1669,7 @@ export default function App() {
 
           {/* DELOREAN DMC-12 TIME MACHINE BANNER */}
           <div style={{ maxWidth: 1240, margin: '0 auto', padding: '0 14px' }}>
+            <Suspense fallback={null}>
             <DeLoreanDockBanner
               activeEra={deloreanEra}
               activeCarId={activeCarId}
@@ -1670,6 +1680,7 @@ export default function App() {
               }}
               onQuickWarp={handleTriggerDeLoreanWarp}
             />
+            </Suspense>
           </div>
 
           {/* SIDE ENTERTAINMENT LOUNGE: FEATURED 80s NEON ARCADE SUB-GAMES BELOW THE MEME FEED */}
@@ -2352,6 +2363,7 @@ export default function App() {
 
       {/* PHASE 10: CRAWLABLE SEO DISCOVERY DIRECTORY & FAQ HUB */}
       {!isFixedArcadeGame && (
+        <Suspense fallback={null}>
         <SeoDiscoveryFooter
           onOpenInstallModal={() => {
             sfx.playToggle();
@@ -2403,6 +2415,7 @@ export default function App() {
             setShowRewardsModal(true);
           }}
         />
+        </Suspense>
       )}
 
       {/* FULL-SCREEN MUSIC EQUALIZER STUDIO */}

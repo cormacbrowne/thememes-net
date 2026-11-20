@@ -3,7 +3,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildChromeSignSvg } from '../../src/components/chromeBrandSvg.js';
-import { SEO_ROUTES, ARCADE_GAME_COUNT, getCanonicalPathForState, resolveRouteFromLocation } from '../../src/data/seoRoutes.js';
+import { ARCADE_GAME_COUNT, getCanonicalPathForState, resolveRouteFromLocation } from '../../src/data/seoRoutes.js';
+import { SEO_ROUTES_WITH_COPY as SEO_ROUTES } from '../../src/data/seoRouteCopy.js';
 import { ARCADE_GAMES_CATALOG, BOSS_SCREENS_CATALOG } from '../../src/data/arcadeGamesCatalog.js';
 
 const visibleText = (html) =>

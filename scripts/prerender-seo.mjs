@@ -1,7 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SEO_ROUTES, SITE_ORIGIN, DEFAULT_OG_IMAGE } from '../src/data/seoRoutes.js';
+import { SITE_ORIGIN, DEFAULT_OG_IMAGE } from '../src/data/seoRoutes.js';
+// Routes with their long intro copy (kept out of the app bundle, plan 1.3).
+import { SEO_ROUTES_WITH_COPY as SEO_ROUTES } from '../src/data/seoRouteCopy.js';
 import { STARTER_MEMES } from '../src/data/starterMemes.js';
 import { MEME_TEMPLATES, TEMPLATES_INDEX_PATH, relatedTemplates } from '../src/data/memeTemplates.js';
 import { TEMPLATES_INDEX_META, buildTemplateJsonLd, buildTemplatesIndexJsonLd } from '../src/utils/templateSeo.js';
@@ -92,16 +94,16 @@ function buildPrerenderMainHtml(route) {
     const topPreviewMemes = STARTER_MEMES.slice(0, 4);
     const previewHtml = topPreviewMemes
       .map(
-        (meme, idx) => `
+        (meme) => `
           <figure style="margin:0;background:#110d22;border:1px solid #2c2452;border-radius:12px;overflow:hidden;">
-            <img src="${escapeHtml(meme.image_url)}" alt="${escapeHtml(meme.title)}" width="${meme.width || 540}" height="${meme.height || 480}" loading="${idx === 0 ? 'eager' : 'lazy'}" style="display:block;width:100%;height:auto;" />
+            <img src="${escapeHtml(meme.image_url)}" alt="${escapeHtml(meme.title)}" width="${meme.width || 540}" height="${meme.height || 480}" loading="lazy" decoding="async" style="display:block;width:100%;height:auto;" />
             <figcaption style="padding:10px 12px;font-size:14px;color:#e2e8f0;">${escapeHtml(meme.title)}</figcaption>
           </figure>`
       )
       .join('');
     showcaseHtml = `
-      <section aria-label="Featured Community Memes" style="margin-top:24px;">
-        <h2 style="font-size:20px;margin:0 0 14px;color:#ffb800;">Featured Community Memes</h2>
+      <section aria-label="Sample memes from @TheMemesHQ" style="margin-top:24px;">
+        <h2 style="font-size:20px;margin:0 0 14px;color:#ffb800;">Sample memes from @TheMemesHQ</h2>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">
           ${previewHtml}
         </div>
@@ -120,7 +122,7 @@ function buildPrerenderMainHtml(route) {
   // Owner brief 17 Nov 2026 (items 1 + 12): what a visitor sees before the app starts is the lit neon
   // sign on the night background, never an old-style list of memes. The SEO copy sits below the fold.
   return `<main class="tm-seo-prerender" data-seo-route="${escapeHtml(route.path)}" style="min-height:100vh;background:#07060f;color:#e9e6ff;font-family:system-ui,-apple-system,sans-serif;">
-      ${bootSplashHtml()}
+      ${route.path === '/' ? homePortalHtml() : bootSplashHtml()}
       <div style="max-width:980px;margin:0 auto;padding:32px 18px 64px;">
         <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#19f0ff;margin-bottom:8px;font-weight:700;">${escapeHtml(route.kicker)}</div>
         <h1 style="margin:0 0 16px;font-size:32px;line-height:1.2;color:#ffffff;">${escapeHtml(route.h1)}</h1>
@@ -131,6 +133,50 @@ function buildPrerenderMainHtml(route) {
         </nav>
       </div>
     </main>`;
+}
+
+/**
+ * Plan 1.3: the home page's first paint is the real portal (sign + MEMES / PLAY doors + quick
+ * links) as plain HTML and CSS, usable before any JavaScript runs. The links are real <a href>s.
+ * The sun and grid fade in BEHIND the content afterwards (CSS only, reduced-motion respected).
+ * React replaces this with <DualDirectionHero> when it boots; main.jsx flags that the static
+ * portal was shown so the sign doesn't replay its power-on flicker.
+ */
+function homePortalHtml() {
+  const signSvg = buildChromeSignSvg({ uid: 'tmboot', showFlow: true });
+  return `<style>
+@font-face{font-family:'TM Logo';font-style:normal;font-weight:400 900;font-display:swap;src:url('/fonts/orbitron-latin-wght.woff2') format('woff2')}
+.tm-boot-home{position:relative;isolation:isolate;overflow:hidden;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(16px,3vh,26px);padding:max(24px,env(safe-area-inset-top)) 18px max(96px,calc(env(safe-area-inset-bottom) + 80px));background:radial-gradient(70% 50% at 50% 40%,rgba(155,92,255,.16),transparent 72%),#07060f}
+.tm-boot-home .tm-boot-sky{position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:0;animation:tmBootSkyIn 1.2s ease-out .35s forwards}
+.tm-boot-home .tm-boot-sun{position:absolute;left:50%;top:12%;width:min(420px,78vw);aspect-ratio:1;transform:translateX(-50%);border-radius:50%;background:linear-gradient(180deg,#ffb800 0%,#ff2e88 55%,#9b5cff 100%);opacity:.2;-webkit-mask:repeating-linear-gradient(180deg,#000 0 14px,transparent 14px 20px);mask:repeating-linear-gradient(180deg,#000 0 14px,transparent 14px 20px)}
+.tm-boot-home .tm-boot-floor{position:absolute;left:-40%;right:-40%;bottom:0;height:34%;background-image:linear-gradient(rgba(255,46,136,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(255,46,136,.35) 1px,transparent 1px);background-size:44px 44px;transform:perspective(320px) rotateX(62deg);transform-origin:50% 100%;-webkit-mask:linear-gradient(transparent,#000 60%);mask:linear-gradient(transparent,#000 60%)}
+.tm-boot-home svg{width:min(620px,92vw);height:auto;overflow:visible}
+.tm-boot-home .tm-chrome-sheen{animation:tmBootSheen 4.8s ease-in-out infinite}
+.tm-boot-doors{display:grid;gap:clamp(14px,2.4vh,22px);width:min(560px,100%)}
+.tm-boot-door{display:flex;align-items:center;justify-content:center;gap:14px;min-height:clamp(88px,13vh,112px);padding:10px 18px;border-radius:999px;border:3px solid #19f0ff;background:rgba(25,240,255,.06);box-shadow:0 0 18px rgba(25,240,255,.55),inset 0 0 18px rgba(25,240,255,.25);color:#c9fdff;text-decoration:none;-webkit-tap-highlight-color:transparent}
+.tm-boot-door.is-play{border-color:#ff2e88;background:rgba(255,46,136,.06);box-shadow:0 0 18px rgba(255,46,136,.55),inset 0 0 18px rgba(255,46,136,.25);color:#ffd1e6}
+.tm-boot-door-word{display:block;font-family:'TM Logo',Orbitron,system-ui,sans-serif;font-weight:900;font-size:clamp(34px,10vw,52px);letter-spacing:.08em;line-height:1;text-shadow:0 0 12px currentColor}
+.tm-boot-door-sub{display:block;margin-top:6px;font:600 clamp(11px,3vw,13px)/1.2 system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#b9b3d9}
+.tm-boot-door:focus-visible,.tm-boot-chip:focus-visible{outline:2px solid #fff;outline-offset:4px}
+.tm-boot-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.tm-boot-chip{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid #2c2452;background:rgba(17,13,34,.7);color:#e9e6ff;font:600 15px/1 system-ui,sans-serif;text-decoration:none}
+@keyframes tmBootSkyIn{to{opacity:1}}
+@keyframes tmBootSheen{0%{transform:translateX(-120px) skewX(-24deg);opacity:0}18%{opacity:.9}42%{transform:translateX(660px) skewX(-24deg);opacity:0}100%{transform:translateX(660px) skewX(-24deg);opacity:0}}
+@media (prefers-reduced-motion:reduce){.tm-boot-home .tm-boot-sky{animation:none;opacity:1}.tm-boot-home .tm-chrome-sheen{display:none}}
+</style>
+      <div class="tm-boot tm-boot-home" data-tm-static-portal="1">
+        <div class="tm-boot-sky" aria-hidden="true"><div class="tm-boot-sun"></div><div class="tm-boot-floor"></div></div>
+        ${signSvg}
+        <nav class="tm-boot-doors" aria-label="Choose your world: Memes or Play">
+          <a class="tm-boot-door is-memes" href="/memes/dank"><span><span class="tm-boot-door-word">MEMES</span><span class="tm-boot-door-sub">Laugh · Make · Battle</span></span></a>
+          <a class="tm-boot-door is-play" href="/games"><span><span class="tm-boot-door-word">PLAY</span><span class="tm-boot-door-sub">Arcade · Retro · Pranks</span></span></a>
+        </nav>
+        <nav class="tm-boot-chips" aria-label="Quick links">
+          <a class="tm-boot-chip" href="/meme-generator">✏️ Make a meme</a>
+          <a class="tm-boot-chip" href="/hall-of-fame">👑 Caption battle</a>
+          <a class="tm-boot-chip" href="/prank-screens">💀 Prank screens</a>
+        </nav>
+      </div>`;
 }
 
 /** Static copy of the Chrome Outrun <NeonSign size="hero" flow /> plus its CSS, for the pre-app boot screen. */

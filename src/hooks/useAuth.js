@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { getSupabaseClient, fetchSupabaseAuthSettings } from '../supabaseClient';
+import { getSupabaseClient, fetchSupabaseAuthSettings, getAuthRedirectError } from '../supabaseClient';
 import { anonymousHandleFor, validateUsername } from '../../supabase/functions/_shared/identity.js';
 import { claimUsername, USERNAME_ERROR_MESSAGES, textRejectionMessage } from '../utils/serverWrites';
 import { sfx } from '../utils/soundEngine';
@@ -54,7 +54,14 @@ export function useAuth({ setShowAuthModal, awardXpAndCombo }) {
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authUsername, setAuthUsername] = useState('');
-  const [authMessage, setAuthMessage] = useState('');
+  const [authRedirectMessage] = useState(() => {
+    const err = getAuthRedirectError();
+    if (!err) return '';
+    return /expired|invalid/i.test(`${err.code} ${err.description}`)
+      ? '⚠️ That sign-in link has expired or was already used. Request a new one below.'
+      : `⚠️ Sign-in did not finish: ${err.description || err.code}`;
+  });
+  const [authMessage, setAuthMessage] = useState(authRedirectMessage);
   const failedAuthRef = useRef({ count: 0, lockUntil: 0 });
 
   const syncAuthSession = useCallback(async (sessionUser) => {
@@ -153,6 +160,12 @@ export function useAuth({ setShowAuthModal, awardXpAndCombo }) {
     }
     return u;
   }, []);
+
+  // A sign-in or email link that came back with an error (expired, already used, provider
+  // refused): reopen the sign-in sheet and say so instead of failing silently.
+  useEffect(() => {
+    if (authRedirectMessage) setShowAuthModal(true);
+  }, [authRedirectMessage, setShowAuthModal]);
 
   useEffect(() => {
     const client = getSupabaseClient();

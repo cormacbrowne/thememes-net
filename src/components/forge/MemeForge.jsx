@@ -823,6 +823,9 @@ export default function MemeForge({ intent, user, onClose, onPublish, onRequireA
           </div>
         )}
 
+        {/* Phones: this column scrolls as one, with the preview (.tm-forge-main) pinned on top,
+            so tools, House Rules and the publish row never squeeze or cover the meme. */}
+        <div className="tm-forge-scroll">
         <div className="tm-forge-body">
           <div className="tm-forge-main">
             {!hasMedia ? (
@@ -908,6 +911,7 @@ export default function MemeForge({ intent, user, onClose, onPublish, onRequireA
             {busy ? '⏳ Publishing…' : '🚀 Publish'}
           </button>
         </form>
+        </div>
       </div>
     </div>
   );

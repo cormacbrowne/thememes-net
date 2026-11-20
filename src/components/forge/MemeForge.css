@@ -357,11 +357,46 @@
   box-sizing: border-box;
 }
 
+/* .tm-forge-main centres its children, so without an explicit width the wrap shrank to its
+   padding and the stage (width: 100%) collapsed to 2px: the template was invisible on desktop. */
+.tm-forge-main > .tm-forge-stage-wrap {
+  align-self: stretch;
+  width: 100%;
+  flex: 1 1 auto;
+}
+
+@media (min-width: 781px) {
+  /* Row = the room the body has, not its content, so neither column spills under the footer. */
+  .tm-forge-body {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .tm-forge-tools {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .tm-forge-main {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* Fit the stage to the room the wrap actually has (tip message stays visible under it). */
+  .tm-forge-main > .tm-forge-stage-wrap {
+    min-height: 0;
+    container-type: size;
+  }
+
+  .tm-forge-main > .tm-forge-stage-wrap > .tm-forge-stage {
+    width: min(100%, 520px, calc(100cqh * var(--tm-stage-ratio, 1)));
+  }
+}
+
 .tm-forge-stage {
   position: relative;
-  width: 100%;
-  max-width: min(100%, 520px);
-  max-height: min(100%, 54dvh);
+  /* Size from the width (aspect-ratio gives the height), capped so tall templates still fit. */
+  width: min(100%, 520px, calc(54dvh * var(--tm-stage-ratio, 1)));
+  max-width: 100%;
   background: #050814;
   border: 1.5px solid rgba(25, 240, 255, 0.4);
   border-radius: 12px;
@@ -463,6 +498,15 @@
   margin-left: auto;
 }
 
+/* Wraps the editor body + House Rules + publish row (see the phone rules below). */
+.tm-forge-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 /* iPhone & Mobile Meme Forge Layout: Constrained Top Stage + Scrollable Bottom Tools (Never blows up!) */
 @media (max-width: 780px) {
   .tm-forge-backdrop {
@@ -541,6 +585,53 @@
 
   .tm-forge-foot {
     padding: 8px 10px calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* One scrolling column under the header. The preview stays pinned at the top while the
+     tools, AI writer, House Rules and publish row scroll beneath it, so on short iPhone
+     screens nothing squeezes the meme to nothing or sits on top of it. */
+  .tm-forge-scroll {
+    display: block;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .tm-forge-body {
+    display: contents;
+  }
+
+  .tm-forge-main {
+    position: sticky;
+    top: 0;
+    z-index: 6;
+    max-height: none;
+    overflow: visible;
+    gap: 6px;
+    background: #03060f;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.55);
+  }
+
+  .tm-forge-main .tm-forge-msg {
+    padding: 5px 8px;
+    font-size: 11.5px;
+  }
+
+  .tm-forge-tools,
+  .tm-forge-tool-body {
+    flex: none !important;
+    overflow: visible !important;
+  }
+
+  .tm-forge-scroll > .tm-house-rules-line {
+    margin: 0;
+    padding: 10px 12px 0 !important;
+  }
+
+  .tm-forge-draft {
+    font-size: 11px;
+    padding: 5px 10px;
   }
 }
 

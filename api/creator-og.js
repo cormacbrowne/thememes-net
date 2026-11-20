@@ -4,6 +4,7 @@ import process from 'node:process';
 import { STARTER_MEMES } from '../src/data/starterMemes.js';
 import { SITE_ORIGIN, DEFAULT_OG_IMAGE } from '../src/data/seoRoutes.js';
 import { replaceRootContent, replaceRouteJsonLd, sendNotFound, sendTryLater } from './_seoShell.js';
+import { memePath } from '../src/utils/memeSeo.js';
 
 // Returned when the database could not answer (timeout / error), as opposed to "no such creator".
 const FETCH_FAILED = Symbol('fetch_failed');
@@ -158,7 +159,7 @@ export default async function handler(req, res) {
   // Own page body (the shell's body is the home page's text, which would be duplicate content).
   const memeItems = listedMemes
     .map((m) => {
-      const href = `/m/${encodeURIComponent(String(m.id))}`;
+      const href = memePath(m);
       const cat = m.category ? ` · #${escapeHtml(m.category)}` : '';
       return `<li style="margin:0 0 8px;"><a href="${escapeHtml(href)}" style="color:#00f5ff;">${escapeHtml(
         m.title || 'Meme'

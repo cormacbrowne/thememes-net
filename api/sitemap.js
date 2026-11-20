@@ -3,6 +3,7 @@ import { SEO_ROUTES, SITE_ORIGIN } from '../src/data/seoRoutes.js';
 import { STARTER_MEMES } from '../src/data/starterMemes.js';
 import { MEME_TEMPLATES, TEMPLATES_INDEX_PATH } from '../src/data/memeTemplates.js';
 import { extractUniqueCreatorHandles } from '../src/utils/creatorProfiles.js';
+import { memePath } from '../src/utils/memeSeo.js';
 
 function escapeXml(value = '') {
   return String(value)
@@ -95,7 +96,7 @@ export default async function handler(req, res) {
     seenIds.add(idStr);
     const mod = row.created_at ? String(row.created_at).slice(0, 10) : '';
     memeUrlXml.push(`  <url>
-    <loc>${escapeXml(`${SITE_ORIGIN}/m/${encodeURIComponent(idStr)}`)}</loc>${lastmodTag(mod)}
+    <loc>${escapeXml(`${SITE_ORIGIN}${memePath(row)}`)}</loc>${lastmodTag(mod)}
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>${imageTag(row)}
   </url>`);

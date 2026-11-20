@@ -10,7 +10,7 @@ import {
   getSeoRouteForState,
   getCanonicalPathForState
 } from '../data/seoRoutes.js';
-import { buildMemeJsonLd, memeSeoDescription, shareCardUrl, shareCardAlt } from './memeSeo.js';
+import { buildMemeJsonLd, memeSeoDescription, shareCardUrl, shareCardAlt, memePath } from './memeSeo.js';
 import { sanitizeMediaUrl } from './securityGuard.js';
 import { getTemplateBySlug } from '../data/memeTemplates.js';
 import { TEMPLATES_INDEX_META, buildTemplateJsonLd, buildTemplatesIndexJsonLd } from './templateSeo.js';
@@ -119,7 +119,7 @@ export function updateDynamicSeo({
     const author = activeMeme.author_name || 'Anon';
     pageTitle = `${activeMeme.title} — Meme by @${author} | THE MEMES.net`;
     pageDesc = memeSeoDescription(activeMeme);
-    canonicalUrl = `${SITE_ORIGIN}/m/${encodeURIComponent(String(activeMeme.id))}`;
+    canonicalUrl = `${SITE_ORIGIN}${memePath(activeMeme)}`;
     const isVid = activeMeme.media_type === 'video';
     const safeOg = sanitizeMediaUrl(isVid ? activeMeme.poster_url : activeMeme.image_url, '');
     if (safeOg && !safeOg.startsWith('data:') && !safeOg.startsWith('blob:')) {

@@ -1,6 +1,7 @@
 import { track as vercelTrack } from '@vercel/analytics';
 import { pulse, pulseTimer, isPulseAllowed } from './pulse';
 import { plausibleEvent } from './plausible';
+import { memePath } from './memeSeo';
 
 const viewedKeysThisSession = new Set();
 const featuresUsedThisSession = new Set();
@@ -59,12 +60,16 @@ export function track(eventName, props = {}) {
   safeTrack(String(eventName), props);
 }
 
-/** Share link for a meme, tagged so visits from shares can be measured (?ref=share&m=<id>). */
-export function memeShareUrl(memeId, origin) {
+/**
+ * Share link for a meme, tagged so visits from shares can be measured (?ref=share&m=<id>).
+ * Pass the meme (readable /m/<id>/<slug> URL) or just its id (/m/<id>).
+ */
+export function memeShareUrl(memeOrId, origin) {
   const base =
     origin || (typeof window !== 'undefined' ? window.location.origin : 'https://www.thememes.net');
-  const id = encodeURIComponent(String(memeId));
-  return `${base}/m/${id}?ref=share&m=${id}`;
+  const meme = memeOrId && typeof memeOrId === 'object' ? memeOrId : { id: memeOrId };
+  const id = encodeURIComponent(String(meme.id));
+  return `${base}${memePath(meme)}?ref=share&m=${id}`;
 }
 
 /** Fires return_visit once per browser session for people who have been here before. */

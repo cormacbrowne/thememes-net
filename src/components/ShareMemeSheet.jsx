@@ -9,6 +9,14 @@ import './ShareMemeSheet.css';
  * The file is prepared first (videos play through once), then Share opens the phone's share
  * sheet from a fresh tap, which iPhone Safari requires.
  */
+// Plan 2.2: quick-share targets. Discord has no share URL, so it copies the link.
+const QUICK_SHARES = [
+  { id: 'whatsapp', label: 'WhatsApp', url: (u, t) => `https://wa.me/?text=${encodeURIComponent(`${t} ${u}`)}` },
+  { id: 'x', label: 'X', url: (u, t) => `https://x.com/intent/post?text=${encodeURIComponent(t)}&url=${encodeURIComponent(u)}` },
+  { id: 'reddit', label: 'Reddit', url: (u, t) => `https://www.reddit.com/submit?url=${encodeURIComponent(u)}&title=${encodeURIComponent(t)}` },
+  { id: 'discord', label: 'Discord (copy)', url: null }
+];
+
 export default function ShareMemeSheet({ meme, initialAction = 'share', onClose, onShared }) {
   const [state, setState] = useState('preparing'); // preparing | ready | failed
   const [progress, setProgress] = useState(0);
@@ -18,7 +26,7 @@ export default function ShareMemeSheet({ meme, initialAction = 'share', onClose,
   const [note, setNote] = useState('');
   const closeRef = useRef(null);
 
-  const shareUrl = memeShareUrl(meme.id);
+  const shareUrl = memeShareUrl(meme);
   const isVideo = meme.media_type === 'video';
   const canShareFiles =
     typeof navigator !== 'undefined' &&
@@ -158,6 +166,35 @@ export default function ShareMemeSheet({ meme, initialAction = 'share', onClose,
             {copied ? <Check size={18} aria-hidden="true" /> : <Link2 size={18} aria-hidden="true" />}
             {copied ? 'Copied' : 'Copy link'}
           </button>
+        </div>
+        {/* Plan 2.2: one-tap shares. Every link carries ?ref=share&m=<id>. */}
+        <div className="tm-share-quick" aria-label="Share to an app">
+          {QUICK_SHARES.map((q) => (
+            <a
+              key={q.id}
+              className={`tm-share-quick-btn is-${q.id}`}
+              href={q.url ? q.url(shareUrl, meme.title || 'Meme from thememes.net') : undefined}
+              target={q.url ? '_blank' : undefined}
+              rel={q.url ? 'noopener noreferrer' : undefined}
+              role={q.url ? undefined : 'button'}
+              tabIndex={0}
+              onClick={async (e) => {
+                if (!q.url) {
+                  e.preventDefault();
+                  try {
+                    await navigator.clipboard.writeText(shareUrl);
+                    setNote('Link copied. Paste it into Discord.');
+                  } catch {
+                    setNote(shareUrl);
+                  }
+                }
+                track('meme_shared', { channel: q.id, meme_id: String(meme.id) });
+                onShared?.(q.id);
+              }}
+            >
+              {q.label}
+            </a>
+          ))}
         </div>
         {note && (
           <p className="tm-share-msg" role="status">

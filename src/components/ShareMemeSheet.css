@@ -143,3 +143,30 @@
   color: var(--tm-text-dim);
   word-break: break-all;
 }
+
+/* Plan 2.2: quick-share row (WhatsApp, X, Reddit, Discord copy). */
+.tm-share-quick {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+@media (min-width: 480px) {
+  .tm-share-quick {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+.tm-share-quick-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--tm-text, #e9e6ff);
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+}

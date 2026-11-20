@@ -41,8 +41,8 @@ export default function MemeLiveCelebrationModal({
 
   const shareUrl =
     typeof window !== 'undefined'
-      ? memeShareUrl(meme.id, window.location.origin)
-      : memeShareUrl(meme.id, 'https://www.thememes.net');
+      ? memeShareUrl(meme, window.location.origin)
+      : memeShareUrl(meme, 'https://www.thememes.net');
 
   const handleCopy = (e) => {
     if (onShareMeme) {

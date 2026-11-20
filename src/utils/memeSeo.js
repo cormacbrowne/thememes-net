@@ -86,3 +86,32 @@ export function shareCardAlt(meme = {}) {
   const title = String(meme.title || 'Funny meme').slice(0, 120);
   return `${title} (meme on THE MEMES.net)`;
 }
+
+/**
+ * Plan 2.2: readable meme URLs, /m/<id>/<slug>. The id alone still works (old links, shares);
+ * the slug is only decoration for people and search engines, so a changed title never breaks a link.
+ * Built-in sample memes keep /m/<id> (their pages are static files).
+ */
+export function memeSlug(title = '') {
+  return String(title || '')
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/['’]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60)
+    .replace(/-+$/g, '');
+}
+
+export function memePath(meme = {}) {
+  const id = encodeURIComponent(String(meme?.id || ''));
+  if (!id) return '/';
+  if (/^(?:seed|tpl)-/i.test(String(meme.id))) return `/m/${id}`;
+  const slug = memeSlug(meme.title);
+  return slug ? `/m/${id}/${slug}` : `/m/${id}`;
+}
+
+export function memeUrl(meme = {}, origin = ORIGIN) {
+  return `${origin}${memePath(meme)}`;
+}

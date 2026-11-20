@@ -4,7 +4,7 @@ import process from 'node:process';
 import { STARTER_MEMES } from '../src/data/starterMemes.js';
 import { SITE_ORIGIN, DEFAULT_OG_IMAGE, CATEGORY_ID_TO_SLUG } from '../src/data/seoRoutes.js';
 import { replaceRootContent, replaceRouteJsonLd, sendNotFound, sendTryLater } from './_seoShell.js';
-import { buildMemeJsonLd, memeSeoDescription, shareCardUrl, shareCardAlt } from '../src/utils/memeSeo.js';
+import { buildMemeJsonLd, memeSeoDescription, shareCardUrl, shareCardAlt, memePath } from '../src/utils/memeSeo.js';
 
 function escapeHtml(value = '') {
   return String(value)
@@ -226,7 +226,7 @@ export default async function handler(req, res) {
   if (meme) {
     const titleText = `${meme.title || 'Funny Meme'} — @${meme.author_name || 'Anon'} | THE MEMES.net`;
     const descText = memeSeoDescription(meme);
-    const canonicalUrl = `${SITE_ORIGIN}/m/${encodeURIComponent(String(meme.id))}`;
+    const canonicalUrl = `${SITE_ORIGIN}${memePath(meme)}`;
     const rawImg = meme.media_type === 'video' ? meme.poster_url || DEFAULT_OG_IMAGE : meme.image_url;
     const ogImg = toAbsoluteUrl(rawImg);
 

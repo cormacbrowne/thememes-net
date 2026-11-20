@@ -322,6 +322,10 @@
       "destination": "/api/sitemap"
     },
     {
+      "source": "/m/:id/:slug",
+      "destination": "/api/meme-og?id=:id"
+    },
+    {
       "source": "/m/:id",
       "destination": "/api/meme-og?id=:id"
     },

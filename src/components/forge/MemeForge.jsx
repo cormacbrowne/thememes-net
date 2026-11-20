@@ -120,10 +120,9 @@ async function buildFromIntent(intent = {}) {
             makeTextLayer({ slot: 'top', text: randPair[0], y: 0.1, h: 0.18 }),
             makeTextLayer({ slot: 'bottom', text: randPair[1], y: 0.89, h: 0.18, fill: '#facc15' })
           ];
-    out.title =
-      intent.mode === 'remix'
-        ? `REMIX: ${parent.title || 'Untitled'}`
-        : `Caption: ${parent.title || ''}`.trim();
+    // Plan 1.2: never prefix titles (prefixes stacked into "REMIX: REMIX: …"). The link to the
+    // original is parent_meme_id; the title is the remixer's own caption (publish falls back to it).
+    out.title = '';
     if (isMotionParent) {
       out.doc = makeDoc({ base: await motionFromMeme(parent), layers: fresh });
     } else {
@@ -149,7 +148,7 @@ async function buildFromIntent(intent = {}) {
   }
   if (intent.mode === 'chaos' && intent.chaos) {
     const c = intent.chaos;
-    out.title = `REMIX: ${c.top}`;
+    out.title = c.top || '';
     const layers = [
       makeTextLayer({ slot: 'top', text: c.top, y: 0.1, h: 0.18 }),
       makeTextLayer({ slot: 'bottom', text: c.bottom, y: 0.89, h: 0.18, fill: '#facc15' }),

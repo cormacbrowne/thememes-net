@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
-import { SEO_ROUTES, getOgImageSlugForRoutePath } from '../src/data/seoRoutes.js';
+import { SEO_ROUTES, getOgImageSlugForRoutePath, ARCADE_GAME_COUNT } from '../src/data/seoRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,8 +20,8 @@ const CARD_THEMES = {
     gold: '#facc15',
     badge: "EST. 1986 SYNTH-ARCADE // THEMEMES.NET",
     headline: 'MAKE MEMES.\nPLAY ‘86 ARCADE.',
-    sub: 'Caption images & animated GIFs with Impact text in seconds. 15 free neon arcade games & prank screens.',
-    pills: ['BURNED-IN MEME TEXT', '15 RETRO GAMES', 'NO LOGIN NEEDED'],
+    sub: `Caption images & animated GIFs with Impact text in seconds. ${ARCADE_GAME_COUNT} free neon arcade games & prank screens.`,
+    pills: ['BURNED-IN MEME TEXT', `${ARCADE_GAME_COUNT} RETRO GAMES`, 'NO LOGIN NEEDED'],
     scene: 'hero'
   },
   '/meme-generator': {
@@ -58,10 +58,10 @@ const CARD_THEMES = {
     accent: '#00f5ff',
     accent2: '#ff2a85',
     gold: '#facc15',
-    badge: "15 FREE GAMES // NO APP DOWNLOAD",
+    badge: `${ARCADE_GAME_COUNT} FREE GAMES // NO APP DOWNLOAD`,
     headline: "THE ‘86\nCYBER ARCADE",
     sub: "Neon Bingo '86, Coin Dozer, 5-Table Pinball, Vegas 777 Slots, Roulette, MEMEDAQ Stocks & more.",
-    pills: ['15 CABINET GAMES', 'SHARED BANKROLL', 'INSTANT PLAY'],
+    pills: [`${ARCADE_GAME_COUNT} CABINET GAMES`, 'SHARED BANKROLL', 'INSTANT PLAY'],
     scene: 'arcade-hub'
   },
   '/games/neon-bingo': {

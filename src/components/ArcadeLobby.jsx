@@ -13,9 +13,7 @@ import {
   Coins,
   EyeOff,
   Play,
-  ArrowUpDown,
-  Search,
-  X
+  ArrowUpDown
 } from 'lucide-react';
 import { sfx } from '../utils/soundEngine';
 import { formatMoney } from '../utils/tokenEconomy';
@@ -26,6 +24,8 @@ import { DeLoreanDockBanner } from './DeLoreanTimeMachine';
 import { Wallet } from './ui/Money';
 import EightiesIconsStrip from './EightiesIconsStrip';
 import GameIcon from './GameIcon';
+import CatalogSearchBox, { CatalogSearchEmpty } from './CatalogSearchBox';
+import { toSearchTerms, itemMatchesSearch } from '../utils/catalogSearch';
 import {
   ARCADE_GAMES_CATALOG,
   ARCADE_LOBBY_GROUPS,
@@ -47,23 +47,9 @@ import './ArcadeLobby.css';
 /** sessionStorage key the home portal sets to open the lobby on the Prank Screens list. */
 export const LOBBY_REALM_KEY = 'tm_lobby_realm';
 
-/** Lower-case and strip accents/apostrophes so "tysiac" finds "Tysiąc" and "21s" finds "21's". */
-const normalizeSearch = (text) =>
-  String(text || '')
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/ł/gi, 'l')
-    .toLowerCase()
-    .replace(/[’'`]/g, '');
-
 const GROUP_LABELS = Object.fromEntries(ARCADE_LOBBY_GROUPS.map((g) => [g.id, g.label]));
 
-const gameMatchesSearch = (game, terms) => {
-  const haystack = normalizeSearch(
-    [game.label, game.pitch, game.id, game.group, GROUP_LABELS[game.group], game.badge].join(' ')
-  );
-  return terms.every((t) => haystack.includes(t));
-};
+const gameMatchesSearch = (game, terms) => itemMatchesSearch(game, terms, [GROUP_LABELS[game.group]]);
 
 const GROUP_ICONS = {
   skill: Gamepad2,
@@ -99,11 +85,16 @@ export default function ArcadeLobby({
   const [activeFilter, setActiveFilter] = useState('all');
   const [sortMode, setSortMode] = useState('top-rated'); // 'top-rated' | 'grouped'
   const [searchQuery, setSearchQuery] = useState('');
-  const searchTerms = useMemo(
-    () => normalizeSearch(searchQuery).split(/s+/).filter(Boolean),
-    [searchQuery]
-  );
+  const searchTerms = useMemo(() => toSearchTerms(searchQuery), [searchQuery]);
   const isSearching = searchTerms.length > 0;
+  // Pranks get their own query so flipping tabs doesn't carry a game search across.
+  const [prankQuery, setPrankQuery] = useState('');
+  const prankTerms = useMemo(() => toSearchTerms(prankQuery), [prankQuery]);
+  const isSearchingPranks = prankTerms.length > 0;
+  const visiblePranks = useMemo(
+    () => BOSS_SCREENS_CATALOG.filter((p) => itemMatchesSearch(p, prankTerms)),
+    [prankTerms]
+  );
   const [favoriteIds, setFavoriteIds] = useState(() => getFavoriteArcadeGameIds());
   const [copiedId, setCopiedId] = useState(null);
   const [userRatings, setUserRatings] = useState(() => loadUserGameRatings());
@@ -333,34 +324,23 @@ export default function ArcadeLobby({
       </div>
 
       {realm === 'games' && (
-        <div className="tm-lobby-search" role="search">
-          <Search size={16} className="tm-lobby-search-icon" aria-hidden="true" />
-          <input
-            type="search"
-            className="tm-lobby-search-input"
-            placeholder={`Search ${ARCADE_GAMES_CATALOG.length} games…`}
-            aria-label="Search arcade games"
-            data-testid="lobby-search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') setSearchQuery('');
-            }}
-            autoComplete="off"
-            spellCheck={false}
-            enterKeyHint="search"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              className="tm-lobby-search-clear"
-              aria-label="Clear search"
-              onClick={() => setSearchQuery('')}
-            >
-              <X size={15} aria-hidden="true" />
-            </button>
-          )}
-        </div>
+        <CatalogSearchBox
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder={`Search ${ARCADE_GAMES_CATALOG.length} games…`}
+          ariaLabel="Search arcade games"
+          testId="lobby-search"
+        />
+      )}
+
+      {realm === 'pranks' && (
+        <CatalogSearchBox
+          value={prankQuery}
+          onChange={setPrankQuery}
+          placeholder={`Search ${BOSS_SCREENS_CATALOG.length} prank screens…`}
+          ariaLabel="Search prank screens"
+          testId="lobby-prank-search"
+        />
       )}
 
       {realm === 'games' && !isSearching && (
@@ -456,18 +436,13 @@ export default function ArcadeLobby({
       {/* Arcade & Casino Games Sections (Higher star ratings at the top) */}
       {realm === 'games' && (
         visibleGroups.length === 0 ? (
-          <div className="tm-lobby-empty">
-            {isSearching ? (
-              <>
-                No games match &ldquo;{searchQuery.trim()}&rdquo;.{' '}
-                <button type="button" className="tm-lobby-empty-link" onClick={() => setSearchQuery('')}>
-                  Clear search
-                </button>
-              </>
-            ) : (
-              'Tap the heart on any cabinet to pin it to your Favourites row.'
-            )}
-          </div>
+          isSearching ? (
+            <CatalogSearchEmpty noun="games" query={searchQuery} onClear={() => setSearchQuery('')} />
+          ) : (
+            <div className="tm-lobby-empty">
+              Tap the heart on any cabinet to pin it to your Favourites row.
+            </div>
+          )
         ) : (
           visibleGroups.map((group) => (
             <div key={group.id} className="tm-lobby-section">
@@ -500,14 +475,22 @@ export default function ArcadeLobby({
         <div className="tm-lobby-section tm-lobby-pranks-section">
           <div className="tm-lobby-section-head">
             <h2 className="tm-lobby-section-title">
-              <EyeOff size={15} aria-hidden="true" /> Fake screens &amp; office disguises
+              <EyeOff size={15} aria-hidden="true" />{' '}
+              {isSearchingPranks
+                ? `Search results (${visiblePranks.length})`
+                : 'Fake screens & office disguises'}
             </h2>
             <span className="tm-lobby-section-desc">
-              Not games: fullscreen fakes to fool a friend (or hide from the boss). Tap to launch.
+              {isSearchingPranks
+                ? 'Matching every prank screen'
+                : 'Not games: fullscreen fakes to fool a friend (or hide from the boss). Tap to launch.'}
             </span>
           </div>
+          {isSearchingPranks && visiblePranks.length === 0 && (
+            <CatalogSearchEmpty noun="prank screens" query={prankQuery} onClear={() => setPrankQuery('')} />
+          )}
           <div className="tm-lobby-grid">
-            {BOSS_SCREENS_CATALOG.map((item) => (
+            {visiblePranks.map((item) => (
               <article
                 key={item.id}
                 className="tm-lobby-card tm-lobby-prank-card"

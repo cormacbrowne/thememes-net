@@ -265,6 +265,11 @@ export const ARCADE_GAMES_CATALOG = [
   }
 ];
 
+/**
+ * Every prank listed here shows up (and is searchable) in the lobby's Pranks tab and on
+ * /prank-screens. Search reads label, pitch, id, path and the optional `keywords` (nicknames
+ * people might type, e.g. "broken" for the cracked screens). Games accept `keywords` too.
+ */
 export const BOSS_SCREENS_CATALOG = [
   {
     id: 'zoom',
@@ -272,6 +277,7 @@ export const BOSS_SCREENS_CATALOG = [
     label: 'Fake Video Call (Teams / Zoom style)',
     pitch: 'Realistic 4-person standup meeting, incoming Boss Call ringtone & bad Wi-Fi camera freeze.',
     path: '/fake-teams-zoom-call-screen',
+    keywords: 'meeting webcam video conference standup boss',
     accent: '#6366f1'
   },
   {
@@ -280,6 +286,7 @@ export const BOSS_SCREENS_CATALOG = [
     label: 'Fake Boss Spreadsheet (Excel style)',
     pitch: 'Interactive Q4 Cloud Synergy financial sheet with clickable cells & Monte Carlo audit.',
     path: '/fake-excel-boss-screen',
+    keywords: 'spreadsheet work office finance boss key',
     accent: '#10b981'
   },
   {
@@ -288,6 +295,7 @@ export const BOSS_SCREENS_CATALOG = [
     label: 'Fake Blue Screen of Death (BSOD)',
     pitch: 'Classic ":(" blue crash screen with live % recovery & IT support QR prank.',
     path: '/fake-blue-screen-prank',
+    keywords: 'crash error windows computer broken pc',
     accent: '#0284c7'
   },
   {
@@ -296,6 +304,7 @@ export const BOSS_SCREENS_CATALOG = [
     label: 'Fake System Update Screen',
     pitch: 'Fullscreen "Working on updates 69% complete" prank — click anywhere to advance %.',
     path: '/fake-windows-update-screen',
+    keywords: 'windows loading installing restart computer pc',
     accent: '#0ea5e9'
   },
   {
@@ -304,6 +313,7 @@ export const BOSS_SCREENS_CATALOG = [
     label: 'Fake Hacker & DevOps Terminal',
     pitch: 'Tap any key to compile fake Rust/Kubernetes microservices in fullscreen green text.',
     path: '/fake-hacker-terminal-screen',
+    keywords: 'hacking code coding matrix command line',
     accent: '#22c55e'
   },
   {
@@ -312,6 +322,7 @@ export const BOSS_SCREENS_CATALOG = [
     label: 'Fake Enterprise AI Copilot',
     pitch: 'SynergyGPT Q4 Executive Workspace generating ultra-convincing corporate memos.',
     path: '/fake-ai-workspace-boss-screen',
+    keywords: 'chatbot assistant work office',
     accent: '#8b5cf6'
   },
   {
@@ -320,6 +331,7 @@ export const BOSS_SCREENS_CATALOG = [
     label: 'Cracked iPhone Screen',
     pitch: 'Smashed glass, bleeding ink and live sparks shorting inside the screen. Every tap cracks it more.',
     path: '/fake-cracked-iphone-screen',
+    keywords: 'broken smashed shattered glass phone mobile',
     accent: '#ff7a3d',
     isNew: true
   },
@@ -329,6 +341,7 @@ export const BOSS_SCREENS_CATALOG = [
     label: 'Cracked iPad Screen',
     pitch: 'The big-screen version: a shattered tablet with dead pixel lines and electric arcs.',
     path: '/fake-cracked-ipad-screen',
+    keywords: 'broken smashed shattered glass tablet',
     accent: '#b03cff',
     isNew: true
   }

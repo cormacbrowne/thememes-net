@@ -1,5 +1,8 @@
+import { useMemo, useState } from 'react';
 import { BOSS_SCREENS_CATALOG } from '../data/arcadeGamesCatalog';
 import { PRANK_DISGUISE_TO_PATH } from '../data/seoRoutes';
+import { toSearchTerms, itemMatchesSearch } from '../utils/catalogSearch';
+import CatalogSearchBox, { CatalogSearchEmpty } from './CatalogSearchBox';
 import './PrankScreensPage.css';
 
 /** Tiny CSS-only previews of each prank (no screenshots, no third-party logos). */
@@ -76,6 +79,10 @@ function PrankPreview({ id }) {
  * (the BossKeyOverlay), and the address changes to that prank's own page.
  */
 export default function PrankScreensPage({ onOpen }) {
+  const [query, setQuery] = useState('');
+  const terms = useMemo(() => toSearchTerms(query), [query]);
+  const pranks = useMemo(() => BOSS_SCREENS_CATALOG.filter((p) => itemMatchesSearch(p, terms)), [terms]);
+
   return (
     <div className="tm-prank-page">
       <header className="tm-prank-head">
@@ -86,8 +93,22 @@ export default function PrankScreensPage({ onOpen }) {
         </p>
       </header>
 
+      <div className="tm-prank-search">
+        <CatalogSearchBox
+          value={query}
+          onChange={setQuery}
+          placeholder={`Search ${BOSS_SCREENS_CATALOG.length} prank screens…`}
+          ariaLabel="Search prank screens"
+          testId="prank-page-search"
+        />
+      </div>
+
+      {terms.length > 0 && pranks.length === 0 && (
+        <CatalogSearchEmpty noun="prank screens" query={query} onClear={() => setQuery('')} />
+      )}
+
       <div className="tm-prank-grid">
-        {BOSS_SCREENS_CATALOG.map((p) => (
+        {pranks.map((p) => (
           <a
             key={p.id}
             className="tm-prank-card"

@@ -21,6 +21,11 @@
   line-height: 1.6;
 }
 
+.tm-prank-search {
+  max-width: 560px;
+  margin-bottom: 16px;
+}
+
 .tm-prank-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));

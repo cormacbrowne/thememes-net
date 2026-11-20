@@ -82,7 +82,7 @@ test('games and arena never invent vote numbers', () => {
 });
 
 test('database: new memes start at zero and old baselines are backed up', () => {
-  const sql = read('supabase/migrations/20261120000001_real_counts_only.sql');
+  const sql = read('supabase/migrations/20261120143545_real_counts_only.sql');
   assert.match(sql, /create table if not exists public\.meme_count_baseline_backup/);
   assert.match(sql, /before insert on public\.memes/);
   assert.match(sql, /alter column base_score set default 0/);

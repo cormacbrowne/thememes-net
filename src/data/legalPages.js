@@ -1,7 +1,7 @@
 // Phase 33 task 33.11: legal, safety, takedown, and contact pages.
 // Owner signed these off for publication on 16 Nov 2026 (draft labels removed).
 
-export const LEGAL_LAST_UPDATED = 'Last updated 17 November 2026';
+export const LEGAL_LAST_UPDATED = 'Last updated 20 November 2026';
 
 export const LEGAL_PAGES = {
   '/rules': {
@@ -93,9 +93,13 @@ export const LEGAL_PAGES = {
       {
         heading: '📊 Analytics & Anti-Bot Protection',
         bullets: [
-          'First-party anonymous usage stats (Pulse): we count page views, game plays, and button presses without cookies or tracking IDs. The count cannot be tied to a person or an account, IP addresses are never stored, and raw event counts are deleted after 30 days.',
-          'How to switch it off: toggle "Anonymous usage stats" off in Settings (⚙️), or enable Global Privacy Control (GPC) / Do-Not-Track in your browser — we honour both.',
-          'We also use privacy-friendly Vercel Analytics for aggregate page views, and may use Cloudflare Turnstile on upload and comment checks to stop automated bots. We do not sell your personal information or run third-party ad tracking profiles.'
+          'No cookies and no cross-site tracking: we do not use advertising trackers, session recordings or fingerprinting, and we do not sell your personal information.',
+          'Our own anonymous usage stats (Pulse): we count things like page views, memes made, shares, votes, game plays and caption-battle entries, without cookies or tracking IDs. The counts cannot be tied to you or your account. Your IP address is never stored (it is only used, scrambled with a key that changes every day, to tell today’s visits apart), and raw events are deleted after 30 days.',
+          'Plausible Analytics: we also use Plausible (plausible.io), a privacy-friendly analytics service based in the EU. It counts page views and the same anonymous events without cookies and without storing personal data or IP addresses. See plausible.io/data-policy.',
+          'Vercel Web Analytics: aggregate page-view totals, again without cookies.',
+          'Share links: when you share a meme, the link includes "?ref=share" and the meme’s ID, so we can count visits that came from a share. It does not say who shared it.',
+          'How to switch it off: toggle "Anonymous usage stats" off in Settings (⚙️), or enable Global Privacy Control (GPC) / Do-Not-Track in your browser. We honour both, and that switches off Pulse and Plausible.',
+          'Bot protection: we may use Cloudflare Turnstile on upload and comment checks to stop automated bots.'
         ]
       },
       {

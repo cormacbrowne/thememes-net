@@ -40,6 +40,11 @@
 - Added responsive 2-column desktop homepage grid (`1024px+`) in `src/App.jsx` / `src/index.css` pairing `HomeDailyHub` + `HomeFunExtras` alongside the main feed, with always-visible featured category chips (`All`, `Wholesome`, `Dank`, `Programming`, `Gaming`, `Relatable`).
 - Promoted `wholesome` (`sort: 5`) in `src/data/memeCategories.js`, added `/memes/wholesome` SEO route + pre-render intro copy (`src/data/seoRoutes.js`, `src/data/seoRouteCopy.js`, `src/components/SeoDiscoveryFooter.jsx`), and added unit coverage in `tests/unit/homepageAndWholesome.unit.mjs`.
 
+### 2.8 Social presence & admin social kit
+- Extended `src/config/social.js` with `SOCIAL_PLATFORMS` (`tiktok`, `instagram`, `x`, `youtube`, `discord`) and `getActiveSocialLinks()` so configured `https://` profiles appear and empty URLs stay hidden.
+- Created `SocialLinksBar` (`src/components/SocialLinksBar.jsx` & `.css`) mounted in both `SeoDiscoveryFooter` and `ExtrasDrawerModal`.
+- Built moderator-only `/admin/social` (`src/components/AdminSocialKitPage.jsx` & `.css`, `src/utils/socialKitCanvas.js`, lazy-wired in `src/main.jsx`) to export `1080×1920` Stories/TikTok and `1080×1080` square PNGs plus suggested captions for today's battle and yesterday's winners.
+
 ## Phase 1: Credibility and speed (20 Nov 2026)
 
 ### 1.1 Real numbers only

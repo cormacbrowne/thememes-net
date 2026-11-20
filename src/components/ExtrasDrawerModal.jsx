@@ -1,6 +1,7 @@
 import MemeSoundboardBar from './MemeSoundboardBar';
 import MemesRadio from './MemesRadio';
 import SettingsSheet from './SettingsSheet';
+import SocialLinksBar from './SocialLinksBar';
 
 export default function ExtrasDrawerModal({
   isOpen,
@@ -278,6 +279,8 @@ export default function ExtrasDrawerModal({
             </button>
           </div>
         </div>
+
+        <SocialLinksBar variant="drawer" />
 
         {/* SECTION 3: 16-PAD SOUNDBOARD, REALITY FX & STAMPEDES */}
         {!isSoundboardFocused && soundboardSection}

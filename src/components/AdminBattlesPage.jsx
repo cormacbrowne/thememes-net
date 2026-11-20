@@ -179,7 +179,7 @@ export default function AdminBattlesPage() {
       <header className="tm-ab-top">
         <h1>⚔️ Caption Battle admin</h1>
         <nav>
-          <a href="/admin/moderation">Moderation</a> · <a href="/">Site</a>
+          <a href="/admin/social">Social Kit</a> · <a href="/admin/moderation">Moderation</a> · <a href="/">Site</a>
         </nav>
       </header>
       <p className="tm-ab-help">

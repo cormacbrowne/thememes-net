@@ -4,6 +4,7 @@ import { trackShareClicked } from '../utils/analytics';
 import { VISIBLE_ARCADE_GAMES as ARCADE_GAMES_CATALOG } from '../data/arcadeGamesCatalog';
 import { FEATURE_CASINO_GAMES, CASINO_DISCLAIMER } from '../config/featureFlags';
 import NeonSign from './NeonSign';
+import SocialLinksBar from './SocialLinksBar';
 
 export default function SeoDiscoveryFooter({
   onSelectCategory,
@@ -407,6 +408,8 @@ export default function SeoDiscoveryFooter({
             </details>
           </div>
         </div>
+
+        <SocialLinksBar variant="footer" />
 
         <div className="tm-seo-copyright">
           <span>© 2026 THE MEMES.net // Community Memes &amp; 80s Cyber-Arcade</span>

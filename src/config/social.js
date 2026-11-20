@@ -13,9 +13,31 @@ export const SOCIAL_LINKS = {
   discord: ''
 };
 
+export const SOCIAL_PLATFORMS = [
+  { id: 'tiktok', label: 'TikTok', shortLabel: 'TikTok', icon: '🎵' },
+  { id: 'instagram', label: 'Instagram', shortLabel: 'Instagram', icon: '📸' },
+  { id: 'x', label: 'X', shortLabel: 'X / Twitter', icon: '𝕏' },
+  { id: 'youtube', label: 'YouTube', shortLabel: 'YouTube', icon: '▶️' },
+  { id: 'discord', label: 'Discord', shortLabel: 'Discord', icon: '💬' }
+];
+
+const SAFE_HTTPS_URL_RE = /^https:\/\/[^\s"<>]+$/;
+
+/** Configured platforms that have a non-empty https:// URL. Empty entries are omitted. */
+export function getActiveSocialLinks(links = SOCIAL_LINKS) {
+  const src = links && typeof links === 'object' ? links : {};
+  return SOCIAL_PLATFORMS.reduce((acc, platform) => {
+    const url = String(src[platform.id] || '').trim();
+    if (SAFE_HTTPS_URL_RE.test(url)) {
+      acc.push({ ...platform, url });
+    }
+    return acc;
+  }, []);
+}
+
 /** Non-empty https profile URLs, for schema.org Organization.sameAs. */
 export function socialSameAs(links = SOCIAL_LINKS) {
-  return Object.values(links)
+  return Object.values(links || {})
     .map((u) => String(u || '').trim())
-    .filter((u) => /^https:\/\/[^\s"<>]+$/.test(u));
+    .filter((u) => SAFE_HTTPS_URL_RE.test(u));
 }

@@ -97,10 +97,12 @@ Deno.serve(async (req: Request) => {
   const parsed = parseDecisionRequest(body);
   if (!parsed.ok) return json(req, 400, { ok: false, error: parsed.error });
 
-  const { data: result, error } = await admin.rpc('mod_apply_decision', {
+  const { data: result, error } = await admin.rpc('mod_apply_decision_v2', {
     p_moderator: user.id,
     p_meme_id: parsed.memeId,
     p_comment_id: parsed.commentId,
+    p_battle_entry_id: parsed.battleEntryId ?? null,
+    p_reported_handle: parsed.reportedHandle ?? null,
     p_decision: parsed.decision,
     p_note: parsed.note
   });

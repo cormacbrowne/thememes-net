@@ -146,6 +146,17 @@ export function checkText(text, config = TEXT_MODERATION) {
       return { decision: 'reject', category: t.category, rule: 'blocklist' };
     }
   }
+  const extraTerms = Array.isArray(config?.extraTerms) ? config.extraTerms : [];
+  for (const term of extraTerms) {
+    const cleanTerm = String(term ?? '').trim();
+    if (!cleanTerm) continue;
+    const p = termPattern(cleanTerm);
+    if (!p) continue;
+    const re = new RegExp(`(?<![a-z])${p}${SUFFIX}(?![a-z])`);
+    if (re.test(words)) {
+      return { decision: 'reject', category: 'custom_blocklist', rule: 'blocklist' };
+    }
+  }
   return { decision: 'approve' };
 }
 

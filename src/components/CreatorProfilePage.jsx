@@ -46,7 +46,8 @@ export default function CreatorProfilePage({
   onSelectMeme,
   onRemixMeme,
   onRequireAuth,
-  onAvatarUpdated
+  onAvatarUpdated,
+  onReportProfile
 }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -269,15 +270,28 @@ export default function CreatorProfilePage({
                   {shareCopied ? '✅ Link Copied!' : '🔗 Share Profile'}
                 </button>
                 {!profile.isMe && (
-                  <button
-                    type="button"
-                    disabled={followBusy}
-                    data-testid="creator-follow-btn"
-                    className={`tm-follow-btn ${profile.isFollowing ? 'following' : ''}`}
-                    onClick={handleFollowClick}
-                  >
-                    {profile.isFollowing ? '✓ Following' : '+ Follow'}
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      disabled={followBusy}
+                      data-testid="creator-follow-btn"
+                      className={`tm-follow-btn ${profile.isFollowing ? 'following' : ''}`}
+                      onClick={handleFollowClick}
+                    >
+                      {profile.isFollowing ? '✓ Following' : '+ Follow'}
+                    </button>
+                    {onReportProfile && (
+                      <button
+                        type="button"
+                        className="tm-btn"
+                        style={{ minHeight: '44px' }}
+                        data-testid="creator-report-btn"
+                        onClick={() => onReportProfile(profile.handle)}
+                      >
+                        🚩 Report
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             </div>

@@ -2,6 +2,7 @@ import ModerationCategories from './ModerationCategories';
 import ModerationCurate from './ModerationCurate';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getSupabaseClient } from '../supabaseClient';
+import { FEATURE_IMAGE_MODERATION } from '../config/featureFlags';
 import { reasonLabel } from '../../supabase/functions/_shared/moderationQueue.js';
 import './ModerationPage.css';
 
@@ -45,6 +46,11 @@ export default function ModerationPage() {
   const [flash, setFlash] = useState('');
   const [signedInAs, setSignedInAs] = useState('');
   const [signInMsg, setSignInMsg] = useState('');
+  const [autoHideReports, setAutoHideReports] = useState(3);
+  const [extraTermsText, setExtraTermsText] = useState('');
+  const [imageModEnabled, setImageModEnabled] = useState(false);
+  const [settingsBusy, setSettingsBusy] = useState(false);
+  const [settingsMsg, setSettingsMsg] = useState('');
 
   useEffect(() => {
     document.title = 'Moderation queue · THE MEMES.net';
@@ -72,12 +78,22 @@ export default function ModerationPage() {
       return;
     }
     setItems(Array.isArray(data) ? data : []);
-    const { data: logRows } = await client
-      .from('moderation_actions')
-      .select('id, action, meme_id, comment_id, reason, note, moderator_id, created_at')
-      .order('created_at', { ascending: false })
-      .limit(50);
+    const [{ data: logRows }, { data: cfg }] = await Promise.all([
+      client
+        .from('moderation_actions')
+        .select('id, action, meme_id, comment_id, battle_entry_id, reported_handle, reason, note, moderator_id, created_at')
+        .order('created_at', { ascending: false })
+        .limit(50),
+      client.rpc('admin_get_moderation_settings')
+    ]);
     setLog(Array.isArray(logRows) ? logRows : []);
+    if (cfg?.ok) {
+      setAutoHideReports(Number(cfg.auto_hide_reports) || 3);
+      setExtraTermsText(
+        Array.isArray(cfg.extra_blocked_terms) ? cfg.extra_blocked_terms.join('\n') : ''
+      );
+      setImageModEnabled(Boolean(cfg.image_moderation_enabled));
+    }
     setState('ready');
   }, [client]);
 
@@ -130,6 +146,8 @@ export default function ModerationPage() {
       setBusy(true);
       const body = { decision, note: note.trim() || undefined };
       if (item.kind === 'meme') body.memeId = item.id;
+      else if (item.kind === 'battle_entry') body.battleEntryId = item.id;
+      else if (item.kind === 'profile') body.reportedHandle = item.id;
       else body.commentId = item.id;
       const { data, error } = await client.functions.invoke('moderate', { body });
       setBusy(false);
@@ -137,9 +155,10 @@ export default function ModerationPage() {
         setFlash('⚠️ That did not work. Refresh and try again.');
         return;
       }
-      setFlash(`${def.label.split(' ')[0]} Done: ${item.kind} ${String(item.id).slice(0, 8)}`);
+      const shortId = item.kind === 'profile' ? `@${item.id}` : String(item.id).slice(0, 8);
+      setFlash(`${def.label.split(' ')[0]} Done: ${item.kind} ${shortId}`);
       setNote('');
-      setItems((prev) => prev.filter((x) => x.id !== item.id));
+      setItems((prev) => prev.filter((x) => !(x.kind === item.kind && x.id === item.id)));
       setCursor((c) => Math.max(0, Math.min(c, items.length - 2)));
       setTimeout(() => setFlash(''), 3000);
       load();
@@ -166,6 +185,35 @@ export default function ModerationPage() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [current, decide, items.length, tab]);
+
+  const saveSettings = useCallback(
+    async (e) => {
+      e.preventDefault();
+      if (settingsBusy) return;
+      setSettingsBusy(true);
+      setSettingsMsg('');
+      const terms = extraTermsText
+        .split(/[\n,]+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const { data, error } = await client.rpc('admin_update_moderation_settings', {
+        p_auto_hide_reports: Math.max(1, Math.min(25, Number(autoHideReports) || 3)),
+        p_extra_blocked_terms: terms,
+        p_image_moderation_enabled: Boolean(imageModEnabled)
+      });
+      setSettingsBusy(false);
+      if (error || !data?.ok) {
+        setSettingsMsg('⚠️ Could not save moderation settings.');
+        return;
+      }
+      setAutoHideReports(Number(data.auto_hide_reports) || 3);
+      setExtraTermsText(Array.isArray(data.extra_blocked_terms) ? data.extra_blocked_terms.join('\n') : '');
+      setImageModEnabled(Boolean(data.image_moderation_enabled));
+      setSettingsMsg('✅ Moderation settings saved!');
+      load();
+    },
+    [autoHideReports, client, extraTermsText, imageModEnabled, load, settingsBusy]
+  );
 
   const counts = useMemo(
     () => ({
@@ -234,6 +282,7 @@ export default function ModerationPage() {
           <button type="button" className={tab === 'curate' ? 'is-on' : ''} onClick={() => setTab('curate')}>Curate</button>
           <button type="button" className={tab === 'log' ? 'is-on' : ''} onClick={() => setTab('log')}>Log</button>
           <button type="button" className={tab === 'categories' ? 'is-on' : ''} onClick={() => setTab('categories')}>Categories</button>
+          <button type="button" className={tab === 'settings' ? 'is-on' : ''} onClick={() => setTab('settings')}>⚙️ Settings</button>
           <button type="button" onClick={load}>↻</button>
         </nav>
       </header>
@@ -243,6 +292,47 @@ export default function ModerationPage() {
         <ModerationCurate client={client} />
       ) : tab === 'categories' ? (
         <ModerationCategories client={client} />
+      ) : tab === 'settings' ? (
+        <form className="tm-mod-settings" onSubmit={saveSettings} data-testid="mod-settings-form">
+          <h2>🛡️ Safety &amp; Filter Settings</h2>
+          <label className="tm-mod-setting-field">
+            <span>Auto-hide after N distinct reports (1–25; child-safety is always 1)</span>
+            <input
+              type="number"
+              min={1}
+              max={25}
+              value={autoHideReports}
+              onChange={(e) => setAutoHideReports(e.target.value)}
+            />
+          </label>
+          <label className="tm-mod-setting-field">
+            <span>Extra blocked words / phrases (one per line or comma-separated)</span>
+            <textarea
+              rows={5}
+              placeholder="e.g. badphrase, scamword"
+              value={extraTermsText}
+              onChange={(e) => setExtraTermsText(e.target.value)}
+            />
+          </label>
+          <label className="tm-mod-setting-check">
+            <input
+              type="checkbox"
+              checked={imageModEnabled}
+              onChange={(e) => setImageModEnabled(e.target.checked)}
+            />
+            <span>
+              External third-party image moderation webhook enabled (client flag{' '}
+              <code>FEATURE_IMAGE_MODERATION</code> = <strong>{String(FEATURE_IMAGE_MODERATION)}</strong>;
+              provider comparison in <code>docs/OWNER_TODO.md</code>)
+            </span>
+          </label>
+          <div className="tm-mod-setting-actions">
+            <button type="submit" className="tm-mod-btn is-approve" disabled={settingsBusy}>
+              {settingsBusy ? 'Saving…' : '💾 Save settings'}
+            </button>
+            {settingsMsg && <span role="status" className="tm-mod-muted">{settingsMsg}</span>}
+          </div>
+        </form>
       ) : tab === 'log' ? (
         <div className="tm-mod-log-wrap">
           <table className="tm-mod-log">
@@ -254,7 +344,17 @@ export default function ModerationPage() {
                 <tr key={row.id}>
                   <td>{timeAgo(row.created_at)}</td>
                   <td>{row.action}</td>
-                  <td>{row.meme_id ? `meme ${row.meme_id.slice(0, 8)}` : row.comment_id ? `comment ${String(row.comment_id).slice(0, 8)}` : row.note || '—'}</td>
+                  <td>
+                    {row.meme_id
+                      ? `meme ${row.meme_id.slice(0, 8)}`
+                      : row.comment_id
+                        ? `comment ${String(row.comment_id).slice(0, 8)}`
+                        : row.battle_entry_id
+                          ? `entry ${String(row.battle_entry_id).slice(0, 8)}`
+                          : row.reported_handle
+                            ? `@${row.reported_handle}`
+                            : row.note || '—'}
+                  </td>
                   <td>{row.reason || '—'}{row.note ? ` · ${row.note}` : ''}</td>
                   <td>{row.moderator_id ? row.moderator_id.slice(0, 8) : 'auto'}</td>
                 </tr>
@@ -340,7 +440,15 @@ export default function ModerationPage() {
                       </div>
                     </div>
                   ) : (
-                    <blockquote className="tm-mod-comment">{item.body}</blockquote>
+                    <blockquote className="tm-mod-comment">
+                      {item.kind === 'battle_entry' && (
+                        <span className="tm-mod-chip">⚔️ Battle caption </span>
+                      )}
+                      {item.kind === 'profile' && (
+                        <span className="tm-mod-chip">👤 Profile report </span>
+                      )}
+                      {item.body}
+                    </blockquote>
                   )}
 
                   {item.open_reports > 0 && (

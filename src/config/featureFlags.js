@@ -50,3 +50,10 @@ export const FEATURE_CASINO_GAMES = true;
 /** Shown wherever casino games appear. */
 export const CASINO_DISCLAIMER =
   'Just for fun. No real money: MemeDollarz (M$) are free play-money that can never be bought, transferred or cashed out.';
+
+/**
+ * Optional external image moderation webhook / service hook (Phase 2.6).
+ * false = OFF in client config (service provider options documented in docs/OWNER_TODO.md);
+ *         server-side image checks & moderation_settings.image_moderation_enabled control live publishing.
+ */
+export const FEATURE_IMAGE_MODERATION = false;

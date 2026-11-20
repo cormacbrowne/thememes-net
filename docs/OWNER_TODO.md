@@ -39,3 +39,14 @@ After the next deploy, paste one `/m/<id>/<slug>`, one `/battle/<battleId>`, and
 - [ ] **iMessage** (paste in Messages on iPhone/Mac)
 - [ ] **Discord** (paste in a private channel)
 - [ ] **X (Twitter)** (test in X Card Validator or a draft post with `summary_large_image`)
+
+## Image moderation service options (Phase 2.6)
+Currently `FEATURE_IMAGE_MODERATION` in `src/config/featureFlags.js` and `moderation_settings.image_moderation_enabled` are both `false` for optional third-party webhook expansion, while `publish-meme` continues its built-in OpenAI `omni-moderation-latest` + perceptual-hash + manual-queue safety pipeline. When you want to wire or switch a dedicated automated image moderation provider, pick one below:
+
+| Provider | Free tier / pricing | Strengths | Trade-offs / requirements |
+| --- | --- | --- | --- |
+| **OpenAI `omni-moderation-latest`** | Free with your existing `OPENAI_API_KEY` | Already wired in `supabase/functions/_shared/moderation.js` (zero extra signup); covers sexual, violence/gore, self-harm | Does not score hate symbols or drugs (those stay in manual review) |
+| **Sightengine** | 2,000 ops/month free, then ~$29/month Starter | Adapter already built in `_shared/moderation.js`; covers nudity, gore, hate symbols, self-harm, drugs, weapons | Requires `SIGHTENGINE_API_USER` + `SIGHTENGINE_API_SECRET` secrets; monthly cost once free tier is exceeded |
+| **AWS Rekognition Moderation** | 1,000 images/month free for 12 months, ~$1.00 per 1,000 after | Broad visual taxonomy and strong reliability | Requires AWS account + IAM signing in an Edge Function; no built-in meme OCR/text check |
+| **Google Cloud Vision SafeSearch** | 1,000 units/month free, ~$1.50 per 1,000 after | Solid adult/violence/racy/spoof scores | No hate-symbol classifier; requires GCP billing account & service credentials |
+| **Hive Moderation** | Pay-as-you-go / sales-led tiers | Strong meme + overlaid text + hate-symbol coverage | Commercial onboarding required; higher unit cost at small volumes |

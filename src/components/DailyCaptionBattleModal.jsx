@@ -91,6 +91,7 @@ export default function DailyCaptionBattleModal({
   currentUser = null,
   onRequireAuth,
   onOpenProfile,
+  onReportEntry,
   onKingsUpdated,
   onClaimPrize,
   onActivityRecorded,
@@ -318,13 +319,27 @@ export default function DailyCaptionBattleModal({
           <div className="tm-cb-shared-entry" data-testid="battle-highlighted-entry">
             <div className="tm-cb-shared-entry-head">
               <span>🔥 Shared entry by <strong>@{highlightedEntry.author_name}</strong></span>
-              <button
-                type="button"
-                className="tm-btn tm-cb-entry-share"
-                onClick={() => shareBattleLink(highlightedEntry.id, `"${entryCaption(highlightedEntry)}" — @${highlightedEntry.author_name}`)}
-              >
-                🔗 Share entry
-              </button>
+              <div className="tm-cb-rank-actions">
+                <button
+                  type="button"
+                  className="tm-btn tm-cb-entry-share"
+                  onClick={() => shareBattleLink(highlightedEntry.id, `"${entryCaption(highlightedEntry)}" — @${highlightedEntry.author_name}`)}
+                >
+                  🔗 Share entry
+                </button>
+                {!highlightedEntry.is_mine && onReportEntry && (
+                  <button
+                    type="button"
+                    className="tm-btn tm-cb-entry-share"
+                    onClick={() => onReportEntry(highlightedEntry, battle)}
+                    aria-label="Report this entry"
+                    title="Report this entry"
+                    data-testid="battle-report-highlighted-btn"
+                  >
+                    🚩
+                  </button>
+                )}
+              </div>
             </div>
             <div className="tm-cb-shared-entry-media">
               <CaptionedImage imageUrl={battle.image_url} top={highlightedEntry.top_text} bottom={highlightedEntry.bottom_text} />
@@ -427,6 +442,16 @@ export default function DailyCaptionBattleModal({
                       Swipe right for funny, left to skip. {voteQueue.length} left.
                       {state.votesNeeded > 0 && ` Vote on ${state.votesNeeded} more to unlock the live scores.`}
                     </p>
+                    {!voteQueue[0].is_mine && onReportEntry && (
+                      <button
+                        type="button"
+                        className="tm-btn tm-cb-report-text-btn"
+                        onClick={() => onReportEntry(voteQueue[0], battle)}
+                        data-testid="battle-report-vote-btn"
+                      >
+                        🚩 Report caption
+                      </button>
+                    )}
                   </>
                 )}
               </div>
@@ -465,6 +490,18 @@ export default function DailyCaptionBattleModal({
                           >
                             🔗
                           </button>
+                          {!e.is_mine && onReportEntry && (
+                            <button
+                              type="button"
+                              className="tm-btn tm-cb-entry-share"
+                              onClick={() => onReportEntry(e, battle)}
+                              aria-label="Report this entry"
+                              title="Report this entry"
+                              data-testid="battle-report-rank-btn"
+                            >
+                              🚩
+                            </button>
+                          )}
                         </div>
                       </li>
                     ))}
@@ -519,6 +556,17 @@ export default function DailyCaptionBattleModal({
                                 >
                                   🔗
                                 </button>
+                                {!e.is_mine && onReportEntry && (
+                                  <button
+                                    type="button"
+                                    className="tm-btn tm-cb-entry-share"
+                                    onClick={() => onReportEntry(e, previous)}
+                                    aria-label="Report this entry"
+                                    title="Report this entry"
+                                  >
+                                    🚩
+                                  </button>
+                                )}
                               </div>
                             </div>
                           </article>

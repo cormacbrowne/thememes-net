@@ -5,6 +5,7 @@ import { claimUsername, USERNAME_ERROR_MESSAGES, textRejectionMessage } from '..
 import { sfx } from '../utils/soundEngine';
 import { track } from '../utils/analytics';
 import { syncGuestGuessResultsToServer } from '../utils/guessTheMeme';
+import { getTurnstileToken } from '../utils/turnstile';
 
 const PENDING_HANDLE_KEY = 'tm_pending_handle';
 
@@ -327,9 +328,13 @@ export function useAuth({ setShowAuthModal, awardXpAndCombo }) {
         }
       }
 
+      const captchaToken = await getTurnstileToken('signup');
       const { error } = await client.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: window.location.origin }
+        options: {
+          emailRedirectTo: window.location.origin,
+          ...(captchaToken ? { captchaToken } : {})
+        }
       });
       if (!error) {
         setAuthMessage('✅ Magic Link sent! Check your inbox and click the link to sign in.');
@@ -420,11 +425,13 @@ export function useAuth({ setShowAuthModal, awardXpAndCombo }) {
             return;
           }
         } else {
+          const captchaToken = await getTurnstileToken('signup');
           result = await client.auth.signUp({
             email,
             password: authPassword,
             options: {
               emailRedirectTo: window.location.origin,
+              ...(captchaToken ? { captchaToken } : {}),
               data: validatedUsername
                 ? { pending_username: validatedUsername, full_name: validatedUsername }
                 : undefined

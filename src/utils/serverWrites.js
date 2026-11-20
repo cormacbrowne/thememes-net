@@ -4,7 +4,7 @@
 import { checkTexts } from '../../supabase/functions/_shared/textFilter.js';
 import { anonymousHandleFor, validateUsername } from '../../supabase/functions/_shared/identity.js';
 import { BOT_ERROR_MESSAGES, formatRateLimitMessage } from '../../supabase/functions/_shared/rateLimitAndBot.js';
-import { getTurnstileToken } from './turnstile.js';
+import { ensureActionBotCheck, getTurnstileToken } from './turnstile.js';
 
 export { formatRateLimitMessage };
 
@@ -244,6 +244,7 @@ export async function castVote(client, memeId, direction) {
   if (!(await ensureWriteSession(client))) {
     return { ok: false, error: 'sign_in_required', message: VOTE_ERROR_MESSAGES.sign_in_required };
   }
+  await ensureActionBotCheck('vote');
   const { data, error } = await client.rpc('cast_vote', {
     p_meme_id: memeId,
     p_direction: normalizeVoteDirection(direction)

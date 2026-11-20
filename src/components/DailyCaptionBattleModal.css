@@ -551,3 +551,8 @@
   border-radius: 10px;
   overflow: hidden;
 }
+.tm-cb-report-text-btn {
+  min-height: 44px;
+  font-size: 13px;
+  color: var(--tm-text-soft);
+}

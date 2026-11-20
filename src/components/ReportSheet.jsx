@@ -1,11 +1,24 @@
 import { useState, useEffect, useRef } from 'react';
 import { REPORT_REASONS, REPORT_NOTE_MAX } from '../../supabase/functions/_shared/moderationQueue.js';
-import { isReportableId } from '../utils/reports';
+import { isReportableHandle, isReportableId } from '../utils/reports';
 import './ReportSheet.css';
 
+function ReportSafetyLinks() {
+  return (
+    <nav className="tm-report-links" aria-label="Safety and rules links">
+      <a href="/rules">📜 House Rules</a>
+      <a href="/takedown">🚩 Takedown</a>
+      <a href="/contact">✉️ Contact</a>
+    </nav>
+  );
+}
+
 /**
- * Report sheet (task 33.5). `target` = { kind: 'meme', meme } | { kind: 'comment', comment, meme }.
- * "Hide it for me" stays a separate, local-only option.
+ * Report sheet (task 33.5 + 2.6).
+ * `target` = { kind: 'meme', meme }
+ *          | { kind: 'comment', comment, meme }
+ *          | { kind: 'battle_entry', entry, battle }
+ *          | { kind: 'profile', handle }.
  */
 export default function ReportSheet({ target, onClose, onSubmit, onHideForMe }) {
   const [reason, setReason] = useState('');
@@ -25,12 +38,26 @@ export default function ReportSheet({ target, onClose, onSubmit, onHideForMe }) 
   }, [onClose]);
 
   if (!target) return null;
-  const isComment = target.kind === 'comment';
-  const item = isComment ? target.comment : target.meme;
-  const reportable = isReportableId(item?.id);
-  const label = isComment
-    ? `comment by @${target.comment?.author_name || 'Anon'}`
-    : `"${String(target.meme?.title || 'this meme').slice(0, 40)}"`;
+  const kind = target.kind || 'meme';
+  const reportable =
+    kind === 'profile'
+      ? isReportableHandle(target.handle)
+      : kind === 'battle_entry'
+        ? isReportableId(target.entry?.id)
+        : kind === 'comment'
+          ? isReportableId(target.comment?.id)
+          : isReportableId(target.meme?.id);
+
+  const label =
+    kind === 'profile'
+      ? `profile @${String(target.handle || '').replace(/^@+/, '')}`
+      : kind === 'battle_entry'
+        ? `caption entry by @${target.entry?.author_name || 'Anon'}`
+        : kind === 'comment'
+          ? `comment by @${target.comment?.author_name || 'Anon'}`
+          : `"${String(target.meme?.title || 'this meme').slice(0, 40)}"`;
+
+  const canHideLocally = kind !== 'profile' && typeof onHideForMe === 'function';
 
   const submit = async (e) => {
     e.preventDefault();
@@ -62,11 +89,14 @@ export default function ReportSheet({ target, onClose, onSubmit, onHideForMe }) 
                 ? 'You had already reported this one. Our moderators will take a look.'
                 : done.hidden
                 ? 'It has been hidden for everyone while a moderator checks it.'
+                : kind === 'profile'
+                ? 'Our moderators will review this profile report.'
                 : 'Our moderators will take a look. We have hidden it from your feed.'}
             </p>
             <button type="button" className="tm-report-primary" onClick={onClose} ref={firstRef}>
               Done
             </button>
+            <ReportSafetyLinks />
           </div>
         ) : (
           <form onSubmit={submit}>
@@ -110,25 +140,31 @@ export default function ReportSheet({ target, onClose, onSubmit, onHideForMe }) 
               </>
             ) : (
               <p className="tm-report-sub">
-                This is a sample meme from @TheMemesHQ, so it can’t be reported. You can hide it from your
-                feed instead.
+                {kind === 'profile'
+                  ? 'That handle cannot be reported automatically. Use Takedown or Contact below if you need help.'
+                  : 'This is a sample item from @TheMemesHQ, so it can’t be reported. You can hide it from your view instead.'}
               </p>
             )}
-            <div className="tm-report-divider"><span>or</span></div>
-            <button
-              type="button"
-              className="tm-report-secondary"
-              onClick={() => {
-                onHideForMe(target);
-                onClose();
-              }}
-              ref={reportable ? undefined : firstRef}
-            >
-              🙈 Just hide it for me (no report)
-            </button>
+            {canHideLocally && (
+              <>
+                <div className="tm-report-divider"><span>or</span></div>
+                <button
+                  type="button"
+                  className="tm-report-secondary"
+                  onClick={() => {
+                    onHideForMe(target);
+                    onClose();
+                  }}
+                  ref={reportable ? undefined : firstRef}
+                >
+                  🙈 Just hide it for me (no report)
+                </button>
+              </>
+            )}
             <button type="button" className="tm-report-cancel" onClick={onClose}>
               Cancel
             </button>
+            <ReportSafetyLinks />
           </form>
         )}
       </div>

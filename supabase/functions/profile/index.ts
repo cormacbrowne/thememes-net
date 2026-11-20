@@ -117,7 +117,13 @@ Deno.serve(async (req: Request) => {
   }
 
   if (textsToCheck.length > 0) {
-    const verdict = await moderateText({ texts: textsToCheck, env: Deno.env });
+    const { data: modCfg } = await admin
+      .from('moderation_settings')
+      .select('extra_blocked_terms')
+      .eq('id', 1)
+      .maybeSingle();
+    const extraTerms = Array.isArray(modCfg?.extra_blocked_terms) ? modCfg.extra_blocked_terms : [];
+    const verdict = await moderateText({ texts: textsToCheck, env: Deno.env, extraTerms });
     if (verdict.decision === 'reject') {
       return json(req, 422, { ok: false, error: 'rejected', detail: verdict.category ?? 'rules' });
     }

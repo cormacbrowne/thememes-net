@@ -28,6 +28,13 @@
 - Upgraded `/u/<username>` (`CreatorProfilePage`) with level, daily streak, battle wins, bio editor, Share Profile action, local MemeDollarz ledger history, Phase 3 notification prefs preview, and `REMIX_ENABLED` gating.
 - Added dismissible `SignUpNudgeBanner` for guests at Caption Battle, Guess the Meme streak, and post-meme celebration moments.
 
+### 2.6 Moderation & safety gaps
+- Added `🚩 Report` flows for Daily Caption Battle entries (`DailyCaptionBattleModal`) and user profiles (`CreatorProfilePage`, `PlayerProfileModal`), backed by `public.content_reports`, `report_content()`, updated `mod_queue()`, and `mod_apply_decision_v2()` (with `execute` locked down to `service_role`).
+- Added configurable auto-hide report threshold (`1–25`), configurable extra blocklist terms checked in `textFilter.js` across `publish-meme`, `submit-caption-entry`, `post-comment`, and `profile`, and a `⚙️ Settings` tab in `/admin/moderation`.
+- Added `FEATURE_IMAGE_MODERATION = false` in `src/config/featureFlags.js` and documented image moderation provider options (`OpenAI omni-moderation`, `Sightengine`, `AWS Rekognition`, `Google Cloud Vision SafeSearch`, `Hive`) in `docs/OWNER_TODO.md`.
+- Linked `/rules`, `/takedown`, and `/contact` inside `ReportSheet` alongside footer links, and added Turnstile bot-check hooks (`getTurnstileToken` / `ensureActionBotCheck`) on email/magic-link signup and feed/battle voting.
+- Deployed updated `moderate`, `submit-caption-entry`, `profile`, and `post-comment` Edge Functions and applied migrations `20261120160014_moderation_gaps_2_6.sql` & `20261120160204_moderation_grants_2_6.sql`.
+
 ## Phase 1: Credibility and speed (20 Nov 2026)
 
 ### 1.1 Real numbers only

@@ -111,3 +111,22 @@ export async function getTurnstileToken(action = 'write') {
     }
   });
 }
+
+const VOTE_CHECK_TTL_MS = 5 * 60 * 1000;
+const recentBotChecks = new Map();
+
+/**
+ * Cached invisible Turnstile check for rapid interactive actions (voting).
+ * Returns immediately with `null` when VITE_TURNSTILE_SITE_KEY is unset.
+ */
+export async function ensureActionBotCheck(action = 'vote') {
+  const siteKey = getSiteKey();
+  if (!siteKey || typeof window === 'undefined') return null;
+  const cached = recentBotChecks.get(action);
+  if (cached && Date.now() - cached.at < VOTE_CHECK_TTL_MS) {
+    return cached.token;
+  }
+  const token = await getTurnstileToken(action);
+  if (token) recentBotChecks.set(action, { token, at: Date.now() });
+  return token;
+}

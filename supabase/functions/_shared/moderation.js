@@ -149,11 +149,16 @@ async function callProvider(provider, sample, env, fetchImpl, config) {
   return { error: 'no_provider' };
 }
 
+export const DEFAULT_IMAGE_MODERATION_ENABLED = false;
+
 /**
  * moderateImage({ samples: [{ data: Uint8Array, contentType }], env, fetchImpl? })
  * Every sample (a still, or GIF first/middle/last frames) is checked; the worst verdict wins.
  */
-export async function moderateImage({ samples = [], env, fetchImpl = globalThis.fetch, config = IMAGE_MODERATION } = {}) {
+export async function moderateImage({ samples = [], env, fetchImpl = globalThis.fetch, config = IMAGE_MODERATION, enabled } = {}) {
+  if (enabled === false) {
+    return { decision: 'review', provider: 'none', reason: 'image_moderation_flag_disabled' };
+  }
   const provider = (env?.get?.('IMAGE_MODERATION_PROVIDER') || config.defaultProvider || 'none').toLowerCase();
   if (!ADAPTERS[provider]) {
     return { decision: 'review', provider: 'none', reason: 'image_moderation_not_configured' };
@@ -214,11 +219,12 @@ export function textScoresToVerdict(scores, config = TEXT_MODERATION) {
  * Layer 2: OpenAI omni-moderation on all texts in one request; worst result wins.
  * Fail closed: no provider / key, timeout, HTTP error or odd reply → 'review'.
  */
-export async function moderateText({ texts = [], env, fetchImpl = globalThis.fetch, config = TEXT_MODERATION } = {}) {
+export async function moderateText({ texts = [], env, fetchImpl = globalThis.fetch, config = TEXT_MODERATION, extraTerms = [] } = {}) {
   const list = (texts || []).map((t) => String(t ?? '').trim()).filter(Boolean);
   if (!list.length) return { decision: 'approve', provider: 'none', reason: 'no_text' };
 
-  const local = checkTexts(list, config);
+  const effectiveConfig = Array.isArray(extraTerms) && extraTerms.length ? { ...config, extraTerms } : config;
+  const local = checkTexts(list, effectiveConfig);
   if (local.decision === 'reject') {
     return { decision: 'reject', provider: 'blocklist', reason: `local:${local.category}`, category: local.category };
   }

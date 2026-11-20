@@ -8,7 +8,7 @@ import { STUDIO_TEMPLATES, isSeedMeme } from '../data/starterMemes';
 import { supabase } from '../supabaseClient';
 import { ensureWriteSession, precheckTexts, textRejectionMessage } from './serverWrites';
 import { track } from './analytics';
-import { getTurnstileToken } from './turnstile';
+import { ensureActionBotCheck, getTurnstileToken } from './turnstile';
 import { formatRateLimitMessage } from '../../supabase/functions/_shared/rateLimitAndBot.js';
 
 export const CAPTION_BATTLE_FUNCTION = 'submit-caption-entry';
@@ -322,6 +322,7 @@ export async function voteCaptionBattleEntry(entryId, active = true, client = su
   if (!sess) {
     return { ok: false, error: 'sign_in_required', message: '🔑 Could not start player session.' };
   }
+  await ensureActionBotCheck('vote');
   const { data, error } = await client.rpc('vote_caption_battle_entry', {
     p_entry_id: entryId,
     p_active: Boolean(active)

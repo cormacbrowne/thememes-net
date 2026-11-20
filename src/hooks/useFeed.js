@@ -1574,6 +1574,18 @@ export function useFeed({
     setReportTarget({ kind: 'comment', comment, meme });
   }, []);
 
+  const handleReportBattleEntry = useCallback((entry, battle = null) => {
+    if (!entry) return;
+    sfx.playToggle();
+    setReportTarget({ kind: 'battle_entry', entry, battle });
+  }, []);
+
+  const handleReportProfile = useCallback((handle) => {
+    if (!handle) return;
+    sfx.playToggle();
+    setReportTarget({ kind: 'profile', handle });
+  }, []);
+
   const handleCloseReport = useCallback(() => setReportTarget(null), []);
 
   const hideCommentLocally = useCallback((commentId) => {
@@ -1590,11 +1602,13 @@ export function useFeed({
 
   const handleHideForMe = useCallback(
     (target) => {
-      if (!target) return;
+      if (!target || target.kind === 'profile') return;
       sfx.playVote(false, 1);
       if (target.kind === 'comment') {
         hideCommentLocally(target.comment?.id);
         setModerationToast('🙈 Hidden that comment from your view.');
+      } else if (target.kind === 'battle_entry') {
+        setModerationToast('🙈 Reported/hidden from your view.');
       } else {
         const meme = target.meme;
         setReportedMemeIds((prev) =>
@@ -1611,18 +1625,21 @@ export function useFeed({
     async ({ reason, note }) => {
       const target = reportTarget;
       if (!target) return { ok: false, message: 'Nothing to report.' };
-      const isComment = target.kind === 'comment';
-      const res = await submitReport(getSupabaseClient(), {
-        memeId: isComment ? null : String(target.meme.id),
-        commentId: isComment ? String(target.comment.id) : null,
-        reason,
-        note
-      });
+      const kind = target.kind || 'meme';
+      const payload =
+        kind === 'comment'
+          ? { commentId: String(target.comment.id), reason, note }
+          : kind === 'battle_entry'
+            ? { battleEntryId: String(target.entry.id), reason, note }
+            : kind === 'profile'
+              ? { reportedHandle: String(target.handle), reason, note }
+              : { memeId: String(target.meme.id), reason, note };
+      const res = await submitReport(getSupabaseClient(), payload);
       if (!res.ok) return res;
-      // The reporter never has to see it again, whatever the moderators decide.
-      if (isComment) {
+      // The reporter never has to see reported memes/comments again, whatever moderators decide.
+      if (kind === 'comment') {
         hideCommentLocally(target.comment.id);
-      } else {
+      } else if (kind === 'meme') {
         const idStr = String(target.meme.id);
         setReportedMemeIds((prev) => (prev.includes(idStr) ? prev : [...prev, idStr]));
         if (res.hidden) setMemes((prev) => prev.filter((m) => String(m.id) !== idStr));
@@ -1962,6 +1979,8 @@ export function useFeed({
     handleForgePublish,
     handleReportMeme,
     handleReportComment,
+    handleReportBattleEntry,
+    handleReportProfile,
     reportTarget,
     handleCloseReport,
     handleHideForMe,

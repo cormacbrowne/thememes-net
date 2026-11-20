@@ -31,29 +31,41 @@ export function reasonLabel(reason) {
 }
 
 /** Mirror of the server's auto-hide rule (the database decides; this is for tests/UI copy). */
-export function shouldAutoHide(distinctReporters, reason) {
-  return reason === 'child' || Number(distinctReporters) >= AUTO_HIDE_REPORTERS;
+export function shouldAutoHide(distinctReporters, reason, threshold = AUTO_HIDE_REPORTERS) {
+  const limit = Math.max(1, Number(threshold) || AUTO_HIDE_REPORTERS);
+  return reason === 'child' || Number(distinctReporters) >= limit;
 }
 
 export const MOD_DECISIONS = ['approve', 'remove', 'remove_ban_hash', 'remove_suspend'];
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const HANDLE_RE = /^[A-Za-z0-9_.-]{2,32}$/;
 export function isUuid(value) {
   return typeof value === 'string' && UUID_RE.test(value);
 }
 
 /**
  * Validate a moderator decision request.
- * → { ok: true, memeId, commentId, decision, note } | { ok: false, error }
+ * → { ok: true, memeId, commentId, battleEntryId?, reportedHandle?, decision, note } | { ok: false, error }
  */
 export function parseDecisionRequest(body) {
   const b = body && typeof body === 'object' ? body : {};
   const memeId = isUuid(b.memeId) ? b.memeId.toLowerCase() : null;
   const commentId = isUuid(b.commentId) ? b.commentId.toLowerCase() : null;
-  if ((memeId === null) === (commentId === null)) return { ok: false, error: 'bad_request' };
+  const battleEntryId = isUuid(b.battleEntryId) ? b.battleEntryId.toLowerCase() : null;
+  const rawHandle = typeof b.reportedHandle === 'string' ? b.reportedHandle.trim().replace(/^@+/, '') : '';
+  const reportedHandle = rawHandle && HANDLE_RE.test(rawHandle) ? rawHandle : null;
+
+  const targetCount =
+    (memeId ? 1 : 0) +
+    (commentId ? 1 : 0) +
+    (battleEntryId ? 1 : 0) +
+    (reportedHandle ? 1 : 0);
+  if (targetCount !== 1) return { ok: false, error: 'bad_request' };
+
   const decision = String(b.decision ?? '');
   if (!MOD_DECISIONS.includes(decision)) return { ok: false, error: 'bad_decision' };
-  if (commentId && (decision === 'remove_ban_hash')) return { ok: false, error: 'bad_decision' };
+  if (!memeId && decision === 'remove_ban_hash') return { ok: false, error: 'bad_decision' };
   const note =
     typeof b.note === 'string'
       ? Array.from(b.note, (c) => (c.charCodeAt(0) < 32 || c.charCodeAt(0) === 127 ? ' ' : c))
@@ -61,7 +73,15 @@ export function parseDecisionRequest(body) {
           .trim()
           .slice(0, REPORT_NOTE_MAX)
       : '';
-  return { ok: true, memeId, commentId, decision, note: note || null };
+  return {
+    ok: true,
+    memeId,
+    commentId,
+    ...(battleEntryId ? { battleEntryId } : {}),
+    ...(reportedHandle ? { reportedHandle } : {}),
+    decision,
+    note: note || null
+  };
 }
 
 const PUBLIC_BUCKETS = ['memes', 'meme-images'];

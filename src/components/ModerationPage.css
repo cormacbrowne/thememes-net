@@ -576,3 +576,60 @@ kbd {
   margin-top: auto;
   width: 100%;
 }
+
+.tm-mod-settings {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--tm-surface-1);
+  border: 1px solid rgba(165, 159, 196, 0.22);
+}
+
+.tm-mod-settings h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.tm-mod-setting-field {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--tm-text-soft);
+}
+
+.tm-mod-setting-field input,
+.tm-mod-setting-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(165, 159, 196, 0.3);
+  background: var(--tm-night-0);
+  color: var(--tm-text);
+  font-size: 15px;
+  font-family: inherit;
+}
+
+.tm-mod-setting-check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 13px;
+  color: var(--tm-text-soft);
+  cursor: pointer;
+}
+
+.tm-mod-setting-check input {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.tm-mod-setting-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}

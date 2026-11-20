@@ -283,10 +283,17 @@ async function handlePublishVideo(
       return json(req, 422, { ok: false, error: PUBLISH_ERRORS.REJECTED, status: 'rejected' });
     }
 
+    const { data: modCfg } = await admin
+      .from('moderation_settings')
+      .select('extra_blocked_terms')
+      .eq('id', 1)
+      .maybeSingle();
+    const extraTerms = Array.isArray(modCfg?.extra_blocked_terms) ? modCfg.extra_blocked_terms : [];
+
     const samples = frames.flatMap((f) => f.samples ?? []);
     const [imageVerdict, textVerdict] = await Promise.all([
       moderateImage({ samples, env: Deno.env }),
-      moderateText({ texts: input.texts, env: Deno.env })
+      moderateText({ texts: input.texts, env: Deno.env, extraTerms })
     ]);
     const autoStatus = decideStatus(imageVerdict, textVerdict);
     const moderation = {
@@ -441,11 +448,18 @@ async function handlePublish(
       return json(req, 422, { ok: false, error: PUBLISH_ERRORS.REJECTED, status: 'rejected' });
     }
 
+    const { data: modCfg } = await admin
+      .from('moderation_settings')
+      .select('extra_blocked_terms')
+      .eq('id', 1)
+      .maybeSingle();
+    const extraTerms = Array.isArray(modCfg?.extra_blocked_terms) ? modCfg.extra_blocked_terms : [];
+
     // The published file AND the optional Remix base are both public, so both are moderated.
     const samples = [...(clean.samples ?? []), ...(base?.samples ?? [])];
     const [rawImageVerdict, textVerdict] = await Promise.all([
       moderateImage({ samples, env: Deno.env }),
-      moderateText({ texts: input.texts, env: Deno.env })
+      moderateText({ texts: input.texts, env: Deno.env, extraTerms })
     ]);
     const imageVerdict =
       banCheck.error && rawImageVerdict.decision === 'approve'

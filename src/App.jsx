@@ -491,6 +491,8 @@ export default function App() {
     handleForgePublish,
     handleReportMeme,
     handleReportComment,
+    handleReportBattleEntry,
+    handleReportProfile,
     reportTarget,
     handleCloseReport,
     handleHideForMe,
@@ -1762,6 +1764,7 @@ export default function App() {
             onRemixMeme={handleTriggerStudioMutate}
             onRequireAuth={() => setShowAuthModal(true)}
             onAvatarUpdated={setUserAvatarId}
+            onReportProfile={handleReportProfile}
           />
         </Suspense>
       )}
@@ -2112,6 +2115,7 @@ export default function App() {
             konamiUnlocked={konamiUnlocked}
             onClose={() => setProfileUsername(null)}
             onOpenCreatorPage={(targetHandle) => openCreatorProfile(targetHandle)}
+            onReportProfile={handleReportProfile}
             onAvatarUpdated={setUserAvatarId}
             onRequireAuth={() => setShowAuthModal(true)}
             onSelectMeme={handleOpenTheater}
@@ -2391,6 +2395,7 @@ export default function App() {
               handleCloseBattle();
               setProfileUsername(username);
             }}
+            onReportEntry={handleReportBattleEntry}
             onKingsUpdated={setActiveCaptionKings}
             onActivityRecorded={recordMeaningfulActivity}
             onClose={handleCloseBattle}

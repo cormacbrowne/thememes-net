@@ -35,6 +35,7 @@ export default function PlayerProfileModal({
   konamiUnlocked = false,
   onClose,
   onOpenCreatorPage,
+  onReportProfile,
   onAvatarUpdated,
   onRequireAuth,
   onSelectMeme,
@@ -264,6 +265,20 @@ export default function PlayerProfileModal({
             <button type="button" className="tm-btn" onClick={onClose}>
               ✕ Close
             </button>
+            {!isMe && onReportProfile && (
+              <button
+                type="button"
+                className="tm-btn"
+                style={{ minHeight: '44px' }}
+                data-testid="modal-report-profile-btn"
+                onClick={() => {
+                  onClose?.();
+                  onReportProfile(username);
+                }}
+              >
+                🚩 Report
+              </button>
+            )}
           </div>
         </div>
         {followMsg && (

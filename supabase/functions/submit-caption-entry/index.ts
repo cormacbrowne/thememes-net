@@ -154,7 +154,13 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  const verdict = await moderateText({ texts: parsed.value.texts, env: Deno.env });
+  const { data: modCfg } = await admin
+    .from('moderation_settings')
+    .select('extra_blocked_terms')
+    .eq('id', 1)
+    .maybeSingle();
+  const extraTerms = Array.isArray(modCfg?.extra_blocked_terms) ? modCfg.extra_blocked_terms : [];
+  const verdict = await moderateText({ texts: parsed.value.texts, env: Deno.env, extraTerms });
   const status = decideCaptionEntryStatus(verdict);
   if (status === 'rejected') {
     await admin.from('upload_rejections').insert({

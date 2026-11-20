@@ -270,3 +270,88 @@ export function computeVirtualGridWindow({
     bottomSpacerPx: Math.max(0, totalRows - endRow) * stride
   };
 }
+
+/**
+ * Group grid entries into visual rows. Full-width entries (e.g. the companion card, which spans
+ * every column) always sit on a row of their own, exactly like CSS grid auto-placement does.
+ * Returns an array of rows; each row is an array of entry indices.
+ */
+export function buildGridRows(entries = [], columns = 1) {
+  const cols = Math.max(1, Math.trunc(Number(columns) || 1));
+  const rows = [];
+  let current = [];
+  entries.forEach((entry, idx) => {
+    if (entry?.fullWidth) {
+      if (current.length) rows.push(current);
+      rows.push([idx]);
+      current = [];
+      return;
+    }
+    current.push(idx);
+    if (current.length === cols) {
+      rows.push(current);
+      current = [];
+    }
+  });
+  if (current.length) rows.push(current);
+  return rows;
+}
+
+/**
+ * Windowing for rows of DIFFERENT heights (phones: every card is as tall as its image).
+ * rowHeights[i] is the measured height of row i, or null/undefined when it has not been
+ * rendered yet (then estimateRowPx is used). Spacers are built from the real heights, so the
+ * page no longer jumps when rows above the screen are swapped out (owner report 20 Nov 2026).
+ */
+export function computeVariableGridWindow({
+  rowHeights = [],
+  estimateRowPx = DEFAULT_CARD_ROW_HEIGHT_PX,
+  gapPx = FEED_GRID_GAP_PX,
+  gridTopPx = 0,
+  scrollY = 0,
+  viewportHeight = 900,
+  overscanPx = 1200,
+  minWindowRows = 0
+} = {}) {
+  const totalRows = rowHeights.length;
+  const est = Math.max(120, Number(estimateRowPx) || DEFAULT_CARD_ROW_HEIGHT_PX);
+  const gap = Math.max(0, Number(gapPx) || 0);
+  const heightOf = (i) => {
+    const h = Number(rowHeights[i]);
+    return Number.isFinite(h) && h > 0 ? h : est;
+  };
+
+  // offsets[i] = distance from the top of the grid content to the top of row i.
+  const offsets = new Array(totalRows + 1);
+  offsets[0] = 0;
+  for (let i = 0; i < totalRows; i += 1) offsets[i + 1] = offsets[i] + heightOf(i) + gap;
+  const totalPx = totalRows > 0 ? offsets[totalRows] - gap : 0;
+
+  if (totalRows === 0 || totalRows <= minWindowRows) {
+    return { startRow: 0, endRow: totalRows, totalRows, topSpacerPx: 0, bottomSpacerPx: 0, totalPx };
+  }
+
+  const vpH = Math.max(320, Number(viewportHeight) || 900);
+  const over = Math.max(0, Number(overscanPx) || 0);
+  const relTop = (Number(scrollY) || 0) - (Number(gridTopPx) || 0);
+  const winTop = relTop - over;
+  const winBottom = relTop + vpH + over;
+
+  let startRow = 0;
+  while (startRow < totalRows - 1 && offsets[startRow] + heightOf(startRow) < winTop) startRow += 1;
+  let endRow = startRow + 1;
+  while (endRow < totalRows && offsets[endRow] <= winBottom) endRow += 1;
+
+  // Keep at least minWindowRows mounted (grow downwards first, then upwards).
+  while (endRow - startRow < minWindowRows && endRow < totalRows) endRow += 1;
+  while (endRow - startRow < minWindowRows && startRow > 0) startRow -= 1;
+
+  return {
+    startRow,
+    endRow,
+    totalRows,
+    topSpacerPx: offsets[startRow],
+    bottomSpacerPx: endRow < totalRows ? totalPx - offsets[endRow] + gap : 0,
+    totalPx
+  };
+}

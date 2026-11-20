@@ -448,6 +448,13 @@ html {
   perspective: 1200px;
 }
 
+/* Grid items may never be wider than their column (owner report 20 Nov 2026: the 80s companion
+   card stretched every phone card off screen). */
+.tm-grid > *,
+.tm-grid > [style*="contents"] > * {
+  min-width: 0;
+}
+
 .tm-card {
   position: relative;
   background: linear-gradient(180deg, var(--tm-night-1), color-mix(in srgb, var(--tm-night-1) 70%, var(--tm-night-0)));
@@ -1658,7 +1665,7 @@ html {
 
 @media (max-width: 640px) {
   .tm-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr); /* never let wide content (ticker, faces rail) stretch the column past the screen */
     padding: 6px 12px;
     gap: 16px;
   }

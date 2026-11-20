@@ -24,7 +24,8 @@ import {
   trackRemixOpened,
   trackMemePublished,
   trackShareClicked,
-  pulse
+  pulse,
+  track
 } from '../utils/analytics';
 
 function classifyPublishRefusal(err) {
@@ -944,6 +945,7 @@ export function useFeed({
       if (nextActive) {
         sfx.playReaction(emoji, combo);
         broadcastEmote(memeId, emoji);
+        track('reaction_added', { meme_id: String(memeId), emoji });
         const res = awardFairReward({
           category: 'engagement',
           requestedTokens: ARCADE_ECONOMY_RULES.REWARDS.REACT_UNIQUE_MEME.tokens,

@@ -5,6 +5,8 @@ import { Analytics } from '@vercel/analytics/react'
 import './index.css'
 import App from './App.jsx'
 import RootErrorBoundary from './components/RootErrorBoundary.jsx'
+import { initPlausible } from './utils/plausible.js'
+import { trackReturnVisitOnce } from './utils/analytics.js'
 
 // Task 33.5, 33.11 & 33.15: moderator queue, legal pages, and daily caption Hall of Fame lazy-loaded.
 // eslint-disable-next-line react-refresh/only-export-components
@@ -61,3 +63,13 @@ createRoot(document.getElementById('root')).render(
     <Analytics />
   </StrictMode>,
 )
+
+// Plan 1.4: analytics start after the first screen is up (never on the critical path).
+if (typeof window !== 'undefined') {
+  const startAnalytics = () => {
+    initPlausible()
+    trackReturnVisitOnce()
+  }
+  if ('requestIdleCallback' in window) window.requestIdleCallback(startAnalytics, { timeout: 4000 })
+  else window.setTimeout(startAnalytics, 2000)
+}

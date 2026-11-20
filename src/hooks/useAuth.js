@@ -3,6 +3,7 @@ import { getSupabaseClient, fetchSupabaseAuthSettings, getAuthRedirectError } fr
 import { anonymousHandleFor, validateUsername } from '../../supabase/functions/_shared/identity.js';
 import { claimUsername, USERNAME_ERROR_MESSAGES, textRejectionMessage } from '../utils/serverWrites';
 import { sfx } from '../utils/soundEngine';
+import { track } from '../utils/analytics';
 
 const PENDING_HANDLE_KEY = 'tm_pending_handle';
 
@@ -428,6 +429,9 @@ export function useAuth({ setShowAuthModal, awardXpAndCombo }) {
           setAuthMessage(`⚠️ ${error.message || 'Could not create account.'}`);
           sfx.playSadTrombone();
           return;
+        }
+        if (data?.user) {
+          track('signup', { method: 'email' });
         }
 
         // Empty identities on signUp means an account with that email already exists.

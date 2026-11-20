@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { memeShareUrl } from '../utils/analytics';
 import MemeMedia from './MemeMedia';
 import { exportMemeWithWatermark, shareExportedMeme, triggerBlobDownload } from './forge/forgeEngine';
 import './MemeLiveCelebrationModal.css';
@@ -40,8 +41,8 @@ export default function MemeLiveCelebrationModal({
 
   const shareUrl =
     typeof window !== 'undefined'
-      ? `${window.location.origin}/m/${encodeURIComponent(String(meme.id))}?ref=share`
-      : `https://www.thememes.net/m/${encodeURIComponent(String(meme.id))}?ref=share`;
+      ? memeShareUrl(meme.id, window.location.origin)
+      : memeShareUrl(meme.id, 'https://www.thememes.net');
 
   const handleCopy = (e) => {
     if (onShareMeme) {

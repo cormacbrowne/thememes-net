@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef } from 'react';
 import { isSeedMeme } from '../data/starterMemes';
+import { track } from '../utils/analytics';
 import { sfx } from '../utils/soundEngine';
 import { triggerWinCelebration } from '../utils/winCelebration';
 import GameShell from './GameShell';
@@ -149,6 +150,7 @@ export default function HigherOrLowerGame({
 
   const handleShareStreak = async () => {
     const shareText = `⬆️⬇️ HIGHER OR LOWER — Meme Edition\n🔥 Streak: ${streak} (Best: ${bestStreak})\nCan you beat me? https://thememes.net/games/higher-or-lower?ref=score`;
+    track('share_card_copied', { game: 'higher_or_lower' });
     try {
       if (navigator.share && typeof window !== 'undefined' && window.innerWidth <= 860) {
         await navigator.share({ title: 'Meme Higher or Lower Streak', text: shareText });

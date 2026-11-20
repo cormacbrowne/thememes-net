@@ -7,6 +7,7 @@
 import { STUDIO_TEMPLATES, isSeedMeme } from '../data/starterMemes';
 import { supabase } from '../supabaseClient';
 import { ensureWriteSession, precheckTexts, textRejectionMessage } from './serverWrites';
+import { track } from './analytics';
 import { getTurnstileToken } from './turnstile';
 import { formatRateLimitMessage } from '../../supabase/functions/_shared/rateLimitAndBot.js';
 
@@ -311,6 +312,7 @@ export async function submitCaptionBattleEntry(
     };
   }
 
+  track('battle_entry', { template: String(templateId || '') });
   return data;
 }
 
@@ -337,6 +339,7 @@ export async function voteCaptionBattleEntry(entryId, active = true, client = su
           : '⚠️ Could not record vote.'
     };
   }
+  if (active) track('battle_vote');
   return data;
 }
 

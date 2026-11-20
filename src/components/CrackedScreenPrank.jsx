@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { track } from '../utils/analytics';
 import { sfx } from '../utils/soundEngine';
 import { haptic, isJuiceDisabled } from '../utils/juice';
 import './CrackedScreenPrank.css';
@@ -186,6 +187,9 @@ function useClock() {
 
 export default function CrackedScreenPrank({ device = 'phone' }) {
   const isTablet = device === 'tablet';
+  useEffect(() => {
+    track('prank_opened', { prank: isTablet ? 'cracked_ipad' : 'cracked_iphone' });
+  }, [isTablet]);
   const { w, h } = useViewportSize();
   const now = useClock();
   const canvasRef = useRef(null);

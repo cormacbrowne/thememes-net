@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { track, memeShareUrl } from '../utils/analytics';
 import { Share2, Download, Link2, X, Check } from 'lucide-react';
 import { exportMemeWithWatermark, triggerBlobDownload } from './forge/forgeEngine';
 import './ShareMemeSheet.css';
@@ -17,7 +18,7 @@ export default function ShareMemeSheet({ meme, initialAction = 'share', onClose,
   const [note, setNote] = useState('');
   const closeRef = useRef(null);
 
-  const shareUrl = `${window.location.origin}/m/${encodeURIComponent(String(meme.id))}?ref=share`;
+  const shareUrl = memeShareUrl(meme.id);
   const isVideo = meme.media_type === 'video';
   const canShareFiles =
     typeof navigator !== 'undefined' &&
@@ -80,6 +81,7 @@ export default function ShareMemeSheet({ meme, initialAction = 'share', onClose,
   const doDownload = () => {
     if (!result) return;
     triggerBlobDownload(result.blob, filename);
+    track('meme_downloaded', { meme_id: String(meme.id), type: isVideo ? 'video' : 'image' });
     onShared?.('download');
     setNote(isVideo ? 'Saved. On iPhone: open Downloads (Files) and tap Share → Save Video.' : 'Saved to your downloads.');
   };

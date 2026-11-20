@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { track } from '../utils/analytics';
 import { STUDIO_TEMPLATES } from '../data/starterMemes';
 import { sfx } from '../utils/soundEngine';
 import { triggerWinCelebration } from '../utils/winCelebration';
@@ -137,6 +138,16 @@ export default function GuessTheMemeGame({
   const loadedImgRef = useRef(null);
 
   const isFinished = results.length >= rounds.length;
+  const completionTrackedRef = useRef(false);
+  useEffect(() => {
+    if (!isFinished || !rounds.length || completionTrackedRef.current) return;
+    completionTrackedRef.current = true;
+    track('guess_the_meme_completed', {
+      puzzle: puzzleNumber,
+      solved: results.filter((r) => r && r.won).length,
+      rounds: rounds.length
+    });
+  }, [isFinished, rounds.length, results, puzzleNumber]);
   const activeRound = rounds[Math.min(roundIdx, rounds.length - 1)];
 
   // Load current round image cleanly for canvas pixelation
@@ -281,6 +292,7 @@ export default function GuessTheMemeGame({
 
   const handleCopyShare = async () => {
     const shareText = `${shareGrid} THE MEMES.net #${puzzleNumber} (${solvedCount}/5 · ${totalScore} pts)\n🔥 Streak: ${savedState.streak}\nhttps://thememes.net/games/guess-the-meme?ref=daily`;
+    track('share_card_copied', { game: 'guess_the_meme', puzzle: puzzleNumber });
     try {
       if (navigator.share && typeof window !== 'undefined' && window.innerWidth <= 860) {
         await navigator.share({ title: `Guess The Meme #${puzzleNumber}`, text: shareText });

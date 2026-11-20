@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { track } from '../utils/analytics';
 import { sfx } from '../utils/soundEngine';
 import { PRANK_DISGUISE_TO_PATH, SITE_ORIGIN, getSeoRouteByPath } from '../data/seoRoutes';
 import CrackedScreenPrank from './CrackedScreenPrank';
@@ -99,6 +100,9 @@ export default function BossKeyOverlay({
   onDisguiseChange
 }) {
   const [disguise, setDisguise] = useState(initialDisguise || 'excel');
+  useEffect(() => {
+    track('prank_opened', { prank: String(disguise) });
+  }, [disguise]);
   const [toolbarHidden, setToolbarHidden] = useState(false);
   const [showFullscreenTip, setShowFullscreenTip] = useState(Boolean(isPrankPage));
   const [isFullscreen, setIsFullscreen] = useState(false);

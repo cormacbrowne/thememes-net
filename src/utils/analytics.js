@@ -1,5 +1,6 @@
-import { track } from '@vercel/analytics';
-import { pulse, pulseTimer } from './pulse';
+import { track as vercelTrack } from '@vercel/analytics';
+import { pulse, pulseTimer, isPulseAllowed } from './pulse';
+import { plausibleEvent } from './plausible';
 
 const viewedKeysThisSession = new Set();
 const featuresUsedThisSession = new Set();
@@ -17,13 +18,68 @@ function safeTrack(eventName, props = {}) {
       }
     }
     pulse(eventName, cleanProps);
-    track(eventName, cleanProps);
+    vercelTrack(eventName, cleanProps);
+    plausibleEvent(eventName, cleanProps);
   } catch {
     // Ignore analytics transport or adblocker errors
   }
 }
 
 export { pulse, pulseTimer };
+
+/**
+ * THE one analytics entry point (plan 1.4): track(event, props).
+ * Sends to every configured provider: Pulse (first-party, cookieless, always on),
+ * Vercel Web Analytics, and Plausible (cookieless; only when VITE_PLAUSIBLE_DOMAIN is set).
+ * Swap or add providers inside safeTrack(); call sites never change.
+ * Props: strings/numbers/booleans only, no personal data.
+ *
+ * Plan events: meme_created {type}, meme_shared {channel}, meme_downloaded, vote_cast,
+ * reaction_added, battle_entry, battle_vote, guess_the_meme_completed, share_card_copied,
+ * game_started {game}, prank_opened {prank}, signup, return_visit.
+ */
+export const PLAN_EVENTS = Object.freeze([
+  'meme_created',
+  'meme_shared',
+  'meme_downloaded',
+  'vote_cast',
+  'reaction_added',
+  'battle_entry',
+  'battle_vote',
+  'guess_the_meme_completed',
+  'share_card_copied',
+  'game_started',
+  'prank_opened',
+  'signup',
+  'return_visit'
+]);
+
+export function track(eventName, props = {}) {
+  if (!eventName) return;
+  safeTrack(String(eventName), props);
+}
+
+/** Share link for a meme, tagged so visits from shares can be measured (?ref=share&m=<id>). */
+export function memeShareUrl(memeId, origin) {
+  const base =
+    origin || (typeof window !== 'undefined' ? window.location.origin : 'https://www.thememes.net');
+  const id = encodeURIComponent(String(memeId));
+  return `${base}/m/${id}?ref=share&m=${id}`;
+}
+
+/** Fires return_visit once per browser session for people who have been here before. */
+export function trackReturnVisitOnce() {
+  if (typeof window === 'undefined') return;
+  try {
+    if (sessionStorage.getItem('tm_return_tracked')) return;
+    sessionStorage.setItem('tm_return_tracked', '1');
+    if (localStorage.getItem('tm_intro_seen')) track('return_visit');
+  } catch {
+    // storage blocked: skip
+  }
+}
+
+export { isPulseAllowed };
 
 export function trackFeatureUseOnce(feature) {
   if (!feature || featuresUsedThisSession.has(feature)) return;
@@ -69,6 +125,7 @@ export function trackUpvote(memeId, category = 'unknown', weight = 1) {
     category: category || 'unknown',
     weight: Number(weight) || 1
   });
+  track('vote_cast', { meme_id: String(memeId), direction: Number(weight) > 0 ? 'up' : 'down' });
 }
 
 export function trackRemixOpened(meme, mode = 'remix') {
@@ -86,6 +143,7 @@ export function trackMemePublished(meme, mode = 'forge') {
     media_type: meme?.media_type || 'image',
     mode
   });
+  track('meme_created', { type: meme?.media_type || 'image', mode });
 }
 
 export function trackShareClicked(meme, surface = 'card') {
@@ -94,6 +152,7 @@ export function trackShareClicked(meme, surface = 'card') {
     category: meme?.category || 'site',
     surface
   });
+  track('meme_shared', { channel: surface, meme_id: meme?.id ? String(meme.id) : 'site' });
 }
 
 export function trackGameStarted(game, mode = 'arcade') {

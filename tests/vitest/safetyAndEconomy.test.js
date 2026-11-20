@@ -250,7 +250,7 @@ describe('pokerEngine (Vitest)', () => {
 });
 
 describe('tests/security.spec.js end-to-end against mock staging HTTP API (Vitest)', () => {
-  it('runs all 6 staging security assertions with publishable key only', async () => {
+  it('runs all 7 staging security assertions with publishable key only', async () => {
     const execFileAsync = promisify(execFile);
     let userCounter = 0;
     let voteCalls = 0;
@@ -305,6 +305,10 @@ describe('tests/security.spec.js end-to-end against mock staging HTTP API (Vites
         if (req.method === 'POST' && url.pathname === '/rest/v1/rpc/mod_queue') {
           return send(403, { code: '42501', message: 'moderators only' });
         }
+        // Phase 35.1 Pulse tables are service-role only (security.spec.js check 7).
+        if (req.method === 'GET' && /^\/rest\/v1\/pulse_[a-z_]+$/.test(url.pathname)) {
+          return send(401, { code: '42501', message: 'permission denied for table' });
+        }
         return send(404, { error: 'unhandled mock route' });
       });
     });
@@ -320,7 +324,7 @@ describe('tests/security.spec.js end-to-end against mock staging HTTP API (Vites
           SECURITY_SPEC_REQUIRED: '1'
         }
       });
-      expect(stdout).toContain('# pass 6');
+      expect(stdout).toContain('# pass 7');
       expect(stdout).toContain('# fail 0');
     } finally {
       server.close();

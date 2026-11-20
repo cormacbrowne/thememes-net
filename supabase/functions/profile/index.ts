@@ -97,7 +97,8 @@ Deno.serve(async (req: Request) => {
 
   const { error: updateErr } = await admin
     .from('profiles')
-    .update({ username: v.username, updated_at: new Date().toISOString() })
+    // profiles has no updated_at column: writing one made every handle claim a 500.
+    .update({ username: v.username })
     .eq('id', user.id);
 
   if (updateErr) {

@@ -39,3 +39,9 @@
 - The casino promo is gone from the homepage.
 - "Las Vegas" names are replaced with neutral ones, for example Neon Slots '86 and Neon Pinball '86.
 - New `MEMEDOLLARZ_RULES` and a guard test. The test fails if any payment code, M$ transfer or cash-out path, or money-like database object ever appears.
+
+### Follow-ups (owner-approved, 20 Nov 2026)
+- The vote-count reset migration is applied on production. Every count now comes from real votes and reactions.
+- The analytics section of the privacy policy is published.
+- The three old JPG memes are converted to WebP (384–535 KB down to 179–190 KB) and now have width and height set.
+- Renamed names that echoed real casino products: Lightning Roulette → Neon Strike Roulette, Lightning Vault 5000 → Thunder Vault 5000, Cyber Buffalo '86 → Cyber Stampede '86. Mr. Jackpots stays.

@@ -18,6 +18,7 @@
 - **Fixes**:
   - `close_battle` was callable by anyone through the REST API (now service-role only)
   - creator profiles no longer list pending memes
+  - anon can no longer call internal or moderator-only database functions over REST (`battle_tick`, `ensure_daily_battle`, `admin_*`, signed-in-only writes); see `20261120223000_revoke_anon_internal_rpcs.sql`
 - See `docs/HOUSE_AGENTS.md`.
 
 ## Phase 2: The core loop (20 Nov 2026)

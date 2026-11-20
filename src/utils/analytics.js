@@ -1,38 +1,21 @@
-import { track as vercelTrack } from '@vercel/analytics';
 import { pulse, pulseTimer, isPulseAllowed } from './pulse';
-import { plausibleEvent } from './plausible';
+import { track as providerTrack } from '../lib/analytics';
 import { memePath } from './memeSeo';
 
 const viewedKeysThisSession = new Set();
 const featuresUsedThisSession = new Set();
 
+// All events go through the provider switchboard in src/lib/analytics.ts.
 function safeTrack(eventName, props = {}) {
-  if (typeof window === 'undefined') return;
-  try {
-    const cleanProps = {};
-    for (const [k, v] of Object.entries(props)) {
-      if (v === undefined) continue;
-      if (v === null || typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
-        cleanProps[k] = typeof v === 'string' ? v.slice(0, 120) : v;
-      } else {
-        cleanProps[k] = String(v).slice(0, 120);
-      }
-    }
-    pulse(eventName, cleanProps);
-    vercelTrack(eventName, cleanProps);
-    plausibleEvent(eventName, cleanProps);
-  } catch {
-    // Ignore analytics transport or adblocker errors
-  }
+  providerTrack(eventName, props);
 }
 
 export { pulse, pulseTimer };
 
 /**
  * THE one analytics entry point (plan 1.4): track(event, props).
- * Sends to every configured provider: Pulse (first-party, cookieless, always on),
- * Vercel Web Analytics, and Plausible (cookieless; only when VITE_PLAUSIBLE_DOMAIN is set).
- * Swap or add providers inside safeTrack(); call sites never change.
+ * Sends through src/lib/analytics.ts, which decides the providers (Pulse for everything;
+ * Umami for the main product events). Swap or add providers there; call sites never change.
  * Props: strings/numbers/booleans only, no personal data.
  *
  * Plan events: meme_created {type}, meme_shared {channel}, meme_downloaded, vote_cast,
@@ -157,7 +140,11 @@ export function trackShareClicked(meme, surface = 'card') {
     category: meme?.category || 'site',
     surface
   });
-  track('meme_shared', { channel: surface, meme_id: meme?.id ? String(meme.id) : 'site' });
+  // The card button only opens the share sheet; the sheet records meme_shared with the real
+  // channel (whatsapp, x, copy, …), so don't count the card click as a share too.
+  if (surface !== 'card') {
+    track('meme_shared', { channel: surface, meme_id: meme?.id ? String(meme.id) : 'site' });
+  }
 }
 
 export function trackGameStarted(game, mode = 'arcade') {

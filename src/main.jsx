@@ -2,10 +2,11 @@ import './utils/installStorageGuard.js'
 import { StrictMode, Suspense, lazy } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import './index.css'
 import App from './App.jsx'
 import RootErrorBoundary from './components/RootErrorBoundary.jsx'
-import { initPlausible } from './utils/plausible.js'
+import { initAnalytics } from './lib/analytics'
 import { trackReturnVisitOnce } from './utils/analytics.js'
 
 // Task 33.5, 33.11 & 33.15: moderator queue, legal pages, and daily caption Hall of Fame lazy-loaded.
@@ -88,14 +89,18 @@ createRoot(document.getElementById('root')).render(
       <App />
     )}
     </RootErrorBoundary>
-    <Analytics />
+    {/* Vercel Web Analytics (page views, incl. SPA route changes) + Speed Insights. Production
+        builds only: there they load same-origin from /_vercel/*, so the CSP needs no extra host.
+        In dev they would load debug scripts from va.vercel-scripts.com instead. */}
+    {import.meta.env.PROD && <Analytics />}
+    {import.meta.env.PROD && <SpeedInsights sampleRate={0.5} />}
   </StrictMode>,
 )
 
 // Plan 1.4: analytics start after the first screen is up (never on the critical path).
 if (typeof window !== 'undefined') {
   const startAnalytics = () => {
-    initPlausible()
+    initAnalytics()
     trackReturnVisitOnce()
   }
   if ('requestIdleCallback' in window) window.requestIdleCallback(startAnalytics, { timeout: 4000 })

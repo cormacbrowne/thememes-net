@@ -1,5 +1,13 @@
 # Changelog
 
+## Analytics switch: Plausible out, Umami in (20 Nov 2026)
+- **Plausible removed**: script loader, `VITE_PLAUSIBLE_DOMAIN`, and `plausible.io` in the CSP.
+- **Umami Cloud added** (free Hobby plan) via `src/lib/umami.ts`. It needs `VITE_UMAMI_WEBSITE_ID`, never runs on localhost, and honours the in-app stats toggle, Do Not Track and GPC. It tracks SPA route changes by itself.
+- **One provider switchboard**: `src/lib/analytics.ts`. Every event goes to Pulse. These six also go to Umami: `meme_created`, `battle_entry`, `guess_the_meme_played`, `share_clicked {channel}`, `prank_started {prank}`, `game_started {game}`.
+- **Vercel**: Web Analytics and the new Speed Insights now load in production builds only, same-origin from `/_vercel/*`. Custom events no longer go to Vercel, since they're a Pro feature.
+- **CSP**: added `cloud.umami.is` (script) and `gateway.umami.is` (connect). Removed `plausible.io`, `va.vercel-scripts.com` and `vitals.vercel-insights.com`.
+- The card Share button no longer counts as a share by itself. The share sheet records the channel the person picks.
+
 ## Workstream 1: House agents, "never look empty" (20 Nov 2026)
 - **MemeBot**, a labelled AI house account (`profiles.is_house`) with a "🤖 House" badge on feed cards, the meme page, battle entries and the profile. House content is excluded from winners, awards, Hall of Fame, leaderboards and bounty prizes.
 - **`house-agent` Edge Function** with three tasks:

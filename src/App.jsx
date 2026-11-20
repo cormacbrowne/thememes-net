@@ -1,7 +1,7 @@
 import { Flame, Zap, Trophy, X, SlidersHorizontal } from 'lucide-react';
 import GameFullscreenToggle from './components/GameFullscreenToggle';
 import { ARCADE_GAMES_CATALOG } from './data/arcadeGamesCatalog';
-import { useMemeCategories } from './data/memeCategories';
+import { useMemeCategories, HOMEPAGE_FEATURED_CATEGORY_IDS, HOMEPAGE_FEATURED_LABELS } from './data/memeCategories';
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { sfx } from './utils/soundEngine';
 import lazyWithRetry from './utils/lazyWithRetry';
@@ -36,7 +36,8 @@ import ParticleOverlay from './components/ParticleOverlay';
 import JuiceLayer from './components/ui/JuiceLayer';
 import ArcadeErrorBoundary from './components/ArcadeErrorBoundary';
 import { DELOREAN_ERAS, EIGHTIES_CARS } from './data/deloreanEras';
-import DualDirectionHero from './components/DualDirectionHero';
+import HomeDailyHub from './components/HomeDailyHub';
+import HomeFunExtras from './components/HomeFunExtras';
 import LazyCompanionRow from './components/LazyCompanionRow';
 import MemeSkeletonGrid from './components/MemeSkeletonGrid';
 import MobileArcadeDock from './components/MobileArcadeDock';
@@ -82,7 +83,6 @@ const DankPetWidget = lazyWithRetry(() => import('./components/DankPetWidget'));
 const UnhandledGooseSurprise = lazyWithRetry(() => import('./components/UnhandledGooseSurprise'));
 const MemeLiveCelebrationModal = lazyWithRetry(() => import('./components/MemeLiveCelebrationModal'));
 const DailyCaptionBattleModal = lazyWithRetry(() => import('./components/DailyCaptionBattleModal'));
-const BattleHeroCard = lazyWithRetry(() => import('./components/BattleHeroCard'));
 const FullscreenMusicEqualizer = lazyWithRetry(
   () => import('./components/MusicEqualizer'),
   (m) => ({ default: m.FullscreenMusicEqualizer })
@@ -1209,64 +1209,32 @@ export default function App() {
               setExtrasDrawerOpen(true);
             }}
           />
+        </>
+      )}
 
-          {viewMode === 'feed' && (
-            <DualDirectionHero
-              tokens={tokens}
-              memeCentz={memeCentz}
-              onSelectViewMode={(mode) => {
+      {/* MODE 1: REDESIGNED HOMEPAGE (Battle & Daily Hub + Trending Feed + Fun Extras) */}
+      {viewMode === 'feed' && (
+        <div className="tm-home-layout" data-testid="home-layout">
+          <div className="tm-home-daily">
+            <HomeDailyHub
+              onOpenBattle={(tab) => {
                 sfx.playToggle?.();
                 closeAllModals();
-                setViewMode(mode);
+                setBattleModalOpen(tab || 'enter');
+              }}
+              onOpenGuess={() => {
+                sfx.playToggle?.();
+                closeAllModals();
+                setViewMode('guess');
                 window.scrollTo?.({ top: 0, left: 0, behavior: 'auto' });
               }}
-              onOpenBlankStudio={() => {
-                closeAllModals();
-                handleOpenBlankStudio();
-              }}
-              onOpenCaptionBattle={() => {
-                sfx.playToggle?.();
-                closeAllModals();
-                setBattleModalOpen(true);
-              }}
-              onOpenSoundboard={() => {
-                sfx.playToggle?.();
-                closeAllModals();
-                setExtrasFocus('soundboard');
-                setExtrasDrawerOpen(true);
-              }}
-              onOpenInstallModal={() => {
-                sfx.playToggle?.();
-                closeAllModals();
-                setShowInstallModal(true);
-              }}
-              onScrollToMemes={() => {
-                document
-                  .getElementById('tm-memes-feed-start')
-                  ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }}
             />
-          )}
+          </div>
 
-          {/* Plan 2.1: today's Caption Battle, straight under the portal. */}
-          {viewMode === 'feed' && (
-            <Suspense fallback={null}>
-              <div style={{ padding: '0 14px' }}>
-                <BattleHeroCard
-                  onOpenBattle={(tab) => {
-                    sfx.playToggle?.();
-                    closeAllModals();
-                    setBattleModalOpen(tab || 'enter');
-                  }}
-                />
-              </div>
-            </Suspense>
-          )}
+          <div className="tm-home-feed">
+            {isWideDesktop && <LazyCompanionRow eager />}
 
-          {viewMode === 'feed' && isWideDesktop && <LazyCompanionRow eager />}
-
-          {/* PHASE 28.3: STREAMLINED FEED FILTER BAR (Visible only on grid feed; button count halved) */}
-          {viewMode === 'feed' && (
+            {/* STREAMLINED FEED FILTER BAR */}
             <section
               id="tm-memes-feed-start"
               className={`tm-controls ${mobileFiltersOpen ? 'is-filters-open' : ''}`}
@@ -1312,7 +1280,7 @@ export default function App() {
                   onClick={() => setMobileFiltersOpen((prev) => !prev)}
                 >
                   {mobileFiltersOpen ? <X size={15} aria-hidden="true" /> : <SlidersHorizontal size={15} aria-hidden="true" />}
-                  {mobileFiltersOpen ? 'Close' : 'Filter'}
+                  {mobileFiltersOpen ? 'Close' : 'More'}
                 </button>
                 {sortBy === 'top' && !showSavedOnly && (
                   <div className="tm-top-window-pills tm-mobile-filter-item" role="group" aria-label="Top time window" style={{ display: 'inline-flex', gap: '4px' }}>
@@ -1333,21 +1301,58 @@ export default function App() {
                     ))}
                   </div>
                 )}
-                {[{ id: 'all', label: 'All', emoji: '', trending: false }, ...memeCategories].map((cat) => (
+
+                <div className="tm-featured-chips" role="group" aria-label="Featured meme categories">
                   <button
-                    key={cat.id}
                     type="button"
-                    className={`tm-tab tm-mobile-filter-item ${cat.trending ? 'tm-tab--trending' : ''} ${category === cat.id && !showSavedOnly ? 'active' : ''}`}
+                    data-testid="cat-chip-all"
+                    className={`tm-tab ${category === 'all' && !showSavedOnly ? 'active' : ''}`}
                     onClick={() => {
                       setShowSavedOnly(false);
-                      setCategory(cat.id);
+                      setCategory('all');
                     }}
-                    title={cat.trending ? `Trending now: ${cat.label}` : undefined}
                   >
-                    {cat.emoji ? `${cat.emoji} ` : '#'}
-                    {cat.label}
+                    All
                   </button>
-                ))}
+                  {HOMEPAGE_FEATURED_CATEGORY_IDS.map((fid) => {
+                    const cat = memeCategories.find((c) => c.id === fid);
+                    if (!cat) return null;
+                    const displayLabel = HOMEPAGE_FEATURED_LABELS[cat.id] || cat.label;
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        data-testid={`cat-chip-${cat.id}`}
+                        className={`tm-tab ${category === cat.id && !showSavedOnly ? 'active' : ''}`}
+                        onClick={() => {
+                          setShowSavedOnly(false);
+                          setCategory(cat.id);
+                        }}
+                      >
+                        {cat.emoji ? `${cat.emoji} ` : ''}
+                        {displayLabel}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {memeCategories
+                  .filter((cat) => !HOMEPAGE_FEATURED_CATEGORY_IDS.includes(cat.id))
+                  .map((cat) => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      className={`tm-tab tm-mobile-filter-item ${cat.trending ? 'tm-tab--trending' : ''} ${category === cat.id && !showSavedOnly ? 'active' : ''}`}
+                      onClick={() => {
+                        setShowSavedOnly(false);
+                        setCategory(cat.id);
+                      }}
+                      title={cat.trending ? `Trending now: ${cat.label}` : undefined}
+                    >
+                      {cat.emoji ? `${cat.emoji} ` : '#'}
+                      {cat.label}
+                    </button>
+                  ))}
                 {showSavedOnly && (
                   <button
                     type="button"
@@ -1391,13 +1396,7 @@ export default function App() {
                 </div>
               </div>
             </section>
-          )}
-        </>
-      )}
 
-      {/* MODE 1: HERO MEME FEED FIRST (ON IPHONE & DESKTOP) + SIDE ENTERTAINMENT BELOW */}
-      {viewMode === 'feed' && (
-        <>
           <QuickUploadBar
             onQuickPublishFile={handleQuickPublishFile}
             onOpenStudioWithFile={(file) => {
@@ -1482,9 +1481,7 @@ export default function App() {
               renderMemeCard={(meme, idx) => (
                 <MemeCard
                   meme={meme}
-                  // On the home feed the portal fills the first screen, so no card is above the
-                  // fold: let the browser lazy-load them all (plan 1.3).
-                  priority={viewMode !== 'feed' && idx < 2}
+                  priority={idx < 2}
                   myVote={userVotes[meme.id] || 0}
                   isBookmarked={bookmarkedIds.includes(String(meme.id))}
                   onToggleBookmark={handleToggleBookmark}
@@ -1707,10 +1704,37 @@ export default function App() {
             />
             </Suspense>
           </div>
+          </div>
 
-          {/* Plan 1.6: no casino promo on the homepage (the old "MemeDollarz Casino & Arcade
-              Lounge" block lived here). Casino games live only in the arcade's Retro Casino. */}
-        </>
+          <div className="tm-home-extras">
+            <HomeFunExtras
+              onOpenPranks={() => {
+                sfx.playToggle();
+                closeAllModals();
+                setViewMode('pranks');
+                window.scrollTo?.({ top: 0, left: 0, behavior: 'auto' });
+              }}
+              onOpenSoundboard={() => {
+                sfx.playToggle();
+                closeAllModals();
+                setExtrasFocus('soundboard');
+                setExtrasDrawerOpen(true);
+              }}
+              onOpenArcade={() => {
+                sfx.playToggle();
+                closeAllModals();
+                setViewMode('lobby');
+                window.scrollTo?.({ top: 0, left: 0, behavior: 'auto' });
+              }}
+              onOpenRadio={() => {
+                sfx.playToggle();
+                closeAllModals();
+                setExtrasFocus(null);
+                setExtrasDrawerOpen(true);
+              }}
+            />
+          </div>
+        </div>
       )}
 
       {/* PRANK SCREENS HUB (/prank-screens) */}

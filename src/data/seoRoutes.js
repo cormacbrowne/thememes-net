@@ -59,14 +59,16 @@ export const CATEGORY_SLUG_TO_ID = {
   programming: 'tech',
   tech: 'tech',
   gaming: 'gaming',
-  relatable: 'relatable'
+  relatable: 'relatable',
+  wholesome: 'wholesome'
 };
 
 export const CATEGORY_ID_TO_SLUG = {
   dank: 'dank',
   tech: 'programming',
   gaming: 'gaming',
-  relatable: 'relatable'
+  relatable: 'relatable',
+  wholesome: 'wholesome'
 };
 
 export const GAME_VIEW_MODE_TO_PATH = {
@@ -524,6 +526,19 @@ const ALL_SEO_ROUTES = [
     viewMode: 'feed',
     category: 'relatable',
     prerenderCategory: 'relatable',
+  },
+  {
+    path: '/memes/wholesome',
+    title: 'Wholesome Memes, Feel-Good Jokes & Cute Animal Memes | THE MEMES.net',
+    description:
+      'Browse wholesome memes, uplifting jokes, cute pets, and friendly humor on THE MEMES.net. Vote on community favorites or make your own wholesome meme free.',
+    h1: 'Wholesome & Feel-Good Community Memes',
+    kicker: '#WHOLESOME Category // Uplifting & Friendly Humor',
+    changefreq: 'hourly',
+    priority: '0.9',
+    viewMode: 'feed',
+    category: 'wholesome',
+    ogImage: 'https://www.thememes.net/og-card.png',
   },
   {
     path: '/games/neon-bingo',

@@ -9,6 +9,7 @@ export const DEFAULT_MEME_CATEGORIES = [
   { id: 'black-friday', label: 'Black Friday', emoji: '🛍️', sort: 1, trending: true },
   { id: 'christmas', label: 'Christmas', emoji: '🎄', sort: 2, trending: true },
   { id: 'tiktok-trends', label: 'TikTok Trends', emoji: '📱', sort: 3, trending: true },
+  { id: 'wholesome', label: 'Wholesome', emoji: '🥹', sort: 5, trending: false },
   { id: 'dank', label: 'Dank', emoji: '😂', sort: 10, trending: false },
   { id: 'relatable', label: 'Relatable', emoji: '🫠', sort: 20, trending: false },
   { id: 'tech', label: 'Tech', emoji: '💻', sort: 30, trending: false },
@@ -21,9 +22,13 @@ export const DEFAULT_MEME_CATEGORIES = [
   { id: 'movies-tv', label: 'Movies & TV', emoji: '🎬', sort: 100, trending: false },
   { id: 'music', label: 'Music', emoji: '🎵', sort: 110, trending: false },
   { id: 'food', label: 'Food', emoji: '🍕', sort: 120, trending: false },
-  { id: 'wholesome', label: 'Wholesome', emoji: '🥹', sort: 130, trending: false },
   { id: 'retro', label: 'Retro & 80s', emoji: '📼', sort: 140, trending: false }
 ];
+
+export const HOMEPAGE_FEATURED_CATEGORY_IDS = ['wholesome', 'dank', 'tech', 'gaming', 'relatable'];
+export const HOMEPAGE_FEATURED_LABELS = {
+  tech: 'Programming'
+};
 
 const CACHE_KEY = 'tm_meme_categories_v1';
 let memo = null;

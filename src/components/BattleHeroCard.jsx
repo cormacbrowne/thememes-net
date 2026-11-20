@@ -6,31 +6,22 @@ import './BattleHeroCard.css';
 /**
  * Plan 2.1 / 2.7 — "Today's Caption Battle" hero card for the homepage:
  * the image, a countdown to close, the entry count, a big Enter button, and yesterday's winner.
- * Loads after the first screen is up (idle), so it never slows the homepage's first paint.
  */
-export default function BattleHeroCard({ onOpenBattle }) {
-  const [state, setState] = useState(null);
+export default function BattleHeroCard({ battleState = null, hideInlineWinner = false, onOpenBattle }) {
+  const [fetchedState, setFetchedState] = useState(null);
 
   useEffect(() => {
+    if (battleState) return undefined;
     let alive = true;
-    const run = () =>
-      fetchBattleState().then((res) => {
-        if (alive) setState(res);
-      });
-    const idle =
-      typeof window !== 'undefined' && window.requestIdleCallback
-        ? window.requestIdleCallback(run, { timeout: 2500 })
-        : setTimeout(run, 800);
+    fetchBattleState().then((res) => {
+      if (alive) setFetchedState(res);
+    });
     return () => {
       alive = false;
-      if (typeof window !== 'undefined' && window.cancelIdleCallback && window.requestIdleCallback) {
-        window.cancelIdleCallback(idle);
-      } else {
-        clearTimeout(idle);
-      }
     };
-  }, []);
+  }, [battleState]);
 
+  const state = battleState || fetchedState;
   const battle = state?.battle;
   const winner = state?.previous?.top?.[0] || null;
 
@@ -40,7 +31,15 @@ export default function BattleHeroCard({ onOpenBattle }) {
     <section className="tm-battle-hero" aria-label="Today's Caption Battle" data-testid="battle-hero">
       <div className="tm-battle-hero-media">
         {battle ? (
-          <img src={battle.image_url} alt={`Today's caption battle: ${battle.title}`} width="540" height="480" loading="lazy" decoding="async" />
+          <img
+            src={battle.image_url}
+            alt={`Today's caption battle: ${battle.title}`}
+            width="540"
+            height="480"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+          />
         ) : (
           <div className="tm-battle-hero-skeleton" aria-hidden="true" />
         )}
@@ -66,7 +65,7 @@ export default function BattleHeroCard({ onOpenBattle }) {
         >
           {state?.myEntry ? '😂 Vote on the others' : '⚔️ Enter today’s battle'}
         </button>
-        {winner && (
+        {!hideInlineWinner && winner && (
           <button type="button" className="tm-battle-hero-winner" onClick={() => onOpenBattle?.('results')}>
             👑 Yesterday’s winner: <strong>@{winner.author_name}</strong> “{entryCaption(winner)}” →
           </button>

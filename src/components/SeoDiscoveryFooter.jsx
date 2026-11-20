@@ -122,6 +122,13 @@ export default function SeoDiscoveryFooter({
                 #Relatable 3AM &amp; Work Memes
               </a>
               <a
+                href="/memes/wholesome"
+                className="tm-seo-link"
+                onClick={(e) => handleSpaLinkClick(e, () => onSelectCategory('wholesome'))}
+              >
+                #Wholesome &amp; Feel-Good Memes
+              </a>
+              <a
                 href="/meme-generator"
                 className="tm-seo-link"
                 onClick={(e) => handleSpaLinkClick(e, onOpenBlankStudio)}

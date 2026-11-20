@@ -5173,3 +5173,71 @@ a.tm-btn {
   border: 1px solid rgba(233, 230, 255, 0.28);
   color: var(--tm-text, #e9e6ff);
 }
+
+/* ==========================================
+   PLAN 2.7: HOMEPAGE MOBILE-FIRST & DESKTOP 2-COL GRID
+   ========================================== */
+.tm-home-layout {
+  max-width: 1280px;
+  margin: 12px auto 0;
+  padding: 0 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+.tm-home-daily,
+.tm-home-feed,
+.tm-home-extras {
+  min-width: 0;
+}
+
+.tm-featured-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.tm-featured-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.tm-featured-chips .tm-tab {
+  min-height: 44px;
+  flex-shrink: 0;
+}
+
+@media (min-width: 1024px) {
+  .tm-home-layout {
+    padding: 0 20px;
+    grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    gap: 18px;
+    align-items: start;
+  }
+
+  .tm-home-daily {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .tm-home-extras {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .tm-home-feed {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .tm-home-feed .tm-controls {
+    margin-top: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}

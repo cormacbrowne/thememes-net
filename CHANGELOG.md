@@ -35,6 +35,11 @@
 - Linked `/rules`, `/takedown`, and `/contact` inside `ReportSheet` alongside footer links, and added Turnstile bot-check hooks (`getTurnstileToken` / `ensureActionBotCheck`) on email/magic-link signup and feed/battle voting.
 - Deployed updated `moderate`, `submit-caption-entry`, `profile`, and `post-comment` Edge Functions and applied migrations `20261120160014_moderation_gaps_2_6.sql` & `20261120160204_moderation_grants_2_6.sql`.
 
+### 2.7 Homepage redesign & Wholesome category
+- Removed `<DualDirectionHero />` above the battle card in `viewMode === 'feed'` (keeping `src/components/DualDirectionHero.jsx` in the repo) so Today's Caption Battle leads immediately on 375px mobile via `HomeDailyHub`, paired with Yesterday's Winner strip and Daily Guess the Meme tile.
+- Added responsive 2-column desktop homepage grid (`1024px+`) in `src/App.jsx` / `src/index.css` pairing `HomeDailyHub` + `HomeFunExtras` alongside the main feed, with always-visible featured category chips (`All`, `Wholesome`, `Dank`, `Programming`, `Gaming`, `Relatable`).
+- Promoted `wholesome` (`sort: 5`) in `src/data/memeCategories.js`, added `/memes/wholesome` SEO route + pre-render intro copy (`src/data/seoRoutes.js`, `src/data/seoRouteCopy.js`, `src/components/SeoDiscoveryFooter.jsx`), and added unit coverage in `tests/unit/homepageAndWholesome.unit.mjs`.
+
 ## Phase 1: Credibility and speed (20 Nov 2026)
 
 ### 1.1 Real numbers only

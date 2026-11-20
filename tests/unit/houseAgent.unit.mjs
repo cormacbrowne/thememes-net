@@ -8,6 +8,7 @@ import {
   topicRuleBlock,
   filterTopics,
   isNearDuplicate,
+  isUsableCaption,
   captionSimilarity,
   runKey,
   runOnce,
@@ -66,6 +67,27 @@ test('filterTopics fails closed: needs rules pass AND explicit safe=true', () =>
   assert.equal(reasons['Some celebrity'], 'no_verdict');
   assert.match(reasons['Wi-Fi'], /^llm:/);
   assert.match(reasons.Pets, /^llm:/);
+});
+
+test('topics the model does not actually know are dropped (no nonsense trend memes)', () => {
+  const { kept, dropped, gists } = filterTopics(
+    ['sharky', 'Mondays'],
+    [
+      { topic: 'sharky', safe: true, known: false, gist: '', reason: 'unfamiliar' },
+      { topic: 'Mondays', safe: true, known: true, gist: 'the start of the work week', reason: 'harmless' }
+    ]
+  );
+  assert.deepEqual(kept, ['Mondays']);
+  assert.equal(dropped[0].reason, 'llm:unknown_topic');
+  assert.equal(gists.Mondays, 'the start of the work week');
+});
+
+test('captions need a real punchline', () => {
+  assert.equal(isUsableCaption(['i am helen chooses to', '']), false); // fragment, no punchline
+  assert.equal(isUsableCaption(['SAME', 'same']), false);
+  assert.equal(isUsableCaption(['', 'ok']), false);
+  assert.equal(isUsableCaption(['', 'Monday hits harder than my alarm']), true);
+  assert.equal(isUsableCaption(['WIFI DROPS', 'MID BOSS FIGHT']), true);
 });
 
 test('evergreen list itself passes the rule layer', () => {

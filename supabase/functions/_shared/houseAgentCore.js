@@ -96,12 +96,14 @@ export function topicRuleBlock(topic, blockedTopics = []) {
 
 /**
  * Combine the rule layer with the LLM's verdicts. Fail closed: a topic is kept only if the rules
- * pass AND the model returned an explicit safe=true for it. → { kept, dropped: [{topic, reason}] }
+ * pass AND the model returned an explicit safe=true AND known=true (it can say what the topic is;
+ * opaque trending names make nonsense memes). → { kept, dropped: [{topic, reason}], gists }
  */
 export function filterTopics(topics = [], verdicts = [], blockedTopics = []) {
   const byTopic = new Map((verdicts || []).map((v) => [normTopic(v?.topic), v]));
   const kept = [];
   const dropped = [];
+  const gists = {};
   const seen = new Set();
   for (const topic of topics) {
     const key = normTopic(topic);
@@ -115,9 +117,13 @@ export function filterTopics(topics = [], verdicts = [], blockedTopics = []) {
     const v = byTopic.get(key);
     if (!v) dropped.push({ topic, reason: 'no_verdict' });
     else if (v.safe !== true) dropped.push({ topic, reason: `llm:${String(v.reason || 'unsafe').slice(0, 40)}` });
-    else kept.push(topic);
+    else if (v.known === false) dropped.push({ topic, reason: 'llm:unknown_topic' });
+    else {
+      kept.push(topic);
+      if (v.gist) gists[topic] = String(v.gist).slice(0, 120);
+    }
   }
-  return { kept, dropped };
+  return { kept, dropped, gists };
 }
 
 // ---------------------------------------------------------------- captions & duplicates
@@ -159,6 +165,18 @@ export function isNearDuplicate(candidate, recent = [], threshold = HOUSE_LIMITS
 /** Caption lines out of a stored overlay (house memes) — for the duplicate check. */
 export function linesFromOverlay(overlay) {
   return (overlay?.layers || []).filter((l) => l?.type === 'text').map((l) => String(l.text || ''));
+}
+
+/**
+ * Is a 2-line caption good enough to post? Needs a real punchline (bottom line), no duplicated
+ * lines, and enough words to be a joke rather than a fragment.
+ */
+export function isUsableCaption(lines = []) {
+  const [top = '', bottom = ''] = lines.map((l) => String(l ?? '').trim());
+  if (!bottom) return false;
+  if (top && top.toLowerCase() === bottom.toLowerCase()) return false;
+  const words = `${top} ${bottom}`.split(/\s+/).filter(Boolean).length;
+  return words >= 4;
 }
 
 // ---------------------------------------------------------------- feed ranking (mirror of SQL)

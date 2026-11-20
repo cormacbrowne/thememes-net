@@ -14,7 +14,7 @@ pg_cron ─► public.house_agent_call(task) ─(pg_net + Vault bearer)─► Ed
 | Schema, RPCs, digest | `supabase/migrations/20261120220011_house_agents.sql` (+ `…220148_house_agent_secret.sql`, `…220235_house_agents_grants.sql`) |
 | Schedule (apply last) | `supabase/migrations/20261121090100_house_agent_cron.sql` |
 | Review queue and switches | `/admin/house` (`src/components/AdminHousePage.jsx`) |
-| Account script | `scripts/create-house-account.ts` |
+| Account | `select public.house_agent_call('ensure_account');` (runs inside the function, idempotent; `scripts/create-house-account.ts` does the same from a terminal) |
 | Tests | `tests/unit/houseAgent.unit.mjs`, `tests/vitest/houseOverlay.test.js` |
 
 ## How each run works

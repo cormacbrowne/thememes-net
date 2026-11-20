@@ -30,3 +30,6 @@ begin
   perform cron.schedule('house-bounty', '15 9 * * 1', $c$select public.house_agent_call('weekly_bounty');$c$);
 end;
 $$;
+
+-- Owner approved the schedule after the dry runs (20 Nov 2026): agents on, review mode stays on.
+update public.agent_settings set enabled = true, review_mode = true, updated_at = now() where id;

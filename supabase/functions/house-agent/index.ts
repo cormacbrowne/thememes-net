@@ -542,9 +542,14 @@ async function weeklyBounty(run: Run, settings: Any) {
     run.skip('bounty', 'bad_output');
     return;
   }
-  const blockedRule = topicRuleBlock(prompt, settings.blocked_topics ?? []);
-  if (blockedRule) {
-    run.skip('bounty', `rule:${blockedRule.reason}`, { prompt });
+  // The headline word rules (topicRuleBlock) screen news topics; they misfire on the model's own
+  // light-hearted prompt ("a missing treat" → crime). Here only the owner's blocked_topics apply;
+  // moderateText below still checks everything.
+  const ownerBlock = ((settings.blocked_topics ?? []) as string[]).find(
+    (b) => String(b ?? '').trim() && `${prompt} ${tag}`.toLowerCase().includes(String(b).trim().toLowerCase())
+  );
+  if (ownerBlock) {
+    run.skip('bounty', 'blocked_topics', { prompt });
     return;
   }
   const mod = await moderate([prompt, tag, defaultTop, defaultBottom], extraTerms);

@@ -33,6 +33,9 @@ export default function HallOfFamePage() {
             ← Back to Memes &amp; Arcade
           </a>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <a href="/year-in-memes" className="tm-hof-back">
+              ✨ Year in Memes
+            </a>
             <a href="/games" className="tm-hof-back">
               🕹️ Cyber-Arcade
             </a>

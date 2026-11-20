@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getSupabaseClient } from '../supabaseClient';
 import { STUDIO_TEMPLATES } from '../data/starterMemes';
 import { entryCaption } from '../utils/dailyCaptionBattle';
+import { buildTwelveDaysSchedule } from '../config/seasonal';
 import './AdminBattlesPage.css';
 
 /**
@@ -33,6 +34,24 @@ function nextDayIso(offset = 1) {
   return d.toISOString().slice(0, 10);
 }
 
+async function resolveBattleImage(client, file, templateId) {
+  if (file) {
+    const webp = await toWebp(file);
+    const { data: sess } = await client.auth.getSession();
+    const token = sess?.session?.access_token;
+    const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL || 'https://otvvphmjojqyjaznjzyo.supabase.co'}/functions/v1/battle-image`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'image/webp' },
+      body: webp
+    });
+    const out = await res.json().catch(() => ({}));
+    if (!out.ok) throw new Error(out.error === 'forbidden' ? 'Only moderators can upload.' : 'Image upload failed.');
+    return { imageUrl: out.url, templateId: null };
+  }
+  const tpl = STUDIO_TEMPLATES.find((t) => t.id === templateId) || STUDIO_TEMPLATES[0];
+  return { imageUrl: tpl?.src, templateId: tpl?.id || null };
+}
+
 const STATUS_LABEL = {
   scheduled: '🗓️ Queued',
   live: '🟢 Live',
@@ -56,6 +75,9 @@ export default function AdminBattlesPage() {
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState('');
   const [openEntries, setOpenEntries] = useState(null);
+  const [twelveYear, setTwelveYear] = useState(() => new Date().getUTCFullYear());
+  const [twelveFiles, setTwelveFiles] = useState({});
+  const [twelveBusy, setTwelveBusy] = useState(false);
 
   const refresh = useCallback(async () => {
     if (!client?.rpc) {
@@ -100,25 +122,7 @@ export default function AdminBattlesPage() {
     setBusy(true);
     setNote('');
     try {
-      let imageUrl;
-      let templateId = null;
-      if (form.file) {
-        const webp = await toWebp(form.file);
-        const { data: sess } = await client.auth.getSession();
-        const token = sess?.session?.access_token;
-        const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL || 'https://otvvphmjojqyjaznjzyo.supabase.co'}/functions/v1/battle-image`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'image/webp' },
-          body: webp
-        });
-        const out = await res.json().catch(() => ({}));
-        if (!out.ok) throw new Error(out.error === 'forbidden' ? 'Only moderators can upload.' : 'Image upload failed.');
-        imageUrl = out.url;
-      } else {
-        const tpl = STUDIO_TEMPLATES.find((t) => t.id === form.templateId);
-        imageUrl = tpl?.src;
-        templateId = tpl?.id || null;
-      }
+      const { imageUrl, templateId } = await resolveBattleImage(client, form.file, form.templateId);
       const { data, error } = await client.rpc('admin_schedule_battle', {
         p_day: form.day,
         p_image_url: imageUrl,
@@ -161,6 +165,52 @@ export default function AdminBattlesPage() {
     if (reason === null) return;
     const { data } = await client.rpc('admin_remove_battle_entry', { p_entry_id: entryId, p_note: reason });
     if (data?.ok && openEntries) await showEntries(openEntries.battle);
+  };
+
+  const twelveSchedule = buildTwelveDaysSchedule(twelveYear);
+  const activeDays = new Set(
+    battles.filter((b) => b.status !== 'cancelled').map((b) => String(b.battle_day))
+  );
+  const unscheduledTwelve = twelveSchedule.filter((item) => !activeDays.has(item.battleDay));
+
+  const queueTwelveDay = async (item, silent = false) => {
+    const file = twelveFiles[item.monthDay] || null;
+    const { imageUrl, templateId } = await resolveBattleImage(client, file, item.defaultTemplateId);
+    const { data, error } = await client.rpc('admin_schedule_battle', {
+      p_day: item.battleDay,
+      p_image_url: imageUrl,
+      p_title: item.title,
+      p_prompt: item.prompt,
+      p_theme: item.theme,
+      p_template_id: templateId
+    });
+    if (error || !data?.ok) {
+      throw new Error(data?.error || error?.message || `Failed to queue ${item.battleDay}`);
+    }
+    if (!silent) {
+      setNote(`🎄 Queued ${item.battleDay} (${item.title}).`);
+      await refresh();
+    }
+  };
+
+  const queueAllTwelveDays = async () => {
+    if (twelveBusy || busy || !unscheduledTwelve.length) return;
+    setTwelveBusy(true);
+    setNote('');
+    let queued = 0;
+    try {
+      for (const item of unscheduledTwelve) {
+        await queueTwelveDay(item, true);
+        queued += 1;
+      }
+      setNote(`🎄 Queued ${queued} day${queued === 1 ? '' : 's'} for 12 Days of Memes (${twelveYear}).`);
+      await refresh();
+    } catch (err) {
+      setNote(`⚠️ Queued ${queued} before error: ${err?.message || 'Failed'}`);
+      await refresh();
+    } finally {
+      setTwelveBusy(false);
+    }
   };
 
   if (state === 'loading') return <main className="tm-ab-page">⏳ Loading…</main>;
@@ -226,6 +276,91 @@ export default function AdminBattlesPage() {
         </button>
         {note && <p className="tm-ab-note" role="status">{note}</p>}
       </form>
+
+      <section className="tm-ab-form tm-ab-twelve" aria-labelledby="ab-twelve-h2" data-testid="admin-twelve-days">
+        <div className="tm-ab-twelve-head">
+          <h2 id="ab-twelve-h2">🎄 12 Days of Memes (13–24 Dec)</h2>
+          <div className="tm-ab-twelve-controls">
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <span>Year</span>
+              <input
+                type="number"
+                min={2025}
+                max={2035}
+                value={twelveYear}
+                onChange={(e) => setTwelveYear(Number(e.target.value) || new Date().getUTCFullYear())}
+                style={{ width: '92px' }}
+              />
+            </label>
+            <button
+              type="button"
+              className="tm-ab-btn primary"
+              disabled={twelveBusy || busy || unscheduledTwelve.length === 0}
+              onClick={queueAllTwelveDays}
+            >
+              {twelveBusy
+                ? 'Queueing…'
+                : unscheduledTwelve.length === 0
+                  ? '✅ All 12 days queued'
+                  : `🎄 Queue all ${unscheduledTwelve.length} remaining days`}
+            </button>
+          </div>
+        </div>
+        <p className="tm-ab-help" style={{ margin: 0 }}>
+          Upload a custom holiday image per day (converted to WebP), or leave blank to use each day&apos;s starter template.
+        </p>
+        <ul className="tm-ab-twelve-list">
+          {twelveSchedule.map((item) => {
+            const isQueued = activeDays.has(item.battleDay);
+            return (
+              <li key={item.monthDay} className="tm-ab-twelve-row">
+                <div className="tm-ab-twelve-meta">
+                  <strong>
+                    {item.battleDay} · {item.title} {isQueued ? '✅' : ''}
+                  </strong>
+                  <span>{item.prompt}</span>
+                </div>
+                <div className="tm-ab-twelve-actions">
+                  {!isQueued ? (
+                    <>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        aria-label={`Custom image for ${item.battleDay}`}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null;
+                          setTwelveFiles((prev) => ({ ...prev, [item.monthDay]: file }));
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="tm-ab-btn"
+                        disabled={twelveBusy || busy}
+                        onClick={async () => {
+                          setTwelveBusy(true);
+                          try {
+                            await queueTwelveDay(item, false);
+                          } catch (err) {
+                            setNote(`⚠️ ${err?.message || 'Could not queue day'}`);
+                          } finally {
+                            setTwelveBusy(false);
+                          }
+                        }}
+                      >
+                        Queue {item.monthDay}
+                      </button>
+                    </>
+                  ) : (
+                    <span style={{ color: '#4ade80', fontWeight: 700, fontSize: '13px' }}>
+                      ✅ Scheduled
+                    </span>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
 
       <h2>Last 14 days and the queue</h2>
       <ul className="tm-ab-list">

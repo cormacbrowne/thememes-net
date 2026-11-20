@@ -27,7 +27,9 @@ export const SOUNDBOARD_PADS = [
   { id: 'metalpipe', emoji: '🔔', label: 'Metal Pipe', color: '#38bdf8' },
   { id: 'cartoonrun', emoji: '🏃', label: 'Scooby Run', color: '#fb923c' },
   { id: 'alienbeam', emoji: '👽', label: 'UFO Brainray', color: '#4ade80' },
-  { id: 'xpcrash', emoji: '💻', label: 'Brain Crash', color: '#60a5fa' }
+  { id: 'xpcrash', emoji: '💻', label: 'Brain Crash', color: '#60a5fa' },
+  { id: 'jinglebells', emoji: '🔔', label: 'Jingle Bells', color: '#f87171', seasonal: 'christmas' },
+  { id: 'hohoho', emoji: '🎅', label: 'Ho Ho Ho!', color: '#ef4444', seasonal: 'christmas' }
 ];
 
 // Tiny 44.1kHz silent WAV data URI used to switch iOS Safari from 'ambient' (muted by silent switch)
@@ -960,6 +962,108 @@ export class SoundEngine {
   }
 
   /**
+   * 🔔 JINGLE BELLS STINGER (100% procedural Web Audio chimes)
+   */
+  playJingleBells() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const notes = [
+        [659.25, 0, 0.14],
+        [659.25, 0.15, 0.14],
+        [659.25, 0.3, 0.24],
+        [659.25, 0.56, 0.14],
+        [659.25, 0.71, 0.14],
+        [659.25, 0.86, 0.24],
+        [659.25, 1.12, 0.13],
+        [783.99, 1.26, 0.13],
+        [523.25, 1.4, 0.15],
+        [587.33, 1.56, 0.12],
+        [659.25, 1.7, 0.36]
+      ];
+      notes.forEach(([freq, offset, dur]) => {
+        const t = now + offset;
+        const osc = this.ctx.createOscillator();
+        const overtone = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, t);
+        overtone.type = 'sine';
+        overtone.frequency.setValueAtTime(freq * 2, t);
+        gain.gain.setValueAtTime(0.001, t);
+        gain.gain.linearRampToValueAtTime(0.16, t + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        osc.connect(gain);
+        overtone.connect(gain);
+        gain.connect(this._getOutputNode());
+        osc.start(t);
+        overtone.start(t);
+        osc.stop(t + dur + 0.02);
+        overtone.stop(t + dur + 0.02);
+      });
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
+   * 🎅 JOLLY "HO HO HO!" SYNTH STINGER (100% procedural Web Audio formant laughs + sleigh chime)
+   */
+  playHoHoHo() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      const bursts = [
+        [0, 146.83, 123.47, 0.22],
+        [0.24, 146.83, 116.54, 0.22],
+        [0.48, 164.81, 110.0, 0.32]
+      ];
+      bursts.forEach(([offset, fStart, fEnd, dur]) => {
+        const t = now + offset;
+        const osc = this.ctx.createOscillator();
+        const sub = this.ctx.createOscillator();
+        const filter = this.ctx.createBiquadFilter();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(fStart, t);
+        osc.frequency.exponentialRampToValueAtTime(fEnd, t + dur);
+        sub.type = 'triangle';
+        sub.frequency.setValueAtTime(fStart * 0.5, t);
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(540, t);
+        gain.gain.setValueAtTime(0.001, t);
+        gain.gain.linearRampToValueAtTime(0.22, t + 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        osc.connect(filter);
+        sub.connect(filter);
+        filter.connect(gain);
+        gain.connect(this._getOutputNode());
+        osc.start(t);
+        sub.start(t);
+        osc.stop(t + dur + 0.02);
+        sub.stop(t + dur + 0.02);
+      });
+      // Sparkly bell tail
+      const bell = this.ctx.createOscillator();
+      const bellGain = this.ctx.createGain();
+      bell.type = 'sine';
+      bell.frequency.setValueAtTime(1046.5, now + 0.78);
+      bellGain.gain.setValueAtTime(0.09, now + 0.78);
+      bellGain.gain.exponentialRampToValueAtTime(0.001, now + 1.05);
+      bell.connect(bellGain);
+      bellGain.connect(this._getOutputNode());
+      bell.start(now + 0.78);
+      bell.stop(now + 1.07);
+    } catch {
+      // Ignore audio errors
+    }
+  }
+
+  /**
    * 🫧 GRATIFYING BUBBLE WRAP POP (pitch climbs with consecutive pops!)
    */
   playBubblePop(step = 0) {
@@ -1884,6 +1988,12 @@ export class SoundEngine {
         break;
       case 'xpcrash':
         this.playXpCrash();
+        break;
+      case 'jinglebells':
+        this.playJingleBells();
+        break;
+      case 'hohoho':
+        this.playHoHoHo();
         break;
       default:
         this.playBoing(2);

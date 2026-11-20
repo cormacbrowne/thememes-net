@@ -69,6 +69,13 @@ function PrankPreview({ id }) {
           <span className="short" />
         </div>
       );
+    case 'secretsanta':
+      return (
+        <div className="tm-prank-pv tm-prank-pv--santa">
+          <b>🎅 SECRET SANTA</b>
+          <span>Match: YOUR BOSS</span>
+        </div>
+      );
     default:
       return <div className="tm-prank-pv" />;
   }

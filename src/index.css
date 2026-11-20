@@ -5241,3 +5241,44 @@ a.tm-btn {
     padding-right: 0;
   }
 }
+
+/* ==========================================
+   PLAN 2.9 — SEASONAL SKIN ACCENTS (CHRISTMAS & NEW YEAR)
+   ========================================== */
+.tm-app.tm-season-christmas {
+  --tm-season-accent: #ef4444;
+  --tm-season-accent-2: #22c55e;
+}
+
+.tm-app.tm-season-christmas .tm-nav-brand-text,
+.tm-app.tm-season-christmas .tm-neon-wordmark {
+  filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.55)) drop-shadow(0 0 18px rgba(34, 197, 94, 0.42));
+}
+
+.tm-app.tm-season-christmas .tm-battle-hero {
+  border-color: rgba(239, 68, 68, 0.48);
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.42),
+    0 0 24px rgba(34, 197, 94, 0.16);
+}
+
+.tm-app.tm-season-christmas .tm-synthwave-glow {
+  background: radial-gradient(circle at 50% 0%, rgba(239, 68, 68, 0.22), rgba(16, 185, 129, 0.12) 45%, transparent 72%);
+}
+
+.tm-app.tm-season-newyear {
+  --tm-season-accent: #facc15;
+  --tm-season-accent-2: #00f3ff;
+}
+
+.tm-app.tm-season-newyear .tm-nav-brand-text,
+.tm-app.tm-season-newyear .tm-neon-wordmark {
+  filter: drop-shadow(0 0 12px rgba(250, 204, 21, 0.6)) drop-shadow(0 0 20px rgba(0, 243, 255, 0.4));
+}
+
+.tm-app.tm-season-newyear .tm-battle-hero {
+  border-color: rgba(250, 204, 21, 0.5);
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.42),
+    0 0 24px rgba(250, 204, 21, 0.18);
+}

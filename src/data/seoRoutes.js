@@ -105,7 +105,8 @@ export const PRANK_DISGUISE_TO_PATH = {
   terminal: '/fake-hacker-terminal-screen',
   ai: '/fake-ai-workspace-boss-screen',
   crackphone: '/fake-cracked-iphone-screen',
-  crackpad: '/fake-cracked-ipad-screen'
+  crackpad: '/fake-cracked-ipad-screen',
+  secretsanta: '/fake-secret-santa-prank'
 };
 
 const ALL_SEO_ROUTES = [
@@ -463,6 +464,19 @@ const ALL_SEO_ROUTES = [
     bossDisguise: 'crackpad',
   },
   {
+    path: '/fake-secret-santa-prank',
+    title: 'Office Secret Santa Prank — Assigned Your Boss Parody | THE MEMES.net',
+    description:
+      'A playful browser-based Office Secret Santa parody draw that insists you got assigned your own boss — complete with redraw excuses and a wishlist.',
+    h1: 'Office Secret Santa Prank — HR Holiday Gift Draw Parody',
+    kicker: 'Prank Screens // Festive Office Parody',
+    changefreq: 'weekly',
+    priority: '0.8',
+    viewMode: 'pranks',
+    category: 'all',
+    bossDisguise: 'secretsanta',
+  },
+  {
     path: '/fake-excel-boss-screen',
     title: 'Fake Excel Boss Key Screen — Interactive Spreadsheet Disguise | THE MEMES.net',
     description:
@@ -696,6 +710,20 @@ const ALL_SEO_ROUTES = [
       'Permanent archive of Daily Caption Battle winners on TheMemes.net, featuring yesterday’s Caption King, 24-hour crown holders, and top-voted captions.',
     ogImage: 'https://www.thememes.net/og-card.png',
     h1: 'Caption Battle Hall of Fame',
+  },
+  {
+    path: '/year-in-memes',
+    category: null,
+    tag: null,
+    sortBy: 'top',
+    title: 'Year in Memes — Top Community Memes & Battle Champions | THE MEMES.net',
+    kicker: 'Annual Retrospective // Best of the Year',
+    changefreq: 'weekly',
+    priority: '0.7',
+    description:
+      'TheMemes.net annual retrospective: top community memes by real upvotes, Daily Caption Battle champions, and Creators of the Year.',
+    ogImage: 'https://www.thememes.net/og-card.png',
+    h1: 'Year in Memes — Best Community Comedy of the Year',
   }
 ];
 

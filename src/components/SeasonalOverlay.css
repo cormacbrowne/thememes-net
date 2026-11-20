@@ -1,0 +1,47 @@
+/* Plan 2.9 — Ambient seasonal overlay (snow / sparkles). Never blocks interaction. */
+.tm-seasonal-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 42;
+  overflow: hidden;
+}
+
+.tm-seasonal-flake {
+  position: absolute;
+  top: -28px;
+  color: rgba(224, 247, 255, 0.72);
+  text-shadow: 0 0 8px rgba(0, 243, 255, 0.55);
+  animation-name: tmSeasonFall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+
+.tm-seasonal-overlay.is-newyear .tm-seasonal-flake {
+  color: rgba(255, 214, 102, 0.78);
+  text-shadow: 0 0 10px rgba(255, 184, 0, 0.6);
+}
+
+@keyframes tmSeasonFall {
+  0% {
+    transform: translate3d(0, -24px, 0) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.78;
+  }
+  88% {
+    opacity: 0.72;
+  }
+  100% {
+    transform: translate3d(18px, 105vh, 0) rotate(180deg);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tm-seasonal-flake {
+    display: none;
+  }
+}

@@ -140,3 +140,64 @@
     grid-column: auto;
   }
 }
+
+.tm-ab-twelve {
+  margin-top: 18px;
+  border-color: rgba(239, 68, 68, 0.45);
+}
+
+.tm-ab-twelve-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.tm-ab-twelve-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.tm-ab-twelve-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.tm-ab-twelve-row {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tm-ab-twelve-meta {
+  display: grid;
+  gap: 3px;
+  font-size: 13px;
+}
+
+.tm-ab-twelve-meta span {
+  color: var(--tm-text-soft, #b9b3d9);
+  font-size: 12px;
+}
+
+.tm-ab-twelve-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.tm-ab-twelve-actions input[type='file'] {
+  min-height: 40px;
+  font-size: 12px;
+  max-width: 100%;
+}

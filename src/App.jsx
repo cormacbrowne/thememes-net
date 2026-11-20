@@ -37,6 +37,8 @@ import JuiceLayer from './components/ui/JuiceLayer';
 import ArcadeErrorBoundary from './components/ArcadeErrorBoundary';
 import { DELOREAN_ERAS, EIGHTIES_CARS } from './data/deloreanEras';
 import HomeDailyHub from './components/HomeDailyHub';
+import SeasonalOverlay from './components/SeasonalOverlay';
+import { getActiveSeasonalSkin } from './config/seasonal';
 import HomeFunExtras from './components/HomeFunExtras';
 import LazyCompanionRow from './components/LazyCompanionRow';
 import MemeSkeletonGrid from './components/MemeSkeletonGrid';
@@ -941,17 +943,23 @@ export default function App() {
 
   useViewModeEffects({ router, theaterMeme, isAnyModalOpen });
 
+  const seasonalSkin = getActiveSeasonalSkin({
+    search: typeof window !== 'undefined' ? window.location.search : ''
+  });
+
   return (
     <div
       className={`tm-app ${isFixedArcadeGame ? 'tm-app-game-fixed' : ''} ${
         litePerfMode ? 'tm-lite-perf' : ''
       } ${screenShake ? 'tm-shake' : ''} ${
         screenPunch ? 'tm-screen-punch' : ''
-      } tm-mutator-${chaosMutator} tm-era-${deloreanEra} tm-device-${deviceProfile.id}`}
+      } ${seasonalSkin !== 'off' ? `tm-season-${seasonalSkin}` : ''} tm-mutator-${chaosMutator} tm-era-${deloreanEra} tm-device-${deviceProfile.id}`}
       data-device={deviceProfile.id}
       data-form={deviceProfile.formFactor}
       data-view={viewMode}
+      data-season={seasonalSkin}
     >
+      <SeasonalOverlay skin={seasonalSkin} />
       {/* ACTIVE-BY-DEFAULT SYNTHWAVE PERSPECTIVE GRID & NEON GLOW BACKDROP */}
       <div className="tm-synthwave-bg" aria-hidden="true">
         <div className="tm-synthwave-glow" />

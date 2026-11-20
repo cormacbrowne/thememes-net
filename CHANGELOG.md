@@ -45,6 +45,13 @@
 - Created `SocialLinksBar` (`src/components/SocialLinksBar.jsx` & `.css`) mounted in both `SeoDiscoveryFooter` and `ExtrasDrawerModal`.
 - Built moderator-only `/admin/social` (`src/components/AdminSocialKitPage.jsx` & `.css`, `src/utils/socialKitCanvas.js`, lazy-wired in `src/main.jsx`) to export `1080×1920` Stories/TikTok and `1080×1080` square PNGs plus suggested captions for today's battle and yesterday's winners.
 
+### 2.9 Seasonal: Christmas & New Year
+- Added `SEASONAL_SKIN` (`'off' | 'christmas' | 'newyear' | 'auto'`, plus `?season=` preview override) in `src/config/featureFlags.js` / `src/config/seasonal.js`, rendered via lightweight reduced-motion-safe `SeasonalOverlay` and festive glow classes in `src/App.jsx` & `src/index.css`.
+- Added the **"12 Days of Memes (13–24 Dec)"** batch scheduler in `src/components/AdminBattlesPage.jsx` using `buildTwelveDaysSchedule` and custom `.webp` or starter-template artwork.
+- Added two procedural royalty-free holiday soundboard pads (`jinglebells` 🔔 and `hohoho` 🎅) in `src/utils/soundEngine.js` and documented audio/visual provenance in `docs/ASSETS.md`.
+- Added the parody **Office Secret Santa Prank** (`secretsanta`, `/fake-secret-santa-prank`) in `BossKeyOverlay.jsx`, `PrankScreensPage.jsx`, `arcadeGamesCatalog.js`, and `seoRoutes.js` / `seoRouteCopy.js`.
+- Added **`/year-in-memes`** (`YearInMemesPage.jsx`, live RPC `public.get_year_in_memes(p_year, p_limit)` via migrations `20261120164749_year_in_memes_rpc_2_9.sql` & `20261120164802_year_in_memes_rpc_fix_2_9.sql`) linked from `/hall-of-fame` and footer.
+
 ## Phase 1: Credibility and speed (20 Nov 2026)
 
 ### 1.1 Real numbers only

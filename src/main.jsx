@@ -21,6 +21,8 @@ const AdminSocialKitPage = lazy(() => import('./components/AdminSocialKitPage.js
 const LegalInfoPage = lazy(() => import('./components/LegalInfoPage.jsx'))
 // eslint-disable-next-line react-refresh/only-export-components
 const HallOfFamePage = lazy(() => import('./components/HallOfFamePage.jsx'))
+// eslint-disable-next-line react-refresh/only-export-components
+const YearInMemesPage = lazy(() => import('./components/YearInMemesPage.jsx'))
 const UiKitPage = import.meta.env.DEV ? lazy(() => import('./components/UiKitPage.jsx')) : null
 const pathname = typeof window !== 'undefined' ? window.location.pathname : '/'
 // Owner-friendly aliases: /admin, /administrator, /moderator, /moderation, /administrator/moderator …
@@ -31,6 +33,7 @@ const isBattleAdminRoute = /^\/admin\/battles\/?$/i.test(pathname)
 const isSocialAdminRoute = /^\/admin\/social\/?$/i.test(pathname)
 const isLegalRoute = /^\/(?:rules|terms|privacy|takedown|contact)\/?$/i.test(pathname)
 const isHallOfFameRoute = /^\/hall-of-fame\/?$/i.test(pathname)
+const isYearInMemesRoute = /^\/year-in-memes\/?$/i.test(pathname)
 const isUiKitRoute = Boolean(import.meta.env.DEV && UiKitPage && /^\/__ui\/?$/i.test(pathname))
 
 // Plan 1.3: the home page's static HTML portal is already lit when React takes over, so the
@@ -69,6 +72,10 @@ createRoot(document.getElementById('root')).render(
     ) : isHallOfFameRoute ? (
       <Suspense fallback={<div style={{ minHeight: '100dvh', background: 'var(--tm-night-0)' }} />}>
         <HallOfFamePage />
+      </Suspense>
+    ) : isYearInMemesRoute ? (
+      <Suspense fallback={<div style={{ minHeight: '100dvh', background: 'var(--tm-night-0)' }} />}>
+        <YearInMemesPage />
       </Suspense>
     ) : (
       <App />

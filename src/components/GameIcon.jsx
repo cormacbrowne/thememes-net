@@ -34,7 +34,8 @@ const NEON_PALETTES = {
   terminal: { main: '#3dff9a', sec: '#ffb800', hot: '#d9ffec' },
   ai: { main: '#8a3dff', sec: '#ff2e88', hot: '#efe2ff' },
   crackphone: { main: '#19f0ff', sec: '#ffb800', hot: '#e2fdff' },
-  crackpad: { main: '#8a3dff', sec: '#ffb800', hot: '#efe2ff' }
+  crackpad: { main: '#8a3dff', sec: '#ffb800', hot: '#efe2ff' },
+  secretsanta: { main: '#ff3b5c', sec: '#ffb800', hot: '#ffe4e6' }
 };
 
 function TubePath({ d, color, hot = '#ffffff', width = 2.4 }) {
@@ -319,6 +320,15 @@ function renderGameGlyph(id, p) {
         <>
           <TubePath d="M9 9 L39 9 Q42 9 42 12 L42 36 Q42 39 39 39 L9 39 Q6 39 6 36 L6 12 Q6 9 9 9 Z" color={p.main} hot={p.hot} width={2.1} />
           <TubePath d="M18 20 L24 26 L31 22 M18 20 L13 15 M18 20 L14 30 M24 26 L27 34 M31 22 L36 17" color={p.sec} hot="#fff1c9" width={1.7} />
+        </>
+      );
+
+    case 'secretsanta':
+      // Wrapped holiday gift box + ribbon bow
+      return (
+        <>
+          <TubePath d="M10 19 L38 19 L38 40 L10 40 Z M8 14 L40 14 L40 19 L8 19 Z" color={p.main} hot={p.hot} width={2.1} />
+          <TubePath d="M24 14 L24 40 M24 14 C18 7 13 11 18 14 M24 14 C30 7 35 11 30 14" color={p.sec} hot="#fff1c9" width={2} />
         </>
       );
 

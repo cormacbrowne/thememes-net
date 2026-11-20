@@ -351,6 +351,16 @@ export const BOSS_SCREENS_CATALOG = [
     keywords: 'broken smashed shattered glass tablet',
     accent: '#b03cff',
     isNew: true
+  },
+  {
+    id: 'secretsanta',
+    icon: '🎅',
+    label: 'Office Secret Santa Prank',
+    pitch: 'A playful parody HR gift-exchange draw that dramatically reveals… your boss.',
+    path: '/fake-secret-santa-prank',
+    keywords: 'christmas holiday secret santa gift exchange boss hr party',
+    accent: '#ef4444',
+    isNew: true
   }
 ];
 

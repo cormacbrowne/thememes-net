@@ -416,6 +416,7 @@ export default function SeoDiscoveryFooter({
           <span>💵 MemeDollarz (M$) &amp; MemeCentz (¢) are free pretend tokens, just for fun — cannot be bought or cashed out.</span>
           <span style={{ display: 'inline-flex', gap: '10px', flexWrap: 'wrap' }}>
             <a href="/hall-of-fame" style={{ color: 'var(--tm-amber)', textDecoration: 'none' }}>👑 Hall of Fame</a>
+            <a href="/year-in-memes" style={{ color: '#fde047', textDecoration: 'none' }}>✨ Year in Memes</a>
             <a href="/rules" style={{ color: '#7df9ff', textDecoration: 'none' }}>📜 House Rules</a>
             <a href="/terms" style={{ color: 'var(--tm-text-dim)', textDecoration: 'none' }}>⚖️ Terms</a>
             <a href="/privacy" style={{ color: 'var(--tm-text-dim)', textDecoration: 'none' }}>🔐 Privacy</a>

@@ -13,7 +13,8 @@ const DISGUISE_MODES = [
   { id: 'update', label: '🔄 5. OS Update' },
   { id: 'bsod', label: '💀 6. Blue Screen' },
   { id: 'crackphone', label: '📱 7. Cracked iPhone' },
-  { id: 'crackpad', label: '📱 8. Cracked iPad' }
+  { id: 'crackpad', label: '📱 8. Cracked iPad' },
+  { id: 'secretsanta', label: '🎅 9. Secret Santa' }
 ];
 
 const CRACK_IDS = new Set(['crackphone', 'crackpad']);
@@ -123,6 +124,8 @@ export default function BossKeyOverlay({
   const [copiedPrankLink, setCopiedPrankLink] = useState(false);
   const [aiMessages, setAiMessages] = useState([AI_COPILOT_MEMOS[0]]);
   const [bsodPct, setBsodPct] = useState(42);
+  const [santaRedraws, setSantaRedraws] = useState(0);
+  const [santaWishlistOpen, setSantaWishlistOpen] = useState(false);
   const [prevInitialDisguise, setPrevInitialDisguise] = useState(initialDisguise);
   const [crackSheet, setCrackSheet] = useState('start'); // 'start' | 'menu' | null
   const cornerTapsRef = useRef({ n: 0, t: 0 });
@@ -168,6 +171,7 @@ export default function BossKeyOverlay({
     setDisguise(nextId);
     if (CRACK_IDS.has(nextId)) setCrackSheet('start');
     if (nextId === 'bsod') sfx.playXpCrash();
+    if (nextId === 'secretsanta') sfx.playJingleBells();
     if (onDisguiseChange) onDisguiseChange(nextId);
   };
 
@@ -239,6 +243,7 @@ export default function BossKeyOverlay({
       else if (e.key === '6') selectDisguise('bsod');
       else if (e.key === '7') selectDisguise('crackphone');
       else if (e.key === '8') selectDisguise('crackpad');
+      else if (e.key === '9') selectDisguise('secretsanta');
       else if (disguise === 'terminal' && !ignoredKeys.has(e.key)) {
         handleAppendTerminalLog();
       }
@@ -408,7 +413,9 @@ export default function BossKeyOverlay({
                     ? '#312e81'
                     : disguise === 'update' || disguise === 'bsod'
                       ? '#0067b8'
-                      : '#107c41'
+                      : disguise === 'secretsanta'
+                        ? '#7f1d1d'
+                        : '#107c41'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
@@ -419,6 +426,7 @@ export default function BossKeyOverlay({
               {disguise === 'ai' && '🤖 SynergyGPT Enterprise Copilot v5.4 (SOC2 Verified)'}
               {disguise === 'update' && '🔄 Enterprise OS Security Patch KB5042069'}
               {disguise === 'bsod' && '💀 System Kernel Diagnostic Utility'}
+              {disguise === 'secretsanta' && '🎁 NorthPoleHR — Office Secret Santa Draw (Parody)'}
             </strong>
             {secretXpEarned > 0 && (
               <span
@@ -1197,6 +1205,194 @@ export default function BossKeyOverlay({
               <div style={{ opacity: 0.75, marginTop: '4px' }}>
                 (Tap anywhere to mine +15 Stealth XP while telling your boss &ldquo;IT pushed a bad patch&rdquo;)
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DISGUISE 9: OFFICE SECRET SANTA PRANK (clearly marked parody) */}
+      {disguise === 'secretsanta' && (
+        <div
+          data-testid="secret-santa-prank"
+          style={{
+            flex: 1,
+            background: 'linear-gradient(155deg, #2a0a12 0%, #450a1a 52%, #0a2e1f 100%)',
+            color: '#fffbeb',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px 14px',
+            overflowY: 'auto',
+            fontFamily: 'system-ui, -apple-system, sans-serif'
+          }}
+        >
+          <div
+            style={{
+              width: 'min(100%, 470px)',
+              boxSizing: 'border-box',
+              background: 'rgba(17, 10, 24, 0.92)',
+              border: '2px solid rgba(250, 204, 21, 0.55)',
+              borderRadius: '20px',
+              padding: '22px 18px',
+              boxShadow: '0 20px 44px rgba(0, 0, 0, 0.55)',
+              display: 'grid',
+              gap: '14px',
+              textAlign: 'center'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  letterSpacing: '0.06em',
+                  padding: '4px 10px',
+                  borderRadius: '999px',
+                  background: 'rgba(239, 68, 68, 0.25)',
+                  border: '1px solid rgba(252, 165, 165, 0.5)',
+                  color: '#fecaca'
+                }}
+              >
+                🎄 PARODY PRANK · NORTHPOLEHR
+              </span>
+              <span style={{ fontSize: '12px', color: '#fde047', fontWeight: 700 }}>
+                Draw #2026-12-HR
+              </span>
+            </div>
+
+            <div style={{ fontSize: '46px', lineHeight: 1 }} aria-hidden="true">
+              🎅🎁
+            </div>
+
+            <h1 style={{ margin: 0, fontSize: 'clamp(20px, 5vw, 25px)', color: '#fef08a', lineHeight: 1.2 }}>
+              Office Secret Santa: You&apos;ve been assigned…
+            </h1>
+
+            <div
+              style={{
+                background: 'linear-gradient(135deg, rgba(185, 28, 28, 0.35), rgba(21, 128, 61, 0.28))',
+                border: '1px solid rgba(253, 224, 71, 0.45)',
+                borderRadius: '14px',
+                padding: '14px'
+              }}
+            >
+              <div style={{ fontSize: '24px', fontWeight: 900, color: '#ffffff', letterSpacing: '0.02em' }}>
+                👔 YOUR BOSS
+              </div>
+              <div style={{ fontSize: '13px', color: '#fde68a', marginTop: '4px', fontWeight: 600 }}>
+                Chief Synergy Officer · Executive Corner Office
+              </div>
+              <div style={{ fontSize: '12px', color: '#bbf7d0', marginTop: '6px' }}>
+                Strict Budget: £15.00 max (itemised HR receipt mandatory)
+              </div>
+            </div>
+
+            {santaRedraws > 0 && (
+              <div
+                role="status"
+                style={{
+                  fontSize: '13px',
+                  padding: '10px 12px',
+                  borderRadius: '10px',
+                  background: 'rgba(250, 204, 21, 0.14)',
+                  border: '1px solid rgba(250, 204, 21, 0.4)',
+                  color: '#fef08a',
+                  fontWeight: 700
+                }}
+              >
+                {santaRedraws === 1
+                  ? '🔄 Redraw #1 rejected: Conflict-of-interest check says… STILL YOUR BOSS.'
+                  : santaRedraws === 2
+                    ? '🔄 Redraw #2 blocked: Randomizer algorithm locked by Upper Management — STILL YOUR BOSS.'
+                    : `🔄 Redraw #${santaRedraws}: Nice try. Please bring artisanal mince pies on Friday.`}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setSantaRedraws((c) => c + 1);
+                  sfx.playHoHoHo?.();
+                  earnStealthXp(15);
+                }}
+                style={{
+                  minHeight: '44px',
+                  padding: '10px 14px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: '#ef4444',
+                  color: '#ffffff',
+                  fontWeight: 800,
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  flex: '1 1 170px'
+                }}
+              >
+                🎲 Request HR Redraw
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSantaWishlistOpen((v) => !v);
+                  sfx.playJingleBells?.();
+                  earnStealthXp(10);
+                }}
+                style={{
+                  minHeight: '44px',
+                  padding: '10px 14px',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(250, 204, 21, 0.5)',
+                  background: 'rgba(250, 204, 21, 0.14)',
+                  color: '#fef08a',
+                  fontWeight: 800,
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  flex: '1 1 160px'
+                }}
+              >
+                {santaWishlistOpen ? 'Hide Boss Wishlist' : '🎁 Peek Boss Wishlist'}
+              </button>
+            </div>
+
+            {santaWishlistOpen && (
+              <ul
+                style={{
+                  margin: 0,
+                  padding: '10px 14px 10px 26px',
+                  textAlign: 'left',
+                  fontSize: '13px',
+                  lineHeight: 1.55,
+                  color: '#e5e7eb',
+                  background: 'rgba(0, 0, 0, 0.28)',
+                  borderRadius: '10px'
+                }}
+              >
+                <li>&ldquo;A 10x Q4 with zero unplanned Friday deploys&rdquo;</li>
+                <li>&ldquo;World&apos;s Most Synergistic Boss mug (receipt attached)&rdquo;</li>
+                <li>&ldquo;Two fewer Slack threads asking if this could be an email&rdquo;</li>
+              </ul>
+            )}
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'space-between', alignItems: 'center', paddingTop: '6px', borderTop: '1px solid rgba(255,255,255,0.12)', fontSize: '12px', color: '#cbd5e1' }}>
+              <span>Parody screen · no real HR data</span>
+              <button
+                type="button"
+                onClick={() => onExitBossMode?.()}
+                style={{
+                  background: 'none',
+                  border: '1px solid rgba(255,255,255,0.28)',
+                  color: '#fff',
+                  borderRadius: '8px',
+                  padding: '6px 10px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                ✕ Exit Parody (Esc)
+              </button>
             </div>
           </div>
         </div>

@@ -57,3 +57,13 @@ export const CASINO_DISCLAIMER =
  *         server-side image checks & moderation_settings.image_moderation_enabled control live publishing.
  */
 export const FEATURE_IMAGE_MODERATION = false;
+
+/**
+ * Plan 2.9 — Site-wide seasonal skin mode:
+ * - 'off': standard cyber-arcade theme (default)
+ * - 'christmas': snow overlay + festive red/emerald/ice glow accents
+ * - 'newyear': subtle champagne/cyan sparkles + gold glow accents
+ * - 'auto': automatically 'christmas' (1–26 Dec UTC) and 'newyear' (27 Dec–5 Jan UTC)
+ * Can also be previewed in browser via ?season=christmas|newyear|off.
+ */
+export const SEASONAL_SKIN = 'off';

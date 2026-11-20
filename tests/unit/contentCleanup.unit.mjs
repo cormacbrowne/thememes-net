@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ARCADE_GAME_COUNT } from '../../src/data/seoRoutes.js';
 import { SEO_ROUTES_WITH_COPY as SEO_ROUTES } from '../../src/data/seoRouteCopy.js';
-import { ARCADE_GAMES_CATALOG } from '../../src/data/arcadeGamesCatalog.js';
+import { VISIBLE_ARCADE_GAMES } from '../../src/data/arcadeGamesCatalog.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
@@ -18,7 +18,7 @@ test('remix titles are never prefixed (prefixes used to stack: "REMIX: REMIX: â€
 });
 
 test('arcade game count is calculated from the game list, never hard-coded', () => {
-  assert.equal(ARCADE_GAME_COUNT, ARCADE_GAMES_CATALOG.length);
+  assert.equal(ARCADE_GAME_COUNT, VISIBLE_ARCADE_GAMES.length);
   const lobby = SEO_ROUTES.find((r) => r.path === '/games');
   const text = [lobby.h1, ...(lobby.introParagraphs || [])].join(' ');
   assert.match(text, new RegExp(`\\b${ARCADE_GAME_COUNT} free`, 'i'));

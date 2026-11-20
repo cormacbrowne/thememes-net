@@ -156,7 +156,7 @@ const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge =
 
       case 'watermelon':
         return (
-          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Vegas Watermelon Slice">
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Watermelon slice">
             <path d="M8 22 A25 25 0 0 0 56 22 Z" fill="#16a34a" stroke="#14532d" strokeWidth="2.4" transform="rotate(-14 32 30)" />
             <path d="M12 22 A21 21 0 0 0 52 22 Z" fill="#dcfce7" transform="rotate(-14 32 30)" />
             <path d="M14.5 22 A18.5 18.5 0 0 0 49.5 22 Z" fill="#ef4444" transform="rotate(-14 32 30)" />
@@ -172,7 +172,7 @@ const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge =
 
       case 'lemon':
         return (
-          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Golden Vegas Lemon">
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Golden lemon">
             <defs>
               <radialGradient id={`glem-${uid}`} cx="35%" cy="30%" r="65%">
                 <stop offset="0%" stopColor="#fef9c3" />
@@ -540,7 +540,7 @@ const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge =
       case 'wheel':
       default:
         return (
-          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Vegas Bonus Wheel">
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Bonus wheel">
             <circle cx="32" cy="32" r="23" fill="#1e1b4b" stroke="#facc15" strokeWidth="2.8" />
             <path d="M32 32 L32 9 A23 23 0 0 1 55 32 Z" fill="#ec4899" />
             <path d="M32 32 L55 32 A23 23 0 0 1 32 55 Z" fill="#06b6d4" />

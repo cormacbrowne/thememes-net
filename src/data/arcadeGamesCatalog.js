@@ -3,6 +3,8 @@
 // Shared metadata, categories, recent play history, and favourites.
 // ==========================================
 
+import { FEATURE_CASINO_GAMES } from '../config/featureFlags.js';
+
 export const RECENT_GAMES_KEY = 'tm_recent_games_v1';
 export const FAV_GAMES_KEY = 'tm_fav_games_v1';
 
@@ -10,69 +12,18 @@ export const ARCADE_LOBBY_GROUPS = [
   { id: 'skill', label: 'Skill Cabinets', desc: 'Free reflex, shooter & puzzle cabinets' },
   { id: 'meme', label: 'Meme Games', desc: 'Daily challenges & crowd battles' },
   { id: 'sim', label: 'Market Sim', desc: 'Live MEMEDAQ ticker trading' },
-  { id: 'casino', label: 'Vegas Room', desc: 'MemeDollarz (M$) tables, slots & oracle' }
+  {
+    id: 'casino',
+    label: 'Retro Casino',
+    desc: 'Slots, cards, roulette, bingo and racing'
+  }
 ];
 
 export const ARCADE_GAMES_CATALOG = [
-  // Casino
-  {
-    id: 'bingo',
-    group: 'casino',
-    icon: '🎱',
-    label: "Neon Bingo '86",
-    pitch: 'All 90 comedy calls (Two Little Ducks 22!), UV dabber pen, cheers/boos & M$ jackpots.',
-    badge: '90-Ball',
-    isNew: true,
-    accent: '#ff2a85',
-    path: '/games/neon-bingo'
-  },
-  {
-    id: 'pusher',
-    group: 'casino',
-    icon: '🎰',
-    label: "Neon Coin Dozer '86",
-    pitch: 'Drop coins & shove 3D prize towers.',
-    badge: '3D',
-    isNew: false,
-    accent: '#facc15',
-    path: '/games/coin-pusher'
-  },
-  {
-    id: 'roulette',
-    group: 'casino',
-    icon: '🎡',
-    label: 'Lightning Roulette',
-    pitch: 'European wheel with 150x strikes.',
-    badge: '150x',
-    isNew: false,
-    accent: '#ef4444',
-    path: '/games/roulette'
-  },
-  {
-    id: 'blackjack',
-    group: 'casino',
-    icon: '🃏',
-    label: "Neon 21's",
-    pitch: 'Beat the synth dealer to 21.',
-    badge: 'Cards',
-    isNew: false,
-    accent: '#38bdf8',
-    path: '/games/blackjack'
-  },
-  {
-    id: 'poker',
-    group: 'casino',
-    icon: '🟡',
-    label: "Neon Hold'em '86 Poker",
-    pitch: 'Texas Hold’em with casino chips & MemeDollarz buy-ins.',
-    badge: 'Hold’em',
-    isNew: true,
-    accent: '#ff2a85',
-    path: '/games/poker'
-  },
+  // Skill
   {
     id: 'thousand',
-    group: 'casino',
+    group: 'skill',
     icon: '🃏',
     label: '1000 (Tysiąc)',
     pitch: 'The classic bidding card game: musik, marriages & race to 1000. Free vs computer or 2–4 friends.',
@@ -81,41 +32,6 @@ export const ARCADE_GAMES_CATALOG = [
     accent: '#ffb800',
     path: '/games/1000-card-game'
   },
-  {
-    id: 'slots',
-    group: 'casino',
-    icon: '🎰',
-    label: 'Vegas Slot Arcade',
-    pitch: "5 machines (25¢ min): Bandit '85, Neon Special '86, Mustang, Lightning & Buffalo.",
-    badge: '5 Slots',
-    isNew: true,
-    accent: '#f472b6',
-    path: '/games/slots'
-  },
-  {
-    id: 'eightball',
-    group: 'casino',
-    icon: '🎱',
-    label: "80s Magic 8-Ball",
-    pitch: 'Ask the neon oracle & wager MemeDollarz on destiny.',
-    badge: 'Oracle',
-    isNew: true,
-    accent: '#00f5ff',
-    path: '/games/magic-8-ball'
-  },
-  {
-    id: 'derby',
-    group: 'casino',
-    icon: '🏇',
-    label: "Neon Derby '86",
-    pitch: '8 meme horses sprint synthwave turf.',
-    badge: 'Race',
-    isNew: true,
-    accent: '#22d3ee',
-    path: '/games/horse-racing'
-  },
-
-  // Skill
   {
     id: 'invaders',
     group: 'skill',
@@ -262,6 +178,97 @@ export const ARCADE_GAMES_CATALOG = [
     isNew: false,
     accent: '#34d399',
     path: '/games/meme-stock-market'
+  },
+
+  // Retro Casino — always LAST in the lobby, behind FEATURE_CASINO_GAMES (plan 1.6).
+  // Play-money MemeDollarz only: never bought, transferred or cashed out.
+  {
+    id: 'bingo',
+    group: 'casino',
+    icon: '🎱',
+    label: "Neon Bingo '86",
+    pitch: 'All 90 comedy calls (Two Little Ducks 22!), UV dabber pen, cheers/boos & M$ jackpots.',
+    badge: '90-Ball',
+    isNew: true,
+    accent: '#ff2a85',
+    path: '/games/neon-bingo'
+  },
+  {
+    id: 'pusher',
+    group: 'casino',
+    icon: '🎰',
+    label: "Neon Coin Dozer '86",
+    pitch: 'Drop coins & shove 3D prize towers.',
+    badge: '3D',
+    isNew: false,
+    accent: '#facc15',
+    path: '/games/coin-pusher'
+  },
+  {
+    id: 'roulette',
+    group: 'casino',
+    icon: '🎡',
+    label: 'Lightning Roulette',
+    pitch: 'European wheel with 150x strikes.',
+    badge: '150x',
+    isNew: false,
+    accent: '#ef4444',
+    path: '/games/roulette'
+  },
+  {
+    id: 'blackjack',
+    group: 'casino',
+    icon: '🃏',
+    label: "Neon 21's",
+    pitch: 'Beat the synth dealer to 21.',
+    badge: 'Cards',
+    isNew: false,
+    accent: '#38bdf8',
+    path: '/games/blackjack'
+  },
+  {
+    id: 'poker',
+    group: 'casino',
+    icon: '🟡',
+    label: "Neon Hold'em '86 Poker",
+    pitch: 'Texas Hold’em with play-money M$ chips. No real money, ever.',
+    badge: 'Hold’em',
+    isNew: true,
+    accent: '#ff2a85',
+    path: '/games/poker'
+  },
+  {
+    id: 'slots',
+    group: 'casino',
+    icon: '🎰',
+    label: "Neon Slots '86",
+    pitch: "5 machines (25¢ min): Bandit '85, Neon Special '86, Mustang, Lightning & Buffalo.",
+    badge: '5 Slots',
+    isNew: true,
+    accent: '#f472b6',
+    path: '/games/slots'
+  },
+  {
+    id: 'eightball',
+    group: 'casino',
+    icon: '🎱',
+    label: "80s Magic 8-Ball",
+    pitch: 'Ask the neon oracle a yes/no question (play-money M$ only).',
+    badge: 'Oracle',
+    isNew: true,
+    accent: '#00f5ff',
+    path: '/games/magic-8-ball'
+  },
+  {
+    id: 'derby',
+    group: 'casino',
+    icon: '🏇',
+    label: "Neon Derby '86",
+    pitch: '8 meme horses sprint synthwave turf.',
+    badge: 'Race',
+    isNew: true,
+    accent: '#22d3ee',
+    path: '/games/horse-racing'
   }
 ];
 
@@ -348,6 +355,24 @@ export const BOSS_SCREENS_CATALOG = [
 ];
 
 const GAME_BY_ID = new Map(ARCADE_GAMES_CATALOG.map((g) => [g.id, g]));
+
+export const CASINO_GROUP_ID = 'casino';
+
+export function isCasinoGame(gameOrId) {
+  const g = typeof gameOrId === 'string' ? getArcadeGameById(gameOrId) : gameOrId;
+  return Boolean(g && g.group === CASINO_GROUP_ID);
+}
+
+/** Games the arcade shows: casino games only while FEATURE_CASINO_GAMES is on (plan 1.6). */
+export function getVisibleArcadeGames(includeCasino = FEATURE_CASINO_GAMES) {
+  return ARCADE_GAMES_CATALOG.filter((g) => includeCasino || g.group !== CASINO_GROUP_ID);
+}
+
+export const VISIBLE_ARCADE_GAMES = getVisibleArcadeGames();
+
+export const VISIBLE_ARCADE_LOBBY_GROUPS = ARCADE_LOBBY_GROUPS.filter(
+  (g) => FEATURE_CASINO_GAMES || g.id !== CASINO_GROUP_ID
+);
 
 export function getArcadeGameById(id) {
   return GAME_BY_ID.get(id) || null;

@@ -27,13 +27,16 @@ import GameIcon from './GameIcon';
 import CatalogSearchBox, { CatalogSearchEmpty } from './CatalogSearchBox';
 import { toSearchTerms, itemMatchesSearch } from '../utils/catalogSearch';
 import {
-  ARCADE_GAMES_CATALOG,
-  ARCADE_LOBBY_GROUPS,
+  // Plan 1.6: the lobby only sees casino games while FEATURE_CASINO_GAMES is on.
+  VISIBLE_ARCADE_GAMES as ARCADE_GAMES_CATALOG,
+  VISIBLE_ARCADE_LOBBY_GROUPS as ARCADE_LOBBY_GROUPS,
+  CASINO_GROUP_ID,
   BOSS_SCREENS_CATALOG,
   getRecentArcadeGames,
   getFavoriteArcadeGameIds,
   toggleFavoriteArcadeGameId
 } from '../data/arcadeGamesCatalog';
+import { CASINO_DISCLAIMER } from '../config/featureFlags';
 import {
   loadUserGameRatings,
   loadCachedCommunityRatings,
@@ -99,7 +102,10 @@ export default function ArcadeLobby({
   const [copiedId, setCopiedId] = useState(null);
   const [userRatings, setUserRatings] = useState(() => loadUserGameRatings());
   const [communityRatings, setCommunityRatings] = useState(() => loadCachedCommunityRatings());
-  const recentGames = useMemo(() => getRecentArcadeGames(), []);
+  const recentGames = useMemo(
+    () => getRecentArcadeGames().filter((g) => ARCADE_GAMES_CATALOG.some((v) => v.id === g.id)),
+    []
+  );
 
   useEffect(() => {
     let active = true;
@@ -190,13 +196,17 @@ export default function ArcadeLobby({
     }
 
     if (activeFilter === 'all' && sortMode === 'top-rated') {
+      // Casino games never mix into the main list: they get their own section, always last.
+      const casinoGroup = ARCADE_LOBBY_GROUPS.find((g) => g.id === CASINO_GROUP_ID);
+      const casinoGames = sortedAllGames.filter((g) => g.group === CASINO_GROUP_ID);
       return [
         {
           id: 'top-rated',
           label: 'All Arcade Games — Top Rated First',
           desc: 'Rate any game 1–5 stars; higher-rated games rise straight to the top',
-          games: sortedAllGames
-        }
+          games: sortedAllGames.filter((g) => g.group !== CASINO_GROUP_ID)
+        },
+        ...(casinoGroup && casinoGames.length ? [{ ...casinoGroup, games: casinoGames }] : [])
       ];
     }
 
@@ -230,7 +240,7 @@ export default function ArcadeLobby({
           <p className="tm-lobby-sub">
             {realm === 'pranks'
               ? `${BOSS_SCREENS_CATALOG.length} fullscreen fakes: tap one, go fullscreen, hand over the phone`
-              : `${ARCADE_GAMES_CATALOG.length} retro skill cabinets & MemeDollarz (M$) tables`}
+              : `${ARCADE_GAMES_CATALOG.length} free retro & meme games`}
           </p>
         </div>
 
@@ -433,7 +443,7 @@ export default function ArcadeLobby({
         </div>
       )}
 
-      {/* Arcade & Casino Games Sections (Higher star ratings at the top) */}
+      {/* Arcade sections (higher star ratings at the top); Retro Casino always last */}
       {realm === 'games' && (
         visibleGroups.length === 0 ? (
           isSearching ? (
@@ -447,9 +457,16 @@ export default function ArcadeLobby({
           visibleGroups.map((group) => (
             <div key={group.id} className="tm-lobby-section">
               <div className="tm-lobby-section-head">
-                <h2 className="tm-lobby-section-title">{group.label}</h2>
+                <h2 className="tm-lobby-section-title">
+                  {group.id === CASINO_GROUP_ID ? `🎲 ${group.label} (just for fun, no real money)` : group.label}
+                </h2>
                 <span className="tm-lobby-section-desc">{group.desc}</span>
               </div>
+              {group.id === CASINO_GROUP_ID && (
+                <p className="tm-lobby-casino-disclaimer" role="note" data-testid="casino-disclaimer">
+                  {CASINO_DISCLAIMER}
+                </p>
+              )}
               <div className="tm-lobby-grid">
                 {group.games.map((game) => (
                   <CabinetCard

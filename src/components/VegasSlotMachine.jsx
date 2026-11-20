@@ -1929,7 +1929,7 @@ export default function VegasSlotMachine({
   return (
     <section
       className={`tm-bandit-stage ${embedded ? 'tm-bandit-embedded' : 'tm-bandit-standalone'} tm-slot-theme-${machineId}`}
-      aria-label="Las Vegas Slot Arcade"
+      aria-label="Neon Slots 86 arcade"
     >
       <div className="tm-slot-arcade-shell">
         {/* SLOT ARCADE MACHINE SWITCHER BAR */}

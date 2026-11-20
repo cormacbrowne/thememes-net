@@ -60,15 +60,15 @@ const CARD_THEMES = {
     gold: '#facc15',
     badge: `${ARCADE_GAME_COUNT} FREE GAMES // NO APP DOWNLOAD`,
     headline: "THE ‘86\nCYBER ARCADE",
-    sub: "Neon Bingo '86, Coin Dozer, 5-Table Pinball, Vegas 777 Slots, Roulette, MEMEDAQ Stocks & more.",
-    pills: [`${ARCADE_GAME_COUNT} CABINET GAMES`, 'SHARED BANKROLL', 'INSTANT PLAY'],
+    sub: 'Meme Invaders, Neon Serpent, 5-Table Pinball, Meme Crush, Guess The Meme, MEMEDAQ Stocks & more.',
+    pills: [`${ARCADE_GAME_COUNT} CABINET GAMES`, 'DAILY MEME GAMES', 'INSTANT PLAY'],
     scene: 'arcade-hub'
   },
   '/games/neon-bingo': {
     accent: '#22c55e',
     accent2: '#ff2a85',
     gold: '#facc15',
-    badge: "80s BINGO HALL // 90-BALL & 75-BALL VEGAS",
+    badge: "80s BINGO HALL // JUST FOR FUN, NO REAL MONEY",
     headline: "NEON BINGO\n‘86 CABINET",
     sub: 'Spinning neon blower cage, live UV ink dabbers, recent calls ticker & 4 jackpot prize tiers.',
     pills: ['90 COMEDY CALLS', 'UV INK DABBERS', '1-SCREEN MOBILE'],
@@ -98,8 +98,8 @@ const CARD_THEMES = {
     accent: '#facc15',
     accent2: '#ff2a85',
     gold: '#00f5ff',
-    badge: 'HIGH-VOLTAGE VEGAS REELS // 3X JACKPOT',
-    headline: 'VEGAS 777\nCYBER SLOTS',
+    badge: 'JUST FOR FUN // NO REAL MONEY',
+    headline: "NEON SLOTS\n'86",
     sub: 'Pull the chrome handle, spin neon 777s & diamonds, trigger fever spins and hit mega payouts.',
     pills: ['NEON 777 REELS', 'FEVER SPINS', 'INSTANT JACKPOT'],
     scene: 'slots'
@@ -709,9 +709,9 @@ function renderScene(scene, cfg) {
       return `
         <div class="stage tool-stage">
           <div class="hub-grid">
-            <div class="hub-cab"><span>🎱</span><strong>NEON BINGO</strong></div>
-            <div class="hub-cab"><span>🎰</span><strong>COIN DOZER</strong></div>
-            <div class="hub-cab"><span>🎰</span><strong>VEGAS 777</strong></div>
+            <div class="hub-cab"><span>👾</span><strong>MEME INVADERS</strong></div>
+            <div class="hub-cab"><span>🛸</span><strong>PINBALL</strong></div>
+            <div class="hub-cab"><span>🍬</span><strong>MEME CRUSH</strong></div>
             <div class="hub-cab"><span>📈</span><strong>MEMEDAQ</strong></div>
           </div>
         </div>

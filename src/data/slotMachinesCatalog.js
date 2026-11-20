@@ -1,5 +1,5 @@
 // ==========================================
-// LAS VEGAS SLOT ARCADE CATALOG & ENGINE MATH
+// NEON SLOT ARCADE CATALOG & ENGINE MATH
 // 5 Distinct Machines (House Always Wins ~88-90% RTP):
 //   1. bandit85         — Classic 1985 3-Reel One-Arm Bandit (Authentic Stepper, Hold/Nudge + Fever Accumulator)
 //   2. neon_special     — Neon Supernova Special '86 (5x3, 6 Interactive Powerups, Laser Chase Lights)
@@ -74,13 +74,13 @@ export const SLOT_MACHINES = [
     tag: '3-Reel Mechanical • 25¢ Quarter Slot • Hold & Nudge',
     icon: '🎰',
     accent: '#facc15',
-    marqueeSub: '★ BALLY-STYLE 1985 VEGAS 25¢ STEPPER ★',
+    marqueeSub: '★ CLASSIC 1985 NEON 25¢ STEPPER ★',
     eraYear: '1985',
     coinDenom: '25¢',
-    payGlassTitle: 'LAS VEGAS BLVD • 25¢ QUARTER MECHANICAL 3-REEL STEPPER (CIRCA 1985)',
-    houseEdgeLabel: '~11.5% House Edge • Authentic 1985 Vegas Odds',
+    payGlassTitle: 'NEON BOULEVARD • 25¢ QUARTER MECHANICAL 3-REEL STEPPER (CIRCA 1985)',
+    houseEdgeLabel: '~11.5% house edge • play-money only, just for fun',
     description:
-      'Authentic 1985 Las Vegas 3-reel chrome-arm stepper! 25¢ quarter play with physical center wire payline, Hold/Nudge, Streak Fever & mechanical bell clatter.',
+      'Retro 1985-style 3-reel chrome-arm stepper! 25¢ quarter play with physical center wire payline, Hold/Nudge, Streak Fever & mechanical bell clatter.',
     maxMult: 75,
     volatility: 'Medium'
   },
@@ -96,13 +96,13 @@ export const SLOT_MACHINES = [
     eraYear: '1986',
     coinDenom: '25¢ – M$25 VIP',
     payGlassTitle: 'STARDOME ARCADE 1986 • NEON OVERDRIVE POWERUP REACTOR (~11.5% HOUSE EDGE)',
-    houseEdgeLabel: '~11.5% House Edge • Vegas 1986 Certified',
+    houseEdgeLabel: '~11.5% house edge • play-money only, just for fun',
     isNeonSpecial: true,
     isHighRollerNeon: true,
     neonTheme: 'laser-magenta',
     vipLabel: '⚡ LASER NEON • UP TO M$25 VIP',
     description:
-      'Flagship 1986 flashing neon laser slot! Multi-color chasing marquee bulbs, 6 explosive Powerups (Laser Wild Reel, 3× Synth, Twin Sync, Zapper, Hyper Wilds & Airwolf Raid) calibrated with authentic house-always-wins Vegas odds!',
+      'Flagship 1986 flashing neon laser slot! Multi-color chasing marquee bulbs, 6 explosive Powerups (Laser Wild Reel, 3× Synth, Twin Sync, Zapper, Hyper Wilds & Airwolf Raid) with retro house-always-wins odds (play-money only)!',
     maxMult: 120,
     volatility: 'High'
   },
@@ -117,8 +117,8 @@ export const SLOT_MACHINES = [
     marqueeSub: '★ SILVER MUSTANG CASINO • HELLOOOOO-O-O! ★',
     eraYear: '1985',
     coinDenom: '25¢',
-    payGlassTitle: 'SILVER MUSTANG VEGAS • 25¢ COIN-OP CABINET (1985 ODDS)',
-    houseEdgeLabel: '~12.0% House Edge • Authentic Vegas Odds',
+    payGlassTitle: 'SILVER MUSTANG • 25¢ COIN-OP CABINET (1985 ODDS)',
+    houseEdgeLabel: '~12.0% house edge • play-money only, just for fun',
     description:
       'Twin Peaks S3 Dougie Jones tribute! Follow the Black Lodge Golden Orb, brew 10 Coffees for Free Spins, & trigger Pie Wilds!',
     maxMult: 120,
@@ -136,7 +136,7 @@ export const SLOT_MACHINES = [
     eraYear: '1986',
     coinDenom: 'M$1.00 / M$25 VIP',
     payGlassTitle: 'LIGHTNING VAULT 5000 • HIGH-ROLLER PROGRESSIVE LOCK-IT CABINET (1986)',
-    houseEdgeLabel: '~11.8% House Edge • Authentic Vegas Odds',
+    houseEdgeLabel: '~11.8% house edge • play-money only, just for fun',
     isHighRollerNeon: true,
     isFlagshipHighRoller: true,
     neonTheme: 'plasma-cyan',
@@ -158,12 +158,12 @@ export const SLOT_MACHINES = [
     eraYear: '1986',
     coinDenom: 'M$1.00 / M$25 VIP',
     payGlassTitle: "CYBER BUFFALO '86 • 1,024-WAYS HIGH-ROLLER WIDEBODY CABINET (1986)",
-    houseEdgeLabel: '~12.0% House Edge • Authentic Vegas Odds',
+    houseEdgeLabel: '~12.0% house edge • play-money only, just for fun',
     isHighRollerNeon: true,
     neonTheme: 'solar-gold',
     vipLabel: '🔥 WIDEBODY HIGH-ROLLER • UP TO M$25 VIP',
     description:
-      'Tall 5×4 Vegas widebody neon cabinet! Stack 2×/3× Multiplier Wilds, trigger Gold Stampede upgrades, unlock the M$25 VIP chip, and spin the 8-Wedge Bonus Wheel!',
+      'Tall 5×4 widebody neon cabinet! Stack 2×/3× Multiplier Wilds, trigger Gold Stampede upgrades, unlock the M$25 VIP chip, and spin the 8-Wedge Bonus Wheel!',
     maxMult: 140,
     volatility: 'High'
   }
@@ -182,7 +182,7 @@ export const SLOT_SYMBOLS = {
   bell: { id: 'bell', label: 'LIBERTY BELL', short: 'BELL', color: '#f59e0b', mult3: 15 },
   cherry: { id: 'cherry', label: 'TWIN CHERRY', short: 'CHERRY', color: '#e11d48', mult3: 9 },
   watermelon: { id: 'watermelon', label: 'MELON SLICE', short: 'MELON', color: '#16a34a', mult3: 6 },
-  lemon: { id: 'lemon', label: 'VEGAS LEMON', short: 'LEMON', color: '#eab308', mult3: 5 },
+  lemon: { id: 'lemon', label: 'NEON LEMON', short: 'LEMON', color: '#eab308', mult3: 5 },
 
   // Silver Mustang (Dougie Jones / Twin Peaks Series 3)
   dougie: { id: 'dougie', label: 'MR. JACKPOTS', short: 'DOUGIE', color: '#facc15' },
@@ -260,7 +260,7 @@ export function evaluateBanditPayline(symIds) {
       mult: info.mult3,
       headline:
         s0 === '777'
-          ? `🚨 TRIPLE FLAMING 777 VEGAS JACKPOT! (${info.mult3}× BET!)`
+          ? `🚨 TRIPLE FLAMING 777 JACKPOT! (${info.mult3}× BET!)`
           : `🎰 TRIPLE ${info.label}! (${info.mult3}× BET!)`
     };
   }
@@ -307,7 +307,7 @@ export const DOUGIE_QUOTES = {
     '☕ "Damn good coffee." — Dougie eyes the glowing orb...',
     '🟡 "Follow the green & gold orb, Mr. Jackpots..."',
     '🎰 Silver Mustang Lady: "Don\'t touch my machine!"',
-    '🥧 "Cherry pie & black coffee. Vegas calls."',
+    '🥧 "Cherry pie & black coffee. the neon calls."',
     '🕶️ Dougie stares blankly at the flashing buttons...'
   ],
   spin: [

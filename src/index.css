@@ -2000,6 +2000,17 @@ html {
   letter-spacing: 0.4px;
 }
 
+/* Plan 1.6: the footer's Retro Casino group (heading + always-visible no-real-money note). */
+.tm-seo-links + .tm-seo-heading {
+  margin-top: 18px;
+}
+.tm-seo-desc {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--tm-text-soft);
+}
+
 .tm-seo-links {
   display: flex;
   flex-direction: column;

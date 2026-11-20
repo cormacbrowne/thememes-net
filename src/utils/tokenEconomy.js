@@ -19,6 +19,26 @@ export const CURRENCY_BRAND = {
   maxDailyCentz: 125 // up to 5 tokens (M$1.25/day) from MemeCentz micro-earnings
 };
 
+/**
+ * HARD RULE (plan 1.6) — MemeDollarz (M$) are free play-money:
+ *   - can NEVER be bought with real money,
+ *   - can NEVER be transferred between users,
+ *   - can NEVER be cashed out or redeemed for anything of real value.
+ * They are earned on the site and spent on the site (games, cosmetics) only.
+ *
+ * How it is enforced: the balance lives only in the player's own browser storage. There is
+ * no wallet table, no balance RPC, no payment code and no transfer/cash-out path anywhere
+ * (server or client). tests/unit/memeDollarzGuard.unit.mjs fails the build if any of
+ * those appear. Any future paid currency must be SEPARATE and must never be usable in
+ * casino games. Get legal advice before any real-money feature touches the arcade or M$.
+ */
+export const MEMEDOLLARZ_RULES = Object.freeze({
+  purchasableWithRealMoney: false,
+  transferableBetweenUsers: false,
+  redeemableForRealValue: false,
+  storedOnServer: false
+});
+
 export const ARCADE_ECONOMY_RULES = {
   STARTER_WELCOME_TOKENS: 20,
   STARTER_FIRST_PLAY_BONUS: 10,

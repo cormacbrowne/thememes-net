@@ -4,7 +4,8 @@ import { updateDynamicSeo } from '../utils/seoEngine';
 import {
   resolveRouteFromLocation,
   getCanonicalPathForState,
-  normalizeRoutePath
+  normalizeRoutePath,
+  casinoSafeViewMode
 } from '../data/seoRoutes';
 import { recordRecentArcadeGame } from '../data/arcadeGamesCatalog';
 import {
@@ -86,7 +87,8 @@ export function useViewMode() {
 
   const [category, setCategory] = useState(initialRoute.category);
   const [viewMode, setViewModeRaw] = useState(initialRoute.viewMode);
-  const setViewMode = useCallback((nextMode) => {
+  const setViewMode = useCallback((requestedMode) => {
+    const nextMode = casinoSafeViewMode(requestedMode);
     if (
       typeof document !== 'undefined' &&
       typeof document.startViewTransition === 'function' &&

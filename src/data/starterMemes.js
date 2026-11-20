@@ -537,7 +537,7 @@ export const SLOT_SYMBOLS = [
   { id: 'bell', emoji: '🔔', name: 'LIBERTY BELL', mult: 10, weight: 4, color: '#fbbf24', badge: '10X BELL' },
   { id: 'cherry', emoji: '🍒', name: 'TWIN CHERRY', mult: 6, weight: 5, color: '#f43f5e', badge: '6X / 2X / 1X' },
   { id: 'watermelon', emoji: '🍉', name: 'MELON SLICE', mult: 4, weight: 6, color: '#22c55e', badge: '4X FRUIT' },
-  { id: 'lemon', emoji: '🍋', name: 'VEGAS LEMON', mult: 4, weight: 7, color: '#fde047', badge: '4X CITRUS' }
+  { id: 'lemon', emoji: '🍋', name: 'NEON LEMON', mult: 4, weight: 7, color: '#fde047', badge: '4X CITRUS' }
 ];
 
 export const QUICK_REACTION_COMMENTS = [

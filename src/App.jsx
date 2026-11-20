@@ -59,10 +59,6 @@ const FixedArcadeTopBar = lazyWithRetry(
   () => import('./components/GameRouter'),
   (m) => ({ default: m.FixedArcadeTopBar })
 );
-const ArcadeLoungePromo = lazyWithRetry(
-  () => import('./components/GameRouter'),
-  (m) => ({ default: m.ArcadeLoungePromo })
-);
 const MemeForge = lazyWithRetry(() => import('./components/forge/MemeForge'));
 const MemeEvolutionModal = lazyWithRetry(() => import('./components/MemeEvolutionModal'));
 const AuthModal = lazyWithRetry(() => import('./components/AuthModal'));
@@ -1683,10 +1679,8 @@ export default function App() {
             </Suspense>
           </div>
 
-          {/* SIDE ENTERTAINMENT LOUNGE: FEATURED 80s NEON ARCADE SUB-GAMES BELOW THE MEME FEED */}
-          <Suspense fallback={null}>
-            <ArcadeLoungePromo setViewMode={setViewMode} />
-          </Suspense>
+          {/* Plan 1.6: no casino promo on the homepage (the old "MemeDollarz Casino & Arcade
+              Lounge" block lived here). Casino games live only in the arcade's Retro Casino. */}
         </>
       )}
 

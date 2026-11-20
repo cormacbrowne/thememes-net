@@ -252,6 +252,18 @@
   color: var(--tm-text-soft);
 }
 
+/* Plan 1.6: always-visible "no real money" note on the Retro Casino section. */
+.tm-lobby-casino-disclaimer {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--tm-amber) 45%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--tm-amber) 8%, transparent);
+  color: var(--tm-text);
+  font-size: clamp(0.8rem, 3.2vw, 0.88rem);
+  line-height: 1.45;
+}
+
 .tm-lobby-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

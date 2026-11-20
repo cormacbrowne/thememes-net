@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { trackShareClicked } from '../utils/analytics';
-import { ARCADE_GAMES_CATALOG } from '../data/arcadeGamesCatalog';
+import { VISIBLE_ARCADE_GAMES as ARCADE_GAMES_CATALOG } from '../data/arcadeGamesCatalog';
+import { FEATURE_CASINO_GAMES, CASINO_DISCLAIMER } from '../config/featureFlags';
 import NeonSign from './NeonSign';
 
 export default function SeoDiscoveryFooter({
@@ -162,20 +163,6 @@ export default function SeoDiscoveryFooter({
                 😈 All Fake Prank Screens (Update, Crash, Cracked Phone…)
               </a>
               <a
-                href="/games/neon-bingo"
-                className="tm-seo-link"
-                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('bingo'))}
-              >
-                🎱 Neon Bingo &apos;86 (80s Caller &amp; UV Dabber)
-              </a>
-              <a
-                href="/games/coin-pusher"
-                className="tm-seo-link"
-                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('pusher'))}
-              >
-                🎰 Neon Coin Dozer &apos;86 (Coin Pusher Online Free)
-              </a>
-              <a
                 href="/games/meme-invaders"
                 className="tm-seo-link"
                 onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('invaders'))}
@@ -222,21 +209,7 @@ export default function SeoDiscoveryFooter({
                 className="tm-seo-link"
                 onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('pinball'))}
               >
-                🛸 Las Vegas Retro Pinball (5 Tables)
-              </a>
-              <a
-                href="/games/magic-8-ball"
-                className="tm-seo-link"
-                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('eightball'))}
-              >
-                🎱 80s Neon Magic 8-Ball Fortune Oracle
-              </a>
-              <a
-                href="/games/horse-racing"
-                className="tm-seo-link"
-                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('derby'))}
-              >
-                🏇 Neon Derby &apos;86 Synthwave Horse Racing
+                🛸 Neon Pinball &apos;86 (5 Tables)
               </a>
               <a
                 href="/games/guess-the-meme"
@@ -253,39 +226,11 @@ export default function SeoDiscoveryFooter({
                 ⬆️ Higher or Lower Meme Score Streak
               </a>
               <a
-                href="/games/slots"
-                className="tm-seo-link"
-                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('slots'))}
-              >
-                🎰 Las Vegas 777 Neon Slot Machine
-              </a>
-              <a
-                href="/games/blackjack"
-                className="tm-seo-link"
-                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('blackjack'))}
-              >
-                🃏 Neon 21&apos;s Blackjack vs Dealer Bot &apos;86
-              </a>
-              <a
-                href="/games/poker"
-                className="tm-seo-link"
-                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('poker'))}
-              >
-                🟡 Neon Hold&apos;em &apos;86 Texas Poker (Chips &amp; Tokens)
-              </a>
-              <a
                 href="/games/1000-card-game"
                 className="tm-seo-link"
                 onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('thousand'))}
               >
                 🃏 1000 (Tysiąc) Card Game — vs Computer or Friends
-              </a>
-              <a
-                href="/games/roulette"
-                className="tm-seo-link"
-                onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('roulette'))}
-              >
-                🎡 Neon Lightning Roulette &apos;86 (150× Multipliers)
               </a>
               <a
                 href="/games/meme-crush"
@@ -361,6 +306,71 @@ export default function SeoDiscoveryFooter({
                 🏆 Fair Token Vault &amp; Daily Quests
               </button>
             </div>
+            {/* Plan 1.6: casino games sit apart, last, and only while FEATURE_CASINO_GAMES is on. */}
+            {FEATURE_CASINO_GAMES && (
+              <>
+                <h3 className="tm-seo-heading">🎲 Retro Casino (just for fun, no real money)</h3>
+                <p className="tm-seo-desc">{CASINO_DISCLAIMER}</p>
+                <div className="tm-seo-links">
+                  <a
+                    href="/games/neon-bingo"
+                    className="tm-seo-link"
+                    onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('bingo'))}
+                  >
+                    🎱 Neon Bingo &apos;86 (80s Caller &amp; UV Dabber)
+                  </a>
+                  <a
+                    href="/games/coin-pusher"
+                    className="tm-seo-link"
+                    onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('pusher'))}
+                  >
+                    🎰 Neon Coin Dozer &apos;86 (Coin Pusher Online Free)
+                  </a>
+                  <a
+                    href="/games/magic-8-ball"
+                    className="tm-seo-link"
+                    onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('eightball'))}
+                  >
+                    🎱 80s Neon Magic 8-Ball Fortune Oracle
+                  </a>
+                  <a
+                    href="/games/horse-racing"
+                    className="tm-seo-link"
+                    onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('derby'))}
+                  >
+                    🏇 Neon Derby &apos;86 Synthwave Horse Racing
+                  </a>
+                  <a
+                    href="/games/slots"
+                    className="tm-seo-link"
+                    onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('slots'))}
+                  >
+                    🎰 Neon Slots &apos;86 (Just for Fun)
+                  </a>
+                  <a
+                    href="/games/blackjack"
+                    className="tm-seo-link"
+                    onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('blackjack'))}
+                  >
+                    🃏 Neon 21&apos;s Blackjack vs Dealer Bot &apos;86
+                  </a>
+                  <a
+                    href="/games/poker"
+                    className="tm-seo-link"
+                    onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('poker'))}
+                  >
+                    🟡 Neon Hold&apos;em &apos;86 Texas Poker (Chips &amp; Tokens)
+                  </a>
+                  <a
+                    href="/games/roulette"
+                    className="tm-seo-link"
+                    onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('roulette'))}
+                  >
+                    🎡 Neon Lightning Roulette &apos;86 (150× Multipliers)
+                  </a>
+                </div>
+              </>
+            )}
           </div>
         </div>
 

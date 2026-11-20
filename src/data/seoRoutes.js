@@ -5,10 +5,17 @@
 // ==========================================
 
 import { MEME_TEMPLATES, getTemplateByPath, getTemplateBySlug, TEMPLATES_INDEX_PATH } from './memeTemplates.js';
-import { ARCADE_GAMES_CATALOG } from './arcadeGamesCatalog.js';
+import { VISIBLE_ARCADE_GAMES, isCasinoGame } from './arcadeGamesCatalog.js';
+import { FEATURE_CASINO_GAMES } from '../config/featureFlags.js';
 
 /** Real number of games in the arcade, so every page says the same thing. */
-export const ARCADE_GAME_COUNT = ARCADE_GAMES_CATALOG.length;
+// Games the arcade actually shows (casino games only while FEATURE_CASINO_GAMES is on).
+export const ARCADE_GAME_COUNT = VISIBLE_ARCADE_GAMES.length;
+
+/** Plan 1.6: with the casino switched off, casino URLs and view modes open the lobby. */
+export function casinoSafeViewMode(viewMode, casinoOn = FEATURE_CASINO_GAMES) {
+  return !casinoOn && isCasinoGame(viewMode) ? 'lobby' : viewMode;
+}
 
 export const SITE_ORIGIN = 'https://www.thememes.net';
 export const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/og-card.png`;
@@ -99,7 +106,7 @@ export const PRANK_DISGUISE_TO_PATH = {
   crackpad: '/fake-cracked-ipad-screen'
 };
 
-export const SEO_ROUTES = [
+const ALL_SEO_ROUTES = [
   {
     path: '/',
     title: 'Free Meme & GIF Maker (Top/Bottom Text) & Funny Memes | THE MEMES.net',
@@ -143,9 +150,9 @@ export const SEO_ROUTES = [
     path: '/games',
     title: `Free Cyber-Arcade Lobby — ${ARCADE_GAME_COUNT} Retro & Meme Games | THE MEMES.net`,
     description:
-      `Explore all ${ARCADE_GAME_COUNT} free browser arcade games on THE MEMES.net: Neon Bingo '86 (90 UK calls), Neon Coin Dozer, Lightning Roulette, Pinball, Magic 8-Ball, Neon Derby, Guess The Meme & MEMEDAQ.`,
+      `Explore all ${ARCADE_GAME_COUNT} free browser arcade games on THE MEMES.net: Meme Invaders, Neon Serpent, Pinball, Meme Crush, Guess The Meme, Higher or Lower, MEMEDAQ & more.`,
     h1: `Cyber-Arcade Lobby — Play ${ARCADE_GAME_COUNT} Free Retro & Meme Games`,
-    kicker: 'THE MEMES.net // Casino, Skill, Daily Meme Games & Market Sim',
+    kicker: 'THE MEMES.net // Skill Cabinets, Daily Meme Games & Market Sim',
     changefreq: 'daily',
     priority: '0.95',
     viewMode: 'lobby',
@@ -246,7 +253,7 @@ export const SEO_ROUTES = [
     title: 'Free Retro Pinball Game Online — 5 Neon Arcade Tables | THE MEMES.net',
     description:
       'Play 5 distinct 80s neon pinball tables online for free! Master dual flippers, 3-ball multiball madness, plasma drain shields, drop targets, and high-score jackpots in your browser.',
-    h1: 'Las Vegas Neon Pinball — 5 Free Retro Arcade Tables',
+    h1: "Neon Pinball '86 — 5 Free Retro Arcade Tables",
     kicker: '60fps Physics Pinball // Keyboard & Touch Flippers',
     changefreq: 'daily',
     priority: '0.9',
@@ -255,10 +262,10 @@ export const SEO_ROUTES = [
   },
   {
     path: '/games/slots',
-    title: 'Free Vegas 777 Slot Machine Game Online (No Real Money) | THE MEMES.net',
+    title: "Neon Slots '86 — Free Retro Slot Machine, Just for Fun (No Real Money) | THE MEMES.net",
     description:
-      'Spin the retro Las Vegas 777 one-arm bandit slot machine online for free with no real money. Use strategic Reel HOLD & NUDGE buttons, trigger jackpot drumrolls, and win MemeDollarz.',
-    h1: 'Las Vegas 777 Neon Slot Machine — Free Arcade Play',
+      'Spin a retro neon one-arm bandit just for fun, with no real money. Use Reel HOLD & NUDGE buttons, trigger jackpot drumrolls, and win play-money MemeDollarz that can never be bought or cashed out.',
+    h1: "Neon Slots '86 — Free Retro Slot Machine (Just for Fun)",
     kicker: '3-Reel Mechanical Drums // Free Pretend MemeDollarz — Just for Fun',
     changefreq: 'daily',
     priority: '0.9',
@@ -677,6 +684,11 @@ export const SEO_ROUTES = [
   }
 ];
 
+// Plan 1.6: with FEATURE_CASINO_GAMES off, casino pages drop out of prerender, sitemap and nav.
+export const SEO_ROUTES = ALL_SEO_ROUTES.filter(
+  (r) => FEATURE_CASINO_GAMES || !isCasinoGame(r.viewMode)
+);
+
 export function getOgImageSlugForRoutePath(routePath = '/') {
   const clean = String(routePath || '/').split('?')[0].split('#')[0].trim().replace(/\/+$/, '') || '/';
   if (clean === '/' || clean === '/index.html') return null;
@@ -723,6 +735,14 @@ export function getSeoRouteByPath(pathname) {
 }
 
 export function resolveRouteFromLocation(pathname = '/', search = '') {
+  const route = resolveRouteFromLocationRaw(pathname, search);
+  if (route && route.viewMode !== casinoSafeViewMode(route.viewMode)) {
+    return { ...route, viewMode: 'lobby' };
+  }
+  return route;
+}
+
+function resolveRouteFromLocationRaw(pathname = '/', search = '') {
   const normPath = normalizeRoutePath(pathname);
   const params = new URLSearchParams(search || '');
 

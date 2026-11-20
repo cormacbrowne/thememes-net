@@ -46,7 +46,7 @@ export const LEADERBOARD_GAMES = [
   { id: 'pusher', label: "Neon Coin Dozer '86", icon: '🎰', unit: 'pts', accent: '#facc15' },
   { id: 'hilow', label: 'Higher or Lower', icon: '⬆️', unit: 'streak', accent: '#38bdf8' },
   { id: 'stocks', label: "Meme Stonks '86", icon: '📈', unit: 'M$', accent: '#a3e635' },
-  { id: 'slots', label: 'Cyber-Vegas Slots', icon: '🎰', unit: 'M$', accent: '#fb7185' },
+  { id: 'slots', label: "Neon Slots '86", icon: '🎰', unit: 'M$', accent: '#fb7185' },
   { id: 'blackjack', label: "Neon 21's Blackjack", icon: '🃏', unit: 'M$', accent: '#22d3ee' },
   { id: 'roulette', label: "Lightning Roulette '86", icon: '🎡', unit: 'M$', accent: '#fb923c' },
   { id: 'poker', label: "Neon Hold'em '86", icon: '♠️', unit: 'chips', accent: '#34d399' },

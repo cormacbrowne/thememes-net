@@ -35,3 +35,18 @@ export const REMIX_ENABLED = false;
  *         have their own static /m/seed-… pages and are used as game art, with zero counts.
  */
 export const SAMPLE_MEMES_IN_FEED = false;
+
+/**
+ * Retro Casino games (slots, roulette, blackjack, poker, horse racing, coin dozer, bingo,
+ * magic 8-ball) — plan 1.6. One switch retires the whole section.
+ * true  = ON (default for now): shown LAST in the arcade, in their own "Retro Casino
+ *         (just for fun, no real money)" section with an always-visible disclaimer.
+ *         Never on the homepage or in the main promotional copy.
+ * false = OFF: hidden from the lobby, search, sitemap and prerendered pages; their URLs
+ *         open the arcade lobby instead.
+ */
+export const FEATURE_CASINO_GAMES = true;
+
+/** Shown wherever casino games appear. */
+export const CASINO_DISCLAIMER =
+  'Just for fun. No real money: MemeDollarz (M$) are free play-money that can never be bought, transferred or cashed out.';

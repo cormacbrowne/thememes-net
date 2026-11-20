@@ -1,5 +1,25 @@
 # Changelog
 
+## Workstream 1: House agents, "never look empty" (20 Nov 2026)
+- **MemeBot**, a labelled AI house account (`profiles.is_house`) with a "🤖 House" badge on feed cards, the meme page, battle entries and the profile. House content is excluded from winners, awards, Hall of Fame, leaderboards and bounty prizes.
+- **`house-agent` Edge Function** with three tasks:
+  - `daily_memes`: Google Trends or evergreen topics → safety filter → captions on `/seed/` templates
+  - `seed_battle`: 3 entries per battle (deadpan, absurd, relatable)
+  - `weekly_bounty`: new `bounties` table with a 100 M$ prize for the best human entry
+- **Controls and safety**:
+  - kill switch, review mode, caps and token budget in `agent_settings`
+  - every run logged in `agent_runs`, and a second run of the same task/date/slot never posts twice (idempotent run keys)
+  - every text checked by `moderateText`
+- **Review**: `/admin/house` review queue, plus a house section in the 08:00 digest.
+- **Feed**:
+  - Hot is ranked on the server (`get_hot_feed`): (reactions + 2×comments + 1)/(h+2)^1.5, at most 1 house meme in any 4 cards
+  - zero counts hidden, and "Be the first to enter" instead of "0 entries"
+  - 44 px card buttons
+- **Fixes**:
+  - `close_battle` was callable by anyone through the REST API (now service-role only)
+  - creator profiles no longer list pending memes
+- See `docs/HOUSE_AGENTS.md`.
+
 ## Phase 2: The core loop (20 Nov 2026)
 
 ### 2.1 Daily Caption Battle v2

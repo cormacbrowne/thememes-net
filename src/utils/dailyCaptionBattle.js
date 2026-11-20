@@ -385,6 +385,7 @@ const EMPTY_STATE = Object.freeze({
   battle: null,
   entries: [],
   entryCount: 0,
+  humanEntryCount: 0,
   showTotals: false,
   votesNeeded: 0,
   myVotes: [],
@@ -401,6 +402,8 @@ export function normalizeBattleState(data) {
     battle: data.battle || null,
     entries: Array.isArray(data.entries) ? data.entries : [],
     entryCount: Number(data.entry_count) || 0,
+    // House (MemeBot) seed entries are not counted here: "0 entries" becomes "Be the first to enter".
+    humanEntryCount: Number(data.human_entry_count ?? data.entry_count) || 0,
     showTotals: Boolean(data.show_totals),
     votesNeeded: Math.max(0, Number(data.votes_needed) || 0),
     myVotes: (data.my_votes || []).map(String),

@@ -2,6 +2,8 @@ import { useRef, useCallback, useState, memo } from 'react';
 import { ArrowBigUp, ArrowBigDown, MessageCircle, Star, Download, Share2, Flag, Maximize2 } from 'lucide-react';
 import MemeMedia from './MemeMedia';
 import MemeLiveEmotes from './MemeLiveEmotes';
+import HouseBadge from './HouseBadge';
+import { isHouseItem } from '../utils/house';
 import {
   getMemeRarityTier,
   COMIC_ACTION_WORDS,
@@ -50,6 +52,9 @@ const MemeCard = memo(function MemeCard({
   const rarity = getMemeRarityTier(meme);
   const isBlurred = Boolean(meme.is_spoiler) && !spoilerRevealed;
   const uploadInfo = formatMemeUploadDate(meme.created_at);
+  const commentCount = meme.commentsLoaded
+    ? (meme.comments || []).length
+    : Math.max((meme.comments || []).length, Number(meme.comments_count || 0));
   const hourlyUpvotesSignal = formatUpvotesLastHourSignal(meme);
 
   const triggerComicPop = (customWord = null) => {
@@ -176,6 +181,7 @@ const MemeCard = memo(function MemeCard({
           >
             @{meme.author_name || 'Anon'}
           </button>
+          {isHouseItem(meme) && <HouseBadge />}
           <span className="mc-dot" aria-hidden="true">·</span>
           <time className="mc-time" dateTime={meme.created_at || undefined} title={`Uploaded ${uploadInfo.dateTime}`}>
             {uploadInfo.relative}
@@ -285,7 +291,9 @@ const MemeCard = memo(function MemeCard({
             >
               <ArrowBigUp size={20} aria-hidden="true" />
             </button>
-            <span className="mc-score">{meme.score || 0}</span>
+            {Number(meme.score) !== 0 && Number.isFinite(Number(meme.score)) && (
+              <span className="mc-score">{meme.score}</span>
+            )}
             <button
               type="button"
               className={`mc-vote-btn down ${myVote === -1 ? 'is-on' : ''}`}
@@ -313,7 +321,7 @@ const MemeCard = memo(function MemeCard({
                 }}
               >
                 <span aria-hidden="true">{emoji}</span>
-                <span className="mc-count">{(meme.reactions && meme.reactions[emoji]) || 0}</span>
+                {Number(meme.reactions?.[emoji]) > 0 && <span className="mc-count">{meme.reactions[emoji]}</span>}
               </button>
             ))}
           </div>
@@ -329,9 +337,7 @@ const MemeCard = memo(function MemeCard({
             data-testid={`meme-comments-toggle-${meme.id}`}
           >
             <MessageCircle size={18} aria-hidden="true" />
-            <span className="mc-count">{meme.commentsLoaded
-    ? (meme.comments || []).length
-    : Math.max((meme.comments || []).length, Number(meme.comments_count || 0))}</span>
+            {commentCount > 0 && <span className="mc-count">{commentCount}</span>}
           </button>
           {onToggleBookmark && (
             <button

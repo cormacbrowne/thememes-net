@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import SignUpNudgeBanner from './SignUpNudgeBanner';
 import MemeOverlay from './MemeOverlay';
 import BattleCountdown from './BattleCountdown';
+import HouseBadge from './HouseBadge';
 import { supabase } from '../supabaseClient';
 import {
   buildCaptionOverlay,
@@ -79,7 +80,9 @@ function SwipeCard({ entry, imageUrl, onDecide, busy }) {
     >
       {hint && <span className={`tm-swipe-stamp is-${hint}`}>{hint === 'funny' ? '😂 FUNNY' : 'SKIP'}</span>}
       <CaptionedImage imageUrl={imageUrl} top={entry.top_text} bottom={entry.bottom_text} />
-      <div className="tm-swipe-card-caption">“{entryCaption(entry)}”</div>
+      <div className="tm-swipe-card-caption">
+        “{entryCaption(entry)}”{entry.is_house && <> <HouseBadge /></>}
+      </div>
     </div>
   );
 }
@@ -318,7 +321,10 @@ export default function DailyCaptionBattleModal({
         {highlightedEntry && battle && (
           <div className="tm-cb-shared-entry" data-testid="battle-highlighted-entry">
             <div className="tm-cb-shared-entry-head">
-              <span>🔥 Shared entry by <strong>@{highlightedEntry.author_name}</strong></span>
+              <span>
+                🔥 Shared entry by <strong>@{highlightedEntry.author_name}</strong>{' '}
+                {highlightedEntry.is_house && <HouseBadge />}
+              </span>
               <div className="tm-cb-rank-actions">
                 <button
                   type="button"
@@ -363,7 +369,9 @@ export default function DailyCaptionBattleModal({
                 <form className="tm-cb-form" onSubmit={handleSubmit}>
                   <div className="tm-cb-kicker">
                     {battle.theme ? `🏷️ ${battle.theme} · ` : ''}
-                    {state.entryCount} {state.entryCount === 1 ? 'entry' : 'entries'} so far
+                    {state.humanEntryCount > 0
+                      ? `${state.humanEntryCount} ${state.humanEntryCount === 1 ? 'entry' : 'entries'} so far`
+                      : 'Be the first to enter'}
                   </div>
                   <h3 className="tm-cb-battle-name">{battle.title}</h3>
                   {battle.prompt && <p className="tm-cb-prompt">{battle.prompt}</p>}
@@ -411,8 +419,8 @@ export default function DailyCaptionBattleModal({
               <div className="tm-cb-vote">
                 {voteQueue.length === 0 ? (
                   <div className="tm-cb-empty" data-testid="battle-vote-done">
-                    {state.entryCount === 0
-                      ? 'No captions yet. Be the first to enter!'
+                    {state.humanEntryCount === 0
+                      ? 'Be the first to enter!'
                       : '🎉 You’ve seen every caption. Check the ranking, or come back later for new ones.'}
                   </div>
                 ) : (
@@ -477,6 +485,7 @@ export default function DailyCaptionBattleModal({
                           <button type="button" className="tm-link-btn" onClick={() => onOpenProfile?.(e.author_name)}>
                             @{e.author_name}
                           </button>
+                          {e.is_house && <HouseBadge />}
                           {e.status === 'pending' && <em> (waiting for review)</em>}
                         </span>
                         <div className="tm-cb-rank-actions">

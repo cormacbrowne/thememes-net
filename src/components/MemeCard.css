@@ -13,15 +13,16 @@
 
 .mc-byline {
   display: flex;
+  flex-wrap: wrap; /* phones: author + House badge + time + NEW wrap instead of overlapping */
   align-items: center;
-  gap: 6px;
+  gap: 2px 6px;
   min-width: 0;
   font-size: 13px;
   color: var(--tm-text-dim);
 }
 
 .mc-author {
-  min-width: 0;
+  min-width: 5ch;
   max-width: 14ch;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -131,7 +132,7 @@
 .mc-vote {
   display: inline-flex;
   align-items: center;
-  height: 40px;
+  height: 46px; /* 44px buttons inside a 1px border (Workstream 1, mobile-first) */
   border-radius: 12px;
   border: 1px solid var(--tm-night-3);
   background: var(--tm-night-0);
@@ -141,7 +142,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
+  width: 44px;
   height: 100%;
   border: 0;
   background: none;
@@ -183,8 +184,8 @@
   align-items: center;
   justify-content: center;
   gap: 5px;
-  min-width: 0;
-  height: 40px;
+  min-width: 44px;
+  height: 44px;
   padding: 0 6px;
   border-radius: 12px;
   border: 1px solid var(--tm-night-3);

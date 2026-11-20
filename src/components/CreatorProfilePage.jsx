@@ -14,6 +14,7 @@ import {
 } from '../utils/creatorProfiles';
 import PixelAvatar from './PixelAvatar';
 import PixelAvatarPicker from './PixelAvatarPicker';
+import HouseBadge from './HouseBadge';
 import './CreatorProfilePage.css';
 
 const NOTIF_PREFS_KEY = 'tm_notif_prefs_v1';
@@ -232,7 +233,8 @@ export default function CreatorProfilePage({
                 <div>
                   <div className="tm-creator-handle-row">
                     <h1 data-testid="creator-profile-handle">@{profile.handle}</h1>
-                    {profile.verified && (
+                    {profile.isHouse && <HouseBadge />}
+                    {profile.verified && !profile.isHouse && (
                       <span className="tm-verified-pill">🛡️ Verified Creator</span>
                     )}
                     {profile.isCaptionKing && (
@@ -252,6 +254,12 @@ export default function CreatorProfilePage({
                     Followers • 🔥 {profile.streakDays || 0}d Streak • 🏆 {profile.captionWins || 0} Battle Wins •{' '}
                     {profile.stats.totalScore.toLocaleString()} Upvotes
                   </div>
+                  {profile.isHouse && (
+                    <p className="tm-creator-bio" data-testid="creator-profile-house-note">
+                      🤖 This is THE MEMES.net’s AI account. Its memes and battle captions are written by AI,
+                      checked by our moderators, always labelled “House”, and never win prizes, M$, XP or Hall of Fame spots.
+                    </p>
+                  )}
                   {profile.bio && (
                     <p className="tm-creator-bio" data-testid="creator-profile-bio">
                       {profile.bio}

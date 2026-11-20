@@ -1747,6 +1747,10 @@ export function useFeed({
           return String(b.id).localeCompare(String(a.id));
         }
         if (mode === 'hot') {
+          // Server order from get_hot_feed (already caps house memes at 1 in every 4 cards).
+          const ar = a.hot_rank == null ? NaN : Number(a.hot_rank);
+          const br = b.hot_rank == null ? NaN : Number(b.hot_rank);
+          if (Number.isFinite(ar) && Number.isFinite(br) && ar !== br) return ar - br;
           const diff = computeHotScore(b) - computeHotScore(a);
           if (Math.abs(diff) > 1e-6) return diff;
           const tsDiff = Date.parse(b.created_at || 0) - Date.parse(a.created_at || 0);

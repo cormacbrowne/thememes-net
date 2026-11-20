@@ -141,6 +141,9 @@ export function normalizeOverlayLayers(layers = []) {
 export function isOverlayBurnedIn(meme) {
   if (!meme?.overlay) return true;
   if (meme.overlay.burned) return true;
+  // House memes (Workstream 1) are the bare /seed/ template + a live caption overlay. Only the
+  // server sets `live` (publish-meme's sanitizeOverlay drops unknown top-level keys).
+  if (meme.overlay.live === true) return false;
   return meme.media_type !== 'video' && meme.media_type !== 'gif';
 }
 

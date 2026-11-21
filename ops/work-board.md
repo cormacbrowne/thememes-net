@@ -13,7 +13,7 @@ Statuses: `claimed` → `in progress` → `in review` → `done`
 
 | ID | Task | Agent | Lane (model / thinking) | Branch | Files claimed | Status | Updated |
 |---|---|---|---|---|---|---|---|
-| T-001 | First AI image batch: feed seed images (dank 01–04 pilot) | image-studio | Claude (prompts) → Gemini app images (Route A) | claude/… | `assets/prompts/B001-feed-dank-pilot.md`, `assets/inbox/B001/` | claimed | 2026-11-21 |
+| T-001 | First AI image batch: feed seed images (dank 01–04 pilot) | image-studio | Claude (prompts) → Gemini app images (Route A) | claude/… | `assets/prompts/B001-feed-dank-pilot.md`, `assets/inbox/B001/` | in progress: waiting for Cormac's Gemini run | 2026-11-21 |
 | T-002 | Check Gemini image terms (commercial use, watermarks) before images publish at scale | legal-compliance | Claude | — | `ops/decisions.md` (D-003 only) | claimed | 2026-11-21 |
 
 ## Done (last 2 weeks)

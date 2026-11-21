@@ -2,7 +2,7 @@
 
 **Tool:** Gemini app, image generation (Nano Banana) · **Variants per prompt:** 3 · **Save to:** `assets/inbox/B001/` as `B001-<promptId>-<variant>.png` (e.g. `B001-P01-a.png`)
 
-**Status:** waiting for design-director OK, then Route A. Curate and stage only; **don't publish** until D-003 (Gemini terms) is CLEARED.
+**Status:** design OK (21 Nov 2026, P04 subject changed from "frog-like" to a three-eyed alien to stay clear of Pepe). Route A sent to Cormac. Curate and stage only; **don't publish** until D-003 (Gemini terms) is CLEARED.
 
 Style block (in every prompt): *Original meme-style image, 80s retro-futurist synthwave mood, dark night scene lit by magenta-pink and cyan neon, hints of amber, soft haze, subtle film grain, high contrast, clear single subject, expressive and funny, clean composition with empty space at the top and bottom for caption text, no text, no letters, no logos, no watermarks.*
 
@@ -25,6 +25,6 @@ Style block (in every prompt): *Original meme-style image, 80s retro-futurist sy
 
 ### B001-P04: replaces `public/seed/seed-dank-04.webp`
 - **Caption (added by code, rewritten without real coin names):** "My meme-coin portfolio hitting all-time highs (it's worth £0.03)"
-- **Prompt:** A proud office-worker frog-like alien in a too-big suit and tie, standing in front of a giant glowing amber line chart shooting steeply upward, arms spread in triumph, tiny coins with abstract smiley faces raining around it, retro CRT monitors on the desk. Original meme-style image, 80s retro-futurist synthwave mood, dark night scene lit by magenta-pink and cyan neon, hints of amber, soft haze, subtle film grain, high contrast, clear single subject, expressive and funny, clean composition with empty space at the top and bottom for caption text, no text, no letters, no logos, no watermarks.
-- **Avoid:** anything resembling Pepe the Frog or the Shiba Inu "Doge" (make the alien clearly not a frog meme: blue-violet skin, three eyes), real coin logos, the "Stonks" meme man, numbers on the chart.
+- **Prompt:** A proud blue-violet three-eyed alien office worker in a too-big suit and tie, standing in front of a giant glowing amber line chart shooting steeply upward, arms spread in triumph, tiny coins with abstract smiley faces raining around it, retro CRT monitors on the desk. Original meme-style image, 80s retro-futurist synthwave mood, dark night scene lit by magenta-pink and cyan neon, hints of amber, soft haze, subtle film grain, high contrast, clear single subject, expressive and funny, clean composition with empty space at the top and bottom for caption text, no text, no letters, no logos, no watermarks.
+- **Avoid:** anything resembling Pepe the Frog or the Shiba Inu "Doge", real coin logos, the "Stonks" meme man, numbers on the chart.
 - **Note for legal/content:** the current caption names `$DOGE` and `$PEPE`; meme-content-lead proposes the neutral caption above.

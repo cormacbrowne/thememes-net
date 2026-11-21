@@ -33,4 +33,4 @@ Today the starter feed (`src/data/starterMemes.js`) is 64 seed memes, `public/se
 ## Progress
 | Batch | Target | Prompts | In inbox | Curated | Published | Notes |
 |---|---|---|---|---|---|---|
-| B001 | seed-dank-01…04 (pilot) | 4 | 0 | 0 | 0 | waiting for Route A run + D-003 |
+| B001 | seed-dank-01…04 (pilot) | 4 (design OK) | 0 | 0 | 0 | Route A sent to Cormac 21 Nov; publish waits on D-003 |

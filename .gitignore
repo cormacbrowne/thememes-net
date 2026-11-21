@@ -30,3 +30,7 @@ supabase/.temp
 
 # Raw Gemini template originals (converted copies live in public/meme-templates)
 /images/
+
+# Raw AI images from Gemini (curated WebP copies go into public/)
+/assets/inbox/*
+!/assets/inbox/.gitkeep

@@ -1,5 +1,13 @@
 # Changelog
 
+## Agent team set up (21 Nov 2026)
+- **Director "Max"** in `CLAUDE.md`: Cormac talks only to Max, who plans, briefs, chases, gets work checked and reports back with decisions. `AGENTS.md` and `GEMINI.md` give Antigravity (Gemini) the same rules plus its lane: own `gemini/…` branch, ideally in the `../thememes-net-gemini` worktree.
+- **14 specialist subagents** in `.claude/agents/`: dispatcher, image-studio, innovation-lead, design-director, audio-director, meme-content-lead, retro-games-producer, growth-marketer, community-manager, monetisation-lead, analytics-lead, tech-lead, legal-compliance, qa-reviewer (read-only).
+- **Commands** in `.claude/commands/`: `/standup`, `/weekly-review`, `/retro`, `/new-idea`, `/pitch`, `/handoff`, `/capacity`, `/images`.
+- **`ops/`**: work board with file claims, routing guide, budget (£0 cap until Cormac sets one), decisions, lessons, scorecard, playbook changelog, KPIs, content calendar, monetisation plan, report and handoff templates.
+- **`design/`, `audio/`, `innovation/`, `assets/`**: brand and AI image style, sonic brand and licences, idea backlog and concept template, and the AI image pipeline with the first pilot prompt batch (B001, 4 feed images). Raw images in `assets/inbox/` are git-ignored.
+- The brief said Next.js; the agent files describe the real stack (Vite + React 19, Vercel functions, Supabase). See `ops/decisions.md` D-001.
+
 ## Analytics switch: Plausible out, Umami in (20 Nov 2026)
 - **Plausible removed**: script loader, `VITE_PLAUSIBLE_DOMAIN`, and `plausible.io` in the CSP.
 - **Umami Cloud added** (free Hobby plan) via `src/lib/umami.ts`. It needs `VITE_UMAMI_WEBSITE_ID`, never runs on localhost, and honours the in-app stats toggle, Do Not Track and GPC. It tracks SPA route changes by itself.

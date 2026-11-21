@@ -97,3 +97,15 @@
   cursor: pointer;
   overflow-wrap: anywhere;
 }
+
+.tm-battle-hero-ai {
+  position: absolute;
+  right: var(--tm-space-2);
+  bottom: var(--tm-space-2);
+  padding: var(--tm-space-1) var(--tm-space-2);
+  border-radius: var(--tm-radius-pill);
+  background: var(--tm-surface-1);
+  color: var(--tm-text);
+  font-size: var(--tm-text-xs);
+  font-weight: 700;
+}

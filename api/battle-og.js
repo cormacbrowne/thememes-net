@@ -180,7 +180,11 @@ export default async function handler(req, res) {
       : ''
   }<p style="color:#94a3b8;margin:0 0 16px;">${battle.battle_day ? `${escapeHtml(battle.battle_day)} · ` : ''}${
     battle.theme ? `Theme: ${escapeHtml(battle.theme)} · ` : ''
-  }Status: ${escapeHtml(battle.status || 'live')}</p><img src="${safeImg}" alt="${safeAlt}" style="max-width:100%;height:auto;border-radius:12px;display:block;margin-bottom:16px;" /><p style="line-height:1.6;color:#cbd5e1;">${safeDesc}</p><nav style="display:flex;gap:16px;flex-wrap:wrap;"><a href="/" style="color:#00f5ff;">⚔️ Enter or Vote on THE MEMES.net</a><a href="/hall-of-fame" style="color:#ffb800;">👑 Caption King Hall of Fame</a></nav></article></main>`;
+  }Status: ${escapeHtml(battle.status || 'live')}</p><img src="${safeImg}" alt="${safeAlt}" style="max-width:100%;height:auto;border-radius:12px;display:block;margin-bottom:16px;" />${
+    /^\/seed\/battle-[a-z0-9-]+\.webp$/.test(String(battle.image_url || ''))
+      ? '<p style="margin:-10px 0 16px;color:#94a3b8;font-size:12px;">AI-generated image</p>'
+      : ''
+  }<p style="line-height:1.6;color:#cbd5e1;">${safeDesc}</p><nav style="display:flex;gap:16px;flex-wrap:wrap;"><a href="/" style="color:#00f5ff;">⚔️ Enter or Vote on THE MEMES.net</a><a href="/hall-of-fame" style="color:#ffb800;">👑 Caption King Hall of Fame</a></nav></article></main>`;
   html = replaceRootContent(html, articleMarkup);
 
   html = replaceRouteJsonLd(html, {

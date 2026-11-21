@@ -70,3 +70,29 @@ test('template JSON-LD carries the FAQ, image and breadcrumb', () => {
   assert.deepEqual(types, ['WebPage', 'ImageObject', 'BreadcrumbList', 'FAQPage']);
   assert.match(ld['@graph'][1].contentUrl, /^https:\/\/www\.thememes\.net\/meme-templates\/.+\.webp$/);
 });
+
+test('legal-hold templates stay out of public pages and old links redirect', async () => {
+  const { readFileSync } = await import('node:fs');
+  const vercel = JSON.parse(readFileSync(new URL('../../vercel.json', import.meta.url), 'utf8'));
+  for (const slug of ["drake-reject-approve","woman-yelling-at-cat","disaster-girl","hero-slaps-sidekick"]) {
+    assert.equal(getTemplateBySlug(slug) ?? null, null);
+    assert.ok(!MEME_TEMPLATES.some((x) => x.slug === slug));
+    const redirect = vercel.redirects.find((r) => r.source === `/templates/${slug}-meme-template`);
+    assert.equal(redirect?.destination, '/templates');
+    assert.equal(redirect?.statusCode, 302);
+  }
+});
+
+test('B002 battle rotation points at 20 existing labelled images', async () => {
+  const { existsSync, readFileSync } = await import('node:fs');
+  const { isAiBattleImage } = await import('../../src/utils/battleImages.js');
+  const sql = readFileSync(new URL('../../supabase/migrations/20261121180000_battle_rotation_b002.sql', import.meta.url), 'utf8');
+  const urls = sql.match(/\/seed\/battle-[a-z0-9-]+\.webp/g) || [];
+  assert.equal(urls.length, 20);
+  assert.equal(new Set(urls).size, 20);
+  for (const url of urls) {
+    assert.ok(isAiBattleImage(url));
+    assert.ok(existsSync(new URL(`../../public${url}`, import.meta.url)), url);
+  }
+  assert.equal(isAiBattleImage('/seed/tpl-two-buttons.webp'), false);
+});

@@ -55,7 +55,7 @@ function TemplateIndex({ onOpen }) {
         <input
           type="search"
           className="tm-input"
-          placeholder="Search templates, e.g. drake, buttons, brain…"
+          placeholder="Search templates, e.g. buttons, brain, bell curve…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           aria-label="Search meme templates"

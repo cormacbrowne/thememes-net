@@ -17,6 +17,7 @@ import {
 } from '../utils/dailyCaptionBattle';
 import { track } from '../utils/analytics';
 import { triggerWinCelebration } from '../utils/winCelebration';
+import { AI_BATTLE_IMAGE_LABEL, isAiBattleImage } from '../utils/battleImages';
 import './DailyCaptionBattleModal.css';
 
 // Plan 2.1 — Daily Caption Battle v2: Enter / Vote / Ranking / Results.
@@ -33,13 +34,17 @@ const SWIPE_THRESHOLD = 90;
  * (MemeMedia skips overlays on still images because their captions are normally baked in).
  */
 function CaptionedImage({ imageUrl, top, bottom, alt }) {
+  const aiLabel = isAiBattleImage(imageUrl);
   const hasText = Boolean(top || bottom);
   return (
-    <div className="tm-cb-captioned">
-      <img src={imageUrl} alt={alt || [top, bottom].filter(Boolean).join(' / ') || 'Caption Battle image'} draggable={false} />
-      {/* Remount when text first appears so the overlay measures its box. */}
-      <MemeOverlay key={hasText ? 'on' : 'off'} overlay={buildCaptionOverlay(top, bottom)} />
-    </div>
+    <>
+      <div className="tm-cb-captioned">
+        <img src={imageUrl} alt={alt || [top, bottom].filter(Boolean).join(' / ') || 'Caption Battle image'} draggable={false} />
+        {/* Remount when text first appears so the overlay measures its box. */}
+        <MemeOverlay key={hasText ? 'on' : 'off'} overlay={buildCaptionOverlay(top, bottom)} />
+      </div>
+      {aiLabel && <p className="tm-cb-ai-note">{AI_BATTLE_IMAGE_LABEL}</p>}
+    </>
   );
 }
 

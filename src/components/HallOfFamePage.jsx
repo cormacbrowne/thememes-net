@@ -4,6 +4,7 @@ import {
   getTemplateById,
   isActiveCaptionKing
 } from '../utils/dailyCaptionBattle';
+import { AI_BATTLE_IMAGE_LABEL, isAiBattleImage } from '../utils/battleImages';
 import './HallOfFamePage.css';
 
 export default function HallOfFamePage() {
@@ -105,6 +106,7 @@ export default function HallOfFamePage() {
                     {w.top_text && <div className="tm-hof-cap top">{w.top_text}</div>}
                     {w.bottom_text && <div className="tm-hof-cap bottom">{w.bottom_text}</div>}
                   </div>
+                  {isAiBattleImage(w.image_url) && <p className="tm-hof-ai-note">{AI_BATTLE_IMAGE_LABEL}</p>}
 
                   <div className="tm-hof-meta">
                     <strong style={{ color: 'var(--tm-cyan)' }}>👑 @{w.author_name}</strong>

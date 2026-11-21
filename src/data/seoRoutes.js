@@ -126,7 +126,7 @@ const ALL_SEO_ROUTES = [
     path: '/meme-generator',
     title: 'Free Meme & GIF Generator — Add Top & Bottom Text Online | THE MEMES.net',
     description:
-      `Free meme generator: pick one of ${MEME_TEMPLATES.length} original meme templates or upload any image or GIF, add your text (or let AI write it), then download or share. No sign-up.`,
+      `Free meme generator: pick one of ${MEME_TEMPLATES.length} AI-generated meme templates or upload any image or GIF, add your text (or let AI write it), then download or share. No sign-up.`,
     h1: 'Free Meme Generator & GIF Maker',
     kicker: 'THE MEMES.net // Simple Image & GIF Meme Maker',
     changefreq: 'daily',

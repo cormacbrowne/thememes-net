@@ -46,25 +46,25 @@ export const STUDIO_TEMPLATES = [
   },
   {
     id: 'tpl-this-is-fine',
-    name: '🔥 This Is Fine (Room on Fire)',
+    name: '🔥 Calm in the Chaos (Room on Fire)',
     src: '/seed/tpl-this-is-fine.webp',
     category: 'tech',
     layoutId: 'classic',
     defaultTop: '54 PROD ALERTS & SERVER ON FIRE',
-    defaultBottom: 'THIS IS FINE. SIPS COFFEE.'
+    defaultBottom: 'ME: CALMLY SIPS COFFEE'
   },
   {
     id: 'tpl-change-my-mind',
-    name: '☕ Change My Mind Booth Banner',
+    name: '☕ Hot Take Booth',
     src: '/seed/tpl-change-my-mind.webp',
     category: 'dank',
     layoutId: 'classic',
     defaultTop: 'DARK MODE SHOULD BE MANDATORY BY LAW',
-    defaultBottom: 'CHANGE MY MIND'
+    defaultBottom: 'PROVE ME WRONG'
   },
   {
     id: 'tpl-buff-vs-smol',
-    name: '💪 Buff Champion vs Smol Doge',
+    name: '💪 Buff vs Smol',
     src: '/seed/tpl-buff-vs-smol.webp',
     category: 'gaming',
     layoutId: 'classic',
@@ -73,21 +73,21 @@ export const STUDIO_TEMPLATES = [
   },
   {
     id: 'tpl-stonks-up',
-    name: '📈 Stonks Ultra Bull Rocket',
+    name: '📈 Line Goes Up',
     src: '/seed/tpl-stonks-up.webp',
     category: 'dank',
     layoutId: 'classic',
     defaultTop: 'SAVED $4 MAKING COFFEE AT HOME',
-    defaultBottom: 'SPENT $80 ON GAMES: STONKS'
+    defaultBottom: 'SPENT $80 ON GAMES: LINE GOES UP'
   },
   {
     id: 'tpl-not-stonks',
-    name: '📉 Not Stonks Market Crash',
+    name: '📉 Line Goes Down',
     src: '/seed/tpl-not-stonks.webp',
     category: 'dank',
     layoutId: 'classic',
     defaultTop: 'BOUGHT THE DIP AT 11 AM',
-    defaultBottom: 'IT KEPT DIPPING ALL WEEK: NOT STONKS'
+    defaultBottom: 'IT KEPT DIPPING ALL WEEK: LINE GOES DOWN'
   },
   {
     id: 'tpl-woman-yelling-cat',
@@ -100,7 +100,7 @@ export const STUDIO_TEMPLATES = [
   },
   {
     id: 'tpl-gigachad-verdict',
-    name: '🗿 GigaChad Refuses To Elaborate',
+    name: '🗿 Unbothered Verdict',
     src: '/seed/tpl-gigachad-verdict.webp',
     category: 'dank',
     layoutId: 'classic',
@@ -118,12 +118,12 @@ export const STUDIO_TEMPLATES = [
   },
   {
     id: 'tpl-always-has-been',
-    name: '👩‍🚀 Wait It Is All Memes? Always Has Been',
+    name: '👩‍🚀 It Was Always This Way',
     src: '/seed/tpl-always-has-been.webp',
     category: 'dank',
     layoutId: 'classic',
     defaultTop: 'WAIT... THE ENTIRE INTERNET IS JUST MEMES?',
-    defaultBottom: 'ALWAYS HAS BEEN.'
+    defaultBottom: 'IT WAS ALWAYS THIS WAY.'
   },
   {
     id: 'tpl-brain-at-3am',

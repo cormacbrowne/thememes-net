@@ -7,12 +7,12 @@ import { MEME_TEMPLATES, TEMPLATES_INDEX_PATH } from '../data/memeTemplates.js';
 
 export const TEMPLATES_INDEX_META = {
   path: TEMPLATES_INDEX_PATH,
-  title: `Meme Templates — ${MEME_TEMPLATES.length} Free Original Meme Templates & Generator | THE MEMES.net`,
+  title: `Meme Templates — ${MEME_TEMPLATES.length} Free Meme Templates & Generator | THE MEMES.net`,
   description:
-    `Browse ${MEME_TEMPLATES.length} free, high-quality meme templates: Two Buttons, Distracted Boyfriend, Drake-style, Expanding Brain, Change My Mind and more. Caption them online, let AI write the joke, and share.`,
+    `Browse ${MEME_TEMPLATES.length} free, high-quality meme templates: Two Buttons, Distracted Boyfriend, Expanding Brain, IQ Bell Curve and more. Caption them online, let AI write the joke, and share.`,
   h1: 'Free Meme Templates',
   intro:
-    'Pick a meme template, type your text (or let the AI Caption Writer suggest a joke), then download or share it in seconds. Every template here is our own original, high-quality artwork of a classic meme format, so you get crisp pictures that are free to use and share. No sign-up needed.'
+    'Pick a meme template, type your text (or let the AI Caption Writer suggest a joke), then download or share it in seconds. Every template here is an AI-generated image of a classic meme format, so you get crisp pictures that are free to use and share. No sign-up needed.'
 };
 
 const abs = (origin, p) => `${origin}${p}`;
@@ -48,7 +48,7 @@ export function buildTemplateJsonLd(t, origin) {
         caption: t.summary,
         creditText: 'THE MEMES.net',
         creator: { '@type': 'Organization', name: 'THE MEMES.net' },
-        copyrightNotice: 'Original artwork by THE MEMES.net. Free to use for making memes.',
+        copyrightNotice: 'AI-generated image published by THE MEMES.net. Free to use for making memes.',
         acquireLicensePage: url
       },
       {

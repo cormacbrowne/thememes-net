@@ -56,6 +56,7 @@ const RAW_TEMPLATES = [
   },
   {
     slug: 'drake-reject-approve',
+    hidden: true, // Legal hold, D-003 Finding 6 (21 Nov 2026). Not deleted.
     name: 'Reject / Approve (Drake-style)',
     aka: ['Drake Meme', 'Drake Hotline Bling', 'No / Yes Meme', 'Hotline Bling Meme'],
     category: 'relatable',
@@ -157,6 +158,7 @@ const RAW_TEMPLATES = [
   },
   {
     slug: 'woman-yelling-at-cat',
+    hidden: true, // Legal hold, D-003 Finding 6 (21 Nov 2026). Not deleted.
     name: 'Woman Yelling at Cat',
     aka: ['Lady Yelling At Cat', 'Angry Woman And Cat', 'Cat At Dinner Table'],
     category: 'dank',
@@ -517,6 +519,7 @@ const RAW_TEMPLATES = [
   },
   {
     slug: 'disaster-girl',
+    hidden: true, // Legal hold, D-003 Finding 6 (21 Nov 2026). Not deleted.
     name: 'Disaster Girl',
     aka: ['Girl Smiling At Fire', 'House On Fire Girl', 'Burning House Girl'],
     category: 'relatable',
@@ -570,6 +573,7 @@ const RAW_TEMPLATES = [
   },
   {
     slug: 'hero-slaps-sidekick',
+    hidden: true, // Legal hold, D-003 Finding 6 (21 Nov 2026). Not deleted.
     name: 'Hero Slaps Sidekick',
     aka: ['Superhero Slap Meme', 'Slapping Sidekick', 'Comic Slap Meme', 'Shut Up Slap'],
     category: 'dank',
@@ -1101,11 +1105,11 @@ function buildFaq(t) {
     },
     {
       q: `Is this ${t.name} template free to use?`,
-      a: `Yes. This ${t.name} template is our own original artwork of the format, made for THE MEMES.net, so you can make, download and share memes with it for free. Downloads carry a small thememes.net watermark.`
+      a: `Yes. This ${t.name} template is an AI-generated image made for THE MEMES.net, so you can make, download and share memes with it for free. Downloads carry a small thememes.net watermark.`
     },
     {
       q: 'Why does it look different from the version I know?',
-      a: 'Many famous meme pictures are photos owned by other people. We redrew each format as new original art so you get the same joke structure in a crisp, high-quality picture that is safe to share anywhere.'
+      a: 'Many famous meme pictures are photos owned by other people. Our version is a new AI-generated image that keeps the joke structure, so it looks a little different.'
     }
   ];
 }

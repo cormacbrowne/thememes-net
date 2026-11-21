@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import BattleCountdown from './BattleCountdown';
 import { fetchBattleState, entryCaption } from '../utils/dailyCaptionBattle';
+import { AI_BATTLE_IMAGE_LABEL, isAiBattleImage } from '../utils/battleImages';
 import './BattleHeroCard.css';
 
 /**
@@ -44,6 +45,7 @@ export default function BattleHeroCard({ battleState = null, hideInlineWinner = 
           <div className="tm-battle-hero-skeleton" aria-hidden="true" />
         )}
         <span className="tm-battle-hero-badge">⚔️ TODAY’S CAPTION BATTLE</span>
+        {isAiBattleImage(battle?.image_url) && <span className="tm-battle-hero-ai">{AI_BATTLE_IMAGE_LABEL}</span>}
       </div>
       <div className="tm-battle-hero-body">
         <h2 className="tm-battle-hero-title">{battle ? battle.title : 'Loading today’s battle…'}</h2>

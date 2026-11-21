@@ -1,3 +1,4 @@
+import { AI_BATTLE_IMAGE_LABEL, isAiBattleImage } from './battleImages.js';
 // Plan 2.8 — Social Kit canvas generator (1080x1920 Stories/TikTok & 1080x1080 Square)
 // plus suggested daily caption copy for /admin/social.
 
@@ -301,6 +302,21 @@ export async function renderSocialKitPng({
     if (botCap) drawCaptionText(ctx, botCap, width / 2, contentTop + cardH - (isStory ? 175 : 135), cardW - 48, isStory ? 52 : 42);
   } else if (battle?.prompt) {
     drawCaptionText(ctx, 'YOUR CAPTION GOES HERE', width / 2, contentTop + cardH - (isStory ? 115 : 88), cardW - 48, isStory ? 44 : 34);
+  }
+  if (loadedImg && isAiBattleImage(imgUrl)) {
+    const labelSize = isStory ? 26 : 22;
+    ctx.font = `700 ${labelSize}px system-ui, sans-serif`;
+    const labelW = ctx.measureText(AI_BATTLE_IMAGE_LABEL).width + 24;
+    const labelH = labelSize + 14;
+    const labelX = cardX + cardW - labelW - 14;
+    const labelY = contentTop + cardH - labelH - 12;
+    ctx.fillStyle = 'rgba(7, 6, 15, 0.86)';
+    drawRoundedRect(ctx, labelX, labelY, labelW, labelH, labelH / 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(AI_BATTLE_IMAGE_LABEL, labelX + 12, labelY + labelH / 2);
   }
   ctx.restore();
 

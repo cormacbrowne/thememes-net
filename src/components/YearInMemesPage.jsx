@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { getSupabaseClient } from '../supabaseClient';
 import { entryCaption } from '../utils/dailyCaptionBattle';
 import './YearInMemesPage.css';
+import { AI_BATTLE_IMAGE_LABEL, isAiBattleImage } from '../utils/battleImages';
 
 /**
  * Plan 2.9 — /year-in-memes retrospective page.
@@ -165,6 +166,7 @@ export default function YearInMemesPage() {
                       </div>
                       <div className="tm-yim-body">
                         <strong>“{entryCaption(w)}”</strong>
+                        {isAiBattleImage(w.image_url) && <p className="tm-yim-ai-note">{AI_BATTLE_IMAGE_LABEL}</p>}
                         <div className="tm-yim-meta">
                           <span>@{w.author_name}</span>
                           <span>▲ {w.winning_score} votes</span>

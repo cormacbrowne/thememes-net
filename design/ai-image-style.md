@@ -4,7 +4,7 @@
 **Original, photographic or richly illustrated meme pictures in an 80s neon cyber-arcade world.** These replace the flat pixel-graphic seed cards. They should read instantly at phone size and leave clear space for a caption.
 
 ## Style block (paste into every prompt)
-> Original meme-style image, 80s retro-futurist synthwave mood, dark night scene lit by magenta-pink and cyan neon, hints of amber, soft haze, subtle film grain, high contrast, clear single subject, expressive and funny, clean composition with empty space at the top and bottom for caption text, no text, no letters, no logos, no watermarks.
+> Original meme-style image, 80s retro-futurist synthwave mood, dark night scene lit by magenta-pink and cyan neon, soft haze, subtle film grain, high contrast, clear single subject, expressive and funny, clean composition with calm empty space at the top and bottom, no text, no letters, no logos.
 
 ## Rules
 - **Subjects:** original characters only. Animals, robots, arcade cabinets, invented everyday people (clearly generic, not resembling anyone real), objects with personality.

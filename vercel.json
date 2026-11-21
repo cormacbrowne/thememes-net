@@ -147,9 +147,29 @@
       "statusCode": 301
     },
     {
+      "source": "/templates/drake-reject-approve-meme-template",
+      "destination": "/templates",
+      "statusCode": 302
+    },
+    {
+      "source": "/templates/woman-yelling-at-cat-meme-template",
+      "destination": "/templates",
+      "statusCode": 302
+    },
+    {
+      "source": "/templates/disaster-girl-meme-template",
+      "destination": "/templates",
+      "statusCode": 302
+    },
+    {
+      "source": "/templates/hero-slaps-sidekick-meme-template",
+      "destination": "/templates",
+      "statusCode": 302
+    },
+    {
       "source": "/templates/drake-meme-generator",
-      "destination": "/templates/drake-reject-approve-meme-template",
-      "statusCode": 301
+      "destination": "/templates",
+      "statusCode": 302
     },
     {
       "source": "/templates/expanding-brain-meme-generator",
@@ -188,8 +208,8 @@
     },
     {
       "source": "/templates/woman-yelling-at-cat-meme-generator",
-      "destination": "/templates/woman-yelling-at-cat-meme-template",
-      "statusCode": 301
+      "destination": "/templates",
+      "statusCode": 302
     },
     {
       "source": "/templates/gigachad-meme-generator",

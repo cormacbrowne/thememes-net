@@ -33,4 +33,5 @@ Today the starter feed (`src/data/starterMemes.js`) is 64 seed memes, `public/se
 ## Progress
 | Batch | Target | Prompts | In inbox | Curated | Published | Notes |
 |---|---|---|---|---|---|---|
-| B001 | seed-dank-01…04 (pilot) | 4 (design OK) | 0 | 0 | 0 | Route A sent to Cormac 21 Nov; publish waits on D-003 |
+| B001 | seed-dank-01…04 (pilot) | 4 (design OK) | 0 | 0 | 0 | Route A sent to Cormac 21 Nov; prompts corrected for D-003 C3, use the current file; publish waits on D-003 C1-C7 |
+| B002 | all 20 `tpl-*` templates (battles + house memes), priority | 20 (v2: `B002-v2.md`) | 20 final in `assets/inbox/B002/final/` | 20 staged, awaiting final design and human check | 0 | Route B in the built-in browser, Cormac clicks Save; originals are 2400×1792 JPEG; Media Watermark confirmed Off; publish waits on D-003 C2 and C4-C7 |

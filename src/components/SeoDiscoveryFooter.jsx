@@ -141,7 +141,7 @@ export default function SeoDiscoveryFooter({
                 className="tm-seo-link"
                 onClick={(e) => (onOpenTemplates ? handleSpaLinkClick(e, onOpenTemplates) : undefined)}
               >
-                🖼️ Free Meme Templates (Drake-style, Two Buttons, Expanding Brain…)
+                🖼️ Free Meme Templates (Two Buttons, Expanding Brain, IQ Bell Curve…)
               </a>
               <a
                 href="/meme-soundboard"

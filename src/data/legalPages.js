@@ -1,7 +1,7 @@
 // Phase 33 task 33.11: legal, safety, takedown, and contact pages.
 // Owner signed these off for publication on 16 Nov 2026 (draft labels removed).
 
-export const LEGAL_LAST_UPDATED = 'Last updated 20 November 2026';
+export const LEGAL_LAST_UPDATED = 'Last updated 21 November 2026';
 
 export const LEGAL_PAGES = {
   '/rules': {
@@ -66,7 +66,13 @@ export const LEGAL_PAGES = {
         ]
       },
       {
-        heading: '3. Takedowns & Disputes',
+        heading: '3. AI-Generated Images',
+        bullets: [
+          'Some images on THE MEMES.net, including meme templates and Daily Caption Battle images, are made with AI tools.'
+        ]
+      },
+      {
+        heading: '4. Takedowns & Disputes',
         bullets: [
           'Believe something infringes your copyright or invades your privacy? Submit a high-priority notice on /takedown or see /contact for other questions.'
         ]

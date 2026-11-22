@@ -167,6 +167,8 @@ function homePortalHtml() {
       <div class="tm-boot tm-boot-home" data-tm-static-portal="1">
         <div class="tm-boot-sky" aria-hidden="true"><div class="tm-boot-sun"></div><div class="tm-boot-floor"></div></div>
         ${signSvg}
+        <!-- The app no longer has this portal. Keep the links for no-JS visitors only, so they never flash on load. -->
+        <noscript>
         <nav class="tm-boot-doors" aria-label="Choose your world: Memes or Play">
           <a class="tm-boot-door is-memes" href="/memes/dank"><span><span class="tm-boot-door-word">MEMES</span><span class="tm-boot-door-sub">Laugh · Make · Battle</span></span></a>
           <a class="tm-boot-door is-play" href="/games"><span><span class="tm-boot-door-word">PLAY</span><span class="tm-boot-door-sub">Arcade · Retro · Pranks</span></span></a>
@@ -176,6 +178,7 @@ function homePortalHtml() {
           <a class="tm-boot-chip" href="/hall-of-fame">👑 Caption battle</a>
           <a class="tm-boot-chip" href="/prank-screens">💀 Prank screens</a>
         </nav>
+        </noscript>
       </div>`;
 }
 

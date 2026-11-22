@@ -41,6 +41,16 @@ export function cleanProps(props: EventProps = {}): CleanProps {
   return out;
 }
 
+// Content IDs can link an event to the account that posted it, so they stay out of Umami.
+const UMAMI_BLOCKED_PROPS: ReadonlySet<string> = new Set(['meme_id', 'battle', 'entry']);
+
+/** Copy of the props that is safe to send to Umami (a third party). */
+export function umamiProps(props: CleanProps): CleanProps {
+  return Object.fromEntries(
+    Object.entries(props).filter(([key]) => !UMAMI_BLOCKED_PROPS.has(key))
+  );
+}
+
 /** THE one analytics entry point: track(event, props). Never throws. */
 export function track(eventName: string, props: EventProps = {}): void {
   if (!eventName || typeof window === 'undefined') return;
@@ -49,7 +59,7 @@ export function track(eventName: string, props: EventProps = {}): void {
     const clean = cleanProps(props);
     pulse(name, clean);
     const umamiName = UMAMI_EVENTS[name];
-    if (umamiName) umamiEvent(umamiName, clean);
+    if (umamiName) umamiEvent(umamiName, umamiProps(clean));
   } catch {
     // Ignore analytics transport or adblocker errors
   }

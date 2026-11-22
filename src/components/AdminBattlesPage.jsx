@@ -34,7 +34,7 @@ function nextDayIso(offset = 1) {
   return d.toISOString().slice(0, 10);
 }
 
-async function resolveBattleImage(client, file, templateId) {
+async function resolveBattleImage(client, file, templateId, defaultImageUrl = null) {
   if (file) {
     const webp = await toWebp(file);
     const { data: sess } = await client.auth.getSession();
@@ -49,7 +49,7 @@ async function resolveBattleImage(client, file, templateId) {
     return { imageUrl: out.url, templateId: null };
   }
   const tpl = STUDIO_TEMPLATES.find((t) => t.id === templateId) || STUDIO_TEMPLATES[0];
-  return { imageUrl: tpl?.src, templateId: tpl?.id || null };
+  return { imageUrl: defaultImageUrl || tpl?.src, templateId: tpl?.id || null };
 }
 
 const STATUS_LABEL = {
@@ -175,7 +175,7 @@ export default function AdminBattlesPage() {
 
   const queueTwelveDay = async (item, silent = false) => {
     const file = twelveFiles[item.monthDay] || null;
-    const { imageUrl, templateId } = await resolveBattleImage(client, file, item.defaultTemplateId);
+    const { imageUrl, templateId } = await resolveBattleImage(client, file, item.defaultTemplateId, item.defaultImageUrl);
     const { data, error } = await client.rpc('admin_schedule_battle', {
       p_day: item.battleDay,
       p_image_url: imageUrl,

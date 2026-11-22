@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import GameShell from './GameShell';
+import ResumeCountdown from './ui/ResumeCountdown';
 import { sfx } from '../utils/soundEngine';
 import {
   SERPENT_CANVAS_SIZE,
@@ -183,6 +184,7 @@ export default function NeonSerpentGame({
   soundOn = true,
   onToggleSound,
   onRecordHighScore,
+  onRunRestart,
   onOpenLeaderboard,
   onBackToFeed,
   onPlayWithFriends
@@ -191,6 +193,13 @@ export default function NeonSerpentGame({
   const gameRef = useRef(null);
   const swipeOriginRef = useRef(null);
   const recordedGameOverRef = useRef(false);
+  const resumingRef = useRef(false);
+  const restartArmedRef = useRef(false);
+  const restartArmTimerRef = useRef(0);
+  const togglePauseRef = useRef(null);
+
+  const [resuming, setResuming] = useState(false);
+  const [restartArmed, setRestartArmed] = useState(false);
 
   const [hud, setHud] = useState(() => ({
     score: 0,
@@ -255,40 +264,108 @@ export default function NeonSerpentGame({
     }
   }, [syncHudFromState]);
 
+  const cancelResumeCountdown = useCallback(() => {
+    resumingRef.current = false;
+    setResuming(false);
+  }, []);
+
+  const disarmRestart = useCallback(() => {
+    window.clearTimeout(restartArmTimerRef.current);
+    restartArmedRef.current = false;
+    setRestartArmed(false);
+  }, []);
+
+  useEffect(() => () => window.clearTimeout(restartArmTimerRef.current), []);
+
+  const startResumeCountdown = useCallback(() => {
+    const st = gameRef.current;
+    if (!st || st.status !== 'paused' || resumingRef.current) return;
+    resumingRef.current = true;
+    setResuming(true);
+    sfx.playToggle?.();
+  }, []);
+
+  const completeResumeCountdown = useCallback(() => {
+    resumingRef.current = false;
+    setResuming(false);
+    const st = gameRef.current;
+    if (st && st.status === 'paused') {
+      st.status = 'playing';
+      syncHudFromState(st);
+    }
+  }, [syncHudFromState]);
+
   const steerDirection = useCallback(
     (dir) => {
       const st = gameRef.current;
       if (!st || st.status === 'gameover') return;
       if (st.status === 'paused') {
-        st.status = 'playing';
+        startResumeCountdown();
+        return;
       }
       if (enqueueSerpentDirection(st, dir)) {
         sfx.playToggle?.();
       }
       syncHudFromState(st);
     },
-    [syncHudFromState]
+    [startResumeCountdown, syncHudFromState]
   );
 
-  const handleRestartRun = useCallback(() => {
+  const executeRestartRun = useCallback(() => {
+    disarmRestart();
+    cancelResumeCountdown();
+    onRunRestart?.('serpent');
     sfx.playToggle?.();
     recordedGameOverRef.current = false;
     const fresh = createInitialSerpentState();
     gameRef.current = fresh;
     syncHudFromState(fresh);
-  }, [syncHudFromState]);
+  }, [cancelResumeCountdown, disarmRestart, onRunRestart, syncHudFromState]);
+
+  const handleRestartRun = useCallback(() => {
+    const st = gameRef.current;
+    const isMidRun = Boolean(st && (st.status === 'playing' || st.status === 'paused'));
+    if (!isMidRun || restartArmedRef.current) {
+      executeRestartRun();
+      return;
+    }
+    restartArmedRef.current = true;
+    setRestartArmed(true);
+    sfx.playToggle?.();
+    window.clearTimeout(restartArmTimerRef.current);
+    restartArmTimerRef.current = window.setTimeout(() => {
+      restartArmedRef.current = false;
+      setRestartArmed(false);
+    }, 3500);
+  }, [executeRestartRun]);
 
   const handleTogglePause = useCallback(() => {
     const st = gameRef.current;
     if (!st || st.status === 'gameover') return;
-    st.status = st.status === 'paused' ? 'playing' : 'paused';
+    disarmRestart();
+    if (st.status === 'paused') {
+      if (resumingRef.current) {
+        cancelResumeCountdown();
+        sfx.playToggle?.();
+      } else {
+        startResumeCountdown();
+      }
+      return;
+    }
+    cancelResumeCountdown();
+    st.status = 'paused';
     sfx.playToggle?.();
     syncHudFromState(st);
-  }, [syncHudFromState]);
+  }, [cancelResumeCountdown, disarmRestart, startResumeCountdown, syncHudFromState]);
+
+  useEffect(() => {
+    togglePauseRef.current = handleTogglePause;
+  }, [handleTogglePause]);
 
   // Auto-pause on tab hide / window blur per P2 cabinet spec
   useEffect(() => {
     const pauseIfPlaying = () => {
+      cancelResumeCountdown();
       const st = gameRef.current;
       if (st && st.status === 'playing') {
         st.status = 'paused';
@@ -304,7 +381,7 @@ export default function NeonSerpentGame({
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('blur', pauseIfPlaying);
     };
-  }, [syncHudFromState]);
+  }, [cancelResumeCountdown, syncHudFromState]);
 
   // Keyboard controls (Arrows / WASD / Space / P / R)
   useEffect(() => {
@@ -360,9 +437,8 @@ export default function NeonSerpentGame({
             else if (pad.buttons?.[15]?.pressed || axX > 0.45) steerDirection('right');
 
             if (pad.buttons?.[9]?.pressed && pauseDebounce <= 0 && st && st.status !== 'gameover') {
-              st.status = st.status === 'paused' ? 'playing' : 'paused';
+              togglePauseRef.current?.();
               pauseDebounce = 0.35;
-              syncHudFromState(st);
             }
             break;
           }
@@ -405,8 +481,8 @@ export default function NeonSerpentGame({
   const handleCanvasPointerDown = (e) => {
     const st = gameRef.current;
     if (st?.status === 'paused') {
-      st.status = 'playing';
-      syncHudFromState(st);
+      startResumeCountdown();
+      return;
     }
     swipeOriginRef.current = { x: e.clientX, y: e.clientY };
   };
@@ -492,15 +568,17 @@ export default function NeonSerpentGame({
               disabled={hud.status === 'gameover'}
               data-testid="serpent-pause-btn"
             >
-              {hud.status === 'paused' ? '▶ Resume' : '⏸ Pause'}
+              {hud.status === 'paused' && !resuming ? '▶ Resume' : '⏸ Pause'}
             </button>
             <button
               type="button"
               className="tm-btn"
               onClick={handleRestartRun}
+              aria-label={restartArmed ? 'Confirm restart run' : 'Restart run'}
+              data-restart-armed={restartArmed ? 'true' : 'false'}
               data-testid="serpent-restart-btn"
             >
-              ↻ New
+              {restartArmed ? '↻ Confirm?' : '↻ New'}
             </button>
           </div>
         </div>
@@ -531,7 +609,9 @@ export default function NeonSerpentGame({
             onPointerCancel={handleCanvasPointerUp}
           />
 
-          {hud.status === 'paused' && (
+          <ResumeCountdown active={resuming} onComplete={completeResumeCountdown} />
+
+          {hud.status === 'paused' && !resuming && (
             <div className="tm-serpent-overlay" data-testid="serpent-paused-overlay">
               <h3>⏸ PAUSED</h3>
               <p>Swipe or tap Resume to get back onto the grid.</p>
@@ -540,7 +620,7 @@ export default function NeonSerpentGame({
                   ▶ Resume Run
                 </button>
                 <button type="button" className="tm-btn" onClick={handleRestartRun}>
-                  ↻ Restart
+                  {restartArmed ? '↻ Confirm Restart' : '↻ Restart'}
                 </button>
               </div>
             </div>

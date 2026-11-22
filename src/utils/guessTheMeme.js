@@ -50,7 +50,7 @@ export function formatGuessShareCard({
     `THE MEMES #${safeNum} 🎯 ${safeSolved}/${safeTotal}`,
     String(shareGrid || '').trim() || '🟥'.repeat(safeTotal),
     `🔥 Streak: ${safeStreak}`,
-    'thememes.net/daily'
+    'https://www.thememes.net/games/guess-the-meme?ref=daily'
   ].join('\n');
 }
 

@@ -340,7 +340,6 @@ export async function voteCaptionBattleEntry(entryId, active = true, client = su
           : '⚠️ Could not record vote.'
     };
   }
-  if (active) track('battle_vote');
   return data;
 }
 

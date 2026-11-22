@@ -8,7 +8,7 @@ import './VegasPinballGame.css';
 // ==========================================
 // 80s HYPER-NEON CYBER-PINBALL — CENTER-STAGE WIDESCREEN ARCADE SHOWCASE
 // 5 Distinct Synthwave Tables • Guaranteed One-Way Shooter Arch • 4x Substep Physics
-// True Neon Bloom Tubes, Laser Bumper Zaps, Tapered Plasma Flippers & Free/Prize Modes
+// True Neon Bloom Tubes, Laser Bumper Zaps, Tapered Plasma Flippers & Free/Bonus Modes
 // ==========================================
 
 const W = 440;
@@ -20,12 +20,41 @@ const BALL_R = 9;
 const GRAVITY = 0.255;
 const MAX_SPEED = 22.0;
 
+export const PINBALL_FIXED_STEP_MS = 1000 / 60;
+export const PINBALL_MAX_FRAME_MS = 100;
+export const PINBALL_MAX_STEPS_PER_FRAME = 4;
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function advanceFixedTimestep(accumulatorMs, deltaMs, stepFn) {
+  const safeDelta = Number.isFinite(deltaMs)
+    ? Math.min(PINBALL_MAX_FRAME_MS, Math.max(0, deltaMs))
+    : 0;
+  let acc = (Number.isFinite(accumulatorMs) ? Math.max(0, accumulatorMs) : 0) + safeDelta;
+  let steps = 0;
+  while (acc + 1e-6 >= PINBALL_FIXED_STEP_MS && steps < PINBALL_MAX_STEPS_PER_FRAME) {
+    stepFn();
+    acc = Math.max(0, acc - PINBALL_FIXED_STEP_MS);
+    steps += 1;
+  }
+  if (steps === PINBALL_MAX_STEPS_PER_FRAME && acc >= PINBALL_FIXED_STEP_MS) {
+    acc = 0;
+  }
+  return { accumulatorMs: acc, steps };
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function getPinballInputAction(st, isPaused) {
+  if (!st) return 'none';
+  if (st.gameOver) return 'restart';
+  return isPaused ? 'none' : 'play';
+}
+
 const PINBALL_TABLES = [
   {
     id: 1,
     short: "T1: Vegas '85",
     name: "Vegas Strip '85",
-    badge: '🎰 NEON JACKPOT ROULETTE',
+    badge: '🎰 NEON BONUS ROULETTE',
     accent: '#ff007f',
     secondary: '#00f3ff',
     tertiary: '#facc15',
@@ -39,7 +68,7 @@ const PINBALL_TABLES = [
       { x: 274, y: 232, r: 22, label: '🍒', color: '#ff007f', pts: 220 },
       { x: 204, y: 292, r: 21, label: '🔔', color: '#facc15', pts: 250 }
     ],
-    sinkhole: { x: 204, y: 112, r: 16, label: 'JACKPOT' },
+    sinkhole: { x: 204, y: 112, r: 16, label: 'BONUS' },
     boostPads: [{ x: 74, y: 340, w: 26, h: 68 }],
     portals: null,
     movingBumper: null,
@@ -336,6 +365,7 @@ export default function VegasPinballGame({
   onSpendTokens,
   onPayoutTokens,
   onRecordHighScore,
+  onRunRestart,
   onOpenUpload,
   onBackToFeed
 }) {
@@ -362,6 +392,7 @@ export default function VegasPinballGame({
     '🆓 FREE PLAY READY! CLICK 🚀 LAUNCH, TAP THE TABLE, OR PRESS [SPACE] TO SHOOT!'
   );
   const [gameOverInfo, setGameOverInfo] = useState(null); // null | { score, payout, staked }
+  const [isPaused, setIsPaused] = useState(false);
   const [bestScore, setBestScore] = useState(() =>
     Number(localStorage.getItem('tm_pinball_highscore') || 0)
   );
@@ -369,32 +400,53 @@ export default function VegasPinballGame({
   const canvasRef = useRef(null);
   const stateRef = useRef(null);
   const stakedRef = useRef(0);
+  const isPausedRef = useRef(false);
 
-  const resetTableGame = useCallback((nextTbl, stakeAmt = 0) => {
-    stakedRef.current = stakeAmt;
-    const initSt = buildInitialEngineState(nextTbl);
-    stateRef.current = initSt;
-    setStakedTokens(stakeAmt);
-    setHudScore(0);
-    setHudBallsLeft(3);
-    setHudMultiplier(1);
-    setHudShield(true);
-    setHudCombo(0);
-    setHudFever(false);
-    setHudMission({ cur: 0, goal: initSt.missionGoal });
-    setHudLanes([false, false, false, false]);
-    setHudTargets([false, false, false, false]);
-    setHudMagnaCharge(100);
-    setHudMagnaActive(false);
-    setHudNudgeHeat(0);
-    setBallWaitingInShooter(true);
-    setGameOverInfo(null);
-    setHudBanner(
-      stakeAmt > 0
-        ? `🎱 ${formatMoney(stakeAmt)} PRIZE GAME LIVE! PRESS [SPACE] OR CLICK 🚀 LAUNCH BALL!`
-        : `🆓 FREE PLAY ACTIVE ON ${nextTbl.name.toUpperCase()} — PRESS [SPACE] OR CLICK 🚀 LAUNCH!`
-    );
+  const pausePinball = useCallback(() => {
+    const st = stateRef.current;
+    if (!st || st.gameOver) return;
+    st.leftDown = false;
+    st.rightDown = false;
+    isPausedRef.current = true;
+    setIsPaused(true);
   }, []);
+
+  const resumePinball = useCallback(() => {
+    isPausedRef.current = false;
+    setIsPaused(false);
+  }, []);
+
+  const resetTableGame = useCallback(
+    (nextTbl, stakeAmt = 0) => {
+      onRunRestart?.('pinball');
+      isPausedRef.current = false;
+      setIsPaused(false);
+      stakedRef.current = stakeAmt;
+      const initSt = buildInitialEngineState(nextTbl);
+      stateRef.current = initSt;
+      setStakedTokens(stakeAmt);
+      setHudScore(0);
+      setHudBallsLeft(3);
+      setHudMultiplier(1);
+      setHudShield(true);
+      setHudCombo(0);
+      setHudFever(false);
+      setHudMission({ cur: 0, goal: initSt.missionGoal });
+      setHudLanes([false, false, false, false]);
+      setHudTargets([false, false, false, false]);
+      setHudMagnaCharge(100);
+      setHudMagnaActive(false);
+      setHudNudgeHeat(0);
+      setBallWaitingInShooter(true);
+      setGameOverInfo(null);
+      setHudBanner(
+        stakeAmt > 0
+          ? `🎱 ${formatMoney(stakeAmt)} BONUS RUN LIVE! PRESS [SPACE] OR CLICK 🚀 LAUNCH BALL!`
+          : `🆓 FREE PLAY ACTIVE ON ${nextTbl.name.toUpperCase()} — PRESS [SPACE] OR CLICK 🚀 LAUNCH!`
+      );
+    },
+    [onRunRestart]
+  );
 
   const handleSelectTable = (nextId) => {
     const tbl = PINBALL_TABLES.find((t) => t.id === nextId) || PINBALL_TABLES[0];
@@ -424,19 +476,19 @@ export default function VegasPinballGame({
       consumeDailyPerk('pinball');
       sfx.playLevelUp();
       resetTableGame(activeTable, entryCost);
-      setHudBanner('🎁 FREE DAILY PRIZE PINBALL UNLOCKED! PRESS [SPACE] OR 🚀 LAUNCH!');
+      setHudBanner('🎁 FREE DAILY BONUS RUN UNLOCKED! PRESS [SPACE] OR 🚀 LAUNCH!');
       return;
     }
     if (tokens < entryCost) {
       sfx.playClownHonk();
       resetTableGame(activeTable, 0);
       setHudBanner(
-        `🆓 PLAYING IN FREE PRACTICE MODE! (Need ${formatMoney(entryCost)} for Prize Run — Upload a Meme for ${formatMoney(12, { sign: true })}!)`
+        `🆓 PLAYING IN FREE PRACTICE MODE! (Need ${formatMoney(entryCost)} for Bonus Run — Upload a Meme for ${formatMoney(12, { sign: true })}!)`
       );
       return;
     }
     if (onSpendTokens) {
-      const ok = onSpendTokens(entryCost, `Pinball ${activeTable.name} Prize Entry`);
+      const ok = onSpendTokens(entryCost, `Pinball ${activeTable.name} Bonus Run Entry`);
       if (!ok) return;
     }
     sfx.playCoinInsert();
@@ -445,8 +497,9 @@ export default function VegasPinballGame({
 
   const launchPlunger = useCallback(() => {
     const st = stateRef.current;
-    if (!st) return;
-    if (st.gameOver) {
+    const action = getPinballInputAction(st, isPausedRef.current);
+    if (action === 'none') return;
+    if (action === 'restart') {
       resetTableGame(st.table, 0);
       return;
     }
@@ -497,7 +550,7 @@ export default function VegasPinballGame({
     (dir = 'up') => {
       const direction = typeof dir === 'string' ? dir : 'up';
       const st = stateRef.current;
-      if (!st || st.gameOver || st.tiltTicks > 0) return;
+      if (getPinballInputAction(st, isPausedRef.current) !== 'play' || st.tiltTicks > 0) return;
       const activePlayBalls = st.balls.filter((b) => !b.inShooter);
       if (activePlayBalls.length === 0) {
         launchPlunger();
@@ -544,7 +597,7 @@ export default function VegasPinballGame({
 
   const activateMagnaSave = useCallback(() => {
     const st = stateRef.current;
-    if (!st || st.gameOver || st.tiltTicks > 0) return;
+    if (getPinballInputAction(st, isPausedRef.current) !== 'play' || st.tiltTicks > 0) return;
     if (st.magnaCharge < 100 || st.magnaActiveTicks > 0) return;
     st.magnaCharge = 0;
     st.magnaActiveTicks = 180; // 3 full seconds of electromagnetic drain save
@@ -558,6 +611,7 @@ export default function VegasPinballGame({
   const setFlipperState = useCallback((side, isDown) => {
     const st = stateRef.current;
     if (!st || st.gameOver) return;
+    if (isDown && isPausedRef.current) return;
     if (st.tiltTicks > 0 && isDown) return;
     if (side === 'left') {
       if (isDown && !st.leftDown) sfx.playFlipperClick();
@@ -568,10 +622,30 @@ export default function VegasPinballGame({
     }
   }, []);
 
-  // Keyboard bindings (Left/Right Flippers, Space Launch, Q/E/W/Down/N 3-Way Nudge, M Magna-Save)
+  // Pause on tab hide / window blur
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.hidden) pausePinball();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('blur', pausePinball);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('blur', pausePinball);
+    };
+  }, [pausePinball]);
+
+  // Keyboard bindings (Left/Right Flippers, Space Launch, Q/E/W/Down/N 3-Way Nudge, M Magna-Save, P/Esc Pause)
   useEffect(() => {
     const onKeyDown = (e) => {
       if (e.target && ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+      if (e.code === 'KeyP' || e.code === 'Escape') {
+        e.preventDefault();
+        if (isPausedRef.current) resumePinball();
+        else pausePinball();
+        return;
+      }
+      if (isPausedRef.current) return;
       if (e.code === 'ArrowLeft' || e.code === 'KeyA' || e.code === 'ShiftLeft' || e.code === 'KeyZ') {
         e.preventDefault();
         setFlipperState('left', true);
@@ -618,7 +692,7 @@ export default function VegasPinballGame({
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
     };
-  }, [setFlipperState, launchPlunger, nudgeTable, activateMagnaSave]);
+  }, [setFlipperState, launchPlunger, nudgeTable, activateMagnaSave, pausePinball, resumePinball]);
 
   // Main 60fps Canvas Physics & Hyper-Neon Synthwave Renderer
   useEffect(() => {
@@ -754,7 +828,7 @@ export default function VegasPinballGame({
           amount: payout,
           unit: 'M$',
           game: 'Neon Pinball',
-          headline: `🎱 PINBALL PAYOUT!`,
+          headline: `🎱 PINBALL BONUS!`,
           detail: `${st.table.name} • ${finalScore.toLocaleString()} pts`,
           multiplier: activeStake > 0 ? payout / Math.max(1, activeStake) : 2,
           tier: payout >= activeStake * 2.5 ? 'jackpot' : 'big'
@@ -888,7 +962,7 @@ export default function VegasPinballGame({
               });
             }
           }
-          setHudBanner(`🎰 MINI-SLOT WIN: ${st.miniSlot.prizeText}!`);
+          setHudBanner(`🎰 MINI-SLOT BONUS: ${st.miniSlot.prizeText}!`);
         } else if (st.miniSlot.ticks <= 0) {
           st.miniSlot.active = false;
         }
@@ -1246,7 +1320,7 @@ export default function VegasPinballGame({
               const mysteryPrizes = [
                 '🌈 FEVER OVERDRIVE!',
                 '⚡ +1× MULTIPLIER!',
-                '💎 +2,500 MYSTERY JACKPOT!',
+                '💎 +2,500 MYSTERY BONUS!',
                 '🚨 2-BALL FRENZY!'
               ];
               const pickPrize = mysteryPrizes[Math.floor(Math.random() * mysteryPrizes.length)];
@@ -2320,15 +2394,27 @@ export default function VegasPinballGame({
       ctx.restore();
     };
 
-    const loop = () => {
-      if (typeof document === 'undefined' || !document.hidden) {
-        const st = stateRef.current;
-        const canvas = canvasRef.current;
+    let lastTs = null;
+    let accumulatorMs = 0;
+
+    const loop = (now) => {
+      const hidden = typeof document !== 'undefined' && document.hidden;
+      const st = stateRef.current;
+      const canvas = canvasRef.current;
+      if (hidden || isPausedRef.current) {
+        lastTs = null;
+        accumulatorMs = 0;
         if (st && canvas) {
-          stepPhysics(st);
           const ctx = canvas.getContext('2d');
           if (ctx) drawPlayfield(ctx, st);
         }
+      } else if (st && canvas) {
+        const deltaMs = lastTs === null ? PINBALL_FIXED_STEP_MS : Math.max(0, now - lastTs);
+        lastTs = now;
+        const stepped = advanceFixedTimestep(accumulatorMs, deltaMs, () => stepPhysics(st));
+        accumulatorMs = stepped.accumulatorMs;
+        const ctx = canvas.getContext('2d');
+        if (ctx) drawPlayfield(ctx, st);
       }
       rafId = requestAnimationFrame(loop);
     };
@@ -2410,9 +2496,9 @@ export default function VegasPinballGame({
               type="button"
               className={`tm-bj-mode-pill ${stakedTokens > 0 ? 'active' : ''}`}
               onClick={handleStartPrizeRun}
-              title={`Insert ${formatMoney(entryCost)} to play for ${formatMoney(8)}–${formatMoney(28)} high-score payouts!`}
+              title={`Use ${formatMoney(entryCost)} of play money to earn ${formatMoney(8)}–${formatMoney(28)} in high-score bonuses!`}
             >
-              {stakedTokens > 0 && !gameOverInfo ? `🏆 ${formatMoney(stakedTokens)} LIVE` : `🏆 ${formatMoney(entryCost)} Prize`}
+              {stakedTokens > 0 && !gameOverInfo ? `🏆 ${formatMoney(stakedTokens)} LIVE` : `🏆 ${formatMoney(entryCost)} Bonus Run`}
             </button>
             <button
               type="button"
@@ -2518,6 +2604,40 @@ export default function VegasPinballGame({
               }}
             />
 
+            {/* PAUSE OVERLAY */}
+            {isPaused && !gameOverInfo && (
+              <div
+                className="tm-crush2-overlay"
+                role="dialog"
+                aria-label="Pinball paused"
+                data-testid="pinball-paused-overlay"
+              >
+                <div className="tm-crush2-modal">
+                  <div style={{ fontSize: '36px' }}>⏸️</div>
+                  <h3>TABLE PAUSED</h3>
+                  <p>Flippers locked cleanly while you stepped away.</p>
+                  <div className="tm-crush2-modal-btns">
+                    <button
+                      type="button"
+                      className="tm-btn tm-btn-primary"
+                      onClick={resumePinball}
+                      data-testid="pinball-resume-btn"
+                    >
+                      ▶ Resume Table
+                    </button>
+                    <button
+                      type="button"
+                      className="tm-btn"
+                      onClick={handleStartFreePlay}
+                      data-testid="pinball-pause-restart-btn"
+                    >
+                      🔄 New Game
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* GAME OVER OVERLAY */}
             {gameOverInfo && (
               <div className="tm-crush2-overlay" role="dialog">
@@ -2529,9 +2649,9 @@ export default function VegasPinballGame({
                   <p>
                     {gameOverInfo.staked > 0
                       ? gameOverInfo.payout > 0
-                        ? `Awesome run! You won ${formatMoney(gameOverInfo.payout, { sign: true })}!`
-                        : `Needed 18,000+ pts to cash on a ${formatMoney(entryCost)} Prize Run. Try again!`
-                      : `Free Play Complete! Play Free again anytime or insert ${formatMoney(entryCost)} to win up to ${formatMoney(28)}!`}
+                        ? `Awesome run! You earned ${formatMoney(gameOverInfo.payout, { sign: true })} in play money!`
+                        : `Needed 18,000+ pts to earn play money on a ${formatMoney(entryCost)} Bonus Run. Try again!`
+                      : `Free Play Complete! Play Free again anytime or use ${formatMoney(entryCost)} of play money to earn up to ${formatMoney(28)}!`}
                   </p>
                   <div className="tm-crush2-modal-btns">
                     <button
@@ -2546,7 +2666,7 @@ export default function VegasPinballGame({
                       className="tm-btn"
                       onClick={handleStartPrizeRun}
                     >
-                      🏆 Play Prize Run ({formatMoney(entryCost)})
+                      🏆 Play Bonus Run ({formatMoney(entryCost)})
                     </button>
                     {tokens < entryCost && onOpenUpload && (
                       <button
@@ -2644,7 +2764,7 @@ export default function VegasPinballGame({
             </div>
 
             <div className="tm-pin2-wing-card">
-              <div className="tm-pin2-wing-label">💰 {formatMoney(entryCost)} PRIZE PAYOUTS (90% RTP)</div>
+              <div className="tm-pin2-wing-label">🎮 {formatMoney(entryCost)} BONUS RUN REWARDS (PLAY MONEY)</div>
               <div className="tm-pin2-key-list">
                 <div>
                   <strong>18,000+ pts</strong> <span>{formatMoney(8)}</span>
@@ -2656,7 +2776,7 @@ export default function VegasPinballGame({
                   <strong>50,000+ pts</strong> <span>{formatMoney(18)}</span>
                 </div>
                 <div>
-                  <strong>75,000+ pts</strong> <span>{formatMoney(28)} Jackpot!</span>
+                  <strong>75,000+ pts</strong> <span>{formatMoney(28)} Top Bonus!</span>
                 </div>
               </div>
             </div>

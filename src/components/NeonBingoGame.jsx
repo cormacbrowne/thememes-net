@@ -22,6 +22,11 @@ const SPEED_OPTIONS = [
   { id: 'manual', label: '✋ Manual', ms: 0 }
 ];
 
+// eslint-disable-next-line react-refresh/only-export-components
+export function shouldAutoCallBingo({ roundActive, isAutoCalling, speedMs, documentHidden }) {
+  return Boolean(roundActive && isAutoCalling && Number(speedMs) > 0 && !documentHidden);
+}
+
 const VOICE_PERSONAS = [
   { id: 'valkyrie', label: '👩‍🎤 80s Female', title: "VALKYRIE '86 — 1980s Female Synth Caller" },
   { id: 'kitt', label: '🚗 K.I.T.T.', title: 'K.I.T.T. (Knight Rider Caller)' },
@@ -156,6 +161,9 @@ export default function NeonBingoGame({
   const [dabbedNumbers, setDabbedNumbers] = useState([]);
   const [claimedPrizes, setClaimedPrizes] = useState(() => ({ ...EMPTY_CLAIMS }));
   const [isAutoCalling, setIsAutoCalling] = useState(false);
+  const [tabHidden, setTabHidden] = useState(() =>
+    typeof document !== 'undefined' ? Boolean(document.hidden) : false
+  );
   const [rivals, setRivals] = useState(() => makeRivalsWithTickets('90'));
   const [rivalEventFeed, setRivalEventFeed] = useState(
     '🏟️ LIVE HALL: You + 4 real-ticket rivals in this game! Hit EYES DOWN to drop Ball #1!'
@@ -619,17 +627,36 @@ export default function NeonBingoGame({
     ]
   );
 
-  // Auto-caller interval when round is running
+  // Track document visibility so auto-caller pauses while tab is hidden and resumes on return
   useEffect(() => {
-    if (!roundActive || !isAutoCalling) return undefined;
+    if (typeof document === 'undefined') return undefined;
+    const onVisibility = () => {
+      setTabHidden(Boolean(document.hidden));
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, []);
+
+  // Auto-caller interval when round is running and tab is visible
+  useEffect(() => {
     const speedCfg = SPEED_OPTIONS.find((s) => s.id === speedId);
-    if (!speedCfg || speedCfg.ms <= 0) return undefined;
+    if (
+      !shouldAutoCallBingo({
+        roundActive,
+        isAutoCalling,
+        speedMs: speedCfg?.ms,
+        documentHidden: tabHidden
+      })
+    ) {
+      return undefined;
+    }
 
     const timer = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
       drawNextBall(false);
     }, speedCfg.ms);
     return () => clearInterval(timer);
-  }, [drawNextBall, isAutoCalling, roundActive, speedId]);
+  }, [drawNextBall, isAutoCalling, roundActive, speedId, tabHidden]);
 
   // Manual Dabber Pen Stamp handler
   const handleDabCell = (cardIdx, value, e) => {

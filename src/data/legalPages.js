@@ -1,7 +1,7 @@
 // Phase 33 task 33.11: legal, safety, takedown, and contact pages.
 // Owner signed these off for publication on 16 Nov 2026 (draft labels removed).
 
-export const LEGAL_LAST_UPDATED = 'Last updated 21 November 2026';
+export const LEGAL_LAST_UPDATED = 'Last updated 22 November 2026';
 
 export const LEGAL_PAGES = {
   '/rules': {
@@ -91,7 +91,7 @@ export const LEGAL_PAGES = {
         heading: '📦 What We Store',
         bullets: [
           'Account data: if you sign in via Magic Link or OAuth, Supabase stores your email/provider ID and chosen handle. First-time commenters/voters may use an anonymous Supabase session ID.',
-          'Browser localStorage: saves pretend MemeDollarz balances, CRT/sound settings, muted categories, and bookmarked memes locally on your device.',
+          'Browser localStorage: saves pretend MemeDollarz balances, game scores and progress, sound, display and layout settings, muted categories, and bookmarked memes on your device.',
           'Abuse & rate-limit logs: uploads and reports record hashed IPs briefly for spam prevention and strip EXIF/GPS metadata from every uploaded image/GIF.',
           'Automated safety checks: every uploaded image/GIF and the text of titles, captions, comments and usernames is sent to the OpenAI moderation service to be checked against the House Rules before it can appear. We do not send your email address or account details with it.'
         ]
@@ -100,11 +100,12 @@ export const LEGAL_PAGES = {
         heading: '📊 Analytics & Anti-Bot Protection',
         bullets: [
           'No cookies and no cross-site tracking: we do not use advertising trackers, session recordings or fingerprinting, and we do not sell your personal information.',
-          'Our own anonymous usage stats (Pulse): we count things like page views, memes made, shares, votes, game plays and caption-battle entries, without cookies or tracking IDs. The counts cannot be tied to you or your account. Your IP address is never stored (it is only used, scrambled with a key that changes every day, to tell today’s visits apart), and raw events are deleted after 30 days.',
-          'Umami Analytics: we also use Umami Cloud (umami.is), a privacy-friendly analytics service. It counts page views and a few anonymous events (meme made, battle entry, game or prank started, share clicked) without cookies and without storing personal data or IP addresses. See umami.is/privacy.',
+          'Our own usage stats (Pulse): we count things like page views, memes made, shares, votes, game plays and caption-battle entries, without cookies. Each event is stored with the page, device type, the website or link tag that brought you here, a random ID for that page load and a visitor code that changes every day. Some events include the ID of the meme or battle entry involved. We do not store your name, email or account ID with these events, but a meme or entry ID could link an event to the account that posted it, so we treat this data as personal data. Your IP address is never stored (it is only used, scrambled with a key that changes every day, to tell today’s visits apart). Detailed events are deleted after 30 days. After that we keep daily totals by event and page. A page address can include a public meme ID or username, so these totals can still relate to a public profile.',
+          'Return-visit markers: unless stats are switched off, your browser keeps two small markers so we can count new and returning visits and improve the site. tm_pulse_seen (localStorage) holds "1" until you clear your browser data. tm_return_tracked (sessionStorage) holds "1" or "first" and normally clears when you close the tab. They contain no ID or personal details and their contents are not sent to us; we receive only a yes/no for whether this is a return visit. Switching stats off stops us reading or updating them, and you can remove them by clearing your browser data.',
+          'Umami Analytics: we also use Umami Cloud (umami.is), a privacy-friendly analytics service. It counts page views and a few anonymous events (meme made, battle entry, Guess the Meme played, game or prank started, share clicked) without cookies. We remove meme, battle and profile IDs, usernames, page titles and link details before anything is sent to Umami. If another website sent you here, Umami receives only that website’s address. Umami does not store IP addresses. See umami.is/privacy.',
           'Vercel Web Analytics and Speed Insights: aggregate page-view totals and page-speed measurements from our host, again without cookies.',
           'Share links: when you share a meme, the link includes "?ref=share" and the meme’s ID, so we can count visits that came from a share. It does not say who shared it.',
-          'How to switch it off: toggle "Anonymous usage stats" off in Settings (⚙️), or enable Global Privacy Control (GPC) / Do-Not-Track in your browser. We honour both, and that switches off Pulse and Umami.',
+          'How to switch it off: toggle "Usage stats" off in Settings (⚙️), or enable Global Privacy Control (GPC) / Do-Not-Track in your browser. Pulse and Umami stop straight away. Vercel’s aggregate stats are not controlled by this switch.',
           'Bot protection: we may use Cloudflare Turnstile on upload and comment checks to stop automated bots.'
         ]
       },

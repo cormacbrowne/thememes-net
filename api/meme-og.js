@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
-import { STARTER_MEMES } from '../src/data/starterMemes.js';
+import { STARTER_MEMES, STUDIO_TEMPLATES } from '../src/data/starterMemes.js';
 import { SITE_ORIGIN, DEFAULT_OG_IMAGE, CATEGORY_ID_TO_SLUG } from '../src/data/seoRoutes.js';
 import { replaceRootContent, replaceRouteJsonLd, sendNotFound, sendTryLater } from './_seoShell.js';
 import { buildMemeJsonLd, memeSeoDescription, shareCardUrl, shareCardAlt, memePath } from '../src/utils/memeSeo.js';
@@ -187,6 +187,45 @@ function goneHtml() {
 </html>`;
 }
 
+// Neutral public names that describe the format shown on each studio template image.
+const TEMPLATE_PAGE_TITLES = Object.freeze({
+  'tpl-drake-compare': 'Nope / Yes',
+  'tpl-expanding-brain': 'Four Levels of Enlightenment',
+  'tpl-two-buttons': 'Two Button Panic',
+  'tpl-distracted-choice': 'Distracted by Something Shiny',
+  'tpl-this-is-fine': 'Calm in the Chaos',
+  'tpl-change-my-mind': 'Hot Take Booth',
+  'tpl-buff-vs-smol': 'Buff vs Smol',
+  'tpl-stonks-up': 'Line Goes Up',
+  'tpl-not-stonks': 'Line Goes Down',
+  'tpl-woman-yelling-cat': 'Yelling vs Unbothered',
+  'tpl-gigachad-verdict': 'Unbothered Verdict',
+  'tpl-clown-makeup': '4-Step Clown Protocol',
+  'tpl-always-has-been': 'It Was Always This Way',
+  'tpl-brain-at-3am': 'Brain At 3 AM',
+  'tpl-surprised-shock': 'Surprised Face',
+  'tpl-trade-offer': 'Dodgy Deal',
+  'tpl-bell-curve-iq': 'Bell Curve',
+  'tpl-highway-exit': 'Last-Second Exit',
+  'tpl-spiderman-point': 'Pointing at Each Other',
+  'tpl-trophy-celebration': 'Over-Celebrating 3rd Place'
+});
+
+function studioTemplatePage(id) {
+  const template = STUDIO_TEMPLATES.find((t) => t.id === id);
+  const title = template && TEMPLATE_PAGE_TITLES[id];
+  if (!title) return null;
+  return {
+    id,
+    title: `${title} meme template`,
+    author_name: 'TheMemesHQ',
+    score: 1,
+    media_type: 'image',
+    category: template.category,
+    image_url: template.src
+  };
+}
+
 export default async function handler(req, res) {
   const rawId = Array.isArray(req.query?.id) ? req.query.id[0] : req.query?.id;
   const memeId = String(rawId || '').trim().slice(0, 128);
@@ -195,7 +234,12 @@ export default async function handler(req, res) {
 
   let meme = STARTER_MEMES.find((m) => String(m.id) === memeId) || null;
   let lookupFailed = false;
-  if (!meme && memeId) {
+  // House ids are never database rows (memes.id is a uuid), so asking Supabase would only error into a 503.
+  const isHouseId = /^(?:seed|tpl)-/i.test(memeId);
+  const templatePage = !meme && isHouseId ? studioTemplatePage(memeId) : null;
+  const isTemplatePage = Boolean(templatePage);
+  if (templatePage) meme = templatePage;
+  if (!meme && memeId && !isHouseId) {
     const live = await fetchLiveMeme(memeId);
     if (live === FETCH_FAILED) lookupFailed = true;
     else meme = live;
@@ -211,16 +255,6 @@ export default async function handler(req, res) {
       }
       if (state === 'error') lookupFailed = true;
     }
-  }
-  if (!meme && /^(?:seed|tpl)-[a-z0-9-]+$/i.test(memeId)) {
-    meme = {
-      id: memeId,
-      title: memeId.replace(/^(?:seed|tpl)-/i, '').replaceAll('-', ' '),
-      author_name: 'TheMemesHQ',
-      score: 1,
-      media_type: 'image',
-      image_url: `/seed/${memeId}.webp`
-    };
   }
 
   if (meme) {
@@ -309,7 +343,15 @@ export default async function handler(req, res) {
     html = replaceRootContent(html, articleMarkup);
 
     // Per-meme structured data (replaces the copied route JSON-LD of the home shell).
-    html = replaceRouteJsonLd(html, buildMemeJsonLd(meme, canonicalUrl, ogImg));
+    if (isTemplatePage) {
+      html = html
+        .replace(/\s*<script[^>]*id="tm-dynamic-jsonld"[^>]*>[\s\S]*?<\/script>/i, '')
+        .replace(/\s*<meta\s+name="robots"\s+content="[^"]*"\s*\/?>/i, '')
+        .replace(/<\/head>/i, '  <meta name="robots" content="noindex" />\n  </head>');
+      res.setHeader('X-Robots-Tag', 'noindex');
+    } else {
+      html = replaceRouteJsonLd(html, buildMemeJsonLd(meme, canonicalUrl, ogImg));
+    }
   } else if (lookupFailed) {
     return sendTryLater(res, html);
   } else {

@@ -17,11 +17,12 @@ export function isChunkLoadError(err) {
  * Wraps React.lazy so transient network hiccups or post-deploy hashed-chunk shifts
  * retry cleanly instead of permanently caching a rejected dynamic import in React.
  */
-export default function lazyWithRetry(importer, exportPicker = null) {
+export default function lazyWithRetry(importer, exportPicker = null, { reloadOnFail = true } = {}) {
   const load = async () => {
     try {
       const mod = await importer();
-      if (typeof window !== 'undefined') {
+      // Optional chunks must not clear the guard, or a broken sibling chunk can reload forever.
+      if (reloadOnFail && typeof window !== 'undefined') {
         try {
           window.sessionStorage?.removeItem(CHUNK_RELOAD_KEY);
         } catch {
@@ -36,7 +37,7 @@ export default function lazyWithRetry(importer, exportPicker = null) {
         const modRetry = await importer();
         return exportPicker ? exportPicker(modRetry) : modRetry;
       } catch (secondErr) {
-        if (typeof window !== 'undefined' && isChunkLoadError(secondErr)) {
+        if (reloadOnFail && typeof window !== 'undefined' && isChunkLoadError(secondErr)) {
           try {
             const alreadyReloaded = window.sessionStorage?.getItem(CHUNK_RELOAD_KEY);
             if (!alreadyReloaded) {

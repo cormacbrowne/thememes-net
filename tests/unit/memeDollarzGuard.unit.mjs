@@ -93,10 +93,48 @@ test('casino games: own group, always last, flag-controlled, with a disclaimer',
   assert.equal(casinoSafeViewMode('invaders', false), 'invaders');
 });
 
+test('play-money copy never promises real wins, cash-outs or casino hype', () => {
+  const files = [
+    'src/components/VegasBlackjackGame.jsx',
+    'src/components/VegasRouletteGame.jsx',
+    'src/components/VegasPokerGame.jsx',
+    'src/components/VegasSlotMachine.jsx',
+    'src/components/ArcadeAiAssistant.jsx',
+    'src/data/seoRouteCopy.js',
+    'src/data/seoRoutes.js',
+    'src/data/arcadeGamesCatalog.js'
+  ];
+  const banned = /win real|real wins|real payout|Cash Out|cash out (?:your|winnings)|near-miss|double-or-nothing|up[- ]to[- ]150|XP royalt/i;
+  for (const f of files) assert.doesNotMatch(read(f), banned, f);
+});
+
+test('pinball copy has no prize, jackpot, RTP or cash wording', () => {
+  assert.doesNotMatch(
+    read('src/components/VegasPinballGame.jsx'),
+    /PRIZE|JACKPOT|\bPrize\b|Jackpot!|\(\d+% RTP\)|to cash\b|You won\b/
+  );
+});
+
+test('non-casino and promoted surfaces have no prize, near-miss or betting copy', () => {
+  assert.doesNotMatch(read('src/components/MemeCrushGame.jsx'), /PRIZE|\bPrize\b|So close!|🏆 Stake|to win MemeDollarz/);
+  assert.doesNotMatch(read('src/components/VegasSlotMachine.jsx'), /Prize Wheel|Almost! 2 Bonus/);
+  assert.doesNotMatch(read('src/components/DankPetWidget.jsx'), /Wager your|onSelectViewMode\('slots'\)/);
+  assert.doesNotMatch(read('src/hooks/useTokenEconomy.js'), /bet in the casino/);
+  assert.doesNotMatch(read('src/data/seoRouteCopy.js'), /Vegas Jackpot|Prize Runs?\b/);
+  assert.doesNotMatch(read('src/data/seoRoutes.js'), /high-score jackpots/);
+  assert.doesNotMatch(
+    read('src/components/EightiesIconsStrip.jsx'),
+    /prize payout|bingo jackpot|Full House prize|Full House jackpot|one away from|JACKPOT POWER|prize vault|casino house edge|house edge|serious payouts|bets? the|roulette|Neon Slots|one ball away|extra (?:bingo )?cards|buying four|per diem on two|one more spin/
+  );
+});
+
 test('no Las Vegas framing in user-facing names, and no casino promo on the homepage', () => {
   for (const g of ARCADE_GAMES_CATALOG) assert.doesNotMatch(`${g.label} ${g.pitch}`, /vegas/i, g.id);
   const app = read('src/App.jsx');
-  assert.doesNotMatch(app, /ArcadeLoungePromo/);
+  assert.doesNotMatch(app, /ArcadeLoungePromo|inFeedArcadeCard=|ARCADE &amp; CASINO/);
+  assert.doesNotMatch(read('src/components/SeoDiscoveryFooter.jsx'), /150×/);
+  assert.doesNotMatch(read('src/components/EightiesIconsStrip.jsx'), /cash out/i);
+  assert.doesNotMatch(read('src/components/NeonDerbyGame.jsx'), /Ticket Cashed|You cashed/);
   assert.doesNotMatch(read('src/components/DualDirectionHero.jsx'), /Vegas/);
   assert.doesNotMatch(read('src/data/seoRoutes.js'), /Las Vegas|Vegas 777/);
 });

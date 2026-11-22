@@ -452,7 +452,7 @@ export default function MemeCrushGame({
   );
   const backdropMeme = useMemo(() => getLevelBackdropMeme(memes, levelId), [memes, levelId]);
 
-  // Stake tracking: 0 = Free Practice, >0 = 10-Token Prize Run staked upfront
+  // Stake tracking: 0 = Free Practice, >0 = 10-Token Bonus Run staked upfront
   const [activeStakeTokens, setActiveStakeTokens] = useState(0);
   const [roundStarted, setRoundStarted] = useState(false);
 
@@ -540,7 +540,7 @@ export default function MemeCrushGame({
     setHintState({ boardRef: null, selectedRef: null, cells: [] });
     setComboBanner(
       stakedAmt > 0
-        ? `🏆 ${formatMoney(stakedAmt)} PRIZE RUN ACTIVE — CLEAR OBJECTIVES TO WIN UP TO ${formatMoney(starPayouts[3])}!`
+        ? `🏆 ${formatMoney(stakedAmt)} BONUS RUN — EARN UP TO ${formatMoney(starPayouts[3])}!`
         : `🆓 PRACTICE MODE — Lv.${def.id} ${def.name}`
     );
     setActiveStakeTokens(stakedAmt);
@@ -553,7 +553,7 @@ export default function MemeCrushGame({
     if (busy) return;
     // Prevent accidental loss of active staked run unless round ended
     if (activeStakeTokens > 0 && !roundResult && roundStarted && movesLeft < levelDef.moves) {
-      if (!window.confirm(`Abandon your active ${formatMoney(activeStakeTokens)} Prize Run and switch levels?`)) {
+      if (!window.confirm(`Abandon your active ${formatMoney(activeStakeTokens)} Bonus Run and switch levels?`)) {
         return;
       }
     }
@@ -566,12 +566,12 @@ export default function MemeCrushGame({
     if (tokens < entryCost) {
       sfx.playClownHonk();
       setComboBanner(
-        `⚠️ NEED ${formatMoney(entryCost)} FOR PRIZE MODE! UPLOAD A MEME (${formatMoney(12, { sign: true })}) OR PLAY FREE PRACTICE!`
+        `⚠️ NEED ${formatMoney(entryCost)} FOR BONUS MODE! UPLOAD A MEME (${formatMoney(12, { sign: true })}) OR PLAY FREE PRACTICE!`
       );
       return;
     }
     if (onSpendTokens) {
-      const ok = onSpendTokens(entryCost, `Meme Crush Lv.${levelDef.id} Prize Entry`);
+      const ok = onSpendTokens(entryCost, `Meme Crush Lv.${levelDef.id} Bonus Run Entry`);
       if (!ok) return;
     }
     sfx.playCoinInsert();
@@ -1370,16 +1370,16 @@ export default function MemeCrushGame({
             <Wallet tokens={tokens} centz={centz} size="sm" />
             {activeStakeTokens > 0 && !roundResult ? (
               <span className="tm-crush2-stake-active">
-                🏆 PRIZE RUN ({formatMoney(starPayouts[1])}/{formatMoney(starPayouts[2])}/{formatMoney(starPayouts[3])})
+                🏆 BONUS RUN ({formatMoney(starPayouts[1])}/{formatMoney(starPayouts[2])}/{formatMoney(starPayouts[3])})
               </span>
             ) : (
               <button
                 type="button"
                 className="tm-crush2-prize-btn"
                 onClick={handleStartPrizeRun}
-                title={`Stake ${formatMoney(entryCost)} to win ${formatMoney(starPayouts[1])}–${formatMoney(starPayouts[3])} on clearing this level!`}
+                title={`Use ${formatMoney(entryCost)} of play money to earn ${formatMoney(starPayouts[1])}–${formatMoney(starPayouts[3])} on clearing this level!`}
               >
-                🏆 Stake {formatMoney(entryCost)} (Win up to {formatMoney(starPayouts[3])})
+                🏆 Bonus Run {formatMoney(entryCost)} (Earn up to {formatMoney(starPayouts[3])})
               </button>
             )}
           </div>
@@ -1657,9 +1657,9 @@ export default function MemeCrushGame({
                 <p>
                   {roundResult.won
                     ? roundResult.payout > 0
-                      ? `Final Score: ${roundResult.score.toLocaleString()} • Won ${formatMoney(roundResult.payout, { sign: true })} Prize!`
-                      : `Final Score: ${roundResult.score.toLocaleString()} (Practice Clear — Stake ${formatMoney(entryCost)} to win MemeDollarz!)`
-                    : 'So close! Grab +5 Extra Moves or retry this board!'}
+                      ? `Final Score: ${roundResult.score.toLocaleString()} • Earned ${formatMoney(roundResult.payout, { sign: true })} in play money!`
+                      : `Final Score: ${roundResult.score.toLocaleString()} (Practice Clear — try a ${formatMoney(entryCost)} Bonus Run for more play money!)`
+                    : 'Out of moves. Grab +5 Extra Moves or retry this board.'}
                 </p>
 
                 <div className="tm-crush2-modal-btns">
@@ -1697,7 +1697,7 @@ export default function MemeCrushGame({
                       className="tm-btn tm-btn-primary"
                       onClick={handleStartPrizeRun}
                     >
-                      🏆 Play Prize Run ({formatMoney(entryCost)})
+                      🏆 Play Bonus Run ({formatMoney(entryCost)})
                     </button>
                   )}
                 </div>

@@ -1,4 +1,4 @@
-import { pulse, pulseTimer, isPulseAllowed } from './pulse';
+import { pulse, pulseTimer, isPulseAllowed, resolveReturningVisitor } from './pulse';
 import { track as providerTrack } from '../lib/analytics';
 import { memePath } from './memeSeo';
 
@@ -57,11 +57,11 @@ export function memeShareUrl(memeOrId, origin) {
 
 /** Fires return_visit once per browser session for people who have been here before. */
 export function trackReturnVisitOnce() {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || !isPulseAllowed()) return;
   try {
     if (sessionStorage.getItem('tm_return_tracked')) return;
     sessionStorage.setItem('tm_return_tracked', '1');
-    if (localStorage.getItem('tm_intro_seen')) track('return_visit');
+    if (resolveReturningVisitor()) track('return_visit');
   } catch {
     // storage blocked: skip
   }

@@ -87,8 +87,13 @@ export default function ArcadeInitialsModal({
 
   useEffect(() => {
     const onKeyDown = (e) => {
+      e.stopPropagation();
+      if (e.key === 'Tab') return;
       if (submittedResult) {
-        if (e.key === 'Escape') onClose?.();
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          onClose?.();
+        }
         return;
       }
       if (e.key === 'Escape') {
@@ -134,8 +139,8 @@ export default function ArcadeInitialsModal({
       }
     };
 
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+    window.addEventListener('keydown', onKeyDown, true);
+    return () => window.removeEventListener('keydown', onKeyDown, true);
   }, [activeSlot, handleSubmit, onClose, stepSlot, submittedResult]);
 
   return (

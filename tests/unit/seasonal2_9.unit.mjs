@@ -39,18 +39,23 @@ test('getActiveSeasonalSkin respects flags, auto calendar windows, and ?season o
   );
 });
 
-test('12 Days of Memes schedule covers 12–24 Dec (13..24 Dec) with valid template IDs', () => {
+test('12 Days of Memes covers 13–24 Dec 2026 with neutral copy and battle images', () => {
   assert.equal(TWELVE_DAYS_OF_MEMES.length, 12);
   const starterSrc = fs.readFileSync(new URL('../../src/data/starterMemes.js', import.meta.url), 'utf8');
   const schedule = buildTwelveDaysSchedule(2026);
-  const days = new Set(schedule.map((d) => d.battleDay));
-  assert.equal(days.size, 12);
-  assert.equal(schedule[0].battleDay, '2026-12-13');
-  assert.equal(schedule[11].battleDay, '2026-12-24');
+  assert.deepEqual(
+    schedule.map((d) => d.battleDay),
+    Array.from({ length: 12 }, (_, i) => `2026-12-${13 + i}`)
+  );
+  assert.equal(new Set(schedule.map((d) => d.defaultImageUrl)).size, 12);
 
   for (const item of schedule) {
     assert.equal(item.theme, '12 Days of Memes');
     assert.ok(starterSrc.includes(`id: '${item.defaultTemplateId}'`), `Valid template ${item.defaultTemplateId}`);
+    assert.match(item.defaultImageUrl, /^\/seed\/battle-[a-z0-9-]+\.webp$/);
+    assert.doesNotMatch(item.defaultImageUrl, /otter/);
+    assert.ok(fs.existsSync(new URL(`../../public${item.defaultImageUrl}`, import.meta.url)), item.defaultImageUrl);
+    assert.doesNotMatch(`${item.title} ${item.prompt}`, /slack|mariah|carey|die hard|sellotape|last friday/i);
   }
 });
 

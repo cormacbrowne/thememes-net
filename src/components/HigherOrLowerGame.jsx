@@ -149,7 +149,7 @@ export default function HigherOrLowerGame({
   };
 
   const handleShareStreak = async () => {
-    const shareText = `⬆️⬇️ HIGHER OR LOWER — Meme Edition\n🔥 Streak: ${streak} (Best: ${bestStreak})\nCan you beat me? https://thememes.net/games/higher-or-lower?ref=score`;
+    const shareText = `⬆️⬇️ HIGHER OR LOWER — Meme Edition\n🔥 Streak: ${streak} (Best: ${bestStreak})\nCan you beat me? https://www.thememes.net/games/higher-or-lower?ref=score`;
     track('share_card_copied', { game: 'higher_or_lower' });
     try {
       if (navigator.share && typeof window !== 'undefined' && window.innerWidth <= 860) {

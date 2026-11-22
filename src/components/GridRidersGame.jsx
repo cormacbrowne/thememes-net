@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import GameShell from './GameShell';
+import ResumeCountdown from './ui/ResumeCountdown';
 import { sfx } from '../utils/soundEngine';
 import {
   RIDERS_GRID_SIZE,
@@ -141,11 +142,14 @@ export default function GridRidersGame({
   soundOn = true,
   onToggleSound,
   onRecordHighScore,
+  onRunRestart,
   onOpenLeaderboard,
   onBackToFeed
 }) {
   const [bestScore, setBestScore] = useState(() => readStoredBest());
   const [arenaMode, setArenaMode] = useState('1p');
+  const [resuming, setResuming] = useState(false);
+  const [restartArmed, setRestartArmed] = useState(false);
   const [hud, setHud] = useState({
     mode: '1p',
     status: 'title',
@@ -162,6 +166,22 @@ export default function GridRidersGame({
   const lastGpDirRef = useRef({ p1: null, p2: null });
   const recordedRunRef = useRef(false);
   const stateRef = useRef(null);
+  const resumingRef = useRef(false);
+  const restartArmedRef = useRef(false);
+  const restartArmTimerRef = useRef(0);
+
+  const cancelResumeCountdown = useCallback(() => {
+    resumingRef.current = false;
+    setResuming(false);
+  }, []);
+
+  const disarmRestart = useCallback(() => {
+    window.clearTimeout(restartArmTimerRef.current);
+    restartArmedRef.current = false;
+    setRestartArmed(false);
+  }, []);
+
+  useEffect(() => () => window.clearTimeout(restartArmTimerRef.current), []);
 
   const syncHudFromState = useCallback((st) => {
     setHud({
@@ -191,6 +211,9 @@ export default function GridRidersGame({
 
   const startFreshMatch = useCallback(
     (nextMode = arenaMode) => {
+      disarmRestart();
+      cancelResumeCountdown();
+      onRunRestart?.('riders');
       recordedRunRef.current = false;
       const next = createGridRidersRound({
         mode: nextMode,
@@ -206,12 +229,32 @@ export default function GridRidersGame({
       syncHudFromState(next);
       sfx.playLaser?.();
     },
-    [arenaMode, bestScore, syncHudFromState]
+    [arenaMode, bestScore, cancelResumeCountdown, disarmRestart, onRunRestart, syncHudFromState]
   );
+
+  const handleRestartRun = useCallback(() => {
+    const st = stateRef.current;
+    const isMidRun = Boolean(st && (st.status === 'playing' || st.status === 'paused'));
+    if (!isMidRun || restartArmedRef.current) {
+      startFreshMatch(st?.mode || arenaMode);
+      return;
+    }
+    restartArmedRef.current = true;
+    setRestartArmed(true);
+    sfx.playToggle?.();
+    window.clearTimeout(restartArmTimerRef.current);
+    restartArmTimerRef.current = window.setTimeout(() => {
+      restartArmedRef.current = false;
+      setRestartArmed(false);
+    }, 3500);
+  }, [arenaMode, startFreshMatch]);
 
   const handleModeSwitch = useCallback(
     (nextMode) => {
       if (stateRef.current?.mode === nextMode && stateRef.current?.status === 'title') return;
+      disarmRestart();
+      cancelResumeCountdown();
+      onRunRestart?.('riders');
       recordedRunRef.current = false;
       const next = createGridRidersRound({
         mode: nextMode,
@@ -227,10 +270,12 @@ export default function GridRidersGame({
       syncHudFromState(next);
       sfx.playToggle?.();
     },
-    [bestScore, syncHudFromState]
+    [bestScore, cancelResumeCountdown, disarmRestart, onRunRestart, syncHudFromState]
   );
 
   const startNextRound = useCallback(() => {
+    disarmRestart();
+    cancelResumeCountdown();
     const prev = stateRef.current;
     if (!prev) return;
     const next = createGridRidersRound({
@@ -245,23 +290,48 @@ export default function GridRidersGame({
     stateRef.current = next;
     syncHudFromState(next);
     sfx.playLaser?.();
-  }, [syncHudFromState]);
+  }, [cancelResumeCountdown, disarmRestart, syncHudFromState]);
 
-  const togglePause = useCallback(() => {
+  const startResumeCountdown = useCallback(() => {
     const st = stateRef.current;
-    if (!st) return;
-    if (st.status === 'playing') {
-      st.status = 'paused';
-      syncHudFromState(st);
-    } else if (st.status === 'paused') {
+    if (!st || st.status !== 'paused' || resumingRef.current) return;
+    resumingRef.current = true;
+    setResuming(true);
+    sfx.playToggle?.();
+  }, []);
+
+  const completeResumeCountdown = useCallback(() => {
+    resumingRef.current = false;
+    setResuming(false);
+    const st = stateRef.current;
+    if (st && st.status === 'paused') {
       st.status = 'playing';
       syncHudFromState(st);
     }
   }, [syncHudFromState]);
 
+  const togglePause = useCallback(() => {
+    const st = stateRef.current;
+    if (!st) return;
+    disarmRestart();
+    if (st.status === 'playing') {
+      cancelResumeCountdown();
+      st.status = 'paused';
+      syncHudFromState(st);
+    } else if (st.status === 'paused') {
+      if (resumingRef.current) {
+        cancelResumeCountdown();
+        sfx.playToggle?.();
+      } else {
+        startResumeCountdown();
+      }
+    }
+  }, [cancelResumeCountdown, disarmRestart, startResumeCountdown, syncHudFromState]);
+
   // Auto-pause on tab hide or window blur
   useEffect(() => {
     const pauseIfPlaying = () => {
+      cancelResumeCountdown();
       const st = stateRef.current;
       if (st && st.status === 'playing') {
         st.status = 'paused';
@@ -277,9 +347,9 @@ export default function GridRidersGame({
       document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('blur', pauseIfPlaying);
     };
-  }, [syncHudFromState]);
+  }, [cancelResumeCountdown, syncHudFromState]);
 
-  // Keyboard listeners: 1P (WASD or Arrows), 2P (WASD for P1, Arrows for P2)
+  // Keyboard listeners: 1P (WASD or Arrows), 2P (WASD for P1, Arrows for P2), P/Esc Pause, R Restart
   useEffect(() => {
     const handleKeyDown = (e) => {
       const tag = e.target?.tagName;
@@ -295,6 +365,12 @@ export default function GridRidersGame({
           e.preventDefault();
           togglePause();
         }
+        return;
+      }
+
+      if (lower === 'r' && st.status !== 'title') {
+        e.preventDefault();
+        handleRestartRun();
         return;
       }
 
@@ -333,7 +409,7 @@ export default function GridRidersGame({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [startFreshMatch, startNextRound, togglePause]);
+  }, [handleRestartRun, startFreshMatch, startNextRound, togglePause]);
 
   // Main 60fps simulation + gamepad polling loop
   useEffect(() => {
@@ -581,7 +657,21 @@ export default function GridRidersGame({
                 title={hud.status === 'paused' ? 'Resume Match' : 'Pause Match'}
                 data-testid="riders-pause-btn"
               >
-                {hud.status === 'paused' ? '▶' : '⏸'}
+                {hud.status === 'paused' && !resuming ? '▶' : '⏸'}
+              </button>
+            )}
+            {hud.status !== 'title' && (
+              <button
+                type="button"
+                className="tm-btn"
+                style={{ padding: '2px 8px', minHeight: '28px', fontSize: '0.75rem' }}
+                onClick={handleRestartRun}
+                title={restartArmed ? 'Tap again to confirm restart' : 'Restart Match'}
+                aria-label={restartArmed ? 'Confirm restart match' : 'Restart match'}
+                data-restart-armed={restartArmed ? 'true' : 'false'}
+                data-testid="riders-restart-btn"
+              >
+                {restartArmed ? 'Confirm?' : '↺'}
               </button>
             )}
           </div>
@@ -633,7 +723,9 @@ export default function GridRidersGame({
             </div>
           )}
 
-          {hud.status === 'paused' && (
+          <ResumeCountdown active={resuming} onComplete={completeResumeCountdown} />
+
+          {hud.status === 'paused' && !resuming && (
             <div className="tm-riders-overlay" data-testid="riders-pause-overlay">
               <h3>PAUSED</h3>
               <p>Arena cycles suspended. Ready to resume?</p>
@@ -644,9 +736,9 @@ export default function GridRidersGame({
                 <button
                   type="button"
                   className="tm-btn"
-                  onClick={() => startFreshMatch(arenaMode)}
+                  onClick={handleRestartRun}
                 >
-                  ↺ RESTART
+                  {restartArmed ? '↺ CONFIRM RESTART' : '↺ RESTART'}
                 </button>
               </div>
             </div>

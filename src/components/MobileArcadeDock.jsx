@@ -13,6 +13,12 @@ export default function MobileArcadeDock({
 }) {
   const isSideGameActive = [
     'lobby',
+    'invaders',
+    'serpent',
+    'blaster',
+    'sunset',
+    'void',
+    'riders',
     'bingo',
     'pusher',
     'blackjack',
@@ -60,6 +66,7 @@ export default function MobileArcadeDock({
           className={`ui-tube ui-tube--cyan tm-dock-btn ${homeActive ? 'active' : ''}`}
           onClick={() => handlePickMode('feed')}
           aria-label="Home Memes Feed"
+          aria-current={homeActive ? 'page' : undefined}
         >
           <span className="tm-dock-icon">
             <Home size={20} strokeWidth={2.1} aria-hidden="true" />
@@ -72,6 +79,7 @@ export default function MobileArcadeDock({
         type="button"
         className={`ui-tube ui-tube--cyan tm-dock-btn ${reelsActive ? 'active' : ''}`}
         onClick={() => handlePickMode('reels')}
+        aria-current={reelsActive ? 'page' : undefined}
       >
         <span className="tm-dock-icon">
           <Clapperboard size={20} strokeWidth={2.1} aria-hidden="true" />
@@ -100,6 +108,7 @@ export default function MobileArcadeDock({
         type="button"
         className={`ui-tube ui-tube--cyan tm-dock-btn ${gamesActive ? 'active' : ''}`}
         onClick={() => handlePickMode('lobby')}
+        aria-current={gamesActive ? 'page' : undefined}
       >
         <span className="tm-dock-icon">
           <Gamepad2 size={20} strokeWidth={2.1} aria-hidden="true" />
@@ -113,6 +122,7 @@ export default function MobileArcadeDock({
         onClick={() => {
           if (onOpenProfile) onOpenProfile();
         }}
+        aria-current={profileActive ? 'page' : undefined}
       >
         <span className="tm-dock-icon">
           <User size={20} strokeWidth={2.1} aria-hidden="true" />

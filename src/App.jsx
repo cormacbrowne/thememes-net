@@ -114,6 +114,7 @@ const MODAL_SKELETON_FALLBACK = (
 export default function App() {
   const router = useViewMode();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [desktopTopicsOpen, setDesktopTopicsOpen] = useState(false);
   const [isWideDesktop, setIsWideDesktop] = useState(() =>
     typeof window !== 'undefined' && window.matchMedia
       ? window.matchMedia('(min-width: 1181px)').matches
@@ -960,6 +961,21 @@ export default function App() {
       data-view={viewMode}
       data-season={seasonalSkin}
     >
+      <a
+        href="#tm-main-content"
+        data-testid="skip-to-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-[var(--tm-space-2)] focus:left-[var(--tm-space-2)] focus:z-[var(--tm-z-boss)] focus:px-[var(--tm-space-4)] focus:py-[var(--tm-space-2)] focus:rounded-[var(--tm-radius-btn)] focus:bg-[var(--tm-night-1)] focus:text-[var(--tm-cyan)] focus:border focus:border-[var(--tm-cyan)] focus:shadow-[var(--tm-glow-cyan)] focus:font-bold"
+        onClick={(e) => {
+          e.preventDefault();
+          const target = document.getElementById('tm-main-content');
+          if (target) {
+            target.focus({ preventScroll: false });
+            target.scrollIntoView?.({ block: 'start' });
+          }
+        }}
+      >
+        Skip to content
+      </a>
       <SeasonalOverlay skin={seasonalSkin} />
       {/* ACTIVE-BY-DEFAULT SYNTHWAVE PERSPECTIVE GRID & NEON GLOW BACKDROP */}
       <div className="tm-synthwave-bg" aria-hidden="true">
@@ -1221,6 +1237,8 @@ export default function App() {
         </>
       )}
 
+      <div id="tm-main-content" tabIndex={-1} style={{ outline: 'none', flexShrink: 0 }} />
+
       {/* MODE 1: REDESIGNED HOMEPAGE (Battle & Daily Hub + Trending Feed + Fun Extras) */}
       {viewMode === 'feed' && (
         <div className="tm-home-layout" data-testid="home-layout">
@@ -1246,12 +1264,12 @@ export default function App() {
           </div>
 
           <div className="tm-home-feed">
-            {isWideDesktop && <LazyCompanionRow eager />}
+            {isWideDesktop && <LazyCompanionRow collapsible />}
 
             {/* STREAMLINED FEED FILTER BAR */}
             <section
               id="tm-memes-feed-start"
-              className={`tm-controls ${mobileFiltersOpen ? 'is-filters-open' : ''}`}
+              className={`tm-controls ${mobileFiltersOpen ? 'is-filters-open' : ''} ${desktopTopicsOpen ? 'is-desktop-topics-open' : ''}`.trim()}
             >
               <div className="tm-tabs">
                 <button
@@ -1316,6 +1334,37 @@ export default function App() {
                   </div>
                 )}
 
+                <div className="tm-controls-right tm-mobile-filter-item">
+                  <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', flex: 1 }}>
+                    <input
+                      type="text"
+                      className="tm-input tm-search-input"
+                      placeholder="Search memes..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchQuery('')}
+                        aria-label="Clear search"
+                        style={{
+                          position: 'absolute',
+                          right: '8px',
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--tm-text-dim)',
+                          cursor: 'pointer',
+                          fontSize: '13px',
+                          padding: '2px 4px'
+                        }}
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                </div>
+
                 <div className="tm-featured-chips" role="group" aria-label="Featured meme categories">
                   <button
                     type="button"
@@ -1348,6 +1397,15 @@ export default function App() {
                       </button>
                     );
                   })}
+                  <button
+                    type="button"
+                    data-testid="desktop-more-topics-btn"
+                    className={`tm-tab tm-hide-mobile ${desktopTopicsOpen ? 'active' : ''}`}
+                    aria-expanded={desktopTopicsOpen}
+                    onClick={() => setDesktopTopicsOpen((prev) => !prev)}
+                  >
+                    {desktopTopicsOpen ? '− Less' : '+ More'}
+                  </button>
                 </div>
 
                 {memeCategories
@@ -1356,7 +1414,7 @@ export default function App() {
                     <button
                       key={cat.id}
                       type="button"
-                      className={`tm-tab tm-mobile-filter-item ${cat.trending ? 'tm-tab--trending' : ''} ${category === cat.id && !showSavedOnly ? 'active' : ''}`}
+                      className={`tm-tab tm-secondary-cat-chip tm-mobile-filter-item ${cat.trending ? 'tm-tab--trending' : ''} ${category === cat.id ? 'tm-secondary-cat-chip--current' : ''} ${category === cat.id && !showSavedOnly ? 'active' : ''}`}
                       onClick={() => {
                         setShowSavedOnly(false);
                         setCategory(cat.id);
@@ -1377,37 +1435,6 @@ export default function App() {
                     ⭐ Saved ({bookmarkedIds.length}) ✕
                   </button>
                 )}
-              </div>
-
-              <div className="tm-controls-right tm-mobile-filter-item">
-                <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', flex: 1 }}>
-                  <input
-                    type="text"
-                    className="tm-input tm-search-input"
-                    placeholder="Search memes..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setSearchQuery('')}
-                      aria-label="Clear search"
-                      style={{
-                        position: 'absolute',
-                        right: '8px',
-                        background: 'none',
-                        border: 'none',
-                        color: 'var(--tm-text-dim)',
-                        cursor: 'pointer',
-                        fontSize: '13px',
-                        padding: '2px 4px'
-                      }}
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
               </div>
             </section>
 
@@ -1532,112 +1559,6 @@ export default function App() {
                   litePerfMode={litePerfMode}
                 />
               )}
-              inFeedArcadeCard={
-                <article className="tm-card tm-infeed-arcade-card" aria-label="Side Entertainment Arcade Break">
-                  <div className="tm-infeed-arcade-badge">🕹️ 80s NEON MEMEDOLLARZ ARCADE &amp; CASINO</div>
-                  <div style={{ fontSize: '34px', margin: '6px 0' }}>🃏🎡🎰📈🍬🎱</div>
-                  <h3 style={{ margin: '0 0 6px', fontSize: '18px', color: 'var(--tm-amber)' }}>
-                    READY FOR NEON BINGO &apos;86, COIN DOZER, ROULETTE &amp; ARCADE CABINETS?
-                  </h3>
-                  <p style={{ margin: '0 0 12px', fontSize: '12.5px', color: 'var(--tm-text-soft)', lineHeight: 1.5 }}>
-                    Dab all 90 classic comedy calls in <strong>🎱 Neon Bingo &apos;86</strong>, drop coins in{' '}
-                    <strong>🎰 Coin Dozer &apos;86</strong>, spin <strong>🎡 Neon Strike Roulette (150×)</strong>, pull the{' '}
-                    <strong>🎰 One-Arm Bandit</strong>, or fire up <strong>🎱 Upgraded 80s Pinball</strong>!
-                  </p>
-                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                    <button
-                      type="button"
-                      className="tm-btn tm-btn-primary"
-                      onClick={() => {
-                        sfx.playBingoBallPop?.();
-                        setViewMode('bingo');
-                      }}
-                    >
-                      🎱 Neon Bingo &apos;86
-                    </button>
-                    <button
-                      type="button"
-                      className="tm-btn tm-btn-primary"
-                      onClick={() => {
-                        sfx.playCoinDrop?.();
-                        setViewMode('pusher');
-                      }}
-                    >
-                      🎰 Coin Dozer &apos;86
-                    </button>
-                    <button
-                      type="button"
-                      className="tm-btn tm-btn-primary"
-                      onClick={() => {
-                        sfx.playCardDeal();
-                        setViewMode('blackjack');
-                      }}
-                    >
-                      🃏 Neon 21&apos;s
-                    </button>
-                    <button
-                      type="button"
-                      className="tm-btn tm-btn-primary"
-                      onClick={() => {
-                        sfx.playPokerChip?.(2);
-                        setViewMode('poker');
-                      }}
-                    >
-                      🟡 Texas Poker
-                    </button>
-                    <button
-                      type="button"
-                      className="tm-btn tm-btn-primary"
-                      onClick={() => {
-                        sfx.playRouletteSpin();
-                        setViewMode('roulette');
-                      }}
-                    >
-                      🎡 Neon Strike Roulette
-                    </button>
-                    <button
-                      type="button"
-                      className="tm-btn tm-btn-primary"
-                      onClick={() => {
-                        sfx.playSlotLeverPull();
-                        setViewMode('slots');
-                      }}
-                    >
-                      🎰 One-Arm Bandit
-                    </button>
-                    <button
-                      type="button"
-                      className="tm-btn tm-btn-primary"
-                      onClick={() => {
-                        sfx.playStockBell?.(true);
-                        setViewMode('stocks');
-                      }}
-                    >
-                      📈 Meme Stocks
-                    </button>
-                    <button
-                      type="button"
-                      className="tm-btn tm-btn-primary"
-                      onClick={() => {
-                        sfx.playCandyMatch(3);
-                        setViewMode('crush');
-                      }}
-                    >
-                      🍬 Meme Crush
-                    </button>
-                    <button
-                      type="button"
-                      className="tm-btn tm-btn-primary"
-                      onClick={() => {
-                        sfx.playPinballBumper(0);
-                        setViewMode('pinball');
-                      }}
-                    >
-                      🎱 80s Pinball
-                    </button>
-                  </div>
-                </article>
-              }
               inFeedCompanionCard={!isWideDesktop ? <LazyCompanionRow /> : null}
             />
           )}

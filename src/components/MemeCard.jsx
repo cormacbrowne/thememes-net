@@ -15,6 +15,18 @@ import { exportMemeWithWatermark, triggerBlobDownload } from './forge/forgeEngin
 import { useMemeCategories } from '../data/memeCategories';
 import './MemeCard.css';
 
+function isReducedMotionEnabled() {
+  if (typeof document !== 'undefined') {
+    const pref = document.documentElement?.dataset?.reducedMotion;
+    if (pref === 'on') return true;
+    if (pref === 'off') return false;
+  }
+  if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+  return false;
+}
+
 const MemeCard = memo(function MemeCard({
   meme,
   priority = false,
@@ -74,25 +86,36 @@ const MemeCard = memo(function MemeCard({
   };
 
   // 60fps 3D Holographic Card Tilt + Specular Glare (active on pointer devices with hover)
-  const handleMouseMove = useCallback((e) => {
-    if (typeof window !== 'undefined' && window.matchMedia?.('(hover: none)').matches) return;
-    const el = cardRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const px = x / rect.width;
-    const py = y / rect.height;
+  const handleMouseMove = useCallback(
+    (e) => {
+      const el = cardRef.current;
+      if (litePerfMode || isReducedMotionEnabled()) {
+        if (el) {
+          el.style.setProperty('--rx', '0deg');
+          el.style.setProperty('--ry', '0deg');
+          el.style.setProperty('--glare-opacity', '0');
+        }
+        return;
+      }
+      if (typeof window !== 'undefined' && window.matchMedia?.('(hover: none)').matches) return;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const px = x / rect.width;
+      const py = y / rect.height;
 
-    const rotateY = (px - 0.5) * 11;
-    const rotateX = (0.5 - py) * 11;
+      const rotateY = (px - 0.5) * 11;
+      const rotateX = (0.5 - py) * 11;
 
-    el.style.setProperty('--rx', `${rotateX.toFixed(2)}deg`);
-    el.style.setProperty('--ry', `${rotateY.toFixed(2)}deg`);
-    el.style.setProperty('--glare-x', `${(px * 100).toFixed(1)}%`);
-    el.style.setProperty('--glare-y', `${(py * 100).toFixed(1)}%`);
-    el.style.setProperty('--glare-opacity', '1');
-  }, []);
+      el.style.setProperty('--rx', `${rotateX.toFixed(2)}deg`);
+      el.style.setProperty('--ry', `${rotateY.toFixed(2)}deg`);
+      el.style.setProperty('--glare-x', `${(px * 100).toFixed(1)}%`);
+      el.style.setProperty('--glare-y', `${(py * 100).toFixed(1)}%`);
+      el.style.setProperty('--glare-opacity', '1');
+    },
+    [litePerfMode]
+  );
 
   const handleMouseLeave = useCallback(() => {
     const el = cardRef.current;
@@ -240,17 +263,19 @@ const MemeCard = memo(function MemeCard({
         </button>
 
         {isBlurred && (
-          <div
+          <button
+            type="button"
             className="tm-spoiler-shield"
+            aria-label={`Reveal spicy or spoiler meme: ${meme.title || 'meme'}`}
             onClick={(e) => {
               e.stopPropagation();
               setSpoilerRevealed(true);
             }}
           >
-            <span style={{ fontSize: '30px' }}>🌶️</span>
+            <span style={{ fontSize: '30px' }} aria-hidden="true">🌶️</span>
             <strong>SPICY / SPOILER MEME</strong>
             <span>Tap to reveal</span>
-          </div>
+          </button>
         )}
 
         <MemeMedia

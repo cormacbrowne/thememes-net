@@ -262,7 +262,7 @@ export default function VegasRouletteGame({
             ? `⚡ ${struckMult}× LIGHTNING HIT #${landedNum}!`
             : `🎡 #${landedNum} ${colName.toUpperCase()} WINNER!`,
           detail: isFreePractice
-            ? 'Practice Win! Switch to MemeDollarz Mode to keep real wins!'
+            ? 'Practice Win! Nice spin!'
             : `Ball dropped into #${landedNum} (${colName})!`,
           multiplier: hitLightning ? struckMult : multEst,
           tier: hitLightning ? 'jackpot' : multEst >= 5 ? 'big' : 'win'
@@ -737,7 +737,7 @@ export default function VegasRouletteGame({
     <GameShell
       title="NEON NEON STRIKE ROULETTE '86"
       fitToScreen={false}
-      eyebrow="European single-zero wheel • Lightning up to 150×"
+      eyebrow="European single-zero wheel • Lightning numbers"
       ariaLabel="80s Neon Strike Roulette Wheel and Table"
       onBack={onBackToFeed}
       tokens={tokens}

@@ -26,7 +26,7 @@ export default function MemeEvolutionModal({
               <h2 style={{ margin: 0, color: 'var(--tm-pink)', fontSize: '19px' }}>🧬 Meme Evolution Tree</h2>
               <div style={{ fontSize: '11px', color: 'var(--tm-text-dim)', marginTop: '2px' }}>
                 Origin creators earn <strong style={{ color: '#a3e635' }}>+50 XP</strong> per
-                remix &amp; passive royalties
+                remix
               </div>
             </div>
           </div>

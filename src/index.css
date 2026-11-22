@@ -844,15 +844,18 @@ html {
   line-height: 1.4;
   color: var(--tm-text-soft);
 }
-/* 33.5: small report flag after each comment (min 32px tap target) */
+/* 33.5: report flag after each comment (min 44px tap target) */
 .tm-comment-report-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
-  padding: 0 6px;
-  min-width: 32px;
-  min-height: 28px;
-  font-size: 12px;
-  opacity: 0.45;
+  padding: 0;
+  min-width: 44px;
+  min-height: 44px;
+  font-size: var(--tm-text-sm);
+  opacity: 0.65;
   cursor: pointer;
   vertical-align: middle;
 }
@@ -5055,6 +5058,15 @@ html[data-device="iphone-duo"] button {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  :root:not([data-reduced-motion='off']) *,
+  :root:not([data-reduced-motion='off']) *::before,
+  :root:not([data-reduced-motion='off']) *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
   :root:not([data-reduced-motion='off']) .tm-app.tm-screen-punch,
   :root:not([data-reduced-motion='off']) .tm-live-emote-float,
   :root:not([data-reduced-motion='off']) .tm-synthwave-grid {
@@ -5211,6 +5223,26 @@ a.tm-btn {
   flex-shrink: 0;
 }
 
+@media (min-width: 861px) {
+  .tm-controls .tm-tabs {
+    width: 100%;
+    align-items: center;
+  }
+
+  .tm-featured-chips {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+
+  .tm-controls:not(.is-desktop-topics-open) .tm-secondary-cat-chip:not(.tm-secondary-cat-chip--current) {
+    display: none;
+  }
+
+  .tm-controls-right {
+    margin-left: auto;
+  }
+}
+
 @media (min-width: 1024px) {
   .tm-home-layout {
     padding: 0 20px;
@@ -5236,9 +5268,20 @@ a.tm-btn {
   }
 
   .tm-home-feed .tm-controls {
-    margin-top: 0;
+    margin: 0 0 10px;
     padding-left: 0;
     padding-right: 0;
+    gap: 8px;
+  }
+
+  .tm-home-feed .tm-quick-upload-shell {
+    margin: 0 0 12px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .tm-home-feed .tm-quick-upload-bar {
+    padding: 10px 14px;
   }
 }
 

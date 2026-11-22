@@ -594,7 +594,7 @@ export function useTokenEconomy({ spawnParticles, setGoblinFortuneToast }) {
       const x = event?.clientX || (typeof window !== 'undefined' ? window.innerWidth / 2 : 300);
       const y = event?.clientY || 120;
       spawnParticles(x, y, `🎁 Starter Pack: ${formatMoney(bonus, { sign: true })}!`, '🎁');
-      setGoblinFortuneToast(`🎁 Starter Pack: ${formatMoney(bonus, { sign: true })}! Play any arcade cabinet or bet in the casino.`);
+      setGoblinFortuneToast(`🎁 Starter Pack: ${formatMoney(bonus, { sign: true })}! Play any arcade cabinet.`);
       setTimeout(() => setGoblinFortuneToast(''), 5500);
       return bonus;
     },

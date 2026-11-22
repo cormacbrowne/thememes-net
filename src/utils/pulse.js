@@ -8,6 +8,8 @@ const SUPABASE_KEY =
 
 const FLUSH_INTERVAL_MS = 15000;
 const MAX_BATCH = 20;
+export const RETURNING_VISITOR_KEY = 'tm_pulse_seen';
+const SESSION_MARKER_KEY = 'tm_return_tracked';
 
 let sessionId = null;
 let landingSrc = null;
@@ -54,12 +56,38 @@ function getSessionId() {
   return sessionId;
 }
 
+export function resolveReturningVisitor() {
+  if (returningUser !== null) return returningUser;
+  if (!isPulseAllowed()) return false;
+  if (typeof localStorage === 'undefined') {
+    returningUser = false;
+    return false;
+  }
+  try {
+    const raw = localStorage.getItem(RETURNING_VISITOR_KEY);
+    const seen = raw === '1' || raw === 'true';
+    if (!seen) {
+      sessionStorage.setItem(SESSION_MARKER_KEY, 'first');
+      localStorage.setItem(RETURNING_VISITOR_KEY, '1');
+      returningUser = false;
+      return false;
+    }
+    returningUser = sessionStorage.getItem(SESSION_MARKER_KEY) !== 'first';
+    return returningUser;
+  } catch {
+    returningUser = false;
+    return false;
+  }
+}
+
 function initLandingMetadata() {
   if (landingSrc !== null) return;
   landingSrc = '';
   landingRefHost = '';
-  returningUser = false;
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined') {
+    returningUser = false;
+    return;
+  }
 
   try {
     const params = new URLSearchParams(window.location.search);
@@ -82,11 +110,7 @@ function initLandingMetadata() {
     // ignore
   }
 
-  try {
-    returningUser = Boolean(localStorage.getItem('tm_intro_seen'));
-  } catch {
-    returningUser = false;
-  }
+  returningUser = resolveReturningVisitor();
 }
 
 function getDeviceBucket() {

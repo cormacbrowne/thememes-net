@@ -710,8 +710,8 @@ export default function DankPetWidget({
           role="status"
         >
           <span>
-            🎰📈🍬 <strong>80s CYBER-ARCADE LOUNGE OPEN!</strong> Wager your MemeDollarz on One-Arm
-            Bandit, Meme Stocks, Crush &amp; Pinball!
+            🕹️📈🍬 <strong>80s CYBER-ARCADE LOUNGE OPEN!</strong> Play Meme Stocks,
+            Crush &amp; Pinball for fun!
           </span>
           {onSelectViewMode && (
             <div style={{ display: 'flex', gap: '6px' }}>
@@ -734,10 +734,10 @@ export default function DankPetWidget({
                 onClick={(e) => {
                   e.stopPropagation();
                   setActiveEvent(null);
-                  onSelectViewMode('slots');
+                  onSelectViewMode('lobby');
                 }}
               >
-                🎰 Slots
+                🕹️ Arcade
               </button>
             </div>
           )}

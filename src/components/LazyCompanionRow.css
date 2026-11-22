@@ -1,0 +1,67 @@
+/* Compact collapsible wrapper for the desktop 80s Crew & CRT News hub */
+.tm-companion-shell {
+  margin-bottom: var(--tm-space-2);
+}
+
+.tm-companion-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tm-space-3);
+  min-height: 44px;
+  padding: var(--tm-space-1) var(--tm-space-3);
+  border-radius: var(--tm-radius-card);
+  border: 1px solid var(--tm-night-3);
+  background: color-mix(in srgb, var(--tm-night-1) 88%, transparent);
+  box-shadow: var(--tm-shadow-1);
+}
+
+.tm-companion-bar-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tm-space-2);
+  font-family: var(--tm-font-display);
+  font-size: var(--tm-text-sm);
+  font-weight: 700;
+  color: var(--tm-text);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tm-companion-bar-sub {
+  color: var(--tm-text-mute);
+  font-weight: 500;
+}
+
+.tm-companion-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0 var(--tm-space-3);
+  border-radius: var(--tm-radius-pill);
+  border: 1px solid color-mix(in srgb, var(--tm-cyan) 45%, var(--tm-night-3));
+  background: color-mix(in srgb, var(--tm-cyan) 10%, var(--tm-night-2));
+  color: var(--tm-cyan-hot);
+  font-family: var(--tm-font-body);
+  font-size: var(--tm-text-xs);
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    border-color var(--tm-dur-fast) ease-out,
+    background-color var(--tm-dur-fast) ease-out,
+    color var(--tm-dur-fast) ease-out;
+}
+
+.tm-companion-toggle:hover {
+  border-color: var(--tm-cyan);
+  background: color-mix(in srgb, var(--tm-cyan) 18%, var(--tm-night-2));
+}
+
+.tm-companion-toggle:focus-visible {
+  outline: 2px solid var(--tm-cyan);
+  outline-offset: 2px;
+}

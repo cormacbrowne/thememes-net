@@ -15,8 +15,8 @@ const EIGHTIES_ICON_CAST = [
     role: 'Day-Off Legend',
     voiceMode: 'kitt',
     quotes: [
-      "Life moves pretty fast. If you don't stop and spin the arcade wheels once in a while, you could miss it.",
-      "I'm not saying we should skip work to play Neon Bingo... okay, yeah, that's exactly what I'm saying.",
+      "Life moves pretty fast. If you don't stop and play a little once in a while, you could miss it.",
+      "I'm not saying we should skip work to play arcade games... okay, yeah, that's exactly what I'm saying.",
       "The question isn't 'what are we going to do', the question is 'what aren't we going to do?'",
       "A man with priorities so far out of whack doesn't deserve such a choice ride."
     ],
@@ -34,8 +34,8 @@ const EIGHTIES_ICON_CAST = [
     voiceMode: 'kitt',
     quotes: [
       "One man can make a difference — especially with Turbo Boost and a full pocket of quarters.",
-      "K.I.T.T., plot the fastest route to the Grand Arcade before the bingo hall fills up!",
-      "Don't sweat it, pal. My Trans Am's scanner spotted those lucky numbers three blocks back.",
+      "K.I.T.T., plot the fastest route to the Grand Arcade before the pizza runs out!",
+      "Don't sweat it, pal. My Trans Am's scanner spotted a parking space three blocks back.",
       "If anyone asks for our high-score secret: Pursuit Mode and a black leather jacket."
     ],
     priceTokens: 28,
@@ -52,9 +52,9 @@ const EIGHTIES_ICON_CAST = [
     voiceMode: 'valkyrie',
     quotes: [
       "We are living in a neon material world, and I am a Material Girl stacking gold tokens.",
-      "Strike a pose! There's nothing to it — hit the Bingo button like you own the spotlight.",
+      "Strike a pose! There's nothing to it — hit that dance floor like you own the spotlight.",
       "Express yourself, grab your fingerless lace gloves, and turn that boombox dial past ten.",
-      "Holiday celebration awaits — four corners, two lines, full house, baby!"
+      "Holiday celebration awaits — big hair, loud synths, full volume, baby!"
     ],
     priceTokens: 18,
     item80s: 'Rubber Bracelets & Bow',
@@ -69,8 +69,8 @@ const EIGHTIES_ICON_CAST = [
     role: 'Chrome Cyborg',
     voiceMode: 'hal',
     quotes: [
-      "I'll be back... right after I cash out this arcade high score.",
-      "Come with me if you want to hit Full House before the other players.",
+      "I'll be back... right after I beat this arcade high score.",
+      "Come with me if you want to reach the next level before the credits roll.",
       "Your leather jacket, your sunglasses, and your last two bingo dabbers. Hand them over.",
       "Phased plasma rifle in a 40-watt range? No. Just give me a roll of 1984 quarters."
     ],
@@ -87,10 +87,10 @@ const EIGHTIES_ICON_CAST = [
     role: 'OCP Enforcer',
     voiceMode: 'hal',
     quotes: [
-      "Dead or alive, you're playing one more round of Neon Bingo with me.",
-      "Your move, creep. Stamp that B-12 square before the rival hall claims Two Lines.",
+      "Dead or alive, you're playing one more round at the arcade with me.",
+      "Your move, creep. Pick a cabinet and show me your best high score.",
       "Prime Directive #4: Never walk past an open arcade cabinet without dropping a token.",
-      "I'd buy THAT 1987 prize payout for a dollar!"
+      "I'd buy THAT 1987 high score for a dollar!"
     ],
     priceTokens: 32,
     item80s: 'Auto-9 Chrome Holster',
@@ -105,8 +105,8 @@ const EIGHTIES_ICON_CAST = [
     role: 'Parapsychologist',
     voiceMode: 'kitt',
     quotes: [
-      "We came, we saw, we kicked its paranormal bingo jackpot!",
-      "Don't cross the neon streams — unless it unlocks a double token multiplier.",
+      "We came, we saw, we kicked its paranormal bingo board!",
+      "Don't cross the neon streams — the cleanup bill alone would haunt us.",
       "He slimed my scorecard! Wait... does green slime count as an extra dauber?",
       "Back off man, I'm a scientist... with three lines left on card two."
     ],
@@ -123,10 +123,10 @@ const EIGHTIES_ICON_CAST = [
     role: 'Power Loader Ace',
     voiceMode: 'valkyrie',
     quotes: [
-      "Get away from that Full House prize, you rival squad!",
-      "Nuke the house edge from orbit — it's the only way to be sure.",
-      "I say we take off, load up two extra bingo cards, and beat this hall clean.",
-      "Check those corners. Something's moving on Column G... mostly lucky numbers."
+      "Get away from that Full House card, you rival squad!",
+      "Nuke the high-score table from orbit — it's the only way to be sure.",
+      "I say we take off, grab a snack, and beat this high score clean.",
+      "Check those corners. Something's moving behind the snack machine."
     ],
     priceTokens: 26,
     item80s: 'Weyland P-5000 Work Gloves',
@@ -142,7 +142,7 @@ const EIGHTIES_ICON_CAST = [
     voiceMode: 'kitt',
     quotes: [
       "Wait a minute, Doc — are you telling me an arcade quarter is still 25¢?",
-      "Nobody calls me chicken when there's a Full House jackpot on the line!",
+      "Nobody calls me chicken when there's a high score on the line!",
       "Check out this hoverboard move... okay, 1985 still only has twin-kick skateboards.",
       "Guess you guys aren't ready for synth-wave yet... but your kids are gonna love it."
     ],
@@ -159,9 +159,9 @@ const EIGHTIES_ICON_CAST = [
     role: 'Flux Inventor',
     voiceMode: 'kitt',
     quotes: [
-      "Great Scott! 1.21 gigawatts straight into the Neon Slots!",
+      "Great Scott! 1.21 gigawatts straight into the arcade cabinet!",
       "Roads? Where we're going, we don't need roads — we have four bingo scorecards!",
-      "When this DeLorean speedometer hits 88 miles per hour, you're gonna see some serious payouts.",
+      "When this DeLorean speedometer hits 88 miles per hour, you're gonna see some serious high scores.",
       "Don't worry about the timeline, Marty — it's always Saturday night in 1985 here."
     ],
     priceTokens: 20,
@@ -177,10 +177,10 @@ const EIGHTIES_ICON_CAST = [
     role: 'Detroit Undercover',
     voiceMode: 'kitt',
     quotes: [
-      "I'm not gonna fall for a banana in the tailpipe... unless it pays out M$12.50!",
+      "I'm not gonna fall for a banana in the tailpipe... unless it comes with extra fries!",
       "Hey man, relax — the Axel F synth bassline just kicked in across the lobby.",
-      "Don't tell the Chief I spent our per diem on two extra bingo cards.",
-      "Trust me, I read that look — somebody at table 3 is one away from Two Lines!"
+      "Don't tell the Chief I spent our per diem on arcade snacks.",
+      "Trust me, I read that look — somebody at table 3 just tried the chilli fries."
     ],
     priceTokens: 19,
     item80s: 'Mumford High Varsity Jacket',
@@ -195,10 +195,10 @@ const EIGHTIES_ICON_CAST = [
     role: 'Corporate Raider',
     voiceMode: 'kitt',
     quotes: [
-      "Greed, for lack of a better word, is good... especially when buying four bingo cards.",
+      "Greed, for lack of a better word, is good... especially at the snack bar.",
       "Money never sleeps, pal — and neither does the Wall Street ticker on Channel 5.",
-      "Lunch is for wimps. Winners are calling BINGO while sipping espresso.",
-      "I don't throw darts at a board; I bet the sure thing on red suspenders."
+      "Lunch is for wimps. Legends are setting high scores while sipping espresso.",
+      "I don't throw darts at a board; I just wear really good red suspenders."
     ],
     priceTokens: 50,
     item80s: 'Motorola DynaTAC Brick Phone',
@@ -216,7 +216,7 @@ const EIGHTIES_ICON_CAST = [
       "Give me a paperclip, three chewing gum wrappers, and a rubber band — I'll fix that CRT antenna.",
       "Never needed fancy gear when Swiss Army steel and quick math beat the clock.",
       "A little physics here, a dab of duct tape there, and our bingo hopper runs at twice the speed.",
-      "Patience pays off. Wait for the exact angle, then drop the pin."
+      "Patience is everything. Wait for the exact angle, then drop the pin."
     ],
     priceTokens: 12,
     item80s: 'Red Swiss Army Pocket Knife',
@@ -249,9 +249,9 @@ const EIGHTIES_ICON_CAST = [
     role: 'Defender of Eternia',
     voiceMode: 'kitt',
     quotes: [
-      "By the Power of Grayskull... I HAVE THE JACKPOT POWER!",
-      "Skeletor may try to steal Full House, but good vibes always triumph at the hall.",
-      "Remember kids: always dab every called number before hitting SHOUT BINGO!",
+      "By the Power of Grayskull... I HAVE THE HIGH SCORE!",
+      "Skeletor may try to steal the high score, but good vibes always triumph at the arcade.",
+      "Remember kids: always share your snacks with the whole squad!",
       "Battle Cat loves 80s synthwave almost as much as weekend Saturday morning cartoons."
     ],
     priceTokens: 16,
@@ -267,7 +267,7 @@ const EIGHTIES_ICON_CAST = [
     role: 'Heavy Muscle',
     voiceMode: 'kitt',
     quotes: [
-      "I pity the fool who bets the rent on a single roulette spin!",
+      "I pity the fool who skips breakfast before a high-score run!",
       "Ain't nobody gettin' me on no plane... unless Airwolf and Blue Thunder are escorting!",
       "I love it when a three-line bingo card plan comes together, sucker!",
       "Touch my gold chains and you're sleepin' outside behind the arcade van."
@@ -288,7 +288,7 @@ const EIGHTIES_ICON_CAST = [
       "Pastel blazer pressed, Wayfarers on, Jan Hammer cassette cranked to 11.",
       "Elvis the alligator guarded our Ferris Bueller Ferrari all night on Ocean Drive.",
       "Miami lights look best reflecting off pure cyan and hot magenta neon.",
-      "No socks, white loafers, double espresso — let's run the tables clean."
+      "No socks, white loafers, double espresso — let's cruise Ocean Drive."
     ],
     priceTokens: 25,
     item80s: 'Ocean Drive Espresso & Shades',
@@ -306,7 +306,7 @@ const EIGHTIES_ICON_CAST = [
       "I feel the need... the need for 80s arcade speed!",
       "Talk to me, Goose — is that a clean Full House trajectory on card one?",
       "Right down the Danger Zone highway with Danger Zone cranked full blast!",
-      "Tower, this is Ghost Rider requesting a celebratory flyby over the prize vault."
+      "Tower, this is Ghost Rider requesting a celebratory flyby over the arcade."
     ],
     priceTokens: 12,
     item80s: 'Miramar Aviator Polarized Specs',
@@ -322,7 +322,7 @@ const EIGHTIES_ICON_CAST = [
     voiceMode: 'kitt',
     quotes: [
       "Turbos armed. Scramble Airwolf or Blue Thunder on the double!",
-      "Santini Air radar is tracking a hostile rival only one ball away from Bingo.",
+      "Santini Air radar is tracking a hostile rival closing in on your high score.",
       "Silent whisper mode engaged until we cross the valley... then Mach-1 afterburners!",
       "Cello by the cabin lake by day, supersonic interceptor by night."
     ],
@@ -358,8 +358,8 @@ const EIGHTIES_ICON_CAST = [
     voiceMode: 'valkyrie',
     quotes: [
       "Saturday detention never stopped diamond earrings.",
-      "Yes, I brought sushi to the library — and yes, I'm still winning Neon Bingo.",
-      "You know, popularity isn't free, but one bingo card is only four tokens.",
+      "Yes, I brought sushi to the library — and yes, I'm still top of the high-score table.",
+      "You know, popularity isn't free, but the arcade is.",
       "Don't mess up the shoulder pads in this pink blazer!"
     ],
     priceTokens: 15,
@@ -376,7 +376,7 @@ const EIGHTIES_ICON_CAST = [
     voiceMode: 'valkyrie',
     quotes: [
       "When you grow up, your heart dies — good thing memes are eternal.",
-      "I made a sandwich out of Cap'n Crunch and pixy stix. Want luck like this?",
+      "I made a sandwich out of Cap'n Crunch and pixy stix. Want a bite?",
       "I just sit in the corner with my oversized coat and quietly fill two lines.",
       "Vodka? No, give me Diet Tab and the spooky VHS rack."
     ],
@@ -393,8 +393,8 @@ const EIGHTIES_ICON_CAST = [
     role: 'The Brain',
     voiceMode: 'kitt',
     quotes: [
-      "Sincere calculations show the casino house edge is mathematically fascinating.",
-      "Four cards increase your Full House probability — though watch your token burn rate!",
+      "Sincere calculations show the arcade high-score table is mathematically fascinating.",
+      "Practice improves your high-score probability — though watch your snack burn rate!",
       "Excuse me, that wasn't a flare gun, it was my Commodore 64 power supply overheating.",
       "Look at the statistical spread across B-I-N-G-O columns: pure elegance."
     ],
@@ -413,8 +413,8 @@ const EIGHTIES_ICON_CAST = [
     quotes: [
       "Don't mess with the bull, young man — you'll get the horns.",
       "Do you have any idea what it takes to sprint all 15 squares on a single bingo card?",
-      "Varsity letterman rules apply here: hustle hard and claim Four Corners early!",
-      "Four sandwiches for lunch, four tokens for extra cards."
+      "Varsity letterman rules apply here: hustle hard and finish your laps early!",
+      "Four sandwiches for lunch, four more for the road."
     ],
     priceTokens: 8,
     item80s: 'Varsity Letterman Patch',
@@ -430,9 +430,9 @@ const EIGHTIES_ICON_CAST = [
     voiceMode: 'kitt',
     quotes: [
       "I am NOT putting another mile on my dad's 1961 GT California!",
-      "Pardon my French, but you're an absolute legend if you win Full House with one card.",
+      "Pardon my French, but you're an absolute legend if you beat that high score.",
       "When Cameron was in Egypt's land... let my bingo balls go!",
-      "Okay, okay, I'll stay for one more spin, just don't tell Ferris I liked it."
+      "Okay, okay, I'll stay for one more game, just don't tell Ferris I liked it."
     ],
     priceTokens: 10,
     item80s: '#9 Red Wings Jersey',

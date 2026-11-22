@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import GameShell from './GameShell';
+import ResumeCountdown from './ui/ResumeCountdown';
 import { sfx } from '../utils/soundEngine';
 import {
   INVADERS_WIDTH,
@@ -193,6 +194,7 @@ export default function MemeInvadersGame({
   soundOn = true,
   onToggleSound,
   onRecordHighScore,
+  onRunRestart,
   onOpenLeaderboard,
   onBackToFeed
 }) {
@@ -201,6 +203,12 @@ export default function MemeInvadersGame({
   const gameRef = useRef(null);
   const bossImageRef = useRef(null);
   const recordedGameOverRef = useRef(false);
+  const resumingRef = useRef(false);
+  const restartArmedRef = useRef(false);
+  const restartArmTimerRef = useRef(0);
+  const togglePauseRef = useRef(null);
+  const [resuming, setResuming] = useState(false);
+  const [restartArmed, setRestartArmed] = useState(false);
 
   const inputRef = useRef({
     left: false,
@@ -271,26 +279,93 @@ export default function MemeInvadersGame({
     });
   }, []);
 
-  const handleRestartRun = useCallback(() => {
+  const cancelResumeCountdown = useCallback(() => {
+    resumingRef.current = false;
+    setResuming(false);
+  }, []);
+
+  const disarmRestart = useCallback(() => {
+    window.clearTimeout(restartArmTimerRef.current);
+    restartArmedRef.current = false;
+    setRestartArmed(false);
+  }, []);
+
+  useEffect(() => () => window.clearTimeout(restartArmTimerRef.current), []);
+
+  const startResumeCountdown = useCallback(() => {
+    const st = gameRef.current;
+    if (!st || st.status !== 'paused' || resumingRef.current) return;
+    resumingRef.current = true;
+    setResuming(true);
+    sfx.playToggle?.();
+  }, []);
+
+  const completeResumeCountdown = useCallback(() => {
+    resumingRef.current = false;
+    setResuming(false);
+    const st = gameRef.current;
+    if (st && st.status === 'paused') {
+      st.status = 'playing';
+      syncHudFromState(st);
+    }
+  }, [syncHudFromState]);
+
+  const executeRestartRun = useCallback(() => {
+    disarmRestart();
+    cancelResumeCountdown();
+    onRunRestart?.('invaders');
     sfx.playToggle?.();
     recordedGameOverRef.current = false;
     inputRef.current.targetX = null;
     const fresh = createInitialInvadersState({ memes });
     gameRef.current = fresh;
     syncHudFromState(fresh);
-  }, [memes, syncHudFromState]);
+  }, [cancelResumeCountdown, disarmRestart, memes, onRunRestart, syncHudFromState]);
+
+  const handleRestartRun = useCallback(() => {
+    const st = gameRef.current;
+    const isMidRun = Boolean(st && (st.status === 'playing' || st.status === 'paused'));
+    if (!isMidRun || restartArmedRef.current) {
+      executeRestartRun();
+      return;
+    }
+    restartArmedRef.current = true;
+    setRestartArmed(true);
+    sfx.playToggle?.();
+    window.clearTimeout(restartArmTimerRef.current);
+    restartArmTimerRef.current = window.setTimeout(() => {
+      restartArmedRef.current = false;
+      setRestartArmed(false);
+    }, 3500);
+  }, [executeRestartRun]);
 
   const handleTogglePause = useCallback(() => {
     const st = gameRef.current;
     if (!st || st.status === 'gameover') return;
-    st.status = st.status === 'paused' ? 'playing' : 'paused';
+    disarmRestart();
+    if (st.status === 'paused') {
+      if (resumingRef.current) {
+        cancelResumeCountdown();
+        sfx.playToggle?.();
+      } else {
+        startResumeCountdown();
+      }
+      return;
+    }
+    cancelResumeCountdown();
+    st.status = 'paused';
     sfx.playToggle?.();
     syncHudFromState(st);
-  }, [syncHudFromState]);
+  }, [cancelResumeCountdown, disarmRestart, startResumeCountdown, syncHudFromState]);
+
+  useEffect(() => {
+    togglePauseRef.current = handleTogglePause;
+  }, [handleTogglePause]);
 
   // Auto-pause on tab hide / window blur per P2 spec
   useEffect(() => {
     const pauseIfPlaying = () => {
+      cancelResumeCountdown();
       const st = gameRef.current;
       if (st && st.status === 'playing') {
         st.status = 'paused';
@@ -306,9 +381,9 @@ export default function MemeInvadersGame({
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('blur', pauseIfPlaying);
     };
-  }, [syncHudFromState]);
+  }, [cancelResumeCountdown, syncHudFromState]);
 
-  // Keyboard controls (Arrows / A-D / Space / P)
+  // Keyboard controls (Arrows / A-D / Space / P / R)
   useEffect(() => {
     const onKeyDown = (e) => {
       if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'Space', ' '].includes(e.key)) {
@@ -325,12 +400,14 @@ export default function MemeInvadersGame({
         inputRef.current.right = true;
       } else if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
         if (gameRef.current?.status === 'paused') {
-          gameRef.current.status = 'playing';
-          syncHudFromState(gameRef.current);
+          startResumeCountdown();
+          return;
         }
         inputRef.current.fire = true;
       } else if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
         handleTogglePause();
+      } else if (e.key === 'r' || e.key === 'R') {
+        handleRestartRun();
       }
     };
     const onKeyUp = (e) => {
@@ -348,7 +425,7 @@ export default function MemeInvadersGame({
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
     };
-  }, [handleTogglePause, syncHudFromState]);
+  }, [handleRestartRun, handleTogglePause, startResumeCountdown]);
 
   // Main 60fps requestAnimationFrame loop + Gamepad API polling
   useEffect(() => {
@@ -381,7 +458,7 @@ export default function MemeInvadersGame({
             if (dRight) inp.right = true;
             if (gpFire) inp.fire = true;
             if (gpPause && pauseDebounce <= 0 && st && st.status !== 'gameover') {
-              st.status = st.status === 'paused' ? 'playing' : 'paused';
+              togglePauseRef.current?.();
               pauseDebounce = 0.35;
             }
             break;
@@ -435,8 +512,8 @@ export default function MemeInvadersGame({
   const handleCanvasPointerDown = (e) => {
     const st = gameRef.current;
     if (st?.status === 'paused') {
-      st.status = 'playing';
-      syncHudFromState(st);
+      startResumeCountdown();
+      return;
     }
     const x = mapPointerToCanvasX(e.clientX);
     if (x !== null) inputRef.current.targetX = x;
@@ -516,15 +593,17 @@ export default function MemeInvadersGame({
               disabled={hud.status === 'gameover'}
               data-testid="invaders-pause-btn"
             >
-              {hud.status === 'paused' ? '▶ Resume' : '⏸ Pause'}
+              {hud.status === 'paused' && !resuming ? '▶ Resume' : '⏸ Pause'}
             </button>
             <button
               type="button"
               className="tm-btn"
               onClick={handleRestartRun}
+              aria-label={restartArmed ? 'Confirm restart run' : 'Restart run'}
+              data-restart-armed={restartArmed ? 'true' : 'false'}
               data-testid="invaders-restart-btn"
             >
-              ↻ New
+              {restartArmed ? '↻ Confirm?' : '↻ New'}
             </button>
           </div>
         </div>
@@ -563,7 +642,9 @@ export default function MemeInvadersGame({
             onPointerLeave={handleCanvasPointerUp}
           />
 
-          {hud.status === 'paused' && (
+          <ResumeCountdown active={resuming} onComplete={completeResumeCountdown} />
+
+          {hud.status === 'paused' && !resuming && (
             <div className="tm-invaders-overlay" data-testid="invaders-paused-overlay">
               <h3>⏸ PAUSED</h3>
               <p>Grid defense halted safely while you stepped away.</p>
@@ -572,7 +653,7 @@ export default function MemeInvadersGame({
                   ▶ Resume Wave {hud.wave}
                 </button>
                 <button type="button" className="tm-btn" onClick={handleRestartRun}>
-                  ↻ Restart Wave 1
+                  {restartArmed ? '↻ Confirm Restart' : '↻ Restart Wave 1'}
                 </button>
               </div>
             </div>
@@ -631,8 +712,8 @@ export default function MemeInvadersGame({
             data-testid="invaders-btn-fire"
             onPointerDown={() => {
               if (gameRef.current?.status === 'paused') {
-                gameRef.current.status = 'playing';
-                syncHudFromState(gameRef.current);
+                startResumeCountdown();
+                return;
               }
               inputRef.current.fire = true;
             }}

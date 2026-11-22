@@ -409,7 +409,7 @@ export default function PlayerProfileModal({
           </div>
           <div className="tm-profile-stat-card">
             <div className="tm-stat-val" style={{ color: '#a3e635' }}>+{royaltyBonus}</div>
-            <div className="tm-stat-lbl">XP Royalties</div>
+            <div className="tm-stat-lbl">Remix Bonus XP</div>
           </div>
         </div>
 

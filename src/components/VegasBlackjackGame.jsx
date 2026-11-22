@@ -492,7 +492,7 @@ export default function VegasBlackjackGame({
               : anyBj
               ? '🃏 BLACKJACK 21!'
               : '🃏 PRACTICE HAND WON!',
-            detail: `${nextStreak}× Win Streak — Switch to MemeDollarz Mode for real payouts!`,
+            detail: `${nextStreak}× Win Streak!`,
             multiplier: anyCharlie || anyBj ? 4 : 2,
             tier: anyCharlie || anyBj ? 'big' : 'win'
           });
@@ -502,7 +502,7 @@ export default function VegasBlackjackGame({
           face: dEval.isBust ? '🤯' : anyBj ? '🎰' : '😱',
           tag: dEval.isBust ? 'SYSTEM OVERLOAD — DEALER BUST!' : 'PLAYER VICTORY!',
           line: isFreePractice
-            ? `🎉 YOU WON IN PRACTICE! (${nextStreak}× WIN STREAK — Switch to MemeDollarz wager to win real M$!)`
+            ? `🎉 YOU WON IN PRACTICE! (${nextStreak}× WIN STREAK!)`
             : `🎉 WINNER! PAID ${formatMoney(totalPayout, { sign: true })}! (🔥 ${nextStreak}× HOT STREAK!)`
         });
       } else if (!anyLoss) {

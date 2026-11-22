@@ -320,7 +320,7 @@ export default function MemeStudioModal({
             <span>
               🧬 Remixing <strong>{mutatingParentMeme.title}</strong> by{' '}
               <strong style={{ color: 'var(--tm-cyan)' }}>@{mutatingParentMeme.author_name}</strong> —
-              Origin creator earns <strong>+50 XP Royalty!</strong>
+              Origin creator earns <strong>+50 bonus XP!</strong>
             </span>
             <button
               type="button"

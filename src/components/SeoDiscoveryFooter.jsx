@@ -18,25 +18,39 @@ export default function SeoDiscoveryFooter({
 }) {
   const [sharedSite, setSharedSite] = useState(false);
 
-  const handleShareSite = () => {
+  const handleShareSite = async () => {
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.thememes.net';
     const shareUrl = `${origin}/?ref=footer`;
     const shareText =
       '🔥 Check out THE MEMES.net — Community Meme Feed, Free Meme Generator, Soundboard & Retro Arcade Games!';
-    navigator.clipboard?.writeText(`${shareText} ${shareUrl}`).catch(() => {});
-    if (typeof navigator.share === 'function') {
-      navigator
-        .share({
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      try {
+        await navigator.share({
           title: 'THE MEMES.net — Free Meme Generator, Soundboard & Retro Arcade Games',
           text: shareText,
           url: shareUrl
-        })
-        .catch(() => {});
+        });
+        trackShareClicked(null, 'site_footer');
+        sfx.playPop(2);
+        setSharedSite(true);
+        setTimeout(() => setSharedSite(false), 2600);
+        return;
+      } catch (err) {
+        if (err?.name === 'AbortError') return;
+      }
     }
-    trackShareClicked(null, 'site_footer');
-    sfx.playPop(2);
-    setSharedSite(true);
-    setTimeout(() => setSharedSite(false), 2600);
+    try {
+      if (typeof navigator === 'undefined' || typeof navigator.clipboard?.writeText !== 'function') {
+        return;
+      }
+      await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+      trackShareClicked(null, 'site_footer');
+      sfx.playPop(2);
+      setSharedSite(true);
+      setTimeout(() => setSharedSite(false), 2600);
+    } catch {
+      // clipboard unavailable or denied
+    }
   };
 
   const handleSpaLinkClick = (e, fn) => {
@@ -374,7 +388,7 @@ export default function SeoDiscoveryFooter({
                     className="tm-seo-link"
                     onClick={(e) => handleSpaLinkClick(e, () => onSelectViewMode('roulette'))}
                   >
-                    🎡 Neon Strike Roulette &apos;86 (150× Multipliers)
+                    🎡 Neon Strike Roulette &apos;86
                   </a>
                 </div>
               </>

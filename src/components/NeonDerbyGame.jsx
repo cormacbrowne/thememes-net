@@ -62,7 +62,7 @@ export default function NeonDerbyGame({
   const [phase, setPhase] = useState('betting'); // 'betting' | 'racing' | 'photo' | 'finished'
   const [commentaryText, setCommentaryText] = useState('Pick a horse & place bets, or roll Lucky Dip.');
   const [voiceCommentary, setVoiceCommentary] = useState(true);
-  const [leaderNames, setLeaderNames] = useState(['Doge', 'Stonks', 'Nyan']);
+  const [leaderNames, setLeaderNames] = useState(['Good Boy', 'Bull Run', 'Rainbow']);
   // Owner brief 18 Nov 2026: full live order for the race-focus standings board.
   const [liveOrder, setLiveOrder] = useState([0, 1, 2, 3, 4, 5, 6, 7]);
   const raceFocus = phase !== 'betting';
@@ -260,7 +260,7 @@ export default function NeonDerbyGame({
             ? 'Winning Practice Ticket!'
             : cupMultiplier > 1
             ? '+15% Derby Cup Bonus!'
-            : 'Photo-Finish Ticket Cashed!',
+            : 'Photo-Finish Winner!',
           multiplier: stakeSum > 0 ? wonAmt / Math.max(1, stakeSum) : 3,
           tier: wonAmt >= stakeSum * 5 ? 'jackpot' : 'big'
         });
@@ -272,7 +272,7 @@ export default function NeonDerbyGame({
           ? `📸 ${winner.name} wins! Practice win +${rawWin}.`
           : `📸 ${winner.name} wins ahead of ${board.horses[second].short}!`
         : verifiedWin > 0
-          ? `🏆 ${winner.name} wins! You cashed ${formatMoney(verifiedWin, { sign: true })}!`
+          ? `🏆 ${winner.name} wins! Play money ${formatMoney(verifiedWin, { sign: true })}!`
           : `📸 ${winner.name} takes 1st! Place bets for the next race.`;
 
       setCommentaryText(msg);

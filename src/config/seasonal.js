@@ -39,6 +39,7 @@ export function getActiveSeasonalSkin({
   return 'off';
 }
 
+// Each default pairs a template id with its neutral B002 battle image (see battle_rotation_b002).
 export const TWELVE_DAYS_OF_MEMES = Object.freeze([
   {
     dayNumber: 1,
@@ -46,7 +47,8 @@ export const TWELVE_DAYS_OF_MEMES = Object.freeze([
     title: 'Day 1: Skipping Plans to Scroll Memes',
     theme: '12 Days of Memes',
     prompt: 'Holiday invites vs. staying wrapped in a blanket scrolling memes all night',
-    defaultTemplateId: 'tpl-drake-compare'
+    defaultTemplateId: 'tpl-highway-exit',
+    defaultImageUrl: '/seed/battle-exit-tortoise.webp'
   },
   {
     dayNumber: 2,
@@ -54,7 +56,8 @@ export const TWELVE_DAYS_OF_MEMES = Object.freeze([
     title: 'Day 2: Levels of Holiday Gift Shopping',
     theme: '12 Days of Memes',
     prompt: 'From spreadsheets in October to gas-station gift cards at 11:45 PM on 24 Dec',
-    defaultTemplateId: 'tpl-expanding-brain'
+    defaultTemplateId: 'tpl-expanding-brain',
+    defaultImageUrl: '/seed/battle-cosmic-snail.webp'
   },
   {
     dayNumber: 3,
@@ -62,7 +65,8 @@ export const TWELVE_DAYS_OF_MEMES = Object.freeze([
     title: 'Day 3: One Festive Button Choice',
     theme: '12 Days of Memes',
     prompt: 'Save money for Q1 vs. buy everyone absurd novelty mugs and lights',
-    defaultTemplateId: 'tpl-two-buttons'
+    defaultTemplateId: 'tpl-two-buttons',
+    defaultImageUrl: '/seed/battle-panicking-robot.webp'
   },
   {
     dayNumber: 4,
@@ -70,23 +74,26 @@ export const TWELVE_DAYS_OF_MEMES = Object.freeze([
     title: 'Day 4: Eyeing the Holiday Buffet',
     theme: '12 Days of Memes',
     prompt: 'Your New Year fitness plan watching you eye the third tray of mince pies',
-    defaultTemplateId: 'tpl-distracted-choice'
+    defaultTemplateId: 'tpl-distracted-choice',
+    defaultImageUrl: '/seed/battle-distracted-magpie.webp'
   },
   {
     dayNumber: 5,
     monthDay: '12-17',
-    title: 'Day 5: Deploying on the Last Friday Before Christmas',
+    title: 'Day 5: One Tiny Deploy Before Christmas',
     theme: '12 Days of Memes',
-    prompt: 'When Slack pings after 4 PM while Mariah Carey plays in the background',
-    defaultTemplateId: 'tpl-this-is-fine'
+    prompt: 'When the work chat pings after 4 PM and the same Christmas song starts again',
+    defaultTemplateId: 'tpl-this-is-fine',
+    defaultImageUrl: '/seed/battle-calm-capybara.webp'
   },
   {
     dayNumber: 6,
     monthDay: '12-18',
-    title: 'Day 6: Die Hard & Festive Food Debates',
+    title: 'Day 6: Festive Food Hot Takes',
     theme: '12 Days of Memes',
     prompt: 'Drop your boldest festive hot take at the table and defend it',
-    defaultTemplateId: 'tpl-change-my-mind'
+    defaultTemplateId: 'tpl-change-my-mind',
+    defaultImageUrl: '/seed/battle-hot-take-pigeon.webp'
   },
   {
     dayNumber: 7,
@@ -94,7 +101,8 @@ export const TWELVE_DAYS_OF_MEMES = Object.freeze([
     title: 'Day 7: Out of Office Energy vs. Still Working',
     theme: '12 Days of Memes',
     prompt: 'Coworkers already on holiday vs. you answering "quick question" emails',
-    defaultTemplateId: 'tpl-buff-vs-smol'
+    defaultTemplateId: 'tpl-buff-vs-smol',
+    defaultImageUrl: '/seed/battle-buff-hamster.webp'
   },
   {
     dayNumber: 8,
@@ -102,7 +110,8 @@ export const TWELVE_DAYS_OF_MEMES = Object.freeze([
     title: 'Day 8: Holiday Nap & Gravy Economy',
     theme: '12 Days of Memes',
     prompt: 'When the biscuit tin actually has real biscuits instead of sewing kits',
-    defaultTemplateId: 'tpl-stonks-up'
+    defaultTemplateId: 'tpl-stonks-up',
+    defaultImageUrl: '/seed/battle-smug-beaver.webp'
   },
   {
     dayNumber: 9,
@@ -110,31 +119,35 @@ export const TWELVE_DAYS_OF_MEMES = Object.freeze([
     title: 'Day 9: Bank Account After December',
     theme: '12 Days of Memes',
     prompt: 'Checking your balance after buying "just one small Secret Santa gift"',
-    defaultTemplateId: 'tpl-not-stonks'
+    defaultTemplateId: 'tpl-not-stonks',
+    defaultImageUrl: '/seed/battle-stunned-beaver.webp'
   },
   {
     dayNumber: 10,
     monthDay: '12-22',
     title: 'Day 10: Untangling the Tree Lights',
     theme: '12 Days of Memes',
-    prompt: 'Four degrees of enlightenment while one dead bulb knocks out the whole string',
-    defaultTemplateId: 'tpl-expanding-brain'
+    prompt: 'Four steps from "I can fix this" to full clown while one dead bulb kills the whole string',
+    defaultTemplateId: 'tpl-clown-makeup',
+    defaultImageUrl: '/seed/battle-clown-penguin.webp'
   },
   {
     dayNumber: 11,
     monthDay: '12-23',
     title: 'Day 11: Wrapping Gifts With Pure Chaos',
     theme: '12 Days of Memes',
-    prompt: 'Precision origami corners vs. 19 layers of Sellotape and optimism',
-    defaultTemplateId: 'tpl-drake-compare'
+    prompt: 'Presenting 19 layers of sticky tape and optimism like it won an award',
+    defaultTemplateId: 'tpl-trophy-celebration',
+    defaultImageUrl: '/seed/battle-trophy-mouse.webp'
   },
   {
     dayNumber: 12,
     monthDay: '12-24',
-    title: 'Day 12: Christmas Eve Everything-is-Fine Finale',
+    title: 'Day 12: Christmas Eve Grand Finale',
     theme: '12 Days of Memes',
     prompt: 'Caption the grand Christmas Eve finale — crown & Hall of Fame glory await!',
-    defaultTemplateId: 'tpl-this-is-fine'
+    defaultTemplateId: 'tpl-surprised-shock',
+    defaultImageUrl: '/seed/battle-surprised-owl.webp'
   }
 ]);
 

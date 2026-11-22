@@ -113,17 +113,21 @@ export default function CreatorProfilePage({
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://thememes.net';
     const url = `${origin}${path}?ref=profile`;
     const title = `@${cleanHandle} — Level ${rankObj.level} ${rankObj.title} | THE MEMES.net`;
-    track('meme_shared', { channel: 'profile_link' });
     try {
       if (typeof navigator !== 'undefined' && typeof navigator.share === 'function' && window.innerWidth <= 860) {
         await navigator.share({ title, url });
+        track('meme_shared', { channel: 'profile_link' });
         return;
       }
     } catch (err) {
       if (err?.name === 'AbortError') return;
     }
     try {
-      await navigator.clipboard?.writeText(url);
+      if (typeof navigator === 'undefined' || typeof navigator.clipboard?.writeText !== 'function') {
+        throw new Error('clipboard_unavailable');
+      }
+      await navigator.clipboard.writeText(url);
+      track('meme_shared', { channel: 'profile_link' });
       setShareCopied(true);
       setTimeout(() => setShareCopied(false), 2200);
     } catch {

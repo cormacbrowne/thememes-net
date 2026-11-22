@@ -778,7 +778,7 @@ export default function VegasSlotMachine({
     setAutoSpinsLeft(0);
     setStatusBanner(
       nextBet === 0
-        ? 'Demo mode active (FREE, M$0.00 real payout).'
+        ? 'Demo mode active (free, just for fun).'
         : `${formatMoney(nextBet)} wager set — ready to spin!`
     );
   };
@@ -1294,7 +1294,7 @@ export default function VegasSlotMachine({
           setLastOutcome({ tier: 'miss', mult: 0, payout: 0, bet: activeBet });
           setStatusBanner(
             wheelCount === 2
-              ? 'Almost! 2 Bonus Wheels landed — Charge Gold Stampede!'
+              ? '2 Bonus Wheels landed.'
               : 'No ways matched — Gold Stampede meter building!'
           );
         }
@@ -1821,7 +1821,7 @@ export default function VegasSlotMachine({
             activeBet: stake,
             mult: segment.mult,
             headline: `🎡🚨 BONUS WHEEL LANDED ${segment.label}!`,
-            detail: `Cyber Stampede Prize Wheel ${segment.mult}× Payout!`,
+            detail: `Cyber Stampede Bonus Wheel ${segment.mult}× Bonus!`,
             tier: segment.mult >= 35 ? 'jackpot' : 'big',
             maxMultiplier: 140,
             dougiePhrase: segment.mult >= 35 ? 'HELLOOOOO-O-O!!' : ''

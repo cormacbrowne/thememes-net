@@ -1,5 +1,5 @@
 import { Maximize2, Gamepad2, Trophy, Share2, Check, SlidersHorizontal } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState, Suspense } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { sfx } from '../utils/soundEngine';
 import { formatMoney } from '../utils/tokenEconomy';
 import { GAME_VIEW_MODE_TO_PATH, SITE_ORIGIN } from '../data/seoRoutes';
@@ -254,6 +254,41 @@ export function FixedArcadeTopBar({
 /**
  * Lazy-loaded arcade games and interactive feed view switcher (Reels, Lobby, Swipe, Battle).
  */
+// eslint-disable-next-line react-refresh/only-export-components
+export function createHighScorePromptGuard() {
+  const runGenByGame = new Map();
+  return {
+    markRunRestarted(gameId) {
+      if (!gameId) return;
+      runGenByGame.set(gameId, (runGenByGame.get(gameId) || 0) + 1);
+    },
+    getRunGen(gameId) {
+      return runGenByGame.get(gameId) || 0;
+    },
+    async evaluateScore({
+      gameId,
+      score,
+      sessionId = null,
+      getActiveViewMode,
+      fetchBoard,
+      qualifies
+    }) {
+      const startedGen = runGenByGame.get(gameId) || 0;
+      const board = await fetchBoard(gameId);
+      if (!board?.ok || !qualifies(board.entries, score)) {
+        return { action: 'ignore' };
+      }
+      if ((runGenByGame.get(gameId) || 0) !== startedGen) {
+        return { action: 'defer', payload: { gameId, score, sessionId } };
+      }
+      if (typeof getActiveViewMode === 'function' && getActiveViewMode() !== gameId) {
+        return { action: 'ignore' };
+      }
+      return { action: 'open', payload: { gameId, score, sessionId } };
+    }
+  };
+}
+
 export default function GameRouter({
   viewMode,
   setViewMode,
@@ -314,12 +349,19 @@ export default function GameRouter({
   onDailyPuzzleCompleted
 }) {
   const [initialsPrompt, setInitialsPrompt] = useState(null);
+  const [deferredSave, setDeferredSave] = useState(null);
+  const viewModeRef = useRef(viewMode);
+  useEffect(() => {
+    viewModeRef.current = viewMode;
+  }, [viewMode]);
+  const promptGuard = useMemo(() => createHighScorePromptGuard(), []);
   // Play with friends: { game, viewMode, code } while a multiplayer room is open (invite link = ?room=CODE).
   const [mpRoom, setMpRoom] = useState(() => roomFromUrl(viewMode));
   const [mpPrevView, setMpPrevView] = useState(viewMode);
   if (mpPrevView !== viewMode) {
     setMpPrevView(viewMode);
     setMpRoom(roomFromUrl(viewMode));
+    setDeferredSave(null);
   }
   const activeRoom = mpRoom && mpRoom.viewMode === viewMode ? mpRoom : null;
   useEffect(() => {
@@ -399,18 +441,37 @@ export default function GameRouter({
     }
   }, [viewMode]);
 
-  const openInitialsForScore = useCallback(async (gameId, rawScore) => {
-    const cleanScore = Math.floor(Number(rawScore) || 0);
-    if (!isLeaderboardGame(gameId) || cleanScore < 1) return;
-    const board = await fetchGameLeaderboard(gameId, 'all_time', 10);
-    if (!board.ok || !qualifiesForTop10(board.entries, cleanScore)) return;
-    sessionLoggedPeakRef.current[gameId] = cleanScore;
-    setInitialsPrompt({
-      gameId,
-      score: cleanScore,
-      sessionId: getActiveGameSession(gameId)?.sessionId || null
-    });
-  }, []);
+  const handleRunRestart = useCallback(
+    (gameId) => {
+      promptGuard.markRunRestarted(gameId);
+    },
+    [promptGuard]
+  );
+
+  const openInitialsForScore = useCallback(
+    async (gameId, rawScore) => {
+      const cleanScore = Math.floor(Number(rawScore) || 0);
+      if (!isLeaderboardGame(gameId) || cleanScore < 1) return;
+      const sessionId = getActiveGameSession(gameId)?.sessionId || null;
+      const decision = await promptGuard.evaluateScore({
+        gameId,
+        score: cleanScore,
+        sessionId,
+        getActiveViewMode: () => viewModeRef.current,
+        fetchBoard: (gId) => fetchGameLeaderboard(gId, 'all_time', 10),
+        qualifies: qualifiesForTop10
+      });
+      if (decision.action === 'open') {
+        sessionLoggedPeakRef.current[gameId] = cleanScore;
+        setDeferredSave(null);
+        setInitialsPrompt(decision.payload);
+      } else if (decision.action === 'defer') {
+        sessionLoggedPeakRef.current[gameId] = cleanScore;
+        setDeferredSave(decision.payload);
+      }
+    },
+    [promptGuard]
+  );
 
   const handleRecordHighScore = useCallback(
     async (gameId, rawScore) => {
@@ -748,6 +809,7 @@ export default function GameRouter({
               if (nextState) sfx.playToggle();
             }}
             onRecordHighScore={handleRecordHighScore}
+            onRunRestart={handleRunRestart}
             onOpenLeaderboard={() => onOpenCabinetLeaderboard?.('invaders')}
             onBackToFeed={() => {
               sfx.playToggle();
@@ -772,6 +834,7 @@ export default function GameRouter({
                 if (nextState) sfx.playToggle();
               }}
               onRecordHighScore={handleRecordHighScore}
+              onRunRestart={handleRunRestart}
               onOpenLeaderboard={() => onOpenCabinetLeaderboard?.('serpent')}
               onBackToFeed={() => {
                 sfx.playToggle();
@@ -793,6 +856,7 @@ export default function GameRouter({
               if (nextState) sfx.playToggle();
             }}
             onRecordHighScore={handleRecordHighScore}
+            onRunRestart={handleRunRestart}
             onOpenLeaderboard={() => onOpenCabinetLeaderboard?.('blaster')}
             onBackToFeed={() => {
               sfx.playToggle();
@@ -815,6 +879,7 @@ export default function GameRouter({
               if (nextState) sfx.playToggle();
             }}
             onRecordHighScore={handleRecordHighScore}
+            onRunRestart={handleRunRestart}
             onOpenLeaderboard={() => onOpenCabinetLeaderboard?.('sunset')}
             onBackToFeed={() => {
               sfx.playToggle();
@@ -835,6 +900,7 @@ export default function GameRouter({
               if (nextState) sfx.playToggle();
             }}
             onRecordHighScore={handleRecordHighScore}
+            onRunRestart={handleRunRestart}
             onOpenLeaderboard={() => onOpenCabinetLeaderboard?.('void')}
             onBackToFeed={() => {
               sfx.playToggle();
@@ -855,6 +921,7 @@ export default function GameRouter({
               if (nextState) sfx.playToggle();
             }}
             onRecordHighScore={handleRecordHighScore}
+            onRunRestart={handleRunRestart}
             onOpenLeaderboard={() => onOpenCabinetLeaderboard?.('riders')}
             onBackToFeed={() => {
               sfx.playToggle();
@@ -894,6 +961,7 @@ export default function GameRouter({
             onSpendTokens={handleSpendTokens}
             onPayoutTokens={handlePayoutGameTokens}
             onRecordHighScore={handleRecordHighScore}
+            onRunRestart={handleRunRestart}
             onOpenUpload={() => {
               sfx.playToggle();
               setViewMode('feed');
@@ -926,6 +994,43 @@ export default function GameRouter({
         </div>
       )}
 
+      {deferredSave && deferredSave.gameId === viewMode && !initialsPrompt && (
+        <div
+          data-testid="save-score-chip"
+          style={{
+            position: 'fixed',
+            bottom: 'var(--tm-space-4)',
+            right: 'var(--tm-space-4)',
+            zIndex: 'var(--tm-z-overlay)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 'var(--tm-space-2)'
+          }}
+        >
+          <button
+            type="button"
+            className="tm-btn tm-btn-primary"
+            data-testid="save-score-chip-btn"
+            onClick={() => {
+              const next = deferredSave;
+              setDeferredSave(null);
+              setInitialsPrompt(next);
+            }}
+          >
+            🏆 Save score ({deferredSave.score.toLocaleString()})
+          </button>
+          <button
+            type="button"
+            className="tm-btn"
+            aria-label="Dismiss save score"
+            data-testid="save-score-dismiss-btn"
+            onClick={() => setDeferredSave(null)}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {initialsPrompt && (
         <Suspense fallback={null}>
           <ArcadeInitialsModal
@@ -933,6 +1038,10 @@ export default function GameRouter({
             score={initialsPrompt.score}
             sessionId={initialsPrompt.sessionId}
             onClose={() => setInitialsPrompt(null)}
+            onSubmitted={() => {
+              setDeferredSave(null);
+              void startGameSession(initialsPrompt.gameId);
+            }}
             onOpenLeaderboard={(gId) => {
               setInitialsPrompt(null);
               onOpenCabinetLeaderboard?.(gId);

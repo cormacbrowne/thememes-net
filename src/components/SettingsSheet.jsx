@@ -292,7 +292,7 @@ export default function SettingsSheet({ compact = false, onResetHints }) {
               }}
               aria-pressed={settings.pulseOn !== false}
             >
-              📊 Anonymous usage stats: {settings.pulseOn !== false ? 'ON' : 'OFF'}
+              📊 Usage stats: {settings.pulseOn !== false ? 'ON' : 'OFF'}
             </button>
           </div>
           <div className="tm-settings-sub" style={{ marginTop: '2px' }}>

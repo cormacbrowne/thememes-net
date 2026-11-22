@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import GameShell from './GameShell';
+import ResumeCountdown from './ui/ResumeCountdown';
 import { EightiesCarSvg } from './DeLoreanTimeMachine';
 import { EIGHTIES_CARS } from '../data/deloreanEras';
 import { sfx } from '../utils/soundEngine';
@@ -324,6 +325,7 @@ export default function SunsetSprintGame({
   soundOn = true,
   onToggleSound,
   onRecordHighScore,
+  onRunRestart,
   onOpenLeaderboard,
   onBackToFeed
 }) {
@@ -335,6 +337,12 @@ export default function SunsetSprintGame({
   const canvasRef = useRef(null);
   const gameRef = useRef(null);
   const recordedGameOverRef = useRef(false);
+  const resumingRef = useRef(false);
+  const restartArmedRef = useRef(false);
+  const restartArmTimerRef = useRef(0);
+  const togglePauseRef = useRef(null);
+  const [resuming, setResuming] = useState(false);
+  const [restartArmed, setRestartArmed] = useState(false);
   const inputRef = useRef({
     left: false,
     right: false,
@@ -411,26 +419,93 @@ export default function SunsetSprintGame({
     sfx.playToggle?.();
   };
 
-  const handleRestartRun = useCallback(() => {
+  const cancelResumeCountdown = useCallback(() => {
+    resumingRef.current = false;
+    setResuming(false);
+  }, []);
+
+  const disarmRestart = useCallback(() => {
+    window.clearTimeout(restartArmTimerRef.current);
+    restartArmedRef.current = false;
+    setRestartArmed(false);
+  }, []);
+
+  useEffect(() => () => window.clearTimeout(restartArmTimerRef.current), []);
+
+  const startResumeCountdown = useCallback(() => {
+    const st = gameRef.current;
+    if (!st || st.status !== 'paused' || resumingRef.current) return;
+    resumingRef.current = true;
+    setResuming(true);
+    sfx.playToggle?.();
+  }, []);
+
+  const completeResumeCountdown = useCallback(() => {
+    resumingRef.current = false;
+    setResuming(false);
+    const st = gameRef.current;
+    if (st && st.status === 'paused') {
+      st.status = 'playing';
+      syncHudFromState(st);
+    }
+  }, [syncHudFromState]);
+
+  const executeRestartRun = useCallback(() => {
+    disarmRestart();
+    cancelResumeCountdown();
+    onRunRestart?.('sunset');
     sfx.playToggle?.();
     recordedGameOverRef.current = false;
     inputRef.current.targetRoadX = null;
     const fresh = createInitialSunsetSprintState({ carId: selectedCar });
     gameRef.current = fresh;
     syncHudFromState(fresh);
-  }, [selectedCar, syncHudFromState]);
+  }, [cancelResumeCountdown, disarmRestart, onRunRestart, selectedCar, syncHudFromState]);
+
+  const handleRestartRun = useCallback(() => {
+    const st = gameRef.current;
+    const isMidRun = Boolean(st && (st.status === 'playing' || st.status === 'paused'));
+    if (!isMidRun || restartArmedRef.current) {
+      executeRestartRun();
+      return;
+    }
+    restartArmedRef.current = true;
+    setRestartArmed(true);
+    sfx.playToggle?.();
+    window.clearTimeout(restartArmTimerRef.current);
+    restartArmTimerRef.current = window.setTimeout(() => {
+      restartArmedRef.current = false;
+      setRestartArmed(false);
+    }, 3500);
+  }, [executeRestartRun]);
 
   const handleTogglePause = useCallback(() => {
     const st = gameRef.current;
     if (!st || st.status === 'gameover') return;
-    st.status = st.status === 'paused' ? 'playing' : 'paused';
+    disarmRestart();
+    if (st.status === 'paused') {
+      if (resumingRef.current) {
+        cancelResumeCountdown();
+        sfx.playToggle?.();
+      } else {
+        startResumeCountdown();
+      }
+      return;
+    }
+    cancelResumeCountdown();
+    st.status = 'paused';
     sfx.playToggle?.();
     syncHudFromState(st);
-  }, [syncHudFromState]);
+  }, [cancelResumeCountdown, disarmRestart, startResumeCountdown, syncHudFromState]);
+
+  useEffect(() => {
+    togglePauseRef.current = handleTogglePause;
+  }, [handleTogglePause]);
 
   // Auto-pause on tab hide / window blur
   useEffect(() => {
     const pauseIfPlaying = () => {
+      cancelResumeCountdown();
       const st = gameRef.current;
       if (st && st.status === 'playing') {
         st.status = 'paused';
@@ -446,7 +521,7 @@ export default function SunsetSprintGame({
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('blur', pauseIfPlaying);
     };
-  }, [syncHudFromState]);
+  }, [cancelResumeCountdown, syncHudFromState]);
 
   // Keyboard controls
   useEffect(() => {
@@ -464,12 +539,14 @@ export default function SunsetSprintGame({
         inputRef.current.right = true;
       } else if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
         if (gameRef.current?.status === 'paused') {
-          gameRef.current.status = 'playing';
-          syncHudFromState(gameRef.current);
+          startResumeCountdown();
+          return;
         }
         inputRef.current.boost = true;
       } else if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
         handleTogglePause();
+      } else if (e.key === 'r' || e.key === 'R') {
+        handleRestartRun();
       }
     };
     const onKeyUp = (e) => {
@@ -487,7 +564,7 @@ export default function SunsetSprintGame({
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
     };
-  }, [handleTogglePause, syncHudFromState]);
+  }, [handleRestartRun, handleTogglePause, startResumeCountdown]);
 
   // 60fps simulation + Gamepad API polling + FM cassette switching
   useEffect(() => {
@@ -515,7 +592,7 @@ export default function SunsetSprintGame({
             if (pad.buttons?.[15]?.pressed) inp.right = true;
             if (pad.buttons?.[0]?.pressed || pad.buttons?.[7]?.pressed) inp.boost = true;
             if (pad.buttons?.[9]?.pressed && pauseDebounce <= 0 && st && st.status !== 'gameover') {
-              st.status = st.status === 'paused' ? 'playing' : 'paused';
+              togglePauseRef.current?.();
               pauseDebounce = 0.35;
             }
             break;
@@ -577,8 +654,8 @@ export default function SunsetSprintGame({
   const handleCanvasPointerDown = (e) => {
     const st = gameRef.current;
     if (st?.status === 'paused') {
-      st.status = 'playing';
-      syncHudFromState(st);
+      startResumeCountdown();
+      return;
     }
     const rx = mapPointerToRoadX(e.clientX);
     if (rx !== null) inputRef.current.targetRoadX = rx;
@@ -661,15 +738,17 @@ export default function SunsetSprintGame({
               disabled={hud.status === 'gameover'}
               data-testid="sunset-pause-btn"
             >
-              {hud.status === 'paused' ? '▶' : '⏸'}
+              {hud.status === 'paused' && !resuming ? '▶' : '⏸'}
             </button>
             <button
               type="button"
               className="tm-btn"
               onClick={handleRestartRun}
+              aria-label={restartArmed ? 'Confirm restart run' : 'Restart run'}
+              data-restart-armed={restartArmed ? 'true' : 'false'}
               data-testid="sunset-restart-btn"
             >
-              ↻
+              {restartArmed ? 'Confirm?' : '↻'}
             </button>
           </div>
         </div>
@@ -723,7 +802,9 @@ export default function SunsetSprintGame({
             onPointerMove={handleCanvasPointerMove}
           />
 
-          {hud.status === 'paused' && (
+          <ResumeCountdown active={resuming} onComplete={completeResumeCountdown} />
+
+          {hud.status === 'paused' && !resuming && (
             <div className="tm-sunset-overlay" data-testid="sunset-paused-overlay">
               <h3>⏸ RACE PAUSED</h3>
               <p>Next checkpoint in {hud.nextCheckpointIn}m — tap Resume when ready.</p>
@@ -732,7 +813,7 @@ export default function SunsetSprintGame({
                   ▶ Resume Stage {hud.stage}
                 </button>
                 <button type="button" className="tm-btn" onClick={handleRestartRun}>
-                  ↻ Restart
+                  {restartArmed ? '↻ Confirm Restart' : '↻ Restart'}
                 </button>
               </div>
             </div>

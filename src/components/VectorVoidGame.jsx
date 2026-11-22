@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import GameShell from './GameShell';
+import ResumeCountdown from './ui/ResumeCountdown';
 import { sfx } from '../utils/soundEngine';
 import {
   VOID_WIDTH,
@@ -128,6 +129,7 @@ export default function VectorVoidGame({
   soundOn = true,
   onToggleSound,
   onRecordHighScore,
+  onRunRestart,
   onOpenLeaderboard,
   onBackToFeed
 }) {
@@ -136,6 +138,12 @@ export default function VectorVoidGame({
   const recordedGameOverRef = useRef(false);
   const leftPadRef = useRef(null);
   const rightPadRef = useRef(null);
+  const resumingRef = useRef(false);
+  const restartArmedRef = useRef(false);
+  const restartArmTimerRef = useRef(0);
+  const togglePauseRef = useRef(null);
+  const [resuming, setResuming] = useState(false);
+  const [restartArmed, setRestartArmed] = useState(false);
 
   const inputRef = useRef({
     wasd: { up: false, down: false, left: false, right: false },
@@ -194,25 +202,92 @@ export default function VectorVoidGame({
     }
   }, [syncHudFromState]);
 
-  const handleRestartRun = useCallback(() => {
+  const cancelResumeCountdown = useCallback(() => {
+    resumingRef.current = false;
+    setResuming(false);
+  }, []);
+
+  const disarmRestart = useCallback(() => {
+    window.clearTimeout(restartArmTimerRef.current);
+    restartArmedRef.current = false;
+    setRestartArmed(false);
+  }, []);
+
+  useEffect(() => () => window.clearTimeout(restartArmTimerRef.current), []);
+
+  const startResumeCountdown = useCallback(() => {
+    const st = gameRef.current;
+    if (!st || st.status !== 'paused' || resumingRef.current) return;
+    resumingRef.current = true;
+    setResuming(true);
+    sfx.playToggle?.();
+  }, []);
+
+  const completeResumeCountdown = useCallback(() => {
+    resumingRef.current = false;
+    setResuming(false);
+    const st = gameRef.current;
+    if (st && st.status === 'paused') {
+      st.status = 'playing';
+      syncHudFromState(st);
+    }
+  }, [syncHudFromState]);
+
+  const executeRestartRun = useCallback(() => {
+    disarmRestart();
+    cancelResumeCountdown();
+    onRunRestart?.('void');
     sfx.playToggle?.();
     recordedGameOverRef.current = false;
     const fresh = createInitialVectorVoidState();
     gameRef.current = fresh;
     syncHudFromState(fresh);
-  }, [syncHudFromState]);
+  }, [cancelResumeCountdown, disarmRestart, onRunRestart, syncHudFromState]);
+
+  const handleRestartRun = useCallback(() => {
+    const st = gameRef.current;
+    const isMidRun = Boolean(st && (st.status === 'playing' || st.status === 'paused'));
+    if (!isMidRun || restartArmedRef.current) {
+      executeRestartRun();
+      return;
+    }
+    restartArmedRef.current = true;
+    setRestartArmed(true);
+    sfx.playToggle?.();
+    window.clearTimeout(restartArmTimerRef.current);
+    restartArmTimerRef.current = window.setTimeout(() => {
+      restartArmedRef.current = false;
+      setRestartArmed(false);
+    }, 3500);
+  }, [executeRestartRun]);
 
   const handleTogglePause = useCallback(() => {
     const st = gameRef.current;
     if (!st || st.status === 'gameover') return;
-    st.status = st.status === 'paused' ? 'playing' : 'paused';
+    disarmRestart();
+    if (st.status === 'paused') {
+      if (resumingRef.current) {
+        cancelResumeCountdown();
+        sfx.playToggle?.();
+      } else {
+        startResumeCountdown();
+      }
+      return;
+    }
+    cancelResumeCountdown();
+    st.status = 'paused';
     sfx.playToggle?.();
     syncHudFromState(st);
-  }, [syncHudFromState]);
+  }, [cancelResumeCountdown, disarmRestart, startResumeCountdown, syncHudFromState]);
+
+  useEffect(() => {
+    togglePauseRef.current = handleTogglePause;
+  }, [handleTogglePause]);
 
   // Auto-pause on tab hide / window blur
   useEffect(() => {
     const pauseIfPlaying = () => {
+      cancelResumeCountdown();
       const st = gameRef.current;
       if (st && st.status === 'playing') {
         st.status = 'paused';
@@ -228,9 +303,9 @@ export default function VectorVoidGame({
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('blur', pauseIfPlaying);
     };
-  }, [syncHudFromState]);
+  }, [cancelResumeCountdown, syncHudFromState]);
 
-  // Keyboard twin-stick controls (WASD move, Arrow keys aim+fire, Space fire, P pause)
+  // Keyboard twin-stick controls (WASD move, Arrow keys aim+fire, Space fire, P pause, R restart)
   useEffect(() => {
     const onKeyDown = (e) => {
       const tag = document.activeElement?.tagName;
@@ -250,6 +325,7 @@ export default function VectorVoidGame({
       else if (e.key === 'ArrowRight') a.right = true;
       else if (e.key === ' ') inputRef.current.spaceFire = true;
       else if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') handleTogglePause();
+      else if (e.key === 'r' || e.key === 'R') handleRestartRun();
     };
     const onKeyUp = (e) => {
       const w = inputRef.current.wasd;
@@ -270,7 +346,7 @@ export default function VectorVoidGame({
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
     };
-  }, [handleTogglePause]);
+  }, [handleRestartRun, handleTogglePause]);
 
   // 60fps requestAnimationFrame loop + dual-stick Gamepad API polling
   useEffect(() => {
@@ -317,7 +393,7 @@ export default function VectorVoidGame({
             }
             if (pad.buttons?.[0]?.pressed || pad.buttons?.[7]?.pressed) fire = true;
             if (pad.buttons?.[9]?.pressed && pauseDebounce <= 0 && st && st.status !== 'gameover') {
-              st.status = st.status === 'paused' ? 'playing' : 'paused';
+              togglePauseRef.current?.();
               pauseDebounce = 0.35;
             }
             break;
@@ -381,8 +457,8 @@ export default function VectorVoidGame({
   const handleStickDown = (which, e) => {
     const st = gameRef.current;
     if (st?.status === 'paused') {
-      st.status = 'playing';
-      syncHudFromState(st);
+      startResumeCountdown();
+      return;
     }
     e.currentTarget.setPointerCapture?.(e.pointerId);
     const padEl = which === 'left' ? leftPadRef.current : rightPadRef.current;
@@ -496,15 +572,17 @@ export default function VectorVoidGame({
               disabled={hud.status === 'gameover'}
               data-testid="void-pause-btn"
             >
-              {hud.status === 'paused' ? '▶' : '⏸'}
+              {hud.status === 'paused' && !resuming ? '▶' : '⏸'}
             </button>
             <button
               type="button"
               className="tm-btn"
               onClick={handleRestartRun}
+              aria-label={restartArmed ? 'Confirm restart run' : 'Restart run'}
+              data-restart-armed={restartArmed ? 'true' : 'false'}
               data-testid="void-restart-btn"
             >
-              ↻
+              {restartArmed ? 'Confirm?' : '↻'}
             </button>
           </div>
         </div>
@@ -518,8 +596,8 @@ export default function VectorVoidGame({
             data-testid="void-canvas"
             onPointerDown={(e) => {
               if (gameRef.current?.status === 'paused') {
-                gameRef.current.status = 'playing';
-                syncHudFromState(gameRef.current);
+                startResumeCountdown();
+                return;
               }
               updateCanvasAim(e);
               inputRef.current.canvasFire = true;
@@ -533,7 +611,9 @@ export default function VectorVoidGame({
             }}
           />
 
-          {hud.status === 'paused' && (
+          <ResumeCountdown active={resuming} onComplete={completeResumeCountdown} />
+
+          {hud.status === 'paused' && !resuming && (
             <div className="tm-void-overlay" data-testid="void-paused-overlay">
               <h3>⏸ SECTOR PAUSED</h3>
               <p>{hud.rocksLeft} vector fragments drifting across the wrap-around void.</p>
@@ -542,7 +622,7 @@ export default function VectorVoidGame({
                   ▶ Resume Sector {hud.wave}
                 </button>
                 <button type="button" className="tm-btn" onClick={handleRestartRun}>
-                  ↻ Restart
+                  {restartArmed ? '↻ Confirm Restart' : '↻ Restart'}
                 </button>
               </div>
             </div>

@@ -94,14 +94,23 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: rgba(7, 6, 15, 0.6);
   color: #fff;
   cursor: pointer;
   opacity: 0.85;
+}
+
+button.tm-spoiler-shield {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  font: inherit;
 }
 
 .mc-expand:hover,
@@ -257,10 +266,41 @@
   }
 }
 
+.tm-lite-perf .tm-grid,
+:root[data-reduced-motion='on'] .tm-grid {
+  perspective: none;
+}
+
+.tm-lite-perf .tm-holo-card,
+:root[data-reduced-motion='on'] .tm-holo-card {
+  transform: none;
+  transition: none;
+  will-change: auto;
+}
+
+.tm-lite-perf .tm-holo-glare,
+:root[data-reduced-motion='on'] .tm-holo-glare {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .mc-react,
-  .mc-tool {
+  :root:not([data-reduced-motion='off']) .mc-react,
+  :root:not([data-reduced-motion='off']) .mc-tool {
     transition: none;
+  }
+
+  :root:not([data-reduced-motion='off']) .tm-grid {
+    perspective: none;
+  }
+
+  :root:not([data-reduced-motion='off']) .tm-holo-card {
+    transform: none;
+    transition: none;
+    will-change: auto;
+  }
+
+  :root:not([data-reduced-motion='off']) .tm-holo-glare {
+    display: none;
   }
 }
 

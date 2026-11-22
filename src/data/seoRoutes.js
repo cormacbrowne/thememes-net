@@ -255,7 +255,7 @@ const ALL_SEO_ROUTES = [
     path: '/games/pinball',
     title: 'Free Retro Pinball Game Online — 5 Neon Arcade Tables | THE MEMES.net',
     description:
-      'Play 5 distinct 80s neon pinball tables online for free! Master dual flippers, 3-ball multiball madness, plasma drain shields, drop targets, and high-score jackpots in your browser.',
+      'Play 5 distinct 80s neon pinball tables online for free! Master dual flippers, 3-ball multiball madness, plasma drain shields, drop targets, and high-score bonuses in your browser.',
     h1: "Neon Pinball '86 — 5 Free Retro Arcade Tables",
     kicker: '60fps Physics Pinball // Keyboard & Touch Flippers',
     changefreq: 'daily',
@@ -340,7 +340,7 @@ const ALL_SEO_ROUTES = [
     path: '/games/poker',
     title: "Neon Hold'em '86 Poker — Free Online Texas Hold'em With Chips | THE MEMES.net",
     description:
-      "Play Neon Hold'em '86 Texas Poker free online! Buy in with free MemeDollarz for stacked casino chips, bet Pre-Flop through River vs AI sharks, and cash out winnings back to your wallet.",
+      "Play Neon Hold'em '86 Texas Poker free online! Buy in with free MemeDollarz for stacked casino chips, bet Pre-Flop through River vs AI sharks, and return your play-money chips to your wallet.",
     h1: "Neon Hold'em '86 — Free Texas Hold'em Poker With Chips",
     kicker: 'No-Limit Texas Hold’em // Stacked Chips & MemeDollarz Buy-Ins',
     changefreq: 'daily',
@@ -363,11 +363,11 @@ const ALL_SEO_ROUTES = [
   },
   {
     path: '/games/roulette',
-    title: "Free Neon Strike Roulette Online — 150x Neon Wheel '86 | THE MEMES.net",
+    title: "Free Neon Strike Roulette Online — Play-Money Wheel '86 | THE MEMES.net",
     description:
-      'Spin a 37-pocket European Neon Strike Roulette wheel free online with random up-to-150x lightning multipliers, inside & outside bets, and quick presets. Zero real money required.',
+      'Spin a 37-pocket European Neon Strike Roulette wheel free online with Lightning numbers, inside & outside bets, and quick presets. Play money only.',
     h1: "Neon Strike Roulette '86 — Free Online European Wheel",
-    kicker: '37-Pocket Single Zero // Up To 150x Multipliers',
+    kicker: '37-Pocket Single Zero // Play Money Only',
     changefreq: 'daily',
     priority: '0.85',
     viewMode: 'roulette',

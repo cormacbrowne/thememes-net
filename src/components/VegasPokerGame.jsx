@@ -229,7 +229,7 @@ export default function VegasPokerGame({
       onPayoutTokens(verifiedPayout, {
         stakedTokens: stakedRef,
         xp: verifiedPayout > stakedRef ? 45 : 15,
-        label: `🃏 Poker Cashout ${formatMoney(verifiedPayout, { sign: true })}`,
+        label: `🃏 Poker Chips Returned ${formatMoney(verifiedPayout, { sign: true })}`,
         emoji: '🃏'
       });
     }
@@ -239,8 +239,8 @@ export default function VegasPokerGame({
         amount: verifiedPayout,
         unit: 'M$',
         game: "Neon Hold'em '86",
-        headline: '🃏 POKER TABLE CASHOUT!',
-        detail: `Cashed ${formatMoney(verifiedPayout)} back to Wallet!`,
+        headline: '🃏 CHIPS BACK IN THE WALLET!',
+        detail: `Returned ${formatMoney(verifiedPayout)} in play money to your Wallet!`,
         multiplier: verifiedPayout / stakedRef,
         tier: verifiedPayout >= stakedRef * 2.5 ? 'jackpot' : 'big'
       });
@@ -255,7 +255,7 @@ export default function VegasPokerGame({
     setWinnerIds([]);
     setShowdownSummary('');
     setSeats((prev) => prev.map((s) => ({ ...s, hole: [], bet: 0, lastAction: '', chips: s.id === 0 ? 0 : s.chips })));
-    setStatusBanner(`💰 Cashed out ${formatMoney(verifiedPayout)} back into your Wallet!`);
+    setStatusBanner(`💰 Returned ${formatMoney(verifiedPayout)} in play money to your Wallet!`);
   };
 
   const resolveShowdown = useCallback(
@@ -687,13 +687,13 @@ export default function VegasPokerGame({
       onBackToFeed={onBackToFeed}
       statusBanner={statusBanner}
       howToPlay={[
-        'In MemeDollarz Mode, stack your balance into table chips, play No-Limit Texas Hold’em vs 2 AI sharks, and 💰 Cash Out your stack back to your wallet anytime between hands.',
+        'In MemeDollarz Mode, stack your balance into table chips, play No-Limit Texas Hold’em vs 2 AI sharks, and 💰 Leave the Table to return your chips to your wallet anytime between hands.',
         'Blinds rotate automatically with the Dealer button (D). Check, Call, Raise by +5/+10/+25 or 1/2 Pot, or shove ALL IN!',
         'Best 5-card Hold’em hand using your 2 hole cards + 5 community cards takes the pot.'
       ]}
     >
       <div className="tm-pk-cabinet">
-        {/* Top Table Telemetry & Real MemeDollarz Cashout / Buy-In Bar */}
+        {/* Top Table Telemetry & MemeDollarz Leave Table / Buy-In Bar */}
         <div className="tm-pk-topbar">
           <div className="tm-pk-stat-group">
             <span className="tm-pk-pill">
@@ -711,7 +711,7 @@ export default function VegasPokerGame({
 
           {!practiceMode && savedRealStack > 0 && (phase === 'idle' || phase === 'showdown') && (
             <button type="button" className="tm-pk-cashout-btn" onClick={handleCashOutChips}>
-              💰 Cash Out {formatMoney(savedRealStack, { zero: 'balance' })}
+              💰 Leave Table {formatMoney(savedRealStack, { zero: 'balance' })}
             </button>
           )}
         </div>

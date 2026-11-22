@@ -242,21 +242,27 @@ export default function DailyCaptionBattleModal({
     const url = `${origin}${path}?ref=share`;
     const title = battle.title ? `${battle.title} — Daily Caption Battle` : 'Daily Caption Battle | THE MEMES.net';
     const text = customText || `Compete in "${battle.title || 'Daily Caption Battle'}" on THE MEMES.net`;
-    track('meme_shared', {
-      channel: 'battle_link',
-      battle: String(battle.id),
-      ...(entryId ? { entry: String(entryId) } : {})
-    });
+    const recordShare = () =>
+      track('meme_shared', {
+        channel: 'battle_link',
+        battle: String(battle.id),
+        ...(entryId ? { entry: String(entryId) } : {})
+      });
     try {
       if (typeof navigator !== 'undefined' && typeof navigator.share === 'function' && window.innerWidth <= 860) {
         await navigator.share({ title, text, url });
+        recordShare();
         return;
       }
     } catch (err) {
       if (err?.name === 'AbortError') return;
     }
     try {
-      await navigator.clipboard?.writeText(url);
+      if (typeof navigator === 'undefined' || typeof navigator.clipboard?.writeText !== 'function') {
+        throw new Error('clipboard_unavailable');
+      }
+      await navigator.clipboard.writeText(url);
+      recordShare();
       setMsg({ type: 'ok', text: entryId ? '🔗 Entry link copied!' : '🔗 Battle link copied!' });
     } catch {
       setMsg({ type: 'ok', text: url });

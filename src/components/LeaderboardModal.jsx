@@ -492,7 +492,7 @@ export default function LeaderboardModal({
                   <div style={{ fontSize: '16px', fontWeight: 900, color: 'var(--tm-amber)' }}>⚡ {c.xp} XP</div>
                   {(c.remixesSpawned > 0 || c.royaltyXp > 0) && (
                     <div style={{ fontSize: '11px', color: '#a3e635', fontWeight: 700 }}>
-                      +{c.remixesSpawned * 50 + c.royaltyXp} XP Royalties
+                      +{c.remixesSpawned * 50 + c.royaltyXp} Remix Bonus XP
                     </div>
                   )}
                 </div>
@@ -612,7 +612,7 @@ export default function LeaderboardModal({
                       >
                         @{m.author_name}
                       </strong>{' '}
-                      • <strong style={{ color: '#a3e635' }}>+{(m.mutation_count || 0) * 50} XP Royalties Earned</strong>
+                      • <strong style={{ color: '#a3e635' }}>+{(m.mutation_count || 0) * 50} Remix Bonus XP</strong>
                     </div>
                   </div>
                 </div>

@@ -8,7 +8,7 @@ import {
 } from '../../src/utils/guessTheMeme.js';
 import { resolveRouteFromLocation } from '../../src/data/seoRoutes.js';
 
-test('formatGuessShareCard outputs spoiler-free Wordle-style result with thememes.net/daily', () => {
+test('formatGuessShareCard outputs spoiler-free Wordle-style result with https://www.thememes.net/games/guess-the-meme?ref=daily', () => {
   const card = formatGuessShareCard({
     puzzleNumber: 142,
     solvedCount: 3,
@@ -18,7 +18,7 @@ test('formatGuessShareCard outputs spoiler-free Wordle-style result with thememe
   });
   assert.equal(
     card,
-    'THE MEMES #142 🎯 3/5\n🟥🟩🟨🟩🟥\n🔥 Streak: 6\nthememes.net/daily'
+    'THE MEMES #142 🎯 3/5\n🟥🟩🟨🟩🟥\n🔥 Streak: 6\nhttps://www.thememes.net/games/guess-the-meme?ref=daily'
   );
 });
 

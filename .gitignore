@@ -34,3 +34,6 @@ supabase/.temp
 # Raw AI images from Gemini (curated WebP copies go into public/)
 /assets/inbox/*
 !/assets/inbox/.gitkeep
+
+# Private legal and compliance drafts. Never commit while the repo is public.
+legal-private/

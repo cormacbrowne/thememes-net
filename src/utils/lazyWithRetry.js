@@ -1,6 +1,15 @@
 import { lazy } from 'react';
 
 const CHUNK_RELOAD_KEY = 'tm_chunk_reload_v1';
+// One automatic reload per tab per cooldown. The guard is never cleared by a successful load:
+// other chunks loading fine after the reload used to clear it, so a chunk that kept failing
+// reloaded the page ~50 times in 20s instead of reaching the Reboot Cabinet screen.
+export const CHUNK_RELOAD_COOLDOWN_MS = 5 * 60 * 1000;
+
+function reloadGuardActive(now) {
+  const stamp = Number(window.sessionStorage?.getItem(CHUNK_RELOAD_KEY));
+  return Number.isFinite(stamp) && stamp > 0 && now - stamp < CHUNK_RELOAD_COOLDOWN_MS;
+}
 
 export function isChunkLoadError(err) {
   const msg = String(err?.message || err || '');
@@ -21,14 +30,6 @@ export default function lazyWithRetry(importer, exportPicker = null, { reloadOnF
   const load = async () => {
     try {
       const mod = await importer();
-      // Optional chunks must not clear the guard, or a broken sibling chunk can reload forever.
-      if (reloadOnFail && typeof window !== 'undefined') {
-        try {
-          window.sessionStorage?.removeItem(CHUNK_RELOAD_KEY);
-        } catch {
-          // ignore storage errors
-        }
-      }
       return exportPicker ? exportPicker(mod) : mod;
     } catch (firstErr) {
       // One micro-retry after short delay in case of transient mobile network stall
@@ -39,11 +40,13 @@ export default function lazyWithRetry(importer, exportPicker = null, { reloadOnF
       } catch (secondErr) {
         if (reloadOnFail && typeof window !== 'undefined' && isChunkLoadError(secondErr)) {
           try {
-            const alreadyReloaded = window.sessionStorage?.getItem(CHUNK_RELOAD_KEY);
-            if (!alreadyReloaded) {
-              window.sessionStorage?.setItem(CHUNK_RELOAD_KEY, String(Date.now()));
+            const now = Date.now();
+            if (!reloadGuardActive(now)) {
+              window.sessionStorage?.setItem(CHUNK_RELOAD_KEY, String(now));
+              // If storage silently refuses the write, don't reload: there'd be nothing to stop a loop.
+              if (!reloadGuardActive(now)) throw secondErr;
               const url = new URL(window.location.href);
-              url.searchParams.set('_cb', String(Date.now()));
+              url.searchParams.set('_cb', String(now));
               window.location.replace(url.toString());
               return new Promise(() => {});
             }

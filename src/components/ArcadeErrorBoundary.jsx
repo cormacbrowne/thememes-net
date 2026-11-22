@@ -47,6 +47,16 @@ export default class ArcadeErrorBoundary extends React.Component {
     }));
   };
 
+  // Leave the broken view without reloading it: clear the error and let the parent navigate away.
+  handleReturnHome = () => {
+    this.setState((prev) => ({
+      hasError: false,
+      errorMessage: '',
+      retryNonce: prev.retryNonce + 1
+    }));
+    this.props.onReturnHome();
+  };
+
   render() {
     if (!this.state.hasError) {
       return <React.Fragment key={this.state.retryNonce}>{this.props.children}</React.Fragment>;
@@ -94,7 +104,9 @@ export default class ArcadeErrorBoundary extends React.Component {
             {title}
           </h2>
           <p style={{ margin: '0 0 16px', fontSize: '0.88rem', color: 'var(--tm-text-soft)', lineHeight: 1.45 }}>
-            {this.state.errorMessage}
+            {isChunkLoadError({ message: this.state.errorMessage })
+              ? "This cabinet didn't finish loading. Check your connection, then reboot it."
+              : 'Something glitched in this cabinet. Reboot it, or head back and try another.'}
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
             <button
@@ -116,10 +128,7 @@ export default class ArcadeErrorBoundary extends React.Component {
             {typeof onReturnHome === 'function' && (
               <button
                 type="button"
-                onClick={() => {
-                  this.handleRetry();
-                  onReturnHome();
-                }}
+                onClick={this.handleReturnHome}
                 style={{
                   minHeight: '44px',
                   padding: '10px 18px',

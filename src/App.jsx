@@ -1732,7 +1732,7 @@ export default function App() {
       <ArcadeErrorBoundary
         resetKey={viewMode}
         title="ARCADE CABINET SIGNAL LOST"
-        onReturnHome={() => setViewMode('feed')}
+        onReturnHome={() => setViewMode(viewMode === 'lobby' ? 'feed' : 'lobby')}
       >
         <Suspense fallback={<div style={{ padding: '18px' }}><MemeSkeletonGrid count={3} /></div>}>
           <GameRouter

@@ -1733,6 +1733,8 @@ export default function App() {
         resetKey={viewMode}
         title="ARCADE CABINET SIGNAL LOST"
         onReturnHome={() => setViewMode(viewMode === 'lobby' ? 'feed' : 'lobby')}
+        returnLabel={viewMode === 'lobby' ? 'Back to Feed' : 'Back to Lobby'}
+        returnIcon={viewMode === 'lobby' ? '🏠' : '🕹️'}
       >
         <Suspense fallback={<div style={{ padding: '18px' }}><MemeSkeletonGrid count={3} /></div>}>
           <GameRouter
@@ -2094,6 +2096,11 @@ export default function App() {
       {showRewardsModal && (
         <ArcadeErrorBoundary
           title="TOKEN VAULT SIGNAL LOST"
+          loadFailMessage="The Token Vault didn't finish loading. Check your connection, then try again."
+          glitchMessage="Something glitched in the Token Vault. Try again, or close it and come back later."
+          retryLabel="Try Again"
+          returnLabel="Close Vault"
+          returnIcon="✖️"
           onReturnHome={() => {
             setShowRewardsModal(false);
             setRewardsInitialTab('vault');

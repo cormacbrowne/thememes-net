@@ -62,7 +62,16 @@ export default class ArcadeErrorBoundary extends React.Component {
       return <React.Fragment key={this.state.retryNonce}>{this.props.children}</React.Fragment>;
     }
 
-    const { onReturnHome, title = 'ARCADE SIGNAL INTERRUPTED' } = this.props;
+    const {
+      onReturnHome,
+      title = 'ARCADE SIGNAL INTERRUPTED',
+      loadFailMessage = "This cabinet didn't finish loading. Check your connection, then reboot it.",
+      glitchMessage = 'Something glitched in this cabinet. Reboot it, or head back and try another.',
+      retryLabel = 'Reboot Cabinet',
+      retryIcon = '🔄',
+      returnLabel = 'Back to Lobby',
+      returnIcon = '🕹️'
+    } = this.props;
     return (
       <div
         role="alert"
@@ -90,7 +99,7 @@ export default class ArcadeErrorBoundary extends React.Component {
             fontFamily: 'var(--tm-font-body)'
           }}
         >
-          <div style={{ fontSize: '2.1rem', marginBottom: '8px' }}>📺⚡</div>
+          <div aria-hidden="true" style={{ fontSize: '2.1rem', marginBottom: '8px' }}>📺⚡</div>
           <h2
             style={{
               margin: '0 0 8px',
@@ -104,9 +113,7 @@ export default class ArcadeErrorBoundary extends React.Component {
             {title}
           </h2>
           <p style={{ margin: '0 0 16px', fontSize: '0.88rem', color: 'var(--tm-text-soft)', lineHeight: 1.45 }}>
-            {isChunkLoadError({ message: this.state.errorMessage })
-              ? "This cabinet didn't finish loading. Check your connection, then reboot it."
-              : 'Something glitched in this cabinet. Reboot it, or head back and try another.'}
+            {isChunkLoadError({ message: this.state.errorMessage }) ? loadFailMessage : glitchMessage}
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
             <button
@@ -123,7 +130,7 @@ export default class ArcadeErrorBoundary extends React.Component {
                 cursor: 'pointer'
               }}
             >
-              🔄 Reboot Cabinet
+              <span aria-hidden="true">{retryIcon}</span> {retryLabel}
             </button>
             {typeof onReturnHome === 'function' && (
               <button
@@ -140,7 +147,7 @@ export default class ArcadeErrorBoundary extends React.Component {
                   cursor: 'pointer'
                 }}
               >
-                🕹️ Back to Lobby
+                <span aria-hidden="true">{returnIcon}</span> {returnLabel}
               </button>
             )}
           </div>

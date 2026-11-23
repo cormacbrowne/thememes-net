@@ -4030,6 +4030,7 @@ html {
 }
 
 .tm-media-ai-note {
+  align-self: stretch;
   margin: 0;
   padding: var(--tm-space-1) var(--tm-space-2);
   background: var(--tm-surface-1);

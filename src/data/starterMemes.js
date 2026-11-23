@@ -208,7 +208,7 @@ const RAW_SEED_MEMES = [
   { id: 'seed-relatable-03', category: 'relatable', tpl: 'tpl-this-is-fine', title: 'Boss: "Quick 5-minute sync?" — The meeting 85 minutes later', comments: [] },
 
   { id: 'seed-tech-04', category: 'tech', tpl: 'tpl-spiderman-point', title: 'Running git blame to roast whoever wrote this spaghetti', comments: [] },
-  { id: 'seed-dank-04', category: 'dank', tpl: 'tpl-stonks-up', title: 'MEMEDAQ $DOGE & $PEPE portfolio hitting all-time highs', comments: [] },
+  { id: 'seed-dank-04', category: 'dank', tpl: 'tpl-stonks-up', title: 'My imaginary meme-token portfolio hitting all-time highs', comments: [] },
   { id: 'seed-gaming-04', category: 'gaming', tpl: 'tpl-two-buttons', title: 'Final boss fight inventory management syndrome', comments: [] },
   { id: 'seed-relatable-04', category: 'relatable', tpl: 'tpl-drake-compare', title: 'Going to sleep at a reasonable hour vs revenge bedtime procrastination', comments: [] },
 

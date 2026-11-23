@@ -4,3 +4,16 @@ export const AI_BATTLE_IMAGE_LABEL = 'AI-generated image';
 export function isAiBattleImage(url) {
   return /^\/seed\/battle-[a-z0-9-]+\.webp$/.test(String(url || ''));
 }
+
+/**
+ * House memes and Meme Forge templates draw live captions over the same AI pictures
+ * (/seed/tpl-*.webp hold B002 pictures since 23 Nov 2026). Seed memes (/seed/seed-*)
+ * carry the tag baked in, so they don't need a second one.
+ */
+export function isAiTemplateImage(url) {
+  return /^(?:https?:\/\/[^/]+)?\/seed\/(?:tpl|battle)-[a-z0-9-]+\.webp$/.test(String(url || ''));
+}
+
+export function memeUsesAiPicture(meme) {
+  return Boolean(meme) && (isAiTemplateImage(meme.image_url) || isAiTemplateImage(meme.base_image_url));
+}

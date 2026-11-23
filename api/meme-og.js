@@ -4,6 +4,7 @@ import process from 'node:process';
 import { STARTER_MEMES, STUDIO_TEMPLATES } from '../src/data/starterMemes.js';
 import { SITE_ORIGIN, DEFAULT_OG_IMAGE, CATEGORY_ID_TO_SLUG } from '../src/data/seoRoutes.js';
 import { replaceRootContent, replaceRouteJsonLd, sendNotFound, sendTryLater } from './_seoShell.js';
+import { memeUsesAiPicture } from '../src/utils/battleImages.js';
 import { buildMemeJsonLd, memeSeoDescription, shareCardUrl, shareCardAlt, memePath } from '../src/utils/memeSeo.js';
 
 function escapeHtml(value = '') {
@@ -339,7 +340,11 @@ export default async function handler(req, res) {
         : `#${escapeHtml(meme.category || 'meme')}`
     } · Score ${Number(meme.score || 1)}${
       meme.created_at ? ` · <time datetime="${escapeHtml(meme.created_at)}">${escapeHtml(String(meme.created_at).slice(0, 10))}</time>` : ''
-    }</p><img src="${safeImg}" alt="${escapeHtml(meme.title || 'Meme')}" style="max-width:100%;height:auto;border-radius:12px;display:block;margin-bottom:16px;" /><p style="line-height:1.6;color:#cbd5e1;">${safeDesc}</p><nav style="display:flex;gap:16px;flex-wrap:wrap;"><a href="/" style="color:#00f5ff;">🔥 More funny memes</a><a href="/meme-generator" style="color:#ffb800;">Make your own meme</a><a href="/games" style="color:#ffb800;">Play free arcade games</a></nav></article></main>`;
+    }</p><img src="${safeImg}" alt="${escapeHtml(/^seed-/i.test(String(meme.id)) || memeUsesAiPicture(meme) ? `${meme.title || 'Meme'} (AI-generated image)` : meme.title || 'Meme')}" style="max-width:100%;height:auto;border-radius:12px;display:block;margin-bottom:16px;" />${
+      /^seed-/i.test(String(meme.id)) || memeUsesAiPicture(meme)
+        ? '<p style="margin:-10px 0 16px;color:#94a3b8;font-size:12px;">AI-generated image</p>'
+        : ''
+    }<p style="line-height:1.6;color:#cbd5e1;">${safeDesc}</p><nav style="display:flex;gap:16px;flex-wrap:wrap;"><a href="/" style="color:#00f5ff;">🔥 More funny memes</a><a href="/meme-generator" style="color:#ffb800;">Make your own meme</a><a href="/games" style="color:#ffb800;">Play free arcade games</a></nav></article></main>`;
     html = replaceRootContent(html, articleMarkup);
 
     // Per-meme structured data (replaces the copied route JSON-LD of the home shell).

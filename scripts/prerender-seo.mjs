@@ -61,7 +61,7 @@ function buildPrerenderMainHtml(route) {
       .map(
         (meme, idx) => `
           <figure style="margin:0;background:#110d22;border:1px solid #2c2452;border-radius:12px;overflow:hidden;">
-            <img src="${escapeHtml(meme.image_url)}" alt="${escapeHtml(meme.title)}" width="${meme.width || 540}" height="${meme.height || 480}" loading="${idx < 4 ? 'eager' : 'lazy'}" style="display:block;width:100%;height:auto;background:#07060f;" />
+            <img src="${escapeHtml(meme.image_url)}" alt="${escapeHtml(meme.is_seed ? `${meme.title} (AI-generated image)` : meme.title)}" width="${meme.width || 540}" height="${meme.height || 480}" loading="${idx < 4 ? 'eager' : 'lazy'}" style="display:block;width:100%;height:auto;background:#07060f;" />
             <figcaption style="padding:10px 12px;font-size:14px;line-height:1.4;color:#e2e8f0;">
               <strong>${escapeHtml(meme.title)}</strong>
               <span style="display:block;font-size:12px;color:#94a3b8;margin-top:4px;">@${escapeHtml(meme.author_name || 'TheMemesHQ')} · #${escapeHtml(route.category)}</span>
@@ -96,7 +96,7 @@ function buildPrerenderMainHtml(route) {
       .map(
         (meme) => `
           <figure style="margin:0;background:#110d22;border:1px solid #2c2452;border-radius:12px;overflow:hidden;">
-            <img src="${escapeHtml(meme.image_url)}" alt="${escapeHtml(meme.title)}" width="${meme.width || 540}" height="${meme.height || 480}" loading="lazy" decoding="async" style="display:block;width:100%;height:auto;" />
+            <img src="${escapeHtml(meme.image_url)}" alt="${escapeHtml(meme.is_seed ? `${meme.title} (AI-generated image)` : meme.title)}" width="${meme.width || 540}" height="${meme.height || 480}" loading="lazy" decoding="async" style="display:block;width:100%;height:auto;" />
             <figcaption style="padding:10px 12px;font-size:14px;color:#e2e8f0;">${escapeHtml(meme.title)}</figcaption>
           </figure>`
       )
@@ -389,7 +389,7 @@ function renderMemeHtml(baseHtml, meme) {
         <div style="font-size:12px;color:#19f0ff;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;">THE MEMES.net // #${escapeHtml(meme.category || 'dank')}</div>
         <h1 style="margin:8px 0 10px;font-size:28px;color:#ffffff;">${escapeHtml(meme.title || 'Meme')}</h1>
         <p style="margin:0 0 16px;font-size:13px;color:#94a3b8;">Posted by @${escapeHtml(author)} · Score: ${Number(meme.score || 1)}</p>
-        <img src="${escapeHtml(rawImg || safeImg)}" alt="${escapeHtml(meme.title || 'Meme')}" width="${meme.width || 540}" height="${meme.height || 480}" loading="eager" style="display:block;max-width:100%;height:auto;border-radius:12px;margin:0 auto 16px;" />
+        <img src="${escapeHtml(rawImg || safeImg)}" alt="${escapeHtml(meme.is_seed ? `${meme.title} (AI-generated image)` : meme.title || 'Meme')}" width="${meme.width || 540}" height="${meme.height || 480}" loading="eager" style="display:block;max-width:100%;height:auto;border-radius:12px;margin:0 auto 16px;" />
         <p style="margin:0 0 18px;color:#cbd5e1;line-height:1.6;">${safeDesc}</p>
         <div style="display:flex;gap:12px;flex-wrap:wrap;">
           <a href="/" style="color:#00f5ff;text-decoration:none;font-weight:700;">🔥 Explore More Memes</a>

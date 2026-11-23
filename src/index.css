@@ -4028,6 +4028,28 @@ html {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
 }
 
+.tm-media-ai-label {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  z-index: 5;
+  padding: 2px 8px;
+  border-radius: var(--tm-radius-pill, 999px);
+  background: rgba(7, 8, 16, 0.78);
+  color: var(--tm-text, #f8fafc);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.5;
+  pointer-events: none;
+}
+
+.tm-forge-ai-note {
+  margin: 6px 0 0;
+  color: var(--tm-text-muted, #94a3b8);
+  font-size: 12px;
+  text-align: center;
+}
+
 .tm-media-play {
   position: absolute;
   inset: 0;

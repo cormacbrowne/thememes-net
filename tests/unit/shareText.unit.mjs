@@ -27,7 +27,8 @@ test('share and invite call sites use the helper', () => {
     'src/components/BossKeyOverlay.jsx',
     'src/components/multiplayer/MultiplayerRoom.jsx',
     'src/components/GameShell.jsx',
-    'src/components/ArcadeLobby.jsx'
+    'src/components/ArcadeLobby.jsx',
+    'src/components/CreatorProfilePage.jsx'
   ]) {
     assert.match(readFileSync(file, 'utf8'), /linkSafeShareText\(/, `${file} should use linkSafeShareText`);
   }

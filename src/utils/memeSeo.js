@@ -38,8 +38,12 @@ export function buildMemeJsonLd(meme = {}, canonicalUrl, imageUrl) {
         url: imageUrl,
         caption: title,
         creditText: `@${author} on THE MEMES.net`,
-        creator: { '@type': 'Person', name: author },
-        copyrightNotice: `@${author} on THE MEMES.net`,
+        creator: meme.is_seed
+          ? { '@type': 'Organization', name: 'THE MEMES.net' }
+          : { '@type': 'Person', name: author },
+        copyrightNotice: meme.is_seed
+          ? 'AI-generated image published by THE MEMES.net'
+          : `@${author} on THE MEMES.net`,
         acquireLicensePage: `${ORIGIN}/terms`
       };
   return {

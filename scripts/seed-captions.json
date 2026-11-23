@@ -1,0 +1,322 @@
+{
+"tech-01": [
+"calm-capybara",
+"TESTS FAILED IN STAGING?",
+"FORCE PUSH TO MAIN ANYWAY"
+],
+"tech-02": [
+"surprised-owl",
+"ZERO ERRORS ON FIRST COMPILE",
+"WAIT... SOMETHING IS WRONG"
+],
+"tech-03": [
+"otter-nope-yes",
+"READ DOCS FOR 5 MINUTES",
+"TRIAL AND ERROR FOR 6 HOURS"
+],
+"tech-04": [
+"copycat-crabs",
+"WHO WROTE THIS GARBAGE CODE?!",
+"GIT BLAME: YOU, 3 MONTHS AGO"
+],
+"tech-05": [
+"cosmic-snail",
+"STEPPING THROUGH A DEBUGGER",
+"CONSOLE.LOG(\"HERE 123\")"
+],
+"tech-06": [
+"distracted-magpie",
+"FINISHING MY CURRENT APP",
+"BUYING A NEW $12 DOMAIN NAME"
+],
+"tech-07": [
+"bell-curve-sheep",
+"JUST USE A SIMPLE SQL TABLE",
+"19 MICROSERVICES FOR A BLOG"
+],
+"tech-08": [
+"hot-take-pigeon",
+"LIGHT MODE IN YOUR IDE IS A FLASHBANG",
+"FIGHT ME"
+],
+"tech-09": [
+"panicking-robot",
+"LEARN PROPER CSS GRID SPECS",
+"SLAP FLEXBOX ON EVERYTHING"
+],
+"tech-10": [
+"trophy-mouse",
+"FIXED 1 MISSING SEMICOLON",
+"I AM A 10X PRINCIPAL ENGINEER"
+],
+"tech-11": [
+"old-lemur",
+"WAIT, IT'S ALL HELD TOGETHER BY REGEX?",
+"IT WAS ALWAYS THIS WAY."
+],
+"tech-12": [
+"stunned-beaver",
+"DELETED 1 UNUSED COMMENT LINE",
+"ENTIRE BUILD PIPELINE CRASHED"
+],
+"tech-13": [
+"buff-hamster",
+"1969: 4KB RAM LANDED ON THE MOON",
+"2026: 64GB RAM LAGS ON 8 TABS"
+],
+"tech-14": [
+"dodgy-octopus",
+"I RECEIVE: 1.4 GB OF DISK SPACE",
+"YOU RECEIVE: 942 NODE MODULES"
+],
+"tech-15": [
+"clown-penguin",
+"IT'S ONLY A 2-LINE HOTFIX",
+"NO NEED TO TEST BEFORE DEPLOY"
+],
+"tech-16": [
+"unbothered-ram",
+"CLOSES 63 OPEN BROWSER TABS AT ONCE",
+"FEELS LIKE PURE ENLIGHTENMENT"
+],
+"dank-01": [
+"unbothered-ram",
+"LAUGHS AT A MEME & IMMEDIATELY UPVOTES",
+"ABSOLUTE CYBER-ARCADE LEGEND"
+],
+"dank-02": [
+"cosmic-snail",
+"REMEMBERING ACTUAL STUDY NOTES",
+"PLAYING SYNTHWAVE RADIO IN MY HEAD"
+],
+"dank-03": [
+"old-lemur",
+"WAIT... IT'S ALL REMIXED MEME LORE?",
+"IT WAS ALWAYS THIS WAY."
+],
+"dank-04": [
+"smug-beaver",
+"INVESTED ALL TOKENS IN RARE MEME STOCKS",
+"MAXIMUM OVERDRIVE GAINS!"
+],
+"dank-05": [
+"dodgy-octopus",
+"I RECEIVE: BREAKFAST AT 4:15 AM",
+"YOU RECEIVE: 3 AM ZOOMIES CONCERT"
+],
+"dank-06": [
+"bell-curve-sheep",
+"FUNNY CAPTION = GOOD MEME",
+"40 LAYERS OF IRONIC META LORE"
+],
+"dank-07": [
+"goose-hedgehog",
+"YOU ALREADY HAVE 3 KEYBOARDS AT HOME!",
+"CREAMY THOCK SWITCHES GO BRRRR"
+],
+"dank-08": [
+"buff-hamster",
+"1986 ARCADE: INSERT COIN & PLAY",
+"MODERN APP: MAKE AN ACCOUNT FOR THE CALCULATOR"
+],
+"dank-09": [
+"calm-capybara",
+"SPINNING ROULETTE AT MY DESK",
+"SHIFT+B: Q4 SYNERGY EXCEL CHART!"
+],
+"dank-10": [
+"surprised-owl",
+"CLICKED THE WTF SURPRISE BUTTON",
+"HONK.EXE STOLE MY MOUSE CURSOR!"
+],
+"dank-11": [
+"otter-nope-yes",
+"POSTING PLAIN UNEDITED TEXT",
+"DEEP-FRIED NEON MEME FORGE REMIX"
+],
+"dank-12": [
+"exit-tortoise",
+"CHECK ONE QUICK MEME ON LUNCH BREAK",
+"DROPPING 50 COINS IN NEON DOZER 86"
+],
+"dank-13": [
+"panicking-robot",
+"808 VINE BOOM BASS DROP",
+"TRIPLE AIRHORN BLAST"
+],
+"dank-14": [
+"trophy-mouse",
+"UNLOCKED 5X OVERDRIVE COMBO MULTIPLIER",
+"DOPAMINE RECEPTORS AT 1000%"
+],
+"dank-15": [
+"stunned-beaver",
+"CALCULATED THE EXACT WHEEL PHYSICS",
+"BALL LANDED ONE POCKET NEXT TO MINE"
+],
+"dank-16": [
+"copycat-crabs",
+"SHARED SINGLE BRAINCELL DETECTED",
+"INSTANT BEST FRIENDS FOREVER"
+],
+"gaming-01": [
+"exit-tortoise",
+"URGENT MAIN QUEST: SAVE THE WORLD",
+"80 HOURS OF FISHING MINIGAMES"
+],
+"gaming-02": [
+"clown-penguin",
+"WE END ON A WIN TONIGHT, BOYS",
+"BIRDS CHIRPING OUTSIDE AT 5 AM"
+],
+"gaming-03": [
+"surprised-owl",
+"BARELY BEAT THE BOSS WITH 1 HP LEFT",
+"PHASE 2 CUTSCENE STARTS IN LATIN"
+],
+"gaming-04": [
+"panicking-robot",
+"USE 1 OF MY 99 MEGA ELIXIRS NOW",
+"SAVE THEM IN CASE I NEED THEM LATER"
+],
+"gaming-05": [
+"otter-nope-yes",
+"STABLE 144 FPS ON MEDIUM SETTINGS",
+"RAY TRACING ULTRA AT 19 FPS"
+],
+"gaming-06": [
+"buff-hamster",
+"THE BOSS WHEN YOU FIGHT HIM",
+"THE BOSS WHEN UNLOCKED AS PLAYABLE"
+],
+"gaming-07": [
+"distracted-magpie",
+"120 UNPLAYED GAMES IN MY LIBRARY",
+"BUYING 4 MORE GAMES AT 80% OFF"
+],
+"gaming-08": [
+"trophy-mouse",
+"MISSED 28 SHOTS, THEN HIT 1 LUCKY ONE",
+"TYPING \"EZ TUTORIAL\" IN ALL CHAT"
+],
+"gaming-09": [
+"goose-hedgehog",
+"BRO THE SERVER LAG IS UNPLAYABLE!",
+"SCOREBOARD SHOWING 14 MS PING"
+],
+"gaming-10": [
+"unbothered-ram",
+"REVIVES TEAMMATES BEFORE LOOTING THE BOSS",
+"DROPS EXTRA AMMO. SAYS GG."
+],
+"gaming-11": [
+"calm-capybara",
+"ROOM FULL OF AMMO + AUTOSAVE ICON",
+"CHUCKLES: I'M IN DANGER"
+],
+"gaming-12": [
+"smug-beaver",
+"TURNED KEYBOARD RGB TO RAINBOW WAVE",
+"FPS & SKILL IMMEDIATELY +400%"
+],
+"gaming-13": [
+"dodgy-octopus",
+"I RECEIVE: 50,000 GOLD COINS",
+"YOU RECEIVE: +1% CRIT SWORD"
+],
+"gaming-14": [
+"cosmic-snail",
+"RELOAD WHEN THE MAGAZINE IS EMPTY",
+"RELOAD AFTER FIRING 1 SINGLE BULLET"
+],
+"gaming-15": [
+"hot-take-pigeon",
+"EVERY GAMER TESTS FALL DAMAGE FIRST",
+"AND CHECKS IF FIRE HURTS"
+],
+"gaming-16": [
+"3am-cat",
+"SCORE IS TIED 2-2 IN OVERTIME",
+"ACTIVATES 45-DEGREE GAMER LEAN"
+],
+"relatable-01": [
+"3am-cat",
+"ALARM SET FOR 6:30 AM TOMORROW",
+"TIME FOR A 3-HOUR HISTORY VIDEO"
+],
+"relatable-02": [
+"clown-penguin",
+"OPENING THE FRIDGE 6 TIMES IN 1 HOUR",
+"LOWERING STANDARDS & CHECKING AGAIN"
+],
+"relatable-03": [
+"calm-capybara",
+"THIS 90-MINUTE VIDEO MEETING",
+"COULD HAVE BEEN A 2-LINE MESSAGE"
+],
+"relatable-04": [
+"otter-nope-yes",
+"SLEEPING 8 HOURS LIKE AN ADULT",
+"SCROLLING MEMES UNTIL 2:30 AM"
+],
+"relatable-05": [
+"panicking-robot",
+"SAY \"THANK YOU\" LIKE A NORMAL PERSON",
+"PANIC AND REPLY \"YOU TOO!\""
+],
+"relatable-06": [
+"goose-hedgehog",
+"6 ALARMS GOING OFF EVERY 5 MINUTES",
+"ME IN BLANKET BURRITO MODE"
+],
+"relatable-07": [
+"smug-beaver",
+"REFUSED TO PAY $7 SHIPPING",
+"ADDED $35 OF ITEMS FOR FREE SHIPPING"
+],
+"relatable-08": [
+"trophy-mouse",
+"REPLIED TO 1 EMAIL AT 9:14 AM",
+"I DESERVE A COFFEE & MEME BREAK"
+],
+"relatable-09": [
+"surprised-owl",
+"LOST IN AN UNFAMILIAR CAR PARK",
+"TURNS THE MUSIC DOWN TO SEE BETTER"
+],
+"relatable-10": [
+"buff-hamster",
+"ME AT 11 PM: TOMORROW I CHANGE MY LIFE",
+"ME AT 7 AM: SNOOZE BUTTON CHAMPION"
+],
+"relatable-11": [
+"distracted-magpie",
+"ACTUALLY CLEANING THE ROOM",
+"PLAYING WITH STUFF I FOUND IN A BOX"
+],
+"relatable-12": [
+"unbothered-ram",
+"FRIDAY PLANS CANCELLED LAST MINUTE",
+"INSTANT COZY PYJAMA VICTORY"
+],
+"relatable-13": [
+"exit-tortoise",
+"STICK TO THE SHOPPING LIST: MILK ONLY",
+"GARLIC BREAD, CRISPS & ICE CREAM"
+],
+"relatable-14": [
+"stunned-beaver",
+"SAID \"TREAT YOURSELF\" ALL WEEKEND",
+"MONDAY MORNING BANK BALANCE CHECK"
+],
+"relatable-15": [
+"copycat-crabs",
+"DO YOU KNOW WHAT THAT ACRONYM MEANS?",
+"NO, I THOUGHT YOU KNEW!"
+],
+"relatable-16": [
+"hot-take-pigeon",
+"NAPS ARE 10X COZIER WHEN PROCRASTINATING",
+"FIGHT ME"
+]
+}

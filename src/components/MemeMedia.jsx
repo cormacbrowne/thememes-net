@@ -4,6 +4,7 @@ import { isOverlayBurnedIn } from './forge/forgeEngine';
 import { registerAutoplay, hasUserGestured } from '../utils/videoAutoplay';
 import { formatDuration } from '../utils/mediaPipeline';
 import { sanitizeMediaUrl } from '../utils/securityGuard';
+import { AI_BATTLE_IMAGE_LABEL, memeUsesAiPicture } from '../utils/battleImages';
 
 /**
  * PHASE 26: unified meme media renderer (image | gif | video) + non-destructive overlay.
@@ -62,7 +63,7 @@ const MemeMedia = memo(function MemeMedia({
         {safeImageUrl && (
           <img
             src={safeImageUrl}
-            alt={meme.title}
+            alt={memeUsesAiPicture(meme) ? `${meme.title} (${AI_BATTLE_IMAGE_LABEL})` : meme.title}
             width={meme.width || 540}
             height={meme.height || 480}
             loading={effectiveLoading}
@@ -73,6 +74,8 @@ const MemeMedia = memo(function MemeMedia({
         )}
         <MemeOverlay overlay={liveOverlay} />
         {meme.media_type === 'gif' && <span className="tm-media-badge">GIF</span>}
+        {/* D-003 C5: house memes and template memes sit on AI pictures. */}
+        {memeUsesAiPicture(meme) && <span className="tm-media-ai-label">{AI_BATTLE_IMAGE_LABEL}</span>}
       </div>
     );
   }

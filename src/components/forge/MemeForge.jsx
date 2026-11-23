@@ -32,6 +32,7 @@ import { VIRAL_CAPTIONS } from '../../data/starterMemes';
 import { getTemplateById, getTemplateBySlug, templateTextLayers } from '../../data/memeTemplates';
 import { publishErrorMessage, CHECKING_MESSAGE, RULES_PATH } from '../../utils/publishMeme';
 import { sfx } from '../../utils/soundEngine';
+import { AI_BATTLE_IMAGE_LABEL, isAiTemplateImage } from '../../utils/battleImages';
 import {
   PUBLIC_UPLOADS_ENABLED,
   UPLOADS_PAUSED_MESSAGE,
@@ -271,6 +272,8 @@ export default function MemeForge({ intent, user, onClose, onPublish, onRequireA
 
   const selected = doc.layers.find((l) => l.id === selectedId) || null;
   const hasMedia = Boolean(doc.base) || doc.panels.some((p) => p.src);
+  // D-003 C5: label the canvas when a house AI picture is the background.
+  const usesAiPicture = doc.panels.some((p) => isAiTemplateImage(p.src));
 
   const removeSelected = useCallback(() => {
     if (!selectedId) return;
@@ -861,6 +864,7 @@ export default function MemeForge({ intent, user, onClose, onPublish, onRequireA
                 }}
               />
             )}
+            {hasMedia && usesAiPicture && <p className="tm-forge-ai-note">{AI_BATTLE_IMAGE_LABEL}</p>}
             {(error || status) && (
               <div className={`tm-forge-msg ${error ? 'err' : ''}`} role="status" aria-live="polite">
                 {error || status}

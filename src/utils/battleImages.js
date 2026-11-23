@@ -2,7 +2,8 @@
 export const AI_BATTLE_IMAGE_LABEL = 'AI-generated image';
 
 export function isAiBattleImage(url) {
-  return /^\/seed\/battle-[a-z0-9-]+\.webp$/.test(String(url || ''));
+  // tpl-* files hold B002 pictures too since 23 Nov 2026, and older battles used them.
+  return /^\/seed\/(?:battle|tpl)-[a-z0-9-]+\.webp$/.test(String(url || ''));
 }
 
 /**

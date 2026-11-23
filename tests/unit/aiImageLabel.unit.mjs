@@ -14,7 +14,7 @@ test('recognises house AI pictures', () => {
 });
 
 test('feed media, meme pages and the Forge show the label', () => {
-  assert.match(readFileSync('src/components/MemeMedia.jsx', 'utf8'), /memeUsesAiPicture\(meme\) && <span className="tm-media-ai-label">/);
+  assert.match(readFileSync('src/components/MemeMedia.jsx', 'utf8'), /memeUsesAiPicture\(meme\) \? <p className="tm-media-ai-note">/);
   assert.match(readFileSync('api/meme-og.js', 'utf8'), /memeUsesAiPicture\(meme\)/);
   assert.match(readFileSync('src/components/forge/MemeForge.jsx', 'utf8'), /tm-forge-ai-note/);
 });

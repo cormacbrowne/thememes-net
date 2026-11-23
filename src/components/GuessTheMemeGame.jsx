@@ -18,6 +18,7 @@ import {
 import GameShell from './GameShell';
 import SignUpNudgeBanner from './SignUpNudgeBanner';
 import './GuessTheMemeGame.css';
+import { AI_BATTLE_IMAGE_LABEL } from '../utils/battleImages';
 
 // ==========================================
 // GUESS THE MEME: DAILY (Phase 29.9 / 2.3)
@@ -384,6 +385,7 @@ export default function GuessTheMemeGame({
 
           <div className="tm-guess-canvas-wrap">
             <canvas ref={canvasRef} width={360} height={320} className="tm-guess-canvas" />
+            <p className="tm-guess-ai-note">{AI_BATTLE_IMAGE_LABEL}</p>
             <div className="tm-guess-clarity-bar">
               <span>Clarity Step {clarityStep} / 5</span>
               <span>Worth {Math.max(20, (6 - clarityStep) * 20)} pts</span>

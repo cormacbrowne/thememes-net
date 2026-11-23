@@ -10,7 +10,7 @@ import { evaluateBadges } from '../config/badges.js';
 export const STUDIO_TEMPLATES = [
   {
     id: 'tpl-drake-compare',
-    name: '🙅 2-Panel Reject / Approve',
+    name: '🦦 Nope / Yes Otter',
     src: '/seed/tpl-drake-compare.webp',
     category: 'relatable',
     layoutId: 'drake',
@@ -19,7 +19,7 @@ export const STUDIO_TEMPLATES = [
   },
   {
     id: 'tpl-expanding-brain',
-    name: '🧠 4-Tier Expanding Galaxy Brain',
+    name: '🧠 Cosmic Snail',
     src: '/seed/tpl-expanding-brain.webp',
     category: 'tech',
     layoutId: 'classic',
@@ -28,7 +28,7 @@ export const STUDIO_TEMPLATES = [
   },
   {
     id: 'tpl-two-buttons',
-    name: '🔴 Two Red Buttons Panic Sweat',
+    name: '🔴 Panicking Robot',
     src: '/seed/tpl-two-buttons.webp',
     category: 'relatable',
     layoutId: 'classic',
@@ -37,7 +37,7 @@ export const STUDIO_TEMPLATES = [
   },
   {
     id: 'tpl-distracted-choice',
-    name: '👀 Distracted By Shiny New Thing',
+    name: '👀 Distracted Magpie',
     src: '/seed/tpl-distracted-choice.webp',
     category: 'tech',
     layoutId: 'classic',
@@ -46,7 +46,7 @@ export const STUDIO_TEMPLATES = [
   },
   {
     id: 'tpl-this-is-fine',
-    name: '🔥 Calm in the Chaos (Room on Fire)',
+    name: '🔥 Calm in the Chaos',
     src: '/seed/tpl-this-is-fine.webp',
     category: 'tech',
     layoutId: 'classic',
@@ -91,7 +91,7 @@ export const STUDIO_TEMPLATES = [
   },
   {
     id: 'tpl-woman-yelling-cat',
-    name: '🐱 Yelling vs Unbothered Dinner Cat',
+    name: '🪿 Goose vs Unbothered Hedgehog',
     src: '/seed/tpl-woman-yelling-cat.webp',
     category: 'relatable',
     layoutId: 'classic',
@@ -118,7 +118,7 @@ export const STUDIO_TEMPLATES = [
   },
   {
     id: 'tpl-always-has-been',
-    name: '👩‍🚀 It Was Always This Way',
+    name: '🌄 It Was Always This Way',
     src: '/seed/tpl-always-has-been.webp',
     category: 'dank',
     layoutId: 'classic',
@@ -127,7 +127,7 @@ export const STUDIO_TEMPLATES = [
   },
   {
     id: 'tpl-brain-at-3am',
-    name: '🌙 Sleeping Brain Wake-Up At 3 AM',
+    name: '🌙 Brain At 3 AM',
     src: '/seed/tpl-brain-at-3am.webp',
     category: 'relatable',
     layoutId: 'classic',
@@ -136,7 +136,7 @@ export const STUDIO_TEMPLATES = [
   },
   {
     id: 'tpl-surprised-shock',
-    name: '⚡ Surprised Cyber Shock Face',
+    name: '⚡ Surprised Owl',
     src: '/seed/tpl-surprised-shock.webp',
     category: 'gaming',
     layoutId: 'classic',
@@ -145,7 +145,7 @@ export const STUDIO_TEMPLATES = [
   },
   {
     id: 'tpl-trade-offer',
-    name: '🤝 Incoming Trade Offer Alert',
+    name: '🤝 Dodgy Deal',
     src: '/seed/tpl-trade-offer.webp',
     category: 'gaming',
     layoutId: 'classic',
@@ -154,7 +154,7 @@ export const STUDIO_TEMPLATES = [
   },
   {
     id: 'tpl-bell-curve-iq',
-    name: '📊 IQ Bell Curve Midwit Consensus',
+    name: '📊 Bell Curve Sheep',
     src: '/seed/tpl-bell-curve-iq.webp',
     category: 'tech',
     layoutId: 'classic',
@@ -163,7 +163,7 @@ export const STUDIO_TEMPLATES = [
   },
   {
     id: 'tpl-highway-exit',
-    name: '🏎️ Highway Exit Drift Turn',
+    name: '🏎️ Last-Second Exit',
     src: '/seed/tpl-highway-exit.webp',
     category: 'gaming',
     layoutId: 'classic',
@@ -172,7 +172,7 @@ export const STUDIO_TEMPLATES = [
   },
   {
     id: 'tpl-spiderman-point',
-    name: '👉 Double Clone Pointing Blame',
+    name: '👉 Copycat Crabs',
     src: '/seed/tpl-spiderman-point.webp',
     category: 'tech',
     layoutId: 'classic',
@@ -181,7 +181,7 @@ export const STUDIO_TEMPLATES = [
   },
   {
     id: 'tpl-trophy-celebration',
-    name: '🏆 Over-Celebrating 3rd Place Trophy',
+    name: '🏆 Over-Celebrating 3rd Place',
     src: '/seed/tpl-trophy-celebration.webp',
     category: 'gaming',
     layoutId: 'classic',

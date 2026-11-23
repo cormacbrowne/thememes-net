@@ -57,8 +57,13 @@ const MemeMedia = memo(function MemeMedia({
   const boxStyle = meme.width && meme.height ? { aspectRatio: `${meme.width} / ${meme.height}` } : undefined;
   const effectiveLoading = priority ? 'eager' : imgLoading;
 
+  // D-003 C5: house memes and template memes sit on AI pictures. The note goes under the
+  // picture (never on it), so it can't cover a caption.
+  const aiNote = memeUsesAiPicture(meme) ? <p className="tm-media-ai-note">{AI_BATTLE_IMAGE_LABEL}</p> : null;
+
   if (!isVideo) {
     return (
+      <>
       <div className={`tm-media-box ${className}`} style={boxStyle}>
         {safeImageUrl && (
           <img
@@ -74,9 +79,9 @@ const MemeMedia = memo(function MemeMedia({
         )}
         <MemeOverlay overlay={liveOverlay} />
         {meme.media_type === 'gif' && <span className="tm-media-badge">GIF</span>}
-        {/* D-003 C5: house memes and template memes sit on AI pictures. */}
-        {memeUsesAiPicture(meme) && <span className="tm-media-ai-label">{AI_BATTLE_IMAGE_LABEL}</span>}
       </div>
+      {aiNote}
+      </>
     );
   }
 

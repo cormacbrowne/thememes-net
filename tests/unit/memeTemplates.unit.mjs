@@ -94,5 +94,5 @@ test('B002 battle rotation points at 20 existing labelled images', async () => {
     assert.ok(isAiBattleImage(url));
     assert.ok(existsSync(new URL(`../../public${url}`, import.meta.url)), url);
   }
-  assert.equal(isAiBattleImage('/seed/tpl-two-buttons.webp'), false);
+  assert.equal(isAiBattleImage('/seed/tpl-two-buttons.webp'), true); // tpl-* hold B002 pictures since 23 Nov 2026
 });

@@ -380,3 +380,11 @@
     min-height: 44px;
   }
 }
+
+/* D-003 C5: the puzzle pictures are AI-generated */
+.tm-guess-ai-note {
+  margin: var(--tm-space-1) 0 0;
+  color: var(--tm-text-dim);
+  font-size: var(--tm-text-xs);
+  text-align: right;
+}

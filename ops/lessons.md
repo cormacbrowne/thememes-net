@@ -40,3 +40,9 @@ Format:
 - Didn't: our brand name "THE MEMES.net" contains another site's domain, and nobody had checked share text for auto-linking.
 - Routing note: a small fix like this belongs on Claude; the slots engine bug went to Gemini with a brief.
 - Suggest: growth-marketer and qa-reviewer add "read share text as a phone would (what gets auto-linked?)" to the share-preview checklist.
+
+## 2026-11-23: T-010 feed image swap
+- Worked: checking the live feed before building showed the graphic images came from the house memes on the 20 old templates, not from the 64 sample memes (those are switched off in the feed). Replacing the 20 template files fixed the feed, Forge and future house memes at once, with no database or Edge Function change. Running legal, design and QA in parallel against the exact deploy branch kept it to an afternoon.
+- Didn't: the first build targeted the sample memes because the brief (CLAUDE.md §8) described them as "the feed". Legal's first pass came back before its scope was widened, so it had to run twice.
+- Routing note: Claude did it end to end. Image compositing in headless Chromium with the site's own fonts made 64 images in under a minute.
+- Suggest: before any "replace what users see" task, screenshot the live page and list the image URLs first. Keep QA screenshots as small JPEGs; PNGs added 7 MB to the repo.

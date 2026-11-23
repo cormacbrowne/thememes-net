@@ -24,8 +24,8 @@ Statuses marked 🟡 came from a code search, not a full test. The dispatcher co
 ## C. Top priority: images
 | # | Item | Status | Lane | Notes |
 |---|---|---|---|---|
-| C1 | Replace the 64 graphic-style feed images with real AI images | ⬜ (B001 pilot of 4 waiting) | images: Gemini app; curation: C | CLAUDE.md §8 top priority. B001 is waiting for Cormac's Gemini run. |
-| C2 | Use the 20 new B002 images in Meme Forge and house memes (battles already use them) | ⬜ | C | Needs its own legal check (D-003). |
+| C1 | Replace the 64 graphic-style feed images with real AI images | ✅ first pass live 23 Nov (on the 20 B002 pictures); fresh pictures per meme still to come via B001+ | images: Gemini app; curation: C | CLAUDE.md §8 top priority. B001 is waiting for Cormac's Gemini run. |
+| C2 | Use the 20 new B002 images in Meme Forge and house memes (battles already use them) | ✅ live 23 Nov | C | Needs its own legal check (D-003). |
 | C3 | Replace the otter battle image | ⬜ | images | Due before 7 Dec (T-003). |
 | C4 | Review the other 48 library templates | ⬜ | C (legal + design) | Must happen before ads. |
 | C5 | Rename recognisable template names and files (D-005, D-003 Finding 5) | ⬜ | C→G (bulk rename) | Must happen before ads. Battle names need a new migration (Claude). |

@@ -4,6 +4,7 @@ import { sfx } from '../utils/soundEngine';
 import { PRANK_DISGUISE_TO_PATH, SITE_ORIGIN, getSeoRouteByPath } from '../data/seoRoutes';
 import CrackedScreenPrank from './CrackedScreenPrank';
 import './BossKeyOverlay.css';
+import { linkSafeShareText } from '../utils/shareText.js';
 
 const DISGUISE_MODES = [
   { id: 'excel', label: '📊 1. Spreadsheet' },
@@ -147,8 +148,8 @@ export default function BossKeyOverlay({
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       navigator
         .share({
-          title: shareTitle,
-          text: shareText,
+          title: linkSafeShareText(shareTitle),
+          text: linkSafeShareText(shareText),
           url: shareUrl
         })
         .catch(() => {});

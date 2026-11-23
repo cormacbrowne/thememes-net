@@ -5,6 +5,7 @@ import { VISIBLE_ARCADE_GAMES as ARCADE_GAMES_CATALOG } from '../data/arcadeGame
 import { FEATURE_CASINO_GAMES, CASINO_DISCLAIMER } from '../config/featureFlags';
 import NeonSign from './NeonSign';
 import SocialLinksBar from './SocialLinksBar';
+import { linkSafeShareText } from '../utils/shareText.js';
 
 export default function SeoDiscoveryFooter({
   onSelectCategory,
@@ -26,8 +27,8 @@ export default function SeoDiscoveryFooter({
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       try {
         await navigator.share({
-          title: 'THE MEMES.net — Free Meme Generator, Soundboard & Retro Arcade Games',
-          text: shareText,
+          title: linkSafeShareText('THE MEMES.net — Free Meme Generator, Soundboard & Retro Arcade Games'),
+          text: linkSafeShareText(shareText),
           url: shareUrl
         });
         trackShareClicked(null, 'site_footer');
@@ -43,7 +44,7 @@ export default function SeoDiscoveryFooter({
       if (typeof navigator === 'undefined' || typeof navigator.clipboard?.writeText !== 'function') {
         return;
       }
-      await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+      await navigator.clipboard.writeText(`${linkSafeShareText(shareText)} ${shareUrl}`);
       trackShareClicked(null, 'site_footer');
       sfx.playPop(2);
       setSharedSite(true);

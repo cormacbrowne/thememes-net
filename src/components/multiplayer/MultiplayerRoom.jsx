@@ -5,6 +5,7 @@ import { useGameRoom, loadMpProfile, saveMpProfile } from '../../hooks/useGameRo
 import { MP_AVATARS, buildInviteUrl, sanitizePlayerName, splitSeats } from '../../utils/multiplayer/roomCore';
 import { MP_GAMES } from '../../utils/multiplayer/mpGames';
 import './Multiplayer.css';
+import { linkSafeShareText } from '../../utils/shareText.js';
 
 const MpPokerTable = lazy(() => import('./MpPokerTable'));
 const MpTwentyOneTable = lazy(() => import('./MpTwentyOneTable'));
@@ -22,11 +23,11 @@ function InviteButton({ game, code, myName, compact = false }) {
   const handleInvite = () => {
     if (typeof window === 'undefined') return;
     const url = buildInviteUrl(window.location.origin, def.path, code);
-    const text = def.invite(myName);
+    const text = linkSafeShareText(def.invite(myName));
     navigator.clipboard?.writeText(`${text} ${url}`).catch(() => {});
     if (typeof navigator.share === 'function') {
       pulse('share', { surface: 'mp_invite', method: 'native', game });
-      navigator.share({ title: `${def.title} — THE MEMES.net`, text, url }).catch(() => {});
+      navigator.share({ title: linkSafeShareText(`${def.title} — THE MEMES.net`), text, url }).catch(() => {});
     } else {
       pulse('share', { surface: 'mp_invite', method: 'copy', game });
     }

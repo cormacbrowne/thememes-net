@@ -72,6 +72,14 @@ Set up `../thememes-net-gemini` as a git worktree for Antigravity (recommended),
 Some existing template files reference real people or characters by name (for example `tpl-spiderman-point`, `tpl-gigachad-verdict`, `tpl-woman-yelling-cat`). legal-compliance to review whether the names, the images, or both should change as part of the image replacement.
 **Recommendation:** replace with original AI images and neutral names during the feed image work.
 
+### D-006: Gemini takes the heavy code work (Cormac, 23 Nov 2026)
+Cormac's Pro plan includes Antigravity, so Gemini can do the bulk of code building and save Claude usage. **Proposed standing brief** (Max recommends):
+- **Gemini builds:** features and fixes that have a written spec (a concept card or a handoff), bulk edits and renames, tests, and screenshots. Neon (medium/high thinking) handles builds; Hydrogen (low) handles bulk edits.
+- **Claude keeps:** deciding what to build, writing each handoff, design/legal/audio calls, and review, QA and merging. Also anything touching security, RLS, migrations, money/M$, moderation, `vercel.json`/CSP, and deploys.
+- **How:** one handoff per task from `/handoff`, saved in `ops/handoffs/`. Gemini works on a `gemini/<slug>` branch in its own folder (D-004) and returns the report from `AGENTS.md`. Claude reviews, then Cormac says when to ship.
+- **First task:** `ops/handoffs/H-20261123-01-slots-surge.md`.
+**Recommendation:** approve, together with D-004 (worktree). Cost: £0, because it's included in the Pro plan. Risk: Gemini output still needs a Claude review pass, about a third of the cost of Claude building it.
+
 ## Decided
 
 ### D-001: The stack is Vite + React, not Next.js (21 Nov 2026)

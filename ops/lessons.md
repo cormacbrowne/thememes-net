@@ -34,3 +34,9 @@ Format:
 - Didn't: fixes went in piecemeal because the first search for flagged wording was too narrow. A file attached in Gemini was the wrong image, caught only by looking at the thumbnail.
 - Routing note: run legal's wording sweep across the whole repo before the first review round.
 - Suggest: check the thumbnail before every Gemini verification, and list every view of an image before adding a label.
+
+## 2026-11-23: T-007 share link went to the wrong site
+- Worked: before changing anything, loaded the live battle URL on a phone-size browser. That proved the preview card worked, so the bug was the message text: iMessage auto-links "MEMES.net".
+- Didn't: our brand name "THE MEMES.net" contains another site's domain, and nobody had checked share text for auto-linking.
+- Routing note: a small fix like this belongs on Claude; the slots engine bug went to Gemini with a brief.
+- Suggest: growth-marketer and qa-reviewer add "read share text as a phone would (what gets auto-linked?)" to the share-preview checklist.

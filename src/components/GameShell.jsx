@@ -7,6 +7,7 @@ import { RadioToggleButton } from './MemesRadio';
 import { Wallet } from './ui/Money';
 import PlayWithFriendsButton from './multiplayer/PlayWithFriendsButton';
 import './GameShell.css';
+import { linkSafeShareText } from '../utils/shareText.js';
 
 export default function GameShell({
   title,
@@ -143,7 +144,7 @@ export default function GameShell({
       pulse('share', { surface: 'game_shell', method: 'native' });
       navigator
         .share({
-          title: `${title} — Free Game on THE MEMES.net`,
+          title: linkSafeShareText(`${title} — Free Game on THE MEMES.net`),
           text: `Play ${title} free online! 🎮`,
           url: targetUrl
         })

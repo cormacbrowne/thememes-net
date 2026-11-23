@@ -19,6 +19,7 @@ import { track } from '../utils/analytics';
 import { triggerWinCelebration } from '../utils/winCelebration';
 import { AI_BATTLE_IMAGE_LABEL, isAiBattleImage } from '../utils/battleImages';
 import './DailyCaptionBattleModal.css';
+import { linkSafeShareText } from '../utils/shareText.js';
 
 // Plan 2.1 — Daily Caption Battle v2: Enter / Vote / Ranking / Results.
 const TABS = [
@@ -250,7 +251,7 @@ export default function DailyCaptionBattleModal({
       });
     try {
       if (typeof navigator !== 'undefined' && typeof navigator.share === 'function' && window.innerWidth <= 860) {
-        await navigator.share({ title, text, url });
+        await navigator.share({ title: linkSafeShareText(title), text: linkSafeShareText(text), url });
         recordShare();
         return;
       }

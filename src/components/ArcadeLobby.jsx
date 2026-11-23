@@ -46,6 +46,7 @@ import {
   saveGameRating
 } from '../utils/gameRatings';
 import './ArcadeLobby.css';
+import { linkSafeShareText } from '../utils/shareText.js';
 
 /** sessionStorage key the home portal sets to open the lobby on the Prank Screens list. */
 export const LOBBY_REALM_KEY = 'tm_lobby_realm';
@@ -153,8 +154,8 @@ export default function ArcadeLobby({
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       navigator
         .share({
-          title: `${item.label} — THE MEMES.net`,
-          text: `${item.pitch}`,
+          title: linkSafeShareText(`${item.label} — THE MEMES.net`),
+          text: linkSafeShareText(`${item.pitch}`),
           url: shareUrl
         })
         .catch(() => {});

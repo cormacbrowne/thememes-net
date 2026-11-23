@@ -51,6 +51,7 @@ const ArcadeInitialsModal = lazyWithRetry(() => import('./ArcadeInitialsModal'))
 const SwipeDeck = lazyWithRetry(() => import('./SwipeDeck'));
 const BattleArena = lazyWithRetry(() => import('./BattleArena'));
 import ArcadeLobby from './arcadeLobbyLazy';
+import { linkSafeShareText } from '../utils/shareText.js';
 const NeonBingoGame = lazyWithRetry(() => import('./NeonBingoGame'));
 const MemeCrushGame = lazyWithRetry(() => import('./MemeCrushGame'));
 const MemeInvadersGame = lazyWithRetry(() => import('./MemeInvadersGame'));
@@ -126,8 +127,8 @@ export function FixedArcadeTopBar({
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       navigator
         .share({
-          title: shareTitle,
-          text: shareText,
+          title: linkSafeShareText(shareTitle),
+          text: linkSafeShareText(shareText),
           url: shareUrl
         })
         .catch(() => {});

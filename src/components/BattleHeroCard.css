@@ -1,98 +1,267 @@
-/* Plan 2.1 / 2.7 — homepage "Today's Caption Battle" hero card (mobile-first). */
+/* Plan 2.1 / 2.7 / W2-1 — homepage "Today's Caption Battle" hero card (mobile-first). */
 .tm-battle-hero {
   display: grid;
   gap: 0;
   max-width: 1240px;
   margin: 0 auto 14px;
-  border-radius: var(--tm-radius-sheet, 18px);
+  border-radius: var(--tm-radius-sheet);
   overflow: hidden;
-  border: 1px solid rgba(255, 184, 0, 0.45);
-  background: linear-gradient(160deg, rgba(255, 184, 0, 0.1), rgba(255, 46, 136, 0.08) 60%, rgba(7, 6, 15, 0.9));
-  box-shadow: 0 0 22px rgba(255, 184, 0, 0.15);
+  border: 1px solid color-mix(in srgb, var(--tm-amber) 45%, transparent);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--tm-amber) 10%, transparent),
+    color-mix(in srgb, var(--tm-pink) 8%, transparent) 60%,
+    color-mix(in srgb, var(--tm-night-0) 92%, transparent)
+  );
+  box-shadow: var(--tm-shadow-2);
 }
+
 @media (min-width: 720px) {
   .tm-battle-hero {
     grid-template-columns: minmax(260px, 420px) 1fr;
   }
 }
+
 .tm-battle-hero-media {
   position: relative;
   aspect-ratio: 540 / 480;
-  background: #0d0a1c;
+  background: var(--tm-night-1);
 }
+
 .tm-battle-hero-media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
+
 .tm-battle-hero-skeleton {
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, #110d22, #1b1533, #110d22);
+  background: linear-gradient(90deg, var(--tm-night-1), var(--tm-night-2), var(--tm-night-1));
 }
+
 .tm-battle-hero-badge {
   position: absolute;
   top: 10px;
   left: 10px;
   padding: 5px 10px;
-  border-radius: 999px;
-  background: rgba(7, 6, 15, 0.82);
+  border-radius: var(--tm-radius-pill);
+  background: color-mix(in srgb, var(--tm-night-0) 86%, transparent);
   border: 1px solid var(--tm-amber);
   color: var(--tm-amber);
-  font-size: 11px;
+  font-size: var(--tm-text-xs);
   font-weight: 900;
   letter-spacing: 0.06em;
 }
+
 .tm-battle-hero-body {
   display: grid;
-  gap: 10px;
+  gap: var(--tm-space-3);
   align-content: center;
-  padding: 14px 16px 16px;
+  padding: var(--tm-space-4);
 }
+
 .tm-battle-hero-title {
   margin: 0;
   font-size: clamp(19px, 5.4vw, 26px);
-  color: #fff;
+  color: var(--tm-text);
   line-height: 1.15;
 }
+
 .tm-battle-hero-theme {
   justify-self: start;
   padding: 3px 10px;
-  border-radius: 999px;
-  background: rgba(25, 240, 255, 0.12);
+  border-radius: var(--tm-radius-pill);
+  background: color-mix(in srgb, var(--tm-cyan) 12%, transparent);
   color: var(--tm-cyan);
-  font-size: 12px;
+  font-size: var(--tm-text-sm);
   font-weight: 800;
 }
+
 .tm-battle-hero-stats {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--tm-space-2);
 }
+
 .tm-battle-hero-stat {
   padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--tm-radius-pill);
+  background: color-mix(in srgb, var(--tm-text) 6%, transparent);
+  border: 1px solid var(--tm-night-3);
   color: var(--tm-text);
-  font-size: 13px;
+  font-size: var(--tm-text-sm);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
+
+.tm-battle-hero-quickvote {
+  display: grid;
+  gap: var(--tm-space-2);
+  padding: var(--tm-space-3);
+  border-radius: var(--tm-radius-card);
+  border: 1px solid color-mix(in srgb, var(--tm-cyan) 42%, transparent);
+  background: color-mix(in srgb, var(--tm-night-1) 90%, transparent);
+}
+
+.tm-battle-hero-quickvote-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tm-space-2);
+  flex-wrap: wrap;
+}
+
+.tm-battle-hero-quickvote-kicker {
+  font-size: var(--tm-text-xs);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--tm-cyan);
+}
+
+.tm-battle-hero-quickvote-left {
+  font-size: var(--tm-text-xs);
+  color: var(--tm-text-dim);
+  font-weight: 700;
+}
+
+.tm-battle-hero-quickvote-caption {
+  margin: 0;
+  font-size: var(--tm-text-base);
+  font-weight: 700;
+  color: var(--tm-text);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.tm-battle-hero-quickvote-author {
+  font-size: var(--tm-text-sm);
+  font-weight: 500;
+  color: var(--tm-text-dim);
+}
+
+.tm-battle-hero-quickvote-btns {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--tm-space-2);
+}
+
+.tm-battle-hero-qbtn,
+.tm-battle-hero-qskip {
+  min-height: 44px;
+  min-width: 44px;
+  justify-content: center;
+  font-size: var(--tm-text-base);
+}
+
+.tm-battle-hero-qskip {
+  padding: 0 var(--tm-space-4);
+  border: 1px solid var(--tm-night-3);
+  background: var(--tm-night-2);
+  color: var(--tm-text-soft);
+}
+
+.tm-battle-hero-feedback {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tm-space-2);
+  flex-wrap: wrap;
+  padding: var(--tm-space-2) var(--tm-space-3);
+  border-radius: var(--tm-radius-btn);
+  border: 1px solid color-mix(in srgb, var(--tm-ok) 55%, transparent);
+  background: color-mix(in srgb, var(--tm-ok) 12%, var(--tm-night-1));
+  color: var(--tm-text);
+  font-size: var(--tm-text-sm);
+  font-weight: 700;
+}
+
+.tm-battle-hero-feedback.is-error {
+  border-color: color-mix(in srgb, var(--tm-danger) 60%, transparent);
+  background: color-mix(in srgb, var(--tm-danger) 14%, var(--tm-night-1));
+}
+
+.tm-battle-hero-feedback-btn {
+  min-height: 44px;
+  padding: 0 var(--tm-space-3);
+  border-radius: var(--tm-radius-btn);
+  border: 1px solid var(--tm-cyan);
+  background: transparent;
+  color: var(--tm-cyan);
+  font-size: var(--tm-text-sm);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tm-battle-hero-standings {
+  display: grid;
+  gap: var(--tm-space-1);
+  padding: var(--tm-space-2) var(--tm-space-3);
+  border-radius: var(--tm-radius-btn);
+  border: 1px solid color-mix(in srgb, var(--tm-amber) 35%, transparent);
+  background: color-mix(in srgb, var(--tm-amber) 8%, var(--tm-night-1));
+  font-size: var(--tm-text-sm);
+}
+
+.tm-battle-hero-standings-kicker {
+  font-size: var(--tm-text-xs);
+  font-weight: 800;
+  color: var(--tm-amber);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tm-battle-hero-standing-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tm-space-2);
+  color: var(--tm-text-soft);
+}
+
+.tm-battle-hero-standing-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tm-battle-hero-standing-row strong {
+  color: var(--tm-amber);
+  flex-shrink: 0;
+}
+
+.tm-battle-hero-actions {
+  display: grid;
+  gap: var(--tm-space-2);
+}
+
+@media (min-width: 460px) {
+  .tm-battle-hero-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .tm-battle-hero-cta {
-  min-height: 52px;
-  font-size: clamp(16px, 4.4vw, 18px);
+  min-height: 48px;
+  font-size: var(--tm-text-base);
   justify-content: center;
 }
+
+.tm-battle-hero-secondary {
+  border: 1px solid var(--tm-night-3);
+  background: var(--tm-night-1);
+  color: var(--tm-text);
+}
+
 .tm-battle-hero-winner {
   min-height: 44px;
   padding: 8px 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 184, 0, 0.35);
-  background: rgba(255, 184, 0, 0.08);
+  border-radius: var(--tm-radius-btn);
+  border: 1px solid color-mix(in srgb, var(--tm-amber) 35%, transparent);
+  background: color-mix(in srgb, var(--tm-amber) 8%, transparent);
   color: var(--tm-text);
-  font-size: 13px;
+  font-size: var(--tm-text-sm);
   text-align: left;
   cursor: pointer;
   overflow-wrap: anywhere;
@@ -108,4 +277,9 @@
   color: var(--tm-text);
   font-size: var(--tm-text-xs);
   font-weight: 700;
+}
+
+.tm-battle-hero button:focus-visible {
+  outline: 2px solid var(--tm-cyan);
+  outline-offset: 2px;
 }

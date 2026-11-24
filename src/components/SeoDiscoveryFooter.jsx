@@ -114,7 +114,7 @@ export default function SeoDiscoveryFooter({
                 className="tm-seo-link"
                 onClick={(e) => handleSpaLinkClick(e, () => onSelectCategory('dank'))}
               >
-                #Dank Memes &amp; Shitposts
+                #Dank Memes &amp; Chaos
               </a>
               <a
                 href="/memes/programming"

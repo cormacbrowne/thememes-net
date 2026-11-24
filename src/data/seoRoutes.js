@@ -493,7 +493,7 @@ const ALL_SEO_ROUTES = [
     path: '/memes/dank',
     title: 'Dank Memes & Viral Humor — Community Feed | THE MEMES.net',
     description:
-      'Browse dank memes, chaotic reaction images, and community shitposts. Double-tap to upvote, react with emojis, share the best ones, or upload your own.',
+      'Browse dank memes, chaotic reaction images, and community chaos. Double-tap to upvote, react with emojis, share the best ones, or upload your own.',
     h1: 'Dank Memes & Chaotic Community Humor',
     kicker: '#DANK Category // Instant Community Feed',
     changefreq: 'hourly',

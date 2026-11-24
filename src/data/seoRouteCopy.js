@@ -162,7 +162,7 @@ export const SEO_ROUTE_INTRO_PARAGRAPHS = {
     'Press Escape or click Coast is Clear whenever you are ready to return right back to your meme feed or arcade game—plus every spreadsheet recalculation and disguise interaction secretly banks bonus Arcade XP while you pretend to be deep in quarterly financial forecasting.'
   ],
   ['/memes/dank']: [
-    'Dive into the #DANK feed on THE MEMES.net—home to absurdist reaction memes, chaotic late-night shitposts, line-goes-up energy, cyber-arcade humor, and fresh community uploads. Every meme loads instantaneously offline or online with lightweight WebP art, and fresh community uploads rise to the top as people vote.',
+    'Dive into the #DANK feed on THE MEMES.net—home to absurdist reaction memes, chaotic late-night memes, line-goes-up energy, cyber-arcade humor, and fresh community uploads. Every meme loads instantaneously offline or online with lightweight WebP art, and fresh community uploads rise to the top as people vote.',
     'Double-tap any meme card to fire an instant upvote combo, drop 🔥 💀 😂 🗿 emoji reactions, save your favorites, tap Share to send a meme straight to a group chat, or open the free meme generator to put your own punchline, bold Impact captions, and custom stickers on any classic template. New uploads join the feed after a quick safety check.',
     `Explore the top #DANK memes right below with full captions and alt descriptions, switch effortlessly between Latest and Top leaderboards, copy direct Theater share links for Discord and WhatsApp, or jump straight into Programming, Gaming, and Relatable meme categories and ${ARCADE_GAME_COUNT} free retro arcade games.`
   ],

@@ -777,7 +777,7 @@ const RAW_TEMPLATES = [
   {
     slug: 'no-question-face',
     name: 'No …? Smug Face',
-    aka: ['No Meme', 'No Bitches Meme', 'Megamind No Style', 'Smug No Face'],
+    aka: ['No Meme', 'No ...? Meme', 'Megamind No Style', 'Smug No Face'],
     category: 'dank',
     summary: 'A smug big-headed cartoon cat raises an eyebrow with a sly half-smile.',
     meaning:

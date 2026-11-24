@@ -190,8 +190,8 @@
 }
 
 .tm-lobby-sort-btn {
-  min-height: 36px;
-  padding: 4px 10px;
+  min-height: 44px;
+  padding: 6px 12px;
   border-radius: 999px;
   border: none;
   background: transparent;
@@ -350,15 +350,15 @@
 .tm-lobby-stars-row {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 0;
 }
 
 .tm-lobby-star-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 32px;
-  min-height: 36px;
+  min-width: 44px;
+  min-height: 44px;
   padding: 0;
   border: none;
   border-radius: 6px;

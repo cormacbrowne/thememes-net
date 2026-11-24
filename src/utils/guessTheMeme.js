@@ -1,3 +1,5 @@
+import { SITE_URL } from './shareText.js';
+
 export const GUESS_STORAGE_KEY = 'tm_guess_meme_v1';
 
 export function getLocalDateKey(date = new Date()) {
@@ -50,7 +52,7 @@ export function formatGuessShareCard({
     `THE MEMES #${safeNum} 🎯 ${safeSolved}/${safeTotal}`,
     String(shareGrid || '').trim() || '🟥'.repeat(safeTotal),
     `🔥 Streak: ${safeStreak}`,
-    'https://www.thememes.net/games/guess-the-meme?ref=daily'
+    `${SITE_URL}/games/guess-the-meme?ref=daily`
   ].join('\n');
 }
 

@@ -26,6 +26,7 @@ import {
   triggerBlobDownload,
   shareExportedMeme
 } from './forge/forgeEngine';
+import { SITE_URL } from '../utils/shareText.js';
 
 export default function QuickUploadBar({
   onQuickPublishFile,
@@ -188,7 +189,7 @@ export default function QuickUploadBar({
         filename: res?.filename || `thememes-net-${Date.now()}.png`,
         title: quickTitle.trim() || caption || 'Fresh Meme',
         text: `${quickTitle.trim() || caption || 'Fresh Meme'} ⚡`,
-        url: typeof window !== 'undefined' ? window.location.origin : 'https://www.thememes.net'
+        url: SITE_URL
       });
       if (outcome.method === 'files' || outcome.method === 'url') {
         setStatusMsg('✅ Shared with www.thememes.net watermark!');

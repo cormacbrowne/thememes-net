@@ -7,7 +7,7 @@ import { RadioToggleButton } from './MemesRadio';
 import { Wallet } from './ui/Money';
 import PlayWithFriendsButton from './multiplayer/PlayWithFriendsButton';
 import './GameShell.css';
-import { linkSafeShareText } from '../utils/shareText.js';
+import { canonicalShareUrl, ensureShareUrlInText, linkSafeShareText } from '../utils/shareText.js';
 
 export default function GameShell({
   title,
@@ -135,8 +135,8 @@ export default function GameShell({
   const handleShareGame = () => {
     if (typeof window === 'undefined') return;
     const baseUrl = sharePath
-      ? `${window.location.origin}${sharePath.startsWith('/') ? sharePath : `/${sharePath}`}`
-      : window.location.href;
+      ? canonicalShareUrl(sharePath)
+      : canonicalShareUrl(`${window.location.pathname}${window.location.search}`);
     const sep = baseUrl.includes('?') ? '&' : '?';
     const targetUrl = baseUrl.includes('ref=') ? baseUrl : `${baseUrl}${sep}ref=game`;
     navigator.clipboard?.writeText(targetUrl).catch(() => {});
@@ -145,7 +145,7 @@ export default function GameShell({
       navigator
         .share({
           title: linkSafeShareText(`${title} — Free Game on THE MEMES.net`),
-          text: `Play ${title} free online! 🎮`,
+          text: ensureShareUrlInText(`Play ${title} free online! 🎮`, targetUrl),
           url: targetUrl
         })
         .catch(() => {});

@@ -5,7 +5,7 @@ import { VISIBLE_ARCADE_GAMES as ARCADE_GAMES_CATALOG } from '../data/arcadeGame
 import { FEATURE_CASINO_GAMES, CASINO_DISCLAIMER } from '../config/featureFlags';
 import NeonSign from './NeonSign';
 import SocialLinksBar from './SocialLinksBar';
-import { linkSafeShareText } from '../utils/shareText.js';
+import { SITE_URL, ensureShareUrlInText, linkSafeShareText } from '../utils/shareText.js';
 
 export default function SeoDiscoveryFooter({
   onSelectCategory,
@@ -20,15 +20,15 @@ export default function SeoDiscoveryFooter({
   const [sharedSite, setSharedSite] = useState(false);
 
   const handleShareSite = async () => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.thememes.net';
-    const shareUrl = `${origin}/?ref=footer`;
+    const shareUrl = `${SITE_URL}/?ref=footer`;
     const shareText =
       '🔥 Check out THE MEMES.net — Community Meme Feed, Free Meme Generator, Soundboard & Retro Arcade Games!';
+    const shareMessage = ensureShareUrlInText(shareText, shareUrl);
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       try {
         await navigator.share({
           title: linkSafeShareText('THE MEMES.net — Free Meme Generator, Soundboard & Retro Arcade Games'),
-          text: linkSafeShareText(shareText),
+          text: shareMessage,
           url: shareUrl
         });
         trackShareClicked(null, 'site_footer');
@@ -44,7 +44,7 @@ export default function SeoDiscoveryFooter({
       if (typeof navigator === 'undefined' || typeof navigator.clipboard?.writeText !== 'function') {
         return;
       }
-      await navigator.clipboard.writeText(`${linkSafeShareText(shareText)} ${shareUrl}`);
+      await navigator.clipboard.writeText(shareMessage);
       trackShareClicked(null, 'site_footer');
       sfx.playPop(2);
       setSharedSite(true);

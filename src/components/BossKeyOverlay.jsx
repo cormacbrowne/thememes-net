@@ -4,7 +4,7 @@ import { sfx } from '../utils/soundEngine';
 import { PRANK_DISGUISE_TO_PATH, SITE_ORIGIN, getSeoRouteByPath } from '../data/seoRoutes';
 import CrackedScreenPrank from './CrackedScreenPrank';
 import './BossKeyOverlay.css';
-import { linkSafeShareText } from '../utils/shareText.js';
+import { SITE_URL, ensureShareUrlInText, linkSafeShareText } from '../utils/shareText.js';
 
 const DISGUISE_MODES = [
   { id: 'excel', label: '📊 1. Spreadsheet' },
@@ -140,7 +140,7 @@ export default function BossKeyOverlay({
     if (typeof window === 'undefined') return;
     const path = PRANK_DISGUISE_TO_PATH[disguise] || '/fake-excel-boss-screen';
     const route = getSeoRouteByPath(path);
-    const shareUrl = `${window.location.origin || SITE_ORIGIN}${path}?ref=prank`;
+    const shareUrl = `${SITE_URL || SITE_ORIGIN}${path}?ref=prank`;
     const label = DISGUISE_MODES.find((d) => d.id === disguise)?.label || 'Prank Screen';
     const shareTitle = route?.title || `Boss Key Disguise: ${label}`;
     const shareText = route?.description || 'Check out this interactive prank/boss screen on THE MEMES.net! 💼';
@@ -149,7 +149,7 @@ export default function BossKeyOverlay({
       navigator
         .share({
           title: linkSafeShareText(shareTitle),
-          text: linkSafeShareText(shareText),
+          text: ensureShareUrlInText(shareText, shareUrl),
           url: shareUrl
         })
         .catch(() => {});
@@ -1198,7 +1198,7 @@ export default function BossKeyOverlay({
               [QR: IT TICKET #42069]
             </div>
             <div style={{ fontSize: '13px', lineHeight: 1.6, opacity: 0.92 }}>
-              <div>For more information about this issue and possible fixes, visit thememes.net/prank-screens</div>
+              <div>For more information about this issue and possible fixes, visit https://www.thememes.net/prank-screens</div>
               <div>If you call a support person, give them this info:</div>
               <div style={{ fontWeight: 700 }}>
                 Stop code: CRITICAL_SYNERGY_OVERFLOW_EXCEPTION (0x00000420)

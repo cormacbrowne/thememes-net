@@ -1,25 +1,58 @@
-// "THE MEMES.net" must never reach share text: phones auto-link it to memes.net.
+// "THE MEMES.net" and bare "thememes.net" must never reach share text:
+// phones auto-link "THE MEMES.net" to memes.net or fail to link bare domains.
+// Every share text and URL must use https://www.thememes.net.
 // Run: npm run test:unit
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { linkSafeShareText } from '../../src/utils/shareText.js';
+import {
+  SITE_URL,
+  canonicalShareUrl,
+  ensureShareUrlInText,
+  linkSafeShareText
+} from '../../src/utils/shareText.js';
 
-test('rewrites the spaced brand to the real domain', () => {
-  assert.equal(
-    linkSafeShareText('Compete in "Buff vs Smol" on THE MEMES.net'),
-    'Compete in "Buff vs Smol" on thememes.net'
-  );
-  assert.equal(linkSafeShareText('the memes.net rocks, THE  MEMES.net!'), 'thememes.net rocks, thememes.net!');
+test('SITE_URL is the canonical https://www.thememes.net address', () => {
+  assert.equal(SITE_URL, 'https://www.thememes.net');
 });
 
-test('leaves other text alone', () => {
-  assert.equal(linkSafeShareText('Play on thememes.net'), 'Play on thememes.net');
+test('rewrites the spaced brand and bare/non-www domains to https://www.thememes.net', () => {
+  assert.equal(
+    linkSafeShareText('Compete in "Buff vs Smol" on THE MEMES.net'),
+    'Compete in "Buff vs Smol" on https://www.thememes.net'
+  );
+  assert.equal(
+    linkSafeShareText('the memes.net rocks, THE  MEMES.net!'),
+    'https://www.thememes.net rocks, https://www.thememes.net!'
+  );
+  assert.equal(linkSafeShareText('Play on thememes.net'), 'Play on https://www.thememes.net');
+  assert.equal(linkSafeShareText('Visit www.thememes.net/games'), 'Visit https://www.thememes.net/games');
+  assert.equal(linkSafeShareText('https://thememes.net/u/demo'), 'https://www.thememes.net/u/demo');
+});
+
+test('is idempotent on canonical https://www.thememes.net URLs and handles empty values', () => {
+  assert.equal(
+    linkSafeShareText('Play https://www.thememes.net/games/poker?ref=game'),
+    'Play https://www.thememes.net/games/poker?ref=game'
+  );
   assert.equal(linkSafeShareText(''), '');
   assert.equal(linkSafeShareText(undefined), undefined);
 });
 
-test('share and invite call sites use the helper', () => {
+test('canonicalShareUrl and ensureShareUrlInText guarantee a full https://www URL', () => {
+  assert.equal(canonicalShareUrl('/games/poker?room=ABC'), 'https://www.thememes.net/games/poker?room=ABC');
+  assert.equal(canonicalShareUrl('https://thememes.net/u/neo'), 'https://www.thememes.net/u/neo');
+  assert.equal(
+    ensureShareUrlInText('Check out THE MEMES.net', 'https://www.thememes.net/m/42?ref=share'),
+    'Check out https://www.thememes.net https://www.thememes.net/m/42?ref=share'
+  );
+  assert.equal(
+    ensureShareUrlInText('Already linked https://www.thememes.net/m/42', 'https://www.thememes.net/m/42'),
+    'Already linked https://www.thememes.net/m/42'
+  );
+});
+
+test('share and invite call sites use shareText helpers', () => {
   for (const file of [
     'src/components/DailyCaptionBattleModal.jsx',
     'src/components/SeoDiscoveryFooter.jsx',
@@ -28,8 +61,23 @@ test('share and invite call sites use the helper', () => {
     'src/components/multiplayer/MultiplayerRoom.jsx',
     'src/components/GameShell.jsx',
     'src/components/ArcadeLobby.jsx',
-    'src/components/CreatorProfilePage.jsx'
+    'src/components/CreatorProfilePage.jsx',
+    'src/components/ShareMemeSheet.jsx',
+    'src/components/MemeLiveCelebrationModal.jsx',
+    'src/components/GuessTheMemeGame.jsx',
+    'src/components/HigherOrLowerGame.jsx',
+    'src/components/Magic8BallOracle.jsx',
+    'src/components/QuickUploadBar.jsx',
+    'src/components/forge/MemeForge.jsx',
+    'src/components/forge/forgeEngine.js',
+    'src/utils/socialKitCanvas.js',
+    'src/utils/analytics.js'
   ]) {
-    assert.match(readFileSync(file, 'utf8'), /linkSafeShareText\(/, `${file} should use linkSafeShareText`);
+    const content = readFileSync(file, 'utf8');
+    assert.match(
+      content,
+      /shareText\.js/,
+      `${file} should import helpers from shareText.js`
+    );
   }
 });

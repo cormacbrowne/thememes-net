@@ -3,6 +3,7 @@ import { sfx } from '../utils/soundEngine';
 import { ARCADE_ECONOMY_RULES, formatMoney } from '../utils/tokenEconomy';
 import GameShell from './GameShell';
 import './Magic8BallOracle.css';
+import { SITE_URL, linkSafeShareText } from '../utils/shareText.js';
 
 const FORTUNE_BANK = [
   // 9 Auspicious (45% chance -> 2.0x gross payout = 90.0% RTP / 10.0% House Edge)
@@ -148,7 +149,9 @@ export default function Magic8BallOracle({
   };
 
   const handleCopyProphecy = () => {
-    const shareText = `🎱 Asked the 80s Neon Magic 8-Ball: "${question}" → "${fortune.text}" #THEMEMES #80sArcade ${window.location.origin}/games/magic-8-ball`;
+    const shareText = linkSafeShareText(
+      `🎱 Asked the 80s Neon Magic 8-Ball: "${question}" → "${fortune.text}" #THEMEMES #80sArcade ${SITE_URL}/games/magic-8-ball?ref=game`
+    );
     navigator.clipboard?.writeText(shareText).catch(() => {});
     sfx.playToggle?.();
     setCopiedId(true);

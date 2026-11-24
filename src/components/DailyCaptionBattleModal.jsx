@@ -19,7 +19,7 @@ import { track } from '../utils/analytics';
 import { triggerWinCelebration } from '../utils/winCelebration';
 import { AI_BATTLE_IMAGE_LABEL, isAiBattleImage } from '../utils/battleImages';
 import './DailyCaptionBattleModal.css';
-import { linkSafeShareText } from '../utils/shareText.js';
+import { SITE_URL, ensureShareUrlInText, linkSafeShareText } from '../utils/shareText.js';
 
 // Plan 2.1 — Daily Caption Battle v2: Enter / Vote / Ranking / Results.
 const TABS = [
@@ -302,11 +302,10 @@ export default function DailyCaptionBattleModal({
 
   const shareBattleLink = async (entryId = null, customText = '') => {
     if (!battle?.id) return;
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.thememes.net';
     const path = entryId
       ? `/battle/${encodeURIComponent(battle.id)}/e/${encodeURIComponent(entryId)}`
       : `/battle/${encodeURIComponent(battle.id)}`;
-    const url = `${origin}${path}?ref=share`;
+    const url = `${SITE_URL}${path}?ref=share`;
     const title = battle.title ? `${battle.title} — Daily Caption Battle` : 'Daily Caption Battle | THE MEMES.net';
     const text = customText || `Compete in "${battle.title || 'Daily Caption Battle'}" on THE MEMES.net`;
     const recordShare = () =>
@@ -317,7 +316,11 @@ export default function DailyCaptionBattleModal({
       });
     try {
       if (typeof navigator !== 'undefined' && typeof navigator.share === 'function' && window.innerWidth <= 860) {
-        await navigator.share({ title: linkSafeShareText(title), text: linkSafeShareText(text), url });
+        await navigator.share({
+          title: linkSafeShareText(title),
+          text: ensureShareUrlInText(text, url),
+          url
+        });
         recordShare();
         return;
       }

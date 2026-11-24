@@ -4,6 +4,7 @@ import { Share2, Download, Link2, X, Check } from 'lucide-react';
 import { exportMemeWithWatermark, triggerBlobDownload } from './forge/forgeEngine';
 import Sheet from './ui/Sheet';
 import './ShareMemeSheet.css';
+import { ensureShareUrlInText, linkSafeShareText } from '../utils/shareText.js';
 
 /**
  * Share / save a posted meme with the thememes.net logo burned in (owner brief 17 Nov 2026).
@@ -36,14 +37,15 @@ export async function executeMemeNativeShare({
     typeof nav?.canShare === 'function';
   const file = new File([result.blob], filename, { type: result.blob.type || result.mime });
   try {
+    const shareTitle = linkSafeShareText(meme.title || 'Meme from THE MEMES.net');
     if (canShareFiles && nav.canShare({ files: [file] })) {
-      await nav.share({ files: [file], title: meme.title || 'Meme from thememes.net', text: shareUrl });
+      await nav.share({ files: [file], title: shareTitle, text: ensureShareUrlInText(meme.title || '', shareUrl) });
       onTrack('meme_shared', { channel: 'native_file', meme_id: String(meme.id) });
       onShared?.('native_file');
       return { status: 'shared', channel: 'native_file' };
     }
     if (typeof nav?.share === 'function') {
-      await nav.share({ title: meme.title || 'Meme from thememes.net', url: shareUrl });
+      await nav.share({ title: shareTitle, text: ensureShareUrlInText(meme.title || '', shareUrl), url: shareUrl });
       onTrack('meme_shared', { channel: 'native_link', meme_id: String(meme.id) });
       onShared?.('native_link');
       return { status: 'shared', channel: 'native_link' };
@@ -217,7 +219,7 @@ export default function ShareMemeSheet({ meme, initialAction = 'share', onClose,
             <a
               key={q.id}
               className={`tm-share-quick-btn is-${q.id}`}
-              href={q.url(shareUrl, meme.title || 'Meme from thememes.net')}
+              href={q.url(shareUrl, linkSafeShareText(meme.title || 'Meme from THE MEMES.net'))}
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => {

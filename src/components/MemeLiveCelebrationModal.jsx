@@ -4,6 +4,7 @@ import MemeMedia from './MemeMedia';
 import SignUpNudgeBanner from './SignUpNudgeBanner';
 import { exportMemeWithWatermark, shareExportedMeme, triggerBlobDownload } from './forge/forgeEngine';
 import './MemeLiveCelebrationModal.css';
+import { SITE_URL, ensureShareUrlInText } from '../utils/shareText.js';
 
 const CONFETTI_PIECES = [
   { left: '8%', delay: '0s', color: '#00f3ff' },
@@ -42,10 +43,7 @@ export default function MemeLiveCelebrationModal({
 
   if (!meme) return null;
 
-  const shareUrl =
-    typeof window !== 'undefined'
-      ? memeShareUrl(meme, window.location.origin)
-      : memeShareUrl(meme, 'https://www.thememes.net');
+  const shareUrl = memeShareUrl(meme, SITE_URL);
 
   const handleCopy = (e) => {
     if (onShareMeme) {
@@ -64,7 +62,7 @@ export default function MemeLiveCelebrationModal({
         blob: exported?.blob || null,
         filename: exported?.filename || `thememes-net-${meme.id || Date.now()}.png`,
         title: meme.title || 'Check out my new meme!',
-        text: `🚀 "${meme.title || 'Fresh Meme'}" ⚡`,
+        text: ensureShareUrlInText(`🚀 "${meme.title || 'Fresh Meme'}" ⚡`, shareUrl),
         url: shareUrl
       });
       if (outcome.method === 'files' || outcome.method === 'url') {

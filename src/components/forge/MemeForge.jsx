@@ -22,6 +22,7 @@ import {
   triggerBlobDownload,
   shareExportedMeme
 } from './forgeEngine';
+import { SITE_URL } from '../../utils/shareText.js';
 import {
   ACCEPT_MEDIA,
   validateFile,
@@ -492,7 +493,7 @@ export default function MemeForge({ intent, user, onClose, onPublish, onRequireA
         filename: res?.filename || `thememes-net-${Date.now()}.png`,
         title: title.trim() || fallbackText || 'Fresh Meme',
         text: `${title.trim() || fallbackText || 'Fresh Meme'} ⚡`,
-        url: typeof window !== 'undefined' ? window.location.origin : 'https://www.thememes.net'
+        url: SITE_URL
       });
       if (outcome.method === 'files' || outcome.method === 'url') {
         setStatus('✅ Shared with www.thememes.net watermark!');

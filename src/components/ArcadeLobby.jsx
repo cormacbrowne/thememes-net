@@ -19,6 +19,7 @@ import { sfx } from '../utils/soundEngine';
 import { formatMoney } from '../utils/tokenEconomy';
 import { haptic } from '../utils/juice';
 import { SITE_ORIGIN } from '../data/seoRoutes';
+import { SITE_URL, ensureShareUrlInText, linkSafeShareText } from '../utils/shareText.js';
 import { RadioStationStrip } from './MemesRadio';
 import { DeLoreanDockBanner } from './DeLoreanTimeMachine';
 import { Wallet } from './ui/Money';
@@ -46,7 +47,6 @@ import {
   saveGameRating
 } from '../utils/gameRatings';
 import './ArcadeLobby.css';
-import { linkSafeShareText } from '../utils/shareText.js';
 
 /** sessionStorage key the home portal sets to open the lobby on the Prank Screens list. */
 export const LOBBY_REALM_KEY = 'tm_lobby_realm';
@@ -149,13 +149,13 @@ export default function ArcadeLobby({
     if (typeof window === 'undefined' || !item?.path) return;
     const sep = item.path.includes('?') ? '&' : '?';
     const refTag = item.group ? 'arcade' : 'prank';
-    const shareUrl = `${window.location.origin || SITE_ORIGIN}${item.path}${sep}ref=${refTag}`;
+    const shareUrl = `${SITE_URL || SITE_ORIGIN}${item.path}${sep}ref=${refTag}`;
     navigator.clipboard?.writeText(shareUrl).catch(() => {});
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       navigator
         .share({
           title: linkSafeShareText(`${item.label} — THE MEMES.net`),
-          text: linkSafeShareText(`${item.pitch}`),
+          text: ensureShareUrlInText(item.pitch, shareUrl),
           url: shareUrl
         })
         .catch(() => {});

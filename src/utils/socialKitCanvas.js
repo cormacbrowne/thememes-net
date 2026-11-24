@@ -1,4 +1,5 @@
 import { AI_BATTLE_IMAGE_LABEL, isAiBattleImage } from './battleImages.js';
+import { SITE_URL } from './shareText.js';
 // Plan 2.8 — Social Kit canvas generator (1080x1920 Stories/TikTok & 1080x1080 Square)
 // plus suggested daily caption copy for /admin/social.
 
@@ -44,8 +45,8 @@ export function buildSocialCaption({
       `🏆 @${winAuthor}${scorePart}: “${winCaption}”`,
       ...runnerLines,
       ``,
-      `Can you beat today’s prompt? Enter free at thememes.net ⚔️`,
-      `Hall of Fame: thememes.net/hall-of-fame`,
+      `Can you beat today’s prompt? Enter free at ${SITE_URL} ⚔️`,
+      `Hall of Fame: ${SITE_URL}/hall-of-fame`,
       `#TheMemesNet #CaptionBattle #MemeOfTheDay #FunnyMemes #DailyMeme`
     ].join('\n');
   }
@@ -61,7 +62,7 @@ export function buildSocialCaption({
     `💬 ${prompt}`,
     countLine,
     ``,
-    `Drop your best caption & vote now at thememes.net 👑`,
+    `Drop your best caption & vote now at ${SITE_URL} 👑`,
     `Top vote tomorrow wins the 24h Caption King crown!`,
     `#TheMemesNet #CaptionBattle #MemeChallenge #FunnyMemes #MemeGenerator`
   ]

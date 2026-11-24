@@ -1,6 +1,7 @@
 import { pulse, pulseTimer, isPulseAllowed, resolveReturningVisitor } from './pulse';
 import { track as providerTrack } from '../lib/analytics';
 import { memePath } from './memeSeo';
+import { SITE_URL, canonicalShareUrl } from './shareText.js';
 
 const viewedKeysThisSession = new Set();
 const featuresUsedThisSession = new Set();
@@ -48,8 +49,7 @@ export function track(eventName, props = {}) {
  * Pass the meme (readable /m/<id>/<slug> URL) or just its id (/m/<id>).
  */
 export function memeShareUrl(memeOrId, origin) {
-  const base =
-    origin || (typeof window !== 'undefined' ? window.location.origin : 'https://www.thememes.net');
+  const base = origin ? canonicalShareUrl(origin) : SITE_URL;
   const meme = memeOrId && typeof memeOrId === 'object' ? memeOrId : { id: memeOrId };
   const id = encodeURIComponent(String(meme.id));
   return `${base}${memePath(meme)}?ref=share&m=${id}`;

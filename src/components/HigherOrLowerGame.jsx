@@ -5,6 +5,7 @@ import { sfx } from '../utils/soundEngine';
 import { triggerWinCelebration } from '../utils/winCelebration';
 import GameShell from './GameShell';
 import './HigherOrLowerGame.css';
+import { ensureShareUrlInText } from '../utils/shareText.js';
 
 // ==========================================
 // HIGHER OR LOWER: MEME EDITION (Phase 29.11)
@@ -149,7 +150,10 @@ export default function HigherOrLowerGame({
   };
 
   const handleShareStreak = async () => {
-    const shareText = `⬆️⬇️ HIGHER OR LOWER — Meme Edition\n🔥 Streak: ${streak} (Best: ${bestStreak})\nCan you beat me? https://www.thememes.net/games/higher-or-lower?ref=score`;
+    const shareText = ensureShareUrlInText(
+      `⬆️⬇️ HIGHER OR LOWER — Meme Edition\n🔥 Streak: ${streak} (Best: ${bestStreak})\nCan you beat me?`,
+      'https://www.thememes.net/games/higher-or-lower?ref=score'
+    );
     track('share_card_copied', { game: 'higher_or_lower' });
     try {
       if (navigator.share && typeof window !== 'undefined' && window.innerWidth <= 860) {

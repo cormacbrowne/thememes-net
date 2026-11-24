@@ -19,6 +19,7 @@ import GameShell from './GameShell';
 import SignUpNudgeBanner from './SignUpNudgeBanner';
 import './GuessTheMemeGame.css';
 import { AI_BATTLE_IMAGE_LABEL } from '../utils/battleImages';
+import { linkSafeShareText } from '../utils/shareText.js';
 
 // ==========================================
 // GUESS THE MEME: DAILY (Phase 29.9 / 2.3)
@@ -320,14 +321,14 @@ export default function GuessTheMemeGame({
     });
     try {
       if (navigator.share) {
-        await navigator.share({ title: `THE MEMES #${puzzleNumber}`, text: shareCardText });
+        await navigator.share({ title: `THE MEMES #${puzzleNumber}`, text: linkSafeShareText(shareCardText) });
         return;
       }
     } catch {
       // fallback to clipboard
     }
     try {
-      await navigator.clipboard?.writeText(shareCardText);
+      await navigator.clipboard?.writeText(linkSafeShareText(shareCardText));
       setCopiedNotice(true);
       setTimeout(() => setCopiedNotice(false), 2200);
     } catch {

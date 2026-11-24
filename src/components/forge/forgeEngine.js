@@ -3,6 +3,7 @@
 // Shared text-fit, layouts, fonts, and canvas renderer (preview + export use the same math).
 // ==========================================
 import { renderArtworkWithFilter, stampArcadeCartridgeFooter } from '../../utils/canvasMutator';
+import { SITE_URL, canonicalShareUrl, ensureShareUrlInText, linkSafeShareText } from '../../utils/shareText.js';
 
 export const FONT_PACK = [
   { id: 'Anton', label: 'Impact / Anton', css: "'Anton', Impact, 'Arial Black', sans-serif" },
@@ -893,13 +894,16 @@ export async function exportMemeWithWatermark(
  * Shares an exported watermarked File via Web Share API Level 2 when supported,
  * or falls back cleanly to URL share / clipboard copy + download.
  */
-export async function shareExportedMeme({ blob, filename, title, text, url }) {
+export async function shareExportedMeme({ blob, filename, title, text, url = SITE_URL }) {
+  const shareUrl = canonicalShareUrl(url || SITE_URL);
+  const safeTitle = linkSafeShareText(title);
+  const safeText = ensureShareUrlInText(text, shareUrl);
   if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
     if (blob && typeof File !== 'undefined') {
       const file = new File([blob], filename || 'meme-thememes-net.png', { type: blob.type || 'image/png' });
       try {
         if (navigator.canShare?.({ files: [file] })) {
-          await navigator.share({ files: [file], title, text, url });
+          await navigator.share({ files: [file], title: safeTitle, text: safeText, url: shareUrl });
           return { method: 'files' };
         }
       } catch (err) {
@@ -907,14 +911,14 @@ export async function shareExportedMeme({ blob, filename, title, text, url }) {
       }
     }
     try {
-      await navigator.share({ title, text, url });
+      await navigator.share({ title: safeTitle, text: safeText, url: shareUrl });
       return { method: 'url' };
     } catch (err) {
       if (err?.name === 'AbortError') return { method: 'cancelled' };
     }
   }
-  if (url && navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(url).catch(() => {});
+  if (shareUrl && navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(shareUrl).catch(() => {});
   }
   if (blob) {
     triggerBlobDownload(blob, filename || 'meme-thememes-net.png');

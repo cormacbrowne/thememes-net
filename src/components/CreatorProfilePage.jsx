@@ -16,7 +16,7 @@ import PixelAvatar from './PixelAvatar';
 import PixelAvatarPicker from './PixelAvatarPicker';
 import HouseBadge from './HouseBadge';
 import './CreatorProfilePage.css';
-import { linkSafeShareText } from '../utils/shareText.js';
+import { SITE_URL, ensureShareUrlInText, linkSafeShareText } from '../utils/shareText.js';
 
 const NOTIF_PREFS_KEY = 'tm_notif_prefs_v1';
 const DEFAULT_NOTIF_PREFS = {
@@ -111,12 +111,12 @@ export default function CreatorProfilePage({
   const handleShareProfile = async () => {
     const cleanHandle = profile?.handle || handle;
     const path = getCreatorProfilePath(cleanHandle);
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://thememes.net';
-    const url = `${origin}${path}?ref=profile`;
+    const url = `${SITE_URL}${path}?ref=profile`;
     const title = linkSafeShareText(`@${cleanHandle} — Level ${rankObj.level} ${rankObj.title} | THE MEMES.net`);
+    const text = ensureShareUrlInText(`Check out @${cleanHandle} on THE MEMES.net`, url);
     try {
       if (typeof navigator !== 'undefined' && typeof navigator.share === 'function' && window.innerWidth <= 860) {
-        await navigator.share({ title, url });
+        await navigator.share({ title, text, url });
         track('meme_shared', { channel: 'profile_link' });
         return;
       }

@@ -51,7 +51,7 @@ const ArcadeInitialsModal = lazyWithRetry(() => import('./ArcadeInitialsModal'))
 const SwipeDeck = lazyWithRetry(() => import('./SwipeDeck'));
 const BattleArena = lazyWithRetry(() => import('./BattleArena'));
 import ArcadeLobby from './arcadeLobbyLazy';
-import { linkSafeShareText } from '../utils/shareText.js';
+import { SITE_URL, ensureShareUrlInText, linkSafeShareText } from '../utils/shareText.js';
 const NeonBingoGame = lazyWithRetry(() => import('./NeonBingoGame'));
 const MemeCrushGame = lazyWithRetry(() => import('./MemeCrushGame'));
 const MemeInvadersGame = lazyWithRetry(() => import('./MemeInvadersGame'));
@@ -115,7 +115,7 @@ export function FixedArcadeTopBar({
     if (typeof window === 'undefined') return;
     const canonical = GAME_VIEW_MODE_TO_PATH[viewMode] || window.location.pathname;
     const sep = canonical.includes('?') ? '&' : '?';
-    const shareUrl = `${window.location.origin || SITE_ORIGIN}${canonical}${sep}ref=game`;
+    const shareUrl = `${SITE_URL || SITE_ORIGIN}${canonical}${sep}ref=game`;
     const gameMeta = getArcadeGameById(viewMode);
     const shareTitle = gameMeta
       ? `${gameMeta.label} | THE MEMES.net`
@@ -128,7 +128,7 @@ export function FixedArcadeTopBar({
       navigator
         .share({
           title: linkSafeShareText(shareTitle),
-          text: linkSafeShareText(shareText),
+          text: ensureShareUrlInText(shareText, shareUrl),
           url: shareUrl
         })
         .catch(() => {});

@@ -1,9 +1,12 @@
 /* Plan 2.1 / 2.7 / W2-1 — homepage "Today's Caption Battle" hero card (mobile-first). */
 .tm-battle-hero {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0;
+  width: 100%;
   max-width: 1240px;
   margin: 0 auto 14px;
+  box-sizing: border-box;
   border-radius: var(--tm-radius-sheet);
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--tm-amber) 45%, transparent);
@@ -18,20 +21,32 @@
 
 @media (min-width: 720px) {
   .tm-battle-hero {
-    grid-template-columns: minmax(260px, 420px) 1fr;
+    grid-template-columns: minmax(220px, 320px) minmax(0, 1fr);
+    align-items: stretch;
   }
 }
 
 .tm-battle-hero-media {
   position: relative;
-  aspect-ratio: 540 / 480;
-  background: var(--tm-night-1);
+  height: clamp(164px, 24svh, 204px);
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--tm-night-0);
+}
+
+@media (min-width: 720px) {
+  .tm-battle-hero-media {
+    height: auto;
+    min-height: 200px;
+    max-height: 280px;
+  }
 }
 
 .tm-battle-hero-media img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 
@@ -57,14 +72,17 @@
 
 .tm-battle-hero-body {
   display: grid;
-  gap: var(--tm-space-3);
+  gap: var(--tm-space-2);
   align-content: center;
-  padding: var(--tm-space-4);
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: var(--tm-space-3);
 }
 
 .tm-battle-hero-title {
   margin: 0;
-  font-size: clamp(19px, 5.4vw, 26px);
+  font-size: var(--tm-text-lg);
   color: var(--tm-text);
   line-height: 1.15;
 }
@@ -99,7 +117,10 @@
 .tm-battle-hero-quickvote {
   display: grid;
   gap: var(--tm-space-2);
-  padding: var(--tm-space-3);
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: var(--tm-space-2) var(--tm-space-3);
   border-radius: var(--tm-radius-card);
   border: 1px solid color-mix(in srgb, var(--tm-cyan) 42%, transparent);
   background: color-mix(in srgb, var(--tm-night-1) 90%, transparent);
@@ -143,7 +164,7 @@
 
 .tm-battle-hero-quickvote-btns {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: var(--tm-space-2);
 }
 
@@ -233,19 +254,26 @@
 
 .tm-battle-hero-actions {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--tm-space-2);
+  min-width: 0;
+  max-width: 100%;
 }
 
-@media (min-width: 460px) {
+@media (min-width: 350px) {
   .tm-battle-hero-actions {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 .tm-battle-hero-cta {
-  min-height: 48px;
-  font-size: var(--tm-text-base);
+  min-height: 44px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0 var(--tm-space-2);
+  font-size: var(--tm-text-sm);
   justify-content: center;
+  text-align: center;
 }
 
 .tm-battle-hero-secondary {

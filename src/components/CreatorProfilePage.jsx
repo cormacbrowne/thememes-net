@@ -1,5 +1,31 @@
 import { REMIX_ENABLED } from '../config/featureFlags';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  ArrowLeft,
+  Award,
+  Bell,
+  Calendar,
+  Check,
+  Coins,
+  Crown,
+  Flag,
+  Flame,
+  Gamepad2,
+  Heart,
+  Image,
+  Lock,
+  Medal,
+  Palette,
+  PenLine,
+  Share2,
+  ShieldCheck,
+  Shuffle,
+  Sparkles,
+  Swords,
+  Trophy,
+  UserPlus,
+  Zap
+} from 'lucide-react';
 import { getSupabaseClient } from '../supabaseClient';
 import { getLevelForXp } from '../config/progression';
 import { formatMemeUploadDate } from '../data/starterMemes';
@@ -19,12 +45,31 @@ import './CreatorProfilePage.css';
 import { SITE_URL, ensureShareUrlInText, linkSafeShareText } from '../utils/shareText.js';
 
 const NOTIF_PREFS_KEY = 'tm_notif_prefs_v1';
+const INITIAL_BADGE_COUNT = 4;
 const DEFAULT_NOTIF_PREFS = {
   battleResults: true,
   memeMilestones: true,
   streakReminder: true,
   dailyBattleLive: false
 };
+
+const BADGE_ICON_MAP = {
+  'first-meme': Palette,
+  'first-battle': Swords,
+  'podium-finish': Medal,
+  'battle-champion': Trophy,
+  'caption-king': Crown,
+  'streak-7': Flame,
+  'streak-30': Sparkles,
+  'upvotes-100': Zap,
+  'remix-master': Shuffle,
+  'wholesome-hero': Heart
+};
+
+function renderBadgeIcon(badgeId) {
+  const Icon = BADGE_ICON_MAP[badgeId] || Award;
+  return <Icon size={18} strokeWidth={1.8} aria-hidden="true" />;
+}
 
 function loadNotifPrefs() {
   try {
@@ -61,6 +106,7 @@ export default function CreatorProfilePage({
   const [bioBusy, setBioBusy] = useState(false);
   const [bioMessage, setBioMessage] = useState('');
   const [shareCopied, setShareCopied] = useState(false);
+  const [showAllBadges, setShowAllBadges] = useState(false);
   const [notifPrefs, setNotifPrefs] = useState(() => loadNotifPrefs());
 
   useEffect(() => {
@@ -87,6 +133,11 @@ export default function CreatorProfilePage({
 
   const rankObj = profile?.levelInfo || getLevelForXp(profile?.stats?.playerXp || 0);
 
+  const sortedBadges = useMemo(() => {
+    const list = Array.isArray(profile?.badges) ? profile.badges : [];
+    return [...list].sort((a, b) => Number(b.unlocked) - Number(a.unlocked));
+  }, [profile]);
+
   const handleSaveBio = async (e) => {
     e.preventDefault();
     if (!profile?.isMe || bioBusy) return;
@@ -105,7 +156,7 @@ export default function CreatorProfilePage({
     }
     setProfile((prev) => (prev ? { ...prev, bio: res.bio } : prev));
     setBioDraft(res.bio || '');
-    setBioMessage('✅ Bio saved!');
+    setBioMessage('Bio saved.');
   };
 
   const handleShareProfile = async () => {
@@ -188,8 +239,11 @@ export default function CreatorProfilePage({
     }
     setProfile((prev) => (prev ? { ...prev, avatarId: res.avatarId } : prev));
     onAvatarUpdated?.(res.avatarId);
-    setAvatarMessage('✅ Saved built-in pixel avatar!');
+    setAvatarMessage('Saved built-in pixel avatar.');
   };
+
+  const visibleBadges = showAllBadges ? sortedBadges : sortedBadges.slice(0, INITIAL_BADGE_COUNT);
+  const unlockedCount = sortedBadges.filter((b) => b.unlocked).length;
 
   return (
     <section
@@ -204,19 +258,18 @@ export default function CreatorProfilePage({
           data-testid="creator-back-to-feed"
           onClick={onBackToFeed}
         >
-          ← Back to Feed
+          <ArrowLeft size={16} strokeWidth={2} aria-hidden="true" />
+          <span>Back to Feed</span>
         </button>
-        <div style={{ fontSize: '12px', color: 'var(--tm-text-dim)' }}>
-          {getCreatorProfilePath(profile?.handle || handle)}
-        </div>
+        <div className="tm-creator-path-label">{getCreatorProfilePath(profile?.handle || handle)}</div>
       </div>
 
       {loading && !profile ? (
-        <div className="tm-creator-hero-card">⏳ Loading creator profile...</div>
+        <div className="tm-creator-hero-card">Loading creator profile...</div>
       ) : !profile ? (
         <div className="tm-creator-hero-card">
           <h1>Creator handle not found</h1>
-          <p style={{ color: 'var(--tm-text-dim)' }}>
+          <p className="tm-creator-empty-note">
             Handles may contain letters, numbers, underscores, or hyphens (2–32 chars).
           </p>
         </div>
@@ -232,36 +285,38 @@ export default function CreatorProfilePage({
                 <PixelAvatar
                   avatarId={profile.avatarId}
                   handle={profile.handle}
-                  size={74}
+                  size={72}
                   frame={profile.isCaptionKing ? 'caption-king' : ''}
                 />
-                <div>
+                <div className="tm-creator-identity-text">
                   <div className="tm-creator-handle-row">
                     <h1 data-testid="creator-profile-handle">@{profile.handle}</h1>
                     {profile.isHouse && <HouseBadge />}
                     {profile.verified && !profile.isHouse && (
-                      <span className="tm-verified-pill">🛡️ Verified Creator</span>
+                      <span className="tm-verified-pill">
+                        <ShieldCheck size={12} strokeWidth={2} aria-hidden="true" />
+                        <span>Verified</span>
+                      </span>
                     )}
                     {profile.isCaptionKing && (
-                      <span className="tm-rarity-badge supernova">👑 Caption King (24h)</span>
+                      <span className="tm-rarity-badge supernova">
+                        <Crown size={12} strokeWidth={2} aria-hidden="true" />
+                        <span>Caption King (24h)</span>
+                      </span>
                     )}
-                    <span
-                      className="tm-tag"
-                      style={{ background: 'rgba(250,204,21,0.18)', color: 'var(--tm-amber)' }}
-                    >
+                    <span className="tm-creator-level-pill">
                       Lv.{rankObj.level} {rankObj.title}
                     </span>
                   </div>
-                  <div style={{ fontSize: '13px', color: 'var(--tm-text-soft)', marginTop: '6px' }}>
+                  <div className="tm-creator-followers-line">
                     <strong data-testid="creator-follower-count">
                       {profile.followerCount.toLocaleString()}
                     </strong>{' '}
-                    Followers • 🔥 {profile.streakDays || 0}d Streak • 🏆 {profile.captionWins || 0} Battle Wins •{' '}
-                    {profile.stats.totalScore.toLocaleString()} Upvotes
+                    followers
                   </div>
                   {profile.isHouse && (
                     <p className="tm-creator-bio" data-testid="creator-profile-house-note">
-                      🤖 This is THE MEMES.net’s AI account. Its memes and battle captions are written by AI,
+                      This is THE MEMES.net’s AI account. Its memes and battle captions are written by AI,
                       checked by our moderators, always labelled “House”, and never win prizes, M$, XP or Hall of Fame spots.
                     </p>
                   )}
@@ -276,11 +331,21 @@ export default function CreatorProfilePage({
               <div className="tm-creator-actions">
                 <button
                   type="button"
-                  className="tm-btn"
+                  className="tm-btn tm-creator-action-btn"
                   data-testid="creator-share-btn"
                   onClick={handleShareProfile}
                 >
-                  {shareCopied ? '✅ Link Copied!' : '🔗 Share Profile'}
+                  {shareCopied ? (
+                    <>
+                      <Check size={15} strokeWidth={2} aria-hidden="true" />
+                      <span>Link Copied</span>
+                    </>
+                  ) : (
+                    <>
+                      <Share2 size={15} strokeWidth={2} aria-hidden="true" />
+                      <span>Share Profile</span>
+                    </>
+                  )}
                 </button>
                 {!profile.isMe && (
                   <>
@@ -291,17 +356,27 @@ export default function CreatorProfilePage({
                       className={`tm-follow-btn ${profile.isFollowing ? 'following' : ''}`}
                       onClick={handleFollowClick}
                     >
-                      {profile.isFollowing ? '✓ Following' : '+ Follow'}
+                      {profile.isFollowing ? (
+                        <>
+                          <Check size={15} strokeWidth={2} aria-hidden="true" />
+                          <span>✓ Following</span>
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus size={15} strokeWidth={2} aria-hidden="true" />
+                          <span>+ Follow</span>
+                        </>
+                      )}
                     </button>
                     {onReportProfile && (
                       <button
                         type="button"
-                        className="tm-btn"
-                        style={{ minHeight: '44px' }}
+                        className="tm-btn tm-creator-action-btn"
                         data-testid="creator-report-btn"
                         onClick={() => onReportProfile(profile.handle)}
                       >
-                        🚩 Report
+                        <Flag size={15} strokeWidth={2} aria-hidden="true" />
+                        <span>Report</span>
                       </button>
                     )}
                   </>
@@ -309,28 +384,32 @@ export default function CreatorProfilePage({
               </div>
             </div>
 
-            {followMessage && (
-              <div style={{ marginTop: '10px', fontSize: '12px', color: 'var(--tm-amber)' }}>
-                {followMessage}
-              </div>
-            )}
+            {followMessage && <div className="tm-creator-follow-msg">{followMessage}</div>}
 
             <div className="tm-creator-stats-strip">
               <div className="tm-creator-kpi">
                 <strong>{profile.stats.memesCount}</strong>
-                <span>Memes Posted</span>
+                <span>
+                  <Image size={13} strokeWidth={1.8} aria-hidden="true" /> Memes
+                </span>
               </div>
               <div className="tm-creator-kpi">
-                <strong style={{ color: 'var(--tm-amber)' }}>{profile.stats.totalScore.toLocaleString()}</strong>
-                <span>Total Upvotes</span>
+                <strong>{profile.stats.totalScore.toLocaleString()}</strong>
+                <span>
+                  <Flame size={13} strokeWidth={1.8} aria-hidden="true" /> Upvotes
+                </span>
               </div>
               <div className="tm-creator-kpi">
-                <strong style={{ color: '#fb923c' }}>🔥 {profile.streakDays || 0}d</strong>
-                <span>Daily Streak</span>
+                <strong>{profile.streakDays || 0}d</strong>
+                <span>
+                  <Calendar size={13} strokeWidth={1.8} aria-hidden="true" /> Streak
+                </span>
               </div>
               <div className="tm-creator-kpi">
-                <strong style={{ color: 'var(--tm-cyan)' }}>🏆 {profile.captionWins || 0}</strong>
-                <span>Battle Wins</span>
+                <strong>{profile.captionWins || 0}</strong>
+                <span>
+                  <Trophy size={13} strokeWidth={1.8} aria-hidden="true" /> Battle Wins
+                </span>
               </div>
             </div>
 
@@ -345,7 +424,10 @@ export default function CreatorProfilePage({
 
                 <form className="tm-creator-bio-form" onSubmit={handleSaveBio} data-testid="creator-bio-form">
                   <div className="tm-avatar-picker-head">
-                    <label htmlFor="tm-creator-bio-input">✍️ YOUR PROFILE BIO</label>
+                    <label htmlFor="tm-creator-bio-input" className="tm-avatar-picker-title">
+                      <PenLine size={14} strokeWidth={1.9} aria-hidden="true" />
+                      <span>Profile Bio</span>
+                    </label>
                     <span className="tm-avatar-picker-hint">{bioDraft.length}/160</span>
                   </div>
                   <div className="tm-creator-bio-row">
@@ -371,14 +453,17 @@ export default function CreatorProfilePage({
           {profile.isMe && (
             <div className="tm-creator-own-grid">
               <section className="tm-creator-section" data-testid="creator-mdollarz-history">
-                <h2>💵 MEMEDOLLARZ LEDGER (JUST FOR FUN)</h2>
-                <div style={{ fontSize: '14px', marginBottom: '10px', color: 'var(--tm-text-soft)' }}>
+                <h2 className="tm-creator-section-heading">
+                  <Coins size={16} strokeWidth={1.9} aria-hidden="true" />
+                  <span>MemeDollarz Ledger (Just for Fun)</span>
+                </h2>
+                <div className="tm-creator-ledger-summary">
                   Balance:{' '}
-                  <strong style={{ color: 'var(--tm-amber)' }}>
+                  <strong className="tm-creator-ledger-val">
                     {formatMoney(tokens, { centz: memeCentz, zero: 'balance' })}
                   </strong>{' '}
                   · Earned today:{' '}
-                  <strong style={{ color: 'var(--tm-ok)' }}>
+                  <strong className="tm-creator-ledger-ok">
                     {formatMoney(tokenLedger?.totalToday || 0, { zero: 'balance' })}
                   </strong>
                 </div>
@@ -413,16 +498,17 @@ export default function CreatorProfilePage({
               </section>
 
               <section className="tm-creator-section" data-testid="creator-notif-prefs">
-                <h2>🔔 NOTIFICATION SETTINGS</h2>
-                <p style={{ fontSize: '12px', color: 'var(--tm-text-dim)', margin: '0 0 10px' }}>
-                  Saved on this device for Phase 3 push alerts.
-                </p>
+                <h2 className="tm-creator-section-heading">
+                  <Bell size={16} strokeWidth={1.9} aria-hidden="true" />
+                  <span>Notification Settings</span>
+                </h2>
+                <p className="tm-creator-section-sub">Saved on this device for alert preferences.</p>
                 <div className="tm-creator-notif-list">
                   {[
-                    { key: 'battleResults', label: '🏆 Battle results are in' },
-                    { key: 'memeMilestones', label: '🔥 My meme hits 10 / 100 upvotes' },
-                    { key: 'streakReminder', label: '⏰ Evening streak saver reminder' },
-                    { key: 'dailyBattleLive', label: '⚔️ Today’s Caption Battle goes live' }
+                    { key: 'battleResults', label: 'Battle results are in' },
+                    { key: 'memeMilestones', label: 'My meme hits 10 / 100 upvotes' },
+                    { key: 'streakReminder', label: 'Evening streak saver reminder' },
+                    { key: 'dailyBattleLive', label: 'Today’s Caption Battle goes live' }
                   ].map((item) => (
                     <label key={item.key} className="tm-creator-notif-toggle">
                       <input
@@ -438,27 +524,52 @@ export default function CreatorProfilePage({
             </div>
           )}
 
-          {/* Badges */}
-          <div className="tm-creator-section" data-testid="creator-badges-section">
-            <h2>🏅 CREATOR BADGES</h2>
-            <div className="tm-badges-grid">
-              {profile.badges.map((b) => (
-                <div key={b.id} className={`tm-badge-card ${b.unlocked ? 'unlocked' : 'locked'}`}>
-                  <span style={{ fontSize: '24px' }}>{b.icon}</span>
-                  <div>
-                    <div style={{ fontWeight: 800, fontSize: '13px' }}>{b.name || b.title}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--tm-text-dim)' }}>{b.desc}</div>
+          {/* Badges (top 4 + See all) */}
+          <section className="tm-creator-section" data-testid="creator-badges-section">
+            <div className="tm-creator-section-head">
+              <h2 className="tm-creator-section-heading">
+                <Award size={16} strokeWidth={1.9} aria-hidden="true" />
+                <span>Creator Badges ({unlockedCount}/{sortedBadges.length})</span>
+              </h2>
+              {sortedBadges.length > INITIAL_BADGE_COUNT && (
+                <button
+                  type="button"
+                  className="tm-creator-see-all-btn"
+                  aria-expanded={showAllBadges}
+                  onClick={() => setShowAllBadges((prev) => !prev)}
+                >
+                  {showAllBadges ? 'Show fewer' : `See all ${sortedBadges.length}`}
+                </button>
+              )}
+            </div>
+            <div className="tm-creator-badges-grid">
+              {visibleBadges.map((b) => (
+                <div key={b.id} className={`tm-creator-badge-card ${b.unlocked ? 'unlocked' : 'locked'}`}>
+                  <span className="tm-creator-badge-icon">{renderBadgeIcon(b.id)}</span>
+                  <div className="tm-creator-badge-copy">
+                    <div className="tm-creator-badge-name">
+                      <span>{b.name || b.title}</span>
+                      {b.unlocked ? (
+                        <Check size={13} strokeWidth={2.2} className="tm-creator-badge-ok" aria-label="Unlocked" />
+                      ) : (
+                        <Lock size={12} strokeWidth={2} className="tm-creator-badge-lock" aria-label="Locked" />
+                      )}
+                    </div>
+                    <div className="tm-creator-badge-desc">{b.desc}</div>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
 
           {/* Arcade High Scores */}
-          <div className="tm-creator-section" data-testid="creator-highscores-section">
-            <h2>🕹️ ARCADE HIGH SCORES</h2>
+          <section className="tm-creator-section" data-testid="creator-highscores-section">
+            <h2 className="tm-creator-section-heading">
+              <Gamepad2 size={16} strokeWidth={1.9} aria-hidden="true" />
+              <span>Arcade High Scores</span>
+            </h2>
             {profile.highScores.length === 0 ? (
-              <div style={{ fontSize: '13px', color: 'var(--tm-text-dim)' }}>
+              <div className="tm-creator-empty-note">
                 No cabinet high scores logged yet for @{profile.handle}.
               </div>
             ) : (
@@ -466,27 +577,26 @@ export default function CreatorProfilePage({
                 {profile.highScores.map((s) => (
                   <div key={s.game} className="tm-creator-score-card">
                     <div>
-                      <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--tm-text)' }}>
-                        {s.emoji} {s.title}
-                      </div>
-                      <div style={{ fontSize: '11px', color: 'var(--tm-text-dim)' }}>
+                      <div className="tm-creator-score-title">{s.title}</div>
+                      <div className="tm-creator-score-initials">
                         Initials: <strong>{s.initials}</strong>
                       </div>
                     </div>
-                    <div style={{ fontWeight: 900, fontSize: '18px', color: 'var(--tm-cyan)' }}>
-                      {s.highScore.toLocaleString()}
-                    </div>
+                    <div className="tm-creator-score-value">{s.highScore.toLocaleString()}</div>
                   </div>
                 ))}
               </div>
             )}
-          </div>
+          </section>
 
           {/* Memes Posted */}
-          <div className="tm-creator-section" data-testid="creator-memes-section">
-            <h2>🖼️ MEMES POSTED ({profile.memes.length})</h2>
+          <section className="tm-creator-section" data-testid="creator-memes-section">
+            <h2 className="tm-creator-section-heading">
+              <Image size={16} strokeWidth={1.9} aria-hidden="true" />
+              <span>Memes Posted ({profile.memes.length})</span>
+            </h2>
             {profile.memes.length === 0 ? (
-              <div style={{ fontSize: '13px', color: 'var(--tm-text-dim)' }}>
+              <div className="tm-creator-empty-note">
                 @{profile.handle} has not posted any memes yet.
               </div>
             ) : (
@@ -500,26 +610,22 @@ export default function CreatorProfilePage({
                       onClick={() => onSelectMeme?.(meme)}
                     />
                     <div className="tm-creator-meme-meta">
-                      <strong style={{ fontSize: '13px', color: '#ffffff' }}>{meme.title}</strong>
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          fontSize: '11px',
-                          color: 'var(--tm-text-dim)'
-                        }}
-                      >
-                        <span>🔥 {Number(meme.score || 0).toLocaleString()}</span>
+                      <strong className="tm-creator-meme-title">{meme.title}</strong>
+                      <div className="tm-creator-meme-foot">
+                        <span className="tm-creator-meme-score">
+                          <Flame size={12} strokeWidth={2} aria-hidden="true" />
+                          <span>{Number(meme.score || 0).toLocaleString()}</span>
+                        </span>
                         <span>{formatMemeUploadDate(meme.created_at).relative}</span>
                       </div>
                       {REMIX_ENABLED && (
                         <button
                           type="button"
-                          className="tm-btn"
-                          style={{ fontSize: '11px', padding: '5px 8px' }}
+                          className="tm-btn tm-creator-remix-btn"
                           onClick={() => onRemixMeme?.(meme)}
                         >
-                          🎨 Remix
+                          <Palette size={13} strokeWidth={2} aria-hidden="true" />
+                          <span>Remix</span>
                         </button>
                       )}
                     </div>
@@ -527,7 +633,7 @@ export default function CreatorProfilePage({
                 ))}
               </div>
             )}
-          </div>
+          </section>
         </>
       )}
     </section>

@@ -1,3 +1,4 @@
+import { Bot } from 'lucide-react';
 import './HouseBadge.css';
 
 /**
@@ -11,7 +12,8 @@ export default function HouseBadge({ className = '' }) {
       title="Made by MemeBot, THE MEMES.net's AI house account. House posts never win prizes."
       data-testid="house-badge"
     >
-      <span aria-hidden="true">🤖</span> House
+      <Bot size={12} strokeWidth={2.2} aria-hidden="true" />
+      <span>House</span>
     </span>
   );
 }

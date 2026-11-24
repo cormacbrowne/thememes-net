@@ -1,5 +1,32 @@
 import { REMIX_ENABLED } from '../config/featureFlags';
 import { useEffect, useMemo, useState } from 'react';
+import {
+  ArrowLeft,
+  Award,
+  Bell,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Crown,
+  ExternalLink,
+  Eye,
+  Flag,
+  Flame,
+  Heart,
+  Image,
+  Lock,
+  Medal,
+  Palette,
+  Shield,
+  ShieldCheck,
+  Shuffle,
+  Sparkles,
+  Swords,
+  Trophy,
+  UserPlus,
+  X,
+  Zap
+} from 'lucide-react';
 import { RANKS, computePlayerBadges, formatMemeUploadDate } from '../data/starterMemes';
 import { loadLocalMemeViews } from '../utils/notifications';
 import { isActiveCaptionKing, isUsernameCaptionKing } from '../utils/dailyCaptionBattle';
@@ -14,6 +41,26 @@ import PixelAvatar from './PixelAvatar';
 import PixelAvatarPicker from './PixelAvatarPicker';
 import SettingsSheet from './SettingsSheet';
 import './PlayerProfileModal.css';
+
+const INITIAL_BADGE_COUNT = 4;
+
+const BADGE_ICON_MAP = {
+  'first-meme': Palette,
+  'first-battle': Swords,
+  'podium-finish': Medal,
+  'battle-champion': Trophy,
+  'caption-king': Crown,
+  'streak-7': Flame,
+  'streak-30': Sparkles,
+  'upvotes-100': Zap,
+  'remix-master': Shuffle,
+  'wholesome-hero': Heart
+};
+
+function renderBadgeIcon(badgeId) {
+  const Icon = BADGE_ICON_MAP[badgeId] || Award;
+  return <Icon size={18} strokeWidth={1.8} aria-hidden="true" />;
+}
 
 export default function PlayerProfileModal({
   username,
@@ -50,6 +97,9 @@ export default function PlayerProfileModal({
   const [avatarMsg, setAvatarMsg] = useState('');
   const [followBusy, setFollowBusy] = useState(false);
   const [followMsg, setFollowMsg] = useState('');
+  const [showAllBadges, setShowAllBadges] = useState(false);
+  const [showMoreStats, setShowMoreStats] = useState(false);
+
   const isMe =
     currentUser &&
     String(currentUser.username || '').toLowerCase() === String(username || '').toLowerCase();
@@ -128,50 +178,57 @@ export default function PlayerProfileModal({
     return r;
   }, [playerXp]);
 
-  const badges = useMemo(
-    () =>
-      computePlayerBadges({
-        authoredMemes,
-        totalScore,
-        totalRemixesSpawned,
-        xp: playerXp,
-        battleStreak: isMe ? battleStreak : 0,
-        bountiesCompleted: isMe ? bountiesCompleted : 0,
-        unlockedFlairs: isMe ? unlockedFlairs : [],
-        roastsRun: isMe ? roastsRun : 0,
-        goblinsCaught: isMe ? goblinsCaught : 0,
-        konamiUnlocked: isMe ? konamiUnlocked : false,
-        isCaptionKing
-      }),
-    [
+  const badges = useMemo(() => {
+    const list = computePlayerBadges({
       authoredMemes,
       totalScore,
       totalRemixesSpawned,
-      playerXp,
-      isMe,
-      battleStreak,
-      bountiesCompleted,
-      unlockedFlairs,
-      roastsRun,
-      goblinsCaught,
-      konamiUnlocked,
+      xp: playerXp,
+      battleStreak: isMe ? battleStreak : 0,
+      bountiesCompleted: isMe ? bountiesCompleted : 0,
+      unlockedFlairs: isMe ? unlockedFlairs : [],
+      roastsRun: isMe ? roastsRun : 0,
+      goblinsCaught: isMe ? goblinsCaught : 0,
+      konamiUnlocked: isMe ? konamiUnlocked : false,
       isCaptionKing
-    ]
-  );
+    });
+    return [...list].sort((a, b) => Number(b.unlocked) - Number(a.unlocked));
+  }, [
+    authoredMemes,
+    totalScore,
+    totalRemixesSpawned,
+    playerXp,
+    isMe,
+    battleStreak,
+    bountiesCompleted,
+    unlockedFlairs,
+    roastsRun,
+    goblinsCaught,
+    konamiUnlocked,
+    isCaptionKing
+  ]);
 
   if (!username) return null;
+
+  const visibleBadges = showAllBadges ? badges : badges.slice(0, INITIAL_BADGE_COUNT);
+  const unlockedCount = badges.filter((b) => b.unlocked).length;
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
     <div className="tm-modal-backdrop" onClick={onClose}>
       <div
         className="tm-modal tm-profile-modal"
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Profile for @${username}`}
       >
-        {/* Sticky Top Profile Banner */}
+        {/* Identity Header */}
         <div className="tm-profile-header tm-modal-sticky-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <div className="tm-profile-identity">
             <button type="button" className="tm-btn tm-back-pill" onClick={onClose}>
-              ← Back
+              <ArrowLeft size={16} strokeWidth={2} aria-hidden="true" />
+              <span>Back</span>
             </button>
             <PixelAvatar
               avatarId={(isMe && currentUser?.avatarId) || serverSummary?.avatarId}
@@ -179,45 +236,34 @@ export default function PlayerProfileModal({
               size={58}
               frame={isReigningKing ? 'caption-king' : ''}
             />
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <h2 style={{ margin: 0, fontSize: '20px', color: 'var(--tm-cyan)' }}>@{username}</h2>
+            <div className="tm-profile-meta">
+              <div className="tm-profile-name-row">
+                <h2 className="tm-profile-username">@{username}</h2>
+                <span className="tm-profile-level-pill">
+                  Lv.{rankObj.level} {isMe && equippedFlair ? equippedFlair : rankObj.title}
+                </span>
                 {isMe && currentUser?.verified && (
                   <span className="tm-verified-pill">
-                    🛡️ Verified ({currentUser.provider || 'OAuth'})
+                    <ShieldCheck size={12} strokeWidth={2} aria-hidden="true" />
+                    <span>Verified</span>
                   </span>
                 )}
                 {isReigningKing && (
                   <span className="tm-rarity-badge supernova" data-testid="profile-caption-king-badge">
-                    👑 Reigning Caption King (24h Frame)
+                    <Crown size={12} strokeWidth={2} aria-hidden="true" />
+                    <span>Reigning Caption King (24h Frame)</span>
                   </span>
                 )}
-                <span className="tm-tag" style={{ background: 'rgba(250,204,21,0.2)', color: 'var(--tm-amber)' }}>
-                  Lv.{rankObj.level} {isMe && equippedFlair ? equippedFlair : rankObj.title}
-                </span>
               </div>
-              <div style={{ fontSize: '12px', color: 'var(--tm-text-dim)', marginTop: '4px' }}>
-                ⚡ <strong>{playerXp} XP</strong> • 🔥 <strong>{totalScore}</strong> Score •{' '}
-                <strong>🏆 {serverSummary?.captionWins || 0}</strong> Battle Wins
-                {serverSummary && (
-                  <>
-                    {' '}• 👥 <strong>{serverSummary.followerCount}</strong> Followers
-                  </>
-                )}
-              </div>
-              {serverSummary?.bio && (
-                <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#e2e8f0', maxWidth: '460px' }}>
-                  {serverSummary.bio}
-                </p>
-              )}
+              {serverSummary?.bio && <p className="tm-profile-bio">{serverSummary.bio}</p>}
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div className="tm-profile-actions">
             {!isMe && (
               <button
                 type="button"
-                className="tm-btn"
+                className={`tm-btn ${serverSummary?.isFollowing ? 'is-following' : ''}`}
                 disabled={followBusy}
                 data-testid="modal-follow-creator-btn"
                 onClick={async () => {
@@ -245,7 +291,17 @@ export default function PlayerProfileModal({
                   );
                 }}
               >
-                {serverSummary?.isFollowing ? '✓ Following' : '+ Follow'}
+                {serverSummary?.isFollowing ? (
+                  <>
+                    <Check size={15} strokeWidth={2} aria-hidden="true" />
+                    <span>Following</span>
+                  </>
+                ) : (
+                  <>
+                    <UserPlus size={15} strokeWidth={2} aria-hidden="true" />
+                    <span>Follow</span>
+                  </>
+                )}
               </button>
             )}
             <a
@@ -260,36 +316,169 @@ export default function PlayerProfileModal({
                 }
               }}
             >
-              🔗 /u/{username}
+              <ExternalLink size={15} strokeWidth={2} aria-hidden="true" />
+              <span>/u/{username}</span>
             </a>
-            <button type="button" className="tm-btn" onClick={onClose}>
-              ✕ Close
-            </button>
             {!isMe && onReportProfile && (
               <button
                 type="button"
-                className="tm-btn"
-                style={{ minHeight: '44px' }}
+                className="tm-btn tm-profile-icon-btn"
                 data-testid="modal-report-profile-btn"
+                aria-label={`Report @${username}`}
+                title={`Report @${username}`}
                 onClick={() => {
                   onClose?.();
                   onReportProfile(username);
                 }}
               >
-                🚩 Report
+                <Flag size={15} strokeWidth={2} aria-hidden="true" />
+                <span>Report</span>
+              </button>
+            )}
+            <button type="button" className="tm-btn tm-profile-icon-btn" onClick={onClose} aria-label="Close profile">
+              <X size={16} strokeWidth={2} aria-hidden="true" />
+              <span>Close</span>
+            </button>
+          </div>
+        </div>
+
+        {followMsg && <div className="tm-profile-status-msg">{followMsg}</div>}
+
+        {/* Consolidated Key Stats (4 core + optional More stats) */}
+        <div
+          className={`tm-creator-stats-card ${
+            isReigningKing
+              ? 'tm-frame-caption-king'
+              : isMe && equippedFrame !== 'default'
+                ? `tm-frame-${equippedFrame}`
+                : ''
+          }`}
+        >
+          <div className="tm-creator-stats-head">
+            <span className="tm-profile-section-title">Key Stats</span>
+            <div className="tm-creator-stats-head-actions">
+              {isMe && onOpenShop && (
+                <button
+                  type="button"
+                  className="tm-profile-text-btn"
+                  onClick={() => {
+                    onClose();
+                    onOpenShop();
+                  }}
+                >
+                  <Sparkles size={14} strokeWidth={1.8} aria-hidden="true" />
+                  <span>Cosmetics</span>
+                </button>
+              )}
+              <button
+                type="button"
+                className="tm-profile-text-btn"
+                aria-expanded={showMoreStats}
+                onClick={() => setShowMoreStats((prev) => !prev)}
+              >
+                <span>{showMoreStats ? 'Fewer stats' : 'More stats'}</span>
+                {showMoreStats ? (
+                  <ChevronUp size={14} strokeWidth={2} aria-hidden="true" />
+                ) : (
+                  <ChevronDown size={14} strokeWidth={2} aria-hidden="true" />
+                )}
+              </button>
+            </div>
+          </div>
+          <div className="tm-creator-stats-row">
+            <div className="tm-creator-stat-item">
+              <strong>{authoredMemes.length}</strong>
+              <span>
+                <Image size={13} strokeWidth={1.8} aria-hidden="true" /> Memes
+              </span>
+            </div>
+            <div className="tm-creator-stat-item">
+              <strong>{creatorStats.upvotes.toLocaleString()}</strong>
+              <span>
+                <Flame size={13} strokeWidth={1.8} aria-hidden="true" /> Upvotes
+              </span>
+            </div>
+            <div className="tm-creator-stat-item">
+              <strong>{creatorStats.views.toLocaleString()}</strong>
+              <span>
+                <Eye size={13} strokeWidth={1.8} aria-hidden="true" /> Views
+              </span>
+            </div>
+            <div className="tm-creator-stat-item">
+              <strong>{playerXp.toLocaleString()}</strong>
+              <span>
+                <Zap size={13} strokeWidth={1.8} aria-hidden="true" /> XP
+              </span>
+            </div>
+          </div>
+
+          {showMoreStats && (
+            <div className="tm-creator-stats-row tm-creator-stats-row--extra">
+              <div className="tm-creator-stat-item">
+                <strong>{totalRemixesSpawned}</strong>
+                <span>Remixes</span>
+              </div>
+              <div className="tm-creator-stat-item">
+                <strong>+{royaltyBonus}</strong>
+                <span>Remix XP</span>
+              </div>
+              <div className="tm-creator-stat-item">
+                <strong>{serverSummary?.captionWins || 0}</strong>
+                <span>Battle Wins</span>
+              </div>
+              <div className="tm-creator-stat-item">
+                <strong>{serverSummary?.followerCount ?? 0}</strong>
+                <span>Followers</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Achievement Badges (top 4 + See all) */}
+        <section className="tm-profile-section">
+          <div className="tm-profile-section-head">
+            <span className="tm-profile-section-title">
+              <Award size={15} strokeWidth={1.9} aria-hidden="true" />
+              <span>Badges ({unlockedCount}/{badges.length})</span>
+            </span>
+            {badges.length > INITIAL_BADGE_COUNT && (
+              <button
+                type="button"
+                className="tm-profile-see-all-btn"
+                aria-expanded={showAllBadges}
+                onClick={() => setShowAllBadges((prev) => !prev)}
+              >
+                {showAllBadges ? 'Show fewer' : `See all ${badges.length}`}
               </button>
             )}
           </div>
-        </div>
-        {followMsg && (
-          <div style={{ fontSize: '12px', color: 'var(--tm-amber)', marginBottom: '10px' }}>{followMsg}</div>
-        )}
+          <div className="tm-badges-grid">
+            {visibleBadges.map((b) => (
+              <div
+                key={b.id}
+                className={`tm-badge-card ${b.unlocked ? 'unlocked' : 'locked'}`}
+                title={b.desc}
+              >
+                <span className="tm-badge-icon-well">{renderBadgeIcon(b.id)}</span>
+                <div className="tm-badge-copy">
+                  <div className="tm-badge-name">
+                    <span>{b.name}</span>
+                    {b.unlocked ? (
+                      <Check size={13} strokeWidth={2.2} className="tm-badge-state-ok" aria-label="Unlocked" />
+                    ) : (
+                      <Lock size={12} strokeWidth={2} className="tm-badge-state-lock" aria-label="Locked" />
+                    )}
+                  </div>
+                  <div className="tm-badge-desc">{b.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
 
         {isMe && currentUser?.verified && (
           <PixelAvatarPicker
-            selectedAvatarId={
-              currentUser?.avatarId || serverSummary?.avatarId || 'pixel-alien'
-            }
+            selectedAvatarId={currentUser?.avatarId || serverSummary?.avatarId || 'pixel-alien'}
             saving={avatarBusy}
             statusMessage={avatarMsg}
             onSelectAvatar={async (avatarId) => {
@@ -303,26 +492,28 @@ export default function PlayerProfileModal({
               }
               onAvatarUpdated?.(res.avatarId);
               setServerSummary((prev) => (prev ? { ...prev, avatarId: res.avatarId } : prev));
-              setAvatarMsg('✅ Saved built-in pixel avatar!');
+              setAvatarMsg('Saved built-in pixel avatar.');
             }}
           />
         )}
 
         {isMe && currentUser?.verified && currentUser?.needsHandle && (
           <p className="tm-profile-handle-nudge" role="note">
-            Pick your @handle below. Until you do, your memes show <strong>@{currentUser.username}</strong>
-            {' '}(we never show your Google name).
+            Pick your @handle below. Until you do, your memes show <strong>@{currentUser.username}</strong>{' '}
+            (we never show your Google name).
           </p>
         )}
+
         {isMe && (currentUser?.role === 'moderator' || currentUser?.role === 'admin') && (
           <a className="tm-btn tm-profile-mod-link" href="/admin/moderation">
-            🛡️ Open moderation queue
+            <Shield size={15} strokeWidth={2} aria-hidden="true" />
+            <span>Open moderation queue</span>
           </a>
         )}
 
-        {/* Unique Handle Claim / Update (Verified accounts only) */}
         {isMe && currentUser?.verified && onClaimUsername && (
           <form
+            className="tm-profile-handle-form"
             onSubmit={async (e) => {
               e.preventDefault();
               if (claimingHandle) return;
@@ -331,7 +522,7 @@ export default function PlayerProfileModal({
               try {
                 const res = await onClaimUsername(handleInput);
                 if (res?.ok) {
-                  setHandleStatus({ ok: true, message: `✅ Handle updated to @${res.username}` });
+                  setHandleStatus({ ok: true, message: `Handle updated to @${res.username}` });
                 } else {
                   setHandleStatus({
                     ok: false,
@@ -342,157 +533,65 @@ export default function PlayerProfileModal({
                 setClaimingHandle(false);
               }
             }}
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              gap: '8px',
-              marginBottom: '12px',
-              padding: '10px 12px',
-              borderRadius: '10px',
-              background: 'rgba(15, 23, 42, 0.72)',
-              border: '1px solid rgba(56, 189, 248, 0.25)'
-            }}
           >
-            <label
-              htmlFor="tm-claim-handle-input"
-              style={{ fontSize: '11px', fontWeight: 800, color: 'var(--tm-text-dim)' }}
-            >
-              @HANDLE:
+            <label htmlFor="tm-claim-handle-input" className="tm-profile-handle-label">
+              @HANDLE
             </label>
             <input
               id="tm-claim-handle-input"
               type="text"
-              className="tm-input"
-              style={{ flex: '1 1 180px', minWidth: '140px' }}
+              className="tm-input tm-profile-handle-input"
               placeholder="Claim unique handle (3–20 chars)"
               maxLength={20}
               value={handleInput}
               onChange={(e) => setHandleInput(e.target.value)}
             />
-            <button
-              type="submit"
-              className="tm-btn tm-btn-primary"
-              disabled={claimingHandle}
-              style={{ whiteSpace: 'nowrap' }}
-            >
+            <button type="submit" className="tm-btn tm-btn-primary" disabled={claimingHandle}>
               {claimingHandle ? 'Saving...' : 'Save @handle'}
             </button>
             {handleStatus && (
-              <div
-                style={{
-                  width: '100%',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  color: handleStatus.ok ? 'var(--tm-ok)' : '#fca5a5'
-                }}
-              >
+              <div className={`tm-profile-handle-status ${handleStatus.ok ? 'is-ok' : 'is-err'}`}>
                 {handleStatus.message}
               </div>
             )}
           </form>
         )}
 
-        {/* Stat Boxes */}
-        <div className="tm-profile-stats-grid">
-          <div className="tm-profile-stat-card">
-            <div className="tm-stat-val" style={{ color: 'var(--tm-amber)' }}>{authoredMemes.length}</div>
-            <div className="tm-stat-lbl">Memes Dropped</div>
-          </div>
-          <div className="tm-profile-stat-card">
-            <div className="tm-stat-val" style={{ color: 'var(--tm-cyan)' }}>{totalScore}</div>
-            <div className="tm-stat-lbl">Arena Score</div>
-          </div>
-          <div className="tm-profile-stat-card">
-            <div className="tm-stat-val" style={{ color: 'var(--tm-pink)' }}>{totalRemixesSpawned}</div>
-            <div className="tm-stat-lbl">Remixes Spawned</div>
-          </div>
-          <div className="tm-profile-stat-card">
-            <div className="tm-stat-val" style={{ color: '#a3e635' }}>+{royaltyBonus}</div>
-            <div className="tm-stat-lbl">Remix Bonus XP</div>
-          </div>
-        </div>
-
-        {/* Phase 28.13 / 33.15: Creator Stats Card (Views, Upvotes, Remixes, 24h Caption King Frame) */}
-        <div
-          className={`tm-creator-stats-card ${
-            isReigningKing
-              ? 'tm-frame-caption-king'
-              : isMe && equippedFrame !== 'default'
-                ? `tm-frame-${equippedFrame}`
-                : ''
-          }`}
-        >
-          <div className="tm-creator-stats-head">
-            <span>📊 CREATOR IMPACT STATS</span>
-            {isMe && onOpenShop && (
-              <button
-                type="button"
-                className="tm-link-btn"
-                style={{ fontSize: '11px', color: 'var(--tm-amber)' }}
-                onClick={() => {
-                  onClose();
-                  onOpenShop();
-                }}
-              >
-                🛍️ Customize Cosmetics →
-              </button>
-            )}
-          </div>
-          <div className="tm-creator-stats-row">
-            <div className="tm-creator-stat-item">
-              <strong style={{ color: 'var(--tm-cyan)' }}>{creatorStats.views.toLocaleString()}</strong>
-              <span>👁️ Views</span>
-            </div>
-            <div className="tm-creator-stat-item">
-              <strong style={{ color: 'var(--tm-amber)' }}>{creatorStats.upvotes.toLocaleString()}</strong>
-              <span>🔥 Upvotes</span>
-            </div>
-            <div className="tm-creator-stat-item">
-              <strong style={{ color: 'var(--tm-pink)' }}>{creatorStats.remixes.toLocaleString()}</strong>
-              <span>🧬 Remixes</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Phase 28.13: Real In-App Creator Notifications Inbox */}
         {isMe && (
           <div className="tm-creator-notif-box">
             <div className="tm-creator-notif-head">
-              <span>🔔 Creator Alerts ({notifications.filter((n) => !n.read).length} unread)</span>
+              <span className="tm-profile-section-title">
+                <Bell size={15} strokeWidth={1.9} aria-hidden="true" />
+                <span>Creator Alerts ({unreadCount} unread)</span>
+              </span>
               {notifications.some((n) => !n.read) && onMarkNotificationsRead && (
-                <button
-                  type="button"
-                  className="tm-link-btn"
-                  style={{ fontSize: '11px' }}
-                  onClick={onMarkNotificationsRead}
-                >
-                  ✓ Mark all read
+                <button type="button" className="tm-profile-text-btn" onClick={onMarkNotificationsRead}>
+                  <Check size={14} strokeWidth={2} aria-hidden="true" />
+                  <span>Mark all read</span>
                 </button>
               )}
             </div>
             {notifications.length === 0 ? (
-              <div style={{ fontSize: '12px', color: 'var(--tm-text-mute)' }}>
-                No alerts yet — publish a meme and real upvotes, comments &amp; remixes will appear here live!
+              <div className="tm-profile-empty-note">
+                No alerts yet — publish a meme and upvotes, comments &amp; remixes will appear here.
               </div>
             ) : (
               <div className="tm-creator-notif-list">
-                {notifications.slice(0, 8).map((n) => {
+                {notifications.slice(0, 6).map((n) => {
                   const linkedMeme = memes.find((m) => String(m.id) === String(n.meme_id));
                   return (
                     <div
                       key={n.id}
-                      className={`tm-creator-notif-item ${n.read ? '' : 'unread'}`}
+                      className={`tm-creator-notif-item ${n.read ? '' : 'unread'} ${linkedMeme ? 'is-clickable' : ''}`}
                       onClick={() => {
                         if (linkedMeme && onSelectMeme) {
                           onClose();
                           onSelectMeme(linkedMeme);
                         }
                       }}
-                      style={{ cursor: linkedMeme ? 'pointer' : 'default' }}
                     >
                       <span>{n.message}</span>
-                      <span style={{ fontSize: '10px', color: 'var(--tm-text-dim)' }}>
+                      <span className="tm-profile-notif-time">
                         {formatMemeUploadDate(n.created_at).relative}
                       </span>
                     </div>
@@ -503,45 +602,23 @@ export default function PlayerProfileModal({
           </div>
         )}
 
-        {/* Unified Arcade Settings (Visible on Own Profile) */}
         {isMe && (
-          <div style={{ marginTop: '18px' }}>
+          <div className="tm-profile-section">
             <SettingsSheet compact />
           </div>
         )}
 
-        {/* Achievement Badges */}
-        <div style={{ marginTop: '18px' }}>
-          <div className="tm-studio-label" style={{ marginBottom: '8px' }}>
-            🏅 Arcade Achievement Badges
-          </div>
-          <div className="tm-badges-grid">
-            {badges.map((b) => (
-              <div
-                key={b.id}
-                className={`tm-badge-card ${b.unlocked ? 'unlocked' : 'locked'}`}
-                title={b.desc}
-              >
-                <span style={{ fontSize: '22px' }}>{b.icon}</span>
-                <div>
-                  <div style={{ fontSize: '12px', fontWeight: 800 }}>
-                    {b.name} {b.unlocked ? '✅' : '🔒'}
-                  </div>
-                  <div style={{ fontSize: '10px', color: 'var(--tm-text-dim)' }}>{b.desc}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Creator Portfolio */}
-        <div style={{ marginTop: '18px' }}>
-          <div className="tm-studio-label" style={{ marginBottom: '8px' }}>
-            📸 Dropped Transmissions ({authoredMemes.length})
+        <section className="tm-profile-section">
+          <div className="tm-profile-section-head">
+            <span className="tm-profile-section-title">
+              <Image size={15} strokeWidth={1.9} aria-hidden="true" />
+              <span>Memes Posted ({authoredMemes.length})</span>
+            </span>
           </div>
           {authoredMemes.length === 0 ? (
-            <div style={{ fontSize: '13px', color: 'var(--tm-text-mute)', padding: '16px 0' }}>
-              No memes published under @{username} yet — hit + Upload / Create to drop your first meme!
+            <div className="tm-profile-empty-note">
+              No memes published under @{username} yet — hit Create to drop your first meme.
             </div>
           ) : (
             <div className="tm-profile-memes-grid">
@@ -555,43 +632,25 @@ export default function PlayerProfileModal({
                       onSelectMeme(m);
                     }}
                   />
-                  <div style={{ padding: '8px 10px' }}>
-                    <div
-                      style={{
-                        fontSize: '12px',
-                        fontWeight: 800,
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis'
-                      }}
-                    >
-                      {m.title}
-                    </div>
-                    <div style={{ fontSize: '10px', color: 'var(--tm-text-dim)', marginTop: '3px' }}>
-                      📅 {formatMemeUploadDate(m.created_at).dateTime}
-                    </div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginTop: '6px'
-                      }}
-                    >
-                      <span style={{ fontSize: '11px', color: 'var(--tm-amber)', fontWeight: 800 }}>
-                        🔥 {m.score}
+                  <div className="tm-profile-meme-meta">
+                    <div className="tm-profile-meme-title">{m.title}</div>
+                    <div className="tm-profile-meme-date">{formatMemeUploadDate(m.created_at).dateTime}</div>
+                    <div className="tm-profile-meme-foot">
+                      <span className="tm-profile-meme-score">
+                        <Flame size={12} strokeWidth={2} aria-hidden="true" />
+                        <span>{m.score}</span>
                       </span>
                       {REMIX_ENABLED && (
                         <button
                           type="button"
-                          className="tm-mutate-btn"
-                          style={{ padding: '4px 8px', fontSize: '10px' }}
+                          className="tm-mutate-btn tm-profile-remix-btn"
                           onClick={(e) => {
                             onClose();
                             onTriggerStudioMutate(m, e);
                           }}
                         >
-                          🧬 Mutate
+                          <Shuffle size={12} strokeWidth={2} aria-hidden="true" />
+                          <span>Mutate</span>
                         </button>
                       )}
                     </div>
@@ -600,7 +659,7 @@ export default function PlayerProfileModal({
               ))}
             </div>
           )}
-        </div>
+        </section>
       </div>
     </div>
   );

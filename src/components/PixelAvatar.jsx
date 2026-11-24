@@ -5,6 +5,7 @@ export default function PixelAvatar({
   handle = 'anon',
   size = 64,
   frame = '',
+  quiet = false,
   className = ''
 }) {
   const preset =
@@ -22,9 +23,9 @@ export default function PixelAvatar({
         width: `${size}px`,
         height: `${size}px`,
         borderRadius: `${Math.max(10, Math.round(size * 0.22))}px`,
-        background: preset.bg,
-        border: `2px solid ${preset.accent}`,
-        boxShadow: `0 0 18px ${preset.accent}55`,
+        background: quiet ? 'var(--tm-night-1)' : preset.bg,
+        border: quiet ? '1px solid var(--tm-night-3)' : `2px solid ${preset.accent}`,
+        boxShadow: quiet ? 'none' : `0 0 14px -2px ${preset.accent}55`,
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',

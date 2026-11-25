@@ -223,7 +223,7 @@ export default function BattleHeroCard({ battleState = null, hideInlineWinner = 
           {battle && approvedEntries.length > 0 && (
             <button
               type="button"
-              className="tm-btn tm-btn-primary tm-battle-hero-cta"
+              className={`tm-btn ${featuredEntry ? 'tm-battle-hero-secondary' : 'tm-btn-primary'} tm-battle-hero-cta`}
               onClick={() => onOpenBattle?.('vote')}
               data-testid="battle-hero-vote"
             >

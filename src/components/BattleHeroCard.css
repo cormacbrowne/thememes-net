@@ -34,6 +34,13 @@
   background: var(--tm-night-1);
 }
 
+@media (min-width: 720px) {
+  /* Fill a taller text column instead of leaving a strip under the image; cover crops the extra. */
+  .tm-battle-hero-media {
+    align-self: stretch;
+  }
+}
+
 .tm-battle-hero-media img {
   width: 100%;
   height: 100%;

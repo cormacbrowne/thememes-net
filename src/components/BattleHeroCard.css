@@ -21,32 +21,23 @@
 
 @media (min-width: 720px) {
   .tm-battle-hero {
-    grid-template-columns: minmax(220px, 320px) minmax(0, 1fr);
-    align-items: stretch;
+    grid-template-columns: minmax(260px, 420px) minmax(0, 1fr);
   }
 }
 
 .tm-battle-hero-media {
   position: relative;
-  height: clamp(164px, 24svh, 204px);
+  aspect-ratio: 540 / 480;
   width: 100%;
   min-width: 0;
   overflow: hidden;
-  background: var(--tm-night-0);
-}
-
-@media (min-width: 720px) {
-  .tm-battle-hero-media {
-    height: auto;
-    min-height: 200px;
-    max-height: 280px;
-  }
+  background: var(--tm-night-1);
 }
 
 .tm-battle-hero-media img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   display: block;
 }
 
@@ -72,6 +63,10 @@
 
 .tm-battle-hero-body {
   display: grid;
+  /* Lock the body to one shrinkable column: without this the implicit track grows to
+     the min-content width of nowrap children (standings rows) and pushes the card
+     past the viewport on phones. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--tm-space-2);
   align-content: center;
   min-width: 0;
@@ -217,6 +212,8 @@
 
 .tm-battle-hero-standings {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: var(--tm-space-1);
   padding: var(--tm-space-2) var(--tm-space-3);
   border-radius: var(--tm-radius-btn);
@@ -242,6 +239,7 @@
 }
 
 .tm-battle-hero-standing-row span {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -268,6 +266,7 @@
 
 .tm-battle-hero-cta {
   min-height: 44px;
+  white-space: normal;
   min-width: 0;
   max-width: 100%;
   padding: 0 var(--tm-space-2);

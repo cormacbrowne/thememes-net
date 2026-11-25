@@ -14,12 +14,6 @@
   .tm-daily-hub .tm-battle-hero {
     grid-template-columns: minmax(0, 1fr);
   }
-
-  .tm-daily-hub .tm-battle-hero-media {
-    height: clamp(168px, 24vh, 200px);
-    max-height: 200px;
-    min-height: 0;
-  }
 }
 
 .tm-yesterday-strip {

@@ -101,3 +101,14 @@ test('deep-link shares carry exactly one link (no extra homepage link)', () => {
     `See https://www.thememes.net/games too ${url}`
   );
 });
+
+test('one-link rule handles full stops, case, line breaks and a trailing-slash homepage', () => {
+  const url = 'https://www.thememes.net/battle/abc?ref=share';
+  assert.equal(ensureShareUrlInText('Join THE MEMES.net.', url), `Join THE MEMES. ${url}`);
+  assert.equal(ensureShareUrlInText('Go HTTPS://WWW.THEMEMES.NET now', url), `Go THE MEMES now ${url}`);
+  assert.equal(ensureShareUrlInText('Line one\n\nLine two', url), `Line one\n\nLine two ${url}`);
+  assert.equal(
+    ensureShareUrlInText('Check THE MEMES.net', 'https://www.thememes.net/'),
+    'Check https://www.thememes.net'
+  );
+});

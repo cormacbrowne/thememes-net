@@ -46,3 +46,9 @@ Format:
 - Didn't: the first build targeted the sample memes because the brief (CLAUDE.md §8) described them as "the feed". Legal's first pass came back before its scope was widened, so it had to run twice.
 - Routing note: Claude did it end to end. Image compositing in headless Chromium with the site's own fonts made 64 images in under a minute.
 - Suggest: before any "replace what users see" task, screenshot the live page and list the image URLs first. Keep QA screenshots as small JPEGs; PNGs added 7 MB to the repo.
+
+## 2026-11-25 — Caption battle card: image size + iPhone overflow (fix to W2-1)
+- **What broke:** the Gemini W2-1 QA "overflow fix" shrank the hero image to a fixed 164–204px letterboxed box, and missed the real overflow cause. Content still ran off the right edge on iPhone.
+- **Root cause:** a CSS grid with no `grid-template-columns` gets an `auto` track. That track grows to fit nowrap text (the standings rows), so `min-width: 0` on the parent alone doesn't stop it. Fix: `grid-template-columns: minmax(0, 1fr)` on every nested grid that holds truncated text.
+- **Check that worked:** a Playwright script that lists every child whose right edge is past the card's right edge, run against mocked battle data in each state (still voting / all voted with standings). Check both states, not just the empty one.
+- **Routing note:** for mobile layout fixes, a Claude Code fix with a before/after overflow measurement beat the Gemini screenshot pass.

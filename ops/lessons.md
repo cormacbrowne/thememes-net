@@ -52,3 +52,9 @@ Format:
 - **Root cause:** a CSS grid with no `grid-template-columns` gets an `auto` track. That track grows to fit nowrap text (the standings rows), so `min-width: 0` on the parent alone doesn't stop it. Fix: `grid-template-columns: minmax(0, 1fr)` on every nested grid that holds truncated text.
 - **Check that worked:** a Playwright script that lists every child whose right edge is past the card's right edge, run against mocked battle data in each state (still voting / all voted with standings). Check both states, not just the empty one.
 - **Routing note:** for mobile layout fixes, a Claude Code fix with a before/after overflow measurement beat the Gemini screenshot pass.
+
+## 2026-11-25 — Share messages carried two links (homepage + deep link)
+- **What broke:** battle share text said "on THE MEMES.net"; `linkSafeShareText` turned that into the homepage URL, then `ensureShareUrlInText` appended the battle URL, so iMessage showed two links.
+- **Fix:** one-link rule in `src/utils/shareText.js` — when the target is a deep link, homepage-only mentions become plain "THE MEMES" (doesn't auto-link). Fixed once in the helper, so every share button benefits. Battle copy now: `⚔️ Caption battle: "<title>". Think you can out-caption me? <link>`.
+- **Check that worked:** QA ran edge cases through the helper (full stops, upper case, blank lines, trailing slash) and caught 4 misses before ship.
+- **Routing note:** small copy/helper fix — Claude Code end to end, no Antigravity step needed.

@@ -307,7 +307,7 @@ export default function DailyCaptionBattleModal({
       : `/battle/${encodeURIComponent(battle.id)}`;
     const url = `${SITE_URL}${path}?ref=share`;
     const title = battle.title ? `${battle.title} — Daily Caption Battle` : 'Daily Caption Battle | THE MEMES.net';
-    const text = customText || `Compete in "${battle.title || 'Daily Caption Battle'}" on THE MEMES.net`;
+    const text = customText || `⚔️ Caption battle: "${battle.title || 'Daily Caption Battle'}". Think you can out-caption me?`;
     const recordShare = () =>
       track('meme_shared', {
         channel: 'battle_link',

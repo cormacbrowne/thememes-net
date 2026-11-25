@@ -44,7 +44,11 @@ test('canonicalShareUrl and ensureShareUrlInText guarantee a full https://www UR
   assert.equal(canonicalShareUrl('https://thememes.net/u/neo'), 'https://www.thememes.net/u/neo');
   assert.equal(
     ensureShareUrlInText('Check out THE MEMES.net', 'https://www.thememes.net/m/42?ref=share'),
-    'Check out https://www.thememes.net https://www.thememes.net/m/42?ref=share'
+    'Check out THE MEMES https://www.thememes.net/m/42?ref=share'
+  );
+  assert.equal(
+    ensureShareUrlInText('Check out THE MEMES.net', 'https://www.thememes.net'),
+    'Check out https://www.thememes.net'
   );
   assert.equal(
     ensureShareUrlInText('Already linked https://www.thememes.net/m/42', 'https://www.thememes.net/m/42'),
@@ -80,4 +84,20 @@ test('share and invite call sites use shareText helpers', () => {
       `${file} should import helpers from shareText.js`
     );
   }
+});
+
+test('deep-link shares carry exactly one link (no extra homepage link)', () => {
+  const url = 'https://www.thememes.net/battle/dd391dc7?ref=share';
+  const out = ensureShareUrlInText('Compete in "Line Goes Down" on THE MEMES.net', url);
+  assert.equal(out, `Compete in "Line Goes Down" on THE MEMES ${url}`);
+  assert.equal((out.match(/https?:\/\//g) || []).length, 1);
+  assert.equal(
+    ensureShareUrlInText('Play on thememes.net and www.thememes.net/', url),
+    `Play on THE MEMES and THE MEMES ${url}`
+  );
+  // Other deep links in the text are kept.
+  assert.equal(
+    ensureShareUrlInText('See https://www.thememes.net/games too', url),
+    `See https://www.thememes.net/games too ${url}`
+  );
 });

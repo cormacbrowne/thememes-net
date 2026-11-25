@@ -9,6 +9,10 @@ export const SITE_URL = 'https://www.thememes.net';
 const BRAND_WITH_SPACE = /\bTHE\s+MEMES\.net\b/gi;
 const NON_WWW_ORIGIN = /https?:\/\/thememes\.net\b/gi;
 const BARE_DOMAIN = /(?<![/@\w.-])(?:www\.)?thememes\.net\b/gi;
+// A homepage-only link (no path/query), e.g. "on https://www.thememes.net".
+const HOMEPAGE_ONLY = /https:\/\/www\.thememes\.net\/?(?![\w/?#.-])/g;
+// Plain brand name that phones do not auto-link.
+export const BRAND_PLAIN = 'THE MEMES';
 
 /**
  * Builds a canonical https://www.thememes.net URL from a path or existing site URL.
@@ -38,10 +42,15 @@ export function linkSafeShareText(text) {
 /**
  * Sanitizes share text and ensures the full canonical https://www.thememes.net/... URL
  * is present in the message body so SMS / iMessage / WhatsApp always auto-link it.
+ * When the target is a deep link, brand/homepage mentions become plain "THE MEMES"
+ * so the message carries exactly one link (the one that goes straight to the content).
  */
 export function ensureShareUrlInText(text, url = SITE_URL) {
   const targetUrl = canonicalShareUrl(url);
-  const safe = linkSafeShareText(typeof text === 'string' ? text.trim() : '');
+  let safe = linkSafeShareText(typeof text === 'string' ? text.trim() : '');
+  if (safe && targetUrl.replace(/\/$/, '') !== SITE_URL) {
+    safe = safe.replace(HOMEPAGE_ONLY, BRAND_PLAIN).replace(/\s{2,}/g, ' ').trim();
+  }
   if (!safe) return targetUrl;
   if (safe.includes(targetUrl)) return safe;
   if (targetUrl === SITE_URL && safe.includes(SITE_URL)) return safe;

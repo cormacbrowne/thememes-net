@@ -127,7 +127,9 @@ const MemeMedia = memo(function MemeMedia({
         playsInline
         controls={mode === 'theater'}
         autoPlay={mode === 'swipe' || (mode === 'feed' && litePerfMode && liteTapped)}
-        preload={mode === 'reel' ? preload : 'metadata'}
+        // Egress guard (T-013): with a poster to show, fetch nothing until the clip plays
+        // (feed autoplay on scroll-in, or a tap). 'metadata' made Chrome download short clips in full.
+        preload={mode === 'reel' ? preload : safePosterUrl ? 'none' : 'metadata'}
       />
       <MemeOverlay overlay={liveOverlay} />
       <span className="tm-media-badge">🎬 {formatDuration(meme.duration_sec)}</span>

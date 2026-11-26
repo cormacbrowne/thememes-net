@@ -58,3 +58,9 @@ Format:
 - Didn't: the server, the app and the sitemap each built creator URLs their own way. The app copied the address bar's casing, so after rendering it disagreed with the server.
 - Routing note: Claude, inline. A curl loop over the sitemap beats reading the code first.
 - Suggest: growth-marketer adds a "sitemap loc == canonical for every URL" check to the SEO checklist (could become a smoke test).
+
+## 2026-11-26: T-013 Supabase over the free allowance
+- Worked: the "over the free amount" email was about egress, not storage. The logs showed one 8.4 MB video sending 451 MB a day. Checking usage by type before deleting anything avoided a cleanup that would have saved nothing.
+- Didn't: `preload="metadata"` isn't a size guard. Chrome downloads a short clip in full, so every home-page visit pulled the whole file, and the meme page pulled it twice.
+- Routing note: Claude, inline. With no service key in the container, a temporary Edge Function with the file list hard-coded and a hashed one-off token did the uploads and deletes. It was stubbed out straight after.
+- Suggest: tech-lead adds a weekly egress check (top storage paths by bytes) to /capacity.

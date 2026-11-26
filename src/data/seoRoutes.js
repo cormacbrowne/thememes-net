@@ -1048,7 +1048,7 @@ export function getCanonicalPathForState({
   }
   if (viewMode === 'creator' && creatorHandle) {
     const clean = String(creatorHandle).trim().replace(/^@+/, '');
-    if (clean) return `/u/${encodeURIComponent(clean)}`;
+    if (clean) return `/u/${encodeURIComponent(clean.toLowerCase())}`;
   }
   // Template pages keep their own URL even while the editor is open on top of them.
   if (viewMode === 'templates') {

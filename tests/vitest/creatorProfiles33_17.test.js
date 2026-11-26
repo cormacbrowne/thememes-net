@@ -41,7 +41,7 @@ describe('Task 33.17 Creator Profile Pages (/u/<handle>), Built-in Pixel Avatars
       normalized: 'kingmemer86'
     });
     expect(normalizeCreatorHandle('../bad')).toBeNull();
-    expect(getCreatorProfilePath('@KingMemer86')).toBe('/u/KingMemer86');
+    expect(getCreatorProfilePath('@KingMemer86')).toBe('/u/kingmemer86');
 
     const resolved = resolveRouteFromLocation('/u/PixelWizard86', '');
     expect(resolved.viewMode).toBe('creator');
@@ -50,7 +50,7 @@ describe('Task 33.17 Creator Profile Pages (/u/<handle>), Built-in Pixel Avatars
 
     expect(
       getCanonicalPathForState({ viewMode: 'creator', creatorHandle: 'PixelWizard86' })
-    ).toBe('/u/PixelWizard86');
+    ).toBe('/u/pixelwizard86');
   });
 
   it('loads creator profile via get_creator_profile RPC and enforces built-in avatar + follow RPCs', async () => {

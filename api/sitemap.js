@@ -150,7 +150,7 @@ export default async function handler(req, res) {
   }
   const creatorUrlsXml = [...handles.values()].map(
     (handle) => `  <url>
-    <loc>${escapeXml(`${SITE_ORIGIN}/u/${encodeURIComponent(handle)}`)}</loc>
+    <loc>${escapeXml(`${SITE_ORIGIN}/u/${encodeURIComponent(handle.toLowerCase())}`)}</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>`

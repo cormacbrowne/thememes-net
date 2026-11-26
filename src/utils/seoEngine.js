@@ -109,7 +109,7 @@ export function updateDynamicSeo({
     const clean = String(creatorHandle).trim().replace(/^@+/, '');
     pageTitle = `@${clean} — Creator Profile, Level & Battle Wins | THE MEMES.net`;
     pageDesc = `Browse @${clean}'s level, daily streak, battle wins, memes, badges & 80s Cyber-Arcade high scores on THE MEMES.net.`;
-    canonicalUrl = `${SITE_ORIGIN}/u/${encodeURIComponent(clean)}`;
+    canonicalUrl = `${SITE_ORIGIN}/u/${encodeURIComponent(clean.toLowerCase())}`;
     ogImageUrl = `${SITE_ORIGIN}/api/profile-og-image?handle=${encodeURIComponent(clean)}`;
   } else if (!showStudio && !extrasDrawerOpen && !(bossKeyActive && prankDisguise) && NON_PATH_VIEW_MODES[viewMode]) {
     pageTitle = NON_PATH_VIEW_MODES[viewMode].title;

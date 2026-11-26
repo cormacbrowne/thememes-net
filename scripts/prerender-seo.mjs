@@ -402,7 +402,8 @@ function renderMemeHtml(baseHtml, meme) {
 }
 
 function renderCreatorHtml(baseHtml, creator) {
-  const safeHandle = encodeURIComponent(creator.handle);
+  // Lowercase canonical, matching api/creator-og.js, the sitemap and the app.
+  const safeHandle = encodeURIComponent(creator.handle.toLowerCase());
   const canonicalUrl = `${SITE_ORIGIN}/u/${safeHandle}`;
   const titleText = `@${creator.handle} — Creator Profile, Memes & High Scores | THE MEMES.net`;
   const descText = `Browse @${creator.handle}'s creator profile on THE MEMES.net: ${creator.memesCount} memes posted (${creator.totalScore} score), built-in pixel avatar, badges, and arcade high scores.`;
@@ -622,7 +623,7 @@ function main() {
   const creators = extractUniqueCreatorHandles(STARTER_MEMES);
   for (const creator of creators) {
     const renderedCreator = renderCreatorHtml(baseHtml, creator);
-    writeDualCleanUrlFiles(`/u/${encodeURIComponent(creator.handle)}`, renderedCreator);
+    writeDualCleanUrlFiles(`/u/${encodeURIComponent(creator.handle.toLowerCase())}`, renderedCreator);
   }
 
   // /sitemap.xml is served live by api/sitemap.js (vercel.json rewrite). A static file here would

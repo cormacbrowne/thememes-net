@@ -23,7 +23,8 @@ export function normalizeCreatorHandle(raw) {
 export function getCreatorProfilePath(rawHandle) {
   const parsed = normalizeCreatorHandle(rawHandle);
   if (!parsed) return '/';
-  return `/u/${encodeURIComponent(parsed.displayHandle)}`;
+  // Handles are case-insensitive: always link to the lowercase canonical URL (one URL per creator for Google).
+  return `/u/${encodeURIComponent(parsed.normalized)}`;
 }
 
 export function extractUniqueCreatorHandles(memes = STARTER_MEMES) {

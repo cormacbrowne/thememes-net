@@ -52,3 +52,9 @@ Format:
 - **Root cause:** a CSS grid with no `grid-template-columns` gets an `auto` track. That track grows to fit nowrap text (the standings rows), so `min-width: 0` on the parent alone doesn't stop it. Fix: `grid-template-columns: minmax(0, 1fr)` on every nested grid that holds truncated text.
 - **Check that worked:** a Playwright script that lists every child whose right edge is past the card's right edge, run against mocked battle data in each state (still voting / all voted with standings). Check both states, not just the empty one.
 - **Routing note:** for mobile layout fixes, a Claude Code fix with a before/after overflow measurement beat the Gemini screenshot pass.
+
+## 2026-11-26: T-012 Google "why pages aren't indexed"
+- Worked: checking the live sitemap URL by URL (status code, canonical, robots) found the one real bug in about a minute: 4 creator pages were listed as `/u/MemeLedge` but canonicalised to `/u/memeledge`. The other three reasons in the report (redirects, discovered/crawled not indexed) were normal for old URLs and thin pages, not bugs.
+- Didn't: the server, the app and the sitemap each built creator URLs their own way. The app copied the address bar's casing, so after rendering it disagreed with the server.
+- Routing note: Claude, inline. A curl loop over the sitemap beats reading the code first.
+- Suggest: growth-marketer adds a "sitemap loc == canonical for every URL" check to the SEO checklist (could become a smoke test).

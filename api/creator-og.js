@@ -122,7 +122,8 @@ export default async function handler(req, res) {
   const battleWins = Number(live?.caption_wins || 0);
   const streakDays = Number(live?.streak_days || 0);
   const followers = Number(live?.follower_count || 0);
-  const canonicalUrl = `${SITE_ORIGIN}/u/${encodeURIComponent(displayHandle)}`;
+  // Handles are case-insensitive: one lowercase canonical URL per creator, matching the sitemap and the app.
+  const canonicalUrl = `${SITE_ORIGIN}/u/${encodeURIComponent(displayHandle.toLowerCase())}`;
   const profileOgImage = `${SITE_ORIGIN}/api/profile-og-image?handle=${encodeURIComponent(displayHandle)}`;
   const winsLabel = `${battleWins} battle ${battleWins === 1 ? 'win' : 'wins'}`;
   const titleText = `@${displayHandle} — Level ${levelInfo.level} ${levelInfo.title} — ${winsLabel} | THE MEMES.net`;

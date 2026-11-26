@@ -55,7 +55,7 @@ export function buildMemeJsonLd(meme = {}, canonicalUrl, imageUrl) {
     headline: title.slice(0, 110),
     description,
     ...(meme.created_at ? { datePublished: meme.created_at } : {}),
-    author: { '@type': 'Person', name: author, url: `${ORIGIN}/u/${encodeURIComponent(author)}` },
+    author: { '@type': 'Person', name: author, url: `${ORIGIN}/u/${encodeURIComponent(author.toLowerCase())}` },
     ...(cat ? { keywords: `${cat} meme, funny meme` } : {}),
     image: imageUrl,
     ...(isVideo ? { video: media } : { sharedContent: media }),

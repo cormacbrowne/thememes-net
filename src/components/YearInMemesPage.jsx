@@ -185,7 +185,7 @@ export default function YearInMemesPage() {
                   {topCreators.map((c, idx) => (
                     <a
                       key={c.author_name}
-                      href={`/u/${encodeURIComponent(c.author_name)}`}
+                      href={`/u/${encodeURIComponent(String(c.author_name).toLowerCase())}`}
                       className="tm-yim-creator-pill"
                     >
                       <span>#{idx + 1} @{c.author_name}</span>

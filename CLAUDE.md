@@ -51,7 +51,7 @@ Each specialist is a Claude Code subagent in `.claude/agents/`. Use the Agent to
 You can tighten these; you **cannot** loosen them, or add agents, paid tools or spending, without Cormac's written OK (record it in `ops/decisions.md`).
 
 - **No spending** outside the monthly cap in `ops/budget.md`, and nothing new without approval. Free first.
-- **No push to `main`, no deploy, no production migration** unless Cormac asks for that specific thing. Work on `claude/…` branches; Gemini works on `gemini/…` branches.
+- **No push to `main`, no deploy, no production migration** unless Cormac asks for that specific thing. *Exception (D-007, 26 Nov 2026):* reviewed code that passed QA and sign-offs deploys to `main` without asking each time, until the site has thousands of users. Migrations, moderation/security Edge Functions, spending and data deletion still need his OK. Work on `claude/…` branches; Gemini works on `gemini/…` branches.
 - **Review, QA and merging happen only on the Claude side.**
 - **Every code change:** `npm run lint` and `npm run build` exit 0; `npm run test:unit` for logic; screenshots at 390×844 and 1280×800 for anything visual (`instructions.md` Phase 35 rule 1).
 - **Repo rules in `instructions.md` "HOW AGENTS MUST WORK" still apply** (targeted edits to `src/App.jsx`, CSS cascade rule, token economy, CSP in both `index.html` and `vercel.json`, no audio before a user gesture, reduced-motion/lite mode always win, SEO route rules). Its "always push to main" line is overridden by the rule above.

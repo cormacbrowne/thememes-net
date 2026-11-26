@@ -82,5 +82,11 @@ Cormac's Pro plan includes Antigravity, so Gemini can do the bulk of code buildi
 
 ## Decided
 
+### D-007: Max deploys without asking each time (Cormac, 26 Nov 2026)
+Cormac, in chat on 26 Nov 2026: "Skip deploy question - always deploy - until we have 1000s of users."
+- **What changes:** Max pushes reviewed work to `main` (Vercel production deploy) without asking first, and says so in the report.
+- **What doesn't change:** every deploy still needs green lint/build/unit tests, a `qa-reviewer` ship verdict and the usual sign-offs (§3.6). Production database migrations, Edge Function deploys that touch moderation/security, spending, and deleting user data or files still need Cormac's OK each time. Gemini work still gets a Claude review before merging.
+- **Ends:** when the site reaches thousands of users (analytics-lead flags when weekly users pass 1,000), or whenever Cormac says so.
+
 ### D-001: The stack is Vite + React, not Next.js (21 Nov 2026)
 The team brief said "Next.js/Vercel/Supabase". The code is a Vite 8 + React 19 single-page app with Vercel serverless functions in `api/` and Supabase. The agent files describe the real stack. Moving to Next.js would be a big migration and is **not** planned; it would need its own pitch and Cormac's OK.

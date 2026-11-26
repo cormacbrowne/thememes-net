@@ -176,7 +176,7 @@ export default async function handler(req, res) {
 
   const articleMarkup = `<main class="tm-seo-prerender" data-battle-id="${escapeHtml(battle.id)}" style="min-height:100vh;background:#07060f;color:#f8fafc;padding:32px 18px 64px;font-family:system-ui,-apple-system,sans-serif;"><article style="max-width:720px;margin:0 auto;"><h1 style="margin:0 0 10px;font-size:28px;">⚔️ ${escapeHtml(battleTitle)}</h1>${
     entry
-      ? `<p style="font-size:18px;font-weight:800;color:#ffb800;margin:0 0 10px;">“${escapeHtml(captionText)}” — <a href="/u/${escapeHtml(encodeURIComponent(entry.author_name || 'Anon'))}" style="color:#00f5ff;">@${escapeHtml(entry.author_name || 'Anon')}</a></p>`
+      ? `<p style="font-size:18px;font-weight:800;color:#ffb800;margin:0 0 10px;">“${escapeHtml(captionText)}” — <a href="/u/${escapeHtml(encodeURIComponent(String(entry.author_name || 'Anon').toLowerCase()))}" style="color:#00f5ff;">@${escapeHtml(entry.author_name || 'Anon')}</a></p>`
       : ''
   }<p style="color:#94a3b8;margin:0 0 16px;">${battle.battle_day ? `${escapeHtml(battle.battle_day)} · ` : ''}${
     battle.theme ? `Theme: ${escapeHtml(battle.theme)} · ` : ''
@@ -200,7 +200,7 @@ export default async function handler(req, res) {
           author: {
             '@type': 'Person',
             name: entry.author_name || 'Anon',
-            url: `${SITE_ORIGIN}/u/${encodeURIComponent(entry.author_name || 'Anon')}`
+            url: `${SITE_ORIGIN}/u/${encodeURIComponent(String(entry.author_name || 'Anon').toLowerCase())}`
           }
         }
       : {})

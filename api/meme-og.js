@@ -334,7 +334,7 @@ export default async function handler(req, res) {
     );
 
     const catSlug = CATEGORY_ID_TO_SLUG[String(meme.category || '').toLowerCase()] || '';
-    const articleMarkup = `<main class="tm-seo-prerender" data-meme-id="${escapeHtml(String(meme.id))}" style="min-height:100vh;background:#070810;color:#f8fafc;padding:32px 18px 64px;font-family:system-ui,-apple-system,sans-serif;"><article style="max-width:720px;margin:0 auto;"><h1 style="margin:0 0 12px;font-size:28px;">${escapeHtml(meme.title || 'Meme')}</h1><p style="color:#94a3b8;margin:0 0 16px;">By <a href="/u/${escapeHtml(encodeURIComponent(meme.author_name || 'Anon'))}" style="color:#00f5ff;">@${escapeHtml(meme.author_name || 'Anon')}</a> · ${
+    const articleMarkup = `<main class="tm-seo-prerender" data-meme-id="${escapeHtml(String(meme.id))}" style="min-height:100vh;background:#070810;color:#f8fafc;padding:32px 18px 64px;font-family:system-ui,-apple-system,sans-serif;"><article style="max-width:720px;margin:0 auto;"><h1 style="margin:0 0 12px;font-size:28px;">${escapeHtml(meme.title || 'Meme')}</h1><p style="color:#94a3b8;margin:0 0 16px;">By <a href="/u/${escapeHtml(encodeURIComponent(String(meme.author_name || 'Anon').toLowerCase()))}" style="color:#00f5ff;">@${escapeHtml(meme.author_name || 'Anon')}</a> · ${
       catSlug
         ? `<a href="/memes/${catSlug}" style="color:#00f5ff;">#${escapeHtml(meme.category)} memes</a>`
         : `#${escapeHtml(meme.category || 'meme')}`

@@ -2684,7 +2684,7 @@ test.describe('Phase 33.17 Creator Profile Pages (/u/<handle>), Built-in Pixel A
       // Verify SEO title, canonical URL & ProfilePage JSON-LD
       await expect.poll(() => page.title(), { timeout: 5000 }).toContain('@PixelMemer86');
       const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
-      expect(canonical).toContain('/u/PixelMemer86');
+      expect(canonical).toContain('/u/pixelmemer86');
       const jsonLd = await page.locator('#tm-dynamic-jsonld').textContent();
       expect(jsonLd).toContain('"ProfilePage"');
 

@@ -27,4 +27,17 @@ export default defineConfig([
       },
     },
   },
+  {
+    // Specs must use the storage stub, or they download live Supabase media (egress cap).
+    files: ['tests/**/*.spec.js'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        paths: [{
+          name: '@playwright/test',
+          importNames: ['test'],
+          message: "Import test from './storageStub.js' so live Supabase Storage is never downloaded.",
+        }],
+      }],
+    },
+  },
 ])

@@ -69,3 +69,4 @@ Format:
 - Worked: grouping Storage egress in the edge logs by user agent and referer showed about 370 of 600 MB in one day came from headless Chrome on `127.0.0.1:4173`, `localhost:4789/4790` and Vercel previews, not from visitors.
 - Didn't: smoke tests faked every REST, auth and function call but not `/storage/`, so every agent test and screenshot run downloaded real user media from production.
 - Routing note: Claude, inline. One auto fixture (`tests/storageStub.js`) covers every spec. One-off screenshot scripts must call `blockStorage(page)` themselves, so this is in `instructions.md` and the handoff template for Gemini too.
+- Didn't (2): I first reported "54 passed" because `| tail` hid both the "66 failed" line and the exit code. Read Playwright's summary block in full and keep the real exit code (no pipe) before quoting a result.

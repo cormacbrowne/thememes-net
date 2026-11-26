@@ -11,7 +11,7 @@
 // Ad-hoc screenshot scripts can call `blockStorage(page)` (or a context).
 import { test as base, expect } from '@playwright/test';
 
-const STORAGE_GLOB = '**/storage/v1/object/**';
+const STORAGE_GLOB = '**/storage/v1/{object,render}/**';
 
 // 1x1 transparent GIF: every browser decodes it as an image of any type.
 const PIXEL = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
@@ -22,14 +22,16 @@ export async function blockStorage(target) {
     const req = route.request();
     if (req.method() !== 'GET' && req.method() !== 'HEAD') return route.fallback();
     const path = new URL(req.url()).pathname.toLowerCase();
-    if (/\.(mp4|webm|mov|m4v)$/.test(path)) {
-      // Empty body: the <video> fails to load and the poster/fallback shows.
-      return route.fulfill({ status: 404, contentType: 'text/plain', body: '' });
+    // Real Supabase sends ACAO *; canvas code loads images with crossOrigin.
+    const headers = { 'access-control-allow-origin': '*', 'cache-control': 'no-store' };
+    if (/\.(mp4|webm|mov|m4v|mp3|ogg|oga|wav|m4a|aac)$/.test(path)) {
+      // Empty body: the <video>/<audio> fails to load and the poster/fallback shows.
+      return route.fulfill({ status: 404, contentType: 'text/plain', headers, body: '' });
     }
     return route.fulfill({
       status: 200,
       contentType: 'image/gif',
-      headers: { 'cache-control': 'no-store' },
+      headers,
       body: PIXEL
     });
   });

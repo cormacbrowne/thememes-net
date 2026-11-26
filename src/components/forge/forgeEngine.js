@@ -482,7 +482,15 @@ export async function burnInVideo(
   layers,
   images,
   onProgress,
-  { maxSeconds = 90, maxDim = 1080, watermark = true, frameCount = 0, frameMaxDim = 480 } = {}
+  {
+    maxSeconds = 90,
+    maxDim = 1080,
+    watermark = true,
+    frameCount = 0,
+    frameMaxDim = 480,
+    videoBitsPerSecond = 4_000_000,
+    audioBitsPerSecond = 128_000
+  } = {}
 ) {
   if (typeof MediaRecorder === 'undefined' || !HTMLCanvasElement.prototype.captureStream) return null;
   const mime = pickVideoRecorderMime();
@@ -557,7 +565,7 @@ export async function burnInVideo(
     audioCtx = null;
   }
 
-  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 4_000_000 });
+  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond, audioBitsPerSecond });
   const chunks = [];
   rec.ondataavailable = (e) => e.data && e.data.size && chunks.push(e.data);
   const stopped = new Promise((res) => (rec.onstop = res));
@@ -622,7 +630,11 @@ export async function prepareVideoForUpload(source, layers = [], { onProgress } 
       maxDim: 720,
       watermark: false,
       frameCount: 'auto',
-      frameMaxDim: 480
+      frameMaxDim: 480,
+      // T-014: posted clips are streamed to every viewer from Supabase (5 GB/month free egress).
+      // 720p looks the same at ~1.8 Mbps; 30 s ≈ 7 MB instead of ~15 MB. Downloads keep 4 Mbps.
+      videoBitsPerSecond: 1_800_000,
+      audioBitsPerSecond: 96_000
     });
   } finally {
     if (source instanceof Blob) URL.revokeObjectURL(url);

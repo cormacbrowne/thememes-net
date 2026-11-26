@@ -11,6 +11,9 @@ import { ensureWriteSession, precheckTexts, TEXT_REJECTION_MESSAGES } from './se
 import { getTurnstileToken } from './turnstile.js';
 import { BOT_ERROR_MESSAGES, formatRateLimitMessage } from '../../supabase/functions/_shared/rateLimitAndBot.js';
 
+/** T-014: posted videos are re-recorded at ~1.8 Mbps (forgeEngine), so 30 s lands near 7 MB. 12 MB is the ceiling. */
+export const VIDEO_UPLOAD_MAX_BYTES = 12 * 1024 * 1024;
+
 export const PUBLISH_FUNCTION = 'publish-meme';
 
 /** Where "House Rules" links point (page arrives in task 33.11). */
@@ -34,7 +37,7 @@ export const PUBLISH_ERROR_MESSAGES = {
   ...BOT_ERROR_MESSAGES,
   video_paused: '🎬 Video memes are coming back soon — post a still or a GIF for now.',
   video_unsupported: '🎬 This browser cannot prepare videos. Try Safari or Chrome, or post a GIF.',
-  video_too_large: '⚠️ That video is too big after preparing — try a shorter clip (max 30 seconds).',
+  video_too_large: '⚠️ That video is too heavy after preparing (max 12MB) — try a shorter clip.',
   video_too_long: '⚠️ Videos can be up to 30 seconds long.',
   video_tracks: '⚠️ That video has extra data tracks we cannot post. Try exporting it again as a normal MP4.',
   video_metadata: '⚠️ That video carries hidden metadata we cannot remove. Try exporting it again as MP4.',
@@ -148,7 +151,7 @@ async function publishVideo({ media, overlay, meta, client }) {
     prepared = null;
   }
   if (!prepared?.blob || !prepared.frames?.length) throw publishError('video_unsupported');
-  if (prepared.blob.size > 25 * 1024 * 1024) throw publishError('video_too_large');
+  if (prepared.blob.size > VIDEO_UPLOAD_MAX_BYTES) throw publishError('video_too_large');
 
   report(1, 'uploading');
   const turnstileToken = await getTurnstileToken('upload');

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './storageStub.js';
 import { stampArcadeCartridgeFooter } from '../src/utils/canvasMutator.js';
 
 const VIEWPORTS = [

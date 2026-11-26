@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './storageStub.js';
 
 const GAME_IDS = [
   { id: 'pusher', name: /Neon Coin Dozer/i, fixed: true },

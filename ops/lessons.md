@@ -64,3 +64,8 @@ Format:
 - Didn't: `preload="metadata"` isn't a size guard. Chrome downloads a short clip in full, so every home-page visit pulled the whole file, and the meme page pulled it twice.
 - Routing note: Claude, inline. With no service key in the container, a temporary Edge Function with the file list hard-coded and a hashed one-off token did the uploads and deletes. It was stubbed out straight after.
 - Suggest: tech-lead adds a weekly egress check (top storage paths by bytes) to /capacity.
+
+## 2026-11-26: T-015 Supabase egress, part 2 (our own tests)
+- Worked: grouping Storage egress in the edge logs by user agent and referer showed about 370 of 600 MB in one day came from headless Chrome on `127.0.0.1:4173`, `localhost:4789/4790` and Vercel previews, not from visitors.
+- Didn't: smoke tests faked every REST, auth and function call but not `/storage/`, so every agent test and screenshot run downloaded real user media from production.
+- Routing note: Claude, inline. One auto fixture (`tests/storageStub.js`) covers every spec. One-off screenshot scripts must call `blockStorage(page)` themselves, so this is in `instructions.md` and the handoff template for Gemini too.

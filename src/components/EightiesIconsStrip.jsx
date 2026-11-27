@@ -323,7 +323,7 @@ const EIGHTIES_ICON_CAST = [
     quotes: [
       "Turbos armed. Scramble the Night Viper or Sky Patrol on the double!",
       "Night Viper radar is tracking a hostile rival closing in on your high score.",
-      "Silent whisper mode engaged until we cross the valley... then Mach-1 afterburners!",
+      "Silent running until we cross the valley... then Mach-1 afterburners!",
       "Arcade cabinet tuner by day, supersonic interceptor by night."
     ],
     priceTokens: 25,

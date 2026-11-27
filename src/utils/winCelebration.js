@@ -226,7 +226,7 @@ export function triggerWinCelebration({
 }
 
 /**
- * Summon an Airwolf or Blue Thunder supersonic flyby on demand (e.g. from the 80s Icons strip).
+ * Summon a Night Viper or Sky Patrol chopper flyby on demand (e.g. from the 80s Icons strip).
  */
 export function triggerHelicopterFlyby(chopper = 'airwolf', label = '') {
   const mode = chopper === 'bluethunder' || chopper === 'both' ? chopper : 'airwolf';
@@ -235,8 +235,8 @@ export function triggerHelicopterFlyby(chopper = 'airwolf', label = '') {
     (mode === 'both'
       ? 'NIGHT VIPER & SKY PATROL SCRAMBLE!'
       : mode === 'bluethunder'
-        ? 'SKY PATROL WHISPER PASS!'
-        : 'NIGHT VIPER SUPERSONIC FLYBY!');
+        ? 'SKY PATROL SILENT RUN!'
+        : 'NIGHT VIPER MACH 1 FLYBY!');
   const detail =
     mode === 'bluethunder'
       ? 'Neon City Sky Patrol • Night Shift • 1983'

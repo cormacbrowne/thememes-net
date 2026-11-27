@@ -61,7 +61,7 @@ function FlyingSaucerSvg() {
   );
 }
 
-/* 1984 Airwolf — sleek supersonic Bell 222 stealth gunship flying left-to-right */
+/* Night Viper — original violet neon gunship with afterburner, flying left-to-right (T-019) */
 function AirwolfSvg() {
   return (
     <svg viewBox="0 0 260 112" className="tm-chopper-svg tm-airwolf-svg" aria-hidden="true">
@@ -87,41 +87,44 @@ function AirwolfSvg() {
       <polygon points="82,45 14,38 26,45 10,51 82,53" fill="url(#awAfterburn)" className="tm-aw-flame" />
 
       {/* Tail boom & shark fin */}
-      <path d="M98,44 L36,42 L26,22 L42,22 L52,42 L100,56 Z" fill="#0f172a" stroke="#475569" strokeWidth="1.5" />
-      <path d="M52,49 L86,52 L88,56 L50,53 Z" fill="#cbd5e1" />
+      <path d="M98,44 L36,42 L26,22 L42,22 L52,42 L100,56 Z" fill="#1e1036" stroke="#7c3aed" strokeWidth="1.5" />
+      <path d="M52,49 L86,52 L88,56 L50,53 Z" fill="#4c1d95" />
       {/* Tail rotor */}
       <circle cx="33" cy="31" r="10" fill="none" stroke="#94a3b8" strokeWidth="1.4" strokeDasharray="4 3" />
       <line x1="33" y1="21" x2="33" y2="41" stroke="#e2e8f0" strokeWidth="2.2" />
 
-      {/* Bell 222 sleek stealth hull (upper matte black, lower silver-white belly) */}
+      {/* One-colour dark violet hull with a single cyan chevron stripe */}
       <path
         d="M84,42 C104,28 148,26 178,34 C202,41 226,51 236,61 C238,67 218,74 176,75 L96,73 C84,68 78,54 84,42 Z"
-        fill="#090d16"
-        stroke="#475569"
+        fill="#1e1036"
+        stroke="#7c3aed"
         strokeWidth="1.6"
       />
-      {/* Classic Airwolf pearl-silver underbelly */}
-      <path d="M100,63 L228,63 C220,71 196,75 166,75 L102,73 C94,71 94,66 100,63 Z" fill="#cbd5e1" />
-      <path d="M100,63 L226,63" stroke="#ef4444" strokeWidth="1.8" />
+      <path d="M96,60 L200,52 L232,60" fill="none" stroke="#19f0ff" strokeWidth="1.8" strokeLinejoin="round" />
 
-      {/* Tinted dual cockpit canopy */}
+      {/* Tinted cockpit canopy */}
       <path d="M168,36 L220,56 L166,57 Z" fill="url(#awCanopy)" stroke="#38bdf8" strokeWidth="1.2" />
       <line x1="190" y1="43" x2="188" y2="57" stroke="#0f172a" strokeWidth="2" />
 
-      {/* Twin turbo-thrust engine pod + side sponson wing */}
-      <path d="M114,32 C136,27 160,29 170,38 L110,41 Z" fill="#1e293b" stroke="#64748b" strokeWidth="1.2" />
-      <rect x="86" y="42" width="28" height="10" rx="4" fill="#334155" stroke="#94a3b8" strokeWidth="1" />
-      <path d="M118,56 L158,64 L112,68 Z" fill="#1e293b" stroke="#64748b" strokeWidth="1.2" />
-      <rect x="150" y="61" width="16" height="4" rx="1.5" fill="#94a3b8" />
+      {/* Top engine fairing */}
+      <path d="M114,32 C136,27 160,29 170,38 L110,41 Z" fill="#2e1065" stroke="#7c3aed" strokeWidth="1.2" />
 
-      {/* Wolf-head emblem stripe */}
-      <circle cx="144" cy="51" r="6" fill="#020617" stroke="#38bdf8" strokeWidth="1.2" />
-      <polygon points="141,53 144,47 147,53" fill="#facc15" />
+      {/* Stub wing with two rocket pods */}
+      <rect x="118" y="64" width="30" height="4" rx="2" fill="#4c1d95" stroke="#a78bfa" strokeWidth="1" />
+      <rect x="120" y="68" width="10" height="4" rx="2" fill="#94a3b8" />
+      <rect x="136" y="68" width="10" height="4" rx="2" fill="#94a3b8" />
+
+      {/* Landing skids */}
+      <path d="M120,75 L114,86 M200,75 L206,86 M104,86 L216,86" stroke="#94a3b8" strokeWidth="2.4" strokeLinecap="round" fill="none" />
+
+      {/* Viper-eye emblem */}
+      <path d="M136,51 Q144,44 152,51 Q144,58 136,51 Z" fill="#020617" stroke="#19f0ff" strokeWidth="1.2" />
+      <ellipse cx="144" cy="51" rx="1.4" ry="4" fill="#ff2a85" />
     </svg>
   );
 }
 
-/* 1983 Blue Thunder — LAPD Special Gazelle chopper with Vulcan nose cannon & searchlight */
+/* Sky Patrol — original teal night-patrol chopper with a searchlight (T-019) */
 function BlueThunderSvg() {
   return (
     <svg viewBox="0 0 260 128" className="tm-chopper-svg tm-bluethunder-svg" aria-hidden="true">
@@ -133,7 +136,7 @@ function BlueThunderSvg() {
         </linearGradient>
       </defs>
 
-      {/* Main whisper rotor disc */}
+      {/* Main rotor disc */}
       <ellipse cx="114" cy="18" rx="90" ry="5" fill="rgba(56,189,248,0.34)" />
       <rect x="34" y="16" width="160" height="3.2" rx="1.6" fill="#bae6fd" className="tm-chopper-blade-sweep" />
       <rect x="110" y="18" width="8" height="14" rx="2" fill="#334155" />
@@ -141,37 +144,34 @@ function BlueThunderSvg() {
       {/* Tactical xenon searchlight cone angled forward-left */}
       <polygon points="48,66 2,126 88,126" fill="url(#btSearchlight)" className="tm-bt-beam" />
 
-      {/* Tail boom & iconic Gazelle Fenestron ducted tail rotor (facing left!) */}
-      <path d="M148,44 L222,42 L232,22 L216,22 L208,42 L148,54 Z" fill="#172554" stroke="#60a5fa" strokeWidth="1.5" />
-      <circle cx="222" cy="36" r="10.5" fill="#0f172a" stroke="#93c5fd" strokeWidth="2" />
-      <circle cx="222" cy="36" r="5" fill="#1e40af" stroke="#67e8f9" strokeWidth="1.4" />
+      {/* Tail boom & open two-blade tail rotor (facing left) */}
+      <path d="M148,44 L222,42 L232,22 L216,22 L208,42 L148,54 Z" fill="#0e3b43" stroke="#19f0ff" strokeWidth="1.5" />
+      <circle cx="222" cy="36" r="10" fill="none" stroke="#94a3b8" strokeWidth="1.4" strokeDasharray="4 3" />
+      <line x1="222" y1="24" x2="222" y2="48" stroke="#e2e8f0" strokeWidth="2.2" />
 
-      {/* Angular armored tactical hull (facing LEFT) */}
+      {/* Rounded-nose patrol hull (facing LEFT) */}
       <path
-        d="M32,58 L54,40 L108,32 L154,36 L160,64 L138,74 L46,72 Z"
-        fill="#1e3a8a"
-        stroke="#60a5fa"
+        d="M30,60 C30,40 60,32 108,32 L154,36 L160,64 L138,74 L50,74 C38,72 30,68 30,60 Z"
+        fill="#0e3b43"
+        stroke="#19f0ff"
         strokeWidth="1.6"
       />
-      {/* Flat Apache-inspired armored cockpit canopy */}
-      <polygon points="36,56 56,42 104,42 104,58 46,60" fill="#020617" stroke="#22d3ee" strokeWidth="1.3" />
-      <line x1="68" y1="42" x2="64" y2="59" stroke="#38bdf8" strokeWidth="1.6" />
-      <polygon points="44,50 62,45 60,55 44,55" fill="#06b6d4" opacity="0.45" />
+      {/* Rounded glass canopy */}
+      <path d="M34,58 C36,44 58,38 100,40 L102,58 Z" fill="#020617" stroke="#22d3ee" strokeWidth="1.3" />
+      <path d="M44,54 C46,47 56,44 66,44 L66,54 Z" fill="#06b6d4" opacity="0.45" />
 
-      {/* Top turbine fairing + Whisper Mode cowling */}
-      <path d="M90,32 L142,30 L146,42 L88,42 Z" fill="#0f172a" stroke="#60a5fa" strokeWidth="1.2" />
+      {/* Top engine fairing */}
+      <path d="M90,32 L142,30 L146,42 L88,42 Z" fill="#082f35" stroke="#19f0ff" strokeWidth="1.2" />
 
-      {/* Chin FLIR pod + M61 20mm Gatling nose cannon */}
-      <circle cx="48" cy="65" r="5" fill="#cbd5e1" stroke="#334155" strokeWidth="1.2" />
-      <circle cx="46" cy="65" r="2.2" fill="#facc15" />
-      <rect x="20" y="61" width="22" height="3.6" rx="1" fill="#94a3b8" />
-      <circle cx="19" cy="62.8" r="2" fill="#f97316" />
+      {/* Chin searchlight pod */}
+      <circle cx="48" cy="67" r="5" fill="#cbd5e1" stroke="#334155" strokeWidth="1.2" />
+      <circle cx="46" cy="67" r="2.2" fill="#fef08a" />
 
       {/* Landing skids */}
-      <path d="M58,72 L52,82 M132,73 L138,82 M42,82 L148,82" stroke="#94a3b8" strokeWidth="2.4" strokeLinecap="round" fill="none" />
+      <path d="M58,74 L52,84 M132,74 L138,84 M42,84 L148,84" stroke="#94a3b8" strokeWidth="2.4" strokeLinecap="round" fill="none" />
 
-      {/* LAPD tactical stripe */}
-      <rect x="108" y="60" width="38" height="4" rx="1" fill="#facc15" />
+      {/* Cyan patrol stripe */}
+      <rect x="108" y="60" width="38" height="4" rx="1" fill="#19f0ff" />
     </svg>
   );
 }
@@ -191,7 +191,7 @@ function renderChopperLayer(chopperFlyby) {
       {showBlueThunder && (
         <div className="tm-win-chopper-unit is-bluethunder">
           <BlueThunderSvg />
-          <span className="tm-chopper-radio-tag">🚁 SKY PATROL • WHISPER MODE</span>
+          <span className="tm-chopper-radio-tag">🚁 SKY PATROL • SILENT RUN</span>
         </div>
       )}
     </div>

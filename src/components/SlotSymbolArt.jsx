@@ -395,15 +395,16 @@ const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge =
             <ellipse cx="32" cy="18" rx="25" ry="3.2" fill="#94a3b8" opacity="0.55" />
             <line x1="7" y1="18" x2="57" y2="18" stroke="#00f3ff" strokeWidth="2" strokeLinecap="round" />
             <line x1="32" y1="18" x2="32" y2="25" stroke="#cbd5e1" strokeWidth="2.6" />
-            {/* Sleek Black Bell 222 Stealth Fuselage */}
-            <path d="M12 31 L25 24 H42 L53 31 L48 37 H20 Z" fill="#0f172a" stroke="#38bdf8" strokeWidth="2" />
-            <path d="M22 36 L44 36 L40 40 H24 Z" fill="#e2e8f0" />
+            {/* Night Viper: one-colour violet gunship hull + skids (T-019, no two-tone belly) */}
+            <path d="M12 31 L25 24 H42 L53 31 L48 37 H20 Z" fill="#1e1036" stroke="#a78bfa" strokeWidth="2" />
+            <path d="M22 36 L44 36 L40 40 H24 Z" fill="#7c3aed" />
+            <path d="M20 40 L18 43 M44 40 L46 43 M15 43 H50" stroke="#94a3b8" strokeWidth="1.6" fill="none" strokeLinecap="round" />
             {/* Cockpit Glass */}
             <polygon points="38,25 49,30 40,32 36,27" fill="#00f3ff" opacity="0.85" />
             {/* Side Turbofan Pod & Afterburner Flame */}
             <ellipse cx="29" cy="34" rx="8" ry="3" fill="#334155" stroke="#38bdf8" strokeWidth="1.4" />
             <polygon points="20,33 12,35 20,37" fill="#ff2a85" />
-            {/* Tail Boom & Fenestron */}
+            {/* Tail Boom */}
             <path d="M15 31 L6 27 L9 34 L15 34 Z" fill="#1e293b" stroke="#38bdf8" strokeWidth="1.5" />
             <rect x="9" y="46" width="46" height="12" rx="4" fill="#090a0f" stroke="#38bdf8" strokeWidth="1.5" />
             <text x="32" y="55" textAnchor="middle" fill="#7dd3fc" fontSize="8" fontWeight="900" fontFamily="Impact, sans-serif" letterSpacing="0.8">

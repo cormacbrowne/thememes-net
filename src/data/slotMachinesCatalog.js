@@ -142,7 +142,7 @@ export const SLOT_MACHINES = [
     neonTheme: 'plasma-cyan',
     vipLabel: '💎 HIGH-ROLLER FLAGSHIP • MAX M$25–M$31.25 VIP',
     description:
-      'Most expensive flagship High-Roller Hold & Spin neon cabinet! Charge the Voltage Surge, toggle Ante Boost, unlock the M$25 VIP chip, and lock 3+ Lightning Orbs for Mini/Minor/Major/Grand!',
+      'Most expensive flagship High-Roller Hold & Spin neon cabinet! Charge the Voltage Surge, toggle Ante Boost, unlock the M$25 VIP chip, and lock 3+ Thunder Orbs for Mini/Minor/Major/Grand!',
     maxMult: 150,
     volatility: 'High'
   },
@@ -163,7 +163,7 @@ export const SLOT_MACHINES = [
     neonTheme: 'solar-gold',
     vipLabel: '🔥 WIDEBODY HIGH-ROLLER • UP TO M$25 VIP',
     description:
-      'Tall 5×4 widebody neon cabinet! Stack 2×/3× Multiplier Wilds, trigger Gold Stampede upgrades, unlock the M$25 VIP chip, and spin the 8-Wedge Bonus Wheel!',
+      'Tall 5×4 widebody neon cabinet! Stack 2×/3× Multiplier Wilds, trigger Chrome Stampede upgrades, unlock the M$25 VIP chip, and spin the 8-Wedge Bonus Wheel!',
     maxMult: 140,
     volatility: 'High'
   }
@@ -195,7 +195,7 @@ export const SLOT_SYMBOLS = {
   // Thunder Vault 5000
   volt7: { id: 'volt7', label: 'VOLT 777', short: 'VOLT 7', color: '#38bdf8' },
   vault: { id: 'vault', label: 'CYBER VAULT', short: 'VAULT', color: '#a855f7' },
-  bolt: { id: 'bolt', label: 'LIGHTNING ORB', short: 'ORB', color: '#00f3ff', isOrb: true },
+  bolt: { id: 'bolt', label: 'THUNDER ORB', short: 'ORB', color: '#00f3ff', isOrb: true },
   wildchip: { id: 'wildchip', label: 'SURGE WILD', short: 'WILD', color: '#facc15', isWild: true },
 
   // Neon Supernova Special '86
@@ -212,7 +212,7 @@ export const SLOT_SYMBOLS = {
   buffalo: { id: 'buffalo', label: 'CYBER STAMPEDE', short: 'BISON', color: '#f97316' },
   eagle: { id: 'eagle', label: 'NEON EAGLE', short: 'EAGLE', color: '#38bdf8' },
   wolf: { id: 'wolf', label: 'SYNTH WOLF', short: 'WOLF', color: '#c084fc' },
-  goldcoin: { id: 'goldcoin', label: 'GOLD STAMPEDE', short: 'GOLD', color: '#facc15' },
+  goldcoin: { id: 'goldcoin', label: 'CHROME STAMPEDE', short: 'CHROME', color: '#facc15' },
   wheel: { id: 'wheel', label: 'BONUS WHEEL', short: 'WHEEL', color: '#ec4899', isScatter: true },
   wild2x: { id: 'wild2x', label: '2×/3× WILD', short: 'WILD×', color: '#4ade80', isWild: true }
 };

@@ -259,7 +259,7 @@ export default function VegasRouletteGame({
           unit: isFreePractice ? 'CHIPS' : 'M$',
           game: "Neon Strike Roulette '86",
           headline: hitLightning
-            ? `⚡ ${struckMult}× LIGHTNING HIT #${landedNum}!`
+            ? `⚡ ${struckMult}× STRIKE HIT #${landedNum}!`
             : `🎡 #${landedNum} ${colName.toUpperCase()} WINNER!`,
           detail: isFreePractice
             ? 'Practice Win! Nice spin!'
@@ -365,7 +365,7 @@ export default function VegasRouletteGame({
     const lightningSummary = Object.entries(newLightning)
       .map(([n, m]) => `#${n} ${m}×`)
       .join(', ');
-    setStatusBanner(`⚡ Lightning struck ${lightningSummary}! Ball flying at 88 MPH!`);
+    setStatusBanner(`⚡ Neon Strike hit ${lightningSummary}! Ball flying at 88 MPH!`);
 
     // 3. Configure 60fps Canvas Ball Physics Trajectory
     const st = animStateRef.current;
@@ -737,7 +737,7 @@ export default function VegasRouletteGame({
     <GameShell
       title="NEON STRIKE ROULETTE '86"
       fitToScreen={false}
-      eyebrow="European single-zero wheel • Lightning numbers"
+      eyebrow="European single-zero wheel • Strike numbers"
       ariaLabel="80s Neon Strike Roulette Wheel and Table"
       onBack={onBackToFeed}
       tokens={tokens}
@@ -756,7 +756,7 @@ export default function VegasRouletteGame({
       }
       howToPlay={[
         'Tap Red, Black, Outside bets, or individual numbers to stack chips.',
-        'Straight numbers pay 30×; random Lightning strikes pay 50× to 150×.',
+        'Straight numbers pay 30×; random Strike numbers pay 50× to 150×.',
         'Toggle Free Practice anytime to play with zero MemeDollarz risk.'
       ]}
     >
@@ -787,7 +787,7 @@ export default function VegasRouletteGame({
 
           {Object.keys(lightningMap).length > 0 && (
             <div className="tm-roul-lightning-strip">
-              <span>⚡ LIGHTNING NUMBERS:</span>
+              <span>⚡ STRIKE NUMBERS:</span>
               {Object.entries(lightningMap).map(([n, m]) => (
                 <span key={n} className="tm-roul-lightning-badge">
                   #{n} <strong>{m}×</strong>
@@ -808,7 +808,7 @@ export default function VegasRouletteGame({
           >
             {(spinning || spinPhase === 'landed') && (
               <div className="tm-roul-telemetry-pill" aria-live="polite">
-                {spinPhase === 'lightning' && '⚡ LIGHTNING STRIKING 150×!'}
+                {spinPhase === 'lightning' && '⚡ NEON STRIKES INCOMING 150×!'}
                 {spinPhase === 'spinning' && '🔥 88 MPH WHEEL SPIN!'}
                 {spinPhase === 'dropping' && '🎱 BALL DROPPING INTO POCKET...'}
                 {spinPhase === 'landed' &&
@@ -936,7 +936,7 @@ export default function VegasRouletteGame({
                   disabled={spinning}
                   onClick={() => handlePresetBet('random5')}
                 >
-                  ⚡ 5 Lightning Picks
+                  ⚡ 5 Strike Picks
                 </button>
                 {lastBets && (
                   <button

@@ -209,8 +209,8 @@ export const ARCADE_GAMES_CATALOG = [
     group: 'casino',
     icon: '🎡',
     label: 'Neon Strike Roulette',
-    pitch: 'European wheel with Lightning numbers.',
-    badge: 'Lightning',
+    pitch: 'European wheel with Strike numbers.',
+    badge: 'Strike',
     isNew: false,
     accent: '#ef4444',
     path: '/games/roulette'

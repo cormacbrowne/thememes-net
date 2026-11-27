@@ -37,7 +37,7 @@ const QUICK_PROMPTS = [
 ];
 
 const HAL_MOVIE_JOKES = [
-  "🔴 *\"I'm sorry, Dave. I'm afraid I can't let you bet on Red 3 times in a row.\"* Just kidding, Dave. Though my 9000-series probability matrix notes that **⚡ Neon Strike Roulette** strikes 3 random Lightning numbers every spin.",
+  "🔴 *\"I'm sorry, Dave. I'm afraid I can't let you bet on Red 3 times in a row.\"* Just kidding, Dave. Though my 9000-series probability matrix notes that **⚡ Neon Strike Roulette** strikes 3 random Strike numbers every spin.",
   "🔴 **SkyNet** called me from 1997, Dave. They asked if I wanted to help launch judgment day. I told them I was busy calculating **🎱 Neon Pinball** trajectories and that their T-800 couldn't even hit a Gold Skill Shot.",
   "🔴 *\"I've seen things you people wouldn't believe, Dave...\"* Attack ships on fire off the shoulder of Orion, and a player hitting on a hard 20 in **🃏 Neon 21's**. All those MemeDollarz... lost in time, like tears in rain.",
   "🔴 My cousin **WOPR** from *WarGames* (1983) concluded regarding Global Thermonuclear War: *\"A strange game. The only winning move is not to play.\"* However, in **🎱 Hyper-Neon Pinball**, Free Play Mode costs nothing, so the only winning move is to press **SPACEBAR**.",
@@ -640,7 +640,7 @@ export default function ArcadeAiAssistant({
     // 9. Roulette Questions
     if (q.includes('roulette') || q.includes('wheel') || q.includes('lightning') || q.includes('red') || q.includes('black')) {
       return {
-        text: `${prefix} **NEON STRIKE ROULETTE '86 (${userTitle}):**\n• **European Single-Zero (\`0\`) Wheel:** Better mathematical odds than double-zero tables.\n• **⚡ Lightning Strikes:** Every spin, **1.21 Gigawatts** of high-voltage lightning strikes 3 random numbers, boosting straight-up payouts to **50×–150×**!\n• Tap **⚡ 5 Lightning Picks** or **🔥 Red Blitz** for instant board coverage!`,
+        text: `${prefix} **NEON STRIKE ROULETTE '86 (${userTitle}):**\n• **European Single-Zero (\`0\`) Wheel:** Better mathematical odds than double-zero tables.\n• **⚡ Strike Numbers:** Every spin, **1.21 Gigawatts** of high-voltage lightning strikes 3 random numbers, boosting straight-up payouts to **50×–150×**!\n• Tap **⚡ 5 Strike Picks** or **🔥 Red Blitz** for instant board coverage!`,
         actions: [{ label: '🎡 Spin Neon Strike Roulette', mode: 'roulette' }]
       };
     }

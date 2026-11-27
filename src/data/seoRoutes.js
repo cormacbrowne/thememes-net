@@ -365,7 +365,7 @@ const ALL_SEO_ROUTES = [
     path: '/games/roulette',
     title: "Free Neon Strike Roulette Online — Play-Money Wheel '86 | THE MEMES.net",
     description:
-      'Spin a 37-pocket European Neon Strike Roulette wheel free online with Lightning numbers, inside & outside bets, and quick presets. Play money only.',
+      'Spin a 37-pocket European Neon Strike Roulette wheel free online with Strike numbers, inside & outside bets, and quick presets. Play money only.',
     h1: "Neon Strike Roulette '86 — Free Online European Wheel",
     kicker: '37-Pocket Single Zero // Play Money Only',
     changefreq: 'daily',

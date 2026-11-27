@@ -1212,7 +1212,7 @@ export default function VegasSlotMachine({
             lockedMap: orbEntries,
             stake: activeBet
           });
-          setStatusBanner(`⚡ ${orbCount} LIGHTNING ORBS LOCKED! 3 HOLD & SPIN RESPINS!`);
+          setStatusBanner(`⚡ ${orbCount} THUNDER ORBS LOCKED! 3 HOLD & SPIN RESPINS!`);
           return;
         }
 
@@ -1260,7 +1260,7 @@ export default function VegasSlotMachine({
           setStatusBanner(
             wheelCount >= 3
               ? '🎡 3+ BONUS WHEELS! TAP SPIN WHEEL TO CLAIM!'
-              : '🏆 100% GOLD STAMPEDE! BONUS WHEEL UNLOCKED!'
+              : '🏆 100% CHROME STAMPEDE! BONUS WHEEL UNLOCKED!'
           );
           if (totalMult > 0) {
             awardSlotWin({
@@ -1281,7 +1281,7 @@ export default function VegasSlotMachine({
             activeBet,
             mult: totalMult,
             headline: isBig
-              ? `🦬🚨 GOLD STAMPEDE MEGA WAYS! (${totalMult}×)`
+              ? `🦬🚨 CHROME STAMPEDE MEGA WAYS! (${totalMult}×)`
               : `🦬 ${evalRes.matchedWays.length} STAMPEDE WAYS! (${totalMult}×)`,
             detail: usedSecondChance
               ? '🛡️ 2nd-Chance Nudge checked + Ways paid!'
@@ -1295,7 +1295,7 @@ export default function VegasSlotMachine({
           setStatusBanner(
             wheelCount === 2
               ? '2 Bonus Wheels landed.'
-              : 'No ways matched — Gold Stampede meter building!'
+              : 'No ways matched — Chrome Stampede meter building!'
           );
         }
       }
@@ -1773,7 +1773,7 @@ export default function VegasSlotMachine({
         headline: step.hitGrand
           ? `🚨⚡ GRAND LOCK-IT FULL BOARD! (${step.totalMult}×)`
           : `⚡🚨 HOLD & SPIN LOCK-IT PAYOUT! (${step.totalMult}×)`,
-        detail: `${step.totalOrbs} Lightning Orbs collected!`,
+        detail: `${step.totalOrbs} Thunder Orbs collected!`,
         tier: step.totalMult >= 30 || step.hitGrand ? 'jackpot' : 'big',
         maxMultiplier: 150,
         dougiePhrase: 'HELLOOOOO-O-O!!'
@@ -1863,7 +1863,7 @@ export default function VegasSlotMachine({
       sfx.playSlotPowerup('boost');
       setBuffaloCharge((c) => Math.max(0, c - 60));
       setGoldStampedeArmed(true);
-      setStatusBanner('🦬 GOLD STAMPEDE ARMED! High Bison & Gold Coin odds next spin!');
+      setStatusBanner('🦬 CHROME STAMPEDE ARMED! High Bison & Chrome Coin odds next spin!');
     } else if (kind === 'nudge' && buffaloCharge >= 45 && !secondChanceArmed) {
       sfx.playSlotPowerup('boost');
       setBuffaloCharge((c) => Math.max(0, c - 45));
@@ -2218,7 +2218,7 @@ export default function VegasSlotMachine({
                     <>
                       <li><strong>1,024 ways:</strong> matching symbols on neighbouring reels pay from the left, any row.</li>
                       <li><strong>⭐ Wilds</strong> carry 2× or 3× multipliers. 3+ 🎡 wheels start the bonus wheel.</li>
-                      <li><strong>Power charge:</strong> 🦬 Gold Up (60⚡) and 🛡️ second-chance Nudge (45⚡).</li>
+                      <li><strong>Power charge:</strong> 🦬 Chrome Up (60⚡) and 🛡️ second-chance Nudge (45⚡).</li>
                     </>
                   )}
                 </ul>
@@ -2588,7 +2588,7 @@ export default function VegasSlotMachine({
                       sfx.playToggle();
                       setAnteBetOn((v) => !v);
                     }}
-                    title="Increases wager by +25% for +45% Lightning Orb drop odds"
+                    title="Increases wager by +25% for +45% Thunder Orb drop odds"
                   >
                     ⚡ ANTE +25% {anteBetOn ? 'ON' : 'OFF'}
                   </button>

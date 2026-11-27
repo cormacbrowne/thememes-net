@@ -521,7 +521,7 @@ const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge =
 
       case 'goldcoin':
         return (
-          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Chrome Stampede Coin">
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Stampede bonus coin">
             <defs>
               <radialGradient id={`ggc-${uid}`} cx="35%" cy="30%" r="65%">
                 <stop offset="0%" stopColor="#fef9c3" />

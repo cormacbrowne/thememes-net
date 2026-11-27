@@ -2615,7 +2615,7 @@ export default function VegasSlotMachine({
                     disabled={isAnySpinning || buffaloCharge < 60 || goldStampedeArmed}
                     onClick={() => activateBuffaloPowerup('gold')}
                   >
-                    🦬 GOLD UP (60⚡)
+                    🦬 CHROME UP (60⚡)
                   </button>
                   <button
                     type="button"

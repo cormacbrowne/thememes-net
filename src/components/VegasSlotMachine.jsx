@@ -1112,7 +1112,7 @@ export default function VegasSlotMachine({
                 : `${evalRes.winningLines.length} Neon Laser Lines (1986 Vegas ~11.5% House Edge)`,
             tier: isMega ? 'jackpot' : isBig ? 'big' : 'win',
             maxMultiplier: 120,
-            dougiePhrase: isBig ? '🚁 AIRWOLF & BLUE THUNDER ON STANDBY!' : ''
+            dougiePhrase: isBig ? '🚁 NIGHT VIPER & SKY PATROL ON STANDBY!' : ''
           });
         } else if (orbCount >= 3 && !isFreeSpinRound) {
           fireBigWinSiren(false, '🔮 +4 NEON FREE SPINS!');
@@ -2153,7 +2153,7 @@ export default function VegasSlotMachine({
                   {machineId === 'neon_special' && (
                     <>
                       <span>⚡ Neon Wild×5 = <strong>200× Line</strong></span>
-                      <span>🚁 Airwolf×5 = <strong>155× Line</strong></span>
+                      <span>🚁 Night Viper×5 = <strong>155× Line</strong></span>
                       <span>🔮 3+ Power Orbs = <strong>+4 Free Spins</strong></span>
                       <span>6 Powerups = <strong>~11.5% House Edge</strong></span>
                     </>

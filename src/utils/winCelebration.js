@@ -233,21 +233,21 @@ export function triggerHelicopterFlyby(chopper = 'airwolf', label = '') {
   const headline =
     label ||
     (mode === 'both'
-      ? 'AIRWOLF & BLUE THUNDER SCRAMBLE!'
+      ? 'NIGHT VIPER & SKY PATROL SCRAMBLE!'
       : mode === 'bluethunder'
-        ? 'BLUE THUNDER WHISPER PASS!'
-        : 'AIRWOLF SUPERSONIC FLYBY!');
+        ? 'SKY PATROL WHISPER PASS!'
+        : 'NIGHT VIPER SUPERSONIC FLYBY!');
   const detail =
     mode === 'bluethunder'
-      ? 'Officer Frank Murphy • LAPD Astro Division • 1983'
+      ? 'Neon City Sky Patrol • Night Shift • 1983'
       : mode === 'both'
-        ? 'Stringfellow Hawke & Frank Murphy • 80s Air Superiority'
-        : 'Stringfellow Hawke • Mach 1+ Turbo Boost • 1984';
+        ? 'Night Viper & Sky Patrol • 80s Air Superiority'
+        : 'Captain Ace Vega • Mach 1+ Turbo Boost • 1984';
 
   const res = triggerWinCelebration({
     amount: 0,
     unit: '',
-    game: mode === 'bluethunder' ? 'BLUE THUNDER' : mode === 'both' ? '80S CHOPPER PATROL' : 'AIRWOLF',
+    game: mode === 'bluethunder' ? 'SKY PATROL' : mode === 'both' ? '80S CHOPPER PATROL' : 'NIGHT VIPER',
     headline,
     detail,
     multiplier: 1,

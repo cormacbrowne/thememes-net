@@ -662,7 +662,7 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test('Mobile Extras Drawer Fullscreen EQ auto-closes drawer + 80s Characters & Airwolf/Blue Thunder flybys work', async ({
+  test('Mobile Extras Drawer Fullscreen EQ auto-closes drawer + 80s Characters & Night Viper/Sky Patrol flybys work', async ({
     page
   }) => {
     const pageErrors = [];
@@ -684,7 +684,7 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
       }
     }
 
-    // 2. Verify 1980s Characters digital faces strip, dossier 1985 price, and Airwolf/Blue Thunder flybys.
+    // 2. Verify 1980s Characters digital faces strip, dossier 1985 price, and Night Viper/Sky Patrol chopper flybys (T-019: no Airwolf/Blue Thunder).
     // Since the 20 Nov home redesign the strip lives in the arcade lobby (and deep in the feed on phones).
     await page.goto('/games', { waitUntil: 'domcontentloaded' });
     const castBar = page.locator('.tm-80s-cast-bar').first();
@@ -697,6 +697,8 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
 
     await castBar.locator('.tm-80s-chopper-btn.is-airwolf').click();
     await expect(page.locator('.tm-win-chopper-unit.is-airwolf')).toBeVisible();
+    await expect(page.locator('.tm-win-chopper-unit.is-airwolf')).toContainText(/NIGHT VIPER/);
+    await expect(page.locator('body')).not.toContainText(/Airwolf|Blue Thunder|Stringfellow/i);
 
     await castBar.locator('.tm-80s-chopper-btn.is-bluethunder').click();
     await expect(page.locator('.tm-win-chopper-unit.is-bluethunder')).toBeVisible();

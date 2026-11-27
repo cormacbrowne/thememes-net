@@ -41,7 +41,7 @@ export const NEON_SPECIAL_POWERUPS = [
     icon: '💥',
     name: 'Low-Symbol Zapper',
     short: 'UPGRADE',
-    desc: 'Vaporizes Quarters & Cassettes on center reels, upgrading them to Keytars, Polybius & Airwolf!',
+    desc: 'Vaporizes Quarters & Cassettes on center reels, upgrading them to Keytars, Polybius & Night Vipers!',
     color: '#a855f7',
     chargeCost: 2
   },
@@ -57,9 +57,9 @@ export const NEON_SPECIAL_POWERUPS = [
   {
     id: 'chopper_siren',
     icon: '🚁',
-    name: 'Airwolf Siren Raid',
+    name: 'Night Viper Siren Raid',
     short: 'CHOPPER',
-    desc: 'Summons Airwolf & Blue Thunder searchlights — boosts 🚁 high symbols + triggers flyby on wins!',
+    desc: 'Summons Night Viper & Sky Patrol searchlights — boosts 🚁 high symbols + triggers flyby on wins!',
     color: '#38bdf8',
     chargeCost: 3
   }
@@ -102,7 +102,7 @@ export const SLOT_MACHINES = [
     neonTheme: 'laser-magenta',
     vipLabel: '⚡ LASER NEON • UP TO M$25 VIP',
     description:
-      'Flagship 1986 flashing neon laser slot! Multi-color chasing marquee bulbs, 6 explosive Powerups (Laser Wild Reel, 3× Synth, Twin Sync, Zapper, Hyper Wilds & Airwolf Raid) with retro house-always-wins odds (play-money only)!',
+      'Flagship 1986 flashing neon laser slot! Multi-color chasing marquee bulbs, 6 explosive Powerups (Laser Wild Reel, 3× Synth, Twin Sync, Zapper, Hyper Wilds & Night Viper Raid) with retro house-always-wins odds (play-money only)!',
     maxMult: 120,
     volatility: 'High'
   },
@@ -201,7 +201,7 @@ export const SLOT_SYMBOLS = {
   // Neon Supernova Special '86
   ns_wild: { id: 'ns_wild', label: 'NEON CYBER WILD', short: 'NEON WILD', color: '#00f3ff', isWild: true },
   ns_orb: { id: 'ns_orb', label: 'PLASMA POWER ORB', short: 'PWR ORB', color: '#a855f7', isScatter: true },
-  ns_airwolf: { id: 'ns_airwolf', label: 'AIRWOLF CHOPPER', short: 'AIRWOLF', color: '#38bdf8' },
+  ns_airwolf: { id: 'ns_airwolf', label: 'NIGHT VIPER CHOPPER', short: 'VIPER', color: '#38bdf8' },
   ns_arcade: { id: 'ns_arcade', label: "'86 ARCADE CABINET", short: 'ARCADE', color: '#ff2a85' },
   ns_synth: { id: 'ns_synth', label: 'DX7 KEYTAR LASER', short: 'KEYTAR', color: '#f472b6' },
   ns_shades: { id: 'ns_shades', label: 'OUTRUN AVIATORS', short: 'SHADES', color: '#facc15' },

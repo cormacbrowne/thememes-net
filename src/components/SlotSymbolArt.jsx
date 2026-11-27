@@ -390,7 +390,7 @@ const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge =
 
       case 'ns_airwolf':
         return (
-          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Airwolf Supersonic Chopper">
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Night Viper attack chopper">
             {/* Rotor Blur */}
             <ellipse cx="32" cy="18" rx="25" ry="3.2" fill="#94a3b8" opacity="0.55" />
             <line x1="7" y1="18" x2="57" y2="18" stroke="#00f3ff" strokeWidth="2" strokeLinecap="round" />
@@ -407,7 +407,7 @@ const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge =
             <path d="M15 31 L6 27 L9 34 L15 34 Z" fill="#1e293b" stroke="#38bdf8" strokeWidth="1.5" />
             <rect x="9" y="46" width="46" height="12" rx="4" fill="#090a0f" stroke="#38bdf8" strokeWidth="1.5" />
             <text x="32" y="55" textAnchor="middle" fill="#7dd3fc" fontSize="8" fontWeight="900" fontFamily="Impact, sans-serif" letterSpacing="0.8">
-              AIRWOLF
+              VIPER
             </text>
           </svg>
         );

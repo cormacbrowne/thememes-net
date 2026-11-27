@@ -185,13 +185,13 @@ function renderChopperLayer(chopperFlyby) {
       {showAirwolf && (
         <div className="tm-win-chopper-unit is-airwolf">
           <AirwolfSvg />
-          <span className="tm-chopper-radio-tag">🦅 HAWKE • AIRWOLF MACH 1+</span>
+          <span className="tm-chopper-radio-tag">🦅 ACE VEGA • NIGHT VIPER MACH 1+</span>
         </div>
       )}
       {showBlueThunder && (
         <div className="tm-win-chopper-unit is-bluethunder">
           <BlueThunderSvg />
-          <span className="tm-chopper-radio-tag">🚁 MURPHY • BLUE THUNDER WHISPER</span>
+          <span className="tm-chopper-radio-tag">🚁 SKY PATROL • WHISPER MODE</span>
         </div>
       )}
     </div>

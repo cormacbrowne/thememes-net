@@ -268,7 +268,7 @@ const EIGHTIES_ICON_CAST = [
     voiceMode: 'kitt',
     quotes: [
       "I pity the fool who skips breakfast before a high-score run!",
-      "Ain't nobody gettin' me on no plane... unless Airwolf and Blue Thunder are escorting!",
+      "Ain't nobody gettin' me on no plane... unless the Night Viper and Sky Patrol choppers are escorting!",
       "I love it when a three-line bingo card plan comes together, sucker!",
       "Touch my gold chains and you're sleepin' outside behind the arcade van."
     ],
@@ -315,19 +315,19 @@ const EIGHTIES_ICON_CAST = [
   },
   {
     id: 'hawke',
-    name: 'Hawke',
-    fullName: 'Stringfellow Hawke',
-    movie: 'Airwolf (1984)',
+    name: 'Ace',
+    fullName: 'Captain "Ace" Vega',
+    movie: 'Original 1984 chopper ace',
     role: 'Stealth Pilot',
     voiceMode: 'kitt',
     quotes: [
-      "Turbos armed. Scramble Airwolf or Blue Thunder on the double!",
-      "Santini Air radar is tracking a hostile rival closing in on your high score.",
+      "Turbos armed. Scramble the Night Viper or Sky Patrol on the double!",
+      "Night Viper radar is tracking a hostile rival closing in on your high score.",
       "Silent whisper mode engaged until we cross the valley... then Mach-1 afterburners!",
-      "Cello by the cabin lake by day, supersonic interceptor by night."
+      "Arcade cabinet tuner by day, supersonic interceptor by night."
     ],
     priceTokens: 25,
-    item80s: 'Santini Air Fuel Voucher',
+    item80s: 'Neon Heliport Fuel Voucher',
     bg: '#020617',
     accent: '#38bdf8'
   },
@@ -879,14 +879,14 @@ const EightiesIconsStrip = memo(function EightiesIconsStrip({ compact = false })
             className="tm-80s-chopper-btn is-airwolf"
             onClick={() => triggerHelicopterFlyby('airwolf')}
           >
-            🦅 Airwolf Flyby
+            🦅 Night Viper Flyby
           </button>
           <button
             type="button"
             className="tm-80s-chopper-btn is-bluethunder"
             onClick={() => triggerHelicopterFlyby('bluethunder')}
           >
-            🚁 Blue Thunder
+            🚁 Sky Patrol
           </button>
         </div>
       </div>
@@ -971,9 +971,9 @@ const EightiesIconsStrip = memo(function EightiesIconsStrip({ compact = false })
                 <button
                   type="button"
                   className="tm-80s-chopper-btn is-airwolf"
-                  onClick={() => triggerHelicopterFlyby('both', 'HAWKE & MURPHY: DOUBLE CHOPPER SCRAMBLE!')}
+                  onClick={() => triggerHelicopterFlyby('both', 'ACE VEGA: DOUBLE CHOPPER SCRAMBLE!')}
                 >
-                  ⚡ Scramble Airwolf + Blue Thunder
+                  ⚡ Scramble Night Viper + Sky Patrol
                 </button>
               )}
             </div>

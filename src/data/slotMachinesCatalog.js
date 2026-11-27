@@ -148,8 +148,8 @@ export const SLOT_MACHINES = [
   },
   {
     id: 'buffalo_stampede',
-    name: "Cyber Stampede '86",
-    shortName: "Stampede '86",
+    name: "Cyber Herd '86",
+    shortName: "Herd '86",
     badge: '🔥 HIGH-ROLLER 1024',
     tag: '5×4 • 2×/3× Wilds • M$1–M$25 VIP Bonus Wheel',
     icon: '🦬',
@@ -157,13 +157,13 @@ export const SLOT_MACHINES = [
     marqueeSub: '★ 1986 1,024-WAYS HIGH-ROLLER NEON MEGA CABINET ★',
     eraYear: '1986',
     coinDenom: 'M$1.00 / M$25 VIP',
-    payGlassTitle: "CYBER STAMPEDE '86 • 1,024-WAYS HIGH-ROLLER WIDEBODY CABINET (1986)",
+    payGlassTitle: "CYBER HERD '86 • 1,024-WAYS HIGH-ROLLER WIDEBODY CABINET (1986)",
     houseEdgeLabel: '~12.0% house edge • play-money only, just for fun',
     isHighRollerNeon: true,
     neonTheme: 'solar-gold',
     vipLabel: '🔥 WIDEBODY HIGH-ROLLER • UP TO M$25 VIP',
     description:
-      'Tall 5×4 widebody neon cabinet! Stack 2×/3× Multiplier Wilds, trigger Chrome Stampede upgrades, unlock the M$25 VIP chip, and spin the 8-Wedge Bonus Wheel!',
+      'Tall 5×4 widebody neon cabinet! Stack 2×/3× Multiplier Wilds, trigger Chrome Herd upgrades, unlock the M$25 VIP chip, and spin the 8-Wedge Bonus Wheel!',
     maxMult: 140,
     volatility: 'High'
   }
@@ -209,10 +209,10 @@ export const SLOT_SYMBOLS = {
   ns_quarter: { id: 'ns_quarter', label: '1986 25¢ QUARTER', short: '25¢', color: '#cbd5e1' },
 
   // Cyber Stampede '86
-  buffalo: { id: 'buffalo', label: 'CYBER STAMPEDE', short: 'BISON', color: '#f97316' },
+  buffalo: { id: 'buffalo', label: 'CYBER HERD', short: 'BISON', color: '#f97316' },
   eagle: { id: 'eagle', label: 'NEON EAGLE', short: 'EAGLE', color: '#38bdf8' },
   wolf: { id: 'wolf', label: 'SYNTH WOLF', short: 'WOLF', color: '#c084fc' },
-  goldcoin: { id: 'goldcoin', label: 'CHROME STAMPEDE', short: 'CHROME', color: '#facc15' },
+  goldcoin: { id: 'goldcoin', label: 'CHROME HERD', short: 'CHROME', color: '#facc15' },
   wheel: { id: 'wheel', label: 'BONUS WHEEL', short: 'WHEEL', color: '#ec4899', isScatter: true },
   wild2x: { id: 'wild2x', label: '2×/3× WILD', short: 'WILD×', color: '#4ade80', isWild: true }
 };

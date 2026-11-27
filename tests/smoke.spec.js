@@ -461,7 +461,7 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     await expect(floorGrid).toContainText(/Neon Supernova Special '86/i);
     await expect(floorGrid).toContainText(/Mr\. Jackpots: Silver Mustang/i);
     await expect(floorGrid).toContainText(/Neon Thunder Vault 5000/i);
-    await expect(floorGrid).toContainText(/Cyber Stampede '86/i);
+    await expect(floorGrid).toContainText(/Cyber Herd '86/i);
 
     // Step up to Silver Mustang (Dougie Jones tribute)
     const mustangCard = floorGrid.locator('.tm-slot-floor-card', { hasText: /Mr\. Jackpots/i });
@@ -504,8 +504,8 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     expect(overflowPx).toBeLessThanOrEqual(2);
 
     // Switch to Cyber Stampede '86 (5x4 grid = 20 cells, 1,024 Ways) and test Staked Spin + Neon Crown
-    await page.getByRole('tab', { name: /Stampede '86/i }).click();
-    await expect(page.locator('.tm-bandit-marquee-title')).toContainText(/CYBER STAMPEDE '86/i);
+    await page.getByRole('tab', { name: /Herd '86/i }).click();
+    await expect(page.locator('.tm-bandit-marquee-title')).toContainText(/CYBER HERD '86/i);
     await expect(page.locator('[data-testid="slot-neon-crown"]')).toBeVisible();
     await expect(page.locator('.tm-video-reel-col')).toHaveCount(5);
     await expect(page.locator('.tm-video-reel-bezel')).toHaveClass(/rows-4/);
@@ -825,7 +825,7 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.evaluate(() => window.scrollTo(0, 1200));
     await page.goto('/games/slots', { waitUntil: 'domcontentloaded' });
-    for (const label of [/Neon Special/i, /Mr\.? Jackpots/i, /Thunder/i, /Stampede/i, /Bandit/i]) {
+    for (const label of [/Neon Special/i, /Mr\.? Jackpots/i, /Thunder/i, /Herd '86/i, /Bandit/i]) {
       const tab = page.locator('.tm-slot-tab-btn', { hasText: label }).first();
       await expect(tab).toBeVisible();
       await tab.click();

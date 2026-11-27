@@ -1260,14 +1260,14 @@ export default function VegasSlotMachine({
           setStatusBanner(
             wheelCount >= 3
               ? '🎡 3+ BONUS WHEELS! TAP SPIN WHEEL TO CLAIM!'
-              : '🏆 100% CHROME STAMPEDE! BONUS WHEEL UNLOCKED!'
+              : '🏆 100% CHROME HERD! BONUS WHEEL UNLOCKED!'
           );
           if (totalMult > 0) {
             awardSlotWin({
               activeBet,
               mult: totalMult,
               headline: `🦬 WAYS WIN + 🎡 BONUS WHEEL!`,
-              detail: `${evalRes.matchedWays.length} Stampede Ways`,
+              detail: `${evalRes.matchedWays.length} Herd Ways`,
               tier: 'big',
               maxMultiplier: 140
             });
@@ -1281,8 +1281,8 @@ export default function VegasSlotMachine({
             activeBet,
             mult: totalMult,
             headline: isBig
-              ? `🦬🚨 CHROME STAMPEDE MEGA WAYS! (${totalMult}×)`
-              : `🦬 ${evalRes.matchedWays.length} STAMPEDE WAYS! (${totalMult}×)`,
+              ? `🦬🚨 CHROME HERD MEGA WAYS! (${totalMult}×)`
+              : `🦬 ${evalRes.matchedWays.length} HERD WAYS! (${totalMult}×)`,
             detail: usedSecondChance
               ? '🛡️ 2nd-Chance Nudge checked + Ways paid!'
               : `${evalRes.matchedWays.reduce((a, w) => a + w.ways, 0)} winning ways!`,
@@ -1295,7 +1295,7 @@ export default function VegasSlotMachine({
           setStatusBanner(
             wheelCount === 2
               ? '2 Bonus Wheels landed.'
-              : 'No ways matched — Chrome Stampede meter building!'
+              : 'No ways matched — Chrome Herd meter building!'
           );
         }
       }
@@ -1821,7 +1821,7 @@ export default function VegasSlotMachine({
             activeBet: stake,
             mult: segment.mult,
             headline: `🎡🚨 BONUS WHEEL LANDED ${segment.label}!`,
-            detail: `Cyber Stampede Bonus Wheel ${segment.mult}× Bonus!`,
+            detail: `Cyber Herd Bonus Wheel ${segment.mult}× Bonus!`,
             tier: segment.mult >= 35 ? 'jackpot' : 'big',
             maxMultiplier: 140,
             dougiePhrase: segment.mult >= 35 ? 'HELLOOOOO-O-O!!' : ''
@@ -1863,7 +1863,7 @@ export default function VegasSlotMachine({
       sfx.playSlotPowerup('boost');
       setBuffaloCharge((c) => Math.max(0, c - 60));
       setGoldStampedeArmed(true);
-      setStatusBanner('🦬 CHROME STAMPEDE ARMED! High Bison & Chrome Coin odds next spin!');
+      setStatusBanner('🦬 CHROME HERD ARMED! High Bison & Chrome Coin odds next spin!');
     } else if (kind === 'nudge' && buffaloCharge >= 45 && !secondChanceArmed) {
       sfx.playSlotPowerup('boost');
       setBuffaloCharge((c) => Math.max(0, c - 45));
@@ -2294,7 +2294,7 @@ export default function VegasSlotMachine({
                       ? { label: '☕ COFFEE POT', pct: (coffeePot / 10) * 100, text: `${coffeePot}/10`, tone: 'amber', full: coffeePot >= 10 }
                       : machineId === 'lightning_vault'
                         ? { label: '🔋 VOLTAGE', pct: voltageMeter, text: `${voltageMeter}%`, tone: 'cyan', full: voltageMeter >= 100 }
-                        : { label: '🏆 STAMPEDE', pct: stampedeMeter, text: `${stampedeMeter}%`, tone: 'amber', full: stampedeMeter >= 100 };
+                        : { label: '🏆 HERD', pct: stampedeMeter, text: `${stampedeMeter}%`, tone: 'amber', full: stampedeMeter >= 100 };
               return (
                 <div
                   className={`tm-slot-liquid-tube tone-${tubeCfg.tone} ${

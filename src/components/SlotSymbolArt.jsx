@@ -482,7 +482,7 @@ const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge =
       // ===== CYBER STAMPEDE '86 =====
       case 'buffalo':
         return (
-          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Cyber Stampede">
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Cyber Herd bison">
             <path d="M10 22 C8 12, 16 10, 20 18" fill="none" stroke="#fde047" strokeWidth="4" strokeLinecap="round" />
             <path d="M54 22 C56 12, 48 10, 44 18" fill="none" stroke="#fde047" strokeWidth="4" strokeLinecap="round" />
             <ellipse cx="32" cy="34" rx="20" ry="18" fill="#7c2d12" stroke="#f97316" strokeWidth="2.4" />
@@ -521,7 +521,7 @@ const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge =
 
       case 'goldcoin':
         return (
-          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Stampede bonus coin">
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Herd bonus coin">
             <defs>
               <radialGradient id={`ggc-${uid}`} cx="35%" cy="30%" r="65%">
                 <stop offset="0%" stopColor="#fef9c3" />

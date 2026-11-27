@@ -376,7 +376,7 @@ export default function VegasSlotMachine({
   const [lockItState, setLockItState] = useState(null);
   // lockItState = { active, respinsLeft, lockedMap: { "c,r": { label, mult, color } }, stake }
 
-  // Cyber Stampede Stampede '86 State
+  // Cyber Stampede '86 State
   const [stampedeMeter, setStampedeMeter] = useState(10); // 0..100
   const [buffaloCharge, setBuffaloCharge] = useState(15); // 0..100
   const [goldStampedeArmed, setGoldStampedeArmed] = useState(false);

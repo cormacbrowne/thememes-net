@@ -5,7 +5,7 @@
 //   2. neon_special     — Neon Supernova Special '86 (5x3, 6 Interactive Powerups, Laser Chase Lights)
 //   3. silver_mustang   — Mr. Jackpots: Silver Mustang (5x3, 5/15/25 Lines, Twin Peaks S3 Dougie Jones)
 //   4. lightning_vault  — Neon Thunder Vault 5000 (5x3, 4 Progressives, Hold & Spin Lock-It)
-//   5. buffalo_stampede — Cyber Stampede Stampede '86 (5x4, 1024 Ways, Bonus Wheel & Cascade Wilds)
+//   5. buffalo_stampede — Cyber Stampede '86 (5x4, 1024 Ways, Bonus Wheel & Cascade Wilds)
 // ==========================================
 
 export const NEON_SPECIAL_POWERUPS = [
@@ -127,7 +127,7 @@ export const SLOT_MACHINES = [
   {
     id: 'lightning_vault',
     name: 'Neon Thunder Vault 5000',
-    shortName: 'Lightning 5000',
+    shortName: 'Thunder 5000',
     badge: '💎 VIP HIGH-ROLLER',
     tag: '5×3 • 4 Progressives • M$1–M$25 VIP Lock-It Orbs',
     icon: '⚡',
@@ -148,7 +148,7 @@ export const SLOT_MACHINES = [
   },
   {
     id: 'buffalo_stampede',
-    name: "Cyber Stampede Stampede '86",
+    name: "Cyber Stampede '86",
     shortName: "Stampede '86",
     badge: '🔥 HIGH-ROLLER 1024',
     tag: '5×4 • 2×/3× Wilds • M$1–M$25 VIP Bonus Wheel',
@@ -208,7 +208,7 @@ export const SLOT_SYMBOLS = {
   ns_cassette: { id: 'ns_cassette', label: 'MAXELL CHROME 90', short: 'TAPE', color: '#4ade80' },
   ns_quarter: { id: 'ns_quarter', label: '1986 25¢ QUARTER', short: '25¢', color: '#cbd5e1' },
 
-  // Cyber Stampede Stampede '86
+  // Cyber Stampede '86
   buffalo: { id: 'buffalo', label: 'CYBER STAMPEDE', short: 'BISON', color: '#f97316' },
   eagle: { id: 'eagle', label: 'NEON EAGLE', short: 'EAGLE', color: '#38bdf8' },
   wolf: { id: 'wolf', label: 'SYNTH WOLF', short: 'WOLF', color: '#c084fc' },
@@ -646,7 +646,7 @@ export function evaluate5x3Paylines(machineId, grid, activeLines = 25, spinMult 
 }
 
 /**
- * Evaluates a 5x4 Cyber Stampede Stampede grid using 1,024 Ways to Win (left-to-right adjacent columns).
+ * Evaluates a 5x4 Cyber Stampede grid using 1,024 Ways to Win (left-to-right adjacent columns).
  */
 export function evaluateBuffalo1024Ways(grid, wildMultipliers = {}, spinMult = 1) {
   const cols = 5;

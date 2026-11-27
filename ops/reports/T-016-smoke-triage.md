@@ -48,3 +48,23 @@ The takedown form shows only "Could not open a session to record this report." i
 3. Group B selector and wording updates. Mechanical, suits Gemini (Flash/medium) with a handoff, or Claude in one pass.
 4. Group C investigations.
 5. Optional: delete test-made anonymous users (Cormac's OK, data deletion).
+
+## Step 3 done (27 Nov, `claude/t016-step3-stale-tests`)
+
+Result: **118 passed, 0 failed, 2 skipped** (was 54 / 66 / 0 on 26 Nov). Run time 4.4 min (was ~17). Across those runs: 0 live sign-ups, hot-feed calls, Storage downloads, Realtime connections or table writes; reads only.
+
+What changed in the tests: wording and selectors updated to the current UI (FREE badge, M$ chips, casino renames, feed card vote/react/comment buttons, caption-king badge, share sheet, video uploads allowed, quick-upload bar desktop-only, House Rules line checked in Meme Forge on phones, new watermark, slot reel columns, "How to play" sheet, Pranks tab, lobby heading). The fixture also fakes the Realtime websocket: parallel test browsers had joined live presence and counted each other.
+
+Real bugs found and fixed in the app:
+- Slot cabinet named **"Cyber Stampede Stampede '86"** and Roulette titled **"NEON NEON STRIKE ROULETTE '86"** (leftovers from the 20 Nov rename). The Thunder Vault tab still said **"Lightning 5000"**, an echo of the real-casino name the rename removed. Now "Cyber Stampede '86", "NEON STRIKE ROULETTE '86" and "Thunder 5000".
+- **SEO:** `/games/speed-swipe` and the battle arena swapped their prerendered titles for old ones ("Hyper-Swipe Meme Triage Deck", "1v1 Sudden-Death…") once the app loaded, so Google saw a different title from the sitemap/prerender. `seoEngine.js` now keeps the route titles.
+
+Parked as `test.fixme` (2), pending Cormac:
+- Fullscreen music equalizer: still mounted, but **nothing on the site opens it** since the radio/EQ widgets left the page. Bring an entry point back, or retire it.
+- K.I.T.T. AI assistant: removed from the site 19 Nov; component and test still in the repo.
+
+Follow-ups:
+- Daily Caption Battle v2 (20 Nov) has no end-to-end smoke test; the old v1 submit/vote steps were removed. Write one.
+- Speed Swipe and the battle arena have no Share button (they don't use GameShell); every other game has one. Growth to decide.
+- Joystick test on iPhone once hung clicking "Back to Lobby" on MEMEDAQ (passed on the next two runs). Watch for flakiness.
+- Roulette mid-spin width check is timing-sensitive (group C).

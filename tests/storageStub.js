@@ -45,6 +45,7 @@ const JSON_HEADERS = { 'access-control-allow-origin': '*' };
 // Default fakes, registered on the context so a spec's own page.route wins:
 //  - anonymous sign-up returns a fake session. Any write a test forgets to fake
 //    then carries a fake token, which the live server rejects.
+//  - Realtime websockets are answered locally (presence, broadcasts never go live).
 //  - get_hot_feed answers "function not found", so the feed falls back to the
 //    memes_feed_view query that the specs fake (see feedPagination.js).
 // Set PW_LIVE_SUPABASE=1 to skip these for a one-off check against live data.
@@ -80,6 +81,31 @@ export async function isolateSupabase(target) {
       })
     })
   );
+  // Realtime is a websocket, which page.route never sees. Without this, parallel test browsers
+  // joined live presence together and the "people here now" pill counted them (T-016).
+  // Join and heartbeat messages get an "ok" reply locally; nothing reaches the live server.
+  await target.routeWebSocket('**/realtime/v1/**', (ws) => {
+    ws.onMessage((raw) => {
+      let msg;
+      try {
+        msg = JSON.parse(String(raw));
+      } catch {
+        return;
+      }
+      // realtime-js speaks Phoenix v1 objects or v2 arrays: [join_ref, ref, topic, event, payload]
+      const isArray = Array.isArray(msg);
+      const event = isArray ? msg[3] : msg?.event;
+      if (event !== 'phx_join' && event !== 'heartbeat') return;
+      const reply = { status: 'ok', response: {} };
+      ws.send(
+        JSON.stringify(
+          isArray
+            ? [msg[0], msg[1], msg[2], 'phx_reply', reply]
+            : { topic: msg.topic, event: 'phx_reply', payload: reply, ref: msg.ref, join_ref: msg.join_ref }
+        )
+      );
+    });
+  });
 }
 
 export const test = base.extend({

@@ -2,9 +2,9 @@ import { test, expect } from './storageStub.js';
 
 const GAME_IDS = [
   { id: 'pusher', name: /Neon Coin Dozer/i, fixed: true },
-  { id: 'roulette', name: /Lightning Roulette/i, fixed: true },
+  { id: 'roulette', name: /Neon Strike Roulette/i, fixed: true },
   { id: 'blackjack', name: /Neon 21's/i, fixed: true },
-  { id: 'slots', name: /Vegas Slot Arcade/i, fixed: true },
+  { id: 'slots', name: /Neon Slots '86/i, fixed: true },
   { id: 'eightball', name: /Magic 8-Ball/i, fixed: true },
   { id: 'derby', name: /Neon Derby/i, fixed: true },
   { id: 'pinball', name: /Neon Pinball/i, fixed: true },
@@ -70,7 +70,8 @@ for (const vp of VIEWPORTS) {
       );
       page.on('pageerror', (err) => pageErrors.push(err.message));
       page.on('console', (msg) => {
-        if (msg.type() === 'error') consoleErrors.push(msg.text());
+        // Network-level 401/404s come from the test fixture's fakes (tests/storageStub.js), not app code.
+        if (msg.type() === 'error' && !/^Failed to load resource/.test(msg.text())) consoleErrors.push(msg.text());
       });
 
       await page.goto('/', { waitUntil: 'domcontentloaded' });
@@ -89,7 +90,7 @@ for (const vp of VIEWPORTS) {
         const dockBtn = page.locator('.tm-mobile-dock .tm-dock-btn', { hasText: 'Games' });
         await dockBtn.click();
       } else {
-        const navBtn = page.locator('.tm-nav-mode-pill', { hasText: '🕹️' });
+        const navBtn = page.locator('.tm-nav-mode-pill[title="Open Cyber-Arcade Lobby"]');
         await navBtn.click();
       }
 
@@ -129,7 +130,7 @@ for (const vp of VIEWPORTS) {
           await expect(dockGamesBtn).toBeVisible();
           await dockGamesBtn.click();
         } else {
-          const navGamesBtn = page.locator('.tm-nav-mode-pill', { hasText: '🕹️' });
+          const navGamesBtn = page.locator('.tm-nav-mode-pill[title="Open Cyber-Arcade Lobby"]');
           await expect(navGamesBtn).toBeVisible();
           await navGamesBtn.click();
         }
@@ -149,7 +150,7 @@ for (const vp of VIEWPORTS) {
       await expect(page.getByRole('heading', { name: /Cyber-Arcade Lobby/i })).toBeVisible();
 
       // Switch between fixed and non-fixed games via fixed bar pills and browser back
-      await page.locator('.tm-lobby-card-play', { hasText: /Lightning Roulette/i }).first().click();
+      await page.locator('.tm-lobby-card-play', { hasText: /Neon Strike Roulette/i }).first().click();
       await page.waitForTimeout(300);
       if (vp.width > 640) {
         await page.locator('.tm-fixed-game-pill', { hasText: /Pinball/i }).click();
@@ -166,7 +167,7 @@ for (const vp of VIEWPORTS) {
       if (vp.width <= 820) {
         await page.locator('.tm-mobile-dock .tm-dock-btn', { hasText: 'Games' }).click();
       } else {
-        await page.locator('.tm-nav-mode-pill', { hasText: '🕹️' }).click();
+        await page.locator('.tm-nav-mode-pill[title="Open Cyber-Arcade Lobby"]').click();
       }
       await assertLobbyVisibleInViewport(page, vp, 'Swipe->goBack->Joystick');
 

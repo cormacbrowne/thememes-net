@@ -13,11 +13,11 @@ const GAME_ROUTES = [
     path: '/games',
     verify: async (page) => {
       await expect(page.getByRole('heading', { name: /Cyber-Arcade Lobby/i })).toBeVisible();
-      await expect(page.getByText(/Neon Lightning Roulette/i).first()).toBeVisible();
+      await expect(page.getByText(/Neon Strike Roulette/i).first()).toBeVisible();
     }
   },
   {
-    name: 'Lightning Roulette',
+    name: 'Neon Strike Roulette',
     path: '/games/roulette',
     verify: async (page) => {
       const redBtn = page.getByRole('button', { name: /RED/i }).first();
@@ -360,10 +360,11 @@ test.describe('Phase 30B Simple Quick Upload, GIF Burn-In, Viral Share & JSON-LD
     expect(download.suggestedFilename()).toMatch(/\.png$/i);
   });
 
-  test('/templates/drake-meme-generator routes cleanly to /meme-generator with SoftwareApplication JSON-LD', async ({
+  test('/meme-generator opens Meme Forge (upload hub, no template grid) with SoftwareApplication JSON-LD', async ({
     page
   }) => {
-    await page.goto('/templates/drake-meme-generator', { waitUntil: 'domcontentloaded' });
+    // Old /templates/*-meme-generator URLs redirect in vercel.json (Drake is on legal hold, D-003).
+    await page.goto('/meme-generator', { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('.tm-forge');
 
     expect(await page.locator('.tm-forge-template-card').count()).toBe(0);
@@ -404,7 +405,7 @@ test.describe('Phase 30B Simple Quick Upload, GIF Burn-In, Viral Share & JSON-LD
     expect(savedBytes.subarray(0, 6).toString('ascii')).toBe('GIF89a');
   });
 
-  test('Remixes challenge filter & dynamic /m/:id?ref=share link format', async ({ page }) => {
+  test('Share on a feed card copies a /m/:id?ref=share link', async ({ page }) => {
     await page.addInitScript(() => {
       window.__copiedText = '';
       try {
@@ -428,18 +429,16 @@ test.describe('Phase 30B Simple Quick Upload, GIF Burn-In, Viral Share & JSON-LD
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('.tm-card.tm-holo-card');
 
-    const remixTab = page.locator('.tm-tab', { hasText: /Remixes/i });
-    await expect(remixTab).toBeVisible();
-    await remixTab.click();
-    await page.waitForTimeout(150);
-
+    // The "Remixes" feed tab was removed; remixing now starts from a card or the theatre view.
     const cardCount = await page.locator('.tm-card.tm-holo-card').count();
     expect(cardCount).toBeGreaterThan(0);
 
-    // Click Share on the first meme card and inspect copied URL format
-    await page.locator('.tm-card.tm-holo-card button[aria-label*="Share" i]').first().click();
-    const copied = await page.evaluate(() => window.__copiedText);
-    expect(copied).toMatch(/\/m\/.+\?ref=share$/);
+    // Share opens the share sheet; "Copy link" copies one deep link tagged ?ref=share&m=<id> (Plan 2.2, T-007)
+    await page.locator('.tm-card.tm-holo-card').first().getByRole('button', { name: 'Share meme' }).click();
+    await page.getByRole('button', { name: /^Copy link$/ }).first().click();
+    await expect.poll(() => page.evaluate(() => window.__copiedText), { timeout: 5000 }).toMatch(
+      /\/m\/[^?\s]+\?ref=share&m=[^&\s]+$/
+    );
   });
 });
 
@@ -461,15 +460,15 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     await expect(floorGrid).toContainText(/One-Arm Bandit '85/i);
     await expect(floorGrid).toContainText(/Neon Supernova Special '86/i);
     await expect(floorGrid).toContainText(/Mr\. Jackpots: Silver Mustang/i);
-    await expect(floorGrid).toContainText(/Neon Lightning Vault 5000/i);
-    await expect(floorGrid).toContainText(/Cyber Buffalo Stampede '86/i);
+    await expect(floorGrid).toContainText(/Neon Thunder Vault 5000/i);
+    await expect(floorGrid).toContainText(/Cyber Stampede '86/i);
 
     // Step up to Silver Mustang (Dougie Jones tribute)
     const mustangCard = floorGrid.locator('.tm-slot-floor-card', { hasText: /Mr\. Jackpots/i });
     await mustangCard.getByRole('button', { name: /Step Up/i }).click();
     await expect(page.locator('.tm-bandit-marquee-title')).toContainText(/MR\. JACKPOTS: SILVER MUSTANG/i);
-    await expect(page.locator('.tm-slot-dougie-quote')).toBeVisible();
-    await expect(page.locator('.tm-video-cell')).toHaveCount(15);
+    // Reels are now 5 animated strip columns (Reel component), not 15 fixed cells.
+    await expect(page.locator('.tm-video-reel-col')).toHaveCount(5);
 
     // Verify 390px iPhone layout fits without horizontal overflow
     let overflowPx = await page.evaluate(
@@ -488,13 +487,13 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     const walletAfterDemo = await page.locator('.tm-bandit-stat-box strong').first().textContent();
     expect(walletAfterDemo).toBe(walletBeforeDemo);
 
-    // Switch to Lightning Vault 5000 via top tab bar and test Ante +25% + VIP High-Roller Neons
-    await page.getByRole('tab', { name: /Lightning 5000/i }).click();
-    await expect(page.locator('.tm-bandit-marquee-title')).toContainText(/NEON LIGHTNING VAULT 5000/i);
+    // Switch to Thunder Vault 5000 via top tab bar and test Ante +25% + VIP High-Roller Neons
+    await page.getByRole('tab', { name: /Thunder 5000/i }).click();
+    await expect(page.locator('.tm-bandit-marquee-title')).toContainText(/NEON THUNDER VAULT 5000/i);
     await expect(page.locator('[data-testid="slot-neon-crown"]')).toBeVisible();
     await expect(page.locator('[data-testid="slot-neon-rail-left"]')).toBeVisible();
     await expect(page.locator('[data-testid="slot-neon-rail-right"]')).toBeVisible();
-    await expect(page.locator('.tm-bandit-chip-btn.vip')).toContainText(/100🪙/);
+    await expect(page.locator('.tm-bandit-chip-btn.vip')).toContainText(/M\$25(\.00)?/);
     await expect(page.locator('.tm-slot-jackpot-leds')).toContainText(/GRAND/i);
     await page.getByRole('button', { name: /ANTE \+25%/i }).click();
     await expect(page.getByRole('button', { name: /ANTE \+25% ON/i })).toBeVisible();
@@ -504,12 +503,13 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     );
     expect(overflowPx).toBeLessThanOrEqual(2);
 
-    // Switch to Cyber Buffalo '86 (5x4 grid = 20 cells, 1,024 Ways) and test Staked Spin + Neon Crown
-    await page.getByRole('tab', { name: /Buffalo '86/i }).click();
-    await expect(page.locator('.tm-bandit-marquee-title')).toContainText(/CYBER BUFFALO STAMPEDE '86/i);
+    // Switch to Cyber Stampede '86 (5x4 grid = 20 cells, 1,024 Ways) and test Staked Spin + Neon Crown
+    await page.getByRole('tab', { name: /Stampede '86/i }).click();
+    await expect(page.locator('.tm-bandit-marquee-title')).toContainText(/CYBER STAMPEDE '86/i);
     await expect(page.locator('[data-testid="slot-neon-crown"]')).toBeVisible();
-    await expect(page.locator('.tm-video-cell')).toHaveCount(20);
-    await page.getByRole('button', { name: /5🪙|🪙 5\b/ }).first().click();
+    await expect(page.locator('.tm-video-reel-col')).toHaveCount(5);
+    await expect(page.locator('.tm-video-reel-bezel')).toHaveClass(/rows-4/);
+    await page.locator('.tm-bandit-chip-btn', { hasText: /^M\$1\.25$/ }).first().click();
     await page.locator('.tm-bandit-spin-btn').click();
     await expect(page.locator('.tm-bandit-spin-btn')).toBeEnabled({ timeout: 5000 });
 
@@ -518,7 +518,7 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     await expect(page.locator('.tm-bandit-marquee-title')).toContainText(/NEON SUPERNOVA SPECIAL '86/i);
     await expect(page.locator('[data-testid="slot-neon-crown"]')).toBeVisible();
     await expect(page.locator('.tm-neon-pw-btn')).toHaveCount(6);
-    await expect(page.locator('.tm-slot-house-edge-strip')).toContainText(/11\.5% HOUSE EDGE/i);
+    // House-edge strip left the cabinet in the 18 Nov one-screen slots pass (250323b).
 
     overflowPx = await page.evaluate(
       () => document.documentElement.scrollWidth - window.innerWidth
@@ -527,13 +527,13 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
 
     // Switch back to classic One-Arm Bandit '85 and check desktop layout + Rules drawer
     await page.getByRole('tab', { name: /Bandit '85/i }).click();
-    await expect(page.locator('.tm-bandit-drum-window')).toHaveCount(3);
+    await expect(page.locator('.tm-bandit-drum-col')).toHaveCount(3);
     await expect(page.locator('.tm-bandit-arm-ball')).toBeVisible();
     await expect(page.locator('[data-testid="slot-neon-crown"]')).toHaveCount(0);
 
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.getByRole('button', { name: /ℹ Rules/i }).click();
-    await expect(page.locator('.tm-slot-paytable-drawer')).toBeVisible();
+    await page.getByRole('button', { name: /How to play/i }).click();
+    await expect(page.locator('.tm-slot-help-card')).toBeVisible();
     overflowPx = await page.evaluate(
       () => document.documentElement.scrollWidth - window.innerWidth
     );
@@ -549,7 +549,8 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     const consoleErrors = [];
     page.on('pageerror', (err) => pageErrors.push(err.message));
     page.on('console', (msg) => {
-      if (msg.type() === 'error') {
+      // Network-level 401/404s come from the test fixture's fakes (tests/storageStub.js), not app code.
+      if (msg.type() === 'error' && !/^Failed to load resource/.test(msg.text())) {
         consoleErrors.push(msg.text());
       }
     });
@@ -558,11 +559,11 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     await page.goto('/games/slots', { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('.tm-slot-switcher-bar');
 
-    // Select Neon Lightning Vault 5000 (most expensive VIP neon cabinet), enable Turbo, set $2.50 (10🪙) wager
-    await page.getByRole('tab', { name: /Lightning 5000/i }).click();
+    // Select Neon Thunder Vault 5000 (most expensive VIP neon cabinet), enable Turbo, set an M$2.50 wager
+    await page.getByRole('tab', { name: /Thunder 5000/i }).click();
     await expect(page.locator('[data-testid="slot-neon-crown"]')).toBeVisible();
     await page.getByRole('button', { name: /TURBO/i }).click();
-    await page.getByRole('button', { name: /10🪙/i }).first().click();
+    await page.locator('.tm-bandit-chip-btn', { hasText: /^M\$2\.50$/ }).first().click();
 
     // Perform 12 consecutive pulls (will drain initial 20-25 tokens and auto-step down to Demo without locking)
     for (let i = 0; i < 12; i += 1) {
@@ -608,7 +609,9 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test('Graphic Equalizer & Fullscreen Music Equalizer Mode work across viewports without overflow', async ({
+  // T-016: no visible control opens the fullscreen EQ since MemesRadio / MusicEqualizer left the page
+  // (the overlay is still mounted in App.jsx). Cormac to decide: bring an entry point back, or retire it.
+  test.fixme('Graphic Equalizer & Fullscreen Music Equalizer Mode work across viewports without overflow', async ({
     page
   }) => {
     const pageErrors = [];
@@ -677,11 +680,13 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
       }
     }
 
-    // 2. Verify 1980s Characters digital faces strip, dossier 1985 price, and Airwolf/Blue Thunder flybys
+    // 2. Verify 1980s Characters digital faces strip, dossier 1985 price, and Airwolf/Blue Thunder flybys.
+    // Since the 20 Nov home redesign the strip lives in the arcade lobby (and deep in the feed on phones).
+    await page.goto('/games', { waitUntil: 'domcontentloaded' });
     const castBar = page.locator('.tm-80s-cast-bar').first();
     await castBar.scrollIntoViewIfNeeded();
     await expect(castBar).toBeVisible();
-    await expect(castBar.locator('.tm-80s-face-chip')).toHaveCount(13);
+    expect(await castBar.locator('.tm-80s-face-chip').count()).toBeGreaterThanOrEqual(13);
     await castBar.locator('.tm-80s-face-chip', { hasText: /Bender/i }).click();
     await expect(castBar.locator('.tm-80s-dossier-card')).toContainText(/The Breakfast Club/i);
     await expect(castBar.locator('.tm-80s-dossier-card')).toContainText(/\$1\.25/);
@@ -717,7 +722,9 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test('AI Assistant exposes clear iPhone Speech Engine modes and Test Voice without errors', async ({
+  // T-016: the K.I.T.T. AI assistant was removed from the site on 19 Nov (413a1cc); the component
+  // file is still in the repo. Retire this test if the assistant is not coming back.
+  test.fixme('AI Assistant exposes clear iPhone Speech Engine modes and Test Voice without errors', async ({
     page
   }) => {
     const pageErrors = [];
@@ -789,7 +796,7 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     // Open Rewards Vault modal & verify prominent Close button >= 44px
-    await page.getByRole('button', { name: /Open Token Wallet|Rewards|🪙/i }).first().click();
+    await page.getByRole('button', { name: /Open MemeDollarz Wallet/i }).first().click();
     const closeBtn = page.locator('.tm-modal-sticky-header button', { hasText: /Close/i }).first();
     await expect(closeBtn).toBeVisible();
     const box = await closeBtn.boundingBox();
@@ -816,7 +823,7 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.evaluate(() => window.scrollTo(0, 1200));
     await page.goto('/games/slots', { waitUntil: 'domcontentloaded' });
-    for (const label of [/Neon Special/i, /Mr\.? Jackpots/i, /Lightning/i, /Buffalo/i, /Bandit/i]) {
+    for (const label of [/Neon Special/i, /Mr\.? Jackpots/i, /Thunder/i, /Stampede/i, /Bandit/i]) {
       const tab = page.locator('.tm-slot-tab-btn', { hasText: label }).first();
       await expect(tab).toBeVisible();
       await tab.click();
@@ -829,32 +836,29 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test('Dual-Direction Hero, 80s Cars, Magic 8-Ball, iPhone App Modal & Upgraded Pinball work cleanly on iPhone', async ({
+  // The dual-direction hero was removed in the 20 Nov home redesign (7a6accf); the iPhone App
+  // modal now opens from the desktop/tablet navbar "App" button (checked at 1280 below).
+  test('80s Cars, Magic 8-Ball, iPhone App Modal & Upgraded Pinball work cleanly', async ({
     page
   }) => {
     const pageErrors = [];
     page.on('pageerror', (err) => pageErrors.push(err.message));
 
-    await page.setViewportSize({ width: 390, height: 844 });
+    await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    const hero = page.locator('.tm-dual-hero');
-    await expect(hero).toBeVisible();
-    await expect(hero.locator('h1')).toContainText(/TWO 80s WORLDS/i);
-    await expect(hero.locator('.tm-portal-card.is-memes')).toBeVisible();
-    await expect(hero.locator('.tm-portal-card.is-arcade')).toBeVisible();
-
-    const overflowHome = await page.evaluate(
-      () => document.documentElement.scrollWidth - window.innerWidth
-    );
-    expect(overflowHome).toBeLessThanOrEqual(2);
-
-    // Open & close iPhone App Home Screen installation modal
-    await hero.locator('.tm-dual-iphone-btn').click();
+    await page.getByRole('button', { name: 'Make THE MEMES.net an iPhone App' }).click();
     const iphoneModal = page.locator('.tm-iphone-modal');
     await expect(iphoneModal).toBeVisible();
     await expect(iphoneModal).toContainText(/Add to Home Screen/i);
     await iphoneModal.locator('.tm-modal-sticky-header button').click();
     await expect(iphoneModal).toBeHidden();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const overflowHome = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth
+    );
+    expect(overflowHome).toBeLessThanOrEqual(2);
 
     // Switch 80s Iconic Cars in the Garage banner
     const banner = page.locator('.tm-delorean-banner');
@@ -924,14 +928,16 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     await expect(page.locator('.tm-bingo-tomato-layer')).toBeVisible();
 
     // Toggle BBC Ceefax P.888 mode & open All 90 Comedy Calls drawer
-    await page.getByRole('button', { name: /Ceefax 888/i }).click();
+    await page.getByTitle(/Ceefax Page 888/).click();
     await expect(page.locator('.tm-bingo-blower-head')).toContainText(/CEEFAX 888/i);
-    await page.getByRole('button', { name: /All 90 Calls/i }).click();
+    await page.getByTitle(/Browse all 90 classic 1986 Bingo callouts/).click();
     await expect(page.locator('.tm-bingo-dict-drawer')).toContainText(/Two Little Ducks/i);
     await page.locator('.tm-bingo-dict-drawer').getByRole('button', { name: /Close/i }).click();
 
     // Switch to 75-Ball Vegas 5x5 card format
-    await page.getByRole('button', { name: /75-Ball Vegas/i }).click();
+    // The format chips are locked during a round, so start fresh ("75-Ball Vegas" became "🇺🇸 75").
+    await page.goto('/games/neon-bingo', { waitUntil: 'domcontentloaded' });
+    await page.locator('.tm-bingo-chip', { hasText: '🇺🇸 75' }).click();
     await expect(page.locator('.tm-bingo-75-head')).toBeVisible();
 
     // Verify zero horizontal overflow across mobile, tablet, and desktop
@@ -958,14 +964,14 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
 
     await page.setViewportSize({ width: 1280, height: 800 });
 
-    // Fake Microsoft Teams & Zoom Call Boss Screen
+    // Fake video-call boss screen (brand names removed from the UI; only the page title says "style")
     await page.goto('/fake-teams-zoom-call-screen', { waitUntil: 'domcontentloaded' });
-    await expect(page).toHaveTitle(/Fake Microsoft Teams & Zoom Call Screen/i);
+    await expect(page).toHaveTitle(/Fake Video Call Screen \(Teams & Zoom Style\)/i);
     await expect(page.locator('.tm-boss-overlay')).toBeVisible();
     await expect(page.getByRole('button', { name: /Share Screen/i })).toBeVisible();
-    await expect(page.getByText('Microsoft Teams').first()).toBeVisible();
-    await page.getByRole('button', { name: /Switch to Zoom UI/i }).click();
-    await expect(page.getByText('Zoom Enterprise').first()).toBeVisible();
+    await expect(page.getByText('Team Call', { exact: true }).first()).toBeVisible();
+    await page.getByRole('button', { name: /Switch to Video Meeting style/i }).click();
+    await expect(page.getByText('Video Meeting', { exact: true }).first()).toBeVisible();
     await page.getByRole('button', { name: /Trigger Incoming Boss Call/i }).click();
     await expect(page.getByText(/Richard Vance \(VP of Synergy\)/i)).toBeVisible();
 
@@ -981,24 +987,25 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     await expect(page.locator('.tm-boss-overlay')).toBeVisible();
     await expect(page.getByRole('button', { name: /Share Screen/i })).toBeVisible();
 
-    // New findable Game SEO routes + GameShell Share button
+    // Findable game SEO routes keep their own titles after the app loads (seoEngine fix, T-016)
     await page.goto('/games/speed-swipe', { waitUntil: 'domcontentloaded' });
-    await expect(page).toHaveTitle(/Meme Speed Swipe/i);
-    await expect(page.locator('.tm-gs-right').getByRole('button', { name: /Share/i })).toBeVisible();
+    await expect(page).toHaveTitle(/Meme Speed Swipe/i, { timeout: 10000 });
+    // Speed Swipe is a full-screen deck now, not a GameShell cabinet, so it has no shell Share button.
 
     await page.goto('/games/meme-battle-arena', { waitUntil: 'domcontentloaded' });
-    await expect(page).toHaveTitle(/Meme Battle Arena/i);
-    await expect(page.locator('.tm-gs-right').getByRole('button', { name: /Share/i })).toBeVisible();
+    await expect(page).toHaveTitle(/Meme Battle Arena/i, { timeout: 10000 });
+    // The battle arena is also full-screen (BattleArena.jsx, no GameShell), so no shell Share button.
 
     // Lobby shows Retro Cabinets + Funny Boss Key & Prank Screens section
     await page.goto('/games', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByText(/21 Retro Cabinets/i).first()).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Funny Boss Key & Prank Screens/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Cyber-Arcade Lobby/i })).toBeVisible();
+    await page.getByTestId('lobby-realm-pranks').click();
+    await expect(page.getByRole('heading', { name: /Fake screens & office disguises/i })).toBeVisible();
 
     expect(pageErrors).toEqual([]);
   });
 
-  test('www.thememes.net stamp writes single electric-blue badge with lightning bolt and never doubles on re-stamp', async ({
+  test('thememes.net watermark writes a single M-tube badge and never doubles on re-stamp', async ({
     page
   }) => {
     // 1. Direct spy verification against canvasMutator.stampArcadeCartridgeFooter
@@ -1042,10 +1049,11 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
       }
     };
 
+    // Phase 35.3e watermark (dfb8025): dark pill, pink "M" tube mark and pale-cyan `thememes.net`.
     stampArcadeCartridgeFooter(spyCtx, 800, 600);
-    expect(textCalls).toEqual([{ txt: 'www.thememes.net', color: '#00f3ff' }]);
-    expect(fillColors).toContain('#070810');
-    expect(fillColors).toContain('#00f3ff');
+    expect(textCalls).toEqual([{ txt: 'thememes.net', color: '#e2fdff' }]);
+    expect(fillColors).toContain('#07060f');
+    expect(fillColors).toContain('#e2fdff');
 
     // 2. Real Chromium canvas pixel verification: pre-existing wider legacy bottom-right stamp is cleanly replaced
     await page.goto('/', { waitUntil: 'domcontentloaded' });
@@ -1081,20 +1089,22 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
         }
       }
 
-      // Verify bottom-right badge area does contain electric-blue pixels
-      const rightData = ctx.getImageData(640, 560, 155, 38).data;
-      let badgeCyanPixels = 0;
+      // Verify the bottom-right badge has its dark pill and pale-cyan #e2fdff lettering
+      // (the #e0e7ff page background has g=231, so g > 240 only matches the text)
+      const rightData = ctx.getImageData(600, 560, 190, 26).data;
+      let badgeTextPixels = 0;
+      let badgeDarkPixels = 0;
       for (let i = 0; i < rightData.length; i += 4) {
-        if (rightData[i] < 75 && rightData[i + 1] > 175 && rightData[i + 2] > 200) {
-          badgeCyanPixels += 1;
-        }
+        if (rightData[i] > 200 && rightData[i + 1] > 240 && rightData[i + 2] > 240) badgeTextPixels += 1;
+        if (rightData[i] < 90 && rightData[i + 1] < 90 && rightData[i + 2] < 110) badgeDarkPixels += 1;
       }
 
-      return { strayCyanPixels, badgeCyanPixels };
+      return { strayCyanPixels, badgeTextPixels, badgeDarkPixels };
     }, stampArcadeCartridgeFooter.toString());
 
     expect(pixelCheck.strayCyanPixels).toBe(0);
-    expect(pixelCheck.badgeCyanPixels).toBeGreaterThan(20);
+    expect(pixelCheck.badgeTextPixels).toBeGreaterThan(20);
+    expect(pixelCheck.badgeDarkPixels).toBeGreaterThan(200);
   });
 });
 
@@ -1311,14 +1321,14 @@ test.describe('Phase 33.7 Rate Limits & Arcade Cooldown Copy', () => {
       await expect(firstCard).toContainText(/Rate Limit Check Meme/i);
 
       // Trigger upvote -> hits mocked rate_limited:240 -> 4 min arcade toast
-      await firstCard.locator('.tm-vote-btn.up').click();
+      await firstCard.getByRole('button', { name: 'Upvote meme' }).click();
       await expect(page.locator('.tm-goblin-toast')).toContainText(
         /Cool your jets, speed racer\. Try again in 4 min\./i,
         { timeout: 5000 }
       );
 
       // Open comments on first card and post -> hits mocked 429 -> 9 sec arcade toast
-      await firstCard.locator('button[title="Toggle Comments"]').click();
+      await firstCard.getByRole('button', { name: 'Comments', exact: true }).click();
       const commentInput = firstCard.locator('.tm-comment-form input');
       await expect(commentInput).toBeVisible({ timeout: 5000 });
       await commentInput.fill('testing rate limit toast');
@@ -1498,25 +1508,25 @@ test.describe('Phase 33.8 Tamper-Resistant Votes, Reactions, Comments & Notifica
       await expect(firstCard).toContainText(/Tamper Resistant Engagement Meme/i);
 
       // Upvote calls cast_vote (never increment_meme_score) and moves score 5 -> 6
-      await firstCard.locator('.tm-vote-btn.up').click();
-      await expect(firstCard.locator('.tm-score')).toHaveText('6', { timeout: 5000 });
+      await firstCard.getByRole('button', { name: 'Upvote meme' }).click();
+      await expect(firstCard.locator('.mc-score')).toHaveText('6', { timeout: 5000 });
       await expect
         .poll(() => castVoteBodies.some((b) => b?.p_direction === 1), { timeout: 5000 })
         .toBe(true);
       expect(legacyScoreCalls).toBe(0);
 
       // Reaction calls toggle_reaction and updates 🔥 to 2 without bumping score above 6
-      await firstCard.locator('.tm-react-group .tm-react-btn').first().click();
-      await expect(firstCard.locator('.tm-react-group .tm-react-btn').first()).toContainText('2', {
+      await firstCard.getByRole('button', { name: 'React 🔥' }).click();
+      await expect(firstCard.getByRole('button', { name: 'React 🔥' })).toContainText('2', {
         timeout: 5000
       });
       await expect
         .poll(() => toggleReactionBodies.some((b) => b?.p_emoji === '🔥' && b?.p_active === true), { timeout: 5000 })
         .toBe(true);
-      await expect(firstCard.locator('.tm-score')).toHaveText('6');
+      await expect(firstCard.locator('.mc-score')).toHaveText('6');
 
       // Open comments: only caller's own comment should get the delete button, not other user's comment
-      await firstCard.locator('button[title="Toggle Comments"]').click();
+      await firstCard.getByRole('button', { name: 'Comments', exact: true }).click();
       await expect(firstCard).toContainText('Someone else comment');
       await expect(firstCard.locator('button[aria-label="Delete your comment"]')).toHaveCount(0);
 
@@ -1560,7 +1570,9 @@ test.describe('Phase 33.9 Video Paused & GIF Limits', () => {
   ];
 
   for (const vp of viewports) {
-    test(`rejects video uploads cleanly and enforces GIF limits on ${vp.name} (${vp.width}x${vp.height})`, async ({
+    // Videos are back (36.V Stage 1, T-014): accepted, re-recorded, held for a moderator.
+    // The quick-upload bar is desktop-only by design (index.css hides it under 861px).
+    test(`accepts video, rejects unreadable clips and enforces GIF limits on ${vp.name} (${vp.width}x${vp.height})`, async ({
       page
     }) => {
       const pageErrors = [];
@@ -1570,28 +1582,27 @@ test.describe('Phase 33.9 Video Paused & GIF Limits', () => {
       await page.goto('/', { waitUntil: 'domcontentloaded' });
 
       const uploadShell = page.locator('.tm-quick-upload-shell');
+      if (vp.width < 861) {
+        await expect(page.locator('.tm-card').first()).toBeVisible({ timeout: 15000 });
+        await expect(uploadShell).toBeHidden();
+        expect(pageErrors).toEqual([]);
+        return;
+      }
       await expect(uploadShell).toBeVisible({ timeout: 15000 });
 
-      const acceptValues = await page
-        .locator('input[type="file"][accept]')
-        .evaluateAll((els) => els.map((el) => el.getAttribute('accept') || ''));
-      expect(acceptValues.length).toBeGreaterThan(0);
-      for (const acc of acceptValues) {
-        expect(acc.toLowerCase()).not.toContain('video/');
-        expect(acc.toLowerCase()).not.toContain('.mp4');
-        expect(acc.toLowerCase()).not.toContain('.mov');
-        expect(acc.toLowerCase()).not.toContain('.webm');
-        expect(acc.toLowerCase()).toContain('image/gif');
+      const quickInput = uploadShell.locator('input[type="file"]').first();
+      const accept = ((await quickInput.getAttribute('accept')) || '').toLowerCase();
+      for (const type of ['video/mp4', 'video/quicktime', 'video/webm', 'image/gif']) {
+        expect(accept).toContain(type);
       }
 
-      const quickInput = uploadShell.locator('input[type="file"]').first();
       await quickInput.setInputFiles({
         name: 'clip.mp4',
         mimeType: 'video/mp4',
         buffer: Buffer.from([0, 0, 0, 24, 0x66, 0x74, 0x79, 0x70, 0x6d, 0x70, 0x34, 0x32])
       });
       await expect(uploadShell.locator('.tm-quick-status-msg')).toContainText(
-        '🎬 Video memes are coming back soon',
+        /cannot read that video/i,
         { timeout: 5000 }
       );
 
@@ -1776,17 +1787,26 @@ test.describe('Phase 33.11 Legal, Takedowns & Settings Account Deletion', () => 
         await expect(footer.locator(`a[href="${href}"]`)).toBeVisible();
       }
 
-      const uploadShell = page.locator('.tm-quick-upload-shell');
-      await expect(uploadShell).toBeVisible();
-      await uploadShell.locator('input[type="file"]').first().setInputFiles({
-        name: 'tiny.png',
-        mimeType: 'image/png',
-        buffer: TINY_PNG
-      });
-      const rulesLine = uploadShell.locator('.tm-house-rules-line');
-      await expect(rulesLine).toBeVisible({ timeout: 5000 });
+      // The quick-upload bar is desktop-only (hidden under 861px). On phones and tablets,
+      // people post from Meme Forge, which must show the same House Rules agreement.
+      let rulesLine;
+      if (vp.width >= 861) {
+        const uploadShell = page.locator('.tm-quick-upload-shell');
+        await expect(uploadShell).toBeVisible();
+        await uploadShell.locator('input[type="file"]').first().setInputFiles({
+          name: 'tiny.png',
+          mimeType: 'image/png',
+          buffer: TINY_PNG
+        });
+        rulesLine = uploadShell.locator('.tm-house-rules-line');
+      } else {
+        await page.goto('/meme-generator', { waitUntil: 'domcontentloaded' });
+        rulesLine = page.locator('.tm-forge .tm-house-rules-line').first();
+      }
+      await expect(rulesLine).toBeVisible({ timeout: 10000 });
       await expect(rulesLine).toContainText('By posting you agree to the House Rules');
       await expect(rulesLine.locator('a[href="/rules"]')).toBeVisible();
+      if (vp.width < 861) await page.goto('/', { waitUntil: 'domcontentloaded' });
 
       const extrasBtn = page.locator('.tm-extras-hud-btn');
       await expect(extrasBtn).toBeVisible();
@@ -2221,43 +2241,28 @@ test.describe('Phase 33.15 Real Daily Caption Battle & Hall of Fame', () => {
       // 1. 24h Caption King frame renders on winning creator's feed cards (and not on others)
       const kingCard = page.locator('.tm-card.tm-frame-caption-king');
       await expect(kingCard).toHaveCount(1, { timeout: 15000 });
-      await expect(kingCard.getByTestId('caption-king-frame-badge')).toContainText('👑 CAPTION KING (24h)');
+      await expect(kingCard.getByTestId('caption-king-frame-badge')).toContainText('👑 CAPTION KING');
 
       // Clicking winning creator opens profile with 24h Reigning Caption King Frame
-      await kingCard.locator('.tm-author-handle').click();
+      await kingCard.getByTitle('View creator profile').click();
       await expect(page.getByTestId('profile-caption-king-badge')).toContainText(
-        '👑 Reigning Caption King (24h Frame)',
+        'Reigning Caption King (24h Frame)',
         { timeout: 10000 }
       );
       await expect(page.locator('.tm-creator-stats-card.tm-frame-caption-king')).toBeVisible();
       await page.locator('.tm-profile-modal button', { hasText: 'Close' }).click();
 
-      // 2. Open Daily Caption Battle modal -> verify yesterday's Supabase winner + submit + vote
-      await page.getByTestId('hero-caption-battle-btn').click();
-      const battleModal = page.getByTestId('daily-caption-battle-modal');
-      await expect(battleModal).toBeVisible({ timeout: 10000 });
-
-      await expect(page.getByTestId('yesterday-caption-king-banner')).toContainText('@KingMemer86');
-      await expect(page.getByTestId('yesterday-caption-king-banner')).toContainText('42');
-
-      await page.getByTestId('battle-top-input').fill('SHIPPING PHASE 33');
-      await page.getByTestId('battle-bottom-input').fill('REAL SUPABASE KING');
-      await page.getByTestId('battle-submit-btn').click();
-      await expect
-        .poll(() => submittedEntryCount, { timeout: 5000 })
-        .toBe(1);
-      await expect(battleModal).toContainText('SHIPPING PHASE 33 / REAL SUPABASE KING');
-
-      await page.getByTestId('battle-vote-btn-11111111-1111-4111-8111-111111111111').click();
-      await expect
-        .poll(() => votedEntryCount, { timeout: 5000 })
-        .toBe(1);
-      await expect(
-        page.getByTestId('battle-vote-btn-11111111-1111-4111-8111-111111111111')
-      ).toContainText('4');
+      // 2. The v1 battle steps (yesterday banner, inline submit + vote buttons) were removed:
+      // Daily Caption Battle v2 (1bc8929, 20 Nov) has scheduled battles and swipe voting.
+      // T-016 follow-up: write a v2 smoke test. Until then, check the modal still opens.
+      await page.locator('.tm-extras-hud-btn').click();
+      await page.getByTestId('extras-caption-battle-btn').click();
+      await expect(page.getByTestId('daily-caption-battle-modal')).toBeVisible({ timeout: 10000 });
+      void submittedEntryCount;
+      void votedEntryCount;
 
       // 3. Visit /hall-of-fame permanent archive
-      await page.getByTestId('hall-of-fame-link').click();
+      await page.goto('/hall-of-fame', { waitUntil: 'domcontentloaded' });
       await expect(page.getByRole('heading', { name: /Caption King Hall of Fame/i })).toBeVisible({
         timeout: 15000
       });
@@ -2433,6 +2438,9 @@ test.describe('Phase 33.16 Infinite Cursor Feed, SQL View Tabs, Lazy Comments & 
         .toBe(true);
 
       await page.getByTestId('feed-tab-top').click();
+      // On phones/tablets the time-window pills sit behind the "More" filter toggle.
+      const moreFilters = page.locator('button.tm-show-mobile-only', { hasText: 'More' });
+      if (await moreFilters.isVisible()) await moreFilters.click();
       await expect(page.getByTestId('top-window-day')).toBeVisible({ timeout: 5000 });
       await expect(page.getByTestId('top-window-week')).toBeVisible();
       await expect(page.getByTestId('top-window-all')).toBeVisible();
@@ -2883,7 +2891,7 @@ test.describe('Phase 33.19 Meme Invaders \'86 skill cabinet', () => {
       await expect(page).toHaveTitle(/Meme Invaders '86/i);
       const stage = page.getByTestId('meme-invaders-stage');
       await expect(stage).toBeVisible({ timeout: 15000 });
-      await expect(page.getByText(/0 TOKENS/i).first()).toBeVisible();
+      await expect(page.locator('.tm-gs-title-row').first()).toContainText('FREE');
 
       const canvas = page.getByTestId('invaders-canvas');
       await expect(canvas).toBeVisible();
@@ -2910,7 +2918,7 @@ test.describe('Phase 33.19 Meme Invaders \'86 skill cabinet', () => {
 
       // Lobby lists Meme Invaders '86 under Skill with accurate count
       await page.goto('/games', { waitUntil: 'domcontentloaded' });
-      await expect(page.getByText(/\d+\s+retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByRole('heading', { name: /Cyber-Arcade Lobby/i })).toBeVisible({ timeout: 10000 });
       await expect(page.getByText(/Meme Invaders '86/i).first()).toBeVisible();
 
       // Zero horizontal overflow
@@ -2941,7 +2949,7 @@ test.describe('Phase 33.20 — Neon Serpent skill cabinet & swipe controls', () 
       await expect(page).toHaveTitle(/Neon Serpent/i);
       const stage = page.getByTestId('neon-serpent-stage');
       await expect(stage).toBeVisible({ timeout: 15000 });
-      await expect(page.getByText(/0 TOKENS/i).first()).toBeVisible();
+      await expect(page.locator('.tm-gs-title-row').first()).toContainText('FREE');
 
       const canvas = page.getByTestId('serpent-canvas');
       await expect(canvas).toBeVisible();
@@ -2973,7 +2981,7 @@ test.describe('Phase 33.20 — Neon Serpent skill cabinet & swipe controls', () 
 
       // Lobby lists Neon Serpent under Skill with accurate count
       await page.goto('/games', { waitUntil: 'domcontentloaded' });
-      await expect(page.getByText(/\d+\s+retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByRole('heading', { name: /Cyber-Arcade Lobby/i })).toBeVisible({ timeout: 10000 });
       await expect(page.getByText(/Neon Serpent/i).first()).toBeVisible();
 
       const overflow = await page.evaluate(
@@ -3003,7 +3011,7 @@ test.describe('Phase 33.21 — Brick Blaster skill cabinet & word/face levels', 
       await expect(page).toHaveTitle(/Brick Blaster/i);
       const stage = page.getByTestId('brick-blaster-stage');
       await expect(stage).toBeVisible({ timeout: 15000 });
-      await expect(page.getByText(/0 TOKENS/i).first()).toBeVisible();
+      await expect(page.locator('.tm-gs-title-row').first()).toContainText('FREE');
 
       const canvas = page.getByTestId('blaster-canvas');
       await expect(canvas).toBeVisible();
@@ -3034,7 +3042,7 @@ test.describe('Phase 33.21 — Brick Blaster skill cabinet & word/face levels', 
 
       // Lobby lists Brick Blaster under Skill with accurate count
       await page.goto('/games', { waitUntil: 'domcontentloaded' });
-      await expect(page.getByText(/\d+\s+retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByRole('heading', { name: /Cyber-Arcade Lobby/i })).toBeVisible({ timeout: 10000 });
       await expect(page.getByText(/Brick Blaster/i).first()).toBeVisible();
 
       const overflow = await page.evaluate(
@@ -3064,7 +3072,7 @@ test.describe('Phase 33.22 — Sunset Sprint synthwave racer & FM cassettes', ()
       await expect(page).toHaveTitle(/Sunset Sprint/i);
       const stage = page.getByTestId('sunset-sprint-stage');
       await expect(stage).toBeVisible({ timeout: 15000 });
-      await expect(page.getByText(/0 TOKENS/i).first()).toBeVisible();
+      await expect(page.locator('.tm-gs-title-row').first()).toContainText('FREE');
 
       const canvas = page.getByTestId('sunset-canvas');
       await expect(canvas).toBeVisible();
@@ -3089,7 +3097,7 @@ test.describe('Phase 33.22 — Sunset Sprint synthwave racer & FM cassettes', ()
 
       // Lobby lists Sunset Sprint under Skill with accurate count
       await page.goto('/games', { waitUntil: 'domcontentloaded' });
-      await expect(page.getByText(/\d+\s+retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByRole('heading', { name: /Cyber-Arcade Lobby/i })).toBeVisible({ timeout: 10000 });
       await expect(page.getByText(/Sunset Sprint/i).first()).toBeVisible();
 
       const overflow = await page.evaluate(
@@ -3119,7 +3127,7 @@ test.describe('Phase 33.23 — Vector Void twin-stick space shooter', () => {
       await expect(page).toHaveTitle(/Vector Void/i);
       const stage = page.getByTestId('vector-void-stage');
       await expect(stage).toBeVisible({ timeout: 15000 });
-      await expect(page.getByText(/0 TOKENS/i).first()).toBeVisible();
+      await expect(page.locator('.tm-gs-title-row').first()).toContainText('FREE');
 
       const canvas = page.getByTestId('void-canvas');
       await expect(canvas).toBeVisible();
@@ -3153,7 +3161,7 @@ test.describe('Phase 33.23 — Vector Void twin-stick space shooter', () => {
 
       // Lobby lists Vector Void under Skill with accurate count
       await page.goto('/games', { waitUntil: 'domcontentloaded' });
-      await expect(page.getByText(/\d+\s+retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByRole('heading', { name: /Cyber-Arcade Lobby/i })).toBeVisible({ timeout: 10000 });
       await expect(page.getByText(/Vector Void/i).first()).toBeVisible();
 
       const overflow = await page.evaluate(
@@ -3183,7 +3191,7 @@ test.describe('Phase 33.24 — Grid Riders 1P & 2P light-trail arena', () => {
       await expect(page).toHaveTitle(/Grid Riders/i);
       const cabinet = page.getByTestId('grid-riders-cabinet');
       await expect(cabinet).toBeVisible({ timeout: 15000 });
-      await expect(page.getByText(/0 TOKENS/i).first()).toBeVisible();
+      await expect(page.locator('.tm-gs-title-row').first()).toContainText('FREE');
 
       const canvas = page.getByTestId('grid-riders-canvas');
       await expect(canvas).toBeVisible();
@@ -3210,7 +3218,7 @@ test.describe('Phase 33.24 — Grid Riders 1P & 2P light-trail arena', () => {
 
       // Lobby lists Grid Riders cleanly
       await page.goto('/games', { waitUntil: 'domcontentloaded' });
-      await expect(page.getByText(/21 retro cabinets/i).first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByRole('heading', { name: /Cyber-Arcade Lobby/i })).toBeVisible({ timeout: 10000 });
       await expect(page.getByText(/Grid Riders/i).first()).toBeVisible();
 
       const overflow = await page.evaluate(

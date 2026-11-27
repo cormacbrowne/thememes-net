@@ -7,7 +7,7 @@ import GameShell from './GameShell';
 import './VegasRouletteGame.css';
 
 // ==========================================
-// 80s NEON NEON STRIKE ROULETTE '86 — 60FPS CANVAS PHYSICS WHEEL,
+// 80s NEON STRIKE ROULETTE '86 — 60FPS CANVAS PHYSICS WHEEL,
 // LIGHTNING MULTIPLIERS (50x / 100x / 150x) & FULL INTERACTIVE BETTING BOARD
 // ==========================================
 
@@ -735,7 +735,7 @@ export default function VegasRouletteGame({
 
   return (
     <GameShell
-      title="NEON NEON STRIKE ROULETTE '86"
+      title="NEON STRIKE ROULETTE '86"
       fitToScreen={false}
       eyebrow="European single-zero wheel • Lightning numbers"
       ariaLabel="80s Neon Strike Roulette Wheel and Table"

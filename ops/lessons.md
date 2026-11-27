@@ -78,3 +78,10 @@ Format:
 - Didn't: the planned "/contact" fallback for takedowns would have been circular, because /contact says the form is the only route. Read the target page before pointing users at it.
 - Didn't: a `sed … && grep -c … && cat >> lessons` chain stopped at grep's exit 1 and silently skipped the lesson. Don't put unrelated writes after a grep in an && chain.
 - Routing note: Claude, inline, with legal, QA and tech-lead in parallel. Legal turned a copy tweak into a real decision for Cormac (no public contact route).
+
+## 2026-11-27: T-016 step 3 (stale smoke tests)
+- Worked: Playwright's `error-context.md` page snapshots from one full run told me the current button names without opening a browser. Fix, rerun, and read the next layer. Long tests fail one stale step at a time, so expect 3–4 rounds.
+- Worked: fixing tests against the real UI found 4 real bugs that a "make it green" pass would have hidden (3 doubled or leftover casino names, 1 SEO title swap). When a test says text is wrong, check the app before the test.
+- Didn't: the preview server serves `dist/`, so after any `src/` change, rebuild before rerunning smoke, or the run tests stale code. I lost one 15-minute run to this.
+- Didn't: sed with `$` and backslashes in JS regexes broke several edits silently. Use a literal find/replace script (or Edit) for test code.
+- Routing note: Claude, inline, about 3 hours. Not a good Gemini job after all: most fixes needed reading app code to decide "stale test vs real bug".

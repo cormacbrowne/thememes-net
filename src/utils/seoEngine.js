@@ -15,21 +15,14 @@ import { sanitizeMediaUrl } from './securityGuard.js';
 import { getTemplateBySlug } from '../data/memeTemplates.js';
 import { TEMPLATES_INDEX_META, buildTemplateJsonLd, buildTemplatesIndexJsonLd } from './templateSeo.js';
 
+// Only view modes with no SEO route of their own. 'swipe' and 'battle' have real routes in
+// seoRoutes.js (/games/speed-swipe, the battle arena); listing them here replaced the
+// prerendered title with a different one once the app loaded (T-016, 27 Nov 2026).
 const NON_PATH_VIEW_MODES = {
   reels: {
     title: 'Vertical Meme Reels — Fullscreen Community Memes | THE MEMES.net',
     description:
       'Swipe through fullscreen vertical meme reels, double-tap to upvote, react, and share direct links.'
-  },
-  swipe: {
-    title: 'Hyper-Swipe Meme Triage Deck | THE MEMES.net',
-    description:
-      'Swipe rapidly through fresh dank, programming, gaming, and relatable memes with instant upvote and super-vote combos.'
-  },
-  battle: {
-    title: '1v1 Sudden-Death Meme Battle Arena | THE MEMES.net',
-    description:
-      'Vote head-to-head in the King of the Hill 1v1 Meme Battle Arena and see how your picks compare with the crowd.'
   }
 };
 

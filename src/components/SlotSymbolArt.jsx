@@ -479,7 +479,7 @@ const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge =
           </svg>
         );
 
-      // ===== CYBER STAMPEDE STAMPEDE '86 =====
+      // ===== CYBER STAMPEDE '86 =====
       case 'buffalo':
         return (
           <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Cyber Stampede">

@@ -640,7 +640,7 @@ export default function ArcadeAiAssistant({
     // 9. Roulette Questions
     if (q.includes('roulette') || q.includes('wheel') || q.includes('lightning') || q.includes('red') || q.includes('black')) {
       return {
-        text: `${prefix} **NEON NEON STRIKE ROULETTE '86 (${userTitle}):**\n• **European Single-Zero (\`0\`) Wheel:** Better mathematical odds than double-zero tables.\n• **⚡ Lightning Strikes:** Every spin, **1.21 Gigawatts** of high-voltage lightning strikes 3 random numbers, boosting straight-up payouts to **50×–150×**!\n• Tap **⚡ 5 Lightning Picks** or **🔥 Red Blitz** for instant board coverage!`,
+        text: `${prefix} **NEON STRIKE ROULETTE '86 (${userTitle}):**\n• **European Single-Zero (\`0\`) Wheel:** Better mathematical odds than double-zero tables.\n• **⚡ Lightning Strikes:** Every spin, **1.21 Gigawatts** of high-voltage lightning strikes 3 random numbers, boosting straight-up payouts to **50×–150×**!\n• Tap **⚡ 5 Lightning Picks** or **🔥 Red Blitz** for instant board coverage!`,
         actions: [{ label: '🎡 Spin Neon Strike Roulette', mode: 'roulette' }]
       };
     }

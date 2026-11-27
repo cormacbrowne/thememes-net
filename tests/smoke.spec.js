@@ -550,7 +550,9 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     page.on('pageerror', (err) => pageErrors.push(err.message));
     page.on('console', (msg) => {
       // Network-level 401/404s come from the test fixture's fakes (tests/storageStub.js), not app code.
-      if (msg.type() === 'error' && !/^Failed to load resource/.test(msg.text())) {
+      const fromFixture =
+        /^Failed to load resource/.test(msg.text()) && /supabase\.co|\/_vercel\//.test(msg.location()?.url || '');
+      if (msg.type() === 'error' && !fromFixture) {
         consoleErrors.push(msg.text());
       }
     });
@@ -1572,7 +1574,7 @@ test.describe('Phase 33.9 Video Paused & GIF Limits', () => {
   for (const vp of viewports) {
     // Videos are back (36.V Stage 1, T-014): accepted, re-recorded, held for a moderator.
     // The quick-upload bar is desktop-only by design (index.css hides it under 861px).
-    test(`accepts video, rejects unreadable clips and enforces GIF limits on ${vp.name} (${vp.width}x${vp.height})`, async ({
+    test(`${vp.width < 861 ? 'hides the desktop-only quick-upload bar' : 'accepts video, rejects unreadable clips and enforces GIF limits'} on ${vp.name} (${vp.width}x${vp.height})`, async ({
       page
     }) => {
       const pageErrors = [];
@@ -2043,7 +2045,7 @@ test.describe('Phase 33.15 Real Daily Caption Battle & Hall of Fame', () => {
   ];
 
   for (const vp of viewports) {
-    test(`runs real Daily Caption Battle flow, 24h Caption King frame, and /hall-of-fame on ${vp.name} (${vp.width}x${vp.height})`, async ({
+    test(`24h Caption King frame, profile badge, battle modal opens, and /hall-of-fame on ${vp.name} (${vp.width}x${vp.height})`, async ({
       page
     }) => {
       const pageErrors = [];

@@ -56,6 +56,8 @@ async function assertLobbyVisibleInViewport(page, vp, label) {
 
 for (const vp of VIEWPORTS) {
   test.describe(`Joystick back-to-menu deep repro (${vp.name})`, () => {
+    // Opens all 13 games in one test; on phone-sized viewports that can exceed the default 30s.
+    test.describe.configure({ timeout: 120000 });
     test.use({
       viewport: { width: vp.width, height: vp.height },
       isMobile: vp.isMobile,
@@ -71,7 +73,9 @@ for (const vp of VIEWPORTS) {
       page.on('pageerror', (err) => pageErrors.push(err.message));
       page.on('console', (msg) => {
         // Network-level 401/404s come from the test fixture's fakes (tests/storageStub.js), not app code.
-        if (msg.type() === 'error' && !/^Failed to load resource/.test(msg.text())) consoleErrors.push(msg.text());
+        const fromFixture =
+          /^Failed to load resource/.test(msg.text()) && /supabase\.co|\/_vercel\//.test(msg.location()?.url || '');
+        if (msg.type() === 'error' && !fromFixture) consoleErrors.push(msg.text());
       });
 
       await page.goto('/', { waitUntil: 'domcontentloaded' });

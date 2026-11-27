@@ -83,7 +83,7 @@ export async function isolateSupabase(target) {
   );
   // Realtime is a websocket, which page.route never sees. Without this, parallel test browsers
   // joined live presence together and the "people here now" pill counted them (T-016).
-  // Join and heartbeat messages get an "ok" reply locally; nothing reaches the live server.
+  // Join, leave and heartbeat messages get an "ok" reply locally; nothing reaches the live server.
   await target.routeWebSocket('**/realtime/v1/**', (ws) => {
     ws.onMessage((raw) => {
       let msg;
@@ -95,7 +95,7 @@ export async function isolateSupabase(target) {
       // realtime-js speaks Phoenix v1 objects or v2 arrays: [join_ref, ref, topic, event, payload]
       const isArray = Array.isArray(msg);
       const event = isArray ? msg[3] : msg?.event;
-      if (event !== 'phx_join' && event !== 'heartbeat') return;
+      if (event !== 'phx_join' && event !== 'phx_leave' && event !== 'heartbeat') return;
       const reply = { status: 'ok', response: {} };
       ws.send(
         JSON.stringify(

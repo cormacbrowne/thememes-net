@@ -66,5 +66,6 @@ Parked as `test.fixme` (2), pending Cormac:
 Follow-ups:
 - Daily Caption Battle v2 (20 Nov) has no end-to-end smoke test; the old v1 submit/vote steps were removed. Write one.
 - Speed Swipe and the battle arena have no Share button (they don't use GameShell); every other game has one. Growth to decide.
-- Joystick test on iPhone once hung clicking "Back to Lobby" on MEMEDAQ (passed on the next two runs). Watch for flakiness.
+- Joystick iPhone flakiness was the 30 s per-test limit (one test opens all 13 games). Given 2 min; 18/18 passed on a 3x repeat.
+- QA notes for later: Forge GIF-limit check on phones (33.9 phone/tablet cases only check the bar is hidden); delete 33.15's dead v1 battle mocks when the v2 test lands; tie the 80s face-count check to the cast length.
 - Roulette mid-spin width check is timing-sensitive (group C).

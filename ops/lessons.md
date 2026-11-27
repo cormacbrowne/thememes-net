@@ -70,3 +70,11 @@ Format:
 - Didn't: smoke tests faked every REST, auth and function call but not `/storage/`, so every agent test and screenshot run downloaded real user media from production.
 - Routing note: Claude, inline. One auto fixture (`tests/storageStub.js`) covers every spec. One-off screenshot scripts must call `blockStorage(page)` themselves, so this is in `instructions.md` and the handoff template for Gemini too.
 - Didn't (2): I first reported "54 passed" because `| tail` hid both the "66 failed" line and the exit code. Read Playwright's summary block in full and keep the real exit code (no pipe) before quoting a result.
+
+## 2026-11-27: T-016 step 1+2 (tests off live Supabase, takedown copy)
+- Worked: making `get_hot_feed` "missing" in the fixture reused the app's own fallback to `memes_feed_view`, which the specs already faked. One fixture line fixed the data step for 8 test groups without touching any spec.
+- Worked: faking anonymous sign-up also neuters any write a test forgets to fake, because it carries a fake token the live server rejects (328 refused calls, 0 writes in a full run). Tech-lead checked every Edge Function and RPC and found no anon-key write a test can reach.
+- Didn't: faking the RPC took the production Hot-tab path out of smoke. QA caught it, and a vitest now covers it (`hotFeedRpc_t016.test.js`).
+- Didn't: the planned "/contact" fallback for takedowns would have been circular, because /contact says the form is the only route. Read the target page before pointing users at it.
+- Didn't: a `sed … && grep -c … && cat >> lessons` chain stopped at grep's exit 1 and silently skipped the lesson. Don't put unrelated writes after a grep in an && chain.
+- Routing note: Claude, inline, with legal, QA and tech-lead in parallel. Legal turned a copy tweak into a real decision for Cormac (no public contact route).

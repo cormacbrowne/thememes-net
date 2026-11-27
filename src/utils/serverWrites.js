@@ -342,7 +342,7 @@ export async function submitTakedownRequest(
       ok: false,
       error: 'sign_in_required',
       message:
-        '🔑 Your report was not sent yet: we could not open a secure session. What you typed is still here. Please press the submit button again in a minute, or try from another connection (for example, mobile data instead of shared Wi-Fi).'
+        '🔑 Your report was not sent yet: we could not open a secure session. What you typed is still here. Please press the submit button again in a few minutes, or try from another connection (for example, mobile data instead of shared Wi-Fi).'
     };
   }
   const { data, error } = await client.rpc('submit_takedown_request', {

@@ -14,7 +14,9 @@ The same failures happen with the storage stub off (`PW_REAL_STORAGE=1`), so T-0
 
 Side effect: the live project has 274 anonymous users, 101 from the last 7 days, 269 with no meme or comment. Most look like test runs. **Not deleted** (needs Cormac's OK).
 
-**Fix:** in `tests/storageStub.js` (rename to `tests/fixtures.js` later) add default context routes for `**/auth/v1/signup*` (fake anonymous session) and `**/rest/v1/rpc/get_hot_feed*` (empty list). Tests that need data keep their own `page.route`, which takes priority. Update each feed test to fake `get_hot_feed` with its meme rows.
+**Fix:** in `tests/storageStub.js` (rename to `tests/fixtures.js` later) add default context routes for `**/auth/v1/signup*` (fake anonymous session) and `**/rest/v1/rpc/get_hot_feed*` (404 PGRST202, so the feed falls back to the faked `memes_feed_view`). Tests that need data keep their own `page.route`, which takes priority.
+
+**Done 27 Nov (`claude/t016-test-isolation`):** both fakes are in. A full run made 0 live sign-ups, hot-feed calls, Storage downloads or table writes, and smoke went from 54 to 64 passing (33.10, 33.14, 33.18 and the desktop 33.11 / 33.16 now pass). 33.7, 33.8, 33.15 and the mobile/tablet 33.11 / 33.16 now get past the data step and fail later on stale selectors, so they move to group B: vote buttons are only in `MemeTheaterModal.jsx`, not on feed cards; the badge reads "👑 CAPTION KING" without "(24h)"; `top-window-day` no longer exists; the quick-upload bar is gone. The production RPC path is now covered by `tests/vitest/hotFeedRpc_t016.test.js`. Step 3 should add a shared `fakeFeed(page, rows)` helper that fakes both `get_hot_feed` and `memes_feed_view*`, so smoke exercises the RPC path again.
 
 ## B. Deliberate product changes, tests never updated (39 tests)
 
@@ -33,10 +35,11 @@ Side effect: the live project has 274 anonymous users, 101 from the last 7 days,
 - Neon Bingo "Ceefax 888" button not found (1). The text is still in `seoRoutes.js`, so check whether the in-game button was renamed.
 - `www.thememes.net` stamp pixel check, deep-equality off by 2 (1). Could be a real change to the export badge, so compare against a fresh export.
 - Joystick: `.tm-nav-mode-pill` 🕹️ click timed out on desktop (1). The pill still exists, so it is probably covered by another element. Check after the casino-name fixes.
+- Roulette on iPhone (`smoke.spec.js:180`): `spinningWidth >= 300` measured 285.8 mid-spin in one run, then passed 3/3 on repeat. It's a flaky timing check, so measure after the spin settles.
 
 ## Safety note (not a test problem)
 
-The takedown form shows only "Could not open a session to record this report." if anonymous sign-in fails (for example, rate-limited on shared Wi-Fi). Rule: report paths never get harder to reach. **Recommend** the message also offers the `/contact` route and the email address, so a takedown can always be sent.
+The takedown form shows only "Could not open a session to record this report." if anonymous sign-in fails (for example, rate-limited on shared Wi-Fi). Rule: report paths never get harder to reach. ~~Recommend the message also offers `/contact` and the email address~~: not possible, because `/contact` says there is no public email and points back to the form. **Done 27 Nov:** the message now says the report wasn't sent, the text is kept, and how to retry (legal cleared). **Still open (Cormac):** legal recommends adding a contact email as a fallback (Online Safety Act ss.20–21, UK GDPR Art 13, and the E-Commerce Regs reg 6 once ads go live). Legal also flags `src/data/legalPages.js` lines 64 and 77, which point to /contact in the same circular way.
 
 ## Suggested order
 

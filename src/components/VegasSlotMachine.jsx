@@ -1151,7 +1151,7 @@ export default function VegasSlotMachine({
           setMustangFreeSpins(awardedFreeSpins || 4);
           setFreeSpinStake(activeBet);
           setDougieBanner(pickDougieQuote('bonus'));
-          fireBigWinSiren(false, 'HELLOOOOO-O-O! FREE SPINS!');
+          fireBigWinSiren(false, 'ORDER UP! FREE SPINS!');
         }
 
         if (totalMult > 0) {
@@ -1163,7 +1163,7 @@ export default function VegasSlotMachine({
             headline:
               bonusHeadline ||
               (isBig
-                ? '☕🚨 HELLOOOOO-O-O!! SILVER MUSTANG BIG WIN!'
+                ? '☕🚨 ORDER UP!! MIDNIGHT DINER BIG WIN!'
                 : `☕ ${evalRes.winningLines.length} PAYLINE HIT! (${totalMult}×)`),
             detail: isFreeSpinRound
               ? `Golden Orb Free Spin ${totalMult}×!`
@@ -1172,7 +1172,7 @@ export default function VegasSlotMachine({
                 : `${evalRes.winningLines.length} winning lines (${mustangLines} lines active)`,
             tier: totalMult >= 20 ? 'jackpot' : isBig ? 'big' : 'win',
             maxMultiplier: 120,
-            dougiePhrase: isBig ? 'HELLOOOOO-O-O!!' : ''
+            dougiePhrase: isBig ? 'WINNER WINNER!!' : ''
           });
         } else if (!triggeredBonus) {
           setDougieBanner(pickDougieQuote('miss'));
@@ -1227,7 +1227,7 @@ export default function VegasSlotMachine({
             detail: wasSurge ? '2× Overcharge Surge applied!' : `${evalRes.winningLines.length} lines hit`,
             tier: totalMult >= 25 ? 'jackpot' : isBig ? 'big' : 'win',
             maxMultiplier: 150,
-            dougiePhrase: isBig ? 'HELLOOOOO-O-O!' : ''
+            dougiePhrase: isBig ? 'WINNER WINNER!' : ''
           });
         } else {
           setLastOutcome({ tier: 'miss', mult: 0, payout: 0, bet: activeBet });
@@ -1288,7 +1288,7 @@ export default function VegasSlotMachine({
               : `${evalRes.matchedWays.reduce((a, w) => a + w.ways, 0)} winning ways!`,
             tier: totalMult >= 25 ? 'jackpot' : isBig ? 'big' : 'win',
             maxMultiplier: 140,
-            dougiePhrase: isBig ? 'HELLOOOOO-O-O!' : ''
+            dougiePhrase: isBig ? 'WINNER WINNER!' : ''
           });
         } else {
           setLastOutcome({ tier: 'miss', mult: 0, payout: 0, bet: activeBet });
@@ -1776,7 +1776,7 @@ export default function VegasSlotMachine({
         detail: `${step.totalOrbs} Thunder Orbs collected!`,
         tier: step.totalMult >= 30 || step.hitGrand ? 'jackpot' : 'big',
         maxMultiplier: 150,
-        dougiePhrase: 'HELLOOOOO-O-O!!'
+        dougiePhrase: 'WINNER WINNER!!'
       });
     } else {
       setLockItState({
@@ -1824,7 +1824,7 @@ export default function VegasSlotMachine({
             detail: `Cyber Herd Bonus Wheel ${segment.mult}× Bonus!`,
             tier: segment.mult >= 35 ? 'jackpot' : 'big',
             maxMultiplier: 140,
-            dougiePhrase: segment.mult >= 35 ? 'HELLOOOOO-O-O!!' : ''
+            dougiePhrase: segment.mult >= 35 ? 'WINNER WINNER!!' : ''
           });
         } catch (err) {
           console.warn('Bonus wheel recovery:', err);
@@ -2160,7 +2160,7 @@ export default function VegasSlotMachine({
                   )}
                   {machineId === 'silver_mustang' && (
                     <>
-                      <span>🕶️ Dougie×5 = <strong>220× Line</strong></span>
+                      <span>🍳 Lucky Lou×5 = <strong>220× Line</strong></span>
                       <span>🟡 Orb Wild = <strong>1.5× Line Boost</strong></span>
                       <span>☕ 10 Coffees = <strong>4 Free Spins</strong></span>
                       <span>5 Orbs = <strong>Progressive Pot</strong></span>
@@ -2204,7 +2204,7 @@ export default function VegasSlotMachine({
                     <>
                       <li><strong>Lines:</strong> tap 📏 to switch between 5, 15 and 25 paylines.</li>
                       <li><strong>Coffee pot:</strong> 10 ☕ = 4 free spins. Charge (⚡) buys power-ups: ☕ 1.5× Rush (40), 🟢 Lock (50), 🥧 Wild reel 3 (60).</li>
-                      <li><strong>Mustang pot:</strong> 5 orbs on screen wins the progressive pot (now <Money tokens={mustangPot} compact zero="balance" />).</li>
+                      <li><strong>Diner pot:</strong> 5 orbs on screen wins the progressive pot (now <Money tokens={mustangPot} compact zero="balance" />).</li>
                     </>
                   )}
                   {machineId === 'lightning_vault' && (
@@ -2570,8 +2570,8 @@ export default function VegasSlotMachine({
                       armedPowerups.owlLock ? 'armed' : ''
                     }`}
                     disabled={isAnySpinning || mustangCharge < 50 || armedPowerups.owlLock}
-                    onClick={() => activateSilverPowerup('owlLock', 50, '🟢 Owl Ring Lock')}
-                    title="Costs 50 ⚡ Charge — Locks reels holding Dougie or Golden Orbs"
+                    onClick={() => activateSilverPowerup('owlLock', 50, '💍 Lucky Ring Lock')}
+                    title="Costs 50 ⚡ Charge — Locks reels holding Lucky Lou or Golden Orbs"
                   >
                     🟢 LOCK (50⚡)
                   </button>

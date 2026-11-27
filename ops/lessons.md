@@ -85,3 +85,9 @@ Format:
 - Didn't: the preview server serves `dist/`, so after any `src/` change, rebuild before rerunning smoke, or the run tests stale code. I lost one 15-minute run to this.
 - Didn't: sed with `$` and backslashes in JS regexes broke several edits silently. Use a literal find/replace script (or Edit) for test code.
 - Routing note: Claude, inline, about 3 hours. Not a good Gemini job after all: most fixes needed reading app code to decide "stale test vs real bug".
+
+## 2026-11-27: T-017 / T-018 casino names and the Twin Peaks slot
+- Didn't (20 Nov rename): "Buffalo" became "Stampede", which is itself an Aristocrat Buffalo sub-brand, and a find/replace produced "Stampede Stampede" and "NEON NEON". Run any new product or feature name past legal (a quick search for "<name> slot" / "<name> casino") and grep the result for doubled words before shipping.
+- Worked: legal rated risk by name + signature mechanic together (Lightning + random multiplier numbers; bison + 1,024 ways + Stampede), not by the word alone. That kept the renames small and left the game maths untouched.
+- Didn't: my first case-sensitive grep missed "GOLD UP" and the catchphrase "HELLOOOOO-O-O!" shared by every slot. Grep case-insensitively, and grep the built `dist/` bundle too: it catches strings in shared helpers.
+- Routing note: Claude, inline, with legal + QA in parallel; QA screenshots caught what grep missed. A theme swap with redrawn symbol art also needs design-director.

@@ -195,7 +195,7 @@ export function evaluateBanditOutcome(
     tier: result.tier,
     headline: feverBoost && totalMult > 0 ? `🔥 FEVER 2× ${result.headline}` : result.headline,
     detail: `${totalMult}× Mechanical Payline!`,
-    dougiePhrase: totalMult >= 10 ? 'HELLOOOOO-O-O!!' : '',
+    dougiePhrase: totalMult >= 10 ? 'WINNER WINNER!!' : '',
     feverBoost: Boolean(feverBoost),
     holdAllowed,
     nudgesLeft,
@@ -376,7 +376,7 @@ export function evaluateVideoSpinOutcome(
       const potBonusMult = Math.min(45, Math.round(mustangPot / 8));
       rawTotalMult += potBonusMult;
       resetPot = true;
-      bonusHeadline = '🚨 MR. JACKPOTS PROGRESSIVE POT! HELLOOOOO-O-O!!';
+      bonusHeadline = '🚨 MIDNIGHT DINER PROGRESSIVE POT! ORDER UP!!';
       features.push('progressive_pot');
     }
 

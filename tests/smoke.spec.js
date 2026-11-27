@@ -459,14 +459,16 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     await expect(floorGrid).toBeVisible();
     await expect(floorGrid).toContainText(/One-Arm Bandit '85/i);
     await expect(floorGrid).toContainText(/Neon Supernova Special '86/i);
-    await expect(floorGrid).toContainText(/Mr\. Jackpots: Silver Mustang/i);
+    await expect(floorGrid).toContainText(/Midnight Diner '86/i);
     await expect(floorGrid).toContainText(/Neon Thunder Vault 5000/i);
     await expect(floorGrid).toContainText(/Cyber Herd '86/i);
+    // T-018: the Twin Peaks tribute (named TV character) became an original diner theme.
+    await expect(floorGrid).not.toContainText(/Jackpots|Dougie|Silver Mustang|Twin Peaks/i);
 
-    // Step up to Silver Mustang (Dougie Jones tribute)
-    const mustangCard = floorGrid.locator('.tm-slot-floor-card', { hasText: /Mr\. Jackpots/i });
-    await mustangCard.getByRole('button', { name: /Step Up/i }).click();
-    await expect(page.locator('.tm-bandit-marquee-title')).toContainText(/MR\. JACKPOTS: SILVER MUSTANG/i);
+    // Step up to Midnight Diner '86 (Lucky Lou)
+    const dinerCard = floorGrid.locator('.tm-slot-floor-card', { hasText: /Midnight Diner/i });
+    await dinerCard.getByRole('button', { name: /Step Up/i }).click();
+    await expect(page.locator('.tm-bandit-marquee-title')).toContainText(/MIDNIGHT DINER '86/i);
     // Reels are now 5 animated strip columns (Reel component), not 15 fixed cells.
     await expect(page.locator('.tm-video-reel-col')).toHaveCount(5);
 
@@ -825,7 +827,7 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.evaluate(() => window.scrollTo(0, 1200));
     await page.goto('/games/slots', { waitUntil: 'domcontentloaded' });
-    for (const label of [/Neon Special/i, /Mr\.? Jackpots/i, /Thunder/i, /Herd '86/i, /Bandit/i]) {
+    for (const label of [/Neon Special/i, /Diner '86/i, /Thunder/i, /Herd '86/i, /Bandit/i]) {
       const tab = page.locator('.tm-slot-tab-btn', { hasText: label }).first();
       await expect(tab).toBeVisible();
       await tab.click();

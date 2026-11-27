@@ -108,19 +108,19 @@ export const SLOT_MACHINES = [
   },
   {
     id: 'silver_mustang',
-    name: 'Mr. Jackpots: Silver Mustang',
-    shortName: 'Mr. Jackpots',
-    badge: 'DOUGIE S3',
+    name: "Midnight Diner '86",
+    shortName: "Diner '86",
+    badge: 'LUCKY LOU',
     tag: '5×3 • 25 Lines • 25¢ Quarter • Coffee Free Spins',
     icon: '☕',
     accent: '#ef4444',
-    marqueeSub: '★ SILVER MUSTANG CASINO • HELLOOOOO-O-O! ★',
+    marqueeSub: '★ MIDNIGHT DINER • ORDER UP! ★',
     eraYear: '1985',
     coinDenom: '25¢',
-    payGlassTitle: 'SILVER MUSTANG • 25¢ COIN-OP CABINET (1985 ODDS)',
+    payGlassTitle: 'MIDNIGHT DINER • 25¢ COIN-OP CABINET (1985 ODDS)',
     houseEdgeLabel: '~12.0% house edge • play-money only, just for fun',
     description:
-      'Twin Peaks S3 Dougie Jones tribute! Follow the Black Lodge Golden Orb, brew 10 Coffees for Free Spins, & trigger Pie Wilds!',
+      'Pull up a stool at the 1986 Midnight Diner! Lucky Lou the fry cook rolls the Golden Orb, brew 10 Coffees for Free Spins, & trigger Pie Wilds!',
     maxMult: 120,
     volatility: 'Med-High'
   },
@@ -184,12 +184,12 @@ export const SLOT_SYMBOLS = {
   watermelon: { id: 'watermelon', label: 'MELON SLICE', short: 'MELON', color: '#16a34a', mult3: 6 },
   lemon: { id: 'lemon', label: 'NEON LEMON', short: 'LEMON', color: '#eab308', mult3: 5 },
 
-  // Silver Mustang (Dougie Jones / Twin Peaks Series 3)
-  dougie: { id: 'dougie', label: 'MR. JACKPOTS', short: 'DOUGIE', color: '#facc15' },
+  // Midnight Diner '86 (id silver_mustang kept for saved progress)
+  dougie: { id: 'dougie', label: 'LUCKY LOU', short: 'LOU', color: '#facc15' },
   orb: { id: 'orb', label: 'GOLDEN ORB WILD', short: 'ORB WILD', color: '#fde047', isWild: true },
   coffee: { id: 'coffee', label: 'BLACK COFFEE', short: 'COFFEE', color: '#fb923c' },
   pie: { id: 'pie', label: 'CHERRY PIE', short: 'PIE', color: '#f43f5e' },
-  owlring: { id: 'owlring', label: 'OWL CAVE RING', short: 'OWL RING', color: '#22c55e' },
+  owlring: { id: 'owlring', label: 'LUCKY EMERALD RING', short: 'RING', color: '#22c55e' },
   redshoes: { id: 'redshoes', label: 'RED SHOES', short: 'SHOES', color: '#ef4444' },
 
   // Thunder Vault 5000
@@ -300,42 +300,44 @@ export function evaluateBanditPayline(symIds) {
 }
 
 // ==========================================
-// 2. DOUGIE JONES / TWIN PEAKS S3 QUOTES & CALLOUTS
+// 2. MIDNIGHT DINER '86 — LUCKY LOU QUOTES & CALLOUTS
+// (T-018, 27 Nov 2026: original diner theme replaced a Twin Peaks tribute; legal would not
+// clear a named TV character. Identifiers below keep their old names so nothing else breaks.)
 // ==========================================
 export const DOUGIE_QUOTES = {
   idle: [
-    '☕ "Damn good coffee." — Dougie eyes the glowing orb...',
-    '🟡 "Follow the green & gold orb, Mr. Jackpots..."',
-    '🎰 Silver Mustang Lady: "Don\'t touch my machine!"',
-    '🥧 "Cherry pie & black coffee. the neon calls."',
-    '🕶️ Dougie stares blankly at the flashing buttons...'
+    '☕ Lucky Lou tops up the coffee pot and eyes the glowing orb...',
+    '🟡 "Golden orb\'s warming up, hon. Feeling lucky?"',
+    '🍳 The griddle hisses. The jukebox flips to a synth ballad.',
+    '🥧 "Cherry pie\'s fresh out the oven. Coffee\'s on the house."',
+    '🌙 Neon OPEN sign flickers over the empty booths...'
   ],
   spin: [
-    '🟡 Golden Black Lodge orb hovers over the reels...',
-    '🕶️ Dougie presses MAX BET with two fingers...',
-    '🎰 "Thank you, Mr. Jackpots!"',
-    '☕ Steam rises from the Damn Fine Coffee Pot...'
+    '🟡 The golden orb rolls along the diner counter...',
+    '🍳 Lucky Lou flips a pancake mid-spin!',
+    '🛎️ "Order up!"',
+    '☕ Steam curls out of the midnight coffee pot...'
   ],
   smallWin: [
-    '🔔 "Jade give two rides." — Nice line hit!',
-    '🥧 "Damn fine cherry pie!"',
-    '🟢 Green Owl Ring glints on the payline!',
-    '👠 Red shoes tap on the Silver Mustang carpet!'
+    '🛎️ "Order up — one small win, extra syrup!"',
+    '🥧 "Slice of cherry pie for the winner!"',
+    '💍 The lucky emerald ring glints on the payline!',
+    '👠 Red dancing shoes tap along to the jukebox!'
   ],
   bigWin: [
-    '🚨 "HELLOOOOO-O-O!!" — MR. JACKPOTS STRIKES!!',
-    '🚨 "THANK YOU, MR. JACKPOTS!! HELLOOOOO-O-O!!"',
-    '☕🚨 "COOP?! HELLOOOOO-O-O!!" — SIRENS BLARING!!',
-    '🟡🚨 BLACK LODGE ORB OVERLOAD — SIREN MEGA PAYOUT!!'
+    '🚨 "ORDER UP!!" — LUCKY LOU HITS THE BELL!!',
+    '🚨 "JACKPOT SPECIAL, TABLE FOUR!!" — SIRENS BLARING!!',
+    '☕🚨 THE WHOLE DINER CHEERS — BOTTOMLESS WIN!!',
+    '🟡🚨 GOLDEN ORB OVERLOAD — SIREN MEGA PAYOUT!!'
   ],
   miss: [
-    '🕶️ "...Call for help."',
-    '👔 Dougie adjusts his green jacket...',
-    '☕ "...Case files." — Spin again to brew Coffee!'
+    '🍳 "Burnt the toast. Spin again, hon."',
+    '🧢 Lucky Lou straightens his paper hat...',
+    '☕ "Pot\'s still brewing." — Spin again to brew Coffee!'
   ],
   bonus: [
-    '☕🔥 15/15 BLACK COFFEE! "HELLOOOOO-O-O! FREE SPINS!"',
-    '🟡⚡ GOLDEN ORB GUIDES THE SILVER MUSTANG!'
+    '☕🔥 15/15 BLACK COFFEE! "ORDER UP! FREE SPINS!"',
+    '🟡⚡ THE GOLDEN ORB LIGHTS UP THE MIDNIGHT DINER!'
   ]
 };
 

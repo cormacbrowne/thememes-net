@@ -242,7 +242,7 @@ export const ARCADE_GAMES_CATALOG = [
     group: 'casino',
     icon: '🎰',
     label: "Neon Slots '86",
-    pitch: "5 machines (25¢ min): Bandit '85, Neon Special '86, Mustang, Mr. Jackpots, Thunder Vault & Cyber Herd.",
+    pitch: "5 machines (25¢ min): Bandit '85, Neon Special '86, Midnight Diner '86, Thunder Vault & Cyber Herd.",
     badge: '5 Slots',
     isNew: true,
     accent: '#f472b6',

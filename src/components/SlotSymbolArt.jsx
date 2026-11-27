@@ -193,10 +193,10 @@ const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge =
           </svg>
         );
 
-      // ===== DOUGIE JONES / SILVER MUSTANG (TWIN PEAKS S3) =====
+      // ===== LUCKY LOU, MIDNIGHT DINER '86 (original fry-cook character, T-018) =====
       case 'dougie':
         return (
-          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Mr. Jackpots Dougie Jones">
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Lucky Lou the diner fry cook">
             <defs>
               <linearGradient id={`gdj-${uid}`} x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" stopColor="#fde047" />
@@ -205,27 +205,32 @@ const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge =
             </defs>
             {/* Gold Jackpot Halo */}
             <circle cx="32" cy="30" r="24" fill={`url(#gdj-${uid})`} opacity="0.22" stroke="#facc15" strokeWidth="2" />
-            {/* Lime Green Dougie Suit & Red Tie */}
-            <path d="M14 54 C16 42, 24 39, 32 39 C40 39, 48 42, 50 54 Z" fill="#84cc16" stroke="#365314" strokeWidth="2" />
-            <polygon points="32,40 28,53 32,56 36,53" fill="#dc2626" />
-            {/* Face & Neat Hair */}
-            <circle cx="32" cy="25" r="11" fill="#fed7aa" stroke="#7c2d12" strokeWidth="1.8" />
-            <path d="M21 23 C21 13, 43 13, 43 23 C39 18, 25 18, 21 23 Z" fill="#1e1b4b" />
-            {/* Cool Vegas Shades */}
-            <rect x="23" y="22" width="8" height="5" rx="1.5" fill="#090a0f" stroke="#facc15" strokeWidth="1" />
-            <rect x="33" y="22" width="8" height="5" rx="1.5" fill="#090a0f" stroke="#facc15" strokeWidth="1" />
-            <line x1="31" y1="24" x2="33" y2="24" stroke="#facc15" strokeWidth="1.2" />
+            {/* White cook's shirt & teal diner apron */}
+            <path d="M14 54 C16 42, 24 39, 32 39 C40 39, 48 42, 50 54 Z" fill="#f8fafc" stroke="#475569" strokeWidth="2" />
+            <path d="M24 42 H40 L42 54 H22 Z" fill="#14b8a6" stroke="#0f766e" strokeWidth="1.4" />
+            {/* Face, big grin & moustache */}
+            <circle cx="32" cy="27" r="10" fill="#fed7aa" stroke="#7c2d12" strokeWidth="1.8" />
+            <circle cx="28.5" cy="25.5" r="1.4" fill="#1e1b4b" />
+            <circle cx="35.5" cy="25.5" r="1.4" fill="#1e1b4b" />
+            <path d="M27 29.5 C29 28, 35 28, 37 29.5" fill="none" stroke="#7c2d12" strokeWidth="2" strokeLinecap="round" />
+            <path d="M28 32 C30 34, 34 34, 36 32" fill="none" stroke="#7c2d12" strokeWidth="1.4" strokeLinecap="round" />
+            {/* Tall paper cook's hat */}
+            <path d="M22 19 C19 9, 27 6, 32 9 C37 6, 45 9, 42 19 Z" fill="#ffffff" stroke="#94a3b8" strokeWidth="1.6" />
+            <rect x="22" y="17" width="20" height="4" rx="1" fill="#e2e8f0" stroke="#94a3b8" strokeWidth="1" />
+            {/* Spatula */}
+            <line x1="48" y1="44" x2="54" y2="30" stroke="#78350f" strokeWidth="2.4" strokeLinecap="round" />
+            <rect x="51" y="22" width="7" height="9" rx="1.5" fill="#cbd5e1" stroke="#475569" strokeWidth="1.2" transform="rotate(22 54.5 26.5)" />
             {/* Ribbon */}
             <rect x="7" y="48" width="50" height="12" rx="4" fill="#991b1b" stroke="#fde047" strokeWidth="1.6" />
             <text x="32" y="57" textAnchor="middle" fill="#fef08a" fontSize="7.5" fontWeight="900" fontFamily="Impact, sans-serif" letterSpacing="0.5">
-              MR.JACKPOTS
+              LUCKY LOU
             </text>
           </svg>
         );
 
       case 'orb':
         return (
-          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Black Lodge Golden Orb Wild">
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Golden Orb Wild">
             <defs>
               <radialGradient id={`gorb-${uid}`} cx="38%" cy="32%" r="65%">
                 <stop offset="0%" stopColor="#ffffff" />
@@ -246,7 +251,7 @@ const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge =
 
       case 'coffee':
         return (
-          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Damn Fine Black Coffee">
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Black Coffee">
             {/* Steam */}
             <path d="M24 18 C22 13, 27 11, 25 6" fill="none" stroke="#e2e8f0" strokeWidth="2.2" strokeLinecap="round" />
             <path d="M32 17 C30 12, 35 10, 33 5" fill="none" stroke="#e2e8f0" strokeWidth="2.2" strokeLinecap="round" />
@@ -257,14 +262,14 @@ const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge =
             <ellipse cx="30.5" cy="24" rx="13" ry="3.5" fill="#1c1917" />
             <ellipse cx="30.5" cy="52" rx="20" ry="4" fill="#cbd5e1" stroke="#475569" strokeWidth="1.8" />
             <text x="30.5" y="40" textAnchor="middle" fill="#7c2d12" fontSize="7.5" fontWeight="900" fontFamily="Impact, sans-serif">
-              COOP
+              JOE
             </text>
           </svg>
         );
 
       case 'pie':
         return (
-          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Twin Peaks Cherry Pie">
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Cherry Pie">
             <polygon points="10,36 52,22 54,44 12,50" fill="#d97706" stroke="#78350f" strokeWidth="2.2" strokeLinejoin="round" />
             <polygon points="10,36 52,22 36,14" fill="#fde68a" stroke="#b45309" strokeWidth="2" strokeLinejoin="round" />
             <path d="M12 42 L53 33 L54 41 L12 47 Z" fill="#dc2626" />
@@ -276,18 +281,18 @@ const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge =
 
       case 'owlring':
         return (
-          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Green Owl Cave Ring">
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Lucky Emerald Ring">
             <ellipse cx="32" cy="40" rx="19" ry="12" fill="none" stroke="#facc15" strokeWidth="6" />
             <ellipse cx="32" cy="40" rx="19" ry="12" fill="none" stroke="#92400e" strokeWidth="1.6" />
             <polygon points="20,16 44,16 48,26 44,34 20,34 16,26" fill="#16a34a" stroke="#fde047" strokeWidth="2.4" />
-            {/* Owl Rune */}
-            <path d="M24 23 L32 28 L40 23 M26 23 L22 20 M38 23 L42 20 M32 28 V32" fill="none" stroke="#dcfce7" strokeWidth="2" strokeLinecap="round" />
+            {/* Cut-gem facets */}
+            <path d="M16 26 H48 M20 16 L26 26 L32 34 L38 26 L44 16 M26 26 L32 16 L38 26" fill="none" stroke="#dcfce7" strokeWidth="1.4" strokeLinejoin="round" opacity="0.85" />
           </svg>
         );
 
       case 'redshoes':
         return (
-          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="New Red Shoes">
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Red Dancing Shoes">
             <path d="M12 44 L16 24 L24 24 L27 38 L46 42 C53 43, 55 48, 52 50 H12 Z" fill="#dc2626" stroke="#7f1d1d" strokeWidth="2.2" strokeLinejoin="round" />
             <rect x="13" y="46" width="6" height="8" rx="1.5" fill="#450a0a" />
             <path d="M20 39 C26 39, 32 42, 42 44" stroke="#fca5a5" strokeWidth="2" fill="none" strokeLinecap="round" />

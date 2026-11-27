@@ -38,7 +38,7 @@ const EIGHTIES_NEWS_CHANNELS = [
     headline: 'THRILLER LP TRIGGERS NEON DANCE FEVER',
     summary:
       'Record shops deploy extra velvet ropes as red zipper jackets and cassette boomboxes sell out from coast to coast.',
-    ticker: 'ENTERTAINMENT ALERT: THRILLER HITS STEREO STORES • MAXELL CHROME TAPES ON BACKORDER • SKATE RINKS ADD EXTRA NEON STROBES',
+    ticker: 'ENTERTAINMENT ALERT: THRILLER HITS STEREO STORES • CHROME CASSETTE TAPES ON BACKORDER • SKATE RINKS ADD EXTRA NEON STROBES',
     palette: { sky: '#3b0764', accent: '#ef4444', glow: '#facc15' },
     scene: 'boombox'
   },

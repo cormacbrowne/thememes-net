@@ -2,7 +2,7 @@ import { memo, useId } from 'react';
 
 /**
  * Crisp inline SVG Las Vegas Slot Machine Reel Graphics
- * Covers Classic Bandit '85 + Silver Mustang (Dougie S3) + Thunder Vault + Cyber Stampede '86
+ * Covers Classic Bandit '85 + Midnight Diner '86 + Thunder Vault + Cyber Herd '86
  */
 const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge = null }) {
   const uid = useId().replace(/:/g, '');
@@ -218,8 +218,9 @@ const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge =
             <path d="M22 19 C19 9, 27 6, 32 9 C37 6, 45 9, 42 19 Z" fill="#ffffff" stroke="#94a3b8" strokeWidth="1.6" />
             <rect x="22" y="17" width="20" height="4" rx="1" fill="#e2e8f0" stroke="#94a3b8" strokeWidth="1" />
             {/* Spatula */}
-            <line x1="48" y1="44" x2="54" y2="30" stroke="#78350f" strokeWidth="2.4" strokeLinecap="round" />
-            <rect x="51" y="22" width="7" height="9" rx="1.5" fill="#cbd5e1" stroke="#475569" strokeWidth="1.2" transform="rotate(22 54.5 26.5)" />
+            <line x1="47" y1="45" x2="53" y2="31" stroke="#78350f" strokeWidth="2.4" strokeLinecap="round" />
+            <rect x="50" y="20" width="9" height="11" rx="1.5" fill="#e2e8f0" stroke="#334155" strokeWidth="1.4" transform="rotate(22 54.5 25.5)" />
+            <path d="M53 23 V28 M56 23 V28" stroke="#334155" strokeWidth="1" strokeLinecap="round" transform="rotate(22 54.5 25.5)" />
             {/* Ribbon */}
             <rect x="7" y="48" width="50" height="12" rx="4" fill="#991b1b" stroke="#fde047" strokeWidth="1.6" />
             <text x="32" y="57" textAnchor="middle" fill="#fef08a" fontSize="7.5" fontWeight="900" fontFamily="Impact, sans-serif" letterSpacing="0.5">
@@ -456,7 +457,7 @@ const SlotSymbolArt = memo(function SlotSymbolArt({ symbolId, size = 54, badge =
 
       case 'ns_cassette':
         return (
-          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="Maxell 1986 Chrome Cassette">
+          <svg width={size} height={size} viewBox="0 0 64 64" aria-label="1986 Chrome 90 Cassette Tape">
             <rect x="8" y="16" width="48" height="32" rx="4" fill="#1e293b" stroke="#4ade80" strokeWidth="2.2" />
             <rect x="12" y="20" width="40" height="18" rx="2" fill="#0f172a" stroke="#38bdf8" strokeWidth="1.4" />
             <circle cx="22" cy="29" r="5" fill="#e2e8f0" stroke="#0f172a" strokeWidth="1.6" />

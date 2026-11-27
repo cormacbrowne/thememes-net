@@ -1845,7 +1845,7 @@ export default function VegasSlotMachine({
     setArmedPowerups((prev) => ({ ...prev, [key]: true }));
     setStatusBanner(`${label} ARMED for your next spin!`);
     if (key === 'coffeeRush') {
-      setDougieBanner('☕ "Damn good coffee!" — 2× Multiplier Armed!');
+      setDougieBanner('☕ Fresh pot! 2× Multiplier Armed!');
     }
   };
 

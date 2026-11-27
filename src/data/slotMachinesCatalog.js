@@ -3,9 +3,9 @@
 // 5 Distinct Machines (House Always Wins ~88-90% RTP):
 //   1. bandit85         — Classic 1985 3-Reel One-Arm Bandit (Authentic Stepper, Hold/Nudge + Fever Accumulator)
 //   2. neon_special     — Neon Supernova Special '86 (5x3, 6 Interactive Powerups, Laser Chase Lights)
-//   3. silver_mustang   — Mr. Jackpots: Silver Mustang (5x3, 5/15/25 Lines, Twin Peaks S3 Dougie Jones)
+//   3. silver_mustang   — Midnight Diner '86 (5x3, 5/15/25 Lines, Lucky Lou the fry cook)
 //   4. lightning_vault  — Neon Thunder Vault 5000 (5x3, 4 Progressives, Hold & Spin Lock-It)
-//   5. buffalo_stampede — Cyber Stampede '86 (5x4, 1024 Ways, Bonus Wheel & Cascade Wilds)
+//   5. buffalo_stampede — Cyber Herd '86 (5x4, 1024 Ways, Bonus Wheel & Cascade Wilds)
 // ==========================================
 
 export const NEON_SPECIAL_POWERUPS = [
@@ -190,7 +190,7 @@ export const SLOT_SYMBOLS = {
   coffee: { id: 'coffee', label: 'BLACK COFFEE', short: 'COFFEE', color: '#fb923c' },
   pie: { id: 'pie', label: 'CHERRY PIE', short: 'PIE', color: '#f43f5e' },
   owlring: { id: 'owlring', label: 'LUCKY EMERALD RING', short: 'RING', color: '#22c55e' },
-  redshoes: { id: 'redshoes', label: 'RED SHOES', short: 'SHOES', color: '#ef4444' },
+  redshoes: { id: 'redshoes', label: 'RED DANCING SHOES', short: 'SHOES', color: '#ef4444' },
 
   // Thunder Vault 5000
   volt7: { id: 'volt7', label: 'VOLT 777', short: 'VOLT 7', color: '#38bdf8' },
@@ -205,7 +205,7 @@ export const SLOT_SYMBOLS = {
   ns_arcade: { id: 'ns_arcade', label: "'86 ARCADE CABINET", short: 'ARCADE', color: '#ff2a85' },
   ns_synth: { id: 'ns_synth', label: 'DX7 KEYTAR LASER', short: 'KEYTAR', color: '#f472b6' },
   ns_shades: { id: 'ns_shades', label: 'OUTRUN AVIATORS', short: 'SHADES', color: '#facc15' },
-  ns_cassette: { id: 'ns_cassette', label: 'MAXELL CHROME 90', short: 'TAPE', color: '#4ade80' },
+  ns_cassette: { id: 'ns_cassette', label: 'CHROME 90 TAPE', short: 'TAPE', color: '#4ade80' },
   ns_quarter: { id: 'ns_quarter', label: '1986 25¢ QUARTER', short: '25¢', color: '#cbd5e1' },
 
   // Cyber Stampede '86

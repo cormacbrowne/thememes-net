@@ -5,7 +5,8 @@
 // the live bucket, which pushed the Free plan past its 5 GB monthly limit.
 //
 // Every spec imports `test` from here instead of '@playwright/test'. The auto
-// fixture answers any /storage/v1/object/ request with a tiny placeholder.
+// fixture answers any /storage/v1/object/ request with a tiny placeholder, and
+// keeps tests off live sign-up and the live hot feed (isolateSupabase below).
 // Set PW_REAL_STORAGE=1 to let real files through for a one-off check.
 //
 // Ad-hoc screenshot scripts can call `blockStorage(page)` (or a context).
@@ -37,10 +38,55 @@ export async function blockStorage(target) {
   });
 }
 
+const JSON_HEADERS = { 'access-control-allow-origin': '*' };
+
+// Keeps tests from writing to the live project (T-016, 27 Nov 2026): test runs
+// created 21 real anonymous accounts in one day and hit the sign-up rate limit.
+// Default fakes, registered on the context so a spec's own page.route wins:
+//  - anonymous sign-up returns a fake session. Any write a test forgets to fake
+//    then carries a fake token, which the live server rejects.
+//  - get_hot_feed answers "function not found", so the feed falls back to the
+//    memes_feed_view query that the specs fake (see feedPagination.js).
+// Set PW_LIVE_SUPABASE=1 to skip these for a one-off check against live data.
+export async function isolateSupabase(target) {
+  if (process.env.PW_LIVE_SUPABASE === '1') return;
+  await target.route('**/auth/v1/signup*', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: JSON_HEADERS,
+      body: JSON.stringify({
+        access_token: 'fixture-anon-jwt',
+        token_type: 'bearer',
+        expires_in: 3600,
+        refresh_token: 'fixture-refresh',
+        user: {
+          id: '00000000-0000-4000-8000-00000000f100',
+          is_anonymous: true,
+          aud: 'authenticated',
+          role: 'authenticated'
+        }
+      })
+    })
+  );
+  await target.route('**/rest/v1/rpc/get_hot_feed*', (route) =>
+    route.fulfill({
+      status: 404,
+      contentType: 'application/json',
+      headers: JSON_HEADERS,
+      body: JSON.stringify({
+        code: 'PGRST202',
+        message: 'Faked as missing by tests/storageStub.js; feed falls back to memes_feed_view'
+      })
+    })
+  );
+}
+
 export const test = base.extend({
   stubStorage: [
     async ({ context }, use) => {
       await blockStorage(context);
+      await isolateSupabase(context);
       await use();
     },
     { auto: true }

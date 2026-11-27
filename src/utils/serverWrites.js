@@ -335,10 +335,15 @@ export async function submitTakedownRequest(
   { targetUrl, kind = 'copyright', requesterEmail = '', details = '' }
 ) {
   if (!client) {
-    return { ok: false, error: 'network', message: '⚠️ Offline right now — please try again shortly or use /contact.' };
+    return { ok: false, error: 'network', message: '⚠️ Offline right now: your report was not sent. What you typed is still here, so please press the submit button again once you are back online.' };
   }
   if (!(await ensureWriteSession(client))) {
-    return { ok: false, error: 'sign_in_required', message: '🔑 Could not open a session to record this report.' };
+    return {
+      ok: false,
+      error: 'sign_in_required',
+      message:
+        '🔑 Your report was not sent yet: we could not open a secure session. What you typed is still here. Please press the submit button again in a minute, or try from another connection (for example, mobile data instead of shared Wi-Fi).'
+    };
   }
   const { data, error } = await client.rpc('submit_takedown_request', {
     p_target_url: String(targetUrl || '').trim().slice(0, 500),

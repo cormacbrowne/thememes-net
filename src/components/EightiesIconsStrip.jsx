@@ -45,19 +45,19 @@ const EIGHTIES_ICON_CAST = [
   },
   {
     id: 'madonna',
-    name: 'Material \'85',
-    fullName: 'Madonna — Material Girl Era',
-    movie: '1985 MTV Pop Icon',
-    role: 'Synth-Pop Queen',
+    name: 'Neon Diva',
+    fullName: 'Neon Diva — Synth-Pop Era',
+    movie: 'Original synth-pop star',
+    role: 'Synth-Pop Star',
     voiceMode: 'valkyrie',
     quotes: [
-      "We are living in a neon material world, and I am a Material Girl stacking gold tokens.",
-      "Strike a pose! There's nothing to it — hit that dance floor like you own the spotlight.",
-      "Express yourself, grab your fingerless lace gloves, and turn that boombox dial past ten.",
-      "Holiday celebration awaits — big hair, loud synths, full volume, baby!"
+      "Big hair, bigger synths, and a stack of gold tokens. Let's go!",
+      "Hit that dance floor like you own the spotlight, then hit the high-score table too.",
+      "Grab your fingerless lace gloves and turn that boombox dial past ten.",
+      "Encore! One more round on the cabinet before the lights come up."
     ],
     priceTokens: 18,
-    item80s: 'Rubber Bracelets & Bow',
+    item80s: 'Neon Leg Warmers & Mixtape',
     bg: '#4a044e',
     accent: '#f472b6'
   },
@@ -147,7 +147,7 @@ const EIGHTIES_ICON_CAST = [
       "Guess you guys aren't ready for synth-wave yet... but your kids are gonna love it."
     ],
     priceTokens: 1,
-    item80s: 'Hill Valley Pepsi Free',
+    item80s: 'Hill Valley Diet Cola',
     bg: '#431407',
     accent: '#fb923c'
   },
@@ -165,7 +165,7 @@ const EIGHTIES_ICON_CAST = [
       "Don't worry about the timeline, Marty — it's always Saturday night in 1985 here."
     ],
     priceTokens: 20,
-    item80s: 'Twin Pines RadioShack Diode',
+    item80s: 'Twin Pines Flux Diode',
     bg: '#0f172a',
     accent: '#22d3ee'
   },
@@ -201,7 +201,7 @@ const EIGHTIES_ICON_CAST = [
       "I don't throw darts at a board; I just wear really good red suspenders."
     ],
     priceTokens: 50,
-    item80s: 'Motorola DynaTAC Brick Phone',
+    item80s: '1980s Brick Phone',
     bg: '#172554',
     accent: '#60a5fa'
   },
@@ -261,19 +261,19 @@ const EIGHTIES_ICON_CAST = [
   },
   {
     id: 'mrt',
-    name: 'B.A.',
-    fullName: 'B.A. Baracus (Mr. T)',
-    movie: 'The A-Team (1983)',
-    role: 'Heavy Muscle',
+    name: 'Sarge',
+    fullName: 'Sergeant "Brick" Malone',
+    movie: 'Original 1983 arcade mechanic',
+    role: 'Cabinet Mechanic',
     voiceMode: 'kitt',
     quotes: [
-      "I pity the fool who skips breakfast before a high-score run!",
-      "Ain't nobody gettin' me on no plane... unless the Night Viper and Sky Patrol choppers are escorting!",
-      "I love it when a three-line bingo card plan comes together, sucker!",
-      "Touch my gold chains and you're sleepin' outside behind the arcade van."
+      "Nobody skips breakfast before a high-score run. Not on my watch!",
+      "I'll fix that cabinet with a wrench and a stare... and the Night Viper flying cover!",
+      "Three lines on one bingo card? Now that's a plan, rookie!",
+      "Touch my toolbox and you're sleepin' out on the loading dock."
     ],
     priceTokens: 16,
-    item80s: '1983 Gold Chain Starter',
+    item80s: '1983 Chrome Wrench Set',
     bg: '#27272a',
     accent: '#eab308'
   },
@@ -376,12 +376,12 @@ const EIGHTIES_ICON_CAST = [
     voiceMode: 'valkyrie',
     quotes: [
       "When you grow up, your heart dies — good thing memes are eternal.",
-      "I made a sandwich out of Cap'n Crunch and pixy stix. Want a bite?",
+      "I made a sandwich out of sugar cereal and sherbet straws. Want a bite?",
       "I just sit in the corner with my oversized coat and quietly fill two lines.",
       "Vodka? No, give me Diet Tab and the spooky VHS rack."
     ],
     priceTokens: 2,
-    item80s: "Cap'n Crunch Sandwich",
+    item80s: "Sugar Cereal Sandwich",
     bg: '#1e1b4b',
     accent: '#a855f7'
   },
@@ -471,11 +471,10 @@ export function EightiesDigitalFaceSvg({ id, size = 38 }) {
       {id === 'madonna' && (
         <>
           <rect x="4" y="1" width="8" height="2" fill="#0f172a" />
-          <rect x="2" y="2" width="4" height="2" fill="#18181b" />
-          <rect x="10" y="2" width="4" height="2" fill="#18181b" />
-          <rect x="3" y="3" width="10" height="4" fill="#fde047" />
-          <rect x="2" y="5" width="2" height="5" fill="#facc15" />
-          <rect x="12" y="5" width="2" height="5" fill="#facc15" />
+          <rect x="3" y="3" width="10" height="4" fill="#c026d3" />
+          <rect x="2" y="5" width="2" height="5" fill="#a21caf" />
+          <rect x="12" y="5" width="2" height="5" fill="#a21caf" />
+          <rect x="11" y="2" width="2" height="2" fill="#22d3ee" />
           <rect x="4" y="5" width="8" height="7" fill="#fde2cc" />
           <rect x="5" y="7" width="2" height="1" fill="#1e293b" />
           <rect x="9" y="7" width="2" height="1" fill="#1e293b" />
@@ -754,15 +753,18 @@ export function EightiesDigitalFaceSvg({ id, size = 38 }) {
 
       {id === 'mrt' && (
         <>
-          <rect x="6" y="1" width="4" height="5" fill="#18181b" />
-          <rect x="4" y="4" width="8" height="8" fill="#854d27" />
+          {/* Original arcade mechanic: teal work cap, clean-shaven, coveralls with a chest pocket */}
+          <rect x="4" y="2" width="8" height="3" fill="#0f766e" />
+          <rect x="3" y="4" width="10" height="1" fill="#115e59" />
+          <rect x="7" y="2" width="2" height="1" fill="#22d3ee" />
+          <rect x="4" y="5" width="8" height="7" fill="#a16207" />
           <rect x="5" y="7" width="2" height="1" fill="#09090b" />
           <rect x="9" y="7" width="2" height="1" fill="#09090b" />
-          <rect x="4" y="9" width="8" height="3" fill="#18181b" />
-          <rect x="6" y="10" width="4" height="1" fill="#f8fafc" />
-          <rect x="2" y="12" width="12" height="4" fill="#3f3f46" />
-          <rect x="4" y="12" width="8" height="1" fill="#facc15" />
-          <rect x="5" y="14" width="6" height="1" fill="#eab308" />
+          <rect x="6" y="10" width="4" height="1" fill="#7c2d12" />
+          <rect x="2" y="12" width="12" height="4" fill="#334155" />
+          <rect x="7" y="12" width="2" height="4" fill="#1e293b" />
+          <rect x="9" y="13" width="3" height="2" fill="#475569" />
+          <rect x="9" y="13" width="3" height="1" fill="#22d3ee" />
         </>
       )}
 

@@ -59,7 +59,7 @@ const KITT_MOVIE_JOKES = [
   "🚗 Detective Sonny Crockett from *Miami Vice* asked if his white Testarossa could race me on **🎱 Pinball Table 4 (Miami Vice Lagoon)**. I told him unless his Ferrari has a **🚀 Turbo Boost** button and a laser shield, he's shark bait, pal.",
   "🚗 Michael, the *Ghostbusters* parked **Ecto-1** in my VIP charging bay! Dr. Venkman told me *\"Don't cross the streams.\"* However, in **🎱 Hyper-Neon Pinball**, crossing the **6× Combo Fever stream** gives you **2× Points and an Automatic Laser Ball Saver**!",
   "🚗 Mr. Miyagi from *The Karate Kid* (1984) said *\"Wax on, wax off.\"* Personally, Michael, I prefer **Flip Left (`A`), Flip Right (`D`), and Launch (`SPACE`)**—and nobody touches my finish with cheap carnauba wax!",
-  "🚗 B.A. Baracus from *The A-Team* said *\"I pity the fool who doesn't claim their daily MemeDollarz!\"* And for once, Michael, his aerodynamics are questionable, but his financial advice is spot-on."
+  "🔧 Sarge Malone from the 80s strip says *\"Nobody skips their daily MemeDollarz on my watch!\"* And for once, Michael, his aerodynamics are questionable, but his advice is spot-on."
 ];
 
 const MEME_IDEAS_POOL = [
@@ -95,8 +95,8 @@ const VALKYRIE_MOVIE_JOKES = [
   "👩‍🎤 Like *Flashdance* with 800% more laser beams, I'm hitting **⚡ Neon Strike Roulette**! Even my shoulder pads generate **1.21 Gigawatts** when a bolt drops!",
   "👩‍🎤 *\"Nobody puts Baby in a corner\"*—and nobody leaves without ringing the **🎟️ Neon Bingo '86** Full House bell! Bring extra Hair-Spray and let's dab every row before Nanna Turbo does!",
   "👩‍🎤 *Weird Science* (1985) called—Gary and Wyatt built a woman with a Memotech MTX512, whereas **VALKYRIE '86** runs on pure synthwave charisma and **3× 5-Card Charlie** odds in **🃏 Neon 21's**!",
-  "👩‍🎤 *\"Bueller? ... Bueller? ... Bueller?\"* Ben Stein's attendance sheet has nothing on our **🎟️ Live 1986 Bingo Hall**! Four rivals are waiting to steal your 1 Line right now!",
-  "👩‍🎤 Even **Madonna** in 1985 said we're living in a Material World—which explains why **🎰 Neon Coin Dozer '86** has golden trophies practically begging to fall over the chrome lip!"
+  "👩‍🎤 *\"Bueller? ... Bueller? ... Bueller?\"* The teacher's attendance sheet has nothing on our **🎟️ Live 1986 Bingo Hall**! Four rivals are waiting to steal your 1 Line right now!",
+  "👩‍🎤 Even the **Neon Diva** knows a big finish when she sees one—which explains why **🎰 Neon Coin Dozer '86** has golden trophies practically begging to fall over the chrome lip!"
 ];
 
 const MAX_AI_PREVIEW_SENTENCES = 3;

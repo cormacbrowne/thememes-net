@@ -1164,7 +1164,8 @@
 }
 
 /* ============================================================================
- * 🚁 1984 AIRWOLF & 1983 BLUE THUNDER BIG-WIN HELICOPTER FLYBYS
+ * 🚁 NIGHT VIPER & SKY PATROL BIG-WIN HELICOPTER FLYBYS (internal keys: airwolf / bluethunder)
+ * Flight paths sit below the win card so the choppers are not hidden behind it.
  * ============================================================================ */
 .tm-win-chopper-layer {
   position: absolute;
@@ -1185,13 +1186,13 @@
 }
 
 .tm-win-chopper-unit.is-airwolf {
-  top: max(18px, 6vh);
+  top: max(260px, 32vh);
   left: -280px;
   animation: tmChopperAirwolfFly 2.85s cubic-bezier(0.22, 0.76, 0.28, 0.98) forwards;
 }
 
 .tm-win-chopper-unit.is-bluethunder {
-  top: max(68px, 14vh);
+  top: max(330px, 46vh);
   right: -280px;
   animation: tmChopperBlueThunderFly 2.75s cubic-bezier(0.24, 0.72, 0.3, 0.96) forwards;
 }
@@ -1222,6 +1223,7 @@
 }
 
 .tm-chopper-blade-sweep {
+  transform-box: fill-box;
   transform-origin: center;
   animation: tmChopperRotorBlur 0.08s linear infinite;
 }
@@ -1292,6 +1294,16 @@
   to { opacity: 0.92; }
 }
 
+/* Phones: start the choppers closer to the edge so they stay on screen while they hover. */
+@media (max-width: 480px) {
+  .tm-win-chopper-unit.is-airwolf {
+    left: -190px;
+  }
+  .tm-win-chopper-unit.is-bluethunder {
+    right: -190px;
+  }
+}
+
 .tm-lite-perf .tm-chopper-blade-sweep,
 .tm-lite-perf .tm-aw-flame,
 .tm-lite-perf .tm-bt-beam {
@@ -1301,10 +1313,9 @@
 @media (prefers-reduced-motion: reduce) {
   .tm-win-chopper-unit.is-airwolf,
   .tm-win-chopper-unit.is-bluethunder {
-    animation-duration: 0.25s;
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
+    /* Reduced motion: no flyby at all (the win card still shows). */
+    display: none;
+    animation: none;
   }
   .tm-chopper-blade-sweep,
   .tm-aw-flame,

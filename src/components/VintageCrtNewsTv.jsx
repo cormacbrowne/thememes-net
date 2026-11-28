@@ -62,7 +62,7 @@ const EIGHTIES_NEWS_CHANNELS = [
     headline: 'FLASHING LIGHTS AT TWIN PINES MALL LOT',
     summary:
       'Mall security baffled after gleaming stainless steel gull-wing coupe leaves dual fire trails before vanishing at 88 MPH.',
-    ticker: 'HILL VALLEY UPDATE: CLOCK TOWER LIGHTNING ADVISORY CONTINUES • RADIOSHACK CAPACITORS SOLD OUT • 1.21 GIGAWATT SPIKE LOGGED',
+    ticker: 'HILL VALLEY UPDATE: CLOCK TOWER LIGHTNING ADVISORY CONTINUES • FLUX CAPACITOR PARTS SOLD OUT • 1.21 GIGAWATT SPIKE LOGGED',
     palette: { sky: '#172554', accent: '#38bdf8', glow: '#f97316' },
     scene: 'delorean'
   },
@@ -110,7 +110,7 @@ const EIGHTIES_NEWS_CHANNELS = [
     headline: 'BRICK CELLPHONES RING ACROSS TRADING FLOOR',
     summary:
       'Two-pound portable phones and red power suspenders dominate Lower Manhattan while CRT tickers race.',
-    ticker: 'MARKET TAPE: MOTOROLA DYNATAC BATTERY GOOD FOR 30 MINUTES • NEON ARCADE TOKENS HOLD STEADY AT 25 CENTS EACH',
+    ticker: 'MARKET TAPE: BRICK PHONE BATTERY GOOD FOR 30 MINUTES • NEON ARCADE TOKENS HOLD STEADY AT 25 CENTS EACH',
     palette: { sky: '#052e16', accent: '#4ade80', glow: '#fde047' },
     scene: 'stocks'
   },

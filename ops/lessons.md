@@ -91,3 +91,9 @@ Format:
 - Worked: legal rated risk by name + signature mechanic together (Lightning + random multiplier numbers; bison + 1,024 ways + Stampede), not by the word alone. That kept the renames small and left the game maths untouched.
 - Didn't: my first case-sensitive grep missed "GOLD UP" and the catchphrase "HELLOOOOO-O-O!" shared by every slot. Grep case-insensitively, and grep the built `dist/` bundle too: it catches strings in shared helpers.
 - Routing note: Claude, inline, with legal + QA in parallel; QA screenshots caught what grep missed. A theme swap with redrawn symbol art also needs design-director.
+
+## 2026-11-28: T-019 recheck and T-020 80s strip interim fix
+- Worked: a post-merge design recheck found the real issue was the flyby path (choppers hidden behind the win card), not the art. Legal reading the pixel sprites, not just the text, caught a Mr. T likeness that survived the rename.
+- Didn't: a rebuild of dist/ during QA's smoke run caused one false failure. QA also spotted that the replacement "wrench" read as a "T".
+- Routing note: renames of real people need legal to check the art and the text together, plus a QA look at small sizes.
+- Suggest: don't rebuild dist/ while a smoke run is going; finish edits, rebuild once, then start QA.

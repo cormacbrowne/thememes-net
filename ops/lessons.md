@@ -97,3 +97,9 @@ Format:
 - Didn't: a rebuild of dist/ during QA's smoke run caused one false failure. QA also spotted that the replacement "wrench" read as a "T".
 - Routing note: renames of real people need legal to check the art and the text together, plus a QA look at small sizes.
 - Suggest: don't rebuild dist/ while a smoke run is going; finish edits, rebuild once, then start QA.
+
+## 2026-11-28: T-021 80s strip option C (21 original characters)
+- Worked: writing the whole cast in one script (data + sprites, ids kept) made a 21-card swap one reviewable diff. Legal's web check caught near-misses a keyword scan never would (Fix-It Felix, Rollerena, Tiffany's mall tours).
+- Didn't: a one-line `node -e` regex failed silently on shell quoting, and the 🪙 emoji tripped the currency guard. A smoke Roulette width check flaked once under load.
+- Routing note: Claude end to end; legal + design in parallel, then QA once.
+- Suggest: put multi-step edits in a script file, not `node -e`; when inventing names, have legal search them before design polishes the art.

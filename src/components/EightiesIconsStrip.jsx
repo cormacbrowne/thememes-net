@@ -9,37 +9,37 @@ import './EightiesIconsStrip.css';
 const EIGHTIES_ICON_CAST = [
   {
     id: 'ferris',
-    name: 'Ferris',
-    fullName: 'Ferris Bueller',
-    movie: "Ferris Bueller's Day Off (1986)",
-    role: 'Day-Off Legend',
-    voiceMode: 'kitt',
+    name: "Joy",
+    fullName: "Joy \"Joystick\" Park",
+    movie: "Original 1986 arcade regular",
+    role: "High-Score Hunter",
+    voiceMode: 'valkyrie',
     quotes: [
-      "Life moves pretty fast. If you don't stop and play a little once in a while, you could miss it.",
-      "I'm not saying we should skip work to play arcade games... okay, yeah, that's exactly what I'm saying.",
-      "The question isn't 'what are we going to do', the question is 'what aren't we going to do?'",
-      "A man with priorities so far out of whack doesn't deserve such a choice ride."
+      "I don't have a favourite cabinet. I have a favourite cabinet for every day of the week.",
+      "My initials are on every high-score table in this building. Three letters. J-O-Y.",
+      "Homework? I did it in the queue for the racing cabinet. Mostly.",
+      "If the screen says INSERT COIN, I take that personally."
     ],
     priceTokens: 14,
-    item80s: 'Matinee Ticket & Hot Dog',
+    item80s: "Lucky Quarter on a Shoelace",
     bg: '#3f2c12',
     accent: '#facc15'
   },
   {
     id: 'knight',
-    name: 'Knight',
-    fullName: 'Michael Knight & K.I.T.T.',
-    movie: 'Knight Rider (1982)',
-    role: 'FLAG Field Agent',
-    voiceMode: 'kitt',
+    name: "Roxy",
+    fullName: "Roxy Rinkwell",
+    movie: "Original 1984 roller-rink DJ",
+    role: "Rink DJ",
+    voiceMode: 'valkyrie',
     quotes: [
-      "One man can make a difference — especially with Turbo Boost and a full pocket of quarters.",
-      "K.I.T.T., plot the fastest route to the Grand Arcade before the pizza runs out!",
-      "Don't sweat it, pal. My Trans Am's scanner spotted a parking space three blocks back.",
-      "If anyone asks for our high-score secret: Pursuit Mode and a black leather jacket."
+      "Couples skate in five minutes. Singles, please clear the floor and the snack bar.",
+      "I take requests, but only if they have at least three key changes.",
+      "Every great night ends with a slow song and someone falling over.",
+      "Turn it up? Honey, this mixer's volume knob fell off in 1982. It's on maximum forever."
     ],
     priceTokens: 28,
-    item80s: 'K.I.T.T. Commlink Watch',
+    item80s: "Glow-in-the-Dark Skate Laces",
     bg: '#18181b',
     accent: '#ef4444'
   },
@@ -63,199 +63,199 @@ const EIGHTIES_ICON_CAST = [
   },
   {
     id: 'terminator',
-    name: 'T-800',
-    fullName: 'Cyberdyne Systems Model 101',
-    movie: 'The Terminator (1984)',
-    role: 'Chrome Cyborg',
+    name: "Unit 86",
+    fullName: "Chrome Unit 86",
+    movie: "Original 1986 arcade robot",
+    role: "Token-Counting Robot",
     voiceMode: 'hal',
     quotes: [
-      "I'll be back... right after I beat this arcade high score.",
-      "Come with me if you want to reach the next level before the credits roll.",
-      "Your leather jacket, your sunglasses, and your last two bingo dabbers. Hand them over.",
-      "Phased plasma rifle in a 40-watt range? No. Just give me a roll of 1984 quarters."
+      "GREETINGS, HUMAN. I HAVE COUNTED YOUR TOKENS. YOU HAVE FOUR. THIS IS FINE.",
+      "MY PROGRAMMING SAYS THE CLAW MACHINE HAS FEELINGS. PLEASE BE GENTLE.",
+      "ERROR 404: CHILL NOT FOUND. REBOOTING WITH EXTRA SYNTH.",
+      "I DO NOT DANCE. I PERFORM SCHEDULED SERVO MAINTENANCE TO MUSIC."
     ],
     priceTokens: 40,
-    item80s: 'Gargoyles ANSI Sunglasses',
+    item80s: "Spare Servo & Oil Can",
     bg: '#1f2937',
-    accent: '#dc2626'
+    accent: '#22d3ee'
   },
   {
     id: 'robocop',
-    name: 'RoboCop',
-    fullName: 'Officer Alex Murphy',
-    movie: 'RoboCop (1987)',
-    role: 'OCP Enforcer',
-    voiceMode: 'hal',
+    name: "Mo",
+    fullName: "Maureen \"Mo\" Delgado",
+    movie: "Original 1987 mall security",
+    role: "Food Court Patrol",
+    voiceMode: 'valkyrie',
     quotes: [
-      "Dead or alive, you're playing one more round at the arcade with me.",
-      "Your move, creep. Pick a cabinet and show me your best high score.",
-      "Prime Directive #4: Never walk past an open arcade cabinet without dropping a token.",
-      "I'd buy THAT 1987 high score for a dollar!"
+      "Ma'am, the fountain is for wishes, not for washing your nachos.",
+      "I have patrolled this mall for six years. The escalator has never once been on time.",
+      "No running in the food court. Speed-walking is fine. I'm not a monster.",
+      "My walkie-talkie has two settings: static and my mum asking when I'm home."
     ],
     priceTokens: 32,
-    item80s: 'Auto-9 Chrome Holster',
+    item80s: "Mall Walkie-Talkie",
     bg: '#0f172a',
     accent: '#94a3b8'
   },
   {
     id: 'venkman',
-    name: 'Venkman',
-    fullName: 'Dr. Peter Venkman',
-    movie: 'Ghostbusters (1984)',
-    role: 'Parapsychologist',
-    voiceMode: 'kitt',
+    name: "Prof. Quark",
+    fullName: "Professor Ida Quark",
+    movie: "Original 1984 science-fair judge",
+    role: "Lab Coat Legend",
+    voiceMode: 'valkyrie',
     quotes: [
-      "We came, we saw, we kicked its paranormal bingo board!",
-      "Don't cross the neon streams — the cleanup bill alone would haunt us.",
-      "He slimed my scorecard! Wait... does green slime count as an extra dauber?",
-      "Back off man, I'm a scientist... with three lines left on card two."
+      "A potato clock? Bold. Ambitious. Four out of ten.",
+      "Science is mostly writing things down and then saying 'huh'.",
+      "Your volcano erupted early and took out the solar system table. Points for drama.",
+      "I'm not saying the baking-soda rocket was dangerous, but my eyebrows are on holiday."
     ],
     priceTokens: 22,
-    item80s: 'Pocket Ecto-Containment Beep',
+    item80s: "Pocket Protector (Full)",
     bg: '#14532d',
     accent: '#4ade80'
   },
   {
     id: 'ripley',
-    name: 'Ripley',
-    fullName: 'Warrant Officer Ellen Ripley',
-    movie: 'Aliens (1986)',
-    role: 'Power Loader Ace',
+    name: "Capt. Nova",
+    fullName: "Captain Lena Nova",
+    movie: "Original 1986 space-freighter captain",
+    role: "Cargo Pilot",
     voiceMode: 'valkyrie',
     quotes: [
-      "Get away from that Full House card, you rival squad!",
-      "Nuke the high-score table from orbit — it's the only way to be sure.",
-      "I say we take off, grab a snack, and beat this high score clean.",
-      "Check those corners. Something's moving behind the snack machine."
+      "Cargo hold contains 40,000 arcade tokens and one very confused hamster.",
+      "Hyperspace is easy. Parallel parking the freighter is the hard part.",
+      "Mission log, day 212: the vending machine still only takes exact change.",
+      "Strap in, rookie. Turbulence ahead, and the snack trolley is not secured."
     ],
     priceTokens: 26,
-    item80s: 'Weyland P-5000 Work Gloves',
+    item80s: "Zero-G Snack Tube",
     bg: '#1c1917',
     accent: '#facc15'
   },
   {
     id: 'marty',
-    name: 'Marty',
-    fullName: 'Marty McFly',
-    movie: 'Back to the Future (1985)',
-    role: '88 MPH Racer',
+    name: "Kip",
+    fullName: "Kip Rader",
+    movie: "Original 1985 skate kid",
+    role: "Skate Park Ace",
     voiceMode: 'kitt',
     quotes: [
-      "Wait a minute, Doc — are you telling me an arcade quarter is still 25¢?",
-      "Nobody calls me chicken when there's a high score on the line!",
-      "Check out this hoverboard move... okay, 1985 still only has twin-kick skateboards.",
-      "Guess you guys aren't ready for synth-wave yet... but your kids are gonna love it."
+      "I've landed this trick in my head about four hundred times.",
+      "Knee pads are for people who plan to fall. I just fall without a plan.",
+      "Grandma says skating is a phase. It's been a phase for nine years.",
+      "Rad. Gnarly. Tubular. I'm running out of words and the session's not over."
     ],
     priceTokens: 1,
-    item80s: 'Hill Valley Diet Cola',
+    item80s: "Neon Grip-Tape Offcut",
     bg: '#431407',
     accent: '#fb923c'
   },
   {
     id: 'doc',
-    name: 'Doc Brown',
-    fullName: 'Dr. Emmett Brown',
-    movie: 'Back to the Future (1985)',
-    role: 'Flux Inventor',
-    voiceMode: 'kitt',
+    name: "Gran Gizmo",
+    fullName: "Grandma Gizmo",
+    movie: "Original 1985 garage inventor",
+    role: "Garage Inventor",
+    voiceMode: 'valkyrie',
     quotes: [
-      "Great Scott! 1.21 gigawatts straight into the arcade cabinet!",
-      "Roads? Where we're going, we don't need roads — we have four bingo scorecards!",
-      "When this DeLorean speedometer hits 88 miles per hour, you're gonna see some serious high scores.",
-      "Don't worry about the timeline, Marty — it's always Saturday night in 1985 here."
+      "I built a robot to do the dishes. Now it does the dishes and judges me.",
+      "Safety goggles on, dear. This toaster has opinions.",
+      "Every great invention starts with 'hold my tea' and a roll of tape.",
+      "The microwave and the TV remote are now one device. You're welcome."
     ],
     priceTokens: 20,
-    item80s: 'Twin Pines Flux Diode',
+    item80s: "Self-Stirring Teacup",
     bg: '#0f172a',
     accent: '#22d3ee'
   },
   {
     id: 'axel',
-    name: 'Axel Foley',
-    fullName: 'Det. Axel Foley',
-    movie: 'Beverly Hills Cop (1984)',
-    role: 'Detroit Undercover',
+    name: "Jojo",
+    fullName: "Jojo Bright",
+    movie: "Original 1984 stand-up comic",
+    role: "Open-Mic Comic",
     voiceMode: 'kitt',
     quotes: [
-      "I'm not gonna fall for a banana in the tailpipe... unless it comes with extra fries!",
-      "Hey man, relax — the Axel F synth bassline just kicked in across the lobby.",
-      "Don't tell the Chief I spent our per diem on arcade snacks.",
-      "Trust me, I read that look — somebody at table 3 just tried the chilli fries."
+      "Is this mic on? It is? Oh no, then you heard all of that.",
+      "I asked the arcade for a high five. It gave me a high score. Close enough.",
+      "My shoulder pads have their own agent now.",
+      "Tough crowd tonight. And by crowd I mean the guy fixing the claw machine."
     ],
     priceTokens: 19,
-    item80s: 'Mumford High Varsity Jacket',
+    item80s: "Glitter Bow Tie",
     bg: '#3b0764',
     accent: '#c084fc'
   },
   {
     id: 'gekko',
-    name: 'Gekko',
-    fullName: 'Gordon Gekko',
-    movie: 'Wall Street (1987)',
-    role: 'Corporate Raider',
-    voiceMode: 'kitt',
+    name: "Penny",
+    fullName: "Penny Ledger",
+    movie: "Original 1987 shoulder-pad exec",
+    role: "Boardroom Boss",
+    voiceMode: 'valkyrie',
     quotes: [
-      "Greed, for lack of a better word, is good... especially at the snack bar.",
-      "Money never sleeps, pal — and neither does the Wall Street ticker on Channel 5.",
-      "Lunch is for wimps. Legends are setting high scores while sipping espresso.",
-      "I don't throw darts at a board; I just wear really good red suspenders."
+      "I scheduled a meeting about the meetings. It went brilliantly.",
+      "My brick phone weighs more than my briefcase, and my briefcase has a fax machine in it.",
+      "Lunch is a power move. Second lunch is a merger.",
+      "Shoulder pads this big don't fit through doors. Doors fit around me."
     ],
     priceTokens: 50,
-    item80s: '1980s Brick Phone',
+    item80s: "Extra-Long Phone Antenna",
     bg: '#172554',
     accent: '#60a5fa'
   },
   {
     id: 'macgyver',
-    name: 'MacGyver',
-    fullName: 'Angus MacGyver',
-    movie: 'MacGyver (1985)',
-    role: 'Phoenix Troubleshooter',
+    name: "Sparks",
+    fullName: "Felix \"Sparks\" Okoro",
+    movie: "Original 1985 TV repair man",
+    role: "Repair Wizard",
     voiceMode: 'kitt',
     quotes: [
-      "Give me a paperclip, three chewing gum wrappers, and a rubber band — I'll fix that CRT antenna.",
-      "Never needed fancy gear when Swiss Army steel and quick math beat the clock.",
-      "A little physics here, a dab of duct tape there, and our bingo hopper runs at twice the speed.",
-      "Patience is everything. Wait for the exact angle, then drop the pin."
+      "Have you tried hitting it gently on the side? Gently. GENTLY.",
+      "This TV just needed a new tube, a pep talk, and one crisp packet in the right place.",
+      "I fixed the jukebox. It now plays only one song, but it plays it beautifully.",
+      "Rule one of repair: if it buzzes, step back. If it hums, sing along."
     ],
     priceTokens: 12,
-    item80s: 'Red Swiss Army Pocket Knife',
+    item80s: "Lucky Screwdriver (Taped)",
     bg: '#064e3b',
     accent: '#34d399'
   },
   {
     id: 'max_headroom',
-    name: 'Max Headroom',
-    fullName: 'Max Headroom (20 Mins Into The Future)',
-    movie: 'The Max Headroom Show (1985)',
-    role: 'AI TV Anarchist',
-    voiceMode: 'kitt',
+    name: "Glitch",
+    fullName: "Glitch the Screen Host",
+    movie: "Original 1987 computer TV host",
+    role: "Pixel Presenter",
+    voiceMode: 'hal',
     quotes: [
-      "C-c-c-catch the wave, arcade viewers! Welcome back to b-b-breaking 80s mayhem!",
-      "Television is the opiate of the masses — and you're looking sharp on C-C-CRT tonight!",
-      "How do I know when someone hits Full House? My pixel hair glitches into neon turquoise!",
-      "Stay tuned! Don't touch that rotary dial — unless you want to tune the vintage tube TV!"
+      "Good evening, viewers! I am drawn in sixteen colours and all of them are excited.",
+      "Coming up after the break: a test card, and then another, slightly different test card.",
+      "Please adjust your aerial. No, the other way. No, the first way.",
+      "I am made of pixels, which means I never have a bad hair day. I have a bad pixel day."
     ],
     priceTokens: 24,
-    item80s: 'Network 23 Hologram Sunglasses',
+    item80s: "Pocket Test-Card Badge",
     bg: '#083344',
     accent: '#22d3ee'
   },
   {
     id: 'he_man',
-    name: 'He-Man',
-    fullName: 'Prince Adam / He-Man',
-    movie: 'Masters of the Universe (1983)',
-    role: 'Defender of Eternia',
-    voiceMode: 'kitt',
+    name: "Brawn",
+    fullName: "Brawnhilda the Bold",
+    movie: "Original 1983 cartoon warrior",
+    role: "Saturday Morning Hero",
+    voiceMode: 'valkyrie',
     quotes: [
-      "By the Power of Grayskull... I HAVE THE HIGH SCORE!",
-      "Skeletor may try to steal the high score, but good vibes always triumph at the arcade.",
-      "Remember kids: always share your snacks with the whole squad!",
-      "Battle Cat loves 80s synthwave almost as much as weekend Saturday morning cartoons."
+      "Fear not, citizens! I shall defeat this boss level after a short snack.",
+      "My sword is made of pure neon and runs on four double-A batteries.",
+      "Remember, kids: share your cereal and always read the instructions.",
+      "Today's lesson: teamwork, bravery, and not leaving your bike in the rain."
     ],
     priceTokens: 16,
-    item80s: 'Power Sword Toy & Foil Shield',
+    item80s: "Foam Sword & Cardboard Shield",
     bg: '#422006',
     accent: '#f59e0b'
   },
@@ -279,37 +279,37 @@ const EIGHTIES_ICON_CAST = [
   },
   {
     id: 'crockett',
-    name: 'Crockett',
-    fullName: 'Sonny Crockett',
-    movie: 'Miami Vice (1984)',
-    role: 'Vice Detective',
-    voiceMode: 'kitt',
+    name: "Coco",
+    fullName: "Coco Reyes",
+    movie: "Original 1984 beach patrol",
+    role: "Lifeguard Captain",
+    voiceMode: 'valkyrie',
     quotes: [
-      "Pastel blazer pressed, Wayfarers on, Jan Hammer cassette cranked to 11.",
-      "Elvis the alligator guarded our Ferris Bueller Ferrari all night on Ocean Drive.",
-      "Miami lights look best reflecting off pure cyan and hot magenta neon.",
-      "No socks, white loafers, double espresso — let's cruise Ocean Drive."
+      "Swim between the flags, wear your sun cream, and stop feeding the seagulls.",
+      "That's not a shark, it's an inflatable flamingo. Back in the water.",
+      "I've blown this whistle so much I can only speak in short bursts.",
+      "Sunset shift, pastel sky, synth on the boombox. Best job in the world."
     ],
     priceTokens: 25,
-    item80s: 'Ocean Drive Espresso & Shades',
+    item80s: "Sun Visor & Whistle",
     bg: '#083344',
     accent: '#00f3ff'
   },
   {
     id: 'maverick',
-    name: 'Maverick',
-    fullName: 'Pete "Maverick" Mitchell',
-    movie: 'Top Gun (1986)',
-    role: 'Mach-2 Ace',
+    name: "Wingnut",
+    fullName: "Lt. Ray \"Wingnut\" Ortiz",
+    movie: "Original 1986 air-show stunt pilot",
+    role: "Stunt Pilot",
     voiceMode: 'kitt',
     quotes: [
-      "I feel the need... the need for 80s arcade speed!",
-      "Talk to me, Goose — is that a clean Full House trajectory on card one?",
-      "Right down the Danger Zone highway with Danger Zone cranked full blast!",
-      "Tower, this is Ghost Rider requesting a celebratory flyby over the arcade."
+      "Loop-the-loop, barrel roll, and I still didn't spill my milkshake.",
+      "The crowd wanted a flypast. I gave them a fly-very-close-past.",
+      "My plane is held together with rivets, paint, and confidence.",
+      "Ground control, requesting permission to show off. Over."
     ],
     priceTokens: 12,
-    item80s: 'Miramar Aviator Polarized Specs',
+    item80s: "Leather Flying Cap",
     bg: '#1a2e05',
     accent: '#a3e635'
   },
@@ -333,109 +333,109 @@ const EIGHTIES_ICON_CAST = [
   },
   {
     id: 'bender',
-    name: 'Bender',
-    fullName: 'John Bender',
-    movie: 'The Breakfast Club (1985)',
-    role: 'The Criminal',
+    name: "Spike",
+    fullName: "Spike Moreno",
+    movie: "Original 1985 garage-punk drummer",
+    role: "Garage Punk",
     voiceMode: 'kitt',
     quotes: [
-      "Does Barry Manilow know that you raid his wardrobe?",
-      "Screws fall out all the time — the arcade world is an imperfect place.",
-      "Hey! You want another Saturday detention? Drop two quarters in the Pac-Man cab.",
-      "Raised fist in the frozen football field at sunset — peak 1985."
+      "We know three chords. We play all of them, very loudly, at once.",
+      "Our band name changes every week. This week we're called Detention Pending.",
+      "I'm not angry, I'm just drumming at a volume that looks angry.",
+      "Saturday rehearsal in the garage. Mum is our biggest fan and our noise complaint."
     ],
     priceTokens: 5,
-    item80s: 'Flannel & Fingerless Gloves',
+    item80s: "Snapped Drumstick (Signed)",
     bg: '#450a0a',
     accent: '#ef4444'
   },
   {
     id: 'claire',
-    name: 'Claire',
-    fullName: 'Claire Standish',
-    movie: 'The Breakfast Club (1985)',
-    role: 'The Princess',
+    name: "Tasha",
+    fullName: "Tasha Glitz",
+    movie: "Original 1985 mall-fashion icon",
+    role: "Mall Trendsetter",
     voiceMode: 'valkyrie',
     quotes: [
-      "Saturday detention never stopped diamond earrings.",
-      "Yes, I brought sushi to the library — and yes, I'm still top of the high-score table.",
-      "You know, popularity isn't free, but the arcade is.",
-      "Don't mess up the shoulder pads in this pink blazer!"
+      "Crimped hair, neon earrings, and a scrunchie on each wrist. Minimum.",
+      "The mall is basically my office, and the food court is my board room.",
+      "I don't follow trends. Trends follow me, slightly out of breath.",
+      "This jacket has more zips than pockets and zero of the pockets are real."
     ],
     priceTokens: 15,
-    item80s: 'Shermer Mall Sushi Box',
+    item80s: "Clip-On Neon Hoops",
     bg: '#500724',
     accent: '#ec4899'
   },
   {
     id: 'allison',
-    name: 'Allison',
-    fullName: 'Allison Reynolds',
-    movie: 'The Breakfast Club (1985)',
-    role: 'The Basket Case',
+    name: "Raven",
+    fullName: "Raven Black",
+    movie: "Original 1985 goth sketch artist",
+    role: "Sketchbook Goth",
     voiceMode: 'valkyrie',
     quotes: [
-      "When you grow up, your heart dies — good thing memes are eternal.",
-      "I made a sandwich out of sugar cereal and sherbet straws. Want a bite?",
-      "I just sit in the corner with my oversized coat and quietly fill two lines.",
-      "Vodka? No, give me Diet Tab and the spooky VHS rack."
+      "I drew you while you weren't looking. You look like a very nice ghost.",
+      "My favourite colour is black, and my second favourite is darker black.",
+      "I don't do small talk. I do tiny, mysterious talk.",
+      "The moon and I have an understanding."
     ],
     priceTokens: 2,
-    item80s: "Sugar Cereal Sandwich",
+    item80s: "Charcoal Pencil Stub",
     bg: '#1e1b4b',
     accent: '#a855f7'
   },
   {
     id: 'brian',
-    name: 'Brian',
-    fullName: 'Brian Johnson',
-    movie: 'The Breakfast Club (1985)',
-    role: 'The Brain',
+    name: "Newt",
+    fullName: "Newton Fish",
+    movie: "Original 1985 computer-club president",
+    role: "Computer Club Whiz",
     voiceMode: 'kitt',
     quotes: [
-      "Sincere calculations show the arcade high-score table is mathematically fascinating.",
-      "Practice improves your high-score probability — though watch your snack burn rate!",
-      "Excuse me, that wasn't a flare gun, it was my Commodore 64 power supply overheating.",
-      "Look at the statistical spread across B-I-N-G-O columns: pure elegance."
+      "I wrote a program that says HELLO. It took three weeks and it's perfect.",
+      "Loading from tape takes eleven minutes. I use that time to think about loading.",
+      "My calculator watch can do sums AND tell the time. I am unstoppable.",
+      "The statistics say practice improves your high score. I have the graph to prove it."
     ],
     priceTokens: 3,
-    item80s: 'Physics Lab Quarter Pack',
+    item80s: "Floppy Disk Keyring",
     bg: '#052e16',
     accent: '#4ade80'
   },
   {
     id: 'andrew',
-    name: 'Andrew',
-    fullName: 'Andrew Clark',
-    movie: 'The Breakfast Club (1985)',
-    role: 'The Athlete',
+    name: "Champ",
+    fullName: "Dee \"Champ\" Okafor",
+    movie: "Original 1985 school track star",
+    role: "Track Star",
     voiceMode: 'kitt',
     quotes: [
-      "Don't mess with the bull, young man — you'll get the horns.",
-      "Do you have any idea what it takes to sprint all 15 squares on a single bingo card?",
-      "Varsity letterman rules apply here: hustle hard and finish your laps early!",
-      "Four sandwiches for lunch, four more for the road."
+      "I ran here. I ran home. Then I ran back because I forgot my tokens.",
+      "Warm up, stretch, drink water, and never trust a puddle on the track.",
+      "My sweatband has seen things.",
+      "Four lunches a day is not a lot when you run everywhere."
     ],
     priceTokens: 8,
-    item80s: 'Varsity Letterman Patch',
+    item80s: "Lucky Sweatband",
     bg: '#172554',
     accent: '#38bdf8'
   },
   {
     id: 'cameron',
-    name: 'Cameron',
-    fullName: 'Cameron Frye',
-    movie: "Ferris Bueller's Day Off (1986)",
-    role: 'Co-Pilot',
+    name: "Milo",
+    fullName: "Milo Fretz",
+    movie: "Original 1986 video-store clerk",
+    role: "Rewind Clerk",
     voiceMode: 'kitt',
     quotes: [
-      "I am NOT putting another mile on my dad's 1961 GT California!",
-      "Pardon my French, but you're an absolute legend if you beat that high score.",
-      "When Cameron was in Egypt's land... let my bingo balls go!",
-      "Okay, okay, I'll stay for one more game, just don't tell Ferris I liked it."
+      "Be kind, rewind. I will know. I always know.",
+      "Late fees are not my fault. They are the universe's fault.",
+      "I've seen every film in the horror aisle and I sleep with the lights on.",
+      "Staff pick of the week: whatever's left on the shelf by Friday night."
     ],
     priceTokens: 10,
-    item80s: '#9 Red Wings Jersey',
+    item80s: "Rewinder Machine",
     bg: '#450a0a',
     accent: '#f87171'
   }
@@ -456,15 +456,17 @@ export function EightiesDigitalFaceSvg({ id, size = 38 }) {
 
       {id === 'knight' && (
         <>
-          <rect x="3" y="2" width="10" height="4" fill="#171717" />
-          <rect x="4" y="1" width="7" height="2" fill="#262626" />
-          <rect x="4" y="5" width="8" height="7" fill="#f3c6a5" />
+          <rect x="2" y="1" width="12" height="6" fill="#9a3412" />
+          <rect x="1" y="4" width="2" height="6" fill="#9a3412" />
+          <rect x="13" y="4" width="2" height="6" fill="#9a3412" />
+          <rect x="2" y="6" width="1" height="3" fill="#22d3ee" />
+          <rect x="13" y="6" width="1" height="3" fill="#22d3ee" />
+          <rect x="4" y="5" width="8" height="7" fill="#c68642" />
           <rect x="5" y="7" width="2" height="1" fill="#0f172a" />
           <rect x="9" y="7" width="2" height="1" fill="#0f172a" />
-          <rect x="6" y="10" width="4" height="1" fill="#9a3412" />
-          <rect x="2" y="12" width="12" height="4" fill="#18181b" />
-          <rect x="4" y="14" width="8" height="1" fill="#ef4444" />
-          <rect x="6" y="14" width="4" height="1" fill="#fca5a5" />
+          <rect x="6" y="10" width="4" height="1" fill="#db2777" />
+          <rect x="2" y="12" width="12" height="4" fill="#0f766e" />
+          <rect x="5" y="12" width="6" height="1" fill="#f8fafc" />
         </>
       )}
 
@@ -486,268 +488,297 @@ export function EightiesDigitalFaceSvg({ id, size = 38 }) {
 
       {id === 'terminator' && (
         <>
-          <rect x="4" y="1" width="8" height="4" fill="#18181b" />
-          <rect x="4" y="5" width="4" height="7" fill="#d4a383" />
-          <rect x="8" y="5" width="4" height="7" fill="#94a3b8" />
-          <rect x="4" y="7" width="3" height="2" fill="#020617" />
-          <rect x="9" y="7" width="2" height="2" fill="#111827" />
-          <rect x="10" y="7" width="1" height="1" fill="#ef4444" />
-          <rect x="6" y="10" width="4" height="1" fill="#475569" />
-          <rect x="2" y="12" width="12" height="4" fill="#09090b" />
-          <rect x="5" y="12" width="6" height="4" fill="#374151" />
+          <rect x="7" y="0" width="2" height="2" fill="#94a3b8" />
+          <rect x="7" y="0" width="2" height="1" fill="#22d3ee" />
+          <rect x="3" y="2" width="10" height="9" fill="#64748b" />
+          <rect x="4" y="3" width="8" height="7" fill="#94a3b8" />
+          <rect x="5" y="5" width="2" height="2" fill="#22d3ee" />
+          <rect x="9" y="5" width="2" height="2" fill="#22d3ee" />
+          <rect x="5" y="8" width="6" height="1" fill="#334155" />
+          <rect x="6" y="8" width="1" height="1" fill="#cbd5e1" />
+          <rect x="8" y="8" width="1" height="1" fill="#cbd5e1" />
+          <rect x="2" y="12" width="12" height="4" fill="#475569" />
+          <rect x="5" y="13" width="2" height="1" fill="#4ade80" />
+          <rect x="9" y="13" width="2" height="1" fill="#f59e0b" />
         </>
       )}
 
       {id === 'robocop' && (
         <>
-          <rect x="3" y="2" width="10" height="5" fill="#cbd5e1" />
-          <rect x="4" y="1" width="8" height="2" fill="#94a3b8" />
-          <rect x="3" y="6" width="10" height="2" fill="#020617" />
-          <rect x="5" y="7" width="6" height="1" fill="#ef4444" />
-          <rect x="5" y="8" width="6" height="4" fill="#f3c6a5" />
+          <rect x="3" y="2" width="10" height="3" fill="#1e3a8a" />
+          <rect x="2" y="4" width="12" height="1" fill="#172554" />
+          <rect x="7" y="2" width="2" height="1" fill="#facc15" />
+          <rect x="4" y="5" width="8" height="7" fill="#a0522d" />
+          <rect x="3" y="5" width="1" height="4" fill="#3f2314" />
+          <rect x="12" y="5" width="1" height="4" fill="#3f2314" />
+          <rect x="5" y="7" width="2" height="1" fill="#0f172a" />
+          <rect x="9" y="7" width="2" height="1" fill="#0f172a" />
           <rect x="6" y="10" width="4" height="1" fill="#7c2d12" />
-          <rect x="2" y="12" width="12" height="4" fill="#64748b" />
-          <rect x="5" y="12" width="6" height="3" fill="#e2e8f0" />
+          <rect x="2" y="12" width="12" height="4" fill="#7dd3fc" />
+          <rect x="11" y="12" width="2" height="3" fill="#111827" />
+          <rect x="4" y="13" width="2" height="1" fill="#facc15" />
         </>
       )}
 
       {id === 'venkman' && (
         <>
-          <rect x="4" y="2" width="8" height="3" fill="#3f2314" />
-          <rect x="4" y="5" width="8" height="7" fill="#f6cfb2" />
-          <rect x="5" y="7" width="2" height="1" fill="#0f172a" />
-          <rect x="9" y="7" width="2" height="1" fill="#0f172a" />
+          <rect x="6" y="0" width="4" height="2" fill="#4b5563" />
+          <rect x="4" y="2" width="8" height="3" fill="#374151" />
+          <rect x="5" y="2" width="2" height="1" fill="#d1d5db" />
+          <rect x="4" y="5" width="8" height="7" fill="#f1c27d" />
+          <rect x="4" y="7" width="3" height="2" fill="#0f172a" />
+          <rect x="9" y="7" width="3" height="2" fill="#0f172a" />
+          <rect x="5" y="7" width="1" height="1" fill="#e0f2fe" />
+          <rect x="10" y="7" width="1" height="1" fill="#e0f2fe" />
+          <rect x="7" y="7" width="2" height="1" fill="#0f172a" />
           <rect x="6" y="10" width="4" height="1" fill="#9a3412" />
-          <rect x="2" y="12" width="12" height="4" fill="#a8a29e" />
-          <rect x="3" y="12" width="2" height="4" fill="#451a03" />
-          <rect x="11" y="12" width="2" height="4" fill="#4ade80" />
+          <rect x="2" y="12" width="12" height="4" fill="#f8fafc" />
+          <rect x="6" y="12" width="4" height="4" fill="#7c3aed" />
         </>
       )}
 
       {id === 'ripley' && (
         <>
-          <rect x="3" y="1" width="10" height="5" fill="#1e1b18" />
-          <rect x="2" y="4" width="2" height="4" fill="#1e1b18" />
-          <rect x="12" y="4" width="2" height="4" fill="#1e1b18" />
-          <rect x="4" y="5" width="8" height="7" fill="#f3c6a5" />
+          <rect x="4" y="2" width="8" height="3" fill="#cbd5e1" />
+          <rect x="3" y="3" width="1" height="3" fill="#cbd5e1" />
+          <rect x="12" y="3" width="1" height="3" fill="#cbd5e1" />
+          <rect x="4" y="5" width="8" height="7" fill="#d4a383" />
           <rect x="5" y="7" width="2" height="1" fill="#0f172a" />
           <rect x="9" y="7" width="2" height="1" fill="#0f172a" />
           <rect x="6" y="10" width="4" height="1" fill="#7c2d12" />
-          <rect x="2" y="12" width="12" height="4" fill="#4d7c0f" />
-          <rect x="2" y="12" width="3" height="2" fill="#facc15" />
-          <rect x="11" y="12" width="3" height="2" fill="#facc15" />
+          <rect x="2" y="12" width="12" height="4" fill="#ea580c" />
+          <rect x="3" y="13" width="3" height="2" fill="#22d3ee" />
+          <rect x="7" y="12" width="2" height="4" fill="#9a3412" />
         </>
       )}
 
       {id === 'axel' && (
         <>
-          <rect x="3" y="2" width="10" height="4" fill="#09090b" />
-          <rect x="4" y="5" width="8" height="7" fill="#8d5524" />
+          <rect x="4" y="2" width="8" height="3" fill="#3f2a1d" />
+          <rect x="3" y="3" width="1" height="2" fill="#3f2a1d" />
+          <rect x="12" y="3" width="1" height="2" fill="#3f2a1d" />
+          <rect x="4" y="5" width="8" height="7" fill="#6b3e26" />
           <rect x="5" y="7" width="2" height="1" fill="#09090b" />
           <rect x="9" y="7" width="2" height="1" fill="#09090b" />
-          <rect x="6" y="10" width="4" height="1" fill="#f8fafc" />
-          <rect x="2" y="12" width="12" height="4" fill="#991b1b" />
-          <rect x="5" y="12" width="6" height="4" fill="#94a3b8" />
-          <rect x="3" y="13" width="2" height="2" fill="#fef3c7" />
+          <rect x="5" y="10" width="6" height="1" fill="#f8fafc" />
+          <rect x="2" y="12" width="12" height="4" fill="#ca8a04" />
+          <rect x="6" y="12" width="4" height="2" fill="#7e22ce" />
+          <rect x="13" y="9" width="2" height="4" fill="#94a3b8" />
         </>
       )}
 
       {id === 'gekko' && (
         <>
-          <rect x="4" y="1" width="8" height="4" fill="#a16207" />
-          <rect x="5" y="1" width="6" height="1" fill="#eab308" />
-          <rect x="4" y="5" width="8" height="7" fill="#f3c6a5" />
+          <rect x="3" y="2" width="10" height="5" fill="#3f2a1d" />
+          <rect x="3" y="5" width="2" height="5" fill="#3f2a1d" />
+          <rect x="11" y="5" width="2" height="5" fill="#3f2a1d" />
+          <rect x="5" y="5" width="6" height="7" fill="#fde2cc" />
           <rect x="5" y="7" width="2" height="1" fill="#0f172a" />
           <rect x="9" y="7" width="2" height="1" fill="#0f172a" />
-          <rect x="6" y="10" width="4" height="1" fill="#7f1d1d" />
-          <rect x="2" y="12" width="12" height="4" fill="#3b82f6" />
-          <rect x="6" y="12" width="4" height="2" fill="#f8fafc" />
-          <rect x="4" y="12" width="1" height="4" fill="#ef4444" />
-          <rect x="11" y="12" width="1" height="4" fill="#ef4444" />
-          <rect x="13" y="8" width="2" height="5" fill="#18181b" />
+          <rect x="7" y="10" width="2" height="1" fill="#dc2626" />
+          <rect x="0" y="12" width="16" height="4" fill="#be185d" />
+          <rect x="6" y="12" width="4" height="4" fill="#f8fafc" />
         </>
       )}
 
       {id === 'macgyver' && (
         <>
-          <rect x="4" y="1" width="8" height="4" fill="#92400e" />
-          <rect x="3" y="5" width="1" height="6" fill="#78350f" />
-          <rect x="12" y="5" width="1" height="6" fill="#78350f" />
-          <rect x="4" y="5" width="8" height="7" fill="#f6cfb2" />
-          <rect x="5" y="7" width="2" height="1" fill="#0f172a" />
+          <rect x="4" y="2" width="8" height="3" fill="#3f2a1d" />
+          <rect x="4" y="5" width="8" height="7" fill="#5c3a21" />
+          <rect x="4" y="7" width="3" height="2" fill="#e2e8f0" />
+          <rect x="5" y="7" width="1" height="1" fill="#0f172a" />
           <rect x="9" y="7" width="2" height="1" fill="#0f172a" />
-          <rect x="6" y="10" width="4" height="1" fill="#9a3412" />
-          <rect x="2" y="12" width="12" height="4" fill="#065f46" />
-          <rect x="10" y="13" width="3" height="1" fill="#ef4444" />
+          <rect x="6" y="10" width="4" height="1" fill="#f8fafc" />
+          <rect x="2" y="12" width="12" height="4" fill="#ea580c" />
+          <rect x="11" y="12" width="1" height="4" fill="#facc15" />
+          <rect x="11" y="12" width="1" height="1" fill="#ef4444" />
         </>
       )}
 
       {id === 'max_headroom' && (
         <>
-          <rect width="16" height="16" fill="#083344" />
-          <rect x="4" y="1" width="8" height="4" fill="#fde047" />
-          <rect x="6" y="1" width="6" height="2" fill="#fef9c3" />
-          <rect x="4" y="5" width="8" height="7" fill="#fbcfe8" />
-          <rect x="4" y="7" width="3" height="2" fill="#020617" />
-          <rect x="9" y="7" width="3" height="2" fill="#020617" />
-          <rect x="7" y="7" width="2" height="1" fill="#22d3ee" />
-          <rect x="6" y="10" width="4" height="1" fill="#be185d" />
-          <rect x="2" y="12" width="12" height="4" fill="#0f172a" />
-          <rect x="5" y="12" width="6" height="4" fill="#f8fafc" />
-          <rect x="7" y="13" width="2" height="3" fill="#22d3ee" />
+          <rect x="2" y="1" width="12" height="11" fill="#475569" />
+          <rect x="3" y="2" width="10" height="9" fill="#052e16" />
+          <rect x="5" y="4" width="2" height="2" fill="#4ade80" />
+          <rect x="9" y="4" width="2" height="2" fill="#4ade80" />
+          <rect x="5" y="8" width="6" height="1" fill="#4ade80" />
+          <rect x="3" y="3" width="10" height="1" fill="#14532d" />
+          <rect x="3" y="6" width="10" height="1" fill="#14532d" />
+          <rect x="3" y="9" width="10" height="1" fill="#14532d" />
+          <rect x="6" y="12" width="4" height="2" fill="#334155" />
+          <rect x="2" y="14" width="12" height="2" fill="#1e293b" />
+          <rect x="12" y="11" width="1" height="1" fill="#ef4444" />
         </>
       )}
 
       {id === 'he_man' && (
         <>
-          <rect x="3" y="2" width="10" height="4" fill="#facc15" />
-          <rect x="2" y="4" width="2" height="5" fill="#eab308" />
-          <rect x="12" y="4" width="2" height="5" fill="#eab308" />
-          <rect x="4" y="5" width="8" height="7" fill="#d97706" />
+          <rect x="4" y="1" width="8" height="3" fill="#cbd5e1" />
+          <rect x="3" y="3" width="10" height="1" fill="#94a3b8" />
+          <rect x="2" y="4" width="2" height="7" fill="#dc2626" />
+          <rect x="12" y="4" width="2" height="7" fill="#dc2626" />
+          <rect x="4" y="4" width="8" height="8" fill="#f3c6a5" />
           <rect x="5" y="7" width="2" height="1" fill="#0f172a" />
           <rect x="9" y="7" width="2" height="1" fill="#0f172a" />
-          <rect x="6" y="10" width="4" height="1" fill="#7c2d12" />
-          <rect x="2" y="12" width="12" height="4" fill="#d97706" />
-          <rect x="4" y="12" width="8" height="2" fill="#94a3b8" />
-          <rect x="7" y="12" width="2" height="3" fill="#ef4444" />
+          <rect x="6" y="10" width="4" height="1" fill="#9a3412" />
+          <rect x="2" y="12" width="12" height="4" fill="#78350f" />
+          <rect x="5" y="12" width="6" height="4" fill="#16a34a" />
+          <rect x="7" y="13" width="2" height="1" fill="#facc15" />
         </>
       )}
 
       {id === 'bender' && (
         <>
-          <rect x="3" y="2" width="10" height="4" fill="#3b2314" />
-          <rect x="2" y="4" width="2" height="4" fill="#3b2314" />
+          <rect x="4" y="0" width="1" height="3" fill="#22c55e" />
+          <rect x="6" y="0" width="1" height="3" fill="#22c55e" />
+          <rect x="8" y="0" width="1" height="3" fill="#22c55e" />
+          <rect x="10" y="0" width="1" height="3" fill="#22c55e" />
+          <rect x="4" y="2" width="8" height="3" fill="#16a34a" />
           <rect x="4" y="5" width="8" height="7" fill="#f3c6a5" />
-          <rect x="3" y="8" width="1" height="2" fill="#f59e0b" />
-          <rect x="5" y="7" width="2" height="1" fill="#1e293b" />
-          <rect x="9" y="7" width="2" height="1" fill="#1e293b" />
+          <rect x="5" y="7" width="2" height="1" fill="#0f172a" />
+          <rect x="9" y="7" width="2" height="1" fill="#0f172a" />
           <rect x="6" y="10" width="4" height="1" fill="#7c2d12" />
-          <rect x="2" y="12" width="12" height="4" fill="#b91c1c" />
-          <rect x="5" y="12" width="6" height="4" fill="#1f2937" />
-          <rect x="6" y="13" width="4" height="1" fill="#f8fafc" />
+          <rect x="2" y="12" width="12" height="4" fill="#111827" />
+          <rect x="3" y="12" width="1" height="1" fill="#cbd5e1" />
+          <rect x="12" y="12" width="1" height="1" fill="#cbd5e1" />
+          <rect x="13" y="9" width="1" height="5" fill="#d6a35c" />
         </>
       )}
 
       {id === 'claire' && (
         <>
-          <rect x="3" y="2" width="10" height="5" fill="#9a3412" />
-          <rect x="2" y="5" width="2" height="6" fill="#9a3412" />
-          <rect x="12" y="5" width="2" height="6" fill="#9a3412" />
-          <rect x="4" y="5" width="8" height="7" fill="#fde2cc" />
-          <rect x="3" y="9" width="1" height="1" fill="#f8fafc" />
-          <rect x="12" y="9" width="1" height="1" fill="#f8fafc" />
-          <rect x="5" y="7" width="2" height="1" fill="#1e293b" />
-          <rect x="9" y="7" width="2" height="1" fill="#1e293b" />
+          <rect x="2" y="1" width="12" height="5" fill="#c4b5fd" />
+          <rect x="1" y="4" width="3" height="8" fill="#a78bfa" />
+          <rect x="12" y="4" width="3" height="8" fill="#a78bfa" />
+          <rect x="4" y="5" width="8" height="7" fill="#8d5524" />
+          <rect x="3" y="9" width="1" height="2" fill="#22d3ee" />
+          <rect x="12" y="9" width="1" height="2" fill="#22d3ee" />
+          <rect x="5" y="7" width="2" height="1" fill="#0f172a" />
+          <rect x="9" y="7" width="2" height="1" fill="#0f172a" />
           <rect x="7" y="10" width="2" height="1" fill="#ec4899" />
-          <rect x="3" y="12" width="10" height="4" fill="#fbcfe8" />
-          <rect x="6" y="12" width="4" height="2" fill="#fdf2f8" />
+          <rect x="2" y="12" width="12" height="4" fill="#f472b6" />
+          <rect x="4" y="13" width="8" height="1" fill="#facc15" />
         </>
       )}
 
       {id === 'allison' && (
         <>
-          <rect x="3" y="2" width="10" height="5" fill="#0f172a" />
-          <rect x="4" y="4" width="3" height="2" fill="#0f172a" />
-          <rect x="4" y="6" width="8" height="6" fill="#fae5d3" />
-          <rect x="5" y="7" width="2" height="2" fill="#111827" />
-          <rect x="9" y="7" width="2" height="2" fill="#111827" />
-          <rect x="7" y="10" width="2" height="1" fill="#6b7280" />
-          <rect x="2" y="12" width="12" height="4" fill="#374151" />
-          <rect x="4" y="12" width="8" height="2" fill="#64748b" />
+          <rect x="3" y="1" width="10" height="5" fill="#1e1b4b" />
+          <rect x="2" y="4" width="2" height="9" fill="#1e1b4b" />
+          <rect x="12" y="4" width="2" height="9" fill="#1e1b4b" />
+          <rect x="4" y="5" width="8" height="7" fill="#f5e6da" />
+          <rect x="5" y="7" width="2" height="1" fill="#7c3aed" />
+          <rect x="9" y="7" width="2" height="1" fill="#7c3aed" />
+          <rect x="5" y="8" width="2" height="1" fill="#111827" />
+          <rect x="9" y="8" width="2" height="1" fill="#111827" />
+          <rect x="7" y="10" width="2" height="1" fill="#6b21a8" />
+          <rect x="2" y="12" width="12" height="4" fill="#18181b" />
+          <rect x="7" y="13" width="2" height="2" fill="#e5e7eb" />
         </>
       )}
 
       {id === 'brian' && (
         <>
-          <rect x="4" y="2" width="8" height="3" fill="#eab308" />
-          <rect x="4" y="5" width="8" height="7" fill="#fcd9bd" />
-          <rect x="5" y="7" width="2" height="1" fill="#1e3a8a" />
-          <rect x="9" y="7" width="2" height="1" fill="#1e3a8a" />
-          <rect x="6" y="10" width="4" height="1" fill="#f8fafc" />
-          <rect x="3" y="12" width="10" height="4" fill="#15803d" />
-          <rect x="6" y="12" width="4" height="2" fill="#f8fafc" />
+          <rect x="4" y="2" width="8" height="3" fill="#7c2d12" />
+          <rect x="4" y="5" width="8" height="7" fill="#f1c27d" />
+          <rect x="4" y="6" width="3" height="3" fill="#1e293b" />
+          <rect x="9" y="6" width="3" height="3" fill="#1e293b" />
+          <rect x="5" y="7" width="1" height="1" fill="#bae6fd" />
+          <rect x="10" y="7" width="1" height="1" fill="#bae6fd" />
+          <rect x="7" y="7" width="2" height="1" fill="#1e293b" />
+          <rect x="6" y="10" width="4" height="1" fill="#9a3412" />
+          <rect x="2" y="12" width="12" height="4" fill="#f8fafc" />
+          <rect x="4" y="12" width="8" height="4" fill="#15803d" />
+          <rect x="7" y="13" width="2" height="2" fill="#111827" />
         </>
       )}
 
       {id === 'andrew' && (
         <>
-          <rect x="4" y="2" width="8" height="3" fill="#451a03" />
-          <rect x="4" y="5" width="8" height="7" fill="#f3c6a5" />
-          <rect x="5" y="7" width="2" height="1" fill="#0f172a" />
-          <rect x="9" y="7" width="2" height="1" fill="#0f172a" />
-          <rect x="6" y="10" width="4" height="1" fill="#9a3412" />
+          <rect x="4" y="2" width="8" height="3" fill="#3f2a1d" />
+          <rect x="3" y="4" width="10" height="1" fill="#ef4444" />
+          <rect x="4" y="5" width="8" height="7" fill="#4a2c17" />
+          <rect x="5" y="7" width="2" height="1" fill="#09090b" />
+          <rect x="9" y="7" width="2" height="1" fill="#09090b" />
+          <rect x="6" y="10" width="4" height="1" fill="#f8fafc" />
           <rect x="2" y="12" width="12" height="4" fill="#1d4ed8" />
-          <rect x="5" y="12" width="6" height="4" fill="#e2e8f0" />
+          <rect x="5" y="12" width="6" height="1" fill="#f8fafc" />
+          <rect x="7" y="13" width="2" height="2" fill="#f8fafc" />
         </>
       )}
 
       {id === 'ferris' && (
         <>
-          <rect x="4" y="1" width="8" height="4" fill="#5c3317" />
-          <rect x="3" y="3" width="2" height="2" fill="#5c3317" />
-          <rect x="4" y="5" width="8" height="7" fill="#f6cfb2" />
-          <rect x="4" y="7" width="3" height="2" fill="#0f172a" />
-          <rect x="9" y="7" width="3" height="2" fill="#0f172a" />
-          <rect x="7" y="7" width="2" height="1" fill="#0f172a" />
+          <rect x="3" y="2" width="10" height="4" fill="#3f2a1d" />
+          <rect x="12" y="4" width="2" height="6" fill="#3f2a1d" />
+          <rect x="3" y="4" width="10" height="1" fill="#f472b6" />
+          <rect x="4" y="5" width="8" height="7" fill="#e8b48c" />
+          <rect x="5" y="7" width="2" height="1" fill="#0f172a" />
+          <rect x="9" y="7" width="2" height="1" fill="#0f172a" />
           <rect x="6" y="10" width="4" height="1" fill="#be123c" />
-          <rect x="2" y="12" width="12" height="4" fill="#78350f" />
-          <rect x="5" y="12" width="6" height="4" fill="#f8fafc" />
-          <rect x="3" y="13" width="2" height="1" fill="#facc15" />
-          <rect x="11" y="14" width="2" height="1" fill="#facc15" />
+          <rect x="2" y="12" width="12" height="4" fill="#6d28d9" />
+          <rect x="9" y="13" width="2" height="2" fill="#facc15" />
         </>
       )}
 
       {id === 'cameron' && (
         <>
-          <rect x="4" y="2" width="8" height="3" fill="#6b4423" />
-          <rect x="4" y="5" width="8" height="7" fill="#f7d7c4" />
+          <rect x="4" y="2" width="8" height="3" fill="#a16207" />
+          <rect x="3" y="2" width="2" height="2" fill="#a16207" />
+          <rect x="10" y="1" width="2" height="2" fill="#a16207" />
+          <rect x="4" y="5" width="8" height="7" fill="#f3c6a5" />
           <rect x="5" y="7" width="2" height="1" fill="#1e293b" />
           <rect x="9" y="7" width="2" height="1" fill="#1e293b" />
           <rect x="6" y="10" width="4" height="1" fill="#7f1d1d" />
           <rect x="2" y="12" width="12" height="4" fill="#dc2626" />
-          <rect x="5" y="12" width="6" height="2" fill="#f8fafc" />
+          <rect x="4" y="13" width="3" height="1" fill="#f8fafc" />
+          <rect x="10" y="12" width="3" height="4" fill="#111827" />
         </>
       )}
 
       {id === 'marty' && (
         <>
-          <rect x="3" y="2" width="10" height="4" fill="#613318" />
-          <rect x="4" y="5" width="8" height="7" fill="#f6cfb2" />
-          <rect x="4" y="7" width="3" height="2" fill="#111827" />
-          <rect x="9" y="7" width="3" height="2" fill="#111827" />
-          <rect x="5" y="7" width="1" height="1" fill="#38bdf8" />
-          <rect x="10" y="7" width="1" height="1" fill="#38bdf8" />
-          <rect x="6" y="10" width="4" height="1" fill="#9a3412" />
-          <rect x="2" y="12" width="12" height="4" fill="#ea580c" />
-          <rect x="5" y="12" width="6" height="4" fill="#2563eb" />
+          <rect x="4" y="2" width="8" height="3" fill="#dc2626" />
+          <rect x="2" y="4" width="3" height="1" fill="#b91c1c" />
+          <rect x="4" y="5" width="8" height="7" fill="#8d5524" />
+          <rect x="5" y="7" width="2" height="1" fill="#0f172a" />
+          <rect x="9" y="7" width="2" height="1" fill="#0f172a" />
+          <rect x="6" y="10" width="4" height="1" fill="#f8fafc" />
+          <rect x="2" y="12" width="12" height="4" fill="#c026d3" />
+          <rect x="4" y="12" width="3" height="2" fill="#22d3ee" />
+          <rect x="9" y="13" width="3" height="2" fill="#facc15" />
         </>
       )}
 
       {id === 'doc' && (
         <>
-          <rect x="2" y="1" width="3" height="6" fill="#f8fafc" />
-          <rect x="11" y="1" width="3" height="6" fill="#f8fafc" />
-          <rect x="4" y="1" width="8" height="3" fill="#e2e8f0" />
-          <rect x="4" y="4" width="8" height="8" fill="#fbd8c5" />
-          <rect x="4" y="7" width="8" height="2" fill="#94a3b8" />
-          <rect x="5" y="7" width="2" height="2" fill="#22d3ee" />
-          <rect x="9" y="7" width="2" height="2" fill="#22d3ee" />
-          <rect x="6" y="10" width="4" height="1" fill="#0f172a" />
-          <rect x="2" y="12" width="12" height="4" fill="#facc15" />
-          <rect x="6" y="12" width="4" height="4" fill="#f1f5f9" />
+          <rect x="6" y="0" width="4" height="2" fill="#d1d5db" />
+          <rect x="4" y="2" width="8" height="3" fill="#9ca3af" />
+          <rect x="4" y="4" width="8" height="1" fill="#f59e0b" />
+          <rect x="5" y="4" width="2" height="1" fill="#fde68a" />
+          <rect x="9" y="4" width="2" height="1" fill="#fde68a" />
+          <rect x="4" y="5" width="8" height="7" fill="#f3c6a5" />
+          <rect x="5" y="7" width="2" height="1" fill="#0f172a" />
+          <rect x="9" y="7" width="2" height="1" fill="#0f172a" />
+          <rect x="6" y="10" width="4" height="1" fill="#be123c" />
+          <rect x="2" y="12" width="12" height="4" fill="#2563eb" />
+          <rect x="5" y="12" width="6" height="3" fill="#1d4ed8" />
+          <rect x="7" y="13" width="2" height="1" fill="#facc15" />
         </>
       )}
 
       {id === 'crockett' && (
         <>
-          <rect x="3" y="2" width="10" height="4" fill="#d97706" />
-          <rect x="4" y="5" width="8" height="7" fill="#f3c6a5" />
-          <rect x="4" y="7" width="3" height="2" fill="#020617" />
-          <rect x="9" y="7" width="3" height="2" fill="#020617" />
-          <rect x="7" y="7" width="2" height="1" fill="#020617" />
-          <rect x="5" y="11" width="6" height="1" fill="#94a3b8" />
-          <rect x="2" y="12" width="12" height="4" fill="#f8fafc" />
-          <rect x="5" y="12" width="6" height="4" fill="#06b6d4" />
+          <rect x="3" y="3" width="10" height="2" fill="#facc15" />
+          <rect x="2" y="4" width="6" height="1" fill="#eab308" />
+          <rect x="4" y="2" width="8" height="1" fill="#78350f" />
+          <rect x="4" y="5" width="8" height="7" fill="#c68642" />
+          <rect x="5" y="7" width="2" height="1" fill="#0f172a" />
+          <rect x="9" y="7" width="2" height="1" fill="#0f172a" />
+          <rect x="6" y="10" width="4" height="1" fill="#f8fafc" />
+          <rect x="2" y="12" width="12" height="4" fill="#ef4444" />
+          <rect x="7" y="12" width="1" height="2" fill="#f8fafc" />
+          <rect x="7" y="14" width="1" height="1" fill="#facc15" />
         </>
       )}
 
@@ -770,14 +801,17 @@ export function EightiesDigitalFaceSvg({ id, size = 38 }) {
 
       {id === 'maverick' && (
         <>
-          <rect x="4" y="2" width="8" height="3" fill="#1e293b" />
-          <rect x="4" y="5" width="8" height="7" fill="#f3c6a5" />
-          <rect x="4" y="7" width="3" height="2" fill="#0f172a" />
-          <rect x="9" y="7" width="3" height="2" fill="#0f172a" />
-          <rect x="4" y="6" width="8" height="1" fill="#facc15" />
-          <rect x="6" y="10" width="4" height="1" fill="#f8fafc" />
-          <rect x="2" y="12" width="12" height="4" fill="#365314" />
-          <rect x="5" y="12" width="6" height="4" fill="#e2e8f0" />
+          <rect x="3" y="2" width="10" height="4" fill="#78350f" />
+          <rect x="2" y="4" width="2" height="5" fill="#78350f" />
+          <rect x="12" y="4" width="2" height="5" fill="#78350f" />
+          <rect x="4" y="4" width="3" height="2" fill="#22d3ee" />
+          <rect x="9" y="4" width="3" height="2" fill="#22d3ee" />
+          <rect x="4" y="6" width="8" height="6" fill="#e0ac69" />
+          <rect x="5" y="8" width="2" height="1" fill="#0f172a" />
+          <rect x="9" y="8" width="2" height="1" fill="#0f172a" />
+          <rect x="6" y="10" width="4" height="1" fill="#7c2d12" />
+          <rect x="2" y="12" width="12" height="4" fill="#713f12" />
+          <rect x="4" y="12" width="8" height="2" fill="#f8fafc" />
         </>
       )}
 
@@ -859,12 +893,12 @@ const EightiesIconsStrip = memo(function EightiesIconsStrip({ compact = false })
   return (
     <section
       className={`tm-80s-cast-bar ${compact ? 'is-compact' : ''}`}
-      aria-label="1980s Pop Culture Crew & Chopper Patrol"
+      aria-label="1980s Arcade Crew & Chopper Patrol"
     >
       <div className="tm-80s-cast-header">
         <div className="tm-80s-cast-title">
           <span className="tm-80s-crt-dot" aria-hidden="true" />
-          <span>📺 1980s CLASSICS CREW ({EIGHTIES_ICON_CAST.length} ICONS)</span>
+          <span>📺 1980s ARCADE CREW ({EIGHTIES_ICON_CAST.length} ICONS)</span>
           <span className="tm-80s-price-tag">1985 PRICES (25¢ COIN-OP)</span>
         </div>
         <div className="tm-80s-chopper-btns">
@@ -966,7 +1000,7 @@ const EightiesIconsStrip = memo(function EightiesIconsStrip({ compact = false })
 
             <div className="tm-80s-dossier-meta">
               <span className="tm-80s-meta-pill">
-                💵 1985 Prop: {selected.item80s} —{' '}
+                🎟️ 1985 Prop: {selected.item80s} —{' '}
                 <strong>{formatMoney(selected.priceTokens)}</strong>
               </span>
               {selected.id === 'hawke' && (

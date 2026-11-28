@@ -691,8 +691,8 @@ test.describe('Las Vegas Slot Arcade & Mobile Audio Recovery', () => {
     await castBar.scrollIntoViewIfNeeded();
     await expect(castBar).toBeVisible();
     expect(await castBar.locator('.tm-80s-face-chip').count()).toBeGreaterThanOrEqual(13);
-    await castBar.locator('.tm-80s-face-chip', { hasText: /Bender/i }).click();
-    await expect(castBar.locator('.tm-80s-dossier-card')).toContainText(/The Breakfast Club/i);
+    await castBar.locator('.tm-80s-face-chip', { hasText: /Spike/i }).click();
+    await expect(castBar.locator('.tm-80s-dossier-card')).toContainText(/Original 1985 garage-punk drummer/i);
     await expect(castBar.locator('.tm-80s-dossier-card')).toContainText(/\$1\.25/);
 
     await castBar.locator('.tm-80s-chopper-btn.is-airwolf').click();

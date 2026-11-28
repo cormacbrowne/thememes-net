@@ -33,7 +33,7 @@ export const BINGO_CALLS_86 = {
   12: { call: 'One Dozen', chant: 'Twelve 12-inch Synth Remixes!', emoji: '💿', sfxType: 'coin' },
   13: { call: 'Unlucky for Some', chant: 'Hide behind the arcade cabinet!', emoji: '🐈‍⬛', sfxType: 'boing' },
   14: { call: "Valentine's Day", chant: 'Send a Neon LoveFax — 14!', emoji: '💘', sfxType: 'whistle' },
-  15: { call: 'Young and Keen', chant: 'Fifteen Minutes of MTV Fame!', emoji: '📺', sfxType: 'synth' },
+  15: { call: 'Young and Keen', chant: 'Fifteen Minutes of Music-Video Fame!', emoji: '📺', sfxType: 'synth' },
   16: { call: 'Sweet Sixteen', chant: 'Sixteen-Bit Graphics Unlocked!', emoji: '🍬', sfxType: 'coin' },
   17: { call: 'Dancing Queen', chant: 'Young and sweet, only 17!', emoji: '🪩', sfxType: 'whistle' },
   18: { call: 'Coming of Age', chant: 'Allowed into the Neon Disco now!', emoji: '🍾', sfxType: 'horn' },

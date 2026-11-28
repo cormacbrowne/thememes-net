@@ -103,3 +103,9 @@ Format:
 - Didn't: a one-line `node -e` regex failed silently on shell quoting, and the 🪙 emoji tripped the currency guard. A smoke Roulette width check flaked once under load.
 - Routing note: Claude end to end; legal + design in parallel, then QA once.
 - Suggest: put multi-step edits in a script file, not `node -e`; when inventing names, have legal search them before design polishes the art.
+
+## 2026-11-28: T-022 film jokes cleared (Arcade AI + CRT TV)
+- Worked: QA looked at the live page around the change, not just the diff, and caught "Trinitron" in a neighbouring hub bar.
+- Didn't: a third of the work went into the Arcade AI, which QA found is not mounted anywhere since 19 Nov. A single-quote apostrophe in a JS string broke the build once.
+- Routing note: before rewriting a component's copy, check it is actually rendered (grep the imports).
+- Suggest: brand sweeps should grep the whole `src/` for the brand, not only the files in the brief.

@@ -113,7 +113,7 @@ export default function LazyCompanionRow({ className = '', eager = false, collap
           <div className="tm-companion-bar-label">
             <span aria-hidden="true">📺</span>
             <span>80s Classics Crew (24 Icons)</span>
-            <span className="tm-companion-bar-sub">&amp; Trinitron &apos;86 CRT News</span>
+            <span className="tm-companion-bar-sub">&amp; NeonVision &apos;86 CRT News</span>
           </div>
           <button
             type="button"

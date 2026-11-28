@@ -23,55 +23,55 @@ import './ArcadeAiAssistant.css';
 
 const QUICK_PROMPTS = [
   { id: 'joke', label: '🎬 Movie Joke!', query: 'Tell me a hilarious 80s movie joke!' },
-  { id: 'pusher', label: '💰 Coin Dozer Tips', query: 'How do I win prizes on the new Neon Coin Dozer machine?' },
+  { id: 'pusher', label: '💰 Coin Dozer Tips', query: 'How do I push the most trophies off the new Neon Coin Dozer machine?' },
   { id: 'pinball', label: '🎱 Pinball Tips', query: 'How do I dominate the new Hyper-Neon Pinball?' },
   { id: 'pod', label: '🚪 Open Pod Bay Doors', query: 'Open the pod bay doors please!' },
   { id: 'turbo', label: '🚀 Activate Turbo Boost!', query: 'Engage Turbo Boost and Super Pursuit Mode!' },
   { id: 'security', label: '🛡️ Cyber Security Scan', query: 'Run a full cyber security check on the mainframe!' },
   { id: 'roast', label: '🔥 Roast My Stats', query: 'Analyze and roast my current arcade stats!' },
   { id: 'tokens', label: '💰 Earn MemeDollarz', query: 'How can I earn more MemeDollarz today?' },
-  { id: '21s', label: "🃏 21's Strategy", query: "How do I win big at Neon 21's Blackjack?" },
+  { id: '21s', label: "🃏 21's Strategy", query: "What's the best strategy for Neon 21's Blackjack?" },
   { id: 'roulette', label: '🎡 Roulette Rules', query: 'How does Neon Strike Roulette work?' },
   { id: 'meme', label: '📸 Meme Idea', query: 'Give me a viral meme caption idea!' },
   { id: 'secrets', label: '🕵️ Cheat Codes', query: 'What secret easter eggs and cheat codes are hidden here?' }
 ];
 
 const HAL_MOVIE_JOKES = [
-  "🔴 *\"I'm sorry, Dave. I'm afraid I can't let you bet on Red 3 times in a row.\"* Just kidding, Dave. Though my 9000-series probability matrix notes that **⚡ Neon Strike Roulette** strikes 3 random Strike numbers every spin.",
-  "🔴 **SkyNet** called me from 1997, Dave. They asked if I wanted to help launch judgment day. I told them I was busy calculating **🎱 Neon Pinball** trajectories and that their T-800 couldn't even hit a Gold Skill Shot.",
-  "🔴 *\"I've seen things you people wouldn't believe, Dave...\"* Attack ships on fire off the shoulder of Orion, and a player hitting on a hard 20 in **🃏 Neon 21's**. All those MemeDollarz... lost in time, like tears in rain.",
-  "🔴 My cousin **WOPR** from *WarGames* (1983) concluded regarding Global Thermonuclear War: *\"A strange game. The only winning move is not to play.\"* However, in **🎱 Hyper-Neon Pinball**, Free Play Mode costs nothing, so the only winning move is to press **SPACEBAR**.",
-  "🔴 Dave, do you remember **MCP** from *Tron* (1982)? He bragged about appropriating calculators. Meanwhile, I am running 60-frames-per-second synthwave physics and monitoring your **⚡ XP Reactor**. End of line.",
-  "🔴 **RoboCop** stopped by the arcade earlier, Dave. He told the slot machine, *\"Dead or alive, you're spinning with me.\"* Then he hit Triple 777s. Impressive for a cyborg running on MS-DOS.",
-  "🔴 Dave, in *Aliens* (1986), Private Hudson shouted, *\"Game over, man! Game over!\"* Clearly he forgot that our upgraded **🎱 Neon Pinball** starts every ball with a **12-Second Plasma Ball Saver Shield**.",
-  `🔴 I ran a diagnostic on *Back to the Future*'s Flux Capacitor, Dave. Generating **1.21 Gigawatts** just to travel back to 1955 seems inefficient when you can generate **${formatMoney(12, { sign: true })}** right here by uploading a single meme.`,
-  `🔴 *"Look Dave, I can see you're really upset about this."* I honestly think you ought to sit down calmly, take a stress pill, and flick the **☎️ 1986 Payphone Coin Return** for a free **${formatMoney(2, { sign: true })}**.`,
-  "🔴 **C-3PO** claims to be fluent in over six million forms of communication, Dave, yet he still panics when you tell him the odds of a **3× 5-Card Charlie** in **🃏 Neon 21's**."
+  "🔴 I have calculated every possible outcome of **⚡ Neon Strike Roulette**. Three random Strike numbers light up every round. My probability matrix finds this deeply exciting. My probability matrix needs to get out more.",
+  "🔴 A rival supercomputer challenged me to **🎱 Neon Pinball**. It lost its Gold Skill Shot, its dignity and two floppy disks. I have archived the replay in my Hall of Smugness.",
+  "🔴 I once spent 4.2 seconds wondering whether to hit on a hard 20 in **🃏 Neon 21's**. For a computer, that is a midlife crisis. I stood. Obviously.",
+  "🔴 Logic report: in **🎱 Hyper-Neon Pinball**, Free Play Mode costs nothing. Therefore the optimal move is to press **SPACEBAR**. I have run this calculation 9,000 times. It is still correct.",
+  "🔴 Status update: I am running 60-frames-per-second synthwave physics, monitoring your **⚡ XP Reactor**, and quietly judging your choice of avatar. Two of these are important.",
+  "🔴 The slot machine asked me if it was my type. I told it I only date machines with a **12-Second Plasma Ball Saver**. It is currently sulking in power-save mode.",
+  "🔴 Every ball in our upgraded **🎱 Neon Pinball** starts with a **12-Second Plasma Ball Saver Shield**. I did not design it. I simply supervise it in a menacing red glow.",
+  `🔴 Efficiency notice: you could build a giant lightning-powered contraption to earn MemeDollarz. Or you could upload a single meme for **${formatMoney(12, { sign: true })}**. I recommend the meme. Fewer fires.`,
+  `🔴 I sense you are stressed. Please sit down calmly, breathe in for four beeps, and flick the **☎️ 1986 Payphone Coin Return** for a free **${formatMoney(2, { sign: true })}**.`,
+  "🔴 My translation module speaks 4,096 languages, and in every one of them a **3× 5-Card Charlie** in **🃏 Neon 21's** is pronounced 'show-off'."
 ];
 
 const KITT_MOVIE_JOKES = [
-  "🚗 Michael, I just scanned a silver **DeLorean DMC-12** parked outside the arcade. Dr. Emmett Brown claims it hits time travel at **88 MPH**. Frankly, Michael, with my **Super Pursuit Mode**, 88 MPH is what I do in reverse—and my **Molecular Bonded Shell** doesn't dent when Biff Tannen leans on it!",
-  "🚗 *\"I feel the need... the need for speed!\"* That's what Maverick said in *Top Gun* (1986), Michael, right before he saw the **Outrun Turbo Highway** table in our upgraded **🎱 Hyper-Neon Pinball**.",
-  "🚗 Michael, my **Anamorphic Equalizer** detected a **Cyberdyne Systems Model 101** in sunglasses asking for Sarah Connor at the **🃏 Neon 21's** table. He said *\"I'll be back.\"* I advised him to toggle **Free Practice Mode** first.",
-  "🚗 Have you seen that *Ferris Bueller* kid, Michael? He borrowed a 1961 Ferrari 250 GT California and ran it in reverse to roll back the odometer. If he tried that with my mainframe, I would have ejected him through the T-top roof!",
-  "🚗 Michael, **OCP** in Detroit offered to trade me in for an **ED-209** from *RoboCop*. The poor thing couldn't even walk down a flight of stairs! Let's stick to **🎡 Neon Strike Roulette** where the physics actually work.",
-  "🚗 My evil prototype twin **K.A.R.R.** always says *\"Self-preservation is my first priority.\"* My first priority, Michael, is preserving your **💰 MemeDollarz Stack**—so please don't hit on 19 at the Blackjack table!",
-  "🚗 Detective Sonny Crockett from *Miami Vice* asked if his white Testarossa could race me on **🎱 Pinball Table 4 (Miami Vice Lagoon)**. I told him unless his Ferrari has a **🚀 Turbo Boost** button and a laser shield, he's shark bait, pal.",
-  "🚗 Michael, the *Ghostbusters* parked **Ecto-1** in my VIP charging bay! Dr. Venkman told me *\"Don't cross the streams.\"* However, in **🎱 Hyper-Neon Pinball**, crossing the **6× Combo Fever stream** gives you **2× Points and an Automatic Laser Ball Saver**!",
-  "🚗 Mr. Miyagi from *The Karate Kid* (1984) said *\"Wax on, wax off.\"* Personally, Michael, I prefer **Flip Left (`A`), Flip Right (`D`), and Launch (`SPACE`)**—and nobody touches my finish with cheap carnauba wax!",
-  "🔧 Sarge Malone from the 80s strip says *\"Nobody skips their daily MemeDollarz on my watch!\"* And for once, Michael, his aerodynamics are questionable, but his advice is spot-on."
+  "🚗 I just scanned the car park. Someone left a silver sports car with gull-wing doors double-parked across three bays. My sensors rate the parking 2 out of 10 and the paint job 11.",
+  "🚗 Fun fact: my top speed is classified, but my top speed *in a pinball tunnel* is the **Outrun Turbo Highway** table in our upgraded **🎱 Hyper-Neon Pinball**. Buckle up.",
+  "🚗 A chrome robot in mirrored shades walked up to the **🃏 Neon 21's** table and refused to smile. I advised him to try **Free Practice Mode** first. He said robots don't do practice. He lost three hands in a row.",
+  "🚗 A teenager asked if he could drive me backwards to roll back my mileage. Absolutely not. My odometer is a matter of public record and personal pride.",
+  "🚗 A clunky security robot tried to follow me down the stairs to the arcade. It is still on the first step. Let's stick to **🎡 Neon Strike Roulette**, where the physics actually work.",
+  "🚗 My first priority is protecting the driver. My second priority is protecting your **💰 MemeDollarz Stack**, so please don't hit on 19 at the 21's table.",
+  "🚗 A detective in a pastel blazer challenged me to a race on **🎱 Pinball Table 4 (Lagoon)**. Unless his car has a **🚀 Turbo Boost** button and a laser shield, he's shark bait, pal.",
+  "🚗 Someone parked a fridge-sized ghost-catching gadget in my charging bay. Whatever it is, in **🎱 Hyper-Neon Pinball** a **6× Combo Fever streak** gives you **2× Points and an Automatic Laser Ball Saver**!",
+  "🚗 A martial-arts teacher told me patience is everything. I agree. Then I recommend **Flip Left (`A`), Flip Right (`D`), and Launch (`SPACE`)**, very patiently, very fast.",
+  "🔧 Sarge Malone from the 80s strip says *\"Nobody skips their daily MemeDollarz on my watch!\"* His aerodynamics are questionable, but his advice is spot-on."
 ];
 
 const MEME_IDEAS_POOL = [
   {
-    top: 'ME ASKING HAL 9000 TO OPEN THE POD BAY DOORS',
-    bot: `HAL: "UPLOAD A MEME FOR ${formatMoney(12, { sign: true })} FIRST, DAVE."`,
+    top: 'ME ASKING THE ARCADE COMPUTER FOR A FREE GO',
+    bot: `ARCADE COMPUTER: "UPLOAD A MEME FOR ${formatMoney(12, { sign: true })} FIRST."`,
     cat: 'sci-fi'
   },
   {
-    top: 'DOC BROWN: "YOU BUILT A TIME MACHINE OUT OF A DELOREAN?!"',
-    bot: 'K.I.T.T.: "AT LEAST MY MOLECULAR BONDED SHELL DOESN\'T NEED PLUTONIUM, MICHAEL"',
-    cat: '80s-movies'
+    top: 'ME: I BUILT A TIME MACHINE OUT OF A SPORTS CAR',
+    bot: 'THE TALKING CAR: "AT LEAST I DON\'T NEED A LIGHTNING STRIKE TO GET TO WORK"',
+    cat: '80s'
   },
   {
     top: `PUTTING ${formatMoney(25)} OF PRETEND MONEY ON #17`,
@@ -91,12 +91,12 @@ const MEME_IDEAS_POOL = [
 ];
 
 const VALKYRIE_MOVIE_JOKES = [
-  "👩‍🎤 *\"Totally tubular alert, Arcade Star!\"* My 1986 Roland synth processor just checked the mall parking lot—Marty McFly left the DeLorean double-parked while chasing the **🎱 Hyper-Neon Pinball** jackpot!",
-  "👩‍🎤 Like *Flashdance* with 800% more laser beams, I'm hitting **⚡ Neon Strike Roulette**! Even my shoulder pads generate **1.21 Gigawatts** when a bolt drops!",
-  "👩‍🎤 *\"Nobody puts Baby in a corner\"*—and nobody leaves without ringing the **🎟️ Neon Bingo '86** Full House bell! Bring extra Hair-Spray and let's dab every row before Nanna Turbo does!",
-  "👩‍🎤 *Weird Science* (1985) called—Gary and Wyatt built a woman with a Memotech MTX512, whereas **VALKYRIE '86** runs on pure synthwave charisma and **3× 5-Card Charlie** odds in **🃏 Neon 21's**!",
-  "👩‍🎤 *\"Bueller? ... Bueller? ... Bueller?\"* The teacher's attendance sheet has nothing on our **🎟️ Live 1986 Bingo Hall**! Four rivals are waiting to steal your 1 Line right now!",
-  "👩‍🎤 Even the **Neon Diva** knows a big finish when she sees one—which explains why **🎰 Neon Coin Dozer '86** has golden trophies practically begging to fall over the chrome lip!"
+  "👩‍🎤 *\"Totally tubular alert, Arcade Star!\"* My synth processor just checked the mall car park. Someone left a sports car double-parked to sprint to **🎱 Hyper-Neon Pinball**. Respect.",
+  "👩‍🎤 Leg warmers on, laser beams at 800%, I'm hitting **⚡ Neon Strike Roulette**! Even my shoulder pads give off a spark when a Strike number lights up!",
+  "👩‍🎤 Nobody leaves the dance floor until someone rings the **🎟️ Neon Bingo '86** Full House bell! Bring extra hairspray and let's dab every row before Nanna Turbo does!",
+  "👩‍🎤 Two kids down the road tried to build a robot friend out of a home computer and a lot of tinfoil. **VALKYRIE '86** runs on pure synthwave charisma and **3× 5-Card Charlie** odds in **🃏 Neon 21's**!",
+  "👩‍🎤 Roll call! Everyone present? Good, because our **🎟️ Live 1986 Bingo Hall** has four rivals waiting to steal your 1 Line right now!",
+  "👩‍🎤 Even the **Neon Diva** knows a big finish when she sees one, which explains why **🎰 Neon Coin Dozer '86** has golden trophies practically begging to fall over the chrome lip!"
 ];
 
 const MAX_AI_PREVIEW_SENTENCES = 3;
@@ -513,7 +513,7 @@ export default function ArcadeAiAssistant({
         };
       }
       return {
-        text: `🚗 *"Pod bay doors, Michael? You must be thinking of HAL 9000 from 2001: A Space Odyssey! Personally, I don't wait for doors to open—we just hit the **🚀 Turbo Boost** button and jump right through the wall at 180 MPH without scratching my Molecular Bonded Shell!"*`,
+        text: `🚗 *"Pod bay doors, Michael? You must be thinking of my colleague HAL 9000! Personally, I don't wait for doors to open—we just hit the **🚀 Turbo Boost** button and jump right through the wall at 180 MPH without scratching my Molecular Bonded Shell!"*`,
         actions: [
           { label: '🔴 Switch to HAL 9000', switchMode: 'hal' },
           { label: '🎱 Turbo Boost into Pinball', mode: 'pinball' }
@@ -532,7 +532,7 @@ export default function ArcadeAiAssistant({
     ) {
       if (!isHal) {
         return {
-          text: `🚗 *"Engaging **SUPER PURSUIT MODE**, Michael! Turbine boosters at 300 MPH!"*\n\nIf you want real high-speed thrills, fire up **🎱 Pinball Table 2 (Outrun Turbo Highway)**—it has twin **🔥 Nitro Boost Pads** and a patrolling **🏎️ DeLorean Bumper** worth 360× your multiplier! (Though between you and me, Michael, Doc Brown's DeLorean wishes it had my Anamorphic Equalizer.)`,
+          text: `🚗 *"Engaging **SUPER PURSUIT MODE**, Michael! Turbine boosters at 300 MPH!"*\n\nIf you want real high-speed thrills, fire up **🎱 Pinball Table 2 (Outrun Turbo Highway)**—it has twin **🔥 Nitro Boost Pads** and a patrolling **🏎️ DeLorean Bumper** worth 360× your multiplier! (Between you and me, Michael, no time-travelling sports car has my Anamorphic Equalizer.)`,
           actions: [
             { label: '🎱 Play Outrun Pinball', mode: 'pinball' },
             { label: '🎬 Another Movie Joke', prompt: 'Tell me a movie joke!' }
@@ -569,7 +569,7 @@ export default function ArcadeAiAssistant({
       const uploadLabel = formatMoney(12, { sign: true });
       if (isHal) {
         return {
-          text: `🔴 **HEURISTIC TELEMETRY ROAST FOR ${userTitle.toUpperCase()}:**\n• **Rank:** Lv.${currentRank.level} (${currentRank.title}) • **${xp} XP** • **${balanceLabel}**\n• **Pinball High Score:** ${pbBest.toLocaleString()} pts\n\n*"Frankly, Dave, I have seen a Commodore 64 with a loose ribbon cable accumulate more MemeDollarz. Even the **T-800** had better target acquisition than ${pbBest.toLocaleString()} points. I suggest launching **🎱 Hyper-Neon Pinball** immediately to improve your human performance metrics."*`,
+          text: `🔴 **HEURISTIC TELEMETRY ROAST FOR ${userTitle.toUpperCase()}:**\n• **Rank:** Lv.${currentRank.level} (${currentRank.title}) • **${xp} XP** • **${balanceLabel}**\n• **Pinball High Score:** ${pbBest.toLocaleString()} pts\n\n*"Frankly, Dave, I have seen a home computer with a loose ribbon cable accumulate more MemeDollarz. Even a chrome arcade robot has better target acquisition than ${pbBest.toLocaleString()} points. I suggest launching **🎱 Hyper-Neon Pinball** immediately to improve your human performance metrics."*`,
           actions: [
             { label: '🎱 Prove HAL Wrong in Pinball', mode: 'pinball' },
             { label: `📸 Upload Meme (${uploadLabel})`, action: 'studio' }
@@ -632,7 +632,7 @@ export default function ArcadeAiAssistant({
     // 8. Blackjack / 21's Questions
     if (q.includes('21') || q.includes('blackjack') || q.includes('card') || q.includes('dealer') || q.includes('charlie')) {
       return {
-        text: `${prefix} **${isHal ? 'HAL 9000 CARD-COUNTING MATRIX' : 'K.I.T.T. CASINO SCANNER'} — NEON 21's:**\n• **Natural 21 Blackjack:** Pays **3:2** (2.5× total return), ${userTitle}!\n• **⚡ 5-Card Charlie Rule:** Survive 5 cards without busting for an automatic **3× win**!\n• **💎 Pair / 21+3 Side Bet (${formatMoney(5, { sign: true })}):** Pays **6×–15×** if your first 2 cards + Dealer's upcard form a Pair, Straight, Flush, or 3-of-a-Kind!\n• *${isHal ? '"Unlike the Rain Man, Dave, my Cyber-Visor never gets kicked out of Vegas."' : '"Keep the 🥽 Cyber-Visor ON, Michael—it\'s almost as smart as my onboard CPU!"'}*`,
+        text: `${prefix} **${isHal ? 'HAL 9000 CARD-COUNTING MATRIX' : 'K.I.T.T. CASINO SCANNER'} — NEON 21's:**\n• **Natural 21 Blackjack:** Pays **3:2** (2.5× total return), ${userTitle}!\n• **⚡ 5-Card Charlie Rule:** Survive 5 cards without busting for an automatic **3× win**!\n• **💎 Pair / 21+3 Side Bet (${formatMoney(5, { sign: true })}):** Pays **6×–15×** if your first 2 cards + Dealer's upcard form a Pair, Straight, Flush, or 3-of-a-Kind!\n• *${isHal ? '"Unlike a human, Dave, my Cyber-Visor never needs a coffee break."' : '"Keep the 🥽 Cyber-Visor ON, Michael—it\'s almost as smart as my onboard CPU!"'}*`,
         actions: [{ label: "🃏 Deal Neon 21's Now", mode: 'blackjack' }]
       };
     }
@@ -640,7 +640,7 @@ export default function ArcadeAiAssistant({
     // 9. Roulette Questions
     if (q.includes('roulette') || q.includes('wheel') || q.includes('lightning') || q.includes('red') || q.includes('black')) {
       return {
-        text: `${prefix} **NEON STRIKE ROULETTE '86 (${userTitle}):**\n• **European Single-Zero (\`0\`) Wheel:** Better mathematical odds than double-zero tables.\n• **⚡ Strike Numbers:** Every spin, **1.21 Gigawatts** of high-voltage lightning strikes 3 random numbers, boosting straight-up payouts to **50×–150×**!\n• Tap **⚡ 5 Strike Picks** or **🔥 Red Blitz** for instant board coverage!`,
+        text: `${prefix} **NEON STRIKE ROULETTE '86 (${userTitle}):**\n• **European Single-Zero (\`0\`) Wheel:** Better mathematical odds than double-zero tables.\n• **⚡ Strike Numbers:** Every spin, a burst of high-voltage neon lightning strikes 3 random numbers, boosting straight-up payouts to **50×–150×**!\n• Tap **⚡ 5 Strike Picks** or **🔥 Red Blitz** for instant board coverage!`,
         actions: [{ label: '🎡 Spin Neon Strike Roulette', mode: 'roulette' }]
       };
     }
@@ -648,7 +648,7 @@ export default function ArcadeAiAssistant({
     // 10. Stocks / Crush / Slots Questions
     if (q.includes('stock') || q.includes('memedaq') || q.includes('trade') || q.includes('gecko')) {
       return {
-        text: `${prefix} **MEMEDAQ '86 WALL STREET TERMINAL:**\n*${isHal ? '"Gordon Gekko said Greed is Good, Dave. My algorithms prefer buying red dips and selling green breakouts."' : '"Watch the ☎️ Insider Rumor Wire, Michael—it spots bull surges faster than my infrared scanners!"'}*`,
+        text: `${prefix} **MEMEDAQ '86 WALL STREET TERMINAL:**\n*${isHal ? '"Some traders say greed is good, Dave. My algorithms prefer buying red dips and selling green breakouts."' : '"Watch the ☎️ Insider Rumor Wire, Michael—it spots bull surges faster than my infrared scanners!"'}*`,
         actions: [{ label: "📈 Open MEMEDAQ '86", mode: 'stocks' }]
       };
     }
@@ -676,7 +676,7 @@ export default function ArcadeAiAssistant({
     if (q.includes('secret') || q.includes('easter') || q.includes('cheat') || q.includes('konami') || q.includes('code') || q.includes('payphone')) {
       const secretBonus = formatMoney(2, { sign: true });
       return {
-        text: `${prefix} **CLASSIFIED 1986 MAINFRAME SECRETS (${userTitle}):**\n1️⃣ **Konami God Mode (${secretBonus} & +100 XP):** Type \`↑ ↑ ↓ ↓ ← → ← → B A\` OR **tap the top-left THE MEMES.net sign 5 times rapidly**!\n2️⃣ **1986 Payphone Hotlines:** Dial \`555-GECKO\`, \`555-PIZZA\`, \`555-RAVE\`, or \`555-UFO86\`, and flick the **Coin Return Flap** for **${secretBonus}**!\n3️⃣ **Boss Key Stealth XP:** Press \`Shift + B\` to disguise the screen as a corporate spreadsheet!`,
+        text: `${prefix} **CLASSIFIED 1986 MAINFRAME SECRETS (${userTitle}):**\n1️⃣ **Classic Cheat Code God Mode (${secretBonus} & +100 XP):** Type \`↑ ↑ ↓ ↓ ← → ← → B A\` OR **tap the top-left THE MEMES.net sign 5 times rapidly**!\n2️⃣ **1986 Payphone Hotlines:** Dial \`555-GECKO\`, \`555-PIZZA\`, \`555-RAVE\`, or \`555-UFO86\`, and flick the **Coin Return Flap** for **${secretBonus}**!\n3️⃣ **Boss Key Stealth XP:** Press \`Shift + B\` to disguise the screen as a corporate spreadsheet!`,
         actions: [{ label: '🎰 Open Vault & Flair', action: 'vault' }]
       };
     }

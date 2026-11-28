@@ -8,12 +8,12 @@ import './VintageCrtNewsTv.css';
 const EIGHTIES_NEWS_CHANNELS = [
   {
     ch: '02',
-    network: 'MTV CABLE 81',
+    network: 'CABLE 81',
     date: 'AUG 01, 1981',
     tag: 'BREAKING',
-    headline: 'MUSIC TELEVISION LAUNCHES AT 12:01 AM',
+    headline: 'MUSIC VIDEO CHANNEL LAUNCHES AT 12:01 AM',
     summary:
-      'Moon-landing bumper rolls nationwide as The Buggles blast Video Killed the Radio Star on live cable TV.',
+      'A moon-landing bumper rolls nationwide as the very first music video plays on live cable TV.',
     ticker: 'BREAKING 1981: FIRST 24-HOUR MUSIC VIDEO NETWORK GOES LIVE • VJs BROADCAST FROM FORT LEE • STEREO FM SIMULCAST READY',
     palette: { sky: '#1e1b4b', accent: '#f472b6', glow: '#22d3ee' },
     scene: 'mtv'
@@ -26,19 +26,19 @@ const EIGHTIES_NEWS_CHANNELS = [
     headline: 'SPACE SHUTTLE COLUMBIA LIFTS OFF',
     summary:
       'Twin solid rocket boosters ignite at Kennedy Space Center, launching the first winged reusable orbiter.',
-    ticker: 'FLASH: COLUMBIA CLEARS TOWER AT PAD 39A • JOHN YOUNG & ROBERT CRIPPEN IN ORBIT • HEAT TILES VERIFIED NOMINAL',
+    ticker: 'FLASH: COLUMBIA CLEARS TOWER AT PAD 39A • TWO-PERSON CREW IN ORBIT • HEAT TILES VERIFIED NOMINAL',
     palette: { sky: '#082f49', accent: '#fb923c', glow: '#38bdf8' },
     scene: 'shuttle'
   },
   {
     ch: '04',
-    network: 'NIGHTLINE 82',
+    network: 'LATE WIRE 82',
     date: 'NOV 30, 1982',
     tag: 'POP WIRE',
-    headline: 'THRILLER LP TRIGGERS NEON DANCE FEVER',
+    headline: 'MEGA-HIT POP LP TRIGGERS NEON DANCE FEVER',
     summary:
-      'Record shops deploy extra velvet ropes as red zipper jackets and cassette boomboxes sell out from coast to coast.',
-    ticker: 'ENTERTAINMENT ALERT: THRILLER HITS STEREO STORES • CHROME CASSETTE TAPES ON BACKORDER • SKATE RINKS ADD EXTRA NEON STROBES',
+      'Record shops deploy extra velvet ropes as shiny jackets and cassette boomboxes sell out from coast to coast.',
+    ticker: 'ENTERTAINMENT ALERT: BIGGEST LP OF THE YEAR HITS STEREO STORES • CHROME CASSETTE TAPES ON BACKORDER • SKATE RINKS ADD EXTRA NEON STROBES',
     palette: { sky: '#3b0764', accent: '#ef4444', glow: '#facc15' },
     scene: 'boombox'
   },
@@ -47,22 +47,22 @@ const EIGHTIES_NEWS_CHANNELS = [
     network: 'VALLEY TECH',
     date: 'JAN 24, 1984',
     tag: 'TECH WIRE',
-    headline: 'MACINTOSH SAYS HELLO FROM A BEIGE BOX',
+    headline: 'NEW HOME COMPUTER SAYS HELLO FROM A BEIGE BOX',
     summary:
-      'Apple unveils 128K all-in-one personal computer with crisp 9-inch CRT, floppy slot, and robotic demo speech.',
+      'A 128K all-in-one personal computer arrives with a crisp 9-inch CRT, a floppy slot, and robotic demo speech.',
     ticker: 'SILICON VALLEY: 3.5-INCH FLOPPY DRIVES REPLACE 5.25" • 128 KILOBYTES OF RAM STUNS CROWD • MOUSE CURSOR DEBUTS TO APPLAUSE',
     palette: { sky: '#0f172a', accent: '#4ade80', glow: '#a3e635' },
     scene: 'mac'
   },
   {
     ch: '06',
-    network: 'KVLY HILL VLY',
-    date: 'OCT 26, 1985',
+    network: 'MALL TV 85',
+    date: 'OCT 04, 1985',
     tag: 'SPECIAL',
-    headline: 'FLASHING LIGHTS AT TWIN PINES MALL LOT',
+    headline: 'FLASHING LIGHTS IN THE MALL CAR PARK',
     summary:
-      'Mall security baffled after gleaming stainless steel gull-wing coupe leaves dual fire trails before vanishing at 88 MPH.',
-    ticker: 'HILL VALLEY UPDATE: CLOCK TOWER LIGHTNING ADVISORY CONTINUES • FLUX CAPACITOR PARTS SOLD OUT • 1.21 GIGAWATT SPIKE LOGGED',
+      'Mall security baffled after a gleaming silver sports car revs three laps of the car park and vanishes in a puff of neon smoke.',
+    ticker: 'MALL UPDATE: THUNDERSTORM ADVISORY CONTINUES • ALIEN RUMOURS DENIED • CAR PARK BARRIER STILL SMOKING',
     palette: { sky: '#172554', accent: '#38bdf8', glow: '#f97316' },
     scene: 'delorean'
   },
@@ -85,7 +85,7 @@ const EIGHTIES_NEWS_CHANNELS = [
     tag: 'GAMING',
     headline: '8-BIT HOME CONSOLE WOWS TEST MARKETS',
     summary:
-      'Light-gun Zappers and two-button grey controllers fly off New York shelves ahead of nationwide mall rollout.',
+      'Plastic light guns and two-button grey controllers fly off New York shelves ahead of a nationwide mall rollout.',
     ticker: 'TOY AISLE BULLETIN: 8-BIT CARTRIDGE BLOWING TECHNIQUE DISCOVERED • ARCADE QUARTERS REMAIN LEGAL TENDER • CRT TV SETS ON SALE',
     palette: { sky: '#1c1917', accent: '#ef4444', glow: '#e2e8f0' },
     scene: 'nes'
@@ -97,8 +97,8 @@ const EIGHTIES_NEWS_CHANNELS = [
     tag: 'WEATHER',
     headline: '100% CHANCE OF BIG HAIR & SYNTH POP',
     summary:
-      'High-pressure Aquanet front meets warm neon mist along Ocean Drive; ideal conditions for Ferris day-offs.',
-    ticker: 'RADAR FORECAST: LEG WARMERS OPTIONAL ABOVE 75°F • FOOD COURT ORANGE JULIUS AT PEAK CHILL • DRIVE-IN CLEAR TONIGHT',
+      'A high-pressure hairspray front meets warm neon mist along the seafront; ideal conditions for a beach day.',
+    ticker: 'RADAR FORECAST: LEG WARMERS OPTIONAL ABOVE 75°F • FOOD COURT FROZEN ORANGE DRINKS AT PEAK CHILL • DRIVE-IN CLEAR TONIGHT',
     palette: { sky: '#083344', accent: '#22d3ee', glow: '#f472b6' },
     scene: 'palm'
   },
@@ -110,7 +110,7 @@ const EIGHTIES_NEWS_CHANNELS = [
     headline: 'BRICK CELLPHONES RING ACROSS TRADING FLOOR',
     summary:
       'Two-pound portable phones and red power suspenders dominate Lower Manhattan while CRT tickers race.',
-    ticker: 'MARKET TAPE: BRICK PHONE BATTERY GOOD FOR 30 MINUTES • NEON ARCADE TOKENS HOLD STEADY AT 25 CENTS EACH',
+    ticker: 'MARKET TAPE: BRICK PHONE BATTERY GOOD FOR 30 MINUTES • NEON ARCADE QUARTERS STILL BUY ONE GO EACH',
     palette: { sky: '#052e16', accent: '#4ade80', glow: '#fde047' },
     scene: 'stocks'
   },
@@ -322,7 +322,7 @@ const VintageCrtNewsTv = memo(function VintageCrtNewsTv({ compact = false }) {
       >
         <div className="tm-crt-brand">
           <span className="tm-crt-rec-dot" />
-          <span>TRINITRON &apos;86 • 80s NEWS DESK</span>
+          <span>NEONVISION &apos;86 • 80s NEWS DESK</span>
         </div>
         <div className="tm-crt-top-actions">
           <button
